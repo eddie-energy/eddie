@@ -1,17 +1,13 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.events.*;
@@ -38,21 +34,17 @@ public class PermissionRequestService {
     private static final String DATA_NEED_ID = "dataNeedId";
     private final FrPermissionRequestRepository repository;
     private final EnedisConfiguration configuration;
-    private final DataNeedsService dataNeedsService;
     private final Outbox outbox;
     private final DataNeedCalculationService<DataNeed> calculationService;
 
     public PermissionRequestService(
             FrPermissionRequestRepository repository,
             EnedisConfiguration configuration,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")  // defined in core
-            DataNeedsService dataNeedsService,
             Outbox outbox,
             DataNeedCalculationService<DataNeed> calculationService
     ) {
         this.repository = repository;
         this.configuration = configuration;
-        this.dataNeedsService = dataNeedsService;
         this.outbox = outbox;
         this.calculationService = calculationService;
     }
@@ -61,31 +53,33 @@ public class PermissionRequestService {
         LOGGER.info("Got request to create a new permission, request was: {}", permissionRequestForCreation);
         var permissionId = UUID.randomUUID().toString();
 
-        var dataNeed = dataNeedsService.findById(permissionRequestForCreation.dataNeedId())
-                                       .orElseThrow(() -> new DataNeedNotFoundException(permissionRequestForCreation.dataNeedId()));
-
+        var result = calculationService.calculate(permissionRequestForCreation.dataNeedId());
         outbox.commit(new FrCreatedEvent(permissionId,
                                          permissionRequestForCreation.connectionId(),
                                          permissionRequestForCreation.dataNeedId()));
-        var calculation = calculationService.calculate(dataNeed);
-        if (!calculation.supportsDataNeed() || calculation.permissionTimeframe() == null) {
-            outbox.commit(new FrMalformedEvent(permissionId,
-                                               new AttributeError(DATA_NEED_ID, "Unsupported data need")));
-            throw new UnsupportedDataNeedException(EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                   permissionRequestForCreation.dataNeedId(),
-                                                   "This region connector only supports validated historical and accounting point data needs.");
-        }
-
-        switch (dataNeed) {
-            case AccountingPointDataNeed ignored ->
-                    handleAccountingPointDataNeed(permissionId, calculation.permissionTimeframe());
-            default -> handleValidatedHistoricalDataNeed(calculation,
-                                                         permissionId,
-                                                         dataNeed.id());
-        }
-
-
-        URI redirectUri = buildRedirectUri(permissionId, calculation.permissionTimeframe().end());
+        var end = switch (result) {
+            case DataNeedNotFoundResult ignored -> {
+                outbox.commit(new FrMalformedEvent(permissionId,
+                                                   new AttributeError(DATA_NEED_ID, "Data need not found")));
+                throw new DataNeedNotFoundException(permissionRequestForCreation.dataNeedId());
+            }
+            case DataNeedNotSupportedResult(String message) -> {
+                outbox.commit(new FrMalformedEvent(permissionId,
+                                                   new AttributeError(DATA_NEED_ID, message)));
+                throw new UnsupportedDataNeedException(EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                       permissionRequestForCreation.dataNeedId(),
+                                                       message);
+            }
+            case AccountingPointDataNeedResult(Timeframe permissionTimeframe) -> {
+                handleAccountingPointDataNeed(permissionId, permissionTimeframe);
+                yield permissionTimeframe.end();
+            }
+            case ValidatedHistoricalDataDataNeedResult vhdResult -> {
+                handleValidatedHistoricalDataNeed(vhdResult, permissionId);
+                yield vhdResult.permissionTimeframe().end();
+            }
+        };
+        var redirectUri = buildRedirectUri(permissionId, end);
         return new CreatedPermissionRequest(permissionId, redirectUri);
     }
 
@@ -97,27 +91,12 @@ public class PermissionRequestService {
     }
 
     private void handleValidatedHistoricalDataNeed(
-            DataNeedCalculation calculation,
-            String permissionId,
-            String dataNeedId
-    ) throws UnsupportedDataNeedException {
-        if (calculation.energyDataTimeframe() == null) {
-            outbox.commit(new FrMalformedEvent(permissionId,
-                                               new AttributeError(DATA_NEED_ID, "Unsupported data need")));
-            throw new UnsupportedDataNeedException(EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                   dataNeedId,
-                                                   "Could not calculate energy data timeframe");
-        }
-        if (calculation.granularities() == null || calculation.granularities().isEmpty()) {
-            outbox.commit(new FrMalformedEvent(permissionId,
-                                               new AttributeError(DATA_NEED_ID, "Unsupported granularity")));
-            throw new UnsupportedDataNeedException(EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                   dataNeedId,
-                                                   "Unsupported granularity");
-        }
+            ValidatedHistoricalDataDataNeedResult calculation,
+            String permissionId
+    ) {
         outbox.commit(new FrValidatedEvent(permissionId,
-                                           calculation.energyDataTimeframe().start(),
-                                           calculation.energyDataTimeframe().end(),
+                                           calculation.energyTimeframe().start(),
+                                           calculation.energyTimeframe().end(),
                                            calculation.granularities().getFirst()));
     }
 

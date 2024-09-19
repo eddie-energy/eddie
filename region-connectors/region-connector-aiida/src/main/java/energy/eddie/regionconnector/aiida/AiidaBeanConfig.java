@@ -210,8 +210,12 @@ public class AiidaBeanConfig {
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(Clock clock) {
+    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
+            Clock clock
+    ) {
         return new DataNeedCalculationServiceImpl(
+                dataNeedsService,
                 SUPPORTED_DATA_NEEDS,
                 AiidaRegionConnectorMetadata.getInstance(),
                 new PermissionEndIsEnergyDataEndStrategy(REGION_CONNECTOR_ZONE_ID),

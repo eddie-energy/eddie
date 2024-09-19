@@ -1,18 +1,12 @@
 package energy.eddie.regionconnector.fi.fingrid.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.EnergyType;
-import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnectorMetadata;
 import energy.eddie.regionconnector.fi.fingrid.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.CreatedEvent;
@@ -37,7 +31,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -51,8 +44,6 @@ import static org.mockito.Mockito.*;
 class PermissionCreationServiceTest {
     @Mock
     private Outbox outbox;
-    @Mock
-    private DataNeedsService dataNeedsService;
     @Mock
     private DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     @Mock
@@ -72,11 +63,8 @@ class PermissionCreationServiceTest {
         var today = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(today, today);
         return Stream.of(
-                Arguments.of(new DataNeedCalculation(false)),
-                Arguments.of(new DataNeedCalculation(true, List.of(Granularity.PT15M), null, timeframe)),
-                Arguments.of(new DataNeedCalculation(true, List.of(Granularity.PT15M), timeframe, null)),
-                Arguments.of(new DataNeedCalculation(true, List.of(), timeframe, timeframe)),
-                Arguments.of(new DataNeedCalculation(true, null, timeframe, timeframe))
+                Arguments.of(new DataNeedNotSupportedResult("")),
+                Arguments.of(new AccountingPointDataNeedResult(timeframe))
         );
     }
 
@@ -84,18 +72,9 @@ class PermissionCreationServiceTest {
     void createAndValidatePermissionRequest_createsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         // Given
         var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT1H,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(dataNeed));
         var today = LocalDate.now(ZoneOffset.UTC);
-        when(dataNeedCalculationService.calculate(dataNeed))
-                .thenReturn(new DataNeedCalculation(
-                        true,
+        when(dataNeedCalculationService.calculate("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         List.of(Granularity.PT1H),
                         new Timeframe(today, today),
                         new Timeframe(today.minusDays(10), today.minusDays(1))
@@ -118,8 +97,8 @@ class PermissionCreationServiceTest {
     void createAndValidatePermissionRequest_throwsOnUnknownDataNeed() {
         // Given
         var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.empty());
+        when(dataNeedCalculationService.calculate("dnid")).thenReturn(new DataNeedNotFoundResult());
+
         // When, Then
         assertThrows(DataNeedNotFoundException.class,
                      () -> permissionCreationService.createAndValidatePermissionRequest(forCreation));
@@ -127,18 +106,10 @@ class PermissionCreationServiceTest {
 
     @ParameterizedTest
     @MethodSource
-    void createAndValidatePermissionRequest_throwsOnUnsupportedDataNeed(DataNeedCalculation calculation) {
+    void createAndValidatePermissionRequest_throwsOnUnsupportedDataNeed(DataNeedCalculationResult calculation) {
         // Given
         var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT1H,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(dataNeed));
-        when(dataNeedCalculationService.calculate(dataNeed))
+        when(dataNeedCalculationService.calculate("dnid"))
                 .thenReturn(calculation);
 
         // When, Then

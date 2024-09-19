@@ -1,15 +1,10 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.dataneeds.duration.AbsoluteDuration;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.eda.AtEdaBeanConfig;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
@@ -23,7 +18,8 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.Optional;
+import java.time.ZoneOffset;
+import java.util.List;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -34,42 +30,29 @@ import static org.mockito.Mockito.*;
 class PermissionRequestCreationAndValidationServiceTest {
     @Mock
     private Outbox mockOutbox;
+    @Spy
+    private final AtConfiguration configuration = new AtEdaBeanConfig().atConfiguration("epId");
+    @SuppressWarnings("unused")
+    @Spy
+    private final ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(configuration);
     @Mock
-    private DataNeedsService mockService;
-    @Mock
-    private ValidatedHistoricalDataDataNeed vhdDataNeed;
-    @Mock
-    private AccountingPointDataNeed accountingPointDataNeed;
-    @Mock
-    private GenericAiidaDataNeed unsupportedDataNeed;
-    @Mock
-    private AbsoluteDuration absoluteDuration;
+    private DataNeedCalculationService<DataNeed> calculationService;
     @InjectMocks
     private PermissionRequestCreationAndValidationService creationService;
-    @SuppressWarnings("unused")
-    @Spy
-    private DataNeedCalculationService<DataNeed> dataNeedCalculationService = new AtEdaBeanConfig().dataNeedCalculationService();
-    @Spy
-    private AtConfiguration configuration = new AtEdaBeanConfig().atConfiguration("epId");
-    @SuppressWarnings("unused")
-    @Spy
-    private ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(configuration);
 
     @Test
     void createValidPermissionRequest_forHVDDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
         // Given
-        when(mockService.findById(any())).thenReturn(Optional.of(vhdDataNeed));
-        when(vhdDataNeed.minGranularity()).thenReturn(Granularity.PT15M);
-        when(vhdDataNeed.maxGranularity()).thenReturn(Granularity.PT15M);
-        LocalDate start = LocalDate.now(AT_ZONE_ID).minusDays(10);
-        when(vhdDataNeed.duration()).thenReturn(absoluteDuration);
-        when(absoluteDuration.start()).thenReturn(start);
-        when(absoluteDuration.end()).thenReturn(start.plusDays(5));
-        when(vhdDataNeed.isEnabled()).thenReturn(true);
+        var start = LocalDate.now(AT_ZONE_ID).minusDays(10);
+        var timeframe = new Timeframe(start, start.plusDays(5));
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
+                                                                      timeframe,
+                                                                      timeframe));
 
 
-        PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
-                                                                           "dnid", "AT000000");
+        var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
+                                                  "dnid", "AT000000");
 
         // When
         var res = creationService.createAndValidatePermissionRequest(pr);
@@ -81,10 +64,12 @@ class PermissionRequestCreationAndValidationServiceTest {
     @Test
     void createValidPermissionRequest_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
         // Given
-        when(mockService.findById(any())).thenReturn(Optional.of(accountingPointDataNeed));
-        when(accountingPointDataNeed.isEnabled()).thenReturn(true);
-        PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
-                                                                           "dnid", "AT000000");
+        var now = LocalDate.now(ZoneOffset.UTC);
+        var timeframe = new Timeframe(now, now);
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new AccountingPointDataNeedResult(timeframe));
+        var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
+                                                  "dnid", "AT000000");
 
         // When
         var res = creationService.createAndValidatePermissionRequest(pr);
@@ -96,8 +81,8 @@ class PermissionRequestCreationAndValidationServiceTest {
     @Test
     void createInvalidPermissionRequest() {
         // Given
-        PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT1234500699900000000000206868100",
-                                                                           "dnid", "AT000000");
+        var pr = new PermissionRequestForCreation("cid", "AT1234500699900000000000206868100",
+                                                  "dnid", "AT000000");
 
 
         // When
@@ -109,10 +94,10 @@ class PermissionRequestCreationAndValidationServiceTest {
     @Test
     void unsupportedDataNeedThrows() {
         // Given
-        when(mockService.findById(any())).thenReturn(Optional.of(unsupportedDataNeed));
+        when(calculationService.calculate("dnid")).thenReturn(new DataNeedNotSupportedResult("bla"));
 
-        PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
-                                                                           "dnid", "AT000000");
+        var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
+                                                  "dnid", "AT000000");
         // When & Then
         assertThrows(UnsupportedDataNeedException.class, () -> creationService.createAndValidatePermissionRequest(pr));
     }
@@ -120,31 +105,24 @@ class PermissionRequestCreationAndValidationServiceTest {
     @Test
     void givenInvalidGranularity_createAndValidatePermissionRequest_throwsException() {
         // Given
-        when(mockService.findById(any())).thenReturn(Optional.of(vhdDataNeed));
-        when(vhdDataNeed.minGranularity()).thenReturn(Granularity.PT5M);
-        when(vhdDataNeed.maxGranularity()).thenReturn(Granularity.PT5M);
-        when(vhdDataNeed.duration()).thenReturn(absoluteDuration);
-        when(absoluteDuration.start()).thenReturn(LocalDate.now(AT_ZONE_ID).minusDays(5));
-        when(absoluteDuration.end()).thenReturn(LocalDate.now(AT_ZONE_ID).minusDays(1));
-        PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
-                                                                           "dnid", "AT000000");
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new DataNeedNotSupportedResult("Granularities not supported"));
+        var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
+                                                  "dnid", "AT000000");
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class, () -> creationService.createAndValidatePermissionRequest(pr));
     }
 
     @Test
-    void givenInvalidStart_createAndValidatePermissionRequest_throwsException() {
+    void givenUnknownDataNeedId_throwsUnknownDataNeedException() {
         // Given
-        when(mockService.findById(any())).thenReturn(Optional.of(vhdDataNeed));
-        when(vhdDataNeed.duration()).thenReturn(absoluteDuration);
-        when(vhdDataNeed.minGranularity()).thenReturn(Granularity.PT15M);
-        when(vhdDataNeed.maxGranularity()).thenReturn(Granularity.P1D);
-        when(absoluteDuration.start()).thenReturn(LocalDate.now(AT_ZONE_ID).minusYears(5));
-        PermissionRequestForCreation pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
-                                                                           "dnid", "AT000000");
+        var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
+                                                  "dnid", "AT000000");
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new DataNeedNotFoundResult());
 
         // When, Then
-        assertThrows(UnsupportedDataNeedException.class, () -> creationService.createAndValidatePermissionRequest(pr));
+        assertThrows(DataNeedNotFoundException.class, () -> creationService.createAndValidatePermissionRequest(pr));
     }
 }

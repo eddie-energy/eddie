@@ -1,9 +1,7 @@
 package energy.eddie.core.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.dataneeds.exceptions.DataNeedDisabledException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.DataNeed;
@@ -55,8 +53,7 @@ class DataNeedCalculationRouterTest {
     @Test
     void testCalculateFor_throwsOnUnknownDataNeed() {
         // Given
-        when(dataNeedsService.findById(any()))
-                .thenReturn(Optional.empty());
+        when(service.calculate("unknown")).thenReturn(new DataNeedNotFoundResult());
         // When
         // Then
         assertThrows(DataNeedNotFoundException.class, () -> router.calculateFor("at-eda", "unknown"));
@@ -64,17 +61,14 @@ class DataNeedCalculationRouterTest {
 
     @Test
     void testCalculateFor_returnsCalculation() throws UnknownRegionConnectorException, DataNeedNotFoundException {
-
-        when(dataNeedsService.findById(any()))
-                .thenReturn(Optional.of(dataNeed));
         var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
-        when(service.calculate(dataNeed))
-                .thenReturn(new DataNeedCalculation(
-                        true,
+        when(service.calculate("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         List.of(Granularity.PT15M),
                         timeframe,
                         timeframe
                 ));
+
         // When
         var res = router.calculateFor("at-eda", "dnid");
 
@@ -84,6 +78,40 @@ class DataNeedCalculationRouterTest {
                 () -> assertEquals(timeframe, res.energyDataTimeframe()),
                 () -> assertEquals(timeframe, res.permissionTimeframe()),
                 () -> assertEquals(List.of(Granularity.PT15M), res.granularities())
+        );
+    }
+
+    @Test
+    void testCalculateFor_returnsCalculation_withAccountingPointData() throws UnknownRegionConnectorException, DataNeedNotFoundException {
+        var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
+        when(service.calculate("dnid")).thenReturn(new AccountingPointDataNeedResult(timeframe));
+
+        // When
+        var res = router.calculateFor("at-eda", "dnid");
+
+        // Then
+        assertAll(
+                () -> assertTrue(res.supportsDataNeed()),
+                () -> assertNull(res.energyDataTimeframe()),
+                () -> assertEquals(timeframe, res.permissionTimeframe()),
+                () -> assertNull(res.granularities())
+        );
+    }
+
+    @Test
+    void testCalculateFor_returnsCalculation_withUnsupportedDataNeed() throws UnknownRegionConnectorException, DataNeedNotFoundException {
+        when(service.calculate("dnid")).thenReturn(new DataNeedNotSupportedResult("ERROR"));
+
+        // When
+        var res = router.calculateFor("at-eda", "dnid");
+
+        // Then
+        assertAll(
+                () -> assertFalse(res.supportsDataNeed()),
+                () -> assertNull(res.energyDataTimeframe()),
+                () -> assertNull(res.permissionTimeframe()),
+                () -> assertNull(res.granularities()),
+                () -> assertEquals("ERROR", res.unsupportedDataNeedMessage())
         );
     }
 
@@ -104,8 +132,7 @@ class DataNeedCalculationRouterTest {
                 .thenReturn(Optional.of(dataNeed));
         var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
         when(service.calculate(dataNeed))
-                .thenReturn(new DataNeedCalculation(
-                        true,
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         List.of(Granularity.PT15M),
                         timeframe,
                         timeframe

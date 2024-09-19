@@ -1,12 +1,14 @@
 package energy.eddie.regionconnector.fr.enedis.persistence;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrCreatedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -33,6 +35,9 @@ class FrPermissionRequestRepositoryTest {
     private FrPermissionRequestRepository permissionRequestRepository;
     @Autowired
     private FrPermissionEventRepository permissionEventRepository;
+    @SuppressWarnings("unused")
+    @MockBean
+    private DataNeedsService dataNeedsService;
 
     @Test
     void testFindTimedOutPermissionRequests_findTimedOutPermissionRequests() {

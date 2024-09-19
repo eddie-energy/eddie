@@ -2,10 +2,11 @@ package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
@@ -16,10 +17,11 @@ import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGran
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class CCMORejectHandler {
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
-    private final DataNeedsService dataNeedsService;
     private final ValidatedEventFactory validatedEventFactory;
     private final AtPermissionRequestRepository repository;
 
@@ -27,14 +29,11 @@ public class CCMORejectHandler {
 
     public CCMORejectHandler(
             DataNeedCalculationService<DataNeed> dataNeedCalculationService,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-            DataNeedsService dataNeedsService,
             ValidatedEventFactory validatedEventFactory,
             AtPermissionRequestRepository repository,
             Outbox outbox
     ) {
         this.dataNeedCalculationService = dataNeedCalculationService;
-        this.dataNeedsService = dataNeedsService;
         this.validatedEventFactory = validatedEventFactory;
         this.repository = repository;
         this.outbox = outbox;
@@ -89,9 +88,14 @@ public class CCMORejectHandler {
         if (permissionRequest.granularity() != AllowedGranularity.PT15M) {
             return false;
         }
-        var dataNeed = dataNeedsService.getById(permissionRequest.dataNeedId());
-        var calc = dataNeedCalculationService.calculate(dataNeed);
-        if (calc.granularities() == null || !calc.granularities().contains(Granularity.P1D)) {
+        var calc = dataNeedCalculationService.calculate(permissionRequest.dataNeedId());
+        if (!(calc instanceof ValidatedHistoricalDataDataNeedResult(
+                List<Granularity> granularities,
+                // False positive
+                @SuppressWarnings("java:S1481")Timeframe ignored1,
+                @SuppressWarnings("java:S1481")Timeframe ignored2
+        ))
+            || !granularities.contains(Granularity.P1D)) {
             return false;
         }
 

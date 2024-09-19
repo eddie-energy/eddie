@@ -1,13 +1,12 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
@@ -37,27 +36,22 @@ import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConn
 @Service
 @SuppressWarnings("NullAway")
 public class PermissionRequestCreationService {
+    public static final String AP_ERROR = "Accounting point data not supported";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestCreationService.class);
-    private static final String UNSUPPORTED_DATA_NEED_MESSAGE = "This Region Connector only supports Validated Historical Data Data Needs for Electricity";
-    private static final String UNSUPPORTED_GRANULARITY_MESSAGE = "Required granularity not supported.";
     private static final String DATA_NEED_ID = "dataNeedId";
     private final UsPermissionRequestRepository repository;
     private final GreenButtonConfiguration configuration;
-    private final DataNeedsService dataNeedsService;
     private final DataNeedCalculationService<DataNeed> calculationService;
     private final Outbox outbox;
 
     public PermissionRequestCreationService(
             UsPermissionRequestRepository repository,
             GreenButtonConfiguration configuration,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")  // defined in core
-            DataNeedsService dataNeedsService,
             DataNeedCalculationService<DataNeed> calculationService,
             Outbox outbox
     ) {
         this.repository = repository;
         this.configuration = configuration;
-        this.dataNeedsService = dataNeedsService;
         this.calculationService = calculationService;
         this.outbox = outbox;
     }
@@ -66,43 +60,34 @@ public class PermissionRequestCreationService {
         var permissionId = UUID.randomUUID().toString();
         var dataSourceInformation = new GreenButtonDataSourceInformation(permissionRequestForCreation.companyId(),
                                                                          permissionRequestForCreation.countryCode());
-
+        var dataNeedId = permissionRequestForCreation.dataNeedId();
         outbox.commit(new UsCreatedEvent(permissionId,
                                          permissionRequestForCreation.connectionId(),
-                                         permissionRequestForCreation.dataNeedId(),
+                                         dataNeedId,
                                          permissionRequestForCreation.jumpOffUrl(),
                                          dataSourceInformation));
 
-        var dataNeedWrapper = dataNeedsService.findById(permissionRequestForCreation.dataNeedId());
-        if (dataNeedWrapper.isEmpty()) {
-            outbox.commit(new UsMalformedEvent(
-                    permissionId,
-                    List.of(new AttributeError(DATA_NEED_ID, "Unknown dataNeedId"))
-            ));
-            throw new DataNeedNotFoundException(permissionRequestForCreation.dataNeedId());
-        }
-
-        var dataNeed = dataNeedWrapper.get();
-        var calculation = calculationService.calculate(dataNeed);
-
-        if (!calculation.supportsDataNeed()
-            || calculation.energyDataTimeframe() == null
-            || calculation.permissionTimeframe() == null) {
-            outbox.commit(new UsMalformedEvent(permissionId,
-                                               List.of(new AttributeError(DATA_NEED_ID,
-                                                                          UNSUPPORTED_DATA_NEED_MESSAGE))));
-            throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID,
-                                                   dataNeed.id(),
-                                                   UNSUPPORTED_DATA_NEED_MESSAGE);
-        }
-        if (calculation.granularities() == null || calculation.granularities().isEmpty()) {
-            outbox.commit(new UsMalformedEvent(permissionId,
-                                               List.of(new AttributeError(DATA_NEED_ID,
-                                                                          UNSUPPORTED_GRANULARITY_MESSAGE))));
-            throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID,
-                                                   dataNeed.id(),
-                                                   UNSUPPORTED_GRANULARITY_MESSAGE);
-        }
+        var calculation = calculationService.calculate(dataNeedId);
+        var res = switch (calculation) {
+            case DataNeedNotFoundResult ignored -> {
+                outbox.commit(new UsMalformedEvent(
+                        permissionId,
+                        List.of(new AttributeError(DATA_NEED_ID, "Unknown dataNeedId"))
+                ));
+                throw new DataNeedNotFoundException(dataNeedId);
+            }
+            case DataNeedNotSupportedResult(String message) -> {
+                outbox.commit(new UsMalformedEvent(permissionId,
+                                                   List.of(new AttributeError(DATA_NEED_ID, message))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
+            }
+            case AccountingPointDataNeedResult ignored -> {
+                outbox.commit(new UsMalformedEvent(permissionId,
+                                                   List.of(new AttributeError(DATA_NEED_ID, AP_ERROR))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, AP_ERROR);
+            }
+            case ValidatedHistoricalDataDataNeedResult vhdResult -> vhdResult;
+        };
 
         var companyId = permissionRequestForCreation.companyId();
         try {
@@ -117,9 +102,9 @@ public class PermissionRequestCreationService {
         Scope scope;
         try {
             scope = new Scope.ScopeBuilder().addDataField(Scope.DataField.INTERVALS)
-                                            .withHistoricalDataStart(calculation.energyDataTimeframe().start())
-                                            .withOngoingDataEnd(calculation.energyDataTimeframe().end())
-                                            .withGranularity(calculation.granularities().getFirst())
+                                            .withHistoricalDataStart(res.energyTimeframe().start())
+                                            .withOngoingDataEnd(res.energyTimeframe().end())
+                                            .withGranularity(res.granularities().getFirst())
                                             .build();
         } catch (IllegalStateException e) {
             outbox.commit(new UsMalformedEvent(permissionId, List.of(new AttributeError("scope", e.getMessage()))));
@@ -128,9 +113,9 @@ public class PermissionRequestCreationService {
 
         String scopeString = scope.toString();
         outbox.commit(new UsValidatedEvent(permissionId,
-                                           calculation.energyDataTimeframe().start(),
-                                           calculation.energyDataTimeframe().end(),
-                                           calculation.granularities().getFirst(),
+                                           res.energyTimeframe().start(),
+                                           res.energyTimeframe().end(),
+                                           res.granularities().getFirst(),
                                            scopeString));
 
         URI redirectUri = buildRedirectUri(permissionId,

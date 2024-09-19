@@ -28,6 +28,7 @@ import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguratio
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.data.needs.SupportsEnergyTypePredicate;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
@@ -180,8 +181,11 @@ public class MijnAansluitingBeanConfig {
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService() {
+    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
+    ) {
         return new DataNeedCalculationServiceImpl(
+                dataNeedsService,
                 SUPPORTED_DATA_NEEDS,
                 MijnAansluitingRegionConnectorMetadata.getInstance(),
                 new PermissionEndIsEnergyDataEndStrategy(NL_ZONE_ID),

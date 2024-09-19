@@ -1,14 +1,11 @@
 package energy.eddie.regionconnector.at.eda.services;
 
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.agnostic.process.model.validation.Validator;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
@@ -32,26 +29,20 @@ import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_
 
 @Component
 public class PermissionRequestCreationAndValidationService {
-    private static final String UNSUPPORTED_DATA_NEED_MESSAGE = "This region connector does not support this data need";
-    private static final String UNSUPPORTED_GRANULARITIES_MESSAGE = "This region connector does not support these granularities";
     private static final String DATA_NEED_ID = "dataNeedId";
     private static final Set<Validator<CreatedEvent>> VALIDATORS = Set.of(
             new MeteringPointMatchesDsoIdValidator()
     );
     private final Outbox outbox;
-    private final DataNeedsService dataNeedsService;
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     private final ValidatedEventFactory validatedEventFactory;
 
     public PermissionRequestCreationAndValidationService(
             Outbox outbox,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")  // defined in core
-            DataNeedsService dataNeedsService,
             DataNeedCalculationService<DataNeed> dataNeedCalculationService,
             ValidatedEventFactory validatedEventFactory
     ) {
         this.outbox = outbox;
-        this.dataNeedsService = dataNeedsService;
         this.dataNeedCalculationService = dataNeedCalculationService;
         this.validatedEventFactory = validatedEventFactory;
     }
@@ -66,11 +57,11 @@ public class PermissionRequestCreationAndValidationService {
     public CreatedPermissionRequest createAndValidatePermissionRequest(
             PermissionRequestForCreation permissionRequest
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
-        String permissionId = UUID.randomUUID().toString();
+        var permissionId = UUID.randomUUID().toString();
         var dataNeedId = permissionRequest.dataNeedId();
         var created = ZonedDateTime.now(AT_ZONE_ID);
 
-        CreatedEvent createdEvent = new CreatedEvent(
+        var createdEvent = new CreatedEvent(
                 permissionId,
                 permissionRequest.connectionId(),
                 dataNeedId,
@@ -85,40 +76,30 @@ public class PermissionRequestCreationAndValidationService {
             outbox.commit(new MalformedEvent(permissionId, errors));
             throw new EdaValidationException(errors);
         }
-
-        var optionalDataNeed = dataNeedsService.findById(dataNeedId);
-        if (optionalDataNeed.isEmpty()) {
-            outbox.commit(new MalformedEvent(
-                    permissionId,
-                    new AttributeError(DATA_NEED_ID, "Unknown DataNeed"))
-            );
-            throw new DataNeedNotFoundException(dataNeedId);
-        }
-        var dataNeed = optionalDataNeed.get();
-
-        var calculation = dataNeedCalculationService.calculate(dataNeed);
-        if (!calculation.supportsDataNeed()) {
-            var reason = calculation.unsupportedDataNeedMessage();
-            if (reason == null) {
-                reason = UNSUPPORTED_DATA_NEED_MESSAGE;
+        var calculation = dataNeedCalculationService.calculate(dataNeedId);
+        var event = switch (calculation) {
+            case DataNeedNotFoundResult ignored -> {
+                outbox.commit(new MalformedEvent(
+                        permissionId,
+                        new AttributeError(DATA_NEED_ID, "Unknown DataNeed"))
+                );
+                throw new DataNeedNotFoundException(dataNeedId);
             }
-            outbox.commit(new MalformedEvent(
-                    permissionId,
-                    new AttributeError(DATA_NEED_ID, reason))
-            );
-            throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID, dataNeedId, reason);
-        }
-
-        ValidatedEvent validatedEvent = switch (dataNeed) {
-            case AccountingPointDataNeed ignored -> validatedEventFactory.createValidatedEvent(
+            case DataNeedNotSupportedResult(String message) -> {
+                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
+                throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                       dataNeedId,
+                                                       message);
+            }
+            case ValidatedHistoricalDataDataNeedResult validatedHistoricalDataDataNeedResult ->
+                    validateHistoricalValidatedEvent(
+                            permissionId, validatedHistoricalDataDataNeedResult
+                    );
+            case AccountingPointDataNeedResult ignored -> validatedEventFactory.createValidatedEvent(
                     permissionId, LocalDate.now(AT_ZONE_ID), null, null
             );
-            default -> validateHistoricalValidatedEvent(
-                    permissionId, dataNeedId, calculation
-            );
         };
-
-        outbox.commit(validatedEvent);
+        outbox.commit(event);
         return new CreatedPermissionRequest(permissionId);
     }
 
@@ -130,22 +111,13 @@ public class PermissionRequestCreationAndValidationService {
 
     private ValidatedEvent validateHistoricalValidatedEvent(
             String permissionId,
-            String dataNeedId,
-            DataNeedCalculation calculation
-    ) throws UnsupportedDataNeedException {
-        if (calculation.granularities() == null || calculation.granularities().isEmpty()) {
-            outbox.commit(new MalformedEvent(permissionId,
-                                             new AttributeError(DATA_NEED_ID, UNSUPPORTED_GRANULARITIES_MESSAGE)));
-            throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                   dataNeedId, UNSUPPORTED_GRANULARITIES_MESSAGE);
-        }
-
+            ValidatedHistoricalDataDataNeedResult calculation
+    ) {
         var granularity = calculation.granularities().getFirst();
-        //noinspection DataFlowIssue
         return validatedEventFactory.createValidatedEvent(
                 permissionId,
-                calculation.energyDataTimeframe().start(),
-                calculation.energyDataTimeframe().end(),
+                calculation.energyTimeframe().start(),
+                calculation.energyTimeframe().end(),
                 AllowedGranularity.valueOf(granularity.name())
         );
     }

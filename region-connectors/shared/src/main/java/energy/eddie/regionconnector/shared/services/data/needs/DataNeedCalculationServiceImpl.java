@@ -1,14 +1,11 @@
 package energy.eddie.regionconnector.shared.services.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.RegionConnectorFilter;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.*;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.EnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
@@ -19,6 +16,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class DataNeedCalculationServiceImpl implements DataNeedCalculationService<DataNeed> {
+    private final DataNeedsService dataNeedsService;
     private final List<Class<? extends DataNeed>> supportedDataNeeds;
     private final RegionConnectorMetadata regionConnectorMetadata;
     private final GranularityChoice granularityChoice;
@@ -27,25 +25,28 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     private final EnergyDataTimeframeStrategy energyDataTimeframeStrategy;
 
     public DataNeedCalculationServiceImpl(
+            DataNeedsService dataNeedsService,
             List<Class<? extends DataNeed>> supportedDataNeeds,
             RegionConnectorMetadata regionConnectorMetadata
     ) {
-        this(
-                supportedDataNeeds,
-                regionConnectorMetadata,
-                new PermissionEndIsEnergyDataEndStrategy(regionConnectorMetadata.timeZone()),
-                new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
-                List.of()
+        this(dataNeedsService,
+             supportedDataNeeds,
+             regionConnectorMetadata,
+             new PermissionEndIsEnergyDataEndStrategy(regionConnectorMetadata.timeZone()),
+             new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
+             List.of()
         );
     }
 
     public DataNeedCalculationServiceImpl(
+            DataNeedsService dataNeedsService,
             List<Class<? extends DataNeed>> supportedDataNeeds,
             RegionConnectorMetadata regionConnectorMetadata,
             PermissionTimeframeStrategy strategy,
             EnergyDataTimeframeStrategy energyDataTimeframeStrategy,
             List<Predicate<DataNeed>> additionalChecks
     ) {
+        this.dataNeedsService = dataNeedsService;
         this.supportedDataNeeds = supportedDataNeeds;
         this.regionConnectorMetadata = regionConnectorMetadata;
         this.granularityChoice = new GranularityChoice(regionConnectorMetadata.supportedGranularities());
@@ -54,8 +55,12 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         this.energyDataTimeframeStrategy = energyDataTimeframeStrategy;
     }
 
+    private static boolean areGranularitiesSupported(DataNeed dataNeed, List<Granularity> supportedGranularities) {
+        return !(dataNeed instanceof ValidatedHistoricalDataDataNeed) || !supportedGranularities.isEmpty();
+    }
+
     @Override
-    public DataNeedCalculation calculate(DataNeed dataNeed) {
+    public DataNeedCalculationResult calculate(DataNeed dataNeed) {
         var filter = dataNeed.regionConnectorFilter();
         if (filter.isPresent()) {
             var regionConnectorId = regionConnectorMetadata.id();
@@ -65,38 +70,48 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
 
             var type = filter.get().type();
             if (type == RegionConnectorFilter.Type.ALLOWLIST && !rcIsInList) {
-                return new DataNeedCalculation(false,
-                                               "Region connector " + regionConnectorMetadata.id() + " is not in the allowlist");
+                return new DataNeedNotSupportedResult("Region connector " + regionConnectorMetadata.id() + " is not in the allowlist");
             }
 
             if (type == RegionConnectorFilter.Type.BLOCKLIST && rcIsInList) {
-                return new DataNeedCalculation(false,
-                                               "Region connector " + regionConnectorMetadata.id() + " is in the blocklist");
+                return new DataNeedNotSupportedResult("Region connector " + regionConnectorMetadata.id() + " is in the blocklist");
             }
         }
 
-        if (!supportsDataNeedType(dataNeed)) {
-            return new DataNeedCalculation(false, "Data need type not supported");
+        if (!dataNeed.isEnabled()) {
+            return new DataNeedNotSupportedResult("Data need is disabled");
         }
-
+        if (!supportsDataNeedType(dataNeed) || !additionalChecks.stream().allMatch(check -> check.test(dataNeed))) {
+            return new DataNeedNotSupportedResult("Data need not supported");
+        }
         var supportedGranularities = supportedGranularities(dataNeed);
+        if (!areGranularitiesSupported(dataNeed, supportedGranularities)) {
+            return new DataNeedNotSupportedResult("Granularities are not supported");
+        }
         Timeframe energyStartAndEndDate;
         try {
             energyStartAndEndDate = energyDataTimeframeStrategy.energyDataTimeframe(dataNeed);
         } catch (UnsupportedDataNeedException e) {
-            return new DataNeedCalculation(false, e.errorReason());
+            return new DataNeedNotSupportedResult(e.errorReason());
         }
 
         var permissionStartAndEndDate = strategy.permissionTimeframe(energyStartAndEndDate);
-        return new DataNeedCalculation(
-                dataNeed.isEnabled()
-                && additionalChecks.stream()
-                                   .allMatch(check -> check.test(dataNeed)),
-                null,
-                supportedGranularities,
-                permissionStartAndEndDate,
-                energyStartAndEndDate
-        );
+        return switch (dataNeed) {
+            case TimeframedDataNeed ignored -> new ValidatedHistoricalDataDataNeedResult(supportedGranularities,
+                                                                                         permissionStartAndEndDate,
+                                                                                         energyStartAndEndDate);
+            case AccountingPointDataNeed ignored -> new AccountingPointDataNeedResult(permissionStartAndEndDate);
+            default -> new DataNeedNotSupportedResult("Unknown data need type: %s".formatted(dataNeed.getClass()));
+        };
+    }
+
+    @Override
+    public DataNeedCalculationResult calculate(String dataNeedId) {
+        var option = dataNeedsService.findById(dataNeedId);
+        if (option.isEmpty()) {
+            return new DataNeedNotFoundResult();
+        }
+        return calculate(option.get());
     }
 
     /**

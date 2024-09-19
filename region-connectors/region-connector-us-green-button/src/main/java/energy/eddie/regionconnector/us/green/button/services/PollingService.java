@@ -1,11 +1,9 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
@@ -32,7 +30,6 @@ public class PollingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     private final UsPermissionRequestRepository permissionRequestRepository;
     private final GreenButtonApi api;
-    private final DataNeedsService dataNeedsService;
     private final DataNeedCalculationService<DataNeed> calculationService;
     private final CredentialService credentialService;
     private final PublishService publishService;
@@ -41,8 +38,6 @@ public class PollingService {
     public PollingService(
             UsPermissionRequestRepository permissionRequestRepository,
             GreenButtonApi api,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-            DataNeedsService dataNeedsService,
             DataNeedCalculationService<DataNeed> calculationService,
             CredentialService credentialService,
             PublishService publishService,
@@ -50,7 +45,6 @@ public class PollingService {
     ) {
         this.permissionRequestRepository = permissionRequestRepository;
         this.api = api;
-        this.dataNeedsService = dataNeedsService;
         this.calculationService = calculationService;
         this.credentialService = credentialService;
         this.publishService = publishService;
@@ -68,34 +62,27 @@ public class PollingService {
             return;
         }
         var dataNeedId = permissionRequest.dataNeedId();
-        var dataNeed = dataNeedsService.getById(dataNeedId);
-        var calc = calculationService.calculate(dataNeed);
-        if (!calc.supportsDataNeed()) {
+        var calc = calculationService.calculate(dataNeedId);
+        if (!(calc instanceof ValidatedHistoricalDataDataNeedResult res)) {
             LOGGER.warn("DataNeed {} not supported for permission request {}", dataNeedId, permissionId);
             return;
         }
         credentialService.retrieveAccessToken(permissionRequest)
-                         .subscribe(credentials -> {
-                                        if (dataNeed instanceof ValidatedHistoricalDataDataNeed)
-                                            pollValidatedHistoricalData(permissionRequest, credentials, calc);
-                                    },
+                         .subscribe(credentials -> pollValidatedHistoricalData(permissionRequest, credentials, res),
                                     throwable -> handleAccessTokenError(throwable, permissionId));
     }
 
     private void pollValidatedHistoricalData(
             UsGreenButtonPermissionRequest permissionRequest,
             OAuthTokenDetails creds,
-            DataNeedCalculation calc
+            ValidatedHistoricalDataDataNeedResult vhdResult
     ) {
-        if (calc.energyDataTimeframe() == null) {
-            return;
-        }
         var permissionId = permissionRequest.permissionId();
         LOGGER.info("Polling validated historical data for permission request {}", permissionId);
-        var start = calc.energyDataTimeframe().start().atStartOfDay(ZoneOffset.UTC);
+        var start = vhdResult.energyTimeframe().start().atStartOfDay(ZoneOffset.UTC);
         var energyDataStart = permissionRequest.latestMeterReadingEndDateTime()
                                                .orElse(start);
-        var end = DateTimeUtils.endOfDay(calc.energyDataTimeframe().end(), ZoneOffset.UTC);
+        var end = DateTimeUtils.endOfDay(vhdResult.energyTimeframe().end(), ZoneOffset.UTC);
         var now = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
         var energyDataEnd = end.isBefore(now) ? end : now;
         api.batchSubscription(creds.authUid(), creds.accessToken(), energyDataStart, energyDataEnd)

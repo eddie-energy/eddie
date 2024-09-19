@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.web.DataNeedsAdvice;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
@@ -66,6 +67,9 @@ class PermissionRequestControllerTest {
     @MockBean
     @SuppressWarnings("unused")
     private Flux<IdentifiableAccountingPointDetails> unusedIdentifiableMeteringPointDetailsFlux;
+    @MockBean
+    @SuppressWarnings("unused")
+    private DataNeedsService dataNeedsService;
     @Autowired
     private ObjectMapper mapper;
 

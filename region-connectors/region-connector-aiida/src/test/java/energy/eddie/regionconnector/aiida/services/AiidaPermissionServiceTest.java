@@ -1,16 +1,13 @@
 package energy.eddie.regionconnector.aiida.services;
 
 import energy.eddie.api.agnostic.aiida.MqttDto;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
@@ -72,8 +69,6 @@ class AiidaPermissionServiceTest {
     @Mock
     private GenericAiidaDataNeed mockDataNeed;
     @Mock
-    private ValidatedHistoricalDataDataNeed unsupportedDataNeed;
-    @Mock
     private AiidaPermissionRequestViewRepository mockViewRepository;
     @Mock
     private MqttService mockMqttService;
@@ -112,7 +107,7 @@ class AiidaPermissionServiceTest {
     void givenNonExistingDataNeedId_createValidateAndSendPermissionRequest_throwsException() {
         // Given
         var nonExisting = "NonExisting";
-        when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.empty());
+        when(calculationService.calculate(anyString())).thenReturn(new DataNeedNotFoundResult());
 
         // Then
         assertThrows(DataNeedNotFoundException.class,
@@ -124,9 +119,7 @@ class AiidaPermissionServiceTest {
     @Test
     void givenUnsupportedDataNeed_createValidateAndSendPermissionRequest_throwsException() {
         // Given
-        when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.of(unsupportedDataNeed));
-        when(calculationService.calculate(unsupportedDataNeed))
-                .thenReturn(new DataNeedCalculation(false));
+        when(calculationService.calculate(anyString())).thenReturn(new DataNeedNotSupportedResult(""));
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,
@@ -140,11 +133,10 @@ class AiidaPermissionServiceTest {
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(mockDataNeed.name()).thenReturn("Test Service");
-        when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.of(mockDataNeed));
+        when(mockDataNeedsService.getById(anyString())).thenReturn(mockDataNeed);
         when(mockJwtUtil.createJwt(eq("aiida"), anyString())).thenReturn("myToken");
-        when(calculationService.calculate(mockDataNeed))
-                .thenReturn(new DataNeedCalculation(
-                        true,
+        when(calculationService.calculate(anyString()))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         List.of(),
                         new Timeframe(start, end),
                         new Timeframe(start, end)
@@ -171,10 +163,9 @@ class AiidaPermissionServiceTest {
         var forCreation = new PermissionRequestForCreation(connectionId, dataNeedId);
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
-        when(mockDataNeedsService.findById(anyString())).thenReturn(Optional.of(mockDataNeed));
-        when(calculationService.calculate(mockDataNeed))
-                .thenReturn(new DataNeedCalculation(
-                        true,
+        when(mockDataNeedsService.getById(anyString())).thenReturn(mockDataNeed);
+        when(calculationService.calculate(anyString()))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         List.of(),
                         new Timeframe(start, end),
                         new Timeframe(start, end)

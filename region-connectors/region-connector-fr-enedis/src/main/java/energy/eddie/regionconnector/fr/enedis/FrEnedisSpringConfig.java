@@ -13,6 +13,7 @@ import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguratio
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisTokenProvider;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
@@ -174,8 +175,11 @@ public class FrEnedisSpringConfig {
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService() {
+    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
+    ) {
         return new DataNeedCalculationServiceImpl(
+                dataNeedsService,
                 SUPPORTED_DATA_NEEDS,
                 EnedisRegionConnectorMetadata.getInstance()
         );

@@ -1,14 +1,11 @@
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.EnergyType;
-import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.dto.SimpleResponseData;
@@ -28,7 +25,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.time.Period;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
@@ -44,8 +41,6 @@ class CCMORejectHandlerTest {
     CCMORejectHandler handler;
     @Mock
     private DataNeedCalculationService<DataNeed> dataNeedCalculationService;
-    @Mock
-    private DataNeedsService dataNeedsService;
     @Spy
     @SuppressWarnings("unused") // injected
     private ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(new PlainAtConfiguration("test"));
@@ -102,16 +97,13 @@ class CCMORejectHandlerTest {
         var permissionRequest = permissionRequest(AllowedGranularity.PT15M);
         when(repository.findByConversationIdOrCMRequestId(any(), any()))
                 .thenReturn(List.of(permissionRequest));
-        CMRequestStatus cmRequestStatus = cmRequestStatus(ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE);
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(new ValidatedHistoricalDataDataNeed(
-                        new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                        EnergyType.ELECTRICITY,
-                        Granularity.PT15M,
-                        Granularity.P1Y
-                ));
-        when(dataNeedCalculationService.calculate(any()))
-                .thenReturn(new DataNeedCalculation(true, List.of(Granularity.PT15M, Granularity.P1D), null, null));
+        var cmRequestStatus = cmRequestStatus(ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE);
+        var now = LocalDate.now(ZoneOffset.UTC);
+        var timeframe = new Timeframe(now, now);
+        when(dataNeedCalculationService.calculate("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M, Granularity.P1D),
+                                                                      timeframe,
+                                                                      timeframe));
 
         // When
         handler.handleCCMOReject(cmRequestStatus);
@@ -136,15 +128,12 @@ class CCMORejectHandlerTest {
         when(repository.findByConversationIdOrCMRequestId(any(), any()))
                 .thenReturn(List.of(permissionRequest));
         CMRequestStatus cmRequestStatus = cmRequestStatus(ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE);
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(new ValidatedHistoricalDataDataNeed(
-                        new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                        EnergyType.ELECTRICITY,
-                        Granularity.PT15M,
-                        Granularity.PT1H
-                ));
-        when(dataNeedCalculationService.calculate(any()))
-                .thenReturn(new DataNeedCalculation(true, List.of(Granularity.PT15M), null, null));
+        var now = LocalDate.now(ZoneOffset.UTC);
+        var timeframe = new Timeframe(now, now);
+        when(dataNeedCalculationService.calculate("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
+                                                                      timeframe,
+                                                                      timeframe));
 
         // When
         handler.handleCCMOReject(cmRequestStatus);

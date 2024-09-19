@@ -14,6 +14,7 @@ import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguratio
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
@@ -258,13 +259,16 @@ public class AtEdaBeanConfig {
                                                             pmdSink,
                                                             atConfig.eligiblePartyId(),
                                                             cimConfig,
-                                                         pr -> TRANSMISSION_CYCLE.name(),
+                                                            pr -> TRANSMISSION_CYCLE.name(),
                                                             AT_ZONE_ID);
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService() {
+    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
+    ) {
         return new DataNeedCalculationServiceImpl(
+                dataNeedsService,
                 SUPPORTED_DATA_NEEDS,
                 EdaRegionConnectorMetadata.getInstance(),
                 new PermissionEndIsEnergyDataEndStrategy(AT_ZONE_ID),

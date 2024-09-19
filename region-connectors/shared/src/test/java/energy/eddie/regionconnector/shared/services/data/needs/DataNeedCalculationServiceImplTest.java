@@ -1,27 +1,28 @@
 package energy.eddie.regionconnector.shared.services.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.dataneeds.EnergyType;
 import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.RegionConnectorFilter;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
-import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -29,13 +30,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DataNeedCalculationServiceImplTest {
-    @Spy
-    private final RegionConnectorMetadata regionConnectorMetadata = new RegionConnectorMetadataImpl(
+    private final List<Class<? extends DataNeed>> supportedDataNeeds = List.of(ValidatedHistoricalDataDataNeed.class,
+                                                                               AccountingPointDataNeed.class);
+    private final RegionConnectorMetadata metadata = new RegionConnectorMetadataImpl(
             "id",
             "AT",
             1,
@@ -45,278 +50,171 @@ class DataNeedCalculationServiceImplTest {
             ZoneOffset.UTC
     );
     @Mock
-    private ValidatedHistoricalDataDataNeed vhdDataNeed;
-    @Mock
-    private RelativeDuration duration;
-    @Mock
-    private GenericAiidaDataNeed aiidaDataNeed;
+    private DataNeedsService dataNeedsService;
     @Mock
     private AccountingPointDataNeed accountingPointDataNeed;
-    private DataNeedCalculationServiceImpl service;
+    @Mock
+    private GenericAiidaDataNeed genericAiidaDataNeed;
 
     private static Stream<Arguments> regionConnectorFilterConfigurations() {
         return Stream.of(
-                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.ALLOWLIST, List.of("id")), true),
+                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.ALLOWLIST, List.of("id")),
+                             AccountingPointDataNeedResult.class),
                 Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.ALLOWLIST, List.of("notInList")),
-                             false),
-                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.BLOCKLIST, List.of("id")), false),
+                             DataNeedNotSupportedResult.class),
+                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.BLOCKLIST, List.of("id")),
+                             DataNeedNotSupportedResult.class),
                 Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.BLOCKLIST, List.of("notInList")),
-                             true)
-        );
-    }
-
-    @BeforeEach
-    void setUp() {
-        service = new DataNeedCalculationServiceImpl(
-                List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
-                regionConnectorMetadata
+                             AccountingPointDataNeedResult.class)
         );
     }
 
     @Test
-    void testCalculate_returnsCorrect_forFutureVHDDataNeed() {
+    void givenUnknownDataNeedId_returnsDataNeedNotFoundResult() {
         // Given
-        when(vhdDataNeed.duration())
-                .thenReturn(duration);
-        when(duration.start())
-                .thenReturn(Optional.of(Period.ZERO));
-        when(duration.end())
-                .thenReturn(Optional.of(Period.ofDays(5)));
-        when(vhdDataNeed.minGranularity())
-                .thenReturn(Granularity.PT5M);
-        when(vhdDataNeed.maxGranularity())
-                .thenReturn(Granularity.P1Y);
-        when(vhdDataNeed.isEnabled())
-                .thenReturn(true);
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var timeframe = new Timeframe(now, now.plusDays(5));
-
+        when(dataNeedsService.findById("dnid"))
+                .thenReturn(Optional.empty());
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
         // When
-        var res = service.calculate(vhdDataNeed);
+        var res = calculationService.calculate("dnid");
 
         // Then
-        assertAll(
-                () -> assertTrue(res.supportsDataNeed()),
-                () -> assertEquals(List.of(Granularity.PT15M, Granularity.P1D), res.granularities()),
-                () -> assertEquals(timeframe, res.permissionTimeframe()),
-                () -> assertEquals(timeframe, res.energyDataTimeframe())
-        );
-    }
-
-    @Test
-    void testCalculate_returnsCorrect_forPastVHDDataNeed() {
-        // Given
-        when(vhdDataNeed.duration())
-                .thenReturn(duration);
-        when(duration.start())
-                .thenReturn(Optional.of(Period.ofDays(-5)));
-        when(duration.end())
-                .thenReturn(Optional.of(Period.ofDays(-1)));
-        when(vhdDataNeed.minGranularity())
-                .thenReturn(Granularity.PT5M);
-        when(vhdDataNeed.maxGranularity())
-                .thenReturn(Granularity.P1Y);
-        when(vhdDataNeed.isEnabled())
-                .thenReturn(true);
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var timeframe = new Timeframe(now.minusDays(5), now.minusDays(1));
-
-        // When
-        var res = service.calculate(vhdDataNeed);
-
-        // Then
-        assertAll(
-                () -> assertTrue(res.supportsDataNeed()),
-                () -> assertEquals(List.of(Granularity.PT15M, Granularity.P1D), res.granularities()),
-                () -> assertEquals(new Timeframe(now, now), res.permissionTimeframe()),
-                () -> assertEquals(timeframe, res.energyDataTimeframe())
-        );
+        assertThat(res, instanceOf(DataNeedNotFoundResult.class));
     }
 
     @ParameterizedTest
     @MethodSource("regionConnectorFilterConfigurations")
+    // needed for the isEnabled() call, when data need is allowed
     @MockitoSettings(strictness = org.mockito.quality.Strictness.LENIENT)
     void testCalculate_regionConnectorFilterReturnsExpectedResult(
             RegionConnectorFilter regionConnectorFilter,
-            boolean expected
+            Class<? extends DataNeedCalculationResult> expected
     ) {
         // Given
         when(accountingPointDataNeed.isEnabled()).thenReturn(true);
         when(accountingPointDataNeed.regionConnectorFilter()).thenReturn(Optional.of(regionConnectorFilter));
+        when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(accountingPointDataNeed));
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
 
         // When
-        var res = service.calculate(accountingPointDataNeed);
+        var res = calculationService.calculate("dnid");
 
         // Then
-        assertEquals(expected, res.supportsDataNeed());
-    }
-
-
-    @Test
-    void testCalculate_returnsCorrect_forInvalidTimeframedVHDDataNeed() {
-        // Given
-        when(vhdDataNeed.duration())
-                .thenReturn(duration);
-        when(duration.start())
-                .thenReturn(Optional.of(Period.ofDays(-100)));
-        when(duration.end())
-                .thenReturn(Optional.of(Period.ofDays(-1)));
-        when(vhdDataNeed.minGranularity())
-                .thenReturn(Granularity.PT5M);
-        when(vhdDataNeed.maxGranularity())
-                .thenReturn(Granularity.P1Y);
-
-        // When
-        var res = service.calculate(vhdDataNeed);
-
-        // Then
-        assertFalse(res.supportsDataNeed());
+        assertThat(res, instanceOf(expected));
     }
 
     @Test
-    void testCalculate_returnsEmptyCalculationOnUnsupportedDataNeed() {
+    void givenDisabledDataNeed_returnsDataNeedNotSupportedResult() {
         // Given
+        when(accountingPointDataNeed.isEnabled()).thenReturn(false);
+        when(dataNeedsService.findById("dnid"))
+                .thenReturn(Optional.of(accountingPointDataNeed));
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
         // When
-        var res = service.calculate(aiidaDataNeed);
+        var res = calculationService.calculate("dnid");
 
         // Then
-        assertAll(
-                () -> assertFalse(res.supportsDataNeed()),
-                () -> assertNull(res.energyDataTimeframe()),
-                () -> assertNull(res.permissionTimeframe()),
-                () -> assertNull(res.granularities())
-        );
+        assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
     }
 
     @Test
-    void testCalculate_returnsCalculationOnNonEnergyDataNeed() {
+    void givenUnsupportedDataNeed_returnsDataNeedNotSupportedResult() {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var timeframe = new Timeframe(now, now);
-        when(accountingPointDataNeed.isEnabled())
-                .thenReturn(true);
-
+        when(dataNeedsService.findById("dnid"))
+                .thenReturn(Optional.of(genericAiidaDataNeed));
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
         // When
-        var res = service.calculate(accountingPointDataNeed);
+        var res = calculationService.calculate("dnid");
 
         // Then
-        assertAll(
-                () -> assertTrue(res.supportsDataNeed()),
-                () -> assertNull(res.energyDataTimeframe()),
-                () -> assertEquals(timeframe, res.permissionTimeframe()),
-                () -> assertEquals(List.of(), res.granularities())
-        );
+        assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
     }
 
     @Test
-    void testCalculate_returnsUnsupported_withFailingAdditionalCheck() {
+    void givenDataNeed_withAdditionalChecksFailing_returnsDataNeedNotSupportedResult() {
         // Given
-        when(vhdDataNeed.duration())
-                .thenReturn(duration);
-        when(duration.start())
-                .thenReturn(Optional.of(Period.ofDays(-5)));
-        when(duration.end())
-                .thenReturn(Optional.of(Period.ofDays(-1)));
-        when(vhdDataNeed.minGranularity())
-                .thenReturn(Granularity.PT5M);
-        when(vhdDataNeed.maxGranularity())
-                .thenReturn(Granularity.P1Y);
-        when(vhdDataNeed.isEnabled())
-                .thenReturn(true);
-        service = new DataNeedCalculationServiceImpl(
-                List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
-                regionConnectorMetadata,
-                new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
-                new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
-                List.of(
-                        dataNeed -> true,
-                        dataNeed -> false
-                )
-        );
+        when(dataNeedsService.findById("dnid"))
+                .thenReturn(Optional.of(new AccountingPointDataNeed()));
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService,
+                                                                    supportedDataNeeds,
+                                                                    metadata,
+                                                                    new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
+                                                                    new DefaultEnergyDataTimeframeStrategy(metadata),
+                                                                    List.of(
+                                                                            in -> true,
+                                                                            in -> false
+                                                                    ));
         // When
-        var res = service.calculate(vhdDataNeed);
+        var res = calculationService.calculate("dnid");
 
         // Then
-        assertFalse(res.supportsDataNeed());
+        assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
     }
 
     @Test
-    void testCalculate_returnsSupported_withSuccessfulAdditionalCheck() {
+    void givenValidatedHistoricalDataDataNeed_withSupportedGranularities_returnsValidatedHistoricalDataNeedResult() {
         // Given
-        when(vhdDataNeed.duration())
-                .thenReturn(duration);
-        when(duration.start())
-                .thenReturn(Optional.of(Period.ofDays(-5)));
-        when(duration.end())
-                .thenReturn(Optional.of(Period.ofDays(-1)));
-        when(vhdDataNeed.minGranularity())
-                .thenReturn(Granularity.PT5M);
-        when(vhdDataNeed.maxGranularity())
-                .thenReturn(Granularity.P1Y);
-        when(vhdDataNeed.isEnabled())
-                .thenReturn(true);
-        service = new DataNeedCalculationServiceImpl(
-                List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
-                regionConnectorMetadata,
-                new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
-                new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
-                List.of(
-                        dataNeed -> true
-                )
-        );
+        when(dataNeedsService.findById("dnid"))
+                .thenReturn(Optional.of(new ValidatedHistoricalDataDataNeed(
+                        new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
+                        EnergyType.ELECTRICITY,
+                        Granularity.PT15M,
+                        Granularity.P1D
+                )));
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
         // When
-        var res = service.calculate(vhdDataNeed);
+        var res = calculationService.calculate("dnid");
 
         // Then
-        assertTrue(res.supportsDataNeed());
+        var result = assertInstanceOf(ValidatedHistoricalDataDataNeedResult.class, res);
+        assertEquals(List.of(Granularity.PT15M, Granularity.P1D), result.granularities());
     }
 
     @Test
-    void testCalculate_returnsUnsupported_withDisabledDataNeed() {
+    void givenValidatedHistoricalDataDataNeed_withUnsupportedGranularities_returnsUnsupportedDataNeedResult() {
         // Given
-        when(vhdDataNeed.duration())
-                .thenReturn(duration);
-        when(duration.start())
-                .thenReturn(Optional.of(Period.ofDays(-5)));
-        when(duration.end())
-                .thenReturn(Optional.of(Period.ofDays(-1)));
-        when(vhdDataNeed.minGranularity())
-                .thenReturn(Granularity.PT5M);
-        when(vhdDataNeed.maxGranularity())
-                .thenReturn(Granularity.P1Y);
-        when(vhdDataNeed.isEnabled())
-                .thenReturn(false);
-        service = new DataNeedCalculationServiceImpl(
-                List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
-                regionConnectorMetadata,
-                new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
-                new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
-                List.of(
-                        dataNeed -> true
-                )
-        );
+        when(dataNeedsService.findById("dnid"))
+                .thenReturn(Optional.of(new ValidatedHistoricalDataDataNeed(
+                        new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
+                        EnergyType.ELECTRICITY,
+                        Granularity.PT5M,
+                        Granularity.PT10M
+                )));
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
         // When
-        var res = service.calculate(vhdDataNeed);
+        var res = calculationService.calculate("dnid");
 
         // Then
-        assertFalse(res.supportsDataNeed());
+        assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
     }
 
     @Test
-    void testCalculate_returnsNotSupported() {
+    void givenDataNeed_whereEnergyDataTimeframeStrategyThrows_returnsDataNeedNotSupportedResult() {
         // Given
+        when(dataNeedsService.findById("dnid"))
+                .thenReturn(Optional.of(new AccountingPointDataNeed()));
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService,
+                                                                    supportedDataNeeds,
+                                                                    metadata,
+                                                                    new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
+                                                                    dn -> {
+                                                                        throw new UnsupportedDataNeedException("",
+                                                                                                               "",
+                                                                                                               "");
+                                                                    },
+                                                                    List.of());
         // When
-        var res = service.calculate(aiidaDataNeed);
+        var res = calculationService.calculate("dnid");
 
         // Then
-        assertFalse(res.supportsDataNeed());
+        assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
     }
 
     @Test
-    void testRegionConnectorId_returnsId() {
+    void regionConnectorId_returnsId() {
         // Given
-        when(regionConnectorMetadata.id())
-                .thenReturn("id");
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
+
         // When
         var res = service.regionConnectorId();
 

@@ -2,16 +2,9 @@ package energy.eddie.regionconnector.us.green.button.services;
 
 import com.rometools.rome.feed.synd.SyndFeedImpl;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.EnergyType;
-import energy.eddie.dataneeds.duration.RelativeDuration;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
@@ -48,8 +41,6 @@ class PollingServiceTest {
     private UsPermissionRequestRepository repository;
     @Mock
     private GreenButtonApi api;
-    @Mock
-    private DataNeedsService dataNeedsService;
     @Mock
     private DataNeedCalculationService<DataNeed> calculationService;
     @Mock
@@ -88,23 +79,14 @@ class PollingServiceTest {
         );
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(dataNeed);
         var start = now.minusDays(10);
         var end = now.minusDays(1);
-        var calc = new DataNeedCalculation(
-                true,
+        var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 new Timeframe(now, now),
                 new Timeframe(start, end)
         );
-        when(calculationService.calculate(dataNeed)).thenReturn(calc);
+        when(calculationService.calculate("dnid")).thenReturn(calc);
         var credentials = new OAuthTokenDetails("pid",
                                                 "token",
                                                 Instant.now(Clock.systemUTC()),
@@ -145,23 +127,14 @@ class PollingServiceTest {
         );
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(dataNeed);
         var start = now.minusDays(10);
         var end = now.plusDays(1);
-        var calc = new DataNeedCalculation(
-                true,
+        var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 new Timeframe(now, now),
                 new Timeframe(start, end)
         );
-        when(calculationService.calculate(dataNeed)).thenReturn(calc);
+        when(calculationService.calculate("dnid")).thenReturn(calc);
         var credentials = new OAuthTokenDetails("pid",
                                                 "token",
                                                 Instant.now(Clock.systemUTC()),
@@ -208,23 +181,14 @@ class PollingServiceTest {
         );
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(dataNeed);
         var start = now.minusDays(10);
         var end = now.plusDays(1);
-        var calc = new DataNeedCalculation(
-                true,
+        var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 new Timeframe(now, now),
                 new Timeframe(start, end)
         );
-        when(calculationService.calculate(dataNeed)).thenReturn(calc);
+        when(calculationService.calculate("dnid")).thenReturn(calc);
         var credentials = new OAuthTokenDetails("pid",
                                                 "token",
                                                 Instant.now(Clock.systemUTC()),
@@ -294,16 +258,8 @@ class PollingServiceTest {
         );
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(dataNeed);
-        var calc = new DataNeedCalculation(false, "");
-        when(calculationService.calculate(dataNeed)).thenReturn(calc);
+        var calc = new DataNeedNotSupportedResult("");
+        when(calculationService.calculate("dnid")).thenReturn(calc);
 
         // When
         pollingService.poll("pid");
@@ -334,23 +290,14 @@ class PollingServiceTest {
         );
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(dataNeed);
         var start = now.minusDays(10);
         var end = now.minusDays(1);
-        var calc = new DataNeedCalculation(
-                true,
+        var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 new Timeframe(now, now),
                 new Timeframe(start, end)
         );
-        when(calculationService.calculate(dataNeed)).thenReturn(calc);
+        when(calculationService.calculate("dnid")).thenReturn(calc);
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.error(new NoRefreshTokenException()));
 
         // When
@@ -382,23 +329,14 @@ class PollingServiceTest {
         );
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(dataNeed);
         var start = now.minusDays(10);
         var end = now.minusDays(1);
-        var calc = new DataNeedCalculation(
-                true,
+        var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 new Timeframe(now, now),
                 new Timeframe(start, end)
         );
-        when(calculationService.calculate(dataNeed)).thenReturn(calc);
+        when(calculationService.calculate("dnid")).thenReturn(calc);
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.error(new Exception()));
 
         // When
@@ -430,23 +368,14 @@ class PollingServiceTest {
         );
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(dataNeed);
         var start = now.minusDays(10);
         var end = now.minusDays(1);
-        var calc = new DataNeedCalculation(
-                true,
+        var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 new Timeframe(now, now),
                 new Timeframe(start, end)
         );
-        when(calculationService.calculate(dataNeed)).thenReturn(calc);
+        when(calculationService.calculate("dnid")).thenReturn(calc);
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.error(
                 WebClientResponseException.create(HttpStatus.FORBIDDEN, "", null, null, null, null)));
 
@@ -455,57 +384,6 @@ class PollingServiceTest {
 
         // Then
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
-    }
-
-    @Test
-    void pollOfValidatedHistoricalData_withoutEnergyTimeFrame_doesNothing() {
-        // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope"
-        );
-        when(repository.getByPermissionId("pid"))
-                .thenReturn(pr);
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(dataNeed);
-        var calc = new DataNeedCalculation(
-                true,
-                List.of(Granularity.PT15M),
-                new Timeframe(now, now),
-                null
-        );
-        when(calculationService.calculate(dataNeed)).thenReturn(calc);
-        var credentials = new OAuthTokenDetails("pid",
-                                                "token",
-                                                Instant.now(Clock.systemUTC()),
-                                                Instant.now(Clock.systemUTC()),
-                                                "token",
-                                                "1111");
-        when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.just(credentials));
-
-        // When
-        pollingService.poll("pid");
-
-        // Then
-        verify(api, never()).batchSubscription(any(), any(), any(), any());
-        verify(publishService, never()).publish(any());
     }
 
     @Test
@@ -528,25 +406,8 @@ class PollingServiceTest {
         );
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var dataNeed = new AccountingPointDataNeed();
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(dataNeed);
-        var start = now.minusDays(10);
-        var end = now.minusDays(1);
-        var calc = new DataNeedCalculation(
-                true,
-                List.of(Granularity.PT15M),
-                new Timeframe(now, now),
-                new Timeframe(start, end)
-        );
-        when(calculationService.calculate(dataNeed)).thenReturn(calc);
-        var credentials = new OAuthTokenDetails("pid",
-                                                "token",
-                                                Instant.now(Clock.systemUTC()),
-                                                Instant.now(Clock.systemUTC()),
-                                                "token",
-                                                "1111");
-        when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.just(credentials));
+        var calc = new AccountingPointDataNeedResult(new Timeframe(now, now));
+        when(calculationService.calculate("dnid")).thenReturn(calc);
 
         // When
         pollingService.poll("pid");
@@ -576,23 +437,14 @@ class PollingServiceTest {
         );
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(dataNeed);
         var start = now.minusDays(10);
         var end = now.minusDays(1);
-        var calc = new DataNeedCalculation(
-                true,
+        var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 new Timeframe(now, now),
                 new Timeframe(start, end)
         );
-        when(calculationService.calculate(dataNeed)).thenReturn(calc);
+        when(calculationService.calculate("dnid")).thenReturn(calc);
         var credentials = new OAuthTokenDetails("pid",
                                                 "token",
                                                 Instant.now(Clock.systemUTC()),
@@ -635,23 +487,14 @@ class PollingServiceTest {
         );
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(dataNeed);
         var start = now.minusDays(10);
         var end = now.minusDays(1);
-        var calc = new DataNeedCalculation(
-                true,
+        var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 new Timeframe(now, now),
                 new Timeframe(start, end)
         );
-        when(calculationService.calculate(dataNeed)).thenReturn(calc);
+        when(calculationService.calculate("dnid")).thenReturn(calc);
         var credentials = new OAuthTokenDetails("pid",
                                                 "token",
                                                 Instant.now(Clock.systemUTC()),
@@ -691,23 +534,14 @@ class PollingServiceTest {
         );
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(dataNeed);
         var start = now.minusDays(10);
         var end = now.minusDays(1);
-        var calc = new DataNeedCalculation(
-                true,
+        var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 new Timeframe(now, now),
                 new Timeframe(start, end)
         );
-        when(calculationService.calculate(dataNeed)).thenReturn(calc);
+        when(calculationService.calculate("dnid")).thenReturn(calc);
         var credentials = new OAuthTokenDetails("pid",
                                                 "token",
                                                 Instant.now(Clock.systemUTC()),

@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.web;
 
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepository;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
@@ -16,23 +17,25 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthorizationCallbackController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class AuthorizationCallbackControllerTest {
-
     @Autowired
     private MockMvc mockMvc;
-
     @MockBean
     private PermissionRequestService permissionRequestService;
-
     @MockBean
+    @SuppressWarnings("unused")
     private FrPermissionRequestRepository unusedRepository;
-
     @MockBean
+    @SuppressWarnings("unused")
     private FrPermissionEventRepository permissionEventRepository;
+    @SuppressWarnings("unused")
+    @MockBean
+    private DataNeedsService dataNeedsService;
 
     @Test
     void authorizationCallback_withParams_returnsAttributes() throws Exception {

@@ -1,16 +1,12 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
@@ -28,21 +24,15 @@ import static energy.eddie.regionconnector.dk.energinet.utils.JwtValidations.isV
 
 @Service
 public class PermissionCreationService {
-    private static final String UNSUPPORTED_GRANULARITIES_MESSAGE = "This region connector does not support these granularities";
-    private static final String UNSUPPORTED_DATA_NEED_MESSAGE = "This region connector only supports validated historical data or accounting point data needs.";
     private static final String DATA_NEED_ID = "dataNeedId";
     private final Outbox outbox;
-    private final DataNeedsService dataNeedsService;
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
 
     public PermissionCreationService(
             Outbox outbox,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-            DataNeedsService dataNeedsService,
             DataNeedCalculationService<DataNeed> dataNeedCalculationService
     ) {
         this.outbox = outbox;
-        this.dataNeedsService = dataNeedsService;
         this.dataNeedCalculationService = dataNeedCalculationService;
     }
 
@@ -60,21 +50,38 @@ public class PermissionCreationService {
                                          dataNeedId,
                                          requestForCreation.meteringPoint(),
                                          requestForCreation.refreshToken()));
-        var dataNeed = dataNeedsService.findById(dataNeedId);
-        if (dataNeed.isEmpty()) {
-            outbox.commit(new DkMalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, "Unknown DataNeed")));
-            throw new DataNeedNotFoundException(dataNeedId);
+        var calculation = dataNeedCalculationService.calculate(dataNeedId);
+        switch (calculation) {
+            case DataNeedNotFoundResult ignored -> {
+                outbox.commit(new DkMalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, "Unknown DataNeed")));
+                throw new DataNeedNotFoundException(dataNeedId);
+            }
+            case DataNeedNotSupportedResult(String message) -> {
+                outbox.commit(new DkMalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
+                throw new UnsupportedDataNeedException(EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                       dataNeedId,
+                                                       message);
+            }
+            case AccountingPointDataNeedResult(Timeframe permissionTimeframe) -> {
+                validateToken(requestForCreation, permissionTimeframe, permissionId);
+                createAccountingPointMasterDataEvent(permissionId);
+            }
+            case ValidatedHistoricalDataDataNeedResult vhdDataNeedResult -> {
+                validateToken(requestForCreation, vhdDataNeedResult.permissionTimeframe(), permissionId);
+                createValidatedHistoricalDataEvent(vhdDataNeedResult,
+                                                   permissionId,
+                                                   vhdDataNeedResult.energyTimeframe());
+            }
         }
-        var calculation = dataNeedCalculationService.calculate(dataNeed.get());
-        var timeframe = calculation.energyDataTimeframe();
-        if (!calculation.supportsDataNeed()) {
-            outbox.commit(new DkMalformedEvent(permissionId,
-                                               new AttributeError(DATA_NEED_ID, UNSUPPORTED_DATA_NEED_MESSAGE)));
-            throw new UnsupportedDataNeedException(EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                   dataNeedId, UNSUPPORTED_DATA_NEED_MESSAGE);
-        }
-        if (calculation.permissionTimeframe() != null
-            && !isValidUntil(requestForCreation.refreshToken(), calculation.permissionTimeframe().end())) {
+        return new CreatedPermissionRequest(permissionId);
+    }
+
+    private void validateToken(
+            PermissionRequestForCreation requestForCreation,
+            Timeframe permissionTimeframe,
+            String permissionId
+    ) throws InvalidRefreshTokenException {
+        if (!isValidUntil(requestForCreation.refreshToken(), permissionTimeframe.end())) {
             outbox.commit(
                     new DkMalformedEvent(
                             permissionId,
@@ -84,27 +91,23 @@ public class PermissionCreationService {
             );
             throw new InvalidRefreshTokenException();
         }
-        if (dataNeed.get() instanceof ValidatedHistoricalDataDataNeed) {
-            createValidatedHistoricalDataEvent(calculation, permissionId, dataNeedId, timeframe);
-        } else {
-            createAccountingPointMasterDataEvent(permissionId);
-        }
-        return new CreatedPermissionRequest(permissionId);
+    }
+
+    private void createAccountingPointMasterDataEvent(String permissionId) {
+        LocalDate today = LocalDate.now(DK_ZONE_ID);
+        outbox.commit(new DKValidatedEvent(
+                permissionId,
+                null,
+                today,
+                today
+        ));
     }
 
     private void createValidatedHistoricalDataEvent(
-            DataNeedCalculation calculation,
+            ValidatedHistoricalDataDataNeedResult calculation,
             String permissionId,
-            String dataNeedId,
             Timeframe timeframe
-    ) throws UnsupportedDataNeedException {
-        if (calculation.granularities() == null || calculation.granularities().isEmpty()) {
-            outbox.commit(new DkMalformedEvent(permissionId,
-                                               new AttributeError(DATA_NEED_ID, UNSUPPORTED_GRANULARITIES_MESSAGE)));
-            throw new UnsupportedDataNeedException(EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                   dataNeedId, UNSUPPORTED_GRANULARITIES_MESSAGE);
-        }
-
+    ) {
         var minimalViableGranularity = calculation.granularities().getFirst();
         Granularity requestGranularity = switch (minimalViableGranularity) {
             case P1D, P1M, P1Y -> minimalViableGranularity; // these are always available
@@ -116,16 +119,6 @@ public class PermissionCreationService {
                 requestGranularity,
                 timeframe.start(),
                 timeframe.end()
-        ));
-    }
-
-    private void createAccountingPointMasterDataEvent(String permissionId) {
-        LocalDate today = LocalDate.now(DK_ZONE_ID);
-        outbox.commit(new DKValidatedEvent(
-                permissionId,
-                null,
-                today,
-                today
         ));
     }
 }

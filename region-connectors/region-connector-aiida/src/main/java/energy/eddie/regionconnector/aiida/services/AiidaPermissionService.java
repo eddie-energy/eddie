@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.aiida.services;
 
 import energy.eddie.api.agnostic.aiida.MqttDto;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -70,45 +70,6 @@ public class AiidaPermissionService {
         revocationSink.asFlux().subscribe(this::revokePermission);
     }
 
-    public QrCodeDto createValidateAndSendPermissionRequest(
-            PermissionRequestForCreation forCreation
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
-        var permissionId = UUID.randomUUID().toString();
-        LOGGER.info("Creating new permission request with ID {}", permissionId);
-
-        var dataNeed = dataNeedsService.findById(forCreation.dataNeedId())
-                                       .orElseThrow(() -> new DataNeedNotFoundException(forCreation.dataNeedId()));
-
-        var calculation = calculationService.calculate(dataNeed);
-        if (!calculation.supportsDataNeed() || calculation.energyDataTimeframe() == null) {
-            throw new UnsupportedDataNeedException(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                   dataNeed.id(),
-                                                   "Unsupported data need");
-        }
-        var terminationTopic = terminationTopicForPermissionId(permissionId);
-        var createdEvent = new CreatedEvent(permissionId,
-                                            forCreation.connectionId(),
-                                            forCreation.dataNeedId(),
-                                            calculation.energyDataTimeframe().start(),
-                                            calculation.energyDataTimeframe().end(),
-                                            terminationTopic);
-
-        outbox.commit(createdEvent);
-        // no validation for AIIDA requests necessary
-        outbox.commit(new SimpleEvent(permissionId, VALIDATED));
-        // we consider displaying the QR code to the user as SENT_TO_PERMISSION_ADMINISTRATOR for AIIDA
-        outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
-
-        var handshakeUrl = new UriTemplate(configuration.handshakeUrl()).expand(permissionId).toString();
-        var jwtString = jwtUtil.createJwt(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
-
-        return new QrCodeDto(permissionId, dataNeed.name(), handshakeUrl, jwtString);
-    }
-
-    private String terminationTopicForPermissionId(String permissionId) {
-        return "aiida/v1/" + permissionId + "/termination";
-    }
-
     public void revokePermission(String permissionId) {
         try {
             checkIfPermissionHasValidStatus(permissionId, ACCEPTED, REVOKED);
@@ -131,7 +92,8 @@ public class AiidaPermissionService {
                     "Got request check if permission {} is in status {} before transitioning it to status {}, but there is no permission with this ID in the database",
                     permissionId,
                     requiredStatus,
-                    desiredNextStatus);
+                    desiredNextStatus
+            );
             throw new PermissionNotFoundException(permissionId);
         }
         var request = optional.get();
@@ -146,6 +108,48 @@ public class AiidaPermissionService {
         }
 
         return request;
+    }
+
+    public QrCodeDto createValidateAndSendPermissionRequest(PermissionRequestForCreation forCreation)
+            throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
+        var permissionId = UUID.randomUUID().toString();
+        LOGGER.info("Creating new permission request with ID {}", permissionId);
+        var dataNeedId = forCreation.dataNeedId();
+        var res = calculationService.calculate(dataNeedId);
+        switch (res) {
+            case DataNeedNotFoundResult ignored -> throw new DataNeedNotFoundException(dataNeedId);
+            case DataNeedNotSupportedResult(String message) ->
+                    throw new UnsupportedDataNeedException(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                           dataNeedId,
+                                                           message);
+            case AccountingPointDataNeedResult ignored ->
+                    throw new UnsupportedDataNeedException(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                           dataNeedId,
+                                                           "Data need not supported");
+            case ValidatedHistoricalDataDataNeedResult vhdResult -> {
+                var terminationTopic = terminationTopicForPermissionId(permissionId);
+                var createdEvent = new CreatedEvent(permissionId,
+                                                    forCreation.connectionId(),
+                                                    dataNeedId,
+                                                    vhdResult.energyTimeframe().start(),
+                                                    vhdResult.energyTimeframe().end(),
+                                                    terminationTopic);
+                outbox.commit(createdEvent);
+                // no validation for AIIDA requests necessary
+                outbox.commit(new SimpleEvent(permissionId, VALIDATED));
+                // we consider displaying the QR code to the user as SENT_TO_PERMISSION_ADMINISTRATOR for AIIDA
+                outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
+
+                var handshakeUrl = new UriTemplate(configuration.handshakeUrl()).expand(permissionId).toString();
+                var jwtString = jwtUtil.createJwt(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
+                var dataNeed = dataNeedsService.getById(dataNeedId);
+                return new QrCodeDto(permissionId, dataNeed.name(), handshakeUrl, jwtString);
+            }
+        }
+    }
+
+    private String terminationTopicForPermissionId(String permissionId) {
+        return "aiida/v1/" + permissionId + "/termination";
     }
 
     public void unableToFulFillPermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException {

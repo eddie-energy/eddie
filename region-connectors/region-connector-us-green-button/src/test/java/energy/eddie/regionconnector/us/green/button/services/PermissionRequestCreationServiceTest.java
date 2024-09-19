@@ -1,17 +1,11 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.EnergyType;
-import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
@@ -34,15 +28,12 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
@@ -62,8 +53,6 @@ class PermissionRequestCreationServiceTest {
     @Mock
     private UsPermissionRequestRepository repository;
     @Mock
-    private DataNeedsService dataNeedsService;
-    @Mock
     private DataNeedCalculationService<DataNeed> calculationService;
     @Mock
     private Outbox outbox;
@@ -73,43 +62,8 @@ class PermissionRequestCreationServiceTest {
     public static Stream<Arguments> createPermissionRequest_withUnsupportedDataNeed_throws() {
         var now = LocalDate.now(ZoneOffset.UTC);
         return Stream.of(
-                Arguments.of(
-                        new DataNeedCalculation(
-                                false, ""
-                        )
-                ),
-                Arguments.of(
-                        new DataNeedCalculation(
-                                true,
-                                List.of(Granularity.PT15M),
-                                null,
-                                new Timeframe(now.minusDays(10), now.minusDays(1))
-                        )
-                ),
-                Arguments.of(
-                        new DataNeedCalculation(
-                                true,
-                                List.of(Granularity.PT15M),
-                                new Timeframe(now, now),
-                                null
-                        )
-                ),
-                Arguments.of(
-                        new DataNeedCalculation(
-                                true,
-                                null,
-                                new Timeframe(now, now),
-                                new Timeframe(now.minusDays(10), now.minusDays(1))
-                        )
-                ),
-                Arguments.of(
-                        new DataNeedCalculation(
-                                true,
-                                List.of(),
-                                new Timeframe(now, now),
-                                new Timeframe(now.minusDays(10), now.minusDays(1))
-                        )
-                )
+                Arguments.of(new DataNeedNotSupportedResult("")),
+                Arguments.of(new AccountingPointDataNeedResult(new Timeframe(now, now)))
         );
     }
 
@@ -163,19 +117,10 @@ class PermissionRequestCreationServiceTest {
     @Test
     void createPermissionRequest_returnsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException, MissingClientIdException, MissingClientSecretException {
         // Given
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(dataNeed));
         var now = LocalDate.now(ZoneOffset.UTC);
-        when(calculationService.calculate(dataNeed))
+        when(calculationService.calculate("dnid"))
                 .thenReturn(
-                        new DataNeedCalculation(
-                                true,
+                        new ValidatedHistoricalDataDataNeedResult(
                                 List.of(Granularity.PT15M),
                                 new Timeframe(now, now),
                                 new Timeframe(now.minusDays(10), now.minusDays(1))
@@ -203,8 +148,6 @@ class PermissionRequestCreationServiceTest {
     @Test
     void createPermissionRequest_throwsOnUnknownDataNeedId() {
         // Given
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.empty());
         var permissionRequestForCreation = new PermissionRequestForCreation(
                 "cid",
                 "dnid",
@@ -212,6 +155,7 @@ class PermissionRequestCreationServiceTest {
                 "company",
                 "US"
         );
+        when(calculationService.calculate("dnid")).thenReturn(new DataNeedNotFoundResult());
 
         // When
         // Then
@@ -223,17 +167,9 @@ class PermissionRequestCreationServiceTest {
 
     @ParameterizedTest
     @MethodSource
-    void createPermissionRequest_withUnsupportedDataNeed_throws(DataNeedCalculation calc) {
+    void createPermissionRequest_withUnsupportedDataNeed_throws(DataNeedCalculationResult calc) {
         // Given
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(dataNeed));
-        when(calculationService.calculate(dataNeed))
+        when(calculationService.calculate("dnid"))
                 .thenReturn(calc);
 
         var permissionRequestForCreation = new PermissionRequestForCreation(
@@ -256,19 +192,10 @@ class PermissionRequestCreationServiceTest {
     @ValueSource(strings = {"only-id", "only-secret"})
     void createPermissionRequest_throwsOnInvalidConfiguration(String company) {
         // Given
-        var dataNeed = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.PT1H
-        );
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(dataNeed));
         var now = LocalDate.now(ZoneOffset.UTC);
-        when(calculationService.calculate(dataNeed))
+        when(calculationService.calculate("dnid"))
                 .thenReturn(
-                        new DataNeedCalculation(
-                                true,
+                        new ValidatedHistoricalDataDataNeedResult(
                                 List.of(Granularity.PT15M),
                                 new Timeframe(now, now),
                                 new Timeframe(now.minusDays(10), now.minusDays(1))
