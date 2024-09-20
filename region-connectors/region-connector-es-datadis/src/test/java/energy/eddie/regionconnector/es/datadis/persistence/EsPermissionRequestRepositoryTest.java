@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.persistence;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.health.DatadisApiHealthIndicator;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsCreatedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
@@ -38,6 +39,9 @@ class EsPermissionRequestRepositoryTest {
     @SuppressWarnings("unused")
     @MockBean
     private DatadisApiHealthIndicator healthIndicator;
+    @SuppressWarnings("unused")
+    @MockBean
+    private DataNeedsService dataNeedsService;
 
 
     @Test

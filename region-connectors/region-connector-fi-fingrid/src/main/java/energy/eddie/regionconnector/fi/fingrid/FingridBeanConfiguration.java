@@ -8,6 +8,7 @@ import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.config.FingridConfiguration;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionEventRepository;
@@ -64,9 +65,14 @@ public class FingridBeanConfiguration {
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService() {
-        return new DataNeedCalculationServiceImpl(List.of(ValidatedHistoricalDataDataNeed.class),
-                                                  FingridRegionConnectorMetadata.INSTANCE);
+    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
+    ) {
+        return new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                List.of(ValidatedHistoricalDataDataNeed.class),
+                FingridRegionConnectorMetadata.INSTANCE
+        );
     }
 
     @Bean

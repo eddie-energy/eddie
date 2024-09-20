@@ -2,16 +2,11 @@ package energy.eddie.regionconnector.nl.mijn.aansluiting.services;
 
 import com.nimbusds.oauth2.sdk.ParseException;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthManager;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthRequestPayload;
@@ -30,7 +25,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -39,12 +33,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.NL_ZONE_ID;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -56,19 +50,11 @@ class PermissionRequestServiceTest {
     @Mock
     private Outbox outbox;
     @Mock
-    private DataNeedsService dataNeedsService;
-    @Mock
-    private ValidatedHistoricalDataDataNeed vhdDataNeed;
-    @Mock
-    private AiidaDataNeed aiidaDataNeed;
-    @Mock
     private NlPermissionRequestRepository permissionRequestRepository;
     @Mock
     private DataNeedCalculationService<DataNeed> calculationService;
     @InjectMocks
     private PermissionRequestService permissionRequestService;
-    @Captor
-    private ArgumentCaptor<NlMalformedEvent> malformedCaptor;
     @Captor
     private ArgumentCaptor<NlCreatedEvent> createdCaptor;
     @Captor
@@ -88,12 +74,9 @@ class PermissionRequestServiceTest {
     void testCreatePermissionRequest_emitsCreatedAndValidatedEvent() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(vhdDataNeed));
         var now = LocalDate.now(NL_ZONE_ID);
-        when(calculationService.calculate(vhdDataNeed))
-                .thenReturn(new DataNeedCalculation(
-                        true,
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         List.of(Granularity.P1D),
                         new Timeframe(now.minusDays(-10), now.minusDays(-1)),
                         new Timeframe(now, now)
@@ -120,8 +103,39 @@ class PermissionRequestServiceTest {
     void testCreatePermissionRequest_withInvalidDataNeed_throws() {
         // Given
         var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.empty());
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new DataNeedNotSupportedResult(""));
+
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionRequestService.createPermissionRequest(permissionRequest));
+        verify(outbox).commit(isA(NlCreatedEvent.class));
+        verify(outbox).commit(isA(NlMalformedEvent.class));
+    }
+
+    @Test
+    void testCreatePermissionRequest_withAccountingPointDataNeed_throws() {
+        // Given
+        var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
+        var now = LocalDate.now(ZoneOffset.UTC);
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new AccountingPointDataNeedResult(new Timeframe(now, now)));
+
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionRequestService.createPermissionRequest(permissionRequest));
+        verify(outbox).commit(isA(NlCreatedEvent.class));
+        verify(outbox).commit(isA(NlMalformedEvent.class));
+    }
+
+    @Test
+    void testCreatePermissionRequest_withUnknownDataNeed_throws() {
+        // Given
+        var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new DataNeedNotFoundResult());
 
         // When
         // Then
@@ -129,51 +143,6 @@ class PermissionRequestServiceTest {
                      () -> permissionRequestService.createPermissionRequest(permissionRequest));
         verify(outbox).commit(isA(NlCreatedEvent.class));
         verify(outbox).commit(isA(NlMalformedEvent.class));
-    }
-
-    @ParameterizedTest
-    @NullAndEmptySource
-    void testCreatePermissionRequest_withInvalidGranularity_throws(List<Granularity> granularities) {
-        // Given
-        var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(vhdDataNeed));
-        var now = LocalDate.now(NL_ZONE_ID);
-        when(calculationService.calculate(vhdDataNeed))
-                .thenReturn(new DataNeedCalculation(
-                        true,
-                        granularities,
-                        new Timeframe(now.minusDays(-10), now.minusDays(-1)),
-                        new Timeframe(now, now)
-                ));
-
-        // When
-        // Then
-        assertThrows(UnsupportedDataNeedException.class,
-                     () -> permissionRequestService.createPermissionRequest(permissionRequest));
-        verify(outbox).commit(isA(NlCreatedEvent.class));
-        verify(outbox).commit(malformedCaptor.capture());
-        var res = malformedCaptor.getValue();
-        assertThat(res.errors()).hasSize(1);
-    }
-
-    @Test
-    void testCreatePermissionRequest_withInvalidDataNeedType_throws() {
-        // Given
-        var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(aiidaDataNeed));
-        when(calculationService.calculate(aiidaDataNeed))
-                .thenReturn(new DataNeedCalculation(false));
-
-        // When
-        // Then
-        assertThrows(UnsupportedDataNeedException.class,
-                     () -> permissionRequestService.createPermissionRequest(permissionRequest));
-        verify(outbox).commit(isA(NlCreatedEvent.class));
-        verify(outbox).commit(malformedCaptor.capture());
-        var res = malformedCaptor.getValue();
-        assertThat(res.errors()).hasSize(1);
     }
 
     @Test

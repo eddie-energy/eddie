@@ -10,7 +10,9 @@ public interface DataNeedCalculationService<T extends DataNeedInterface> {
      * @param dataNeed the data need
      * @return the calculation outcomes of the data need
      */
-    DataNeedCalculation calculate(T dataNeed);
+    DataNeedCalculationResult calculate(T dataNeed);
+
+    DataNeedCalculationResult calculate(String dataNeedId);
 
     /**
      * The id of the region-connector that provides the implementation of this service.

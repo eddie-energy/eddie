@@ -1,17 +1,13 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
@@ -46,7 +42,6 @@ public class PermissionRequestService {
     private final EsPermissionRequestRepository repository;
     private final AccountingPointDataService accountingPointDataService;
     private final PermissionRequestConsumer permissionRequestConsumer;
-    private final DataNeedsService dataNeedsService;
     private final Outbox outbox;
     private final DataNeedCalculationService<DataNeed> calculationService;
     private final JwtUtil jwtUtil;
@@ -56,17 +51,13 @@ public class PermissionRequestService {
             EsPermissionRequestRepository repository,
             AccountingPointDataService accountingPointDataService,
             PermissionRequestConsumer permissionRequestConsumer,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // Injected from another spring context
-            DataNeedsService dataNeedsService,
             Outbox outbox,
             DataNeedCalculationService<DataNeed> calculationService,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // is injected from another Spring context
-            JwtUtil jwtUtil
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") JwtUtil jwtUtil
     ) {
         this.repository = repository;
         this.accountingPointDataService = accountingPointDataService;
         this.permissionRequestConsumer = permissionRequestConsumer;
-        this.dataNeedsService = dataNeedsService;
         this.outbox = outbox;
         this.calculationService = calculationService;
         this.jwtUtil = jwtUtil;
@@ -86,10 +77,9 @@ public class PermissionRequestService {
 
     public void acceptPermission(String permissionId) throws PermissionNotFoundException {
         var permissionRequest = getPermissionRequestById(permissionId);
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Got request to accept permission {}", permissionRequest.permissionId());
-        }
-
+        LOGGER.atInfo()
+              .addArgument(permissionRequest::permissionId)
+              .log("Got request to accept permission {}");
         accountingPointDataService
                 .fetchAccountingPointDataForPermissionRequest(permissionRequest)
                 .doOnError(error -> permissionRequestConsumer.consumeError(error, permissionRequest))
@@ -106,9 +96,9 @@ public class PermissionRequestService {
 
     public void rejectPermission(String permissionId) throws PermissionNotFoundException {
         var permissionRequest = getPermissionRequestById(permissionId);
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Got request to reject permission {}", permissionRequest.permissionId());
-        }
+        LOGGER.atInfo()
+              .addArgument(permissionRequest::permissionId)
+              .log("Got request to reject permission {}");
         outbox.commit(new EsSimpleEvent(permissionId, PermissionProcessStatus.REJECTED));
     }
 
@@ -132,41 +122,44 @@ public class PermissionRequestService {
                                          dataNeedId,
                                          requestForCreation.nif(),
                                          requestForCreation.meteringPointId()));
-        var dataNeed = dataNeedsService.findById(requestForCreation.dataNeedId());
-        if (dataNeed.isEmpty()) {
-            outbox.commit(new EsMalformedEvent(
-                    permissionId,
-                    List.of(new AttributeError(DATA_NEED_ID, "DataNeed not found"))
-            ));
-            throw new DataNeedNotFoundException(dataNeedId);
+        var calculation = calculationService.calculate(dataNeedId);
+        switch (calculation) {
+            case DataNeedNotFoundResult ignored -> {
+                outbox.commit(new EsMalformedEvent(
+                        permissionId,
+                        List.of(new AttributeError(DATA_NEED_ID, "DataNeed not found"))
+                ));
+                throw new DataNeedNotFoundException(dataNeedId);
+            }
+            case DataNeedNotSupportedResult(String message) -> {
+                outbox.commit(new EsMalformedEvent(
+                        permissionId,
+                        List.of(new AttributeError(DATA_NEED_ID, message))
+                ));
+                throw new UnsupportedDataNeedException(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                       dataNeedId,
+                                                       message);
+            }
+            case ValidatedHistoricalDataDataNeedResult vhdResult ->
+                    handleValidatedHistoricalDataNeed(vhdResult, permissionId);
+            case AccountingPointDataNeedResult ignored -> handleAccountingPointDataNeed(permissionId);
         }
-
-        var calculation = calculationService.calculate(dataNeed.get());
-        if (!calculation.supportsDataNeed()) {
-            throwUnsupportedDataNeed(permissionId, dataNeedId);
-        }
-
-        switch (dataNeed.get()) {
-            case AccountingPointDataNeed ignored -> handleAccountingPointDataNeed(permissionId);
-            default -> handleValidatedHistoricalDataNeed(calculation, permissionId, dataNeedId);
-        }
-
         var accessToken = jwtUtil.createJwt(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
-
         return new CreatedPermissionRequest(permissionId, accessToken);
     }
 
-    private void throwUnsupportedDataNeed(String permissionId, String dataNeedId) throws UnsupportedDataNeedException {
-        String message = "This region connector only supports ValidatedHistoricalData and AccountingPoint DataNeeds";
-        outbox.commit(new EsMalformedEvent(
+    private void handleValidatedHistoricalDataNeed(
+            ValidatedHistoricalDataDataNeedResult calculation,
+            String permissionId
+    ) {
+        var allowedMeasurementType = allowedMeasurementType(calculation.granularities());
+        var energyDataTimeframe = calculation.energyTimeframe();
+        outbox.commit(new EsValidatedEvent(
                 permissionId,
-                List.of(new AttributeError(DATA_NEED_ID, message))
+                energyDataTimeframe.start(),
+                energyDataTimeframe.end(),
+                allowedMeasurementType
         ));
-        throw new UnsupportedDataNeedException(
-                DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                dataNeedId,
-                message
-        );
     }
 
     private void handleAccountingPointDataNeed(String permissionId) {
@@ -179,45 +172,7 @@ public class PermissionRequestService {
         ));
     }
 
-    private void handleValidatedHistoricalDataNeed(
-            DataNeedCalculation calculation,
-            String permissionId,
-            String dataNeedId
-    ) throws UnsupportedDataNeedException {
-        if (calculation.granularities() == null || calculation.granularities().isEmpty()) {
-            throwUnsupportedGranularity(permissionId, dataNeedId);
-        }
-        //noinspection DataFlowIssue
-        var allowedMeasurementType = allowedMeasurementType(calculation.granularities());
-        if (allowedMeasurementType.isEmpty()) {
-            throwUnsupportedGranularity(permissionId, dataNeedId);
-        }
-
-        Timeframe energyDataTimeframe = calculation.energyDataTimeframe();
-        //noinspection OptionalGetWithoutIsPresent,DataFlowIssue
-        outbox.commit(new EsValidatedEvent(
-                permissionId,
-                energyDataTimeframe.start(),
-                energyDataTimeframe.end(),
-                allowedMeasurementType.get()
-        ));
-    }
-
-    private void throwUnsupportedGranularity(
-            String permissionId,
-            String dataNeedId
-    ) throws UnsupportedDataNeedException {
-        outbox.commit(new EsMalformedEvent(
-                permissionId,
-                List.of(new AttributeError(DATA_NEED_ID,
-                                           "Unsupported granularity"))
-        ));
-        throw new UnsupportedDataNeedException(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                               dataNeedId,
-                                               "Unsupported granularity");
-    }
-
-    private static Optional<AllowedGranularity> allowedMeasurementType(List<Granularity> granularities) {
+    private static AllowedGranularity allowedMeasurementType(List<Granularity> granularities) {
         boolean hourly = false;
         boolean quarterHourly = false;
         if (granularities.contains(Granularity.PT1H)) {
@@ -227,16 +182,12 @@ public class PermissionRequestService {
             quarterHourly = true;
         }
         if (hourly && quarterHourly) {
-            return Optional.of(AllowedGranularity.PT15M_OR_PT1H);
+            return AllowedGranularity.PT15M_OR_PT1H;
         }
         if (hourly) {
-            return Optional.of(AllowedGranularity.PT1H);
+            return AllowedGranularity.PT1H;
         }
-        if (quarterHourly) {
-            return Optional.of(AllowedGranularity.PT15M);
-        }
-
-        return Optional.empty();
+        return AllowedGranularity.PT15M;
     }
 
     public void terminatePermission(String permissionId) throws PermissionNotFoundException {

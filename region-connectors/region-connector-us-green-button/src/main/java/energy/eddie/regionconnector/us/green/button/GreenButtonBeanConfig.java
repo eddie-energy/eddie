@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.us.green.button;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -75,8 +76,11 @@ public class GreenButtonBeanConfig {
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService() {
+    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
+    ) {
         return new DataNeedCalculationServiceImpl(
+                dataNeedsService,
                 SUPPORTED_DATA_NEEDS,
                 GreenButtonRegionConnectorMetadata.getInstance(),
                 new PermissionEndIsEnergyDataEndStrategy(US_ZONE_ID),

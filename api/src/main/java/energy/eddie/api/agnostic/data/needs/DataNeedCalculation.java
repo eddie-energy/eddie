@@ -14,10 +14,6 @@ public record DataNeedCalculation(boolean supportsDataNeed,
         this(supportsDataNeed, unsupportedDataNeedMessage, null, null, null);
     }
 
-    public DataNeedCalculation(boolean supportsDataNeed) {
-        this(supportsDataNeed, null, null, null, null);
-    }
-
     public DataNeedCalculation(
             boolean supportsDataNeed,
             @Nullable List<Granularity> granularities,

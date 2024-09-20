@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
 import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.health.DatadisApiHealthIndicator;
@@ -58,6 +59,9 @@ class PermissionControllerTest {
     private EsPermissionEventRepository unusedPermissionEventRepository;
     @MockBean
     private DatadisApiHealthIndicator healthIndicator;
+    @SuppressWarnings("unused")
+    @MockBean
+    private DataNeedsService dataNeedsService;
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {

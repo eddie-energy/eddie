@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.fr.enedis.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepository;
@@ -43,9 +44,14 @@ class PermissionRequestControllerTest {
     @MockBean
     private PermissionRequestService permissionRequestService;
     @MockBean
+    @SuppressWarnings("unused")
     private FrPermissionRequestRepository unusedRepository;
     @MockBean
+    @SuppressWarnings("unused")
     private FrPermissionEventRepository permissionEventRepository;
+    @SuppressWarnings("unused")
+    @MockBean
+    private DataNeedsService dataNeedsService;
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {

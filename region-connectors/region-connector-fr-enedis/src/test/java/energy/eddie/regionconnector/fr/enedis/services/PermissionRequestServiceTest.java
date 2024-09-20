@@ -1,17 +1,12 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrAcceptedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrCreatedEvent;
@@ -25,7 +20,6 @@ import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundExceptio
 import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -45,7 +39,6 @@ import java.util.Optional;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -64,12 +57,6 @@ class PermissionRequestServiceTest {
     @MockBean
     private HistoricalDataService historicalDataService;
     @MockBean
-    private DataNeedsService dataNeedsService;
-    @Mock
-    private ValidatedHistoricalDataDataNeed mockVhdDataNeed;
-    @Mock
-    private AiidaDataNeed unsupportedDataNeed;
-    @MockBean
     private Outbox outbox;
     @MockBean
     private DataNeedCalculationService<DataNeed> calculationService;
@@ -79,12 +66,26 @@ class PermissionRequestServiceTest {
         // Given
         var request = new PermissionRequestForCreation("cid", "dnid");
         var now = LocalDate.now(ZONE_ID_FR);
-        when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(mockVhdDataNeed));
-        when(calculationService.calculate(mockVhdDataNeed))
-                .thenReturn(new DataNeedCalculation(true,
-                                                    List.of(Granularity.P1D),
-                                                    new Timeframe(now, now.plusDays(10)),
-                                                    new Timeframe(now, now.plusDays(10))));
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.P1D),
+                                                                      new Timeframe(now, now.plusDays(10)),
+                                                                      new Timeframe(now, now.plusDays(10))));
+
+        // When
+        permissionRequestService.createPermissionRequest(request);
+
+        // Then
+        verify(outbox).commit(isA(FrCreatedEvent.class));
+        verify(outbox).commit(isA(FrValidatedEvent.class));
+    }
+
+    @Test
+    void testCreatePermissionRequest_createsPermissionRequest_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+        // Given
+        var request = new PermissionRequestForCreation("cid", "dnid");
+        var now = LocalDate.now(ZONE_ID_FR);
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new AccountingPointDataNeedResult(new Timeframe(now, now)));
 
         // When
         permissionRequestService.createPermissionRequest(request);
@@ -98,9 +99,8 @@ class PermissionRequestServiceTest {
     void testCreatePermissionRequest_emitsMalformedOnInvalidDataNeed() {
         // Given
         var request = new PermissionRequestForCreation("cid", "dnid");
-        when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(unsupportedDataNeed));
-        when(calculationService.calculate(unsupportedDataNeed))
-                .thenReturn(new DataNeedCalculation(false));
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new DataNeedNotSupportedResult(""));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,
@@ -110,19 +110,14 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void testCreatePermissionRequest_emitsMalformedOnInvalidTimeframe() {
+    void testCreatePermissionRequest_emitsMalformedOnUnknownDataNeed() {
         // Given
         var request = new PermissionRequestForCreation("cid", "dnid");
-        when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(mockVhdDataNeed));
-        when(calculationService.calculate(mockVhdDataNeed))
-                .thenReturn(new DataNeedCalculation(true,
-                                                    List.of(Granularity.P1D),
-                                                    null,
-                                                    null));
-
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new DataNeedNotFoundResult());
         // When
         // Then
-        assertThrows(UnsupportedDataNeedException.class,
+        assertThrows(DataNeedNotFoundException.class,
                      () -> permissionRequestService.createPermissionRequest(request));
         verify(outbox).commit(isA(FrCreatedEvent.class));
         verify(outbox).commit(isA(FrMalformedEvent.class));
@@ -156,6 +151,7 @@ class PermissionRequestServiceTest {
     }
 
     @Test
+    @SuppressWarnings("java:S5961")
     void testAuthorizePermissionRequest_withMultipleUsagePointIds_acceptsFirstAndCreatesNewOnes() throws PermissionNotFoundException {
         // Given
         ArgumentCaptor<PermissionEvent> eventCaptor = ArgumentCaptor.forClass(PermissionEvent.class);
@@ -286,25 +282,6 @@ class PermissionRequestServiceTest {
 
         // Then
         assertTrue(res.isEmpty());
-    }
-
-    @Test
-    void givenUnsupportedGranularity_throws() {
-        // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        when(dataNeedsService.findById(any())).thenReturn(Optional.of(mockVhdDataNeed));
-        when(calculationService.calculate(mockVhdDataNeed))
-                .thenReturn(new DataNeedCalculation(true,
-                                                    List.of(),
-                                                    new Timeframe(now, now.plusDays(10)),
-                                                    new Timeframe(now, now.plusDays(10))));
-        PermissionRequestForCreation create = new PermissionRequestForCreation("foo", "bar");
-
-        // When, Then
-        assertThrows(UnsupportedDataNeedException.class,
-                     () -> permissionRequestService.createPermissionRequest(create));
-        verify(outbox).commit(isA(FrCreatedEvent.class));
-        verify(outbox).commit(isA(FrMalformedEvent.class));
     }
 
     @TestConfiguration

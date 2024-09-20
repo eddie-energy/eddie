@@ -1,18 +1,16 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.services;
 
 import com.nimbusds.oauth2.sdk.ParseException;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthManager;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthRequestPayload;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.exceptions.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlCreatedEvent;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlMalformedEvent;
@@ -36,27 +34,20 @@ import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRe
 @Service
 public class PermissionRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
-    private static final String UNSUPPORTED_DATA_NEED_MESSAGE = "This Region Connector only supports Validated Historical Data Data Needs for Gas and Electricity";
-    private static final String UNSUPPORTED_GRANULARITY_MESSAGE = "Required granularity not supported.";
     private static final String DATA_NEED_ID = "dataNeedId";
     private final OAuthManager oAuthManager;
     private final Outbox outbox;
-    private final DataNeedsService dataNeedService;
     private final NlPermissionRequestRepository permissionRequestRepository;
     private final DataNeedCalculationService<DataNeed> calculationService;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    // The DataNeedsService is autowired from another spring context
     public PermissionRequestService(
             OAuthManager oAuthManager,
             Outbox outbox,
-            DataNeedsService dataNeedService,
             NlPermissionRequestRepository permissionRequestRepository,
             DataNeedCalculationService<DataNeed> calculationService
     ) {
         this.oAuthManager = oAuthManager;
         this.outbox = outbox;
-        this.dataNeedService = dataNeedService;
         this.permissionRequestRepository = permissionRequestRepository;
         this.calculationService = calculationService;
     }
@@ -65,48 +56,45 @@ public class PermissionRequestService {
         String permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating permission request with id {}", permissionId);
         ZonedDateTime now = ZonedDateTime.now(NL_ZONE_ID);
+        var dataNeedId = permissionRequest.dataNeedId();
         outbox.commit(new NlCreatedEvent(permissionId,
                                          permissionRequest.connectionId(),
-                                         permissionRequest.dataNeedId(),
+                                         dataNeedId,
                                          now));
-        var wrapper = dataNeedService.findById(permissionRequest.dataNeedId());
-        if (wrapper.isEmpty()) {
-            outbox.commit(new NlMalformedEvent(
-                    permissionId,
-                    List.of(new AttributeError(DATA_NEED_ID, "Unknown dataNeedId"))
-            ));
-            throw new DataNeedNotFoundException(permissionRequest.dataNeedId());
+        var calculation = calculationService.calculate(dataNeedId);
+        switch (calculation) {
+            case DataNeedNotFoundResult ignored -> {
+                outbox.commit(new NlMalformedEvent(
+                        permissionId,
+                        List.of(new AttributeError(DATA_NEED_ID, "Unknown dataNeedId"))
+                ));
+                throw new DataNeedNotFoundException(dataNeedId);
+            }
+            case DataNeedNotSupportedResult(String message) -> {
+                outbox.commit(new NlMalformedEvent(permissionId,
+                                                   List.of(new AttributeError(DATA_NEED_ID, message))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
+            }
+            case AccountingPointDataNeedResult ignored -> {
+                outbox.commit(new NlMalformedEvent(permissionId,
+                                                   List.of(new AttributeError(DATA_NEED_ID,
+                                                                              "Accounting point data is not supported"))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID,
+                                                       dataNeedId,
+                                                       "Accounting point data is not supported");
+            }
+            case ValidatedHistoricalDataDataNeedResult vhdResult -> {
+                var oauthRequest = oAuthManager.createAuthorizationUrl(permissionRequest.verificationCode());
+                outbox.commit(new NlValidatedEvent(permissionId,
+                                                   oauthRequest.state(),
+                                                   oauthRequest.codeVerifier(),
+                                                   vhdResult.granularities().getFirst(),
+                                                   vhdResult.energyTimeframe().start(),
+                                                   vhdResult.energyTimeframe().end()
+                ));
+                return new CreatedPermissionRequest(permissionId, oauthRequest.uri());
+            }
         }
-        var dataNeed = wrapper.get();
-        var calculation = calculationService.calculate(dataNeed);
-        if (!calculation.supportsDataNeed()
-            || calculation.energyDataTimeframe() == null
-            || calculation.permissionTimeframe() == null) {
-            outbox.commit(new NlMalformedEvent(permissionId,
-                                               List.of(new AttributeError(DATA_NEED_ID,
-                                                                          UNSUPPORTED_DATA_NEED_MESSAGE))));
-            throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID,
-                                                   dataNeed.id(),
-                                                   UNSUPPORTED_DATA_NEED_MESSAGE);
-        }
-        if (calculation.granularities() == null || calculation.granularities().isEmpty()) {
-            outbox.commit(new NlMalformedEvent(permissionId,
-                                               List.of(new AttributeError(DATA_NEED_ID,
-                                                                          UNSUPPORTED_GRANULARITY_MESSAGE))));
-            throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID,
-                                                   dataNeed.id(),
-                                                   UNSUPPORTED_GRANULARITY_MESSAGE);
-        }
-        OAuthRequestPayload oauthRequest = oAuthManager.createAuthorizationUrl(
-                permissionRequest.verificationCode());
-        outbox.commit(new NlValidatedEvent(permissionId,
-                                           oauthRequest.state(),
-                                           oauthRequest.codeVerifier(),
-                                           calculation.granularities().getFirst(),
-                                           calculation.energyDataTimeframe().start(),
-                                           calculation.energyDataTimeframe().end()
-        ));
-        return new CreatedPermissionRequest(permissionId, oauthRequest.uri());
     }
 
     public PermissionProcessStatus receiveResponse(
