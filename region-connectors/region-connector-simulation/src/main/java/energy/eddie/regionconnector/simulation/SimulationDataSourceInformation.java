@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.simulation;
 
-import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.DataSourceInformation;
 
 public class SimulationDataSourceInformation implements DataSourceInformation {
     @Override

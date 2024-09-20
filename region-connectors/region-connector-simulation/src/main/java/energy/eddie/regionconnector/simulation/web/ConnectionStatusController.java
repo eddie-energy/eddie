@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.simulation.web;
 
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
-import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
@@ -24,7 +24,7 @@ import reactor.core.publisher.Sinks;
 import java.time.ZoneOffset;
 
 @RestController
-public class ConnectionStatusController implements Mvp1ConnectionStatusMessageProvider, PermissionMarketDocumentProvider {
+public class ConnectionStatusController implements ConnectionStatusMessageProvider, PermissionMarketDocumentProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusController.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink = Sinks.many().multicast()
                                                                                         .onBackpressureBuffer();

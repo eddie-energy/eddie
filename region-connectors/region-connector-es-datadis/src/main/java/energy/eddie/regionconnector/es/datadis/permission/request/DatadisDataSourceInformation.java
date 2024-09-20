@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.permission.request;
 
-import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 
@@ -23,14 +23,14 @@ public class DatadisDataSourceInformation implements DataSourceInformation {
     }
 
     @Override
-    public String permissionAdministratorId() {
-        return "Datadis";
+    public String meteredDataAdministratorId() {
+        return permissionRequest.distributorCode()
+                                .map(DistributorCode::toString)
+                                .orElse("Not available");
     }
 
     @Override
-    public String meteredDataAdministratorId() {
-        return permissionRequest.distributorCode()
-                .map(DistributorCode::toString)
-                .orElse("Not available");
+    public String permissionAdministratorId() {
+        return "Datadis";
     }
 }

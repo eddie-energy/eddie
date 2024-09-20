@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fi.fingrid.web;
 
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
-import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;

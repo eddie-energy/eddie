@@ -18,11 +18,11 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.oauth2.sdk.GeneralException;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
-import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
@@ -167,7 +167,7 @@ public class MijnAansluitingBeanConfig {
                                                              permissionMarketDocuments,
                                                              config.clientId().getValue(),
                                                              cimConfig,
-                                                          pr -> null,
+                                                             pr -> null,
                                                              NL_ZONE_ID)
         );
     }

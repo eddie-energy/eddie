@@ -6,8 +6,8 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.ConnectionStatusMessageMixin;
-import energy.eddie.api.v0.ConnectionStatusMessage;
 import energy.eddie.examples.exampleapp.kafka.KafkaListener;
 import gg.jte.ContentType;
 import gg.jte.TemplateEngine;
@@ -28,16 +28,12 @@ public class ExampleApp {
     public static final String SRC_MAIN_PREFIX = "./src/main/";
     private static final Logger LOGGER = LoggerFactory.getLogger(ExampleApp.class);
 
-    private static boolean inDevelopmentMode() {
-        return "true".equals(System.getProperty("developmentMode"));
-    }
-
     public static void main(String[] args) {
         Flyway flyway = Flyway.configure()
-                .baselineOnMigrate(true)
-                .dataSource(Env.JDBC_URL.get(), Env.JDBC_USER.get(), Env.JDBC_PASSWORD.get())
-                .locations("db/migration")
-                .load();
+                              .baselineOnMigrate(true)
+                              .dataSource(Env.JDBC_URL.get(), Env.JDBC_USER.get(), Env.JDBC_PASSWORD.get())
+                              .locations("db/migration")
+                              .load();
         flyway.migrate();
 
         var injector = Guice.createInjector(new Module());
@@ -50,7 +46,8 @@ public class ExampleApp {
             JavalinJte.init(TemplateEngine.createPrecompiled(Path.of("jte-classes"), ContentType.Html));
         }
 
-        var kafkaListener = new KafkaListener(injector.getInstance(Jdbi.class), injector.getInstance(ObjectMapper.class));
+        var kafkaListener = new KafkaListener(injector.getInstance(Jdbi.class),
+                                              injector.getInstance(ObjectMapper.class));
         var executor = Executors.newSingleThreadExecutor();
         //noinspection unused
         var unused = executor.submit(kafkaListener);
@@ -60,7 +57,11 @@ public class ExampleApp {
         // is suspended in a forever-sleep loop below.
         try (var app = Javalin.create(config -> {
             config.requestLogger.http((ctx, executionTimeMs) ->
-                    LOGGER.info("{} {} -> {} {}ms", ctx.method(), ctx.url(), ctx.statusCode(), executionTimeMs));
+                                              LOGGER.info("{} {} -> {} {}ms",
+                                                          ctx.method(),
+                                                          ctx.url(),
+                                                          ctx.statusCode(),
+                                                          executionTimeMs));
             var baseUrl = Env.PUBLIC_CONTEXT_PATH.get();
             if (null != baseUrl && !baseUrl.isEmpty()) {
                 config.routing.contextPath = Env.PUBLIC_CONTEXT_PATH.get();
@@ -78,8 +79,8 @@ public class ExampleApp {
             app.get("/", ctx -> ctx.redirect("login"));
 
             Stream.of(LoginHandler.class, ShowConnectionListHandler.class, ShowConnectionHandler.class)
-                    .map(injector::getInstance)
-                    .forEach(handler -> handler.register(app));
+                  .map(injector::getInstance)
+                  .forEach(handler -> handler.register(app));
             app.start(8081);
             while (!Thread.interrupted()) {
                 Thread.sleep(Long.MAX_VALUE);
@@ -92,14 +93,19 @@ public class ExampleApp {
         executor.close();
     }
 
+    private static boolean inDevelopmentMode() {
+        return "true".equals(System.getProperty("developmentMode"));
+    }
+
     private static class Module extends AbstractModule {
         @Override
         protected void configure() {
             bind(ObjectMapper.class).toInstance(JsonMapper.builder()
-                    .addModule(new JavaTimeModule())
-                    .addModule(new Jdk8Module())
-                    .addMixIn(ConnectionStatusMessage.class, ConnectionStatusMessageMixin.class)
-                    .build());
+                                                          .addModule(new JavaTimeModule())
+                                                          .addModule(new Jdk8Module())
+                                                          .addMixIn(ConnectionStatusMessage.class,
+                                                                    ConnectionStatusMessageMixin.class)
+                                                          .build());
             var jdbcUserName = Env.JDBC_USER.get();
             var jdbcPassword = Env.JDBC_PASSWORD.get();
             if (jdbcUserName != null && jdbcPassword != null) {

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.shared.permission.requests;
 
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
-import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 
 import java.time.LocalDate;

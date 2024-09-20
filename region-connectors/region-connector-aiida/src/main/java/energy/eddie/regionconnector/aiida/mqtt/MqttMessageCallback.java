@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttCallback;

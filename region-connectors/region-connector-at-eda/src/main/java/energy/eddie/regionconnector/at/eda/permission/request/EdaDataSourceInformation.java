@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.permission.request;
 
-import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

@@ -1,12 +1,13 @@
-package energy.eddie.api.v0;
+package energy.eddie.api.agnostic;
 
+import energy.eddie.api.v0.RegionConnector;
 import reactor.core.publisher.Flux;
 
 /**
  * Used to extend a {@link RegionConnector} by making a Flux of
  * {@link ConnectionStatusMessage}s available.
  */
-public interface Mvp1ConnectionStatusMessageProvider extends AutoCloseable {
+public interface ConnectionStatusMessageProvider extends AutoCloseable {
     /**
      * Data stream of all connection status updates created by this region connector.
      *

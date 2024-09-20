@@ -1,6 +1,6 @@
 package energy.eddie.core.web;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.core.services.PermissionService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;

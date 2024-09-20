@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.aiida;
 
-import energy.eddie.api.v0.ConnectionStatusMessage;
-import energy.eddie.api.v0.Mvp1ConnectionStatusMessageProvider;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
@@ -12,7 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @Component
-public class AiidaRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider, PermissionMarketDocumentProvider {
+public class AiidaRegionConnector implements RegionConnector, ConnectionStatusMessageProvider, PermissionMarketDocumentProvider {
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink;
     private final Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink;
     private final AiidaPermissionService aiidaPermissionService;
@@ -43,13 +43,13 @@ public class AiidaRegionConnector implements RegionConnector, Mvp1ConnectionStat
     }
 
     @Override
-    public Flux<PermissionEnvelope> getPermissionMarketDocumentStream() {
-        return permissionMarketDocumentSink.asFlux();
-    }
-
-    @Override
     public void close() {
         connectionStatusMessageSink.tryEmitComplete();
         permissionMarketDocumentSink.tryEmitComplete();
+    }
+
+    @Override
+    public Flux<PermissionEnvelope> getPermissionMarketDocumentStream() {
+        return permissionMarketDocumentSink.asFlux();
     }
 }

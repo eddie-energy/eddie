@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.aiida.permission.request;
 
-import energy.eddie.api.v0.DataSourceInformation;
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 
 public class AiidaDataSourceInformation implements DataSourceInformation {

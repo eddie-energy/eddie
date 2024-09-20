@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;

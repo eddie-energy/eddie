@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request;
 
+import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
 import jakarta.annotation.Nullable;

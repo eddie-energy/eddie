@@ -34,7 +34,7 @@ Philosophy: A developer should be able to clone this repository and be able to b
   be served, e.g. */region-connectors/__foo__/ce.js*
     - This JS must not be manually served by the RC but is done via a common *region connector processor*
 - There are several interface a region connector can implement and thereby make data available. E.g. if the region
-  connector implements the `Mvp1ConnectionStatusMessageProvider` interface, it has to provide a stream
+  connector implements the `ConnectionStatusMessageProvider` interface, it has to provide a stream
   of `ConnectionStatusMessages`. When implementing such an interface from the `api` package, the region connector is
   automatically registered for the correct service by a *region connector processor*, and e.g. the consumption records
   are then streamed via Kafka to the EP.

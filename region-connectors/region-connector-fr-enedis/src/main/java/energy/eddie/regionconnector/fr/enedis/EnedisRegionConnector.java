@@ -1,6 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis;
 
-import energy.eddie.api.v0.*;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -13,7 +17,7 @@ import reactor.core.publisher.Sinks;
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 @Component
-public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionStatusMessageProvider {
+public class EnedisRegionConnector implements RegionConnector, ConnectionStatusMessageProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
     private final FrPermissionRequestRepository repository;
@@ -35,11 +39,6 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
     }
 
     @Override
-    public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        return connectionStatusSink.asFlux();
-    }
-
-    @Override
     public void terminatePermission(String permissionId) {
         LOGGER.info("{} got termination request for permission {}", REGION_CONNECTOR_ID, permissionId);
         var permissionRequest = repository.findByPermissionId(permissionId);
@@ -47,6 +46,11 @@ public class EnedisRegionConnector implements RegionConnector, Mvp1ConnectionSta
             return;
         }
         outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.TERMINATED));
+    }
+
+    @Override
+    public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return connectionStatusSink.asFlux();
     }
 
     @Override

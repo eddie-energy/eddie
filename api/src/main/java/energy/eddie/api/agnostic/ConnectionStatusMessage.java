@@ -1,6 +1,7 @@
-package energy.eddie.api.v0;
+package energy.eddie.api.agnostic;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.annotation.Nullable;
 
 import java.time.ZoneId;
