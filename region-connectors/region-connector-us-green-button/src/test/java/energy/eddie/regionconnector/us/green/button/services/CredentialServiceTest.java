@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
+import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
 import energy.eddie.regionconnector.us.green.button.api.TokenApi;
 import energy.eddie.regionconnector.us.green.button.client.OAuthTokenClientFactory;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
@@ -44,11 +45,14 @@ class CredentialServiceTest {
     private OAuthTokenRepository repository;
     @SuppressWarnings("unused")
     @Spy
-    private GreenButtonConfiguration config = new GreenButtonConfiguration("token",
-                                                                           "http://localhost",
-                                                                           Map.of("company", "client-id"),
-                                                                           Map.of("compand", "client-secret"),
-                                                                           "http://localhost");
+    private GreenButtonConfiguration config = new GreenButtonConfiguration(
+            "token",
+            "http://localhost",
+            Map.of("company", "client-id"),
+            Map.of("compand", "client-secret"),
+            "http://localhost",
+            GreenButtonApi.MAX_METER_RESULTS
+    );
     @SuppressWarnings("unused")
     @Mock
     private Outbox outbox;

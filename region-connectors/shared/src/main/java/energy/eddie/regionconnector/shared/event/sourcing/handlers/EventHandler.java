@@ -1,7 +1,5 @@
 package energy.eddie.regionconnector.shared.event.sourcing.handlers;
 
-import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
-
 /**
  * The interface for event handlers.
  * Can be combined with the event bus, to handle events emitted by it.
@@ -21,7 +19,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
  *
  * @param <T> The type of event that should be handled.
  */
-public interface EventHandler<T extends PermissionEvent> {
+public interface EventHandler<T> {
 
     /**
      * Subscription method for the event bus

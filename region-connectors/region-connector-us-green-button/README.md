@@ -36,28 +36,30 @@ tbd
 The region connector needs a set of configuration values to be able to function correctly, how you provide these values
 depends on the way you deploy the region connector.
 
-| Configuration values                                  | Description                                                                                                                                             |
-|-------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `region-connector.us.green.button.basepath`           | Base path for the client (default is https://utilityapi.com/DataCustodian/espi/1_1/resource)                                                            |
-| `region-connector.us.green.button.redirect.url`       | The redirect url for the OAuth flow                                                                                                                     |
-| `region-connector.us.green.button.client.api.token`   | The api token in order to check the API status                                                                                                          |
-| `region-connector.us.green.button.webhook.secret`     | The webhook secret in order to validate webhook events                                                                                                  |
-| `region-connector.us.green.button.client.ids`         | The client ids of the utilities you want to support                                                                                                     |
-| `region-connector.us.green.button.client.secrets`     | The client secrets of the utilities you want to support                                                                                                 |
-| `region-connector.us.green-button.data-ready.polling` | The frequency in which the region-connector checks if the data is available via the green button API. Uses Spring Cron syntax. Default is `0 0 * * * *` |
+| Configuration values                                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|----------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `region-connector.us.green.button.basepath`              | Base path for the client (default is https://utilityapi.com/)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `region-connector.us.green.button.redirect.url`          | The redirect url for the OAuth flow                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `region-connector.us.green.button.client.api.token`      | The api token in order to check the API status                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `region-connector.us.green.button.webhook.secret`        | The webhook secret in order to validate webhook events                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `region-connector.us.green.button.client.ids`            | The client ids of the utilities you want to support                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `region-connector.us.green.button.client.secrets`        | The client secrets of the utilities you want to support                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `region-connector.us.green-button.data-ready.polling`    | The frequency in which the region-connector checks if the data is available via the green button API. Uses Spring Cron syntax. Default is `0 0 * * * *`                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `region-connector.us.green-button.activation-batch-size` | The batch size in which the collection of metering data should be triggered. The green button defers collecting data from the metered data administrator until it has been triggered. This means that no data is lost if the collection is triggered at a later point. If immediate activation is needed set to `1`. Recommended maximum is `1000` to avoid paging API calls. Keep in mind that if the collection is not finished before the data is polled incomplete or no data can be requested for the batch. Related to `region-connector.us.green-button.data-ready.polling`. |
 
 ### .properties file
 
 Example configuration for an `application.properties` file:
 
 ```properties
-region-connector.us.green.button.basepath=https://utilityapi.com/DataCustodian/espi/1_1/resource
+region-connector.us.green.button.basepath=https://utilityapi.com/
 region-connector.us.green.button.redirect.url=https://your-eddie-instance.example/region-connectors/us-green-button/authorization-callback
 region-connector.us.green.button.client.api.token=REPLACE_ME
 region-connector.us.green.button.webhook.secret=REPLACE_ME
 region-connector.us.green.button.client.ids={REPLACE: 'ME', REPLACE_ME: 'TOO'}
 region-connector.us.green.button.client.secrets={REPLACE: 'ME', REPLACE_ME: 'TOO'}
 region-connector.us.green-button.data-ready.polling=0 0 * * * *
+region-connector.us.green-button.activation-batch-size=1
 ```
 
 ### Environment variables
@@ -70,13 +72,14 @@ When using environment variables, the configuration values need to be converted 
 Example configuration for dotenv file:
 
 ```dotenv
-REGION_CONNECTOR_US_GREEN_BUTTON_BASEPATH=https://utilityapi.com/DataCustodian/espi/1_1/resource
+REGION_CONNECTOR_US_GREEN_BUTTON_BASEPATH=https://utilityapi.com/
 REGION_CONNECTOR_US_GREEN_BUTTON_REDIRECT_URL=https://your-eddie-instance.example/region-connectors/us-green-button/authorization-callback
 REGION_CONNECTOR_US_GREEN_BUTTON_CLIENT_API_TOKEN=REPLACE_ME
 REGION_CONNECTOR_US_GREEN_BUTTON_WEBHOOK_SECRET=REPLACE_ME
 REGION_CONNECTOR_US_GREEN_BUTTON_CLIENT_IDS={REPLACE: 'ME', REPLACE_ME: 'TOO'}
 REGION_CONNECTOR_US_GREEN_BUTTON_CLIENT_SECRETS={REPLACE: 'ME', REPLACE_ME: 'TOO'}
 REGION_CONNECTOR_US_GREEN_BUTTON_DATA_READY_POLLING=0 0 * * * *
+REGION_CONNECTOR_US_GREEN_BUTTON_ACTIVATION_BATCH_SIZE=1
 ```
 
 ## Running the Region Connector via EDDIE

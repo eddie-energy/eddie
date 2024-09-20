@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.us.green.button.client;
 
+import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
@@ -16,7 +17,8 @@ class OAuthTokenClientFactoryTest {
             "http://localhost",
             Map.of("company", "client-id", "only-id", "client-id"),
             Map.of("company", "client-secret", "only-secret", "client-secret"),
-            "http://localhost"
+            "http://localhost",
+            GreenButtonApi.MAX_METER_RESULTS
     );
     private final OAuthTokenClientFactory factory = new OAuthTokenClientFactory(config);
 
