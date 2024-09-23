@@ -10,6 +10,7 @@ import energy.eddie.regionconnector.us.green.button.exceptions.InvalidScopesExce
 import energy.eddie.regionconnector.us.green.button.oauth.OAuthCallback;
 import energy.eddie.regionconnector.us.green.button.oauth.enums.OAuthErrorResponse;
 import energy.eddie.regionconnector.us.green.button.oauth.persistence.OAuthTokenDetails;
+import energy.eddie.regionconnector.us.green.button.permission.events.UsAcceptedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsInvalidEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
@@ -46,10 +47,8 @@ class PermissionRequestAuthorizationServiceTest {
     private CredentialService credentialService;
     @InjectMocks
     private PermissionRequestAuthorizationService authorizationService;
-
     @Captor
     private ArgumentCaptor<UsSimpleEvent> simpleEventCaptor;
-
     @Captor
     private ArgumentCaptor<UsInvalidEvent> invalidEventCaptor;
 
@@ -97,22 +96,31 @@ class PermissionRequestAuthorizationServiceTest {
         verifyNoMoreInteractions(outbox);
     }
 
-    private static GreenButtonPermissionRequest createPermissionRequest() {
-        var now = LocalDate.now(ZoneOffset.UTC);
-        return new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                "US",
-                "blbl",
-                "http://localhost",
-                "other"
-        );
+    @Test
+    void testAuthorizePermissionRequest_successful() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException {
+        // Given
+        var permissionId = "permissionId";
+        when(callback.state()).thenReturn(permissionId);
+        when(callback.isSuccessful()).thenReturn(true);
+        when(callback.code()).thenReturn(Optional.of("code"));
+        when(usPermissionRequestRepository.findById(permissionId))
+                .thenReturn(Optional.of(createPermissionRequest()));
+        var now = Instant.now(Clock.systemUTC());
+        when(credentialService.retrieveAccessToken(any(), any()))
+                .thenReturn(Mono.just(new OAuthTokenDetails("pid",
+                                                            "token",
+                                                            now,
+                                                            now.plus(10, ChronoUnit.DAYS),
+                                                            "token",
+                                                            "1111")));
+
+        // When
+        authorizationService.authorizePermissionRequest(callback);
+
+        // Then
+        verify(credentialService).retrieveAccessToken(any(), any());
+        verify(outbox).commit(isA(UsSimpleEvent.class));
+        verify(outbox).commit(isA(UsAcceptedEvent.class));
     }
 
     @Test
@@ -143,32 +151,23 @@ class PermissionRequestAuthorizationServiceTest {
         verifyNoMoreInteractions(outbox);
     }
 
-    @Test
-    void testAuthorizePermissionRequest_successful() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException {
-        // Given
-        var permissionId = "permissionId";
-        when(callback.state()).thenReturn(permissionId);
-        when(callback.isSuccessful()).thenReturn(true);
-        when(callback.code()).thenReturn(Optional.of("code"));
-        when(usPermissionRequestRepository.findById(permissionId))
-                .thenReturn(Optional.of(createPermissionRequest()));
-        var now = Instant.now(Clock.systemUTC());
-        when(credentialService.retrieveAccessToken(any(), any()))
-                .thenReturn(Mono.just(new OAuthTokenDetails("pid",
-                                                            "token",
-                                                            now,
-                                                            now.plus(10, ChronoUnit.DAYS),
-                                                            "token",
-                                                            "1111")));
-
-        // When
-        authorizationService.authorizePermissionRequest(callback);
-
-        // Then
-        verify(credentialService).retrieveAccessToken(any(), any());
-        verify(outbox, times(2)).commit(simpleEventCaptor.capture());
-        var res = simpleEventCaptor.getValue();
-        assertEquals(PermissionProcessStatus.ACCEPTED, res.status());
+    private static GreenButtonPermissionRequest createPermissionRequest() {
+        var now = LocalDate.now(ZoneOffset.UTC);
+        return new GreenButtonPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                now,
+                now,
+                Granularity.PT15M,
+                PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                "US",
+                "blbl",
+                "http://localhost",
+                "other",
+                "1111"
+        );
     }
 
     @Test

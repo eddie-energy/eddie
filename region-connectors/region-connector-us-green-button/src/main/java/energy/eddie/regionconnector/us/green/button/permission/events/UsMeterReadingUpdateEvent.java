@@ -6,32 +6,39 @@ import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import jakarta.persistence.*;
 
 import java.time.ZonedDateTime;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Entity
+@SuppressWarnings("NullAway")
 public class UsMeterReadingUpdateEvent extends PersistablePermissionEvent implements InternalPermissionEvent {
-    @ElementCollection
-    @MapKeyJoinColumn(name = "permission_id", referencedColumnName = "permission_id")
-    @CollectionTable(name = "last_meter_readings", joinColumns = @JoinColumn(name = "permission_id"), schema = "us_green_button")
-    private final Map<String, ZonedDateTime> lastMeterReadings;
-    @Column(name = "polling_status")
+    @OneToMany(fetch = FetchType.LAZY, targetEntity = MeterReading.class, cascade = CascadeType.MERGE)
+    @JoinColumn(insertable = false, updatable = false, name = "permission_id", referencedColumnName = "permission_id")
+    private final List<MeterReading> lastMeterReadings;
     @Enumerated(EnumType.STRING)
+    @Column(name = "polling_status")
     @SuppressWarnings("unused")
     private final PollingStatus pollingStatus;
 
-    public UsMeterReadingUpdateEvent(String permissionId, Map<String, ZonedDateTime> lastMeterReadings) {
+    public UsMeterReadingUpdateEvent(
+            String permissionId, List<MeterReading> lastMeterReadings, PollingStatus pollingStatus
+    ) {
         super(permissionId, PermissionProcessStatus.ACCEPTED);
         this.lastMeterReadings = lastMeterReadings;
-        this.pollingStatus = PollingStatus.DATA_READY;
+        this.pollingStatus = pollingStatus;
     }
 
     protected UsMeterReadingUpdateEvent() {
-        lastMeterReadings = Map.of();
-        this.pollingStatus = PollingStatus.DATA_READY;
+        lastMeterReadings = List.of();
+        pollingStatus = null;
     }
 
     public Optional<ZonedDateTime> latestMeterReadingEndDateTime() {
-        return DateTimeUtils.oldestDateTime(lastMeterReadings.values());
+        return DateTimeUtils.oldestDateTime(MeterReading.lastMeterReadingDates(lastMeterReadings));
+    }
+
+    public Set<String> allowedMeters() {
+        return MeterReading.allowedMeters(lastMeterReadings);
     }
 }

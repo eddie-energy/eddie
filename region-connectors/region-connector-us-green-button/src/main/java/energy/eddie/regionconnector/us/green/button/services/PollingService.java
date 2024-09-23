@@ -85,7 +85,11 @@ public class PollingService {
         var end = DateTimeUtils.endOfDay(vhdResult.energyTimeframe().end(), ZoneOffset.UTC);
         var now = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
         var energyDataEnd = end.isBefore(now) ? end : now;
-        api.batchSubscription(creds.authUid(), creds.accessToken(), energyDataStart, energyDataEnd)
+        api.batchSubscription(creds.authUid(),
+                              creds.accessToken(),
+                              permissionRequest.allowedMeters(),
+                              energyDataStart,
+                              energyDataEnd)
            .map(res -> new IdentifiableSyndFeed(permissionRequest, res))
            .subscribe(publishService::publish,
                       throwable -> handlePollingError(throwable, permissionId));

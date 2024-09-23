@@ -1,0 +1,236 @@
+package energy.eddie.regionconnector.us.green.button.services;
+
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.EnergyType;
+import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.us.green.button.client.dtos.*;
+import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
+import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class DataNeedMatcherTest {
+    public static final LocalDate NOW = LocalDate.now(ZoneOffset.UTC);
+    public static final GreenButtonPermissionRequest PERMISSION_REQUEST =
+            new GreenButtonPermissionRequest(
+                    "pid",
+                    "cid",
+                    "dnid",
+                    NOW,
+                    NOW,
+                    Granularity.PT15M,
+                    PermissionProcessStatus.ACCEPTED,
+                    NOW.atStartOfDay(ZoneOffset.UTC),
+                    "US",
+                    "company",
+                    "http://localhost",
+                    "scope",
+                    "1111"
+            );
+    private final Meter meter = new Meter(
+            "uid",
+            "1111",
+            ZonedDateTime.now(ZoneOffset.UTC),
+            "mail@mail.com",
+            "userId",
+            false,
+            false,
+            false,
+            List.of(),
+            "status",
+            "",
+            ZonedDateTime.now(ZoneOffset.UTC),
+            new OngoingMonitoring("", null, null, null, null),
+            "DEMO-UTILITY",
+            0,
+            List.of(),
+            List.of(),
+            0,
+            List.of(),
+            List.of(),
+            new Exports(null, null, null, null, null),
+            List.of(),
+            List.of()
+    );
+    @Mock
+    private DataNeedsService dataNeedsService;
+    @Mock
+    private UsPermissionRequestRepository repository;
+    @InjectMocks
+    private DataNeedMatcher dataNeedMatcher;
+
+    public static Stream<Arguments> filterMetersNotMeetingDataNeedCriteria_doesNotRemoveMetersMatchingCriteria() {
+        return Stream.of(
+                Arguments.of(EnergyType.ELECTRICITY, "electric"),
+                Arguments.of(EnergyType.NATURAL_GAS, "gas"),
+                Arguments.of(EnergyType.HYDROGEN, "water"),
+                Arguments.of(EnergyType.HEAT, "heat")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void filterMetersNotMeetingDataNeedCriteria_doesNotRemoveMetersMatchingCriteria(
+            EnergyType energyType,
+            String serviceClass
+    ) {
+        // Given
+        meter.setMeterBlock("base", new MeterBlock("id", "tariff", serviceClass, "", List.of(), "", "", ""));
+        var data = new MeterListing(List.of(meter), null);
+        when(repository.findByAuthUid("1111"))
+                .thenReturn(PERMISSION_REQUEST);
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(
+                        new ValidatedHistoricalDataDataNeed(
+                                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
+                                energyType,
+                                Granularity.PT15M,
+                                Granularity.P1D
+                        )
+                );
+
+        // When
+        var res = dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(data);
+
+        // Then
+        assertEquals(List.of(meter), res);
+    }
+
+    @Test
+    void filterMetersNotMeetingDataNeedCriteria_doesNotRemoveMeter_whereOneMeterBlockMatchesCriteria() {
+        // Given
+        meter.setMeterBlock("electric", new MeterBlock("id", "tariff", "electric", "", List.of(), "", "", ""));
+        meter.setMeterBlock("water", new MeterBlock("id", "tariff", "water", "", List.of(), "", "", ""));
+        var data = new MeterListing(List.of(meter), null);
+        when(repository.findByAuthUid("1111"))
+                .thenReturn(PERMISSION_REQUEST);
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(
+                        new ValidatedHistoricalDataDataNeed(
+                                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
+                                EnergyType.ELECTRICITY,
+                                Granularity.PT15M,
+                                Granularity.P1D
+                        )
+                );
+
+        // When
+        var res = dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(data);
+
+        // Then
+        assertEquals(List.of(meter), res);
+    }
+
+    @Test
+    void filterMetersNotMeetingDataNeedCriteria_removesOneNotMatchingMeter() {
+        // Given
+        var waterMeter = new Meter(
+                "uid2",
+                "1111",
+                ZonedDateTime.now(ZoneOffset.UTC),
+                "mail@mail.com",
+                "userId",
+                false,
+                false,
+                false,
+                List.of(),
+                "status",
+                "",
+                ZonedDateTime.now(ZoneOffset.UTC),
+                new OngoingMonitoring("", null, null, null, null),
+                "DEMO-UTILITY",
+                0,
+                List.of(),
+                List.of(),
+                0,
+                List.of(),
+                List.of(),
+                new Exports(null, null, null, null, null),
+                List.of(),
+                List.of()
+        );
+        meter.setMeterBlock("electric", new MeterBlock("id", "tariff", "electric", "", List.of(), "", "", ""));
+        waterMeter.setMeterBlock("water", new MeterBlock("id", "tariff", "water", "", List.of(), "", "", ""));
+        var data = new MeterListing(List.of(meter, waterMeter), null);
+        when(repository.findByAuthUid("1111"))
+                .thenReturn(PERMISSION_REQUEST);
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(
+                        new ValidatedHistoricalDataDataNeed(
+                                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
+                                EnergyType.ELECTRICITY,
+                                Granularity.PT15M,
+                                Granularity.P1D
+                        )
+                );
+
+        // When
+        var res = dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(data);
+
+        // Then
+        assertEquals(List.of(meter), res);
+    }
+
+    @Test
+    void filterMetersNotMeetingDataNeedCriteria_removesMeter_withoutMatchingMeterBlock() {
+        // Given
+        meter.setMeterBlock("water", new MeterBlock("id", "tariff", "water", "", List.of(), "", "", ""));
+        var data = new MeterListing(List.of(meter), null);
+        when(repository.findByAuthUid("1111"))
+                .thenReturn(PERMISSION_REQUEST);
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(
+                        new ValidatedHistoricalDataDataNeed(
+                                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
+                                EnergyType.ELECTRICITY,
+                                Granularity.PT15M,
+                                Granularity.P1D
+                        )
+                );
+
+        // When
+        var res = dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(data);
+
+        // Then
+        assertThat(res).isEmpty();
+    }
+
+    @Test
+    void filterMetersNotMeetingDataNeedCriteria_removesMeter_withWrongDataNeed() {
+        // Given
+        meter.setMeterBlock("water", new MeterBlock("id", "tariff", "water", "", List.of(), "", "", ""));
+        var data = new MeterListing(List.of(meter), null);
+        when(repository.findByAuthUid("1111"))
+                .thenReturn(PERMISSION_REQUEST);
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(new AccountingPointDataNeed());
+
+        // When
+        var res = dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(data);
+
+        // Then
+        assertThat(res).isEmpty();
+    }
+}

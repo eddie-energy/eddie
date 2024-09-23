@@ -85,8 +85,8 @@ class PermissionRequestCreationServiceTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(pr));
         // When

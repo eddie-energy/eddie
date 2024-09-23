@@ -102,8 +102,8 @@ class CredentialServiceTest {
                 "US",
                 companyId,
                 "http://localhost",
-                "other"
-        );
+                "other",
+                "1111");
     }
 
     @Test

@@ -62,7 +62,7 @@ class UsRawDataProviderTest {
                                                   "US",
                                                   "cid",
                                                   "http://localhost",
-                                                  "other");
+                                                  "other", "1111");
         var identifiableSyndFeed = new IdentifiableSyndFeed(pr, xml);
         when(publishService.flux())
                 .thenReturn(Flux.just(identifiableSyndFeed));

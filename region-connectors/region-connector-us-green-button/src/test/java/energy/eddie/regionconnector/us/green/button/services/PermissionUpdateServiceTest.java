@@ -7,6 +7,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.us.green.button.GreenButtonBeanConfig;
 import energy.eddie.regionconnector.us.green.button.XmlLoader;
+import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsPollingNotReadyEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
@@ -24,7 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Map;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.isA;
@@ -53,7 +54,21 @@ class PermissionUpdateServiceTest {
         var feed = new SyndFeedInput().build(new StringReader(xml));
         var start = LocalDate.of(2024, 9, 3);
         var created = ZonedDateTime.of(start, LocalTime.MIDNIGHT, ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
+        var pr = createPermissionRequest(created, start);
+        var payload = new IdentifiableSyndFeed(pr, feed);
+
+        // When
+        permissionUpdateService.updatePermissionRequest(payload);
+
+        // Then
+        verify(outbox).commit(eventCaptor.capture());
+        var res = eventCaptor.getValue();
+        assertThat(res.latestMeterReadingEndDateTime()).contains(created.plusDays(1));
+    }
+
+    private static GreenButtonPermissionRequest createPermissionRequest(ZonedDateTime created, LocalDate start) {
+        var meterReading = new MeterReading("pid", "1669851", created.minusDays(1));
+        return new GreenButtonPermissionRequest(
                 "pid",
                 "cid",
                 "dnid",
@@ -66,17 +81,8 @@ class PermissionUpdateServiceTest {
                 "company",
                 "http://localhost",
                 "scope",
-                Map.of("1669851", created.minusDays(1))
-        );
-        var payload = new IdentifiableSyndFeed(pr, feed);
-
-        // When
-        permissionUpdateService.updatePermissionRequest(payload);
-
-        // Then
-        verify(outbox).commit(eventCaptor.capture());
-        var res = eventCaptor.getValue();
-        assertThat(res.latestMeterReadingEndDateTime()).contains(created.plusDays(1));
+                List.of(meterReading),
+                "1111");
     }
 
     @ParameterizedTest
@@ -93,21 +99,7 @@ class PermissionUpdateServiceTest {
         var feed = new SyndFeedInput().build(new StringReader(xml));
         var start = LocalDate.of(2024, 9, 3);
         var created = ZonedDateTime.of(start, LocalTime.MIDNIGHT, ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                start,
-                LocalDate.of(2024, 9, 4),
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                created,
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                Map.of("1669851", created.minusDays(1))
-        );
+        var pr = createPermissionRequest(created, start);
         var payload = new IdentifiableSyndFeed(pr, feed);
 
         // When
@@ -126,21 +118,7 @@ class PermissionUpdateServiceTest {
         var feed = new SyndFeedInput().build(new StringReader(xml));
         var start = LocalDate.of(2024, 9, 3);
         var created = ZonedDateTime.of(start, LocalTime.MIDNIGHT, ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                start,
-                LocalDate.of(2024, 9, 4),
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                created,
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                Map.of("1669851", created.minusDays(1))
-        );
+        var pr = createPermissionRequest(created, start);
         var payload = new IdentifiableSyndFeed(pr, feed);
 
         // When

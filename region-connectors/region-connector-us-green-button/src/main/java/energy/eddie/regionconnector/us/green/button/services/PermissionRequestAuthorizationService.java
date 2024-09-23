@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingCli
 import energy.eddie.regionconnector.us.green.button.exceptions.InvalidScopesException;
 import energy.eddie.regionconnector.us.green.button.oauth.OAuthCallback;
 import energy.eddie.regionconnector.us.green.button.oauth.enums.OAuthErrorResponse;
+import energy.eddie.regionconnector.us.green.button.permission.events.UsAcceptedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsInvalidEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEvent;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
@@ -58,8 +59,7 @@ public class PermissionRequestAuthorizationService {
 
         LOGGER.info("Authorization callback was successful");
         credentialService.retrieveAccessToken(pr.get(), callback.code().orElseThrow())
-                         .subscribe(res -> outbox.commit(new UsSimpleEvent(permissionId,
-                                                                           PermissionProcessStatus.ACCEPTED)),
+                         .subscribe(res -> outbox.commit(new UsAcceptedEvent(permissionId, res.authUid())),
                                     e -> handleAuthorizationError(e, permissionId));
     }
 

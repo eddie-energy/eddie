@@ -47,21 +47,37 @@ public class GreenButtonClient implements GreenButtonApi {
     }
 
     @Override
-    public Mono<SyndFeed> batchSubscription(
+    public Flux<SyndFeed> batchSubscription(
             String authId,
             String accessToken,
+            Iterable<String> meters,
             ZonedDateTime publishedMin,
             ZonedDateTime publishedMax
     ) {
-        LOGGER.info("Polling for batch subscription");
+        return Flux.fromIterable(meters)
+                   .flatMap(meter -> batchSubscription(authId, accessToken, publishedMin, publishedMax, meter));
+    }
+
+    private Mono<SyndFeed> batchSubscription(
+            String authId,
+            String accessToken,
+            ZonedDateTime publishedMin,
+            ZonedDateTime publishedMax,
+            String meter
+    ) {
+        LOGGER.info("Polling for batch subscription for meter {}", meter);
         synchronized (webClient) {
             return webClient.get()
                             .uri(builder -> builder.path("/DataCustodian/espi/1_1/resource/Batch/Subscription/")
                                                    .path(authId)
+                                                   .path("/UsagePoint/")
+                                                   .path(meter)
                                                    .queryParam("published-min",
-                                                               publishedMin.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                                                               publishedMin.format(
+                                                                       DateTimeFormatter.ISO_OFFSET_DATE_TIME))
                                                    .queryParam("published-max",
-                                                               publishedMax.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                                                               publishedMax.format(
+                                                                       DateTimeFormatter.ISO_OFFSET_DATE_TIME))
                                                    .build()
                             )
                             .header("Authorization", "Bearer " + accessToken)

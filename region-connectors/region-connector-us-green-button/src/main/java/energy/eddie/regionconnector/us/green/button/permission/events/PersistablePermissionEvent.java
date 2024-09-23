@@ -17,7 +17,7 @@ public abstract class PersistablePermissionEvent implements PermissionEvent {
     private final Long id;
 
     // Aggregate ID
-    @Column(length = 36)
+    @Column(length = 36, name = "permission_id")
     private final String permissionId;
     private final ZonedDateTime eventCreated;
     @Enumerated(EnumType.STRING)

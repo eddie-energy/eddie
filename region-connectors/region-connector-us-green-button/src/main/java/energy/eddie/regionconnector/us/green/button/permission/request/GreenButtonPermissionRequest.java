@@ -5,14 +5,16 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import energy.eddie.regionconnector.us.green.button.permission.GreenButtonDataSourceInformation;
+import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Entity
 @Table(schema = "us_green_button", name = "permission_request")
@@ -46,10 +48,12 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
     private final String scope;
     @Column(name = "created")
     private final ZonedDateTime created;
-    @ElementCollection(fetch = FetchType.EAGER)
-    @MapKeyJoinColumn(name = "permission_id", referencedColumnName = "permission_id")
-    @CollectionTable(name = "last_meter_readings", joinColumns = @JoinColumn(name = "permission_id"), schema = "us_green_button")
-    private final Map<String, ZonedDateTime> lastMeterReadings;
+    @OneToMany(fetch = FetchType.LAZY, targetEntity = MeterReading.class)
+    @JoinColumn(insertable = false, updatable = false, name = "permission_id", referencedColumnName = "permission_id")
+    private final List<MeterReading> lastMeterReadings;
+    @SuppressWarnings("unused")
+    @Column(name = "auth_uid")
+    private final String authUid;
 
     // just for JPA
     @SuppressWarnings("NullAway.Init")
@@ -65,7 +69,8 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
         scope = null;
         jumpOffUrl = null;
         created = null;
-        lastMeterReadings = Map.of();
+        lastMeterReadings = List.of();
+        authUid = null;
     }
 
     @SuppressWarnings("java:S107")
@@ -81,25 +86,12 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
             String countryCode,
             String companyId,
             String jumpOffUrl,
-            String scope
+            String scope,
+            String authUid
     ) {
-        this(
-                permissionId,
-                connectionId,
-                dataNeedId,
-                start,
-                end,
-                granularity,
-                status,
-                created,
-                countryCode,
-                companyId,
-                jumpOffUrl,
-                scope,
-                Map.of()
-        );
+        this(permissionId, connectionId, dataNeedId, start, end, granularity, status, created, countryCode,
+             companyId, jumpOffUrl, scope, List.of(), authUid);
     }
-
 
     @SuppressWarnings({"java:S107"})
     public GreenButtonPermissionRequest(
@@ -115,7 +107,8 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
             String companyId,
             @Nullable String jumpOffUrl,
             @Nullable String scope,
-            Map<String, ZonedDateTime> lastMeterReadings
+            List<MeterReading> lastMeterReadings,
+            String authUid
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -129,6 +122,7 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
         this.jumpOffUrl = jumpOffUrl;
         this.scope = scope;
         this.lastMeterReadings = lastMeterReadings;
+        this.authUid = authUid;
     }
 
     @Override
@@ -183,7 +177,12 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
 
     @Override
     public Optional<ZonedDateTime> latestMeterReadingEndDateTime() {
-        return DateTimeUtils.oldestDateTime(lastMeterReadings.values());
+        return DateTimeUtils.oldestDateTime(MeterReading.lastMeterReadingDates(lastMeterReadings));
+    }
+
+    @Override
+    public Set<String> allowedMeters() {
+        return MeterReading.allowedMeters(lastMeterReadings);
     }
 
     @Override
