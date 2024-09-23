@@ -2,7 +2,7 @@
     log
 
     handle_path {$PUBLIC_CONTEXT_PATH:}/lib/* {
-        rewrite * /lib/{path}
+        rewrite * /lib{path}
         reverse_proxy eddie:8080
     }
 
