@@ -1,17 +1,19 @@
 <!doctype html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org">
-<head>
+  <head>
     <title>Login</title>
-    <link rel="stylesheet" th:href="@{/css/login.css}"/>
-</head>
+    <link rel="stylesheet" th:href="@{/css/login.css}" />
+  </head>
 
-<body>
-<div class="main">
-    <img alt="EDDIE Logo" th:src="@{/img/eddie.svg}"/>
-    <h1>AIIDA</h1>
-    <a href="/oauth2/authorization/keycloak">
-        <button type="button" class="btn btn-primary btn-block">Continue to Login</button>
-    </a>
-</div>
-</body>
+  <body>
+    <div class="main">
+      <img alt="EDDIE Logo" th:src="@{/img/eddie.svg}" />
+      <h1>AIIDA</h1>
+      <a href="/oauth2/authorization/keycloak">
+        <button type="button" class="btn btn-primary btn-block">
+          Continue to Login
+        </button>
+      </a>
+    </div>
+  </body>
 </html>

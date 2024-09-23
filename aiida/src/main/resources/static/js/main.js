@@ -220,10 +220,14 @@ function renderPermissions() {
 function addPermission() {
   const body = JSON.parse(atob(aiidaCodeInput.value));
 
+  const csrfToken = document.getElementById("csrfToken").value;
+  const csrfHeader = document.getElementById("csrfHeader").value;
+
   fetch(BASE_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      [csrfHeader]: csrfToken,
     },
     body: JSON.stringify(body),
   })
@@ -265,10 +269,14 @@ function updatePermission(operation) {
 
   const { permissionId } = JSON.parse(atob(aiidaCodeInput.value));
 
+  const csrfToken = document.getElementById("csrfToken").value;
+  const csrfHeader = document.getElementById("csrfHeader").value;
+
   fetch(`${BASE_URL}/${permissionId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      [csrfHeader]: csrfToken,
     },
     body: JSON.stringify({
       operation: operation,
@@ -335,10 +343,14 @@ function openRevokePermissionDialog(permissionId) {
 }
 
 function revokePermission(permissionId) {
+  const csrfToken = document.getElementById("csrfToken").value;
+  const csrfHeader = document.getElementById("csrfHeader").value;
+
   fetch(`${BASE_URL}/${permissionId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      [csrfHeader]: csrfToken,
     },
     body: JSON.stringify({
       operation: "REVOKE",

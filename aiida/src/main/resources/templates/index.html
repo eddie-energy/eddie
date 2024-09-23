@@ -18,16 +18,22 @@
     ></script>
   </head>
   <body>
-  <div class="logout-position">
-    <a href="/logout"><button type="button" class="logout-button">Logout</button></a>
-  </div>
+    <div class="logout-position">
+      <form method="post" th:action="@{/logout}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <input class="logout-button" type="submit" value="Logout" />
+      </form>
+    </div>
+
     <h1>AIIDA</h1>
 
-  <img alt="EDDIE Logo" height="64" th:src="@{/img/eddie.svg}" />
+    <img alt="EDDIE Logo" height="64" th:src="@{/img/eddie.svg}" />
 
     <h2>Add new permission</h2>
 
-    <form id="permission-form" class="permission-form">
+    <form id="permission-form" class="permission-form" method="post">
+      <input type="hidden" id="csrfToken" th:value="${_csrf.token}" />
+      <input type="hidden" id="csrfHeader" th:value="${_csrf.headerName}" />
       <sl-input id="aiida-code" placeholder="AIIDA code" required></sl-input>
       <sl-button type="submit" variant="primary">Add</sl-button>
       <sl-button circle disabled>
@@ -74,6 +80,6 @@
     <h2>Expired permissions</h2>
     <div id="expired-permissions" class="permissions"></div>
 
-  <script th:src="@{/js/main.js}" type="module"></script>
+    <script th:src="@{/js/main.js}" type="module"></script>
   </body>
 </html>
