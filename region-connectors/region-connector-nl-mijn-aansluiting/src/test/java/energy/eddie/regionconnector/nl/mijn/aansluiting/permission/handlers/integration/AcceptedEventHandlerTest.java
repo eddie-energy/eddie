@@ -2,54 +2,69 @@ package energy.eddie.regionconnector.nl.mijn.aansluiting.permission.handlers.int
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.EnergyType;
+import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlInternalPollingEvent;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlSimpleEvent;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AcceptedEventHandlerTest {
-
+    public static final ValidatedHistoricalDataDataNeed DATA_NEED = new ValidatedHistoricalDataDataNeed(
+            new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
+            EnergyType.ELECTRICITY,
+            Granularity.P1D,
+            Granularity.P1D
+    );
+    @Spy
+    private final EventBus eventBus = new EventBusImpl();
     @Mock
     private PollingService pollingService;
     @Mock
     private NlPermissionRequestRepository repository;
+    @Mock
+    private DataNeedsService dataNeedsService;
+    @InjectMocks
+    @SuppressWarnings("unused")
+    private AcceptedEventHandler acceptedEventHandler;
 
     @Test
     void testAccept_doesNotTriggerPolling_onInternalPermissionEvents() {
         // Given
-        var eventBus = new EventBusImpl();
-        new AcceptedEventHandler(eventBus, pollingService, repository);
 
         // When
         eventBus.emit(new NlInternalPollingEvent());
 
         // Then
         verify(pollingService, never()).fetchConsumptionData(any());
-
-        // Clean-Up
-        eventBus.close();
     }
 
     @Test
-    void testAccept_doesTriggerPolling_onAcceptedEvent() {
+    void testAcceptWithValidatedHistoricalDataNeed_doesTriggerPolling_onAcceptedEvent() {
         // Given
-        var eventBus = new EventBusImpl();
-        new AcceptedEventHandler(eventBus, pollingService, repository);
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(DATA_NEED);
         var pr = new MijnAansluitingPermissionRequest("pid",
                                                       "cid",
                                                       "dnid",
@@ -60,42 +75,46 @@ class AcceptedEventHandlerTest {
                                                       LocalDate.now(ZoneOffset.UTC).minusDays(10),
                                                       null,
                                                       Granularity.P1D);
-        when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(pr));
+        when(repository.getByPermissionId("pid"))
+                .thenReturn(pr);
 
         // When
         eventBus.emit(new NlSimpleEvent("pid", PermissionProcessStatus.ACCEPTED));
 
         // Then
         verify(pollingService).fetchConsumptionData(pr);
-
-        // Clean-Up
-        eventBus.close();
     }
 
     @Test
-    void testAccept_doesNotTriggerPolling_onUnknownPermissionRequest() {
+    void testAcceptWithAccountingPointDataNeed_doesTriggerPolling_onAcceptedEvent() {
         // Given
-        var eventBus = new EventBusImpl();
-        new AcceptedEventHandler(eventBus, pollingService, repository);
-        when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.empty());
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(new AccountingPointDataNeed());
+        var pr = new MijnAansluitingPermissionRequest("pid",
+                                                      "cid",
+                                                      "dnid",
+                                                      PermissionProcessStatus.ACCEPTED,
+                                                      "state",
+                                                      "codeVerifier",
+                                                      ZonedDateTime.now(ZoneOffset.UTC),
+                                                      LocalDate.now(ZoneOffset.UTC).minusDays(10),
+                                                      null,
+                                                      Granularity.P1D);
+        when(repository.getByPermissionId("pid"))
+                .thenReturn(pr);
 
         // When
         eventBus.emit(new NlSimpleEvent("pid", PermissionProcessStatus.ACCEPTED));
 
         // Then
-        verify(pollingService, never()).fetchConsumptionData(any());
-
-        // Clean-Up
-        eventBus.close();
+        verify(pollingService).fetchAccountingPointData(pr);
     }
 
     @Test
     void testAccept_doesNotTriggerPolling_onFuturePermissionRequest() {
         // Given
-        var eventBus = new EventBusImpl();
-        new AcceptedEventHandler(eventBus, pollingService, repository);
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(DATA_NEED);
         var pr = new MijnAansluitingPermissionRequest("pid",
                                                       "cid",
                                                       "dnid",
@@ -106,16 +125,13 @@ class AcceptedEventHandlerTest {
                                                       LocalDate.now(ZoneOffset.UTC).plusDays(10),
                                                       null,
                                                       Granularity.P1D);
-        when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(pr));
+        when(repository.getByPermissionId("pid"))
+                .thenReturn(pr);
 
         // When
         eventBus.emit(new NlSimpleEvent("pid", PermissionProcessStatus.ACCEPTED));
 
         // Then
         verify(pollingService, never()).fetchConsumptionData(any());
-
-        // Clean-Up
-        eventBus.close();
     }
 }

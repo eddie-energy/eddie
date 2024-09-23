@@ -1,5 +1,6 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.util.*
 
@@ -94,51 +95,59 @@ sourceSets {
 }
 
 val packagePrefix = "energy.eddie.regionconnector.nl.mijn.aansluiting.client"
+val openApiSpecs = mapOf(
+    "single-request-api" to "/src/main/resources/ConsumptionDataApi.yaml",
+    "continuous-request-api" to "/src/main/resources/ReadingSeriesRetrieval_v0_3_1.json",
+)
+openApiSpecs.forEach { (name, spec) ->
+    tasks.register<GenerateTask>(name) {
+        group = "openapi tools"
+        description = "Generates Java classes for single API of Mijn Aansluiting"
 
-openApiGenerate {
-    generatorName.set("java")
-    inputSpec.set("${projectDir}/src/main/resources/ReadingSeriesRetrieval_v0_3_1.json")
-    outputDir.set(generatedSwaggerJavaDir)
-    ignoreFileOverride.set("${projectDir}/src/main/resources/.openapi-generator-ignore")
+        generatorName.set("java")
+        inputSpec.set("${projectDir}${spec}")
+        outputDir.set(generatedSwaggerJavaDir)
+        ignoreFileOverride.set("${projectDir}/src/main/resources/.openapi-generator-ignore")
 
-    apiPackage.set("${packagePrefix}.api")
-    invokerPackage.set("${packagePrefix}.invoker")
-    modelPackage.set("${packagePrefix}.model")
-
-    generateApiTests.set(false)
-    generateApiDocumentation.set(false)
-    generateModelTests.set(false)
-    generateModelDocumentation.set(false)
-    configOptions.set(
-        mapOf(
-            "sourceFolder" to "/",
-            "useJakartaEe" to "true",
-            "dateLibrary" to "java8"
+        apiPackage.set("${packagePrefix}.api")
+        invokerPackage.set("${packagePrefix}.invoker")
+        modelPackage.set("${packagePrefix}.model")
+        library.set("webclient")
+        generateApiTests.set(false)
+        generateApiDocumentation.set(false)
+        generateModelTests.set(false)
+        generateModelDocumentation.set(false)
+        configOptions.set(
+            mapOf(
+                "sourceFolder" to "/",
+                "useJakartaEe" to "true",
+                "dateLibrary" to "java8"
+            )
         )
-    )
-    typeMappings.set(
-        mapOf(
-            "OffsetDateTime" to "ZonedDateTime"
+        typeMappings.set(
+            mapOf(
+                "OffsetDateTime" to "ZonedDateTime"
+            )
         )
-    )
-    importMappings.set(
-        mapOf(
-            "java.time.OffsetDateTime" to "java.time.ZonedDateTime"
+        importMappings.set(
+            mapOf(
+                "java.time.OffsetDateTime" to "java.time.ZonedDateTime"
+            )
         )
-    )
-    globalProperties.set(
-        mapOf(
-            "apis" to "false",
-            "invokers" to "false",
-            "models" to ""
+        globalProperties.set(
+            mapOf(
+                "apis" to "false",
+                "invokers" to "false",
+                "models" to ""
+            )
         )
-    )
-    library.set("webclient")
-    cleanupOutput.set(true)
+    }
 }
 
 tasks.named("compileJava").configure {
-    dependsOn(tasks.named("openApiGenerate"))
+    openApiSpecs.forEach { (name, _) ->
+        dependsOn(tasks.named(name))
+    }
 }
 
 tasks.jacocoTestReport {

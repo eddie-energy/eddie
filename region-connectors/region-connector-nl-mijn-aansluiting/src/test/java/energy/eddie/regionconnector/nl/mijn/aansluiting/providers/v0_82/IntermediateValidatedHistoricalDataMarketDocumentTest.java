@@ -30,10 +30,14 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     private final JsonResourceObjectMapper<List<MijnAansluitingResponse>> mapper = new JsonResourceObjectMapper<>(new TypeReference<>() {});
     private final MijnAansluitingConfiguration config = new MijnAansluitingConfiguration(
             "",
-                                                                                         "",
-                                                                                         new ClientID("client-id"),
-                                                                                         new Scope(),
-                                                                                         null);
+            "",
+            "",
+            new ClientID("client-id"),
+            new ClientID("client-id"),
+            new Scope(),
+            new Scope(),
+            null
+    );
     private final NlPermissionRequest pr = new MijnAansluitingPermissionRequest("pid",
                                                                                 "cid",
                                                                                 "dnid",
@@ -78,7 +82,8 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 () -> assertEquals(ProcessTypeList.REALISED, vhd.getProcessProcessType()),
                 () -> assertEquals(cimConfig.eligiblePartyNationalCodingScheme(),
                                    vhd.getReceiverMarketParticipantMRID().getCodingScheme()),
-                () -> assertEquals(config.clientId().getValue(), vhd.getReceiverMarketParticipantMRID().getValue()),
+                () -> assertEquals(config.continuousClientId().getValue(),
+                                   vhd.getReceiverMarketParticipantMRID().getValue()),
                 () -> assertEquals(CodingSchemeTypeList.NETHERLANDS_NATIONAL_CODING_SCHEME,
                                    vhd.getSenderMarketParticipantMRID().getCodingScheme()),
                 () -> assertEquals("Stichting Mijn Aansluiting", vhd.getSenderMarketParticipantMRID().getValue()),

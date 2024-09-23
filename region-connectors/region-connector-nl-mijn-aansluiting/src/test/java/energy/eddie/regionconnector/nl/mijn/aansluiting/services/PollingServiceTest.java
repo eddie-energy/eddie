@@ -8,6 +8,8 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.ApiClient;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.ConsumptionData;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MijnAansluitingResponse;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.AccessTokenAndSingleSyncUrl;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthManager;
@@ -38,6 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static energy.eddie.api.v0.PermissionProcessStatus.FULFILLED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,7 +48,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PollingServiceTest {
-    private final JsonResourceObjectMapper<List<MijnAansluitingResponse>> mapper = new JsonResourceObjectMapper<>(new TypeReference<>() {});
+    private final JsonResourceObjectMapper<List<MijnAansluitingResponse>> vhdMapper = new JsonResourceObjectMapper<>(new TypeReference<>() {});
+    private final JsonResourceObjectMapper<List<ConsumptionData>> apMapper = new JsonResourceObjectMapper<>(new TypeReference<>() {});
     @Mock
     private OAuthManager oAuthManager;
     @Mock
@@ -90,7 +94,7 @@ class PollingServiceTest {
     @MethodSource
     void testFetchConsumptionData_wrongPermissionRequest(Class<Exception> exceptionClass) throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
         // Given
-        when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
+        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
                 .thenThrow(exceptionClass);
         var pr = new MijnAansluitingPermissionRequest(
                 "pid",
@@ -120,7 +124,7 @@ class PollingServiceTest {
     @MethodSource
     void testFetchConsumptionData_revokedPermissionRequest(Class<Exception> exceptionClass) throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
         // Given
-        when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
+        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
                 .thenThrow(exceptionClass);
         var pr = new MijnAansluitingPermissionRequest(
                 "pid",
@@ -150,8 +154,8 @@ class PollingServiceTest {
     @Test
     void testFetchConsumptionData_publishesInternalPollingEvent() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
         // Given
-        var json = mapper.loadTestJson("consumption_data.json");
-        when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
+        var json = vhdMapper.loadTestJson("consumption_data.json");
+        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
                 .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
         when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
                 .thenReturn(Mono.just(json));
@@ -187,7 +191,7 @@ class PollingServiceTest {
     @Test
     void testFetchConsumptionData_doesNotPublish_onEmptyResponse() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
         // Given
-        when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
+        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
                 .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
         when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
                 .thenReturn(Mono.just(List.of()));
@@ -221,8 +225,8 @@ class PollingServiceTest {
             int registerSize
     ) throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
         // Given
-        var json = mapper.loadTestJson("consumption_data.json");
-        when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
+        var json = vhdMapper.loadTestJson("consumption_data.json");
+        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
                 .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
         when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
                 .thenReturn(Mono.just(json));
@@ -265,8 +269,8 @@ class PollingServiceTest {
     @Test
     void testFetchConsumptionData_doesEmitNothing_onUnknownDataNeed() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
         // Given
-        var json = mapper.loadTestJson("consumption_data.json");
-        when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
+        var json = vhdMapper.loadTestJson("consumption_data.json");
+        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
                 .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
         when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
                 .thenReturn(Mono.just(json));
@@ -298,8 +302,8 @@ class PollingServiceTest {
     @Test
     void testFetchConsumptionData_doesEmitNothing_onInvalidDataNeed() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
         // Given
-        var json = mapper.loadTestJson("consumption_data.json");
-        when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
+        var json = vhdMapper.loadTestJson("consumption_data.json");
+        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
                 .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
         when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
                 .thenReturn(Mono.just(json));
@@ -331,8 +335,8 @@ class PollingServiceTest {
     @Test
     void testFetchConsumptionData_doesNotPublishDataBeforeStartDate() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
         // Given
-        var json = mapper.loadTestJson("consumption_data.json");
-        when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
+        var json = vhdMapper.loadTestJson("consumption_data.json");
+        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
                 .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
         when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
                 .thenReturn(Mono.just(json));
@@ -377,10 +381,10 @@ class PollingServiceTest {
     }
 
     @Test
-    void testFetchConsumptionData_doesNotPublishDataAfterStartDate() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
+    void testFetchConsumptionData_doesNotPublishDataAfterEndDate() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
         // Given
-        var json = mapper.loadTestJson("consumption_data.json");
-        when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
+        var json = vhdMapper.loadTestJson("consumption_data.json");
+        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
                 .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
         when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
                 .thenReturn(Mono.just(json));
@@ -428,8 +432,8 @@ class PollingServiceTest {
     @Test
     void testFetchConsumptionData_calculatesDeltas() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
         // Given
-        var json = mapper.loadTestJson("single_consumption_data.json");
-        when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
+        var json = vhdMapper.loadTestJson("single_consumption_data.json");
+        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
                 .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
         when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
                 .thenReturn(Mono.just(json));
@@ -472,5 +476,65 @@ class PollingServiceTest {
                         );
                     })
                     .verifyComplete();
+    }
+
+    @Test
+    void testFetchAccountingPointData_emitsData() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
+        // Given
+        var json = apMapper.loadTestJson("single_request.json");
+        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.SINGLE_CONSENT_API))
+                .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
+        when(apiClient.fetchSingleReading("singleSync", "accessToken"))
+                .thenReturn(Mono.just(json));
+        var pr = new MijnAansluitingPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                PermissionProcessStatus.ACCEPTED,
+                "",
+                "",
+                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.of(2023, 5, 1),
+                LocalDate.of(2023, 5, 31),
+                Granularity.P1D
+        );
+
+        // When
+        pollingService.fetchAccountingPointData(pr);
+
+        // Then
+        verify(outbox).commit(assertArg(event -> assertEquals(FULFILLED, event.status())));
+        StepVerifier.create(pollingService.identifiableAccountingPointDataFlux())
+                    .then(pollingService::close)
+                    .assertNext(iap -> assertAll(
+                            () -> assertEquals(pr, iap.permissionRequest()),
+                            () -> assertEquals(json, iap.payload())
+                    ))
+                    .verifyComplete();
+    }
+
+    @Test
+    void testFetchAccountingPointData_withInvalidToken_doesNotFetch() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
+        // Given
+        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.SINGLE_CONSENT_API))
+                .thenThrow(OAuthException.class);
+        var pr = new MijnAansluitingPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                PermissionProcessStatus.ACCEPTED,
+                "",
+                "",
+                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.of(2023, 5, 1),
+                LocalDate.of(2023, 5, 31),
+                Granularity.P1D
+        );
+
+        // When
+        pollingService.fetchAccountingPointData(pr);
+
+        // Then
+        verify(apiClient, never()).fetchSingleReading(any(), any());
     }
 }

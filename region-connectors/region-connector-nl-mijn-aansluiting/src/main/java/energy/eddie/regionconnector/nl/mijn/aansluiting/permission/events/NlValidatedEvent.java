@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,6 +19,7 @@ public class NlValidatedEvent extends NlPermissionEvent {
     private final String codeVerifier;
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
+    @Nullable
     private final Granularity granularity;
     @Column(name = "permission_start")
     private final LocalDate start;
@@ -28,7 +30,7 @@ public class NlValidatedEvent extends NlPermissionEvent {
             String permissionId,
             String state,
             String codeVerifier,
-            Granularity granularity,
+            @Nullable Granularity granularity,
             LocalDate start,
             LocalDate end
     ) {
@@ -60,5 +62,13 @@ public class NlValidatedEvent extends NlPermissionEvent {
 
     public Granularity granularity() {
         return granularity;
+    }
+
+    public LocalDate start() {
+        return start;
+    }
+
+    public LocalDate end() {
+        return end;
     }
 }

@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.client;
 
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.ConsumptionData;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MijnAansluitingResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,19 +19,36 @@ public class ApiClient {
     private Health health = Health.unknown().build();
 
     public Mono<List<MijnAansluitingResponse>> fetchConsumptionData(String singleSyncUri, String accessToken) {
-        return client.get()
-                     .uri(singleSyncUri)
-                     .headers(h -> h.setBearerAuth(accessToken))
-                     .retrieve()
-                     .bodyToMono(new ParameterizedTypeReference<List<MijnAansluitingResponse>>() {})
-                     .doOnError(Exception.class, exception -> {
-                         LOGGER.warn("Data fetching failed", exception);
-                         health = Health.down(exception).build();
-                     })
-                     .doOnNext(ignored -> health = Health.up().build());
+        return fetch(singleSyncUri, accessToken)
+                .bodyToMono(new ParameterizedTypeReference<List<MijnAansluitingResponse>>() {})
+                .doOnError(Exception.class, exception -> {
+                    LOGGER.warn("Data fetching failed", exception);
+                    health = Health.down(exception).build();
+                })
+                .doOnNext(ignored -> health = Health.up().build());
+    }
+
+    public Mono<List<ConsumptionData>> fetchSingleReading(String singleSyncUri, String accessToken) {
+        return fetch(singleSyncUri, accessToken)
+                .bodyToMono(new ParameterizedTypeReference<List<ConsumptionData>>() {})
+                .doOnError(Exception.class, exception -> {
+                    LOGGER.warn("Data fetching failed", exception);
+                    health = Health.down(exception).build();
+                })
+                .doOnNext(ignored -> health = Health.up().build());
     }
 
     public Health health() {
         return health;
+    }
+
+    private WebClient.ResponseSpec fetch(
+            String singleSyncUri,
+            String accessToken
+    ) {
+        return client.get()
+                     .uri(singleSyncUri)
+                     .headers(h -> h.setBearerAuth(accessToken))
+                     .retrieve();
     }
 }

@@ -10,13 +10,14 @@ import com.nimbusds.jwt.proc.JWTProcessor;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.PrivateKeyJWT;
+import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.pkce.CodeChallengeMethod;
 import com.nimbusds.oauth2.sdk.pkce.CodeVerifier;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.oauth2.sdk.token.Tokens;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.exceptions.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.persistence.OAuthTokenDetails;
@@ -36,11 +37,11 @@ import java.util.Map;
 
 @Component
 public class OAuthManager {
+    public static final String CLIENT_ID = "client_id";
     private static final Logger LOGGER = LoggerFactory.getLogger(OAuthManager.class);
     private final MijnAansluitingConfiguration configuration;
     private final PrivateKey privateKey;
     private final OIDCProviderMetadata providerMetadata;
-    private final Map<String, List<String>> tokenRequestCustomParams;
     private final JWTProcessor<SecurityContext> jwtProcessor;
     private final OAuthTokenRepository repository;
     private final NlPermissionRequestRepository permissionRequestRepository;
@@ -59,7 +60,6 @@ public class OAuthManager {
         this.jwtProcessor = jwtProcessor;
         this.repository = repository;
 
-        this.tokenRequestCustomParams = Map.of("client_id", List.of(configuration.clientId().getValue()));
         this.permissionRequestRepository = permissionRequestRepository;
     }
 
@@ -69,16 +69,17 @@ public class OAuthManager {
      * @param verificationCode the house number or verification code
      * @return a redirect URI
      */
-    public OAuthRequestPayload createAuthorizationUrl(String verificationCode) {
+    public OAuthRequestPayload createAuthorizationUrl(String verificationCode, MijnAansluitingApi apiType) {
         // Pass random state instead of permission id to authorization server
         State state = new State();
         CodeVerifier codeVerifier = new CodeVerifier();
-
+        var clientId = getClientID(apiType);
+        var scope = getScope(apiType);
         AuthorizationRequest request = new AuthorizationRequest.Builder(
-                new ResponseType(ResponseType.Value.CODE), configuration.clientId())
+                new ResponseType(ResponseType.Value.CODE), clientId)
                 .redirectionURI(configuration.redirectUrl())
                 .state(state)
-                .scope(configuration.scope())
+                .scope(scope)
                 .customParameter("verify", verificationCode)
                 .codeChallenge(codeVerifier, CodeChallengeMethod.S256)
                 .endpointURI(providerMetadata.getAuthorizationEndpointURI())
@@ -109,7 +110,8 @@ public class OAuthManager {
      */
     public String processCallback(
             URI callbackUri,
-            String permissionId
+            String permissionId,
+            MijnAansluitingApi apiType
     ) throws ParseException,
              OAuthException,
              PermissionNotFoundException,
@@ -118,7 +120,7 @@ public class OAuthManager {
              UserDeniedAuthorizationException,
              InvalidValidationAddressException,
              OAuthUnavailableException {
-        AuthorizationResponse response = AuthorizationResponse.parse(callbackUri);
+        var response = AuthorizationResponse.parse(callbackUri);
 
         if (!response.indicatesSuccess()) {
             // The request was denied or some error occurred
@@ -139,7 +141,7 @@ public class OAuthManager {
             throw new OAuthException("Unknown error occurred. Please contact service provider");
         }
 
-        String state = response.getState().getValue();
+        var state = response.getState().getValue();
         var permissionRequest = permissionRequestRepository.findByStateAndPermissionId(state, permissionId);
 
         if (permissionRequest.isEmpty()) {
@@ -152,17 +154,82 @@ public class OAuthManager {
         }
 
 
-        AuthorizationCode authorizationCode = response.toSuccessResponse().getAuthorizationCode();
+        var authorizationCode = response.toSuccessResponse().getAuthorizationCode();
 
-        NlPermissionRequest nlPermissionRequest = permissionRequest.get();
-        AuthorizationGrant codeGrant = new AuthorizationCodeGrant(authorizationCode,
-                                                                  configuration.redirectUrl(),
-                                                                  new CodeVerifier(nlPermissionRequest.codeVerifier()));
-        var clientAuthentication = createSignedJwt();
-        TokenRequest request = new TokenRequest(providerMetadata.getTokenEndpointURI(), clientAuthentication,
-                                                codeGrant, configuration.scope(), null, tokenRequestCustomParams);
+        var nlPermissionRequest = permissionRequest.get();
+        var codeGrant = new AuthorizationCodeGrant(authorizationCode,
+                                                   configuration.redirectUrl(),
+                                                   new CodeVerifier(nlPermissionRequest.codeVerifier()));
+        var clientAuthentication = createSignedJwt(apiType);
+        var scope = getScope(apiType);
+        var request = new TokenRequest(providerMetadata.getTokenEndpointURI(),
+                                       clientAuthentication,
+                                       codeGrant,
+                                       scope,
+                                       null,
+                                       Map.of(CLIENT_ID, List.of(getClientID(apiType).getValue())));
         getTokens(request, permissionId);
         return permissionId;
+    }
+
+    /**
+     * Returns a valid access token and the endpoint to request the data from
+     *
+     * @param permissionId the permission ID associated with the tokens
+     * @return an access token and the endpoint to request data from
+     * @throws OAuthException                a general exception in case of an unexpected error
+     * @throws JWTSignatureCreationException when the private key JWT could not be created
+     * @throws IllegalTokenException         when the token response could not be parsed
+     * @throws NoRefreshTokenException       when the permission request does not contain a refresh token and the access
+     *                                       token cannot be refreshed
+     * @throws OAuthUnavailableException     when the OAuth server is not available
+     */
+    public AccessTokenAndSingleSyncUrl accessTokenAndSingleSyncUrl(String permissionId, MijnAansluitingApi apiType)
+            throws OAuthException, JWTSignatureCreationException, IllegalTokenException, NoRefreshTokenException, OAuthUnavailableException {
+        LOGGER.debug("Fetching access token for permission request {}", permissionId);
+        var credentials = repository.findById(permissionId)
+                                    .orElseThrow(() -> new OAuthTokenDetailsNotFoundException(permissionId));
+        String accessToken;
+        if (credentials.isValid()) {
+            accessToken = credentials.accessToken();
+        } else {
+            if (credentials.refreshToken() == null) {
+                throw new NoRefreshTokenException();
+            }
+            var refreshTokenGrant = new RefreshTokenGrant(new RefreshToken(credentials.refreshToken()));
+            var clientAuthentication = createSignedJwt(apiType);
+            var scope = getScope(apiType);
+            var request = new TokenRequest(providerMetadata.getTokenEndpointURI(),
+                                           clientAuthentication,
+                                           refreshTokenGrant,
+                                           scope,
+                                           null,
+                                           Map.of(CLIENT_ID, List.of(getClientID(apiType).getValue())));
+
+            accessToken = getTokens(request, permissionId).accessToken();
+        }
+        try {
+            var claimsSet = jwtProcessor.process(SignedJWT.parse(accessToken), null);
+            var singleSync = getSingleSyncUrl(claimsSet);
+            return new AccessTokenAndSingleSyncUrl(accessToken, singleSync);
+        } catch (java.text.ParseException | BadJOSEException | JOSEException e) {
+            throw new OAuthException("Unable to process access token for permission request %s permission id.".formatted(
+                    permissionId));
+        }
+    }
+
+    private Scope getScope(MijnAansluitingApi apiType) {
+        return switch (apiType) {
+            case SINGLE_CONSENT_API -> configuration.singleScope();
+            case CONTINUOUS_CONSENT_API -> configuration.continuousScope();
+        };
+    }
+
+    private ClientID getClientID(MijnAansluitingApi apiType) {
+        return switch (apiType) {
+            case SINGLE_CONSENT_API -> configuration.singleClientId();
+            case CONTINUOUS_CONSENT_API -> configuration.continuousClientId();
+        };
     }
 
     /**
@@ -171,14 +238,23 @@ public class OAuthManager {
      * @return a signed private key JWT
      * @throws JWTSignatureCreationException when the token could not be signed or created
      */
-    private ClientAuthentication createSignedJwt() throws JWTSignatureCreationException {
+    private ClientAuthentication createSignedJwt(MijnAansluitingApi apiType) throws JWTSignatureCreationException {
         try {
-            return new PrivateKeyJWT(configuration.clientId(), providerMetadata.getTokenEndpointURI(),
-                                     JWSAlgorithm.RS256, privateKey, configuration.keyId(), null);
+            var keyId = getKeyId(apiType);
+            var clientId = getClientID(apiType);
+            return new PrivateKeyJWT(clientId, providerMetadata.getTokenEndpointURI(),
+                                     JWSAlgorithm.RS256, privateKey, keyId, null);
         } catch (JOSEException exception) {
             LOGGER.warn("Error while creating signed JWT", exception);
             throw new JWTSignatureCreationException();
         }
+    }
+
+    private String getKeyId(MijnAansluitingApi apiType) {
+        return switch (apiType) {
+            case SINGLE_CONSENT_API -> configuration.singleKeyId();
+            case CONTINUOUS_CONSENT_API -> configuration.continuousKeyId();
+        };
     }
 
     /**
@@ -238,50 +314,6 @@ public class OAuthManager {
                                                                     refreshToken,
                                                                     claimsSet.getIssueTime().toInstant());
         return repository.save(oAuthTokenDetails);
-    }
-
-    /**
-     * Returns a valid access token and the endpoint to request the data from
-     *
-     * @param permissionId the permission ID associated with the tokens
-     * @return an access token and the endpoint to request data from
-     * @throws OAuthException                a general exception in case of an unexpected error
-     * @throws JWTSignatureCreationException when the private key JWT could not be created
-     * @throws IllegalTokenException         when the token response could not be parsed
-     * @throws NoRefreshTokenException       when the permission request does not contain a refresh token and the access
-     *                                       token cannot be refreshed
-     * @throws OAuthUnavailableException     when the OAuth server is not available
-     */
-    public AccessTokenAndSingleSyncUrl accessTokenAndSingleSyncUrl(String permissionId)
-            throws OAuthException, JWTSignatureCreationException, IllegalTokenException, NoRefreshTokenException, OAuthUnavailableException {
-        var credentials = repository.findById(permissionId)
-                                    .orElseThrow(() -> new OAuthTokenDetailsNotFoundException(permissionId));
-        String accessToken;
-        if (credentials.isValid()) {
-            accessToken = credentials.accessToken();
-        } else {
-            if (credentials.refreshToken() == null) {
-                throw new NoRefreshTokenException();
-            }
-            var refreshTokenGrant = new RefreshTokenGrant(new RefreshToken(credentials.refreshToken()));
-            var clientAuthentication = createSignedJwt();
-            TokenRequest request = new TokenRequest(providerMetadata.getTokenEndpointURI(),
-                                                    clientAuthentication,
-                                                    refreshTokenGrant,
-                                                    configuration.scope(),
-                                                    null,
-                                                    tokenRequestCustomParams);
-
-            accessToken = getTokens(request, permissionId).accessToken();
-        }
-        try {
-            var claimsSet = jwtProcessor.process(SignedJWT.parse(accessToken), null);
-            var singleSync = getSingleSyncUrl(claimsSet);
-            return new AccessTokenAndSingleSyncUrl(accessToken, singleSync);
-        } catch (java.text.ParseException | BadJOSEException | JOSEException e) {
-            throw new OAuthException("Unable to process access token for permission request %s permission id.".formatted(
-                    permissionId));
-        }
     }
 
     @SuppressWarnings({"unchecked", "NullAway"})

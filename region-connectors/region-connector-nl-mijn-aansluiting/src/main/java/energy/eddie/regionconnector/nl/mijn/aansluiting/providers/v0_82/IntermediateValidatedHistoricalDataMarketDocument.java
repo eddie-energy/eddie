@@ -54,7 +54,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                     .withReceiverMarketParticipantMRID(
                             new PartyIDStringComplexType()
                                     .withCodingScheme(cimConfig.eligiblePartyNationalCodingScheme())
-                                    .withValue(mijnAansluitingConfig.clientId().getValue())
+                                    .withValue(mijnAansluitingConfig.continuousClientId().getValue())
                     )
                     .withSenderMarketParticipantMRID(new PartyIDStringComplexType()
                                                              .withCodingScheme(CodingSchemeTypeList.NETHERLANDS_NATIONAL_CODING_SCHEME)

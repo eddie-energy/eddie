@@ -6,9 +6,11 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.ApiClient;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MijnAansluitingResponse;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.Reading;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.Register;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.IdentifiableMeteredData;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.AccessTokenAndSingleSyncUrl;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthManager;
@@ -42,6 +44,9 @@ public class PollingService implements AutoCloseable {
     private final Sinks.Many<IdentifiableMeteredData> identifiableMeteredDataSink = Sinks.many()
                                                                                          .multicast()
                                                                                          .onBackpressureBuffer();
+    private final Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink = Sinks.many()
+                                                                                                         .multicast()
+                                                                                                         .onBackpressureBuffer();
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     // DataNeedsService is injected from parent context
@@ -57,26 +62,27 @@ public class PollingService implements AutoCloseable {
         this.dataNeedsService = dataNeedsService;
     }
 
-    public void fetchConsumptionData(NlPermissionRequest permissionRequest) {
+    public void fetchAccountingPointData(NlPermissionRequest permissionRequest) {
         String permissionId = permissionRequest.permissionId();
-        LOGGER.debug("Fetching energy data for permission request {}", permissionId);
-        AccessTokenAndSingleSyncUrl accessTokenAndSingleSyncUrl;
-        try {
-            accessTokenAndSingleSyncUrl = oAuthManager.accessTokenAndSingleSyncUrl(permissionId);
-        } catch (OAuthTokenDetailsNotFoundException e) {
-            LOGGER.error("Permission request {} does not have credentials", permissionId);
-            return;
-        } catch (JWTSignatureCreationException e) {
-            LOGGER.error("Error creating signed JWT", e);
-            return;
-        } catch (OAuthUnavailableException e) {
-            LOGGER.error("OAuth 2.0 Server was not reachable", e);
-            return;
-        } catch (IllegalTokenException | OAuthException | NoRefreshTokenException e) {
-            LOGGER.info("Permission request {} was revoked by final customer", permissionId);
-            outbox.commit(new NlSimpleEvent(permissionId, PermissionProcessStatus.REVOKED));
+        var res = fetchAccessToken(permissionId, MijnAansluitingApi.SINGLE_CONSENT_API);
+        if (res.isEmpty()) {
             return;
         }
+        var accessTokenAndSingleSyncUrl = res.get();
+        LOGGER.info("Fetching accounting point data for permission request {}", permissionId);
+        apiClient.fetchSingleReading(accessTokenAndSingleSyncUrl.singleSync(),
+                                     accessTokenAndSingleSyncUrl.accessToken())
+                 .map(apData -> new IdentifiableAccountingPointData(permissionRequest, apData))
+                 .subscribe(this::consume);
+    }
+
+    public void fetchConsumptionData(NlPermissionRequest permissionRequest) {
+        String permissionId = permissionRequest.permissionId();
+        var res = fetchAccessToken(permissionId, MijnAansluitingApi.CONTINUOUS_CONSENT_API);
+        if (res.isEmpty()) {
+            return;
+        }
+        var accessTokenAndSingleSyncUrl = res.get();
         LOGGER.info("Fetching consumption data for permission request {}", permissionId);
         apiClient.fetchConsumptionData(accessTokenAndSingleSyncUrl.singleSync(),
                                        accessTokenAndSingleSyncUrl.accessToken())
@@ -85,12 +91,51 @@ public class PollingService implements AutoCloseable {
                  .subscribe(this::consume);
     }
 
+    public Flux<IdentifiableMeteredData> identifiableMeteredDataFlux() {
+        return identifiableMeteredDataSink.asFlux();
+    }
+
+    public Flux<IdentifiableAccountingPointData> identifiableAccountingPointDataFlux() {
+        return identifiableAccountingPointDataSink.asFlux();
+    }
+
+    @Override
+    public void close() {
+        identifiableMeteredDataSink.tryEmitComplete();
+        identifiableAccountingPointDataSink.tryEmitComplete();
+    }
+
+    private Optional<AccessTokenAndSingleSyncUrl> fetchAccessToken(String permissionId, MijnAansluitingApi apiType) {
+        try {
+            return Optional.of(oAuthManager.accessTokenAndSingleSyncUrl(permissionId, apiType));
+        } catch (OAuthTokenDetailsNotFoundException e) {
+            LOGGER.error("Permission request {} does not have credentials", permissionId);
+            return Optional.empty();
+        } catch (JWTSignatureCreationException e) {
+            LOGGER.error("Error creating signed JWT", e);
+            return Optional.empty();
+        } catch (OAuthUnavailableException e) {
+            LOGGER.error("OAuth 2.0 Server was not reachable", e);
+            return Optional.empty();
+        } catch (IllegalTokenException | OAuthException | NoRefreshTokenException e) {
+            LOGGER.info("Permission request {} was revoked by final customer", permissionId);
+            outbox.commit(new NlSimpleEvent(permissionId, PermissionProcessStatus.REVOKED));
+            return Optional.empty();
+        }
+    }
+
+    private void consume(IdentifiableAccountingPointData identifiableAccountingPointData) {
+        identifiableAccountingPointDataSink.tryEmitNext(identifiableAccountingPointData);
+        var event = new NlSimpleEvent(identifiableAccountingPointData.permissionRequest().permissionId(),
+                                      PermissionProcessStatus.FULFILLED);
+        outbox.commit(event);
+    }
+
     private void consume(IdentifiableMeteredData identifiableMeteredData) {
         var permissionRequest = identifiableMeteredData.permissionRequest();
         var permissionId = permissionRequest.permissionId();
         LOGGER.info("Received energy data for permission request {}", permissionId);
-        var response = filterEnergyType(identifiableMeteredData.meteredData(),
-                                        permissionRequest.dataNeedId());
+        var response = filterEnergyType(identifiableMeteredData.meteredData(), permissionRequest.dataNeedId());
         if (response.isEmpty()) {
             return;
         }
@@ -116,13 +161,59 @@ public class PollingService implements AutoCloseable {
                 removeMeterReadingsBefore(register, lastTimestamp);
 
                 // Remove the rest of the meter readings which are not part of the permission request timeframe
-                // End of day calculation
-                ZonedDateTime end = DateTimeUtils.endOfDay(permissionRequest.end(), timestamp.getZone());
+                var end = DateTimeUtils.endOfDay(permissionRequest.end(), timestamp.getZone());
+                LOGGER.info("Removing all energy data after optional timestamp {} for permission request {}",
+                            end,
+                            permissionId);
                 removeMeterReadingsAfter(register, end);
             }
         }
         outbox.commit(new NlInternalPollingEvent(permissionId, lastMeterReadings));
         identifiableMeteredDataSink.tryEmitNext(new IdentifiableMeteredData(permissionRequest, response));
+    }
+
+    /**
+     * Gets a reading list and will calculate the deltas between consecutive items in the list. By calculating deltas
+     * the first item will be dropped.
+     *
+     * @param readings list of readings with total cumulative values.
+     * @return list of readings, with the delta as reading values. It has the size of the original list - 1.
+     */
+    private static List<Reading> delta(List<Reading> readings) {
+        var array = readings.toArray(new Reading[0]);
+        List<Reading> deltas = new ArrayList<>(array.length - 1);
+        for (int i = array.length - 1; i > 0; i--) {
+            var prev = array[i - 1];
+            var current = array[i];
+            var delta = current.getValue().subtract(prev.getValue());
+            current.setValue(delta);
+            deltas.addFirst(current);
+        }
+        return deltas;
+    }
+
+    private static void removeMeterReadingsBefore(Register register, ZonedDateTime lastTimestamp) {
+        removeMeterReadings(register, lastTimestamp::isBefore);
+    }
+
+    private static void removeMeterReadings(Register register, Predicate<ZonedDateTime> func) {
+        List<Reading> list = new ArrayList<>();
+        for (Reading reading : register.getReadingList()) {
+            var dateTime = reading.getDateAndOrTime().getDateTime();
+            if (func.test(dateTime)) {
+                list.add(reading);
+            }
+        }
+        LOGGER.atInfo()
+              .addArgument(list::size)
+              .addArgument(() -> register.getReadingList().size())
+              .log("Filtered meter readings resulting in a list of {} out of {} initial records");
+
+        register.setReadingList(list);
+    }
+
+    private static void removeMeterReadingsAfter(Register register, ZonedDateTime lastTimestamp) {
+        removeMeterReadings(register, lastTimestamp::isAfter);
     }
 
     private List<MijnAansluitingResponse> filterEnergyType(
@@ -160,62 +251,9 @@ public class PollingService implements AutoCloseable {
         return newResponseList;
     }
 
-    /**
-     * Gets a reading list and will calculate the deltas between consecutive items in the list. By calculating deltas
-     * the first item will be dropped.
-     *
-     * @param readings list of readings with total cumulative values.
-     * @return list of readings, with the delta as reading values. It has the size of the original list - 1.
-     */
-    private static List<Reading> delta(List<Reading> readings) {
-        var array = readings.toArray(new Reading[0]);
-        List<Reading> deltas = new ArrayList<>(array.length - 1);
-        for (int i = array.length - 1; i > 0; i--) {
-            var prev = array[i - 1];
-            var current = array[i];
-            var delta = current.getValue().subtract(prev.getValue());
-            current.setValue(delta);
-            deltas.addFirst(current);
-        }
-        return deltas;
-    }
-
-    private static void removeMeterReadingsBefore(Register register, ZonedDateTime lastTimestamp) {
-        removeMeterReadings(register, lastTimestamp::isBefore);
-    }
-
-    private static void removeMeterReadingsAfter(Register register, ZonedDateTime lastTimestamp) {
-        removeMeterReadings(register, lastTimestamp::isAfter);
-    }
-
     private static boolean isEnergyType(Register register, String energyType) {
         return register.getMeter()
                        .getMRID()
                        .startsWith(energyType);
-    }
-
-    private static void removeMeterReadings(Register register, Predicate<ZonedDateTime> func) {
-        List<Reading> list = new ArrayList<>();
-        for (Reading reading : register.getReadingList()) {
-            var dateTime = reading.getDateAndOrTime().getDateTime();
-            if (func.test(dateTime)) {
-                list.add(reading);
-            }
-        }
-        LOGGER.atInfo()
-              .addArgument(list::size)
-              .addArgument(() -> register.getReadingList().size())
-              .log("Filtered meter readings resulting in a list of {} out of {} initial records");
-
-        register.setReadingList(list);
-    }
-
-    public Flux<IdentifiableMeteredData> identifiableMeteredDataFlux() {
-        return identifiableMeteredDataSink.asFlux();
-    }
-
-    @Override
-    public void close() {
-        identifiableMeteredDataSink.tryEmitComplete();
     }
 }
