@@ -46,6 +46,7 @@ hakky-logcaptor = "2.9.2"
 paho-mqtt-client = "1.2.5"
 nimbus = "11.10.1"
 bouncycastle = "1.78"
+keycloak="25.0.3"
 
 swagger-codegen-version = "3.0.45"
 swagger-annotations = "2.2.22"
@@ -157,6 +158,7 @@ spring-aspects = { module = "org.springframework:spring-aspects", version.ref = 
 spring-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "openapi-webmvc-ui" }
 spring-oxm = { module = "org.springframework:spring-oxm", version.ref = "spring-oxm" }
 spring-security-test = { module = "org.springframework.security:spring-security-test", version.ref="spring-security-test" }
+spring-boot-starter-keycloak = { module = "org.keycloak:keycloak-spring-boot-starter", version.ref="keycloak" }
 
 
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernate-validator" }

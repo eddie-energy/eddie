@@ -1,10 +1,7 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.PatchPermissionDto;
-import energy.eddie.aiida.errors.DetailFetchingFailedException;
-import energy.eddie.aiida.errors.PermissionAlreadyExistsException;
-import energy.eddie.aiida.errors.PermissionNotFoundException;
-import energy.eddie.aiida.errors.PermissionUnfulfillableException;
+import energy.eddie.aiida.errors.*;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
 import energy.eddie.api.agnostic.EddieApiError;
@@ -49,7 +46,7 @@ public class PermissionController {
             operationId = "getPermissionsSorted", tags = {"permission"})
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Permission.class))))})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Permission>> getAllPermissions() {
+    public ResponseEntity<List<Permission>> getAllPermissions() throws InvalidUserException {
         return ResponseEntity.ok(permissionService.getAllPermissionsSortedByGrantTime());
     }
 
@@ -61,7 +58,7 @@ public class PermissionController {
             @ApiResponse(responseCode = "409", description = "Permission cannot be fulfilled, e.g. because the requested data is not available.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class)))})
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Permission> setupNewPermission(@Valid @RequestBody QrCodeDto qrCodeDto)
-            throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException {
+            throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
         LOGGER.debug("Got new permission request {}", qrCodeDto);
 
         var permission = permissionService.setupNewPermission(qrCodeDto);
@@ -87,7 +84,7 @@ public class PermissionController {
             @Valid @RequestBody PatchPermissionDto patchDto,
             @Parameter(name = "permissionId", description = "Unique ID of the permission", example = "f38a1953-ae7a-480c-814f-1cca3989981e")
             @PathVariable String permissionId
-    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException {
+    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException {
         LOGGER.info("Got request to update permission {} with operation {}", permissionId, patchDto.operation());
 
         var permission = switch (patchDto.operation()) {

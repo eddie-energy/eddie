@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.openapi.webmvc.ui)
     implementation(libs.spring.boot.security)
+    implementation(libs.spring.boot.starter.keycloak)
     implementation(libs.spring.boot.starter.thymeleaf)
     implementation(libs.spring.boot.starter.oauth2.client)
 
