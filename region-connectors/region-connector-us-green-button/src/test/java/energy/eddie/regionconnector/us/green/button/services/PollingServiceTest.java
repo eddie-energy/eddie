@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
 import energy.eddie.regionconnector.us.green.button.exceptions.DataNotReadyException;
 import energy.eddie.regionconnector.us.green.button.oauth.persistence.OAuthTokenDetails;
+import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsPollingNotReadyEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
@@ -24,11 +25,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.*;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,6 +39,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PollingServiceTest {
+    private static final List<MeterReading> METERS = List.of(new MeterReading("pid", "uid", null));
     @Mock
     private UsPermissionRequestRepository repository;
     @Mock
@@ -75,8 +78,9 @@ class PollingServiceTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                METERS,
+                "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var start = now.minusDays(10);
@@ -96,9 +100,10 @@ class PollingServiceTest {
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.just(credentials));
         when(api.batchSubscription("1111",
                                    "token",
+                                   Set.of("uid"),
                                    start.atStartOfDay(ZoneOffset.UTC),
                                    DateTimeUtils.endOfDay(end, ZoneOffset.UTC)))
-                .thenReturn(Mono.just(new SyndFeedImpl()));
+                .thenReturn(Flux.just(new SyndFeedImpl()));
 
         // When
         pollingService.poll("pid");
@@ -123,8 +128,9 @@ class PollingServiceTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                METERS,
+                "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var start = now.minusDays(10);
@@ -144,9 +150,10 @@ class PollingServiceTest {
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.just(credentials));
         when(api.batchSubscription("1111",
                                    "token",
+                                   Set.of("uid"),
                                    start.atStartOfDay(ZoneOffset.UTC),
                                    LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC)))
-                .thenReturn(Mono.just(new SyndFeedImpl()));
+                .thenReturn(Flux.just(new SyndFeedImpl()));
 
         // When
         pollingService.poll("pid");
@@ -160,6 +167,10 @@ class PollingServiceTest {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var actualStart = ZonedDateTime.now(ZoneOffset.UTC).minusDays(8);
+        var meters = List.of(
+                new MeterReading("pid", "1", actualStart),
+                new MeterReading("pid", "2", ZonedDateTime.now(ZoneOffset.UTC).minusDays(1))
+        );
         var pr = new GreenButtonPermissionRequest(
                 "pid",
                 "cid",
@@ -173,12 +184,8 @@ class PollingServiceTest {
                 "company",
                 "http://localhost",
                 "scope",
-                Map.of("1",
-                       actualStart,
-                       "2",
-                       ZonedDateTime.now(ZoneOffset.UTC).minusDays(1)
-                )
-        );
+                meters,
+                "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var start = now.minusDays(10);
@@ -198,15 +205,16 @@ class PollingServiceTest {
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.just(credentials));
         when(api.batchSubscription("1111",
                                    "token",
+                                   Set.of("2", "1"),
                                    actualStart,
                                    LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC)))
-                .thenReturn(Mono.just(new SyndFeedImpl()));
+                .thenReturn(Flux.just(new SyndFeedImpl(), new SyndFeedImpl()));
 
         // When
         pollingService.poll("pid");
 
         // Then
-        verify(publishService).publish(any());
+        verify(publishService, times(2)).publish(any());
     }
 
     @Test
@@ -225,8 +233,8 @@ class PollingServiceTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
 
@@ -234,7 +242,7 @@ class PollingServiceTest {
         pollingService.poll("pid");
 
         // Then
-        verify(api, never()).batchSubscription(any(), any(), any(), any());
+        verify(api, never()).batchSubscription(any(), any(), any(), any(), any());
         verify(publishService, never()).publish(any());
     }
 
@@ -254,8 +262,8 @@ class PollingServiceTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var calc = new DataNeedNotSupportedResult("");
@@ -265,7 +273,7 @@ class PollingServiceTest {
         pollingService.poll("pid");
 
         // Then
-        verify(api, never()).batchSubscription(any(), any(), any(), any());
+        verify(api, never()).batchSubscription(any(), any(), any(), any(), any());
         verify(publishService, never()).publish(any());
     }
 
@@ -286,8 +294,8 @@ class PollingServiceTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var start = now.minusDays(10);
@@ -304,7 +312,7 @@ class PollingServiceTest {
         pollingService.poll("pid");
 
         // Then
-        verify(api, never()).batchSubscription(any(), any(), any(), any());
+        verify(api, never()).batchSubscription(any(), any(), any(), any(), any());
         verify(publishService, never()).publish(any());
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, event.status())));
     }
@@ -325,8 +333,8 @@ class PollingServiceTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var start = now.minusDays(10);
@@ -343,7 +351,7 @@ class PollingServiceTest {
         pollingService.poll("pid");
 
         // Then
-        verify(api, never()).batchSubscription(any(), any(), any(), any());
+        verify(api, never()).batchSubscription(any(), any(), any(), any(), any());
         verify(publishService, never()).publish(any());
         verify(outbox, never()).commit(any());
     }
@@ -364,8 +372,8 @@ class PollingServiceTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var start = now.minusDays(10);
@@ -402,8 +410,8 @@ class PollingServiceTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var calc = new AccountingPointDataNeedResult(new Timeframe(now, now));
@@ -413,7 +421,7 @@ class PollingServiceTest {
         pollingService.poll("pid");
 
         // Then
-        verify(api, never()).batchSubscription(any(), any(), any(), any());
+        verify(api, never()).batchSubscription(any(), any(), any(), any(), any());
         verify(publishService, never()).publish(any());
     }
 
@@ -433,8 +441,8 @@ class PollingServiceTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var start = now.minusDays(10);
@@ -452,8 +460,8 @@ class PollingServiceTest {
                                                 "token",
                                                 "1111");
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.just(credentials));
-        when(api.batchSubscription(any(), any(), any(), any()))
-                .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.FORBIDDEN.value(),
+        when(api.batchSubscription(any(), any(), any(), any(), any()))
+                .thenReturn(Flux.error(WebClientResponseException.create(HttpStatus.FORBIDDEN.value(),
                                                                          "",
                                                                          null,
                                                                          null,
@@ -483,8 +491,8 @@ class PollingServiceTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var start = now.minusDays(10);
@@ -502,8 +510,8 @@ class PollingServiceTest {
                                                 "token",
                                                 "1111");
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.just(credentials));
-        when(api.batchSubscription(any(), any(), any(), any()))
-                .thenReturn(Mono.error(new DataNotReadyException()));
+        when(api.batchSubscription(any(), any(), any(), any(), any()))
+                .thenReturn(Flux.error(new DataNotReadyException()));
 
         // When
         pollingService.poll("pid");
@@ -530,8 +538,8 @@ class PollingServiceTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var start = now.minusDays(10);
@@ -549,8 +557,8 @@ class PollingServiceTest {
                                                 "token",
                                                 "1111");
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.just(credentials));
-        when(api.batchSubscription(any(), any(), any(), any()))
-                .thenReturn(Mono.error(e));
+        when(api.batchSubscription(any(), any(), any(), any(), any()))
+                .thenReturn(Flux.error(e));
 
         // When
         pollingService.poll("pid");

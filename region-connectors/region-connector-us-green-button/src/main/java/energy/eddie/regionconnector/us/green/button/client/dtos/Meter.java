@@ -1,9 +1,11 @@
 package energy.eddie.regionconnector.us.green.button.client.dtos;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +58,7 @@ public class Meter {
     @JsonProperty(required = true)
     private final List<String> blocks;
     @JsonProperty
-    private final Map<String, MeterBlock> meterBlocks;
+    private final Map<String, MeterBlock> meterBlocks = new HashMap<>();
 
     @JsonCreator
     public Meter(
@@ -81,8 +83,7 @@ public class Meter {
             List<List<ZonedDateTime>> intervalCoverage,
             List<String> intervalSources,
             Exports exports, List<Export> exportList,
-            List<String> blocks,
-            Map<String, MeterBlock> meterBlocks
+            List<String> blocks
     ) {
         this.uid = uid;
         this.authorizationUid = authorizationUid;
@@ -107,7 +108,6 @@ public class Meter {
         this.exports = exports;
         this.exportList = exportList;
         this.blocks = blocks;
-        this.meterBlocks = meterBlocks;
     }
 
     public String uid() {
@@ -116,5 +116,14 @@ public class Meter {
 
     public String authorizationUid() {
         return authorizationUid;
+    }
+
+    public Map<String, MeterBlock> meterBlocks() {
+        return meterBlocks;
+    }
+
+    @JsonAnySetter
+    public void setMeterBlock(String key, MeterBlock value) {
+        meterBlocks.put(key, value);
     }
 }

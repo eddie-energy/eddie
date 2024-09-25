@@ -5,6 +5,8 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
+import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
@@ -18,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Map;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -49,12 +51,14 @@ class MeterReadingUpdateHandlerTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.getByPermissionId("pid")).thenReturn(pr);
+        var readingDate = ZonedDateTime.of(2024, 9, 10, 0, 0, 0, 0, ZoneOffset.UTC);
+        var meterReading = new MeterReading("pid", "usagePoint", readingDate);
         var event = new UsMeterReadingUpdateEvent("pid",
-                                                  Map.of("usagePoint",
-                                                         ZonedDateTime.of(2024, 9, 10, 0, 0, 0, 0, ZoneOffset.UTC)));
+                                                  List.of(meterReading),
+                                                  PollingStatus.DATA_READY);
         // When
         eventBus.emit(event);
 
@@ -65,7 +69,7 @@ class MeterReadingUpdateHandlerTest {
     @Test
     void permissionRequest_withoutMeterReading_doesNotFulfillPermissionRequest() {
         // Given
-        var event = new UsMeterReadingUpdateEvent("pid", Map.of());
+        var event = new UsMeterReadingUpdateEvent("pid", List.of(), PollingStatus.DATA_READY);
 
         // When
         eventBus.emit(event);
@@ -89,12 +93,12 @@ class MeterReadingUpdateHandlerTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.getByPermissionId("pid")).thenReturn(pr);
-        var event = new UsMeterReadingUpdateEvent("pid",
-                                                  Map.of("usagePoint",
-                                                         ZonedDateTime.of(2024, 10, 1, 0, 0, 0, 0, ZoneOffset.UTC)));
+        var readingDate = ZonedDateTime.of(2024, 10, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var meterReading = new MeterReading("pid", "usagePoint", readingDate);
+        var event = new UsMeterReadingUpdateEvent("pid", List.of(meterReading), PollingStatus.DATA_READY);
         // When
         eventBus.emit(event);
 
@@ -117,12 +121,12 @@ class MeterReadingUpdateHandlerTest {
                 "US",
                 "company",
                 "http://localhost",
-                "scope"
-        );
+                "scope",
+                "1111");
         when(repository.getByPermissionId("pid")).thenReturn(pr);
-        var event = new UsMeterReadingUpdateEvent("pid",
-                                                  Map.of("usagePoint",
-                                                         ZonedDateTime.of(2024, 9, 30, 23, 59, 59, 0, ZoneOffset.UTC)));
+        var readingDate = ZonedDateTime.of(2024, 9, 30, 23, 59, 59, 0, ZoneOffset.UTC);
+        var meterReading = new MeterReading("pid", "usagePoint", readingDate);
+        var event = new UsMeterReadingUpdateEvent("pid", List.of(meterReading), PollingStatus.DATA_READY);
         // When
         eventBus.emit(event);
 

@@ -4,6 +4,8 @@ import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import energy.eddie.api.agnostic.IdentifiablePayload;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
+import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsPollingNotReadyEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
@@ -23,9 +25,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -51,7 +51,7 @@ public class PermissionUpdateService {
             outbox.commit(new UsPollingNotReadyEvent(permissionId));
             return;
         }
-        var lastMeterReadings = new HashMap<String, ZonedDateTime>();
+        List<MeterReading> lastMeterReadings = new ArrayList<>();
         for (var entry : intervalBlocks) {
             var id = intervalBlockSelfToUsagePointId(entry);
             var intervalBlock = unmarshallToIntervalBlock(entry);
@@ -62,9 +62,9 @@ public class PermissionUpdateService {
             var interval = intervalBlock.getInterval();
             var lastReading = Instant.ofEpochSecond(interval.getStart() + interval.getDuration())
                                      .atZone(ZoneOffset.UTC);
-            lastMeterReadings.put(id, lastReading);
+            lastMeterReadings.add(new MeterReading(permissionId, id, lastReading));
         }
-        outbox.commit(new UsMeterReadingUpdateEvent(permissionId, lastMeterReadings));
+        outbox.commit(new UsMeterReadingUpdateEvent(permissionId, lastMeterReadings, PollingStatus.DATA_READY));
     }
 
     private static List<SyndEntry> findIntervalBlocks(SyndFeed feed) {

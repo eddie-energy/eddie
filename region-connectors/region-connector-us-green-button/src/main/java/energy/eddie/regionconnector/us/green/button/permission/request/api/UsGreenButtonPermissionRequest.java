@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.Set;
 
 public interface UsGreenButtonPermissionRequest extends MeterReadingPermissionRequest {
     Optional<String> scope();
@@ -11,4 +12,6 @@ public interface UsGreenButtonPermissionRequest extends MeterReadingPermissionRe
     Optional<String> jumpOffUrl();
 
     Optional<ZonedDateTime> latestMeterReadingEndDateTime();
+
+    Set<String> allowedMeters();
 }

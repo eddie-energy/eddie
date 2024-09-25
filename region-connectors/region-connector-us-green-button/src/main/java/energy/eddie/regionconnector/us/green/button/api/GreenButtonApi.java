@@ -22,9 +22,10 @@ public interface GreenButtonApi {
 
     Mono<Boolean> isAlive();
 
-    Mono<SyndFeed> batchSubscription(
+    Flux<SyndFeed> batchSubscription(
             String authId,
             String accessToken,
+            Iterable<String> meters,
             ZonedDateTime publishedMin,
             ZonedDateTime publishedMax
     );

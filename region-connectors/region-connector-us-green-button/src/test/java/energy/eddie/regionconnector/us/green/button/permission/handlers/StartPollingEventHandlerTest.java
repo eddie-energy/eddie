@@ -4,10 +4,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
-import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
-import energy.eddie.regionconnector.us.green.button.permission.events.UsPollingNotReadyEvent;
-import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEvent;
-import energy.eddie.regionconnector.us.green.button.permission.events.UsStartPollingEvent;
+import energy.eddie.regionconnector.us.green.button.permission.events.*;
 import energy.eddie.regionconnector.us.green.button.services.PollingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +16,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -38,7 +35,7 @@ class StartPollingEventHandlerTest {
 
     public static Stream<Arguments> testOtherEvents_doNotTriggerPolling() {
         return Stream.of(
-                Arguments.of(new UsMeterReadingUpdateEvent("pid", Map.of())),
+                Arguments.of(new UsMeterReadingUpdateEvent("pid", List.of(), PollingStatus.DATA_READY)),
                 Arguments.of(new UsPollingNotReadyEvent("pid")),
                 Arguments.of(new UsSimpleEvent("pid", PermissionProcessStatus.ACCEPTED))
         );

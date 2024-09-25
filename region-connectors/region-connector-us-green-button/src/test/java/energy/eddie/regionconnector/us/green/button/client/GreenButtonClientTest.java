@@ -22,7 +22,6 @@ import java.net.URI;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,8 +50,7 @@ class GreenButtonClientTest {
             List.of(),
             new Exports(null, null, null, null, null),
             List.of(),
-            List.of(),
-            Map.of()
+            List.of()
     );
     private static MockWebServer mockBackEnd;
 
@@ -86,7 +84,7 @@ class GreenButtonClientTest {
         var api = new GreenButtonClient(client);
 
         // When
-        var res = api.batchSubscription("1111", "token", now, now);
+        var res = api.batchSubscription("1111", "token", List.of("uid"), now, now);
 
         // Then
         StepVerifier.create(res)
@@ -113,7 +111,7 @@ class GreenButtonClientTest {
         var api = new GreenButtonClient(client);
 
         // When
-        var res = api.batchSubscription("1111", "token", now, now);
+        var res = api.batchSubscription("1111", "token", List.of("uid"), now, now);
 
         // Then
         StepVerifier.create(res)
@@ -134,7 +132,7 @@ class GreenButtonClientTest {
         var api = new GreenButtonClient(client);
 
         // When
-        var res = api.batchSubscription("1111", "token", now, now);
+        var res = api.batchSubscription("1111", "token", List.of("uid"), now, now);
 
         // Then
         StepVerifier.create(res)

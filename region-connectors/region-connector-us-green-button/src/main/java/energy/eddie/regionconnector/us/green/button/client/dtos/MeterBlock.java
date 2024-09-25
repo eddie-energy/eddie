@@ -45,5 +45,15 @@ public class MeterBlock {
         this.billingAddress = billingAddress;
         this.billingAccount = billingAccount;
     }
+
+    /**
+     * Returns the service class of the meter block. For possible values see the <a
+     * href="https://utilityapi.com/docs/api/meters/blocks#service-class-type">documentation</a>.
+     *
+     * @return the service class of the meter block
+     */
+    public String serviceClass() {
+        return serviceClass;
+    }
 }
 
