@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -55,18 +56,22 @@ class StatusMessageServiceTest {
                                 )
                 );
         // When
-        testPublisher.emit(pmd);
-        testPublisher.complete();
-
-        // Then
-        verify(statusMessageRepository)
-                .save(assertArg(message -> assertAll(
-                        () -> assertEquals("mrid", message.getPermissionId()),
-                        () -> assertEquals("NFR", message.getCountry()),
-                        () -> assertEquals("Enedis", message.getDso()),
-                        () -> assertEquals("2021-01-01T00:00:00Z", message.getStartDate()),
-                        () -> assertEquals("A05", message.getStatus())
-                )));
+        StepVerifier.create(testPublisher)
+                    .then(() -> {
+                        testPublisher.emit(pmd);
+                        testPublisher.complete();
+                    })
+                    .expectNextCount(1)
+                    // Then
+                    .then(() -> verify(statusMessageRepository)
+                            .save(assertArg(message -> assertAll(
+                                    () -> assertEquals("mrid", message.getPermissionId()),
+                                    () -> assertEquals("NFR", message.getCountry()),
+                                    () -> assertEquals("Enedis", message.getDso()),
+                                    () -> assertEquals("2021-01-01T00:00:00Z", message.getStartDate()),
+                                    () -> assertEquals("A05", message.getStatus())
+                            ))))
+                    .verifyComplete();
     }
 
     @Test
@@ -95,17 +100,21 @@ class StatusMessageServiceTest {
                                 )
                 );
         // When
-        testPublisher.emit(pmd);
-        testPublisher.complete();
-
-        // Then
-        verify(statusMessageRepository)
-                .save(assertArg(message -> assertAll(
-                        () -> assertEquals("mrid", message.getPermissionId()),
-                        () -> assertEquals("Unknown", message.getCountry()),
-                        () -> assertEquals("Aiida", message.getDso()),
-                        () -> assertEquals("2021-01-01T00:00:00Z", message.getStartDate()),
-                        () -> assertEquals("A05", message.getStatus())
-                )));
+        StepVerifier.create(testPublisher)
+                    .then(() -> {
+                        testPublisher.emit(pmd);
+                        testPublisher.complete();
+                    })
+                    .expectNextCount(1)
+                    // Then
+                    .then(() -> verify(statusMessageRepository)
+                            .save(assertArg(message -> assertAll(
+                                    () -> assertEquals("mrid", message.getPermissionId()),
+                                    () -> assertEquals("Unknown", message.getCountry()),
+                                    () -> assertEquals("Aiida", message.getDso()),
+                                    () -> assertEquals("2021-01-01T00:00:00Z", message.getStartDate()),
+                                    () -> assertEquals("A05", message.getStatus())
+                            ))))
+                    .verifyComplete();
     }
 }
