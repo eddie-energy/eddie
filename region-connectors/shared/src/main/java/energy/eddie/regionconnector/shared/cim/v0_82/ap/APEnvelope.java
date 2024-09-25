@@ -34,7 +34,7 @@ public class APEnvelope {
                                 .withConnectionid(permissionRequest.connectionId())
                                 .withDataNeedid(permissionRequest.dataNeedId())
                                 .withPermissionid(permissionRequest.permissionId())
-                                .withDataType(DocumentType.VALIDATED_HISTORICAL_DATA_MARKET_DOCUMENT.description())
+                                .withDataType(DocumentType.ACCOUNTING_POINT_MARKET_DOCUMENT.description())
                                 .withMessageDocumentHeaderRegion(
                                         new MessageDocumentHeaderRegionComplexType()
                                                 .withConnector(permissionRequest.dataSourceInformation()
