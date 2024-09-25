@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.shared.cim.v0_82.ap;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.ap.AccountingPointMarketDocumentComplexType;
+import energy.eddie.regionconnector.shared.cim.v0_82.DocumentType;
 import energy.eddie.regionconnector.shared.permission.requests.SimplePermissionRequest;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +27,9 @@ class APEnvelopeTest {
                 () -> assertEquals(ap, res.getAccountingPointMarketDocument()),
                 () -> assertEquals("pid", header.getPermissionid()),
                 () -> assertEquals("cid", header.getConnectionid()),
-                () -> assertEquals("dnid", header.getDataNeedid())
+                () -> assertEquals("dnid", header.getDataNeedid()),
+                () -> assertEquals(DocumentType.ACCOUNTING_POINT_MARKET_DOCUMENT.description(),
+                                   header.getDataType())
         );
     }
 }
