@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.shared.timeout.StalePermissionRequestRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +13,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface FrPermissionRequestRepository extends PermissionRequestRepository<FrEnedisPermissionRequest>, CrudRepository<EnedisPermissionRequest, String> {
+public interface FrPermissionRequestRepository extends
+        PermissionRequestRepository<FrEnedisPermissionRequest>,
+        CrudRepository<EnedisPermissionRequest, String>,
+        StalePermissionRequestRepository<EnedisPermissionRequest> {
 
     List<FrEnedisPermissionRequest> findAllByStatus(PermissionProcessStatus status);
 
@@ -21,5 +25,6 @@ public interface FrPermissionRequestRepository extends PermissionRequestReposito
                     "FROM fr_enedis.enedis_permission_request WHERE status = 'VALIDATED' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )
-    List<EnedisPermissionRequest> findTimedOutPermissionRequests(@Param("hours") int timeoutDuration);
+    @Override
+    List<EnedisPermissionRequest> findStalePermissionRequests(@Param("hours") int timeoutDuration);
 }

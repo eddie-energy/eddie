@@ -6,6 +6,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 
+import java.time.ZonedDateTime;
+
 @Entity
 @SuppressWarnings({"NullAway", "unused"})
 public class UsCreatedEvent extends PersistablePermissionEvent {
@@ -26,6 +28,21 @@ public class UsCreatedEvent extends PersistablePermissionEvent {
             GreenButtonDataSourceInformation dataSourceInformation
     ) {
         super(permissionId, PermissionProcessStatus.CREATED);
+        this.connectionId = connectionId;
+        this.dataNeedId = dataNeedId;
+        this.jumpOffUrl = jumpOffUrl;
+        this.dataSourceInformation = dataSourceInformation;
+    }
+
+    public UsCreatedEvent(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            String jumpOffUrl,
+            GreenButtonDataSourceInformation dataSourceInformation,
+            ZonedDateTime created
+    ) {
+        super(permissionId, PermissionProcessStatus.CREATED, created);
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
         this.jumpOffUrl = jumpOffUrl;

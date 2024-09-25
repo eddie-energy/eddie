@@ -40,7 +40,7 @@ class FrPermissionRequestRepositoryTest {
     private DataNeedsService dataNeedsService;
 
     @Test
-    void testFindTimedOutPermissionRequests_findTimedOutPermissionRequests() {
+    void testFindTimedOutPermissionRequests_findStalePermissionRequests() {
         // Given
         var fixedClock = Clock.fixed(Instant.now(Clock.systemUTC()).minus(25, ChronoUnit.HOURS), ZoneOffset.UTC);
         permissionEventRepository.saveAll(List.of(
@@ -51,7 +51,7 @@ class FrPermissionRequestRepositoryTest {
         ));
 
         // When
-        var res = permissionRequestRepository.findTimedOutPermissionRequests(24);
+        var res = permissionRequestRepository.findStalePermissionRequests(24);
 
         // Then
         assertEquals(1, res.size());
