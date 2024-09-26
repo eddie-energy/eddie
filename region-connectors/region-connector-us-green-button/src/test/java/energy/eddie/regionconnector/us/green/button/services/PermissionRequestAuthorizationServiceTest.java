@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -97,6 +98,36 @@ class PermissionRequestAuthorizationServiceTest {
     }
 
     @Test
+    void testAuthorizePermissionRequest_forAlreadyAcceptedPermissionRequest() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException {
+        // Given
+        var permissionId = "permissionId";
+        when(callback.state()).thenReturn(permissionId);
+        when(usPermissionRequestRepository.findById(permissionId))
+                .thenReturn(Optional.of(createPermissionRequest(PermissionProcessStatus.ACCEPTED)));
+
+        // When
+        authorizationService.authorizePermissionRequest(callback);
+
+        // Then
+        verify(outbox, never()).commit(any());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PermissionProcessStatus.class, names = {"INVALID", "REJECTED"})
+    void testAuthorizePermissionRequest_forAlreadyInvalidOrRejectedPermissionRequest_throws(PermissionProcessStatus status) {
+        // Given
+        var permissionId = "permissionId";
+        when(callback.state()).thenReturn(permissionId);
+        when(usPermissionRequestRepository.findById(permissionId))
+                .thenReturn(Optional.of(createPermissionRequest(status)));
+
+        // When
+        // Then
+        assertThrows(UnauthorizedException.class, () -> authorizationService.authorizePermissionRequest(callback));
+        verify(outbox, never()).commit(any());
+    }
+
+    @Test
     void testAuthorizePermissionRequest_successful() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException {
         // Given
         var permissionId = "permissionId";
@@ -151,25 +182,6 @@ class PermissionRequestAuthorizationServiceTest {
         verifyNoMoreInteractions(outbox);
     }
 
-    private static GreenButtonPermissionRequest createPermissionRequest() {
-        var now = LocalDate.now(ZoneOffset.UTC);
-        return new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                "US",
-                "blbl",
-                "http://localhost",
-                "other",
-                "1111"
-        );
-    }
-
     @Test
     void testAuthorizePermissionRequest_withMismatchingScopes_emitsInvalid() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException {
         // Given
@@ -212,5 +224,28 @@ class PermissionRequestAuthorizationServiceTest {
 
         // Then
         verify(outbox, never()).commit(invalidEventCaptor.capture());
+    }
+
+    private static GreenButtonPermissionRequest createPermissionRequest() {
+        return createPermissionRequest(PermissionProcessStatus.VALIDATED);
+    }
+
+    private static GreenButtonPermissionRequest createPermissionRequest(PermissionProcessStatus status) {
+        var now = LocalDate.now(ZoneOffset.UTC);
+        return new GreenButtonPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                now,
+                now,
+                Granularity.PT15M,
+                status,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                "US",
+                "blbl",
+                "http://localhost",
+                "other",
+                "authId"
+        );
     }
 }

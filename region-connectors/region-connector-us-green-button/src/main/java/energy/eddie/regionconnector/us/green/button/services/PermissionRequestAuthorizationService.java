@@ -43,6 +43,16 @@ public class PermissionRequestAuthorizationService {
             // unknown state / permissionId => not coming / initiated by our frontend
             throw new PermissionNotFoundException(permissionId);
         }
+        var permissionRequest = pr.get();
+        if (permissionRequest.status() == PermissionProcessStatus.REJECTED
+            || permissionRequest.status() == PermissionProcessStatus.INVALID) {
+            LOGGER.info("Permission request {} was already rejected/invalidated", permissionId);
+            throw new UnauthorizedException();
+        }
+        if (permissionRequest.status() != PermissionProcessStatus.VALIDATED) {
+            LOGGER.info("Permission request {} was already accepted", permissionId);
+            return;
+        }
 
         outbox.commit(new UsSimpleEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
 
