@@ -94,7 +94,7 @@ public class Permission {
      * Constructor only for JPA.
      */
     @SuppressWarnings("NullAway.Init")
-    protected Permission() {
+    public Permission() {
     }
 
     /**

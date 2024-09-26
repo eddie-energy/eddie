@@ -43,6 +43,12 @@ public class AiidaLocalDataNeed {
     @JsonDeserialize(using = CronExpressionDeserializer.class)
     private final CronExpression transmissionSchedule;
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "aiida_local_data_need_schemas",
+            joinColumns = @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id"))
+    @Column(name = "schemas")
+    @JsonProperty
+    private final Set<String> schemas;
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_local_data_need_data_tags", joinColumns = @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id"))
     @Column(name = "data_tags")
     @Nullable
@@ -60,6 +66,7 @@ public class AiidaLocalDataNeed {
         this.purpose = null;
         this.policyLink = null;
         this.transmissionSchedule = null;
+        this.schemas = null;
         this.dataTags = null;
     }
 
@@ -71,6 +78,7 @@ public class AiidaLocalDataNeed {
         this.purpose = details.dataNeed().purpose();
         this.policyLink = details.dataNeed().policyLink();
         this.transmissionSchedule = details.dataNeed().transmissionSchedule();
+        this.schemas = details.dataNeed().schemas();
 
         if (details.dataNeed() instanceof GenericAiidaDataNeed genericAiida) {
             this.dataTags = Set.copyOf(genericAiida.dataTags());
@@ -105,6 +113,10 @@ public class AiidaLocalDataNeed {
 
     public CronExpression transmissionSchedule() {
         return transmissionSchedule;
+    }
+
+    public Set<String> schemas() {
+        return schemas;
     }
 
     public @Nullable Set<String> dataTags() {

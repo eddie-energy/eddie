@@ -2,10 +2,9 @@ package energy.eddie.aiida.datasources.at;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.TestUtils;
+import energy.eddie.aiida.datasources.AiidaDataSource;
+import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.models.record.IntegerAiidaRecord;
-import energy.eddie.aiida.models.record.StringAiidaRecord;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.aiida.utils.MqttFactory;
 import nl.altindag.log.LogCaptor;
@@ -33,6 +32,7 @@ import static org.mockito.Mockito.*;
 
 class OesterreichsEnergieAdapterTest {
     private static final LogCaptor logCaptor = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
+    private static final LogCaptor logCaptorAiidaDataSource = LogCaptor.forClass(AiidaDataSource.class);
     private OesterreichsEnergieAdapter adapter;
     private MqttConfig config;
     private ObjectMapper mapper;
@@ -72,13 +72,14 @@ class OesterreichsEnergieAdapterTest {
     void verify_close_disconnectsAndClosesClient_andEmitsCompleteOnFlux() throws MqttException {
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
             when(mockClient.isConnected()).thenReturn(true);
 
             StepVerifier.create(adapter.start())
-                    .then(adapter::close)
-                    .expectComplete()
-                    .verify();
+                        .then(adapter::close)
+                        .expectComplete()
+                        .verify();
 
             verify(mockClient).disconnect(anyLong());
             verify(mockClient).close();
@@ -91,13 +92,14 @@ class OesterreichsEnergieAdapterTest {
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
             when(mockClient.isConnected()).thenReturn(false);
 
             StepVerifier.create(adapter.start())
-                    .then(adapter::close)
-                    .expectComplete()
-                    .verify();
+                        .then(adapter::close)
+                        .expectComplete()
+                        .verify();
 
             verify(mockClient, never()).disconnect(anyLong());
             verify(mockClient).close();
@@ -109,7 +111,8 @@ class OesterreichsEnergieAdapterTest {
         try (LogCaptor logCaptor = LogCaptor.forClass(OesterreichsEnergieAdapter.class)) {
             try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
                 var mockClient = mock(MqttAsyncClient.class);
-                mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+                mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                               .thenReturn(mockClient);
                 when(mockClient.disconnect(anyLong())).thenThrow(new MqttException(998877));
                 when(mockClient.isConnected()).thenReturn(true);
 
@@ -125,7 +128,8 @@ class OesterreichsEnergieAdapterTest {
     void verify_start_callsConnect() throws MqttException {
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
 
             adapter.start().subscribe();
 
@@ -144,7 +148,8 @@ class OesterreichsEnergieAdapterTest {
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
 
             adapter.start().subscribe();
 
@@ -157,12 +162,13 @@ class OesterreichsEnergieAdapterTest {
     void givenErrorDuringStart_errorPublishedOnFlux() throws MqttException {
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
             when(mockClient.connect(any())).thenThrow(new MqttException(998877));
 
             StepVerifier.create(adapter.start())
-                    .expectErrorMatches(throwable -> ((MqttException) throwable).getReasonCode() == 998877)
-                    .verify();
+                        .expectErrorMatches(throwable -> ((MqttException) throwable).getReasonCode() == 998877)
+                        .verify();
         }
     }
 
@@ -171,43 +177,49 @@ class OesterreichsEnergieAdapterTest {
         var recordJson = "{\"0-0:96.1.0\":{\"value\":\"90296857\"},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2370.6}";
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
 
             MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
 
             StepVerifier.create(adapter.start())
-                    // call method to simulate arrived message
-                    .then(() -> adapter.messageArrived("MyTestTopic", message))
-                    .expectNextMatches(received -> received.code().equals("0-0:96.1.0") && received.timestamp().toEpochMilli() == 0L
-                            && ((StringAiidaRecord) received).value().equals("90296857"))
-                    .then(adapter::close)
-                    .expectComplete()
-                    .log()
-                    .verify();
+                        // call method to simulate arrived message
+                        .then(() -> adapter.messageArrived("MyTestTopic", message))
+                        .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                                                               .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
+                                                                                                             .equals("0-0:96.1.0")
+                                                                                             && aiidaRecordValue.value()
+                                                                                                                .equals("90296857")))
+                        .then(adapter::close)
+                        .expectComplete()
+                        .log()
+                        .verify();
         }
     }
 
     @Test
     void givenRecordFromMqttBroker_isPublishedOnFlux() {
         var recordJson = "{\"1-0:1.7.0\":{\"value\":45,\"time\":1698915600},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":782238.7}";
-        var expectedTimestamp = Instant.ofEpochSecond(1698915600);
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
 
             MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
 
             StepVerifier.create(adapter.start())
-                    // call method to simulate arrived message
-                    .then(() -> adapter.messageArrived("MyTestTopic", message))
-                    .expectNextMatches(received -> received.code().equals("1-0:1.7.0")
-                            && received.timestamp().toEpochMilli() == expectedTimestamp.toEpochMilli()
-                            && ((IntegerAiidaRecord) received).value() == 45)
-                    .then(adapter::close)
-                    .expectComplete()
-                    .log()
-                    .verify();
+                        // call method to simulate arrived message
+                        .then(() -> adapter.messageArrived("MyTestTopic", message))
+                        .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                                                               .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
+                                                                                                             .equals("1-0:1.7.0")
+                                                                                             && aiidaRecordValue.value()
+                                                                                                                .equals("45")))
+                        .then(adapter::close)
+                        .expectComplete()
+                        .log()
+                        .verify();
         }
     }
 
@@ -215,7 +227,8 @@ class OesterreichsEnergieAdapterTest {
     void givenConnectComplete_subscribesToTopic() throws MqttException {
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
 
             adapter.start().subscribe();
 
@@ -229,14 +242,15 @@ class OesterreichsEnergieAdapterTest {
     void givenErrorWhileSubscribing_errorPublishedOnFlux() throws MqttException {
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any())).thenReturn(mockClient);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
             when(mockClient.subscribe(config.subscribeTopic(), 2)).thenThrow(new MqttException(998877));
 
             StepVerifier.create(adapter.start())
-                    .expectSubscription()
-                    .then(() -> adapter.connectComplete(false, config.serverURI()))
-                    .expectError()
-                    .verify();
+                        .expectSubscription()
+                        .then(() -> adapter.connectComplete(false, config.serverURI()))
+                        .expectError()
+                        .verify();
         }
     }
 
@@ -246,16 +260,19 @@ class OesterreichsEnergieAdapterTest {
         var validJson = "{\"1-0:2.7.0\":{\"value\":0,\"time\":1697622950},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2370.6}";
 
         StepVerifier stepVerifier = StepVerifier.create(adapter.start())
-                .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("1-0:2.7.0"))
-                .then(adapter::close)
-                .expectComplete()
-                .verifyLater();
+                                                .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                                                                                       .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
+                                                                                                                                     .equals("1-0:2.7.0")))
+                                                .then(adapter::close)
+                                                .expectComplete()
+                                                .verifyLater();
 
         adapter.messageArrived(config.subscribeTopic(), new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
         adapter.messageArrived(config.subscribeTopic(), new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
-        TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(invalidJson),
-                logCaptor, JsonMappingException.class);
+        TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
+                                                   invalidJson),
+                                           logCaptor, JsonMappingException.class);
 
         stepVerifier.verify();
     }
@@ -270,13 +287,17 @@ class OesterreichsEnergieAdapterTest {
         var json = "{\"1-0:1.8.0\":{\"value\":83622,\"time\":1698218800},\"UNKNOWN-OBIS-CODE\":{\"value\":0,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":83854.3}";
 
         StepVerifier.create(adapter.start())
-                .then(() -> adapter.messageArrived(config.subscribeTopic(), new MqttMessage(json.getBytes(StandardCharsets.UTF_8))))
-                .expectNextMatches(aiidaRecord -> aiidaRecord.code().equals("1-0:1.8.0"))
-                .then(adapter::close)
-                .expectComplete()
-                .verify();
+                    .then(() -> adapter.messageArrived(config.subscribeTopic(),
+                                                       new MqttMessage(json.getBytes(StandardCharsets.UTF_8))))
+                    .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                                                           .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
+                                                                                                         .equals("1-0:1.8.0")))
+                    .then(adapter::close)
+                    .expectComplete()
+                    .verify();
 
-        assertThat(logCaptor.getWarnLogs()).contains("Got OBIS code UNKNOWN-OBIS-CODE from SMA, but AiidaRecordFactory does not know how to handle it");
+        assertThat(logCaptorAiidaDataSource.getWarnLogs()).contains(
+                "Found unknown OBIS-CODES from AT: [UNKNOWN-OBIS-CODE]");
     }
 
     @Test

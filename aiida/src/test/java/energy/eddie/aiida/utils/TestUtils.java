@@ -1,4 +1,4 @@
-package energy.eddie.aiida;
+package energy.eddie.aiida.utils;
 
 import nl.altindag.log.LogCaptor;
 import nl.altindag.log.model.LogEvent;

@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import energy.eddie.aiida.datasources.MqttDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.aiida.models.record.AiidaRecordFactory;
+import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.MqttConfig;
+import energy.eddie.aiida.utils.ObisCode;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
@@ -16,7 +17,8 @@ import org.springframework.boot.actuate.health.Status;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MicroTeleinfoV3 extends MqttDataSource {
     private static final String DATASOURCE_NAME = "MicroTeleinfoV3";
@@ -80,10 +82,22 @@ public class MicroTeleinfoV3 extends MqttDataSource {
                 var json = mapper.readValue(message.getPayload(), MicroTeleinfoV3Json.class);
 
                 // TODO: Rework with GH-1209 to support other kinds of data supplied by MicroTeleinfoV3
-                var energyData = json.papp();
-                var meterReading = json.base();
-                emitNextAiidaRecord("1-0:1.7.0", energyData);
-                emitNextAiidaRecord("1-0:1.8.0", meterReading);
+                List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
+                var papp = json.papp();
+                var pappValue = String.valueOf(papp.value());
+                var base = json.base();
+                var baseValue = String.valueOf(base.value());
+
+                aiidaRecordValues.add(
+                        new AiidaRecordValue("PAPP", papp.mappedObisCode().code(),
+                                             pappValue, papp.unitOfMeasurement().unit(),
+                                             pappValue, papp.unitOfMeasurement().unit()));
+                aiidaRecordValues.add(
+                        new AiidaRecordValue("BASE", base.mappedObisCode().code(),
+                                             baseValue, base.unitOfMeasurement().unit(),
+                                             pappValue, base.unitOfMeasurement().unit()));
+
+                emitAiidaRecord("FR", aiidaRecordValues);
             } catch (IOException e) {
                 LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
                              new String(message.getPayload(), StandardCharsets.UTF_8), e);
@@ -98,20 +112,6 @@ public class MicroTeleinfoV3 extends MqttDataSource {
             healthSink.tryEmitNext(Health.down()
                                          .withDetail(DATASOURCE_NAME, "The datasource is not working properly.")
                                          .build());
-        }
-    }
-
-    private void emitNextAiidaRecord(String code, MicroTeleinfoV3Json.TeleinfoDataField entry) {
-        try {
-            Instant timestamp = Instant.now();
-
-            var aiidaRecord = AiidaRecordFactory.createRecord(code, timestamp, entry.value());
-            var result = recordSink.tryEmitNext(aiidaRecord);
-
-            if (result.isFailure())
-                LOGGER.error("Error while emitting new AiidaRecord {}. Error was {}", aiidaRecord, result);
-        } catch (IllegalArgumentException e) {
-            LOGGER.warn("Got code {} from Teleinfo, but AiidaRecordFactory does not know how to handle it", code, e);
         }
     }
 

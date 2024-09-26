@@ -1,6 +1,8 @@
 package energy.eddie.aiida.datasources.fr;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.models.record.UnitOfMeasurement;
+import energy.eddie.aiida.utils.ObisCode;
 
 /**
  * Meaning of each value:
@@ -26,5 +28,6 @@ public record MicroTeleinfoV3Json(@JsonProperty("MOTDETAT") TeleinfoDataField mo
                                   @JsonProperty("IMAX") TeleinfoDataField imax,
                                   @JsonProperty("PAPP") TeleinfoDataField papp,
                                   @JsonProperty("HHPHC") TeleinfoDataField hhphc) {
-    public record TeleinfoDataField(String raw, @JsonProperty("value") Object value) {}
+    public record TeleinfoDataField(String raw, @JsonProperty("value") Object value,
+                                    UnitOfMeasurement unitOfMeasurement, ObisCode mappedObisCode) {}
 }

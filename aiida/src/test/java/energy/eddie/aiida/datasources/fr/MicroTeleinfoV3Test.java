@@ -2,11 +2,10 @@ package energy.eddie.aiida.datasources.fr;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.TestUtils;
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.models.record.IntegerAiidaRecord;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.aiida.utils.MqttFactory;
+import energy.eddie.aiida.utils.TestUtils;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
@@ -165,10 +164,15 @@ class MicroTeleinfoV3Test {
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("teleinfo/data", message))
-                        .expectNextMatches(received -> received.code().equals("1-0:1.7.0")
-                                                       && ((IntegerAiidaRecord) received).value() == 126)
-                        .expectNextMatches(received -> received.code().equals("1-0:1.8.0")
-                                                       && ((IntegerAiidaRecord) received).value() == 6367621)
+                        .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                                                               .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
+                                                                                                             .equals("1-0:1.7.0")
+                                                                                             && aiidaRecordValue.value()
+                                                                                                                .equals("126")
+                                                                                             || (aiidaRecordValue.dataTag()
+                                                                                                                 .equals("1-0:1.8.0")
+                                                                                                 && aiidaRecordValue.value()
+                                                                                                                    .equals("6367621"))))
                         .then(adapter::close)
                         .expectComplete()
                         .log()
@@ -260,10 +264,11 @@ class MicroTeleinfoV3Test {
         var validJson = "{\"ADCO\":{\"raw\":\"123456789123\",\"value\":123456789123},\"OPTARIF\":{\"raw\":\"BASE\",\"value\":\"BASE\"},\"ISOUSC\":{\"raw\":\"30\",\"value\":30},\"BASE\":{\"raw\":\"006367621\",\"value\":6367621},\"PTEC\":{\"raw\":\"TH..\",\"value\":\"TH\"},\"IINST\":{\"raw\":\"001\",\"value\":1},\"IMAX\":{\"raw\":\"090\",\"value\":90},\"PAPP\":{\"raw\":\"00126\",\"value\":126},\"HHPHC\":{\"raw\":\"A\",\"value\":\"A\"}}";
 
         StepVerifier stepVerifier = StepVerifier.create(adapter.start())
-                                                .expectNextMatches(aiidaRecord -> aiidaRecord.code()
-                                                                                             .equals("1-0:1.7.0"))
-                                                .expectNextMatches(aiidaRecord -> aiidaRecord.code()
-                                                                                             .equals("1-0:1.8.0"))
+                                                .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                                                                                       .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
+                                                                                                                                     .equals("1-0:1.7.0")
+                                                                                                                     || aiidaRecordValue.dataTag()
+                                                                                                                                        .equals("1-0:1.8.0")))
                                                 .then(adapter::close)
                                                 .expectComplete()
                                                 .verifyLater();
@@ -275,7 +280,7 @@ class MicroTeleinfoV3Test {
                                                    invalidJson),
                                            logCaptor, JsonMappingException.class);
 
-        stepVerifier.verify();
+        stepVerifier.verify(Duration.ofSeconds(2));
     }
 
     @Test

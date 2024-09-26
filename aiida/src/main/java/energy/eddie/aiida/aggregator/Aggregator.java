@@ -2,6 +2,7 @@ package energy.eddie.aiida.aggregator;
 
 import energy.eddie.aiida.datasources.AiidaDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +13,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 
-import java.time.*;
-import java.util.*;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -43,6 +49,9 @@ public class Aggregator implements AutoCloseable {
 
     private void saveRecordToDatabase(AiidaRecord aiidaRecord) {
         LOGGER.trace("Saving new record to db");
+        for (AiidaRecordValue value : aiidaRecord.aiidaRecordValue()) {
+            value.setAiidaRecord(aiidaRecord);
+        }
         repository.save(aiidaRecord);
     }
 
@@ -77,11 +86,11 @@ public class Aggregator implements AutoCloseable {
     }
 
     /**
-     * Returns a filtered Flux of {@link AiidaRecord}s that only contains records with a {@link AiidaRecord#code()}
+     * Returns a filtered Flux of {@link AiidaRecord}s that only contains records with a {@link AiidaRecordValue#dataTag()}
      * that is in the set {@code allowedCodes} and that have a timestamp before {@code permissionExpirationTime}.
      * Additionally, the records are buffered and aggregated by the {@link CronExpression} {@code transmissionSchedule}.
      *
-     * @param allowedCodes             Codes which should be included in the returned Flux.
+     * @param allowedDataTags          Tags which should be included in the returned Flux.
      * @param permissionExpirationTime Instant when the permission expires.
      * @param transmissionSchedule     The schedule at which the data should be transmitted.
      * @return A Flux on which will only have AiidaRecords with a code matching one of the codes of the
@@ -89,13 +98,23 @@ public class Aggregator implements AutoCloseable {
      * by the {@code transmissionSchedule}.
      */
     public Flux<AiidaRecord> getFilteredFlux(
-            Set<String> allowedCodes, Instant permissionExpirationTime, CronExpression transmissionSchedule
+            Set<String> allowedDataTags, Instant permissionExpirationTime, CronExpression transmissionSchedule
     ) {
         return combinedSink.asFlux()
-                           .filter(aiidaRecord -> allowedCodes.contains(aiidaRecord.code())
-                                                  && aiidaRecord.timestamp().isBefore(permissionExpirationTime))
-                           .transform(flux -> bufferRecordsByCron(flux, transmissionSchedule))
-                           .flatMapIterable(this::aggregateRecords);
+                   .filter(aiidaRecord -> isAllowedDataTag(aiidaRecord, allowedDataTags)
+                                          && isBeforeExpiration(aiidaRecord, permissionExpirationTime))
+                   .transform(flux -> bufferRecordsByCron(flux, transmissionSchedule))
+                   .flatMapIterable(this::aggregateRecords);
+    }
+
+    private boolean isAllowedDataTag(AiidaRecord aiidaRecord, Set<String> allowedDataTags) {
+        return aiidaRecord.aiidaRecordValue().stream()
+                          .map(AiidaRecordValue::dataTag)
+                          .anyMatch(allowedDataTags::contains);
+    }
+
+    private boolean isBeforeExpiration(AiidaRecord aiidaRecord, Instant permissionExpirationTime) {
+        return aiidaRecord.timestamp().isBefore(permissionExpirationTime);
     }
 
     private Flux<List<AiidaRecord>> bufferRecordsByCron(Flux<AiidaRecord> flux, CronExpression transmissionSchedule) {
@@ -117,7 +136,7 @@ public class Aggregator implements AutoCloseable {
     private List<AiidaRecord> aggregateRecords(List<AiidaRecord> aiidaRecords) {
         // TODO: GH-1307 Currently only the last record is kept. This should be changed to a more sophisticated aggregation.
         var aggregatedRecords = aiidaRecords.stream()
-                                            .collect(Collectors.toMap(AiidaRecord::code,
+                                            .collect(Collectors.toMap(AiidaRecord::aiidaRecordValue,
                                                                       record -> record,
                                                                       (existingRecord, newRecord) -> newRecord,
                                                                       LinkedHashMap::new));
