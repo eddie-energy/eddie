@@ -9,8 +9,7 @@ import java.time.LocalDate;
 import java.util.function.BiConsumer;
 
 public class MeterReadingPermissionUpdateAndFulfillmentService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-            MeterReadingPermissionUpdateAndFulfillmentService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MeterReadingPermissionUpdateAndFulfillmentService.class);
 
     private final FulfillmentService fulfillmentService;
     private final BiConsumer<MeterReadingPermissionRequest, LocalDate> meterReadingUpdater;
@@ -35,7 +34,7 @@ public class MeterReadingPermissionUpdateAndFulfillmentService {
     ) {
         LocalDate endDate = meterReadingEndDate.meterReadingEndDate();
         if (updateLatestMeterReadingEndDate(permissionRequest, endDate)
-                && fulfillmentService.isPermissionRequestFulfilledByDate(permissionRequest, endDate)) {
+            && fulfillmentService.isPermissionRequestFulfilledByDate(permissionRequest, endDate)) {
             fulfillmentService.tryFulfillPermissionRequest(permissionRequest);
         }
     }

@@ -1,24 +1,20 @@
 package energy.eddie.regionconnector.shared.services;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
-import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.event.sourcing.PermissionEventFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
-import java.util.function.BiFunction;
 
 public class FulfillmentService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FulfillmentService.class);
     private final Outbox outbox;
-    private final BiFunction<String, PermissionProcessStatus, PermissionEvent> permissionEventCtor;
+    private final PermissionEventFactory permissionEventCtor;
 
-    public FulfillmentService(
-            Outbox outbox,
-            BiFunction<String, PermissionProcessStatus, PermissionEvent> permissionEventCtor
-    ) {
+    public FulfillmentService(Outbox outbox, PermissionEventFactory permissionEventCtor) {
         this.outbox = outbox;
         this.permissionEventCtor = permissionEventCtor;
     }
@@ -29,8 +25,8 @@ public class FulfillmentService {
               .addArgument(() -> permissionRequest.dataSourceInformation().regionConnectorId())
               .addArgument(permissionRequest::permissionId)
               .log("{}: Fulfilling permission request {}");
-        outbox.commit(permissionEventCtor.apply(permissionRequest.permissionId(),
-                                                PermissionProcessStatus.FULFILLED));
+        outbox.commit(permissionEventCtor.create(permissionRequest.permissionId(),
+                                                 PermissionProcessStatus.FULFILLED));
         LOGGER.atInfo()
               .addArgument(() -> permissionRequest.dataSourceInformation().regionConnectorId())
               .addArgument(permissionRequest::permissionId)

@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.aiida.permission.request.persistence;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
+import energy.eddie.regionconnector.shared.timeout.StalePermissionRequestRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +17,10 @@ import java.util.Optional;
  */
 @Repository
 @Transactional(readOnly = true)
-public interface AiidaPermissionRequestViewRepository extends PermissionRequestRepository<AiidaPermissionRequest>, org.springframework.data.repository.Repository<AiidaPermissionRequest, String> {
+public interface AiidaPermissionRequestViewRepository extends
+        PermissionRequestRepository<AiidaPermissionRequest>,
+        org.springframework.data.repository.Repository<AiidaPermissionRequest, String>,
+        StalePermissionRequestRepository<AiidaPermissionRequest> {
     @Override
     default void save(AiidaPermissionRequest request) {
         throw new UnsupportedOperationException("Not supported by this repository as it is just reading a database view");
@@ -39,5 +43,6 @@ public interface AiidaPermissionRequestViewRepository extends PermissionRequestR
                     "FROM aiida.aiida_permission_request_view WHERE status = 'SENT_TO_PERMISSION_ADMINISTRATOR' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )
+    @Override
     List<AiidaPermissionRequest> findStalePermissionRequests(@Param("hours") int duration);
 }

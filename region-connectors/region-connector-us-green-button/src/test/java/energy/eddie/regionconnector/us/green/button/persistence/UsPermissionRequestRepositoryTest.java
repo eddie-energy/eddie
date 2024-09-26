@@ -13,6 +13,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
@@ -33,23 +36,52 @@ class UsPermissionRequestRepositoryTest {
     void testNumberOfPermissionRequests() {
         // Given
         var dataSourceInformation = new GreenButtonDataSourceInformation("TEST", "US");
-        permissionEventRepository.saveAndFlush(new UsCreatedEvent("pid", "cid", "dnid", "test", dataSourceInformation));
-        permissionEventRepository.saveAndFlush(new UsSimpleEvent("pid", PermissionProcessStatus.VALIDATED));
+        permissionEventRepository.saveAndFlush(new UsCreatedEvent("pid",
+                                                                  "cid",
+                                                                  "dnid",
+                                                                  "test",
+                                                                  dataSourceInformation));
         permissionEventRepository.saveAndFlush(new UsCreatedEvent("otherPid",
                                                                   "cid",
                                                                   "dnid",
                                                                   "test",
                                                                   dataSourceInformation));
-        permissionEventRepository.saveAndFlush(new UsSimpleEvent("otherPid", PermissionProcessStatus.VALIDATED));
 
 
         // When
         var res = permissionRequestRepository.findAll();
-        // Calculate the size by iterating through the Iterable
-        long size = 0;
-        for (var ignored : res) {size++;}
 
         // Then
-        assertEquals(2, size);
+        assertEquals(2, res.spliterator().getExactSizeIfKnown());
+    }
+
+    @Test
+    void testFindTimedOutPermissionRequests_findTimedOutPermissionRequests() {
+        // Given
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var dataSourceInformation = new GreenButtonDataSourceInformation("company", "US");
+        permissionEventRepository.saveAndFlush(new UsCreatedEvent("pid",
+                                                                  "cid",
+                                                                  "dnid",
+                                                                  "",
+                                                                  dataSourceInformation,
+                                                                  now.minusHours(25)));
+        permissionEventRepository.saveAndFlush(new UsSimpleEvent("pid", PermissionProcessStatus.VALIDATED));
+        permissionEventRepository.saveAndFlush(new UsCreatedEvent("otherPid",
+                                                                  "cid",
+                                                                  "dnid",
+                                                                  "",
+                                                                  dataSourceInformation,
+                                                                  now));
+        permissionEventRepository.saveAndFlush(new UsSimpleEvent("otherPid", PermissionProcessStatus.VALIDATED));
+
+
+        // When
+        var res = permissionRequestRepository.findStalePermissionRequests(24);
+
+        // Then
+        assertEquals(1, res.size());
+        var pr = res.getFirst();
+        assertEquals("pid", pr.permissionId());
     }
 }
