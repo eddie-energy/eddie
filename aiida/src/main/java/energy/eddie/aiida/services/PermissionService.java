@@ -106,9 +106,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      */
     public Permission setupNewPermission(QrCodeDto qrCodeDto) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
-        if (currentUserId == null) {
-            throw new InvalidUserException();
-        }
+
         if (repository.existsById(qrCodeDto.permissionId())) {
             throw new PermissionAlreadyExistsException(qrCodeDto.permissionId());
         }
@@ -182,7 +180,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      *                                            {@link PermissionStatus#FETCHED_DETAILS}.
      * @throws UnauthorizedException If the current user is not the owner of the Permission.
      */
-    public Permission rejectPermission(String permissionId) throws PermissionStateTransitionException, PermissionNotFoundException, UnauthorizedException {
+    public Permission rejectPermission(String permissionId) throws PermissionStateTransitionException, PermissionNotFoundException, UnauthorizedException, InvalidUserException {
         var permission = findById(permissionId);
         authService.checkAuthorizationForPermission(permission);
 
@@ -213,7 +211,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      *                                            {@link PermissionStatus#FETCHED_DETAILS}.
      * @throws UnauthorizedException If the current user is not the owner of the Permission.
      */
-    public Permission acceptPermission(String permissionId) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException {
+    public Permission acceptPermission(String permissionId) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
         var permission = findById(permissionId);
         authService.checkAuthorizationForPermission(permission);
 
@@ -261,7 +259,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      *                                            revocation.
      * @throws UnauthorizedException If the current user is not the owner of the Permission.
      */
-    public Permission revokePermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException, UnauthorizedException {
+    public Permission revokePermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException, UnauthorizedException, InvalidUserException {
         LOGGER.info("Got request to revoke permission with id {}", permissionId);
 
         var permission = findById(permissionId);

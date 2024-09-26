@@ -84,7 +84,7 @@ public class PermissionController {
             @Valid @RequestBody PatchPermissionDto patchDto,
             @Parameter(name = "permissionId", description = "Unique ID of the permission", example = "f38a1953-ae7a-480c-814f-1cca3989981e")
             @PathVariable String permissionId
-    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException {
+    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
         LOGGER.info("Got request to update permission {} with operation {}", permissionId, patchDto.operation());
 
         var permission = switch (patchDto.operation()) {
