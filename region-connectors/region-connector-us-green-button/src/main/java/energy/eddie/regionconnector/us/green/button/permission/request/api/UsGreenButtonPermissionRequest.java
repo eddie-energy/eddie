@@ -14,4 +14,6 @@ public interface UsGreenButtonPermissionRequest extends MeterReadingPermissionRe
     Optional<ZonedDateTime> latestMeterReadingEndDateTime();
 
     Set<String> allowedMeters();
+
+    String authorizationUid();
 }

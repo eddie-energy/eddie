@@ -1,0 +1,45 @@
+{
+  "uid": "12345",
+  "created": "2016-01-01T12:30:24.653422+00:00",
+  "customer_signature": {
+    "type": "text",
+    "ts": "2016-01-01T12:30:24.653422+00:00",
+    "full_name": "Philip J. Fry"
+  },
+  "customer_email": "pfry@planetexpress.com",
+  "declined": null,
+  "is_declined": false,
+  "expires": "2019-01-01T12:30:24.653422+00:00",
+  "is_expired": false,
+  "exports": {
+    "bills_combined_csv": "https://utilityapi.com/api/v2/files/meters_bills_csv?meters=321,567",
+    "meters_csv": "https://utilityapi.com/api/v2/files/meters_csv?accounts=12345"
+  },
+  "template_uid": "397hcu30",
+  "form_uid": "87251",
+  "is_archived": false,
+  "is_test": false,
+  "scope": {},
+  "nickname": null,
+  "notes": [
+    {
+      "type": "access_valid",
+      "msg": "Succesfully registered with account number.",
+      "ts": "2019-01-01T12:32:42.347321+00:00"
+    },
+    {
+      "type": "meters_full",
+      "msg": "Found all meters available.",
+      "ts": "2019-01-01T12:35:42.347321+00:00"
+    }
+  ],
+  "revoked": null,
+  "is_revoked": false,
+  "status": "updated",
+  "status_message": "Meters found!",
+  "status_ts": "2016-01-01T12:35:41.823324+00:00",
+  "user_uid": "1337",
+  "user_email": "sales@acmesolar.com",
+  "user_status": "active",
+  "utility": "PG&E"
+}

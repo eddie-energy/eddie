@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.us.green.button.client.dtos;
+package energy.eddie.regionconnector.us.green.button.client.dtos.meter;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

@@ -5,7 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import energy.eddie.regionconnector.us.green.button.XmlLoader;
 import energy.eddie.regionconnector.us.green.button.api.Pages;
-import energy.eddie.regionconnector.us.green.button.client.dtos.*;
+import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
+import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Exports;
+import energy.eddie.regionconnector.us.green.button.client.dtos.meter.HistoricalCollectionResponse;
+import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
+import energy.eddie.regionconnector.us.green.button.client.dtos.meter.OngoingMonitoring;
 import energy.eddie.regionconnector.us.green.button.exceptions.DataNotReadyException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -19,6 +23,7 @@ import reactor.test.StepVerifier;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -208,6 +213,31 @@ class GreenButtonClientTest {
         // Then
         StepVerifier.create(res)
                     .expectNextCount(2)
+                    .verifyComplete();
+    }
+
+    @Test
+    void revoke_returnsAuthorization() throws IOException {
+        // Given
+        var json = new String(
+                getClass().getResourceAsStream("/json/authorization/authorization.json").readAllBytes(),
+                StandardCharsets.UTF_8
+        );
+        mockBackEnd.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader("Content-Type", "application/json")
+                        .setBody(json)
+        );
+        var client = WebClient.create(basePath);
+        var api = new GreenButtonClient(client);
+
+        // When
+        var res = api.revoke("1111");
+
+        // Then
+        StepVerifier.create(res)
+                    .expectNextCount(1)
                     .verifyComplete();
     }
 }

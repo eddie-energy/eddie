@@ -190,4 +190,9 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
         return latestMeterReadingEndDateTime()
                 .map(ZonedDateTime::toLocalDate);
     }
+
+    @Override
+    public String authorizationUid() {
+        return authUid;
+    }
 }
