@@ -1,5 +1,4 @@
 import { html, nothing } from "lit";
-import { createRef, ref } from "lit/directives/ref.js";
 import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import logo from "../resources/datadis-logo.svg?raw";
@@ -16,21 +15,22 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     _isPermissionRequestCreated: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
     _areResponseButtonsDisabled: { type: Boolean },
+    _isVerifying: { type: Boolean },
   };
-
-  requestInformation = createRef();
 
   permissionId = null;
   accessToken = null;
 
   constructor() {
     super();
-    this.addEventListener("eddie-request-status", (_) => {
-      this.requestInformation.value.textContent = null;
+    this.addEventListener("eddie-request-status", () => {
+      // status events following the accepted interaction disable the verifying state
+      this._isVerifying = false;
     });
     this._isPermissionRequestCreated = false;
     this._isSubmitDisabled = false;
     this._areResponseButtonsDisabled = false;
+    this._isVerifying = false;
   }
 
   handleSubmit(event) {
@@ -69,8 +69,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       },
     })
       .then(() => {
-        this.requestInformation.value.textContent =
-          "We are verifying your response with Datadis. This might take a few minutes.";
+        this._isVerifying = true;
         this._areResponseButtonsDisabled = true;
       })
       .catch((error) => this.error(error));
@@ -160,7 +159,13 @@ class PermissionRequestForm extends PermissionRequestFormBase {
               Rejected
             </sl-button>
           </div>
-          <p ${ref(this.requestInformation)}></p>
+
+          ${this._isVerifying
+            ? html`<p>
+                We are verifying your response with Datadis. This might take a
+                few minutes.
+              </p>`
+            : ""}
         </div>
       </div>
     `;
