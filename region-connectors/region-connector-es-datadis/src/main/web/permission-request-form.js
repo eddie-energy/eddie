@@ -1,7 +1,6 @@
 import { html, nothing } from "lit";
 import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
-
 import logo from "../resources/datadis-logo.svg?raw";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/input/input.js";
@@ -16,6 +15,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     _isPermissionRequestCreated: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
     _areResponseButtonsDisabled: { type: Boolean },
+    _isVerifying: { type: Boolean },
   };
 
   permissionId = null;
@@ -23,10 +23,14 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
   constructor() {
     super();
-
+    this.addEventListener("eddie-request-status", () => {
+      // status events following the accepted interaction disable the verifying state
+      this._isVerifying = false;
+    });
     this._isPermissionRequestCreated = false;
     this._isSubmitDisabled = false;
     this._areResponseButtonsDisabled = false;
+    this._isVerifying = false;
   }
 
   handleSubmit(event) {
@@ -61,10 +65,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     fetch(this.REQUEST_URL + `/${this.permissionId}/accepted`, {
       method: "PATCH",
       headers: {
-        "Authorization": "Bearer " + this.accessToken,
-      }
+        Authorization: "Bearer " + this.accessToken,
+      },
     })
       .then(() => {
+        this._isVerifying = true;
         this._areResponseButtonsDisabled = true;
       })
       .catch((error) => this.error(error));
@@ -74,8 +79,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     fetch(this.REQUEST_URL + `/${this.permissionId}/rejected`, {
       method: "PATCH",
       headers: {
-        "Authorization": "Bearer " + this.accessToken,
-      }
+        Authorization: "Bearer " + this.accessToken,
+      },
     })
       .then(() => {
         this._areResponseButtonsDisabled = true;
@@ -103,7 +108,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           ></sl-input>
 
           <br />
-          
+
           <sl-input
             label="DNI/NIF"
             type="text"
@@ -154,6 +159,13 @@ class PermissionRequestForm extends PermissionRequestFormBase {
               Rejected
             </sl-button>
           </div>
+
+          ${this._isVerifying
+            ? html`<p>
+                We are verifying your response with Datadis. This might take a
+                few minutes.
+              </p>`
+            : ""}
         </div>
       </div>
     `;
