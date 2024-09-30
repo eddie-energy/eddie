@@ -1,6 +1,7 @@
 {
   "realm": "EDDIE",
   "enabled": true,
+  "loginTheme": "eddie-theme",
   "clients": [
     {
       "clientId": "AIIDA",
