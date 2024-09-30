@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface PermissionRepository extends JpaRepository<Permission, String> {
     /**
-     * Returns all permission for the given userId, sorted by their grantTime descending.
+     * Returns all permission objects for the given userId, sorted by their grantTime descending.
      *
      * @return A list of permissions, sorted by grantTime descending, i.e. the permission with the newest grantTime is the first item.
      */

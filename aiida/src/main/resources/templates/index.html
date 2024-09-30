@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <link href="/img/icon.svg" rel="icon" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" th:content="${_csrf.token}" />
+    <meta name="csrf-header" th:content="${_csrf.headerName}" />
 
     <title>AIIDA</title>
 
@@ -20,7 +22,11 @@
   <body>
     <div class="logout-position">
       <form method="post" th:action="@{/logout}">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <input
+          type="hidden"
+          th:name="${_csrf.parameterName}"
+          th:value="${_csrf.token}"
+        />
         <input class="logout-button" type="submit" value="Logout" />
       </form>
     </div>
@@ -32,8 +38,6 @@
     <h2>Add new permission</h2>
 
     <form id="permission-form" class="permission-form" method="post">
-      <input type="hidden" id="csrfToken" th:value="${_csrf.token}" />
-      <input type="hidden" id="csrfHeader" th:value="${_csrf.headerName}" />
       <sl-input id="aiida-code" placeholder="AIIDA code" required></sl-input>
       <sl-button type="submit" variant="primary">Add</sl-button>
       <sl-button circle disabled>
