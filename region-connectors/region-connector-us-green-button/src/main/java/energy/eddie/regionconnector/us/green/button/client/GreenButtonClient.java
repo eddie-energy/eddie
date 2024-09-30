@@ -4,9 +4,10 @@ import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
 import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
 import energy.eddie.regionconnector.us.green.button.api.Pages;
-import energy.eddie.regionconnector.us.green.button.client.dtos.HistoricalCollectionResponse;
-import energy.eddie.regionconnector.us.green.button.client.dtos.MeterList;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
+import energy.eddie.regionconnector.us.green.button.client.dtos.authorization.Authorization;
+import energy.eddie.regionconnector.us.green.button.client.dtos.meter.HistoricalCollectionResponse;
+import energy.eddie.regionconnector.us.green.button.client.dtos.meter.MeterList;
 import energy.eddie.regionconnector.us.green.button.exceptions.DataNotReadyException;
 import energy.eddie.regionconnector.us.green.button.xml.helper.Status;
 import org.naesb.espi.ServiceStatus;
@@ -24,6 +25,7 @@ import java.net.URI;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class GreenButtonClient implements GreenButtonApi {
@@ -47,6 +49,12 @@ public class GreenButtonClient implements GreenButtonApi {
     }
 
     @Override
+    public Mono<Boolean> isAlive() {
+        return readServiceStatus().map(serviceStatus -> !Status.fromValue(serviceStatus.getCurrentStatus())
+                                                               .equals(Status.UNAVAILABLE));
+    }
+
+    @Override
     public Flux<SyndFeed> batchSubscription(
             String authId,
             String accessToken,
@@ -56,37 +64,6 @@ public class GreenButtonClient implements GreenButtonApi {
     ) {
         return Flux.fromIterable(meters)
                    .flatMap(meter -> batchSubscription(authId, accessToken, publishedMin, publishedMax, meter));
-    }
-
-    private Mono<SyndFeed> batchSubscription(
-            String authId,
-            String accessToken,
-            ZonedDateTime publishedMin,
-            ZonedDateTime publishedMax,
-            String meter
-    ) {
-        LOGGER.info("Polling for batch subscription for meter {}", meter);
-        synchronized (webClient) {
-            return webClient.get()
-                            .uri(builder -> builder.path("/DataCustodian/espi/1_1/resource/Batch/Subscription/")
-                                                   .path(authId)
-                                                   .path("/UsagePoint/")
-                                                   .path(meter)
-                                                   .queryParam("published-min",
-                                                               publishedMin.format(
-                                                                       DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-                                                   .queryParam("published-max",
-                                                               publishedMax.format(
-                                                                       DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-                                                   .build()
-                            )
-                            .header("Authorization", "Bearer " + accessToken)
-                            .retrieve()
-                            .onStatus(status -> status == HttpStatus.ACCEPTED,
-                                      resp -> Mono.just(new DataNotReadyException()))
-                            .bodyToMono(String.class)
-                            .flatMap(this::parsePayload);
-        }
     }
 
     @Override
@@ -124,9 +101,45 @@ public class GreenButtonClient implements GreenButtonApi {
     }
 
     @Override
-    public Mono<Boolean> isAlive() {
-        return readServiceStatus().map(serviceStatus -> !Status.fromValue(serviceStatus.getCurrentStatus())
-                                                               .equals(Status.UNAVAILABLE));
+    public Mono<Authorization> revoke(String authUid) {
+        LOGGER.info("Triggering revocation for authorization UID {}", authUid);
+        synchronized (webClient) {
+            return webClient.post()
+                            .uri("/api/v2/authorizations/{authUid}/revoke", Map.of("authUid", authUid))
+                            .retrieve()
+                            .bodyToMono(Authorization.class);
+        }
+    }
+
+    private Mono<SyndFeed> batchSubscription(
+            String authId,
+            String accessToken,
+            ZonedDateTime publishedMin,
+            ZonedDateTime publishedMax,
+            String meter
+    ) {
+        LOGGER.info("Polling for batch subscription for meter {}", meter);
+        synchronized (webClient) {
+            return webClient.get()
+                            .uri(builder -> builder.path("/DataCustodian/espi/1_1/resource/Batch/Subscription/")
+                                                   .path(authId)
+                                                   .path("/UsagePoint/")
+                                                   .path(meter)
+                                                   .queryParam("published-min",
+                                                               publishedMin.format(
+                                                                       DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                                                   .queryParam("published-max",
+                                                               publishedMax.format(
+                                                                       DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                                                   .build()
+                            )
+                            .header("Authorization", "Bearer " + accessToken)
+                            .retrieve()
+                            .onStatus(status -> status == HttpStatus.ACCEPTED,
+                                      resp -> Mono.just(new DataNotReadyException()))
+                            .bodyToMono(String.class)
+                            .flatMap(this::parsePayload);
+        }
     }
 
     private Mono<MeterListing> fetchAdditionalMeters(URI url) {

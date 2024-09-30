@@ -6,7 +6,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
 import energy.eddie.regionconnector.us.green.button.api.Pages;
-import energy.eddie.regionconnector.us.green.button.client.dtos.Meter;
+import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.permission.events.*;
 import energy.eddie.regionconnector.us.green.button.services.DataNeedMatcher;
