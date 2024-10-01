@@ -1,0 +1,2 @@
+### GET status messages
+GET http://localhost:9090/outbound-connectors/admin-console/statusMessages
