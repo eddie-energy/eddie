@@ -71,6 +71,14 @@ public class HomeController {
         return "index";
     }
 
+    @GetMapping("/statusMessages")
+    public ResponseEntity<List<StatusMessageDTO>> statusMessagesList() {
+        return ResponseEntity.ok(this.statusMessageRepository.findLatestStatusMessageForAllPermissions()
+                                                             .stream()
+                                                             .map(HomeController::dtoFromStatusMessage)
+                                                             .toList());
+    }
+
     @GetMapping("/statusMessages/{permissionId}")
     public ResponseEntity<List<StatusMessageDTO>> getStatusMessages(@PathVariable String permissionId) {
         List<StatusMessage> statusMessages = statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc(
