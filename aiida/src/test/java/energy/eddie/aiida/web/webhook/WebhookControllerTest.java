@@ -28,6 +28,7 @@ class WebhookControllerTest {
     @BeforeEach
     public void setUp() {
         logCaptor = LogCaptor.forClass(WebhookController.class);
+        logCaptor.setLogLevelToDebug();
     }
 
     @AfterEach
@@ -54,7 +55,7 @@ class WebhookControllerTest {
         mockMvc.perform(post("/webhook/event").contentType(MediaType.APPLICATION_JSON).content(clientConnackPayload))
                .andExpect(status().isOk());
 
-        assertTrue(logCaptor.getInfoLogs()
+        assertTrue(logCaptor.getDebugLogs()
                             .contains("Received event %s with status %s from client %s".formatted(clientConnackRequest.action(),
                                                                                                   clientConnackRequest.connAck(),
                                                                                                   clientConnackRequest.clientId())));
@@ -78,7 +79,7 @@ class WebhookControllerTest {
         mockMvc.perform(post("/webhook/event").contentType(MediaType.APPLICATION_JSON)
                                               .content(clientDisconnectedPayload)).andExpect(status().isOk());
 
-        assertTrue(logCaptor.getInfoLogs()
+        assertTrue(logCaptor.getDebugLogs()
                             .contains("Received event %s with reason %s from client %s".formatted(
                                     clientDisconnectedRequest.action(),
                                     clientDisconnectedRequest.reason(),

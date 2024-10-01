@@ -18,18 +18,20 @@ public class WebhookController {
 
     @PostMapping("/event")
     public ResponseEntity<String> event(@RequestBody WebhookRequest payload) {
+        var clientId = payload.clientId().replaceAll("[\n\r]", "_");
+
         switch (payload) {
-            case ClientConnackRequest clientConnackPayload ->
-                    LOGGER.info("Received event {} with status {} from client {}",
-                                payload.action(),
-                                clientConnackPayload.connAck(),
-                                payload.clientId());
-            case ClientDisconnectedRequest clientDisconnectedPayload ->
-                    LOGGER.info("Received event {} with reason {} from client {}",
-                                payload.action(),
-                                clientDisconnectedPayload.reason(),
-                                payload.clientId());
-            default -> LOGGER.warn("Event {} not supported.", payload.action());
+            case ClientConnackRequest clientConnackPayload -> LOGGER.debug(
+                    "Received event {} with status {} from client {}",
+                    payload.action(),
+                    clientConnackPayload.connAck(),
+                    clientId);
+            case ClientDisconnectedRequest clientDisconnectedPayload -> {
+                var reason = clientDisconnectedPayload.reason().replaceAll("[\n\r]", "_");
+                LOGGER.debug("Received event {} with reason {} from client {}", payload.action(), reason, clientId);
+            }
+
+            default -> LOGGER.debug("Event {} not supported.", payload.action());
         }
 
         return ResponseEntity.ok().build();
