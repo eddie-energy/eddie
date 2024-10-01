@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.datasources.AiidaDataSource;
 import energy.eddie.aiida.datasources.api.DataSourceConfiguration;
 import energy.eddie.aiida.datasources.fr.MicroTeleinfoV3;
+import energy.eddie.aiida.datasources.fr.configs.dtos.MicroTeleinfoV3Datasource;
 import energy.eddie.aiida.utils.MqttConfig;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
@@ -29,15 +30,15 @@ public class MicroTeleinfoV3Configuration implements DataSourceConfiguration {
         this.objectMapper = objectMapper;
 
         var binder = Binder.get(environment);
-        var bindResult = binder.bind(CONFIG_PATH, Bindable.setOf(FrDataSourceConfig.class));
+        var bindResult = binder.bind(CONFIG_PATH, Bindable.setOf(MicroTeleinfoV3Datasource.class));
         if (bindResult.isBound()) {
             instantiateMicroTeleinfoV3FromConfig(bindResult.get());
         }
     }
 
-    private void instantiateMicroTeleinfoV3FromConfig(Set<FrDataSourceConfig> configs) {
+    private void instantiateMicroTeleinfoV3FromConfig(Set<MicroTeleinfoV3Datasource> configs) {
         var enabledConfigs = configs.stream()
-                                    .filter(FrDataSourceConfig::enabled)
+                                    .filter(MicroTeleinfoV3Datasource::enabled)
                                     .toList();
         enabledConfigs.forEach(config -> enabledDataSources.add(
                 new MicroTeleinfoV3(

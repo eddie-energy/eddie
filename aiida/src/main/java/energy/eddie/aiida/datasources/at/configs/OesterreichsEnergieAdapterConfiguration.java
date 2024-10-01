@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.datasources.AiidaDataSource;
 import energy.eddie.aiida.datasources.api.DataSourceConfiguration;
 import energy.eddie.aiida.datasources.at.OesterreichsEnergieAdapter;
+import energy.eddie.aiida.datasources.at.configs.dtos.OesterreichsEnergieAdapterDatasource;
 import energy.eddie.aiida.utils.MqttConfig;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
@@ -29,15 +30,15 @@ public class OesterreichsEnergieAdapterConfiguration implements DataSourceConfig
         this.objectMapper = objectMapper;
 
         var binder = Binder.get(environment);
-        var bindResult = binder.bind(CONFIG_PATH, Bindable.setOf(AtDataSourceConfig.class));
+        var bindResult = binder.bind(CONFIG_PATH, Bindable.setOf(OesterreichsEnergieAdapterDatasource.class));
         if (bindResult.isBound()) {
             instantiateOesterreichsEnergieAdapterFromConfig(bindResult.get());
         }
     }
 
-    private void instantiateOesterreichsEnergieAdapterFromConfig(Set<AtDataSourceConfig> configs) {
+    private void instantiateOesterreichsEnergieAdapterFromConfig(Set<OesterreichsEnergieAdapterDatasource> configs) {
         var enabledConfigs = configs.stream()
-                                    .filter(AtDataSourceConfig::enabled)
+                                    .filter(OesterreichsEnergieAdapterDatasource::enabled)
                                     .toList();
         enabledConfigs.forEach(config -> enabledDataSources.add(
                 new OesterreichsEnergieAdapter(

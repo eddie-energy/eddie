@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.actuate.health.DefaultHealthContributorRegistry;
+import org.springframework.boot.actuate.health.HealthContributorRegistry;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
@@ -27,6 +29,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AggregatorTest {
     private static final LogCaptor logCaptor = LogCaptor.forClass(Aggregator.class);
+    private static final String DATASOURCE_NAME = "TestDataSource";
     private Aggregator aggregator;
     private Set<String> wantedCodes;
     private AiidaRecord unwanted1;
@@ -38,6 +41,7 @@ class AggregatorTest {
     private Flux<AiidaRecord> mockFlux;
     @Mock
     private AiidaRecordRepository mockRepository;
+    private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
 
     @BeforeEach
     void setUp() {
@@ -50,7 +54,7 @@ class AggregatorTest {
         wanted2 = AiidaRecordFactory.createRecord("2.8.0", Instant.now(), 60);
         expiration = Instant.now().plusSeconds(300_000);
 
-        aggregator = new Aggregator(mockRepository);
+        aggregator = new Aggregator(mockRepository, healthContributorRegistry);
     }
 
     @AfterEach
@@ -71,8 +75,12 @@ class AggregatorTest {
     @Test
     void verify_close_callsCloseOnAllDataSources() {
         var mockDataSource1 = mock(AiidaDataSource.class);
-        var mockDataSource2 = mock(AiidaDataSource.class);
+        when(mockDataSource1.id()).thenReturn("1");
+        when(mockDataSource1.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource1.start()).thenReturn(Flux.empty());
+        var mockDataSource2 = mock(AiidaDataSource.class);
+        when(mockDataSource2.id()).thenReturn("2");
+        when(mockDataSource2.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource2.start()).thenReturn(Flux.empty());
 
 
@@ -90,8 +98,12 @@ class AggregatorTest {
         TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
         TestPublisher<AiidaRecord> publisher2 = TestPublisher.create();
         var mockDataSource1 = mock(AiidaDataSource.class);
-        var mockDataSource2 = mock(AiidaDataSource.class);
+        when(mockDataSource1.id()).thenReturn("1");
+        when(mockDataSource1.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource1.start()).thenReturn(publisher1.flux());
+        var mockDataSource2 = mock(AiidaDataSource.class);
+        when(mockDataSource2.id()).thenReturn("2");
+        when(mockDataSource2.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource2.start()).thenReturn(publisher2.flux());
 
 
@@ -124,6 +136,8 @@ class AggregatorTest {
     void getFilteredFlux_doesNotReturnDataPublishedBeforeSubscribed() {
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
         var mockDataSource = mock(AiidaDataSource.class);
+        when(mockDataSource.id()).thenReturn("1");
+        when(mockDataSource.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource.start()).thenReturn(publisher.flux());
 
 
@@ -151,10 +165,15 @@ class AggregatorTest {
     void givenAiidaRecordFromDatasource_isSavedInDatabase() throws InterruptedException {
         TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
         var mockDataSource1 = mock(AiidaDataSource.class);
+        when(mockDataSource1.id()).thenReturn("1");
+        when(mockDataSource1.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource1.start()).thenReturn(publisher1.flux());
+
 
         TestPublisher<AiidaRecord> publisher2 = TestPublisher.create();
         var mockDataSource2 = mock(AiidaDataSource.class);
+        when(mockDataSource2.id()).thenReturn("2");
+        when(mockDataSource2.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource2.start()).thenReturn(publisher2.flux());
 
 
@@ -182,6 +201,8 @@ class AggregatorTest {
     void givenDataWithTimestampAfterFluxFilterTime_fluxDoesNotPublish() {
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
         var mockDataSource = mock(AiidaDataSource.class);
+        when(mockDataSource.id()).thenReturn("1");
+        when(mockDataSource.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource.start()).thenReturn(publisher.flux());
         var atExpirationTime = AiidaRecordFactory.createRecord("1.7.0", expiration, 111);
         var afterExpirationTime = AiidaRecordFactory.createRecord("2.7.0", expiration.plusSeconds(10), 111);
@@ -220,6 +241,8 @@ class AggregatorTest {
 
 
         var mockDataSource = mock(AiidaDataSource.class);
+        when(mockDataSource.id()).thenReturn("1");
+        when(mockDataSource.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource.start()).thenReturn(Flux.empty());
 
 
@@ -233,18 +256,20 @@ class AggregatorTest {
 
     @Test
     void givenErrorFromDataSource_errorIsLoggedWithDataSourceName() {
-        String name = "Test DataSource";
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
 
         var mockDataSource = mock(AiidaDataSource.class);
+        when(mockDataSource.id()).thenReturn("1");
+        when(mockDataSource.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource.start()).thenReturn(publisher.flux());
-        when(mockDataSource.name()).thenReturn(name);
 
 
         aggregator.addNewAiidaDataSource(mockDataSource);
 
         publisher.error(new IOException("My expected exception"));
 
-        TestUtils.verifyErrorLogStartsWith("Error from datasource %s".formatted(name), logCaptor, IOException.class);
+        TestUtils.verifyErrorLogStartsWith("Error from datasource %s".formatted(DATASOURCE_NAME),
+                                           logCaptor,
+                                           IOException.class);
     }
 }

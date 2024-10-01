@@ -31,7 +31,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSource {
      *                   {@link OesterreichsEnergieAdapterValueDeserializer} will be registered to this mapper.
      */
     public OesterreichsEnergieAdapter(String dataSourceId, MqttConfig mqttConfig, ObjectMapper mapper) {
-        super(dataSourceId, "Oesterreichs Energie Adapter (SMA)", mqttConfig, LOGGER);
+        super(dataSourceId, "OesterreichsEnergieAdapter", mqttConfig, LOGGER);
         SimpleModule module = new SimpleModule();
         module.addDeserializer(OesterreichAdapterJson.AdapterValue.class,
                                new OesterreichsEnergieAdapterValueDeserializer(null));

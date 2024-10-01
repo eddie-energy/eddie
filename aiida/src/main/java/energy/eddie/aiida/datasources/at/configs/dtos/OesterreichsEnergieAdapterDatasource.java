@@ -1,8 +1,8 @@
-package energy.eddie.aiida.datasources.at.configs;
+package energy.eddie.aiida.datasources.at.configs.dtos;
 
 import energy.eddie.aiida.datasources.api.configs.MqttDataSourceConfig;
 
-public record AtDataSourceConfig(
+public record OesterreichsEnergieAdapterDatasource(
         boolean enabled,
         String id,
         String mqttServerUri,
@@ -13,7 +13,7 @@ public record AtDataSourceConfig(
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof AtDataSourceConfig that)) return false;
+        if (!(o instanceof OesterreichsEnergieAdapterDatasource that)) return false;
 
         return id.equals(that.id);
     }
