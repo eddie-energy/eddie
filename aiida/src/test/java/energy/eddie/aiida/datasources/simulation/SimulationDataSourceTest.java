@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.actuate.health.Status;
 import reactor.test.StepVerifier;
 
 import java.time.Clock;
@@ -74,5 +75,11 @@ class SimulationDataSourceTest {
         simulator.close();
 
         stepVerifier.verify(Duration.ofSeconds(1));
+    }
+
+    @Test
+    void testHealth() {
+        simulator = new SimulationDataSource("1", "Test Simulator", fixedClock, Duration.ofSeconds(200));
+        assertEquals(Status.UP, simulator.health().getStatus());
     }
 }
