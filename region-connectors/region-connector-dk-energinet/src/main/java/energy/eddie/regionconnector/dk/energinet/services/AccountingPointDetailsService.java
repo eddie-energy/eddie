@@ -68,8 +68,10 @@ public class AccountingPointDetailsService implements AutoCloseable {
                 .accessToken()
                 .flatMap(token -> energinetCustomerApi.getMeteringPointDetails(meteringPointsRequest, token))
                 .retryWhen(RETRY_BACKOFF_SPEC)
-                .flatMap(response -> meteringDetailsApiResponseFilter
-                        .filter(permissionRequest.meteringPoint(), response))
+                .flatMap(response -> meteringDetailsApiResponseFilter.filter(
+                        permissionRequest.meteringPoint(),
+                        response
+                ))
                 .map(meteringPointDetailsCustomerDto -> new IdentifiableAccountingPointDetails(
                         permissionRequest,
                         meteringPointDetailsCustomerDto
@@ -77,6 +79,15 @@ public class AccountingPointDetailsService implements AutoCloseable {
                 .doOnError(error -> apiExceptionService.handleError(permissionRequest.permissionId(), error))
                 .onErrorComplete()
                 .subscribe(this::handleIdentifiableMeteringPointDetails);
+    }
+
+    public Flux<IdentifiableAccountingPointDetails> identifiableMeteringPointDetailsFlux() {
+        return identifiableMeteringPointDetailsFlux;
+    }
+
+    @Override
+    public void close() {
+        sink.emitComplete(Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
     }
 
     private void handleIdentifiableMeteringPointDetails(IdentifiableAccountingPointDetails identifiableAccountingPointDetails) {
@@ -93,14 +104,5 @@ public class AccountingPointDetailsService implements AutoCloseable {
                 permissionId,
                 PermissionProcessStatus.FULFILLED
         ));
-    }
-
-    public Flux<IdentifiableAccountingPointDetails> identifiableMeteringPointDetailsFlux() {
-        return identifiableMeteringPointDetailsFlux;
-    }
-
-    @Override
-    public void close() {
-        sink.emitComplete(Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
     }
 }
