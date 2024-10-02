@@ -39,6 +39,10 @@ When AIIDA is started locally for development it can lead to unexpected logouts,
 To overcome this issue, the property `server.servlet.session.cookie.name` can e.g. be set to `AIIDA_SESSION_ID`, which will fix the unexpected behaviour.  
 ***Important:*** This is only relevant during development, because usually AIIDA and EDDIE services are not deployed using the same host (localhost for the case of development).
 
+### EDDIE Keycloak Theme
+The current version of the EDDIE keycloak theme includes some very simple modifications only for the login page.
+The source code  and instructions can be found within the [keycloak eddie theme folder](../keycloak-eddie-theme).
+
 ## AIIDA configuration
 
 Several configurations can be applied through environment variables or the _application.properties_ file.

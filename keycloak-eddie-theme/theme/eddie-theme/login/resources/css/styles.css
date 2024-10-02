@@ -1,0 +1,62 @@
+.login-pf body {
+    align-items: center;
+    background: lightgrey;
+    display: flex;
+    flex-direction: column;
+    font-family: sans-serif;
+    justify-content: center;
+    line-height: 1.5;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.card-pf {
+    background-color: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 0 2rem rgba(0, 0, 0, 0.2);
+    padding: 1rem 2rem;
+    width: 50rem;
+}
+
+.login-pf-header {
+    background-image: url('../images/eddie.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 200px;
+}
+
+#kc-header-wrapper {
+    visibility: hidden;
+}
+
+#kc-page-title {
+    visibility: hidden;
+}
+
+input {
+    border: 0.1rem solid lightgrey;
+    border-radius: 0.5rem;
+    box-sizing: border-box;
+    display: block;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    width: 100%;
+}
+
+.pf-c-button.pf-m-primary {
+    background-color: #007aa2;
+    color: white;
+}
+
+.pf-c-form__label-text {
+    font-size: 16px;
+}
+
+.btn-lg {
+    border-radius: 1rem;
+    border: none;
+    font-size: 1.5rem;
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    width: 100%;
+}
