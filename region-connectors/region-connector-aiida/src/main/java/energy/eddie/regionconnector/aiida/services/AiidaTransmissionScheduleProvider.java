@@ -8,8 +8,6 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
-
 public record AiidaTransmissionScheduleProvider(DataNeedsService dataNeedsService)
         implements TransmissionScheduleProvider<AiidaPermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaTransmissionScheduleProvider.class);
@@ -21,7 +19,7 @@ public record AiidaTransmissionScheduleProvider(DataNeedsService dataNeedsServic
                 .findById(pr.dataNeedId())
                 .map(dataNeed -> {
                     if (dataNeed instanceof AiidaDataNeed aiidaDataNeed)
-                        return Duration.ofSeconds(aiidaDataNeed.transmissionInterval()).toString();
+                        return aiidaDataNeed.transmissionSchedule().toString();
 
                     LOGGER.warn(
                             "Finding transmission schedule for non-AIIDA data need with ID {} is not possible. Permission ID was {}",

@@ -70,7 +70,7 @@
 
 /**
  * @typedef {DataNeed} AiidaDataNeed
- * @property {number} transmissionInterval - The interval at which data is transmitted.
+ * @property {string} transmissionSchedule - The schedule at which data is transmitted.
  */
 
 /**
@@ -79,7 +79,7 @@
 
 /**
  * @typedef {AiidaDataNeed} GenericAiidaDataNeed
- * @property {number} transmissionInterval - The interval at which data is transmitted.
+ * @property {string} transmissionSchedule - The schedule at which data is transmitted.
  * @property {Array<string>} dataTags - The tags associated with the data.
  */
 

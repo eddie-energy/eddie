@@ -13,6 +13,7 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
@@ -74,8 +75,9 @@ public class StreamerManager implements AutoCloseable {
                                                                         "Data need not supported"));
         }
         Set<String> codes = requireNonNull(dataNeed.dataTags());
+        CronExpression transmissionSchedule = requireNonNull(dataNeed.transmissionSchedule());
 
-        Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(codes, expirationTime);
+        Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(codes, expirationTime, transmissionSchedule);
         Sinks.One<String> streamerTerminationRequestSink = Sinks.one();
 
         streamerTerminationRequestSink.asMono().subscribe(permissionId -> {

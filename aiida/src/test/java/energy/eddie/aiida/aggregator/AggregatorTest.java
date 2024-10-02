@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.actuate.health.DefaultHealthContributorRegistry;
 import org.springframework.boot.actuate.health.HealthContributorRegistry;
+import org.springframework.scheduling.support.CronExpression;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
@@ -37,6 +38,7 @@ class AggregatorTest {
     private AiidaRecord wanted1;
     private AiidaRecord wanted2;
     private Instant expiration;
+    private CronExpression transmissionSchedule;
     @Mock
     private Flux<AiidaRecord> mockFlux;
     @Mock
@@ -47,12 +49,16 @@ class AggregatorTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(2));
 
+        // add 10 minutes to the current time, as only records after the next scheduled cron timestamp are processed
+        var instant = Instant.now().plusSeconds(600);
+
         wantedCodes = Set.of("1.8.0", "2.8.0");
-        unwanted1 = AiidaRecordFactory.createRecord("1.7.0", Instant.now(), 10);
-        unwanted2 = AiidaRecordFactory.createRecord("1.8.0", Instant.now(), 15);
-        wanted1 = AiidaRecordFactory.createRecord("1.8.0", Instant.now(), 50);
-        wanted2 = AiidaRecordFactory.createRecord("2.8.0", Instant.now(), 60);
+        unwanted1 = AiidaRecordFactory.createRecord("1.7.0", instant, 10);
+        unwanted2 = AiidaRecordFactory.createRecord("1.8.0", instant, 15);
+        wanted1 = AiidaRecordFactory.createRecord("1.8.0", instant, 50);
+        wanted2 = AiidaRecordFactory.createRecord("2.8.0", instant, 60);
         expiration = Instant.now().plusSeconds(300_000);
+        transmissionSchedule = CronExpression.parse("* * * * * *");
 
         aggregator = new Aggregator(mockRepository, healthContributorRegistry);
     }
@@ -110,7 +116,7 @@ class AggregatorTest {
         aggregator.addNewAiidaDataSource(mockDataSource1);
         aggregator.addNewAiidaDataSource(mockDataSource2);
 
-        StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration))
+        StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration, transmissionSchedule))
                                                 .expectNextMatches(aiidaRecord -> aiidaRecord.code()
                                                                                              .equals("2.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 60)
                                                 .expectNextMatches(aiidaRecord -> aiidaRecord.code()
@@ -129,7 +135,7 @@ class AggregatorTest {
     }
 
     /**
-     * Tests that the Flux returned by {@link Aggregator#getFilteredFlux(Set, Instant)} only returns
+     * Tests that the Flux returned by {@link Aggregator#getFilteredFlux(Set, Instant, CronExpression)} only returns
      * {@link AiidaRecord}s that have been published after the returned Flux has been created.
      */
     @Test
@@ -145,7 +151,7 @@ class AggregatorTest {
         publisher.next(unwanted1);
         publisher.next(unwanted2);
 
-        StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration))
+        StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration, transmissionSchedule))
                                                 .expectNextMatches(aiidaRecord -> aiidaRecord.code()
                                                                                              .equals("2.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 60)
                                                 .expectNextMatches(aiidaRecord -> aiidaRecord.code()
@@ -156,6 +162,29 @@ class AggregatorTest {
 
 
         publisher.next(wanted2);
+        publisher.next(wanted1);
+
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void getFilteredFlux_bufferRecordsByCron() {
+        TestPublisher<AiidaRecord> publisher = TestPublisher.create();
+        var mockDataSource = mock(AiidaDataSource.class);
+        when(mockDataSource.start()).thenReturn(publisher.flux());
+
+        var unwantedBeforeCron = AiidaRecordFactory.createRecord("1.8.0", Instant.now().minusSeconds(10), -50);
+
+        aggregator.addNewAiidaDataSource(mockDataSource);
+
+        StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration, transmissionSchedule))
+                                                .expectNextMatches(aiidaRecord -> aiidaRecord.code()
+                                                                                             .equals("1.8.0") && ((IntegerAiidaRecord) aiidaRecord).value() == 50)
+                                                .thenCancel()
+                                                .log()
+                                                .verifyLater();
+
+        publisher.next(unwantedBeforeCron);
         publisher.next(wanted1);
 
         stepVerifier.verify(Duration.ofSeconds(2));
@@ -209,7 +238,7 @@ class AggregatorTest {
 
         aggregator.addNewAiidaDataSource(mockDataSource);
 
-        StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration))
+        StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration, transmissionSchedule))
                     .then(() -> {
                         publisher.next(wanted1);
                         publisher.next(atExpirationTime);
@@ -227,15 +256,15 @@ class AggregatorTest {
 
     @Test
     void verify_close_emitsCompleteSignalForFilteredFlux() {
-        var stepVerifier1 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 1"), expiration))
+        var stepVerifier1 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 1"), expiration, transmissionSchedule))
                                         .expectComplete()
                                         .verifyLater();
 
-        var stepVerifier2 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 2"), expiration))
+        var stepVerifier2 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 2"), expiration, transmissionSchedule))
                                         .expectComplete()
                                         .verifyLater();
 
-        var stepVerifier3 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 1"), expiration))
+        var stepVerifier3 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 1"), expiration, transmissionSchedule))
                                         .expectComplete()
                                         .verifyLater();
 

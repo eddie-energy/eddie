@@ -50,7 +50,7 @@ Content-Type: application/json
   "description": "foo",
   "purpose": "purpose",
   "policyLink": "https://example.com/toc",
-  "transmissionInterval": 2,
+  "transmissionSchedule": "*/2 * * * * *",
   "duration": {
     "type": "absoluteDuration",
     "start": "2024-01-01",

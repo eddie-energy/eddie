@@ -28,6 +28,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.web.client.HttpClientErrorException;
 import reactor.core.publisher.Mono;
 import reactor.test.publisher.TestPublisher;
@@ -157,7 +158,7 @@ class PermissionServiceTest {
         when(mockRepository.existsById(permissionId)).thenReturn(false);
         when(mockRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
-        when(mockDataNeed.transmissionInterval()).thenReturn(23);
+        when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/23 * * * * *"));
         when(mockDataNeed.id()).thenReturn("myId");
         when(mockDataNeed.type()).thenReturn(GenericAiidaDataNeed.DISCRIMINATOR_VALUE);
         when(mockDataNeed.name()).thenReturn("My Name");
@@ -186,7 +187,7 @@ class PermissionServiceTest {
         assertNotNull(dataNeed);
         assertEquals(permissionId, dataNeed.permissionId());
         assertEquals("myId", dataNeed.dataNeedId());
-        assertEquals(23, dataNeed.transmissionInterval());
+        assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
         assertEquals(GenericAiidaDataNeed.DISCRIMINATOR_VALUE, dataNeed.type());
         assertEquals("My Name", dataNeed.name());
         assertEquals("Some purpose", dataNeed.purpose());

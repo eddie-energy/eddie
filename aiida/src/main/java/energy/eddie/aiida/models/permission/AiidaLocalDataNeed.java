@@ -1,10 +1,16 @@
 package energy.eddie.aiida.models.permission;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
+import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
+import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import org.springframework.scheduling.support.CronExpression;
 
 import java.util.Set;
 
@@ -30,9 +36,12 @@ public class AiidaLocalDataNeed {
     @Column(nullable = false, name = "policy_link")
     @JsonProperty
     private final String policyLink;
-    @Column(nullable = false, name = "transmission_interval")
+    @Column(nullable = false, name = "transmission_schedule")
+    @Convert(converter = CronExpressionConverter.class)
     @JsonProperty
-    private final int transmissionInterval;
+    @JsonSerialize(using = CronExpressionSerializer.class)
+    @JsonDeserialize(using = CronExpressionDeserializer.class)
+    private final CronExpression transmissionSchedule;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_local_data_need_data_tags", joinColumns = @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id"))
     @Column(name = "data_tags")
@@ -50,7 +59,7 @@ public class AiidaLocalDataNeed {
         this.name = null;
         this.purpose = null;
         this.policyLink = null;
-        this.transmissionInterval = -1;
+        this.transmissionSchedule = null;
         this.dataTags = null;
     }
 
@@ -61,7 +70,7 @@ public class AiidaLocalDataNeed {
         this.name = details.dataNeed().name();
         this.purpose = details.dataNeed().purpose();
         this.policyLink = details.dataNeed().policyLink();
-        this.transmissionInterval = details.dataNeed().transmissionInterval();
+        this.transmissionSchedule = details.dataNeed().transmissionSchedule();
 
         if (details.dataNeed() instanceof GenericAiidaDataNeed genericAiida) {
             this.dataTags = Set.copyOf(genericAiida.dataTags());
@@ -94,8 +103,8 @@ public class AiidaLocalDataNeed {
         return policyLink;
     }
 
-    public int transmissionInterval() {
-        return transmissionInterval;
+    public CronExpression transmissionSchedule() {
+        return transmissionSchedule;
     }
 
     public @Nullable Set<String> dataTags() {
