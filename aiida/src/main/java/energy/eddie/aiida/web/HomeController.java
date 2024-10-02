@@ -11,10 +11,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.time.Duration;
 import java.util.UUID;
 
 @Controller
 public class HomeController {
+    public static Duration MAX_CONNECTION_ID_LIFETIME= Duration.ofHours(24);
 
     @GetMapping("/")
     public String home(Model model, HttpServletRequest request, HttpServletResponse response, Authentication auth) {
@@ -44,7 +46,7 @@ public class HomeController {
         if (connectionId == null) {
             connectionId = "CONN_" + UUID.randomUUID();
             Cookie cookie = new Cookie(cookieH, connectionId);
-            cookie.setMaxAge(60 * 60 * 24); // Set cookie to expire after 24 hours
+            cookie.setMaxAge((int) MAX_CONNECTION_ID_LIFETIME.getSeconds()); // Set cookie to expire after 24 hours
             cookie.setHttpOnly(true);
             cookie.setSecure(true);
             response.addCookie(cookie);
