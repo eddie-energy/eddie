@@ -295,6 +295,29 @@ class PermissionServiceTest {
     }
 
     @Test
+    void givenInvalidUser_getPermissions_throws() throws InvalidUserException {
+        // Given
+        when(mockAuthService.getCurrentUserId()).thenThrow(InvalidUserException.class);
+
+        // When, Then
+        assertThrows(InvalidUserException.class, () -> service.getAllPermissionsSortedByGrantTime());
+    }
+
+    @Test
+    void givenValidUser_getPermissions() throws InvalidUserException {
+        // Given
+        var uuid = UUID.fromString("dc9ff3d3-1f1f-445d-a4ee-85c1faffb715");
+        when(mockAuthService.getCurrentUserId()).thenReturn(uuid);
+        when(mockRepository.findByUserIdOrderByGrantTimeDesc(uuid)).thenReturn(List.of(mockPermission));
+
+        // When
+        var result = service.getAllPermissionsSortedByGrantTime();
+
+        // Then
+        assertEquals(List.of(mockPermission), result);
+    }
+
+    @Test
     void givenPermissionInInvalidState_revokePermission_throws() {
         // Given
         when(mockRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));

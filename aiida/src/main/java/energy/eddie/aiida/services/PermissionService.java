@@ -302,9 +302,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      */
     public List<Permission> getAllPermissionsSortedByGrantTime() throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
-        if (currentUserId == null) {
-            throw new InvalidUserException();
-        }
+
         return repository.findByUserIdOrderByGrantTimeDesc(currentUserId);
     }
 

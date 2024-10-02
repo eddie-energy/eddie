@@ -47,6 +47,7 @@ class PermissionControllerTest {
     private Instant grant;
     private String permissionId;
     private ObjectMapper mapper;
+    private final UUID userId = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
@@ -102,7 +103,7 @@ class PermissionControllerTest {
         var permission1 = new Permission(new QrCodeDto(UUID.randomUUID().toString(),
                 name,
                 "https://example.org",
-                "fooBarToken"));
+                "fooBarToken"), userId);
         permission1.setGrantTime(grant);
 
         name = "Service2";
@@ -110,7 +111,7 @@ class PermissionControllerTest {
         var permission2 = new Permission(new QrCodeDto(UUID.randomUUID().toString(),
                 name,
                 "https://example.org",
-                "fooBarToken"));
+                "fooBarToken"), userId);
         permission2.setGrantTime(grant);
 
         name = "Service3";
@@ -118,7 +119,7 @@ class PermissionControllerTest {
         var permission3 = new Permission(new QrCodeDto(UUID.randomUUID().toString(),
                 name,
                 "https://example.org",
-                "fooBarToken"));
+                "fooBarToken"), userId);
         permission3.setGrantTime(grant);
 
         // grant time order is permission3, permission2, permission1
