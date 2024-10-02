@@ -13,7 +13,7 @@ import java.util.Set;
 @Entity
 @SuppressWarnings("NullAway")
 public class UsMeterReadingUpdateEvent extends PersistablePermissionEvent implements InternalPermissionEvent {
-    @OneToMany(fetch = FetchType.LAZY, targetEntity = MeterReading.class, cascade = CascadeType.MERGE)
+    @OneToMany(fetch = FetchType.LAZY, targetEntity = MeterReading.class)
     @JoinColumn(insertable = false, updatable = false, name = "permission_id", referencedColumnName = "permission_id")
     private final List<MeterReading> lastMeterReadings;
     @Enumerated(EnumType.STRING)
@@ -35,10 +35,10 @@ public class UsMeterReadingUpdateEvent extends PersistablePermissionEvent implem
     }
 
     public Optional<ZonedDateTime> latestMeterReadingEndDateTime() {
-        return DateTimeUtils.oldestDateTime(MeterReading.lastMeterReadingDates(lastMeterReadings));
+        return DateTimeUtils.oldestDateTime(MeterReading.lastMeterReadingDates(List.copyOf(lastMeterReadings)));
     }
 
     public Set<String> allowedMeters() {
-        return MeterReading.allowedMeters(lastMeterReadings);
+        return MeterReading.allowedMeters(List.copyOf(lastMeterReadings));
     }
 }

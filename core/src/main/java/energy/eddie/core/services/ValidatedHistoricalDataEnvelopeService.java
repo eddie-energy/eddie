@@ -14,8 +14,8 @@ public class ValidatedHistoricalDataEnvelopeService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedHistoricalDataEnvelopeService.class);
 
     private final Sinks.Many<ValidatedHistoricalDataEnvelope> consumptionRecordSink = Sinks.many()
-                                                                                                      .multicast()
-                                                                                                      .onBackpressureBuffer();
+                                                                                           .multicast()
+                                                                                           .onBackpressureBuffer();
     private final MeasurementConverter converter;
 
     public ValidatedHistoricalDataEnvelopeService(MeasurementConverter converter) {this.converter = converter;}
@@ -24,9 +24,9 @@ public class ValidatedHistoricalDataEnvelopeService {
         LOGGER.info("EddieValidatedHistoricalDataMarketDocumentService: Registering {}",
                     validatedHistoricalDataEnvelopeProvider.getClass().getName());
         validatedHistoricalDataEnvelopeProvider.getValidatedHistoricalDataMarketDocumentsStream()
-                                                .doOnNext(consumptionRecordSink::tryEmitNext)
-                                                .doOnError(consumptionRecordSink::tryEmitError)
-                                                .subscribe();
+                                               .doOnNext(consumptionRecordSink::tryEmitNext)
+                                               .doOnError(consumptionRecordSink::tryEmitError)
+                                               .subscribe();
     }
 
     public Flux<ValidatedHistoricalDataEnvelope> getEddieValidatedHistoricalDataMarketDocumentStream() {

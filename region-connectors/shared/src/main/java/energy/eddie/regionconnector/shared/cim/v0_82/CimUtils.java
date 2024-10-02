@@ -5,6 +5,7 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Locale;
 import java.util.function.Function;
 
 public class CimUtils {
@@ -22,7 +23,7 @@ public class CimUtils {
     @Nullable
     private static <T> T fromValue(String countryCode, Function<String, T> fromValue) {
         try {
-            return fromValue.apply("N" + countryCode);
+            return fromValue.apply("N" + countryCode.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             // prevent exception spamming until GH-638 is implemented
             if (!countryCode.equalsIgnoreCase("aiida"))

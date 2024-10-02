@@ -26,4 +26,13 @@ public enum Granularity {
     public int minutes() {
         return minutes;
     }
+
+    public static Granularity fromMinutes(int minutes) {
+        for (var granularity : Granularity.values()) {
+            if (granularity.minutes == minutes) {
+                return granularity;
+            }
+        }
+        throw new IllegalArgumentException("Invalid granularity: " + minutes);
+    }
 }

@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.us.green.button.client.dtos.meter.*;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsAcceptedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
+import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
 import energy.eddie.regionconnector.us.green.button.services.DataNeedMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,8 @@ class AcceptedHandlerTest {
     private DataNeedMatcher dataNeedMatcher;
     @Mock
     private Outbox outbox;
+    @Mock
+    private MeterReadingRepository meterReadingRepository;
     @InjectMocks
     @SuppressWarnings("unused")
     private AcceptedHandler handler;
@@ -73,6 +76,7 @@ class AcceptedHandlerTest {
                 .thenReturn(Mono.just(new HistoricalCollectionResponse(true, List.of("uid1", "uid3"))));
         when(dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(data1))
                 .thenReturn(List.of(meter1, meter2, meter3));
+        when(meterReadingRepository.saveAll(any())).thenAnswer(i -> i.getArguments()[0]);
 
         // When
         eventBus.emit(new UsAcceptedEvent("pid1", "1111"));
@@ -84,6 +88,31 @@ class AcceptedHandlerTest {
         assertEquals(Set.of("uid3"), res1.allowedMeters());
         var res2 = meterReadingEventCaptor.getAllValues().getFirst();
         assertEquals(Set.of("uid1"), res2.allowedMeters());
+    }
+
+    @Test
+    void testAccept_emitsUnfulfillable_onPermissionRequestWithoutMeters() {
+        // Given
+        var meter1 = createMeter("uid1", "1111");
+        meter1.setMeterBlock("basic", createMeterBlock());
+        var data1 = new MeterListing(List.of(meter1, meter1), null);
+        var meter2 = createMeter("uid2", "2222");
+        meter2.setMeterBlock("basic", createMeterBlock());
+        var data2 = new MeterListing(List.of(meter2), null);
+        when(api.fetchInactiveMeters(Pages.NO_SLURP, List.of("1111", "2222")))
+                .thenReturn(Flux.just(data1, data2));
+        when(api.collectHistoricalData(List.of("uid1", "uid1")))
+                .thenReturn(Mono.just(new HistoricalCollectionResponse(true, List.of())));
+        when(dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(data1))
+                .thenReturn(List.of(meter1, meter1));
+
+        // When
+        eventBus.emit(new UsAcceptedEvent("pid1", "1111"));
+        eventBus.emit(new UsAcceptedEvent("pid2", "2222"));
+
+        // Then
+        verify(outbox, times(2))
+                .commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, event.status())));
     }
 
     private static Meter createMeter(String uid, String authUid) {
@@ -116,30 +145,5 @@ class AcceptedHandlerTest {
 
     private static @NotNull MeterBlock createMeterBlock() {
         return new MeterBlock("", "", "electric", "", List.of(), "", "", "");
-    }
-
-    @Test
-    void testAccept_emitsUnfulfillable_onPermissionRequestWithoutMeters() {
-        // Given
-        var meter1 = createMeter("uid1", "1111");
-        meter1.setMeterBlock("basic", createMeterBlock());
-        var data1 = new MeterListing(List.of(meter1, meter1), null);
-        var meter2 = createMeter("uid2", "2222");
-        meter2.setMeterBlock("basic", createMeterBlock());
-        var data2 = new MeterListing(List.of(meter2), null);
-        when(api.fetchInactiveMeters(Pages.NO_SLURP, List.of("1111", "2222")))
-                .thenReturn(Flux.just(data1, data2));
-        when(api.collectHistoricalData(List.of("uid1", "uid1")))
-                .thenReturn(Mono.just(new HistoricalCollectionResponse(true, List.of())));
-        when(dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(data1))
-                .thenReturn(List.of(meter1, meter1));
-
-        // When
-        eventBus.emit(new UsAcceptedEvent("pid1", "1111"));
-        eventBus.emit(new UsAcceptedEvent("pid2", "2222"));
-
-        // Then
-        verify(outbox, times(2))
-                .commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, event.status())));
     }
 }

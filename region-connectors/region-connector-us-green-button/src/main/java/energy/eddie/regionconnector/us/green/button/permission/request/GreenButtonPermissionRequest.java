@@ -186,6 +186,11 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
     }
 
     @Override
+    public List<MeterReading> lastMeterReadings() {
+        return lastMeterReadings;
+    }
+
+    @Override
     public Optional<LocalDate> latestMeterReadingEndDate() {
         return latestMeterReadingEndDateTime()
                 .map(ZonedDateTime::toLocalDate);
