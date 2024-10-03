@@ -70,7 +70,7 @@ public class Aggregator implements AutoCloseable {
     }
 
     private void handleError(Throwable throwable, AiidaDataSource dataSource) {
-        // TODO: do we try to restart the affected datasource or only notify user?
+        // TODO: GH-1304 do we try to restart the affected datasource or only notify user?
         LOGGER.error("Error from datasource {}", dataSource.name(), throwable);
     }
 
