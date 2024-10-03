@@ -140,7 +140,7 @@ public class MicroTeleinfoV3 extends MqttDataSource {
                 asyncClient.subscribe(healthTopic, 1);
         } catch (MqttException ex) {
             LOGGER.error("Error while subscribing to topic {}", healthTopic, ex);
-            healthSink.tryEmitError(ex);
+            healthSink.tryEmitNext(Health.down().withDetail("Error", ex).build());
         }
     }
 
