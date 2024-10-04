@@ -42,7 +42,7 @@ abstract AbsoluteDuration {
 }
 
 abstract AiidaDataNeed {
-    transmissionInterval int<seconds>
+    transmissionSchedule String<CronExpression>
 }
 
 class GenericAiidaDataNeed {
@@ -64,5 +64,4 @@ DataNeedDuration <|-- RelativeDuration
 TimeframedDataNeed <|-- AiidaDataNeed
 AiidaDataNeed <|-- GenericAiidaDataNeed
 AiidaDataNeed <|-- SmartMeterAiidaDataNeed
-
 @enduml

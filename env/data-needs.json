@@ -43,7 +43,7 @@
       "start": "2024-04-01",
       "end": "2024-04-05"
     },
-    "transmissionInterval": 5,
+    "transmissionSchedule":"*/5 * * * * *",
     "dataTags": [
       "1.8.0",
       "1.7.0"

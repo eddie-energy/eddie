@@ -4,6 +4,7 @@ import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import org.junit.jupiter.api.Test;
+import org.springframework.scheduling.support.CronExpression;
 
 import java.util.Optional;
 
@@ -17,7 +18,7 @@ class AiidaTransmissionScheduleProviderTest {
     void testFindTransmissionSchedule_returnsISODuration() {
         // Given
         var dataNeed = mock(AiidaDataNeed.class);
-        when(dataNeed.transmissionInterval()).thenReturn(10);
+        when(dataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/10 * * * * *"));
         var dataNeedsService = mock(DataNeedsService.class);
         when(dataNeedsService.findById("dataNeedId"))
                 .thenReturn(Optional.of(dataNeed));
@@ -29,6 +30,6 @@ class AiidaTransmissionScheduleProviderTest {
         var res = scheduleProvider.findTransmissionSchedule(permissionRequest);
 
         // Then
-        assertEquals("PT10S", res);
+        assertEquals("*/10 * * * * *", res);
     }
 }

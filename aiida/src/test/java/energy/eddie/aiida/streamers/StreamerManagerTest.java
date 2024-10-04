@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
@@ -62,12 +63,13 @@ class StreamerManagerTest {
     @Test
     void givenSamePermissionTwice_createNewStreamer_throws() {
         // Given
-        when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockDataNeed.type()).thenReturn(GenericAiidaDataNeed.DISCRIMINATOR_VALUE);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
+        when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any()))
                      .thenReturn(mockAiidaStreamer);
@@ -85,12 +87,13 @@ class StreamerManagerTest {
     @Test
     void givenPermission_createStreamer_callsConnect() throws MqttException {
         // Given
-        when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockDataNeed.type()).thenReturn(GenericAiidaDataNeed.DISCRIMINATOR_VALUE);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
+        when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any()))
                      .thenReturn(mockAiidaStreamer);
@@ -128,13 +131,14 @@ class StreamerManagerTest {
 
     @Test
     void verify_close_closesAllStreamers() throws MqttException {
-        when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockDataNeed.type()).thenReturn(GenericAiidaDataNeed.DISCRIMINATOR_VALUE);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
-        when(aggregatorMock.getFilteredFlux(any(), any())).thenReturn(Flux.empty());
+        when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
+        when(aggregatorMock.getFilteredFlux(any(), any(), any())).thenReturn(Flux.empty());
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any()))
                      .thenReturn(mockAiidaStreamer);

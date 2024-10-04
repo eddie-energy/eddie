@@ -42,7 +42,7 @@ class DataNeedSummary extends HTMLElement {
       minGranularity,
       maxGranularity,
       energyType,
-      transmissionInterval,
+      transmissionSchedule,
       dataTags,
     } = dataNeed;
 
@@ -95,8 +95,8 @@ class DataNeedSummary extends HTMLElement {
             : ""}
 
           <!-- For AIIDA data needs -->
-          ${transmissionInterval
-            ? `<dt>Transmission Interval</dt><dd>${transmissionInterval} seconds</dd>`
+          ${transmissionSchedule
+            ? `<dt>Transmission Schedule</dt><dd>${transmissionSchedule}</dd>`
             : ""}
 
           <!-- For AIIDA smart meter data needs -->

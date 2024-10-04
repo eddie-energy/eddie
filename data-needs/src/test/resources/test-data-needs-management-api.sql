@@ -50,9 +50,7 @@ CREATE TABLE IF NOT EXISTS data_needs.generic_aiida_data_need
     name                  varchar(255) NOT NULL,
     policy_link           varchar(255) NOT NULL,
     purpose               varchar(255) NOT NULL,
-    transmission_interval integer      NOT NULL
-        CONSTRAINT generic_aiida_data_need_transmission_interval_check
-            CHECK (transmission_interval >= 1),
+    transmission_schedule varchar(36) NOT NULL,
     enabled               boolean DEFAULT TRUE
 );
 
@@ -85,9 +83,7 @@ CREATE TABLE IF NOT EXISTS data_needs.smart_meter_aiida_data_need
     name                  varchar(255) NOT NULL,
     policy_link           varchar(255) NOT NULL,
     purpose               varchar(255) NOT NULL,
-    transmission_interval integer      NOT NULL
-        CONSTRAINT smart_meter_aiida_data_need_transmission_interval_check
-            CHECK (transmission_interval >= 1),
+    transmission_schedule varchar(36) NOT NULL,
     enabled               boolean DEFAULT TRUE
 );
 

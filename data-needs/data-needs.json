@@ -43,7 +43,7 @@
       "start": "P0D",
       "end": "P10D"
     }, 
-    "transmissionInterval": 5,
+    "transmissionSchedule": "*/5 * * * * *",
     "dataTags": [
       "1-0:1.8.0",
       "1-0:1.7.0"
