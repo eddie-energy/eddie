@@ -3,7 +3,7 @@ package energy.eddie.aiida.web.webhook.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @SuppressWarnings("NullAway")
-public class ClientConnackRequest extends WebhookRequest {
+public class ClientConnAckRequest extends WebhookRequest {
     @JsonProperty("keepalive")
     private int keepAlive;
     @JsonProperty("proto_ver")

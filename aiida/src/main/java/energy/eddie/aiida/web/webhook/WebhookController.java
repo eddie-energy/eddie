@@ -1,6 +1,6 @@
 package energy.eddie.aiida.web.webhook;
 
-import energy.eddie.aiida.web.webhook.dtos.ClientConnackRequest;
+import energy.eddie.aiida.web.webhook.dtos.ClientConnAckRequest;
 import energy.eddie.aiida.web.webhook.dtos.ClientDisconnectedRequest;
 import energy.eddie.aiida.web.webhook.dtos.WebhookRequest;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ public class WebhookController {
         var clientId = payload.clientId().replaceAll("[\n\r]", "_");
 
         switch (payload) {
-            case ClientConnackRequest clientConnackPayload -> LOGGER.debug(
+            case ClientConnAckRequest clientConnackPayload -> LOGGER.debug(
                     "Received event {} with status {} from client {}",
                     payload.action(),
                     clientConnackPayload.connAck(),

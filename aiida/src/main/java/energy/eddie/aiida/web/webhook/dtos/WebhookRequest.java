@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         visible = true
 )
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = ClientConnackRequest.class, name = "client_connack"),
+        @JsonSubTypes.Type(value = ClientConnAckRequest.class, name = "client_connack"),
         @JsonSubTypes.Type(value = ClientDisconnectedRequest.class, name = "client_disconnected"),
 })
 

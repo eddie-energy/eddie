@@ -1,7 +1,7 @@
 package energy.eddie.aiida.web.webhook;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.web.webhook.dtos.ClientConnackRequest;
+import energy.eddie.aiida.web.webhook.dtos.ClientConnAckRequest;
 import energy.eddie.aiida.web.webhook.dtos.ClientDisconnectedRequest;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.AfterEach;
@@ -49,7 +49,7 @@ class WebhookControllerTest {
                     "action":"client_connack"
                 }
                 """;
-        var clientConnackRequest = objectMapper.readValue(clientConnackPayload, ClientConnackRequest.class);
+        var clientConnackRequest = objectMapper.readValue(clientConnackPayload, ClientConnAckRequest.class);
 
         // When
         mockMvc.perform(post("/webhook/event").contentType(MediaType.APPLICATION_JSON).content(clientConnackPayload))
