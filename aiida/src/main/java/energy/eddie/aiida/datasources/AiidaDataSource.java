@@ -1,11 +1,14 @@
 package energy.eddie.aiida.datasources;
 
 import energy.eddie.aiida.models.record.AiidaRecord;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-public abstract class AiidaDataSource implements AutoCloseable {
+public abstract class AiidaDataSource implements AutoCloseable, HealthIndicator {
     protected final Sinks.Many<AiidaRecord> recordSink;
+    protected final Sinks.Many<Health> healthSink;
     private final String id;
     private final String name;
 
@@ -18,6 +21,7 @@ public abstract class AiidaDataSource implements AutoCloseable {
         this.id = id;
         this.name = name;
         recordSink = Sinks.many().unicast().onBackpressureBuffer();
+        healthSink = Sinks.many().unicast().onBackpressureBuffer();
     }
 
     /**

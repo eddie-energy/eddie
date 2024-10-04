@@ -11,6 +11,7 @@ import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.slf4j.Logger;
+import org.springframework.boot.actuate.health.Health;
 import reactor.core.publisher.Flux;
 
 import java.nio.charset.StandardCharsets;
@@ -22,7 +23,7 @@ public abstract class MqttDataSource extends AiidaDataSource implements MqttCall
     private final MqttConfig mqttConfig;
     private final String clientId;
     @Nullable
-    private MqttAsyncClient asyncClient;
+    protected MqttAsyncClient asyncClient;
 
     /**
      * Creates a new {@code MqttDataSource} with the specified display name and mqttConfig.
@@ -139,6 +140,7 @@ public abstract class MqttDataSource extends AiidaDataSource implements MqttCall
         try {
             if (asyncClient != null)
                 asyncClient.subscribe(mqttConfig.subscribeTopic(), 2);
+            subscribeToHealthTopic();
         } catch (MqttException ex) {
             logger.error("Error while subscribing to topic {}", mqttConfig.subscribeTopic(), ex);
             recordSink.tryEmitError(ex);
@@ -148,5 +150,20 @@ public abstract class MqttDataSource extends AiidaDataSource implements MqttCall
     @Override
     public void authPacketArrived(int reasonCode, MqttProperties properties) {
         // implementation not needed by this datasource
+    }
+
+    protected void subscribeToHealthTopic() {
+        // Not needed in MqttDataSource
+    }
+
+    @Override
+    public Health health() {
+        if (asyncClient == null) {
+            return Health.down().withDetail("MqttDataSource", "Client is null.").build();
+        }
+
+        return (asyncClient.isConnected() ? Health.up() : Health.down()
+                                                                .withDetail("MqttDataSource",
+                                                                            "Client not connected with server " + asyncClient.getServerURI())).build();
     }
 }

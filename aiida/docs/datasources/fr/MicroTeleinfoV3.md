@@ -41,6 +41,20 @@ The topic it publishes to is <mqtt-base-topic>/<electricity-meter-id>, where <mq
 ** by default.
 The <electricity-meter-id> must be evaluated beforehand and has to be added to the datasource configuration.
 To see all configuration options of the image please refer to the official [documentation](https://fmartinou.github.io/teleinfo2mqtt/#/configuration/).
+The .env-fr-teleinfo file provides the most important configuration values with mostly prefilled valus which can be used.
+The example configuration looks as follows:
+
+```text
+MQTT_BASE_TOPIC=teleinfo
+MQTT_URL=mqtt://REPLACE_ME
+MQTT_USER=REPLACE_ME
+MQTT_PASSWORD=REPLACE_ME
+EMIT_INTERVAL=2
+HASS_DISCOVERY=false
+SERIAL=/dev/ttyACM0
+TIC_MODE=history
+TZ=Europe/Paris
+```
 
 ## How to use with AIIDA
 
@@ -80,4 +94,10 @@ AIIDA_DATASOURCES_FR_TELEINFO_0_MQTT_SUBSCRIBE_TOPIC=teleinfo
 AIIDA_DATASOURCES_FR_TELEINFO_0_MQTT_USERNAME=
 AIIDA_DATASOURCES_FR_TELEINFO_0_MQTT_PASSWORD=
 AIIDA_DATASOURCES_FR_TELEINFO_0_METERING_ID=123456789123
+```
+
+In order to start the docker compose with the _teleinfo2mqtt_ image use the following command:
+
+```shell
+docker compose --profile teleinfo up -d
 ```

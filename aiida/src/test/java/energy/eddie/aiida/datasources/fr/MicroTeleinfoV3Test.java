@@ -16,12 +16,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.springframework.boot.actuate.health.Status;
 import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -35,7 +37,7 @@ class MicroTeleinfoV3Test {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "MyTestTopic").build();
+        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data").build();
         mapper = new AiidaConfiguration().objectMapper();
         adapter = new MicroTeleinfoV3("1", config, mapper);
     }
@@ -116,7 +118,7 @@ class MicroTeleinfoV3Test {
 
     @Test
     void givenUsernameAndPassword_isUsedByAdapter() {
-        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "MyTestTopic")
+        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data")
                 .setUsername("User")
                 .setPassword("Pass")
                 .build();
@@ -162,7 +164,7 @@ class MicroTeleinfoV3Test {
 
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
-                        .then(() -> adapter.messageArrived("MyTestTopic", message))
+                        .then(() -> adapter.messageArrived("teleinfo/data", message))
                         .expectNextMatches(received -> received.code().equals("1-0:1.7.0")
                                                        && ((IntegerAiidaRecord) received).value() == 126)
                         .expectNextMatches(received -> received.code().equals("1-0:1.8.0")
@@ -171,6 +173,53 @@ class MicroTeleinfoV3Test {
                         .expectComplete()
                         .log()
                         .verify();
+        }
+    }
+
+    @Test
+    void givenStatusFromMqttBroker_HealthUp() {
+        var status = "up";
+        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
+            var mockClient = mock(MqttAsyncClient.class);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
+            when(mockClient.isConnected()).thenReturn(true);
+
+            MqttMessage message = new MqttMessage(status.getBytes(StandardCharsets.UTF_8));
+
+            StepVerifier.create(adapter.start())
+                        // call method to simulate arrived message
+                        .then(() -> adapter.messageArrived("teleinfo/status", message))
+                        .then(adapter::close)
+                        .expectComplete()
+                        .log()
+                        .verify();
+
+            assertEquals(Status.UP, adapter.health().getStatus());
+        }
+    }
+
+
+    @Test
+    void givenStatusFromMqttBroker_HealthDown() {
+        var status = "down";
+        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
+            var mockClient = mock(MqttAsyncClient.class);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
+            when(mockClient.isConnected()).thenReturn(true);
+
+            MqttMessage message = new MqttMessage(status.getBytes(StandardCharsets.UTF_8));
+
+            StepVerifier.create(adapter.start())
+                        // call method to simulate arrived message
+                        .then(() -> adapter.messageArrived("teleinfo/status", message))
+                        .then(adapter::close)
+                        .expectComplete()
+                        .log()
+                        .verify();
+
+            assertEquals(Status.DOWN, adapter.health().getStatus());
         }
     }
 

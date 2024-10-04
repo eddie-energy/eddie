@@ -5,6 +5,7 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.actuate.health.Health;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
@@ -104,5 +105,10 @@ public class SimulationDataSource extends AiidaDataSource {
 
         // ignore if this fails
         recordSink.tryEmitComplete();
+    }
+
+    @Override
+    public Health health() {
+        return Health.up().build();
     }
 }

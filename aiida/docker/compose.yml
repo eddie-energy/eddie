@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   timescaledb:
     image: timescale/timescaledb:latest-pg12
@@ -12,7 +11,7 @@ services:
 
   aiida:
     image: ghcr.io/eddie-energy/aiida:latest
-    depends_on: [ timescaledb ]
+    depends_on: [ timescaledb, nanomq ]
     ports:
       - "8080:8080"
     environment:
@@ -27,8 +26,21 @@ services:
       - "8084:8083"
       - "8884:8883"
     volumes:
-      - ./nanomq_pwd.conf:/etc/nanomq_pwd.conf
-      - ./nanomq.conf:/etc/nanomq.conf
+      - ./nanomq/nanomq_pwd.conf:/etc/nanomq_pwd.conf
+      - ./nanomq/nanomq.conf:/etc/nanomq.conf
+
+  teleinfo2mqtt:
+    depends_on:
+      - nanomq
+    profiles:
+      - teleinfo
+    image: fmartinou/teleinfo2mqtt
+    container_name: teleinfo2mqtt
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0
+    env_file:
+      - .env-fr-teleinfo2mqtt
+    restart: always
 
 networks:
   default:

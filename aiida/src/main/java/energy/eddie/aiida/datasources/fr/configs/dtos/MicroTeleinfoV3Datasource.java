@@ -1,8 +1,8 @@
-package energy.eddie.aiida.datasources.fr.configs;
+package energy.eddie.aiida.datasources.fr.configs.dtos;
 
-import energy.eddie.aiida.datasources.api.configs.MqttDataSourceConfig;
+import energy.eddie.aiida.datasources.fr.configs.MicroTeleinfoV3DatasourceConfig;
 
-public record FrDataSourceConfig(
+public record MicroTeleinfoV3Datasource(
         boolean enabled,
         String id,
         String mqttServerUri,
@@ -10,11 +10,11 @@ public record FrDataSourceConfig(
         String mqttUsername,
         String mqttPassword,
         String meteringId
-) implements MqttDataSourceConfig {
+) implements MicroTeleinfoV3DatasourceConfig {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof FrDataSourceConfig that)) return false;
+        if (!(o instanceof MicroTeleinfoV3Datasource that)) return false;
 
         return id.equals(that.id);
     }
