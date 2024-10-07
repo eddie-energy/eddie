@@ -105,9 +105,9 @@ openApiSpecs.forEach { (name, spec) ->
         description = "Generates Java classes for single API of Mijn Aansluiting"
 
         generatorName.set("java")
-        inputSpec.set("${projectDir}${spec}")
+        inputSpec.set("${projectDir.invariantSeparatorsPath}${spec}")
         outputDir.set(generatedSwaggerJavaDir)
-        ignoreFileOverride.set("${projectDir}/src/main/resources/.openapi-generator-ignore")
+        ignoreFileOverride.set("${projectDir.invariantSeparatorsPath}/src/main/resources/.openapi-generator-ignore")
 
         apiPackage.set("${packagePrefix}.api")
         invokerPackage.set("${packagePrefix}.invoker")
