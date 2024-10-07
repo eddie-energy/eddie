@@ -1,10 +1,8 @@
 package energy.eddie.regionconnector.us.green.button.permission.events;
 
 import jakarta.annotation.Nullable;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import org.springframework.data.domain.Persistable;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -13,8 +11,9 @@ import java.util.stream.Collectors;
 
 @Table(schema = "us_green_button", name = "last_meter_readings")
 @Entity
+@IdClass(MeterReadingPk.class)
 @SuppressWarnings("NullAway")
-public class MeterReading {
+public class MeterReading implements Persistable<MeterReadingPk> {
     @SuppressWarnings("unused")
     @Column(name = "permission_id", nullable = false)
     @Id
@@ -24,7 +23,7 @@ public class MeterReading {
     private final String meterUid;
     @Column(name = "last_meter_reading")
     @Nullable
-    private final ZonedDateTime lastMeterReading;
+    private ZonedDateTime lastMeterReading;
 
     public MeterReading(String permissionId, String meterUid, @Nullable ZonedDateTime lastMeterReading) {
         this.permissionId = permissionId;
@@ -42,16 +41,30 @@ public class MeterReading {
         return readings.stream().map(MeterReading::lastMeterReading).toList();
     }
 
+    public static Set<String> allowedMeters(List<MeterReading> readings) {
+        return readings.stream().map(MeterReading::meterUid).collect(Collectors.toSet());
+    }
+
     @Nullable
     public ZonedDateTime lastMeterReading() {
         return lastMeterReading;
     }
 
-    public static Set<String> allowedMeters(List<MeterReading> readings) {
-        return readings.stream().map(MeterReading::meterUid).collect(Collectors.toSet());
-    }
-
     public String meterUid() {
         return meterUid;
+    }
+
+    @Override
+    public MeterReadingPk getId() {
+        return null;
+    }
+
+    @Override
+    public boolean isNew() {
+        return lastMeterReading == null;
+    }
+
+    public void setLastMeterReading(@Nullable ZonedDateTime lastReading) {
+        this.lastMeterReading = lastReading;
     }
 }

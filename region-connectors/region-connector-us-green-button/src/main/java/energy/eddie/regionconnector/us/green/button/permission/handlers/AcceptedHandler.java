@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.us.green.button.api.Pages;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.permission.events.*;
+import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
 import energy.eddie.regionconnector.us.green.button.services.DataNeedMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,17 +30,20 @@ public class AcceptedHandler implements EventHandler<List<UsAcceptedEvent>> {
     private final boolean requiresPagination;
     private final DataNeedMatcher dataNeedMatcher;
     private final Outbox outbox;
+    private final MeterReadingRepository meterReadingRepository;
 
     public AcceptedHandler(
             EventBus eventBus,
             GreenButtonApi api,
             GreenButtonConfiguration config,
             DataNeedMatcher dataNeedMatcher,
-            Outbox outbox
+            Outbox outbox,
+            MeterReadingRepository meterReadingRepository
     ) {
         this.api = api;
         // Pagination is not required if the batch size is smaller-equals the maximum amount of meters.
         requiresPagination = config.activationBatchSize() > GreenButtonApi.MAX_METER_RESULTS;
+        this.meterReadingRepository = meterReadingRepository;
         eventBus.filteredFlux(UsAcceptedEvent.class)
                 .buffer(config.activationBatchSize())
                 .subscribe(this::accept);
@@ -93,6 +97,7 @@ public class AcceptedHandler implements EventHandler<List<UsAcceptedEvent>> {
                        LOGGER.info("Adding meters with UIDs {} to permission request {}",
                                    metersOfPermission,
                                    permissionId);
+                       meterReadings = meterReadingRepository.saveAll(meterReadings);
                        outbox.commit(new UsMeterReadingUpdateEvent(permissionId,
                                                                    meterReadings,
                                                                    PollingStatus.DATA_NOT_READY));

@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.us.green.button.permission.events.MeterReadi
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsPollingNotReadyEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
+import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
 import energy.eddie.regionconnector.us.green.button.providers.IdentifiableSyndFeed;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,8 +29,10 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionUpdateServiceTest {
@@ -41,6 +44,8 @@ class PermissionUpdateServiceTest {
     private final Jaxb2Marshaller marshaller = new GreenButtonBeanConfig().jaxb2Marshaller();
     @Mock
     private Outbox outbox;
+    @Mock
+    private MeterReadingRepository meterReadingRepository;
     @InjectMocks
     private PermissionUpdateService permissionUpdateService;
     @Captor
@@ -56,6 +61,7 @@ class PermissionUpdateServiceTest {
         var created = ZonedDateTime.of(start, LocalTime.MIDNIGHT, ZoneOffset.UTC);
         var pr = createPermissionRequest(created, start);
         var payload = new IdentifiableSyndFeed(pr, feed);
+        when(meterReadingRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         // When
         permissionUpdateService.updatePermissionRequest(payload);
@@ -64,25 +70,6 @@ class PermissionUpdateServiceTest {
         verify(outbox).commit(eventCaptor.capture());
         var res = eventCaptor.getValue();
         assertThat(res.latestMeterReadingEndDateTime()).contains(created.plusDays(1));
-    }
-
-    private static GreenButtonPermissionRequest createPermissionRequest(ZonedDateTime created, LocalDate start) {
-        var meterReading = new MeterReading("pid", "1669851", created.minusDays(1));
-        return new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                start,
-                LocalDate.of(2024, 9, 4),
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                created,
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                List.of(meterReading),
-                "1111");
     }
 
     @ParameterizedTest
@@ -126,5 +113,24 @@ class PermissionUpdateServiceTest {
 
         // Then
         verify(outbox).commit(isA(UsPollingNotReadyEvent.class));
+    }
+
+    private static GreenButtonPermissionRequest createPermissionRequest(ZonedDateTime created, LocalDate start) {
+        var meterReading = new MeterReading("pid", "1669851", created.minusDays(1));
+        return new GreenButtonPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                start,
+                LocalDate.of(2024, 9, 4),
+                Granularity.PT15M,
+                PermissionProcessStatus.ACCEPTED,
+                created,
+                "US",
+                "company",
+                "http://localhost",
+                "scope",
+                List.of(meterReading),
+                "1111");
     }
 }
