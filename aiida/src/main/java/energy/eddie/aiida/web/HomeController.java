@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Controller
 public class HomeController {
-    public static Duration MAX_CONNECTION_ID_LIFETIME= Duration.ofHours(24);
+    public static Duration MAX_CONNECTION_ID_LIFETIME = Duration.ofHours(24);
     public static String CONNECTION_ID_COOKIE_NAME = "connectionId";
 
     @GetMapping("/")
@@ -30,11 +30,11 @@ public class HomeController {
     }
 
     protected @Nullable String getConnectionIdFromCookiesIfPresent(HttpServletRequest request) {
-        if(request.getCookies() != null) {
-            var connectionIdCookie = Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equals(CONNECTION_ID_COOKIE_NAME)).findFirst();
-            return connectionIdCookie.map(Cookie::getValue).orElse(null);
+        if (request.getCookies() == null) {
+            return null;
         }
-        return null;
+        var connectionIdCookie = Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equals(CONNECTION_ID_COOKIE_NAME)).findFirst();
+        return connectionIdCookie.map(Cookie::getValue).orElse(null);
     }
 
     protected String createCookie(HttpServletResponse response, @Nullable String connectionId) {

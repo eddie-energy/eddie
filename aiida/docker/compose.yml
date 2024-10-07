@@ -51,7 +51,7 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
     volumes:
       - ./keycloak-realm.json:/opt/keycloak/data/import/keycloak-realm.json
-      - ./eddie-theme.jar:/opt/keycloak/providers/eddie-theme.jar
+      - ../../keycloak-eddie-theme/theme/eddie-theme:/opt/keycloak/themes/eddie-theme
     command: -v start-dev --import-realm
     env_file:
       - .env
