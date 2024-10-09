@@ -14,6 +14,19 @@ spring:
   flyway:
     enabled: true
     locations: 'classpath:db/aiida/migration'
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}
+        registration:
+          keycloak:
+            client-id: ${KEYCLOAK_CLIENT:AIIDA}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:REPLACE_ME}
+            authorization-grant-type: authorization_code
+            scope: openid
+            provider: keycloak
 
 #aiida:
 #  datasources:

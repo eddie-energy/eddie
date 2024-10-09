@@ -2,10 +2,7 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
-import energy.eddie.aiida.errors.DetailFetchingFailedException;
-import energy.eddie.aiida.errors.PermissionAlreadyExistsException;
-import energy.eddie.aiida.errors.PermissionNotFoundException;
-import energy.eddie.aiida.errors.PermissionUnfulfillableException;
+import energy.eddie.aiida.errors.*;
 import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
@@ -42,6 +39,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private final StreamerManager streamerManager;
     private final HandshakeService handshakeService;
     private final PermissionScheduler permissionScheduler;
+    private final AuthService authService;
 
     @Autowired
     public PermissionService(
@@ -49,13 +47,15 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             Clock clock,
             StreamerManager streamerManager,
             HandshakeService handshakeService,
-            PermissionScheduler permissionScheduler
+            PermissionScheduler permissionScheduler,
+            AuthService authService
     ) {
         this.repository = repository;
         this.clock = clock;
         this.streamerManager = streamerManager;
         this.handshakeService = handshakeService;
         this.permissionScheduler = permissionScheduler;
+        this.authService = authService;
 
         streamerManager.terminationRequestsFlux().subscribe(this::terminationRequestReceived);
     }
@@ -102,13 +102,16 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @return Permission object with the details as fetched from EDDIE.
      * @throws PermissionAlreadyExistsException If there is already a permission with the ID.
      * @throws PermissionUnfulfillableException If the permission cannot be fulfilled for whatever reason.
+     * @throws InvalidUserException If the id of the current user can not be determined by the token.
      */
-    public Permission setupNewPermission(QrCodeDto qrCodeDto) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException {
+    public Permission setupNewPermission(QrCodeDto qrCodeDto) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
+        var currentUserId = authService.getCurrentUserId();
+
         if (repository.existsById(qrCodeDto.permissionId())) {
             throw new PermissionAlreadyExistsException(qrCodeDto.permissionId());
         }
 
-        Permission permission = repository.save(new Permission(qrCodeDto));
+        Permission permission = repository.save(new Permission(qrCodeDto, currentUserId));
 
         PermissionDetailsDto details = handshakeService.fetchDetailsForPermission(permission)
                                                        .doOnError(error -> LOGGER.atError()
@@ -175,9 +178,11 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @return The updated permission object.
      * @throws PermissionStateTransitionException Thrown if the permission is not in the state
      *                                            {@link PermissionStatus#FETCHED_DETAILS}.
+     * @throws UnauthorizedException If the current user is not the owner of the Permission.
      */
-    public Permission rejectPermission(String permissionId) throws PermissionStateTransitionException, PermissionNotFoundException {
+    public Permission rejectPermission(String permissionId) throws PermissionStateTransitionException, PermissionNotFoundException, UnauthorizedException, InvalidUserException {
         var permission = findById(permissionId);
+        authService.checkAuthorizationForPermission(permission);
 
         if (permission.status() != FETCHED_DETAILS) {
             throw new PermissionStateTransitionException(permissionId,
@@ -204,9 +209,11 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @return The updated permission object.
      * @throws PermissionStateTransitionException Thrown if the permission is not in the state
      *                                            {@link PermissionStatus#FETCHED_DETAILS}.
+     * @throws UnauthorizedException If the current user is not the owner of the Permission.
      */
-    public Permission acceptPermission(String permissionId) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException {
+    public Permission acceptPermission(String permissionId) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
         var permission = findById(permissionId);
+        authService.checkAuthorizationForPermission(permission);
 
         if (permission.status() != FETCHED_DETAILS) {
             throw new PermissionStateTransitionException(permissionId,
@@ -250,11 +257,13 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @throws PermissionNotFoundException        In case no permission with the specified ID can be found.
      * @throws PermissionStateTransitionException In case the permission has a status that makes it not eligible for
      *                                            revocation.
+     * @throws UnauthorizedException If the current user is not the owner of the Permission.
      */
-    public Permission revokePermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException {
+    public Permission revokePermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException, UnauthorizedException, InvalidUserException {
         LOGGER.info("Got request to revoke permission with id {}", permissionId);
 
         var permission = findById(permissionId);
+        authService.checkAuthorizationForPermission(permission);
 
         if (!isEligibleForRevocation(permission))
             throw new PermissionStateTransitionException(permissionId,
@@ -291,8 +300,10 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @return A list of permissions, sorted by grantTime descending, i.e. the permission with the newest grantTime is
      * the first item.
      */
-    public List<Permission> getAllPermissionsSortedByGrantTime() {
-        return repository.findAllByOrderByGrantTimeDesc();
+    public List<Permission> getAllPermissionsSortedByGrantTime() throws InvalidUserException {
+        var currentUserId = authService.getCurrentUserId();
+
+        return repository.findByUserIdOrderByGrantTimeDesc(currentUserId);
     }
 
     /**

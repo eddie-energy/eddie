@@ -1,10 +1,7 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
-import energy.eddie.aiida.errors.DetailFetchingFailedException;
-import energy.eddie.aiida.errors.PermissionAlreadyExistsException;
-import energy.eddie.aiida.errors.PermissionNotFoundException;
-import energy.eddie.aiida.errors.PermissionUnfulfillableException;
+import energy.eddie.aiida.errors.*;
 import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
@@ -38,6 +35,7 @@ import java.time.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Stream;
@@ -62,6 +60,8 @@ class PermissionServiceTest {
     private GenericAiidaDataNeed mockDataNeed;
     @Mock
     private AiidaLocalDataNeed mockAiidaDataNeed;
+    @Mock
+    private AuthService mockAuthService;
     @Spy
     private Permission mockPermission;
     @Mock
@@ -79,6 +79,7 @@ class PermissionServiceTest {
     private final TestPublisher<String> testPublisher = TestPublisher.create();
     private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
     private final Clock clock = Clock.fixed(fixedInstant, AIIDA_ZONE_ID);
+    private final UUID userId = UUID.randomUUID();
 
     private final QrCodeDto qrCodeDto = new QrCodeDto(permissionId, serviceName, handshakeUrl, accessToken);
 
@@ -90,7 +91,8 @@ class PermissionServiceTest {
                                         clock,
                                         streamerManager,
                                         mockHandshakeService,
-                                        mockPermissionScheduler);
+                                        mockPermissionScheduler,
+                                        mockAuthService);
     }
 
     @Test
@@ -125,16 +127,17 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenExistingPermissionId_setupPermission_throws() {
+    void givenExistingPermissionId_setupPermission_throws() throws InvalidUserException {
         // Given
         when(mockRepository.existsById(permissionId)).thenReturn(true);
+        when(mockAuthService.getCurrentUserId()).thenReturn(userId);
 
         // When, Then
         assertThrows(PermissionAlreadyExistsException.class, () -> service.setupNewPermission(qrCodeDto));
     }
 
     @Test
-    void givenExceptionFromHandshakeService_setupNewPermission_throws() {
+    void givenExceptionFromHandshakeService_setupNewPermission_throws() throws InvalidUserException {
         // Given
         var exception = HttpClientErrorException.create(HttpStatus.GONE,
                                                         "Gone",
@@ -144,13 +147,14 @@ class PermissionServiceTest {
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.error(exception));
         when(mockRepository.save(any())).thenReturn(mockPermission);
         when(mockPermission.permissionId()).thenReturn(permissionId);
+        when(mockAuthService.getCurrentUserId()).thenReturn(userId);
 
         // When, Then
         assertThrows(DetailFetchingFailedException.class, () -> service.setupNewPermission(qrCodeDto));
     }
 
     @Test
-    void givenValidQrCodeDto_setupNewPermission_savesToDb_andCallsHandshakeService() throws PermissionUnfulfillableException, PermissionAlreadyExistsException, DetailFetchingFailedException {
+    void givenValidQrCodeDto_setupNewPermission_savesToDb_andCallsHandshakeService() throws PermissionUnfulfillableException, PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
@@ -165,6 +169,7 @@ class PermissionServiceTest {
         when(mockDataNeed.purpose()).thenReturn("Some purpose");
         when(mockDataNeed.policyLink()).thenReturn("https://example.org");
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0", "2.7.0"));
+        when(mockAuthService.getCurrentUserId()).thenReturn(userId);
 
         // When
         service.setupNewPermission(qrCodeDto);
@@ -223,7 +228,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidPermission_rejectPermission_updatesState_andRecordsTimestamp_andCallsHandshakeService() throws PermissionStateTransitionException, PermissionNotFoundException {
+    void givenValidPermission_rejectPermission_updatesState_andRecordsTimestamp_andCallsHandshakeService() throws PermissionStateTransitionException, PermissionNotFoundException, UnauthorizedException, InvalidUserException {
         // Given
         when(mockRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.status()).thenReturn(FETCHED_DETAILS);
@@ -265,7 +270,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidPermission_acceptPermission_updatesState_callsHandshakeService_andPermissionScheduler() throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException {
+    void givenValidPermission_acceptPermission_updatesState_callsHandshakeService_andPermissionScheduler() throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
         // Given
         when(mockRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
@@ -291,6 +296,29 @@ class PermissionServiceTest {
     }
 
     @Test
+    void givenInvalidUser_getPermissions_throws() throws InvalidUserException {
+        // Given
+        when(mockAuthService.getCurrentUserId()).thenThrow(InvalidUserException.class);
+
+        // When, Then
+        assertThrows(InvalidUserException.class, () -> service.getAllPermissionsSortedByGrantTime());
+    }
+
+    @Test
+    void givenValidUser_getPermissions() throws InvalidUserException {
+        // Given
+        var uuid = UUID.fromString("dc9ff3d3-1f1f-445d-a4ee-85c1faffb715");
+        when(mockAuthService.getCurrentUserId()).thenReturn(uuid);
+        when(mockRepository.findByUserIdOrderByGrantTimeDesc(uuid)).thenReturn(List.of(mockPermission));
+
+        // When
+        var result = service.getAllPermissionsSortedByGrantTime();
+
+        // Then
+        assertEquals(List.of(mockPermission), result);
+    }
+
+    @Test
     void givenPermissionInInvalidState_revokePermission_throws() {
         // Given
         when(mockRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
@@ -301,7 +329,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidPermission_revokePermission_updatesState_andRemovesScheduledRunnables() throws PermissionNotFoundException, PermissionStateTransitionException {
+    void givenValidPermission_revokePermission_updatesState_andRemovesScheduledRunnables() throws PermissionNotFoundException, PermissionStateTransitionException, UnauthorizedException, InvalidUserException {
         // Given
         when(mockRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
@@ -335,7 +363,7 @@ class PermissionServiceTest {
             var per = new Permission(new QrCodeDto("25ee5365-5d71-4b01-b21f-9c61f76a5cc9",
                                                    "Test Service Name",
                                                    "https://example.org",
-                                                   "fooBarToken"));
+                                                   "fooBarToken"), UUID.randomUUID());
             return Stream.of(
                     Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-12-24T00:00:00.000Z", STREAMING_DATA),
                     Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-09-19T00:00:00.000Z", FULFILLED),
@@ -356,7 +384,8 @@ class PermissionServiceTest {
                                             mockClock,
                                             streamerManager,
                                             mockHandshakeService,
-                                            permissionScheduler);
+                                            permissionScheduler,
+                                            mockAuthService);
         }
 
         /**

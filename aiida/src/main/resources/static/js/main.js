@@ -69,7 +69,7 @@ const STATUS = {
   },
 };
 
-const { VITE_API_BASE_URL: BASE_URL } = import.meta.env;
+const BASE_URL = "/permissions";
 
 const permissionDialog = document.getElementById("permission-dialog");
 const permissionDialogContent = document.getElementById(
@@ -220,10 +220,14 @@ function renderPermissions() {
 function addPermission() {
   const body = JSON.parse(atob(aiidaCodeInput.value));
 
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  const csrfHeader = document.querySelector('meta[name="csrf-header"]').getAttribute('content');
+
   fetch(BASE_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      [csrfHeader]: csrfToken,
     },
     body: JSON.stringify(body),
   })
@@ -265,10 +269,14 @@ function updatePermission(operation) {
 
   const { permissionId } = JSON.parse(atob(aiidaCodeInput.value));
 
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  const csrfHeader = document.querySelector('meta[name="csrf-header"]').getAttribute('content');
+
   fetch(`${BASE_URL}/${permissionId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      [csrfHeader]: csrfToken,
     },
     body: JSON.stringify({
       operation: operation,
@@ -335,10 +343,14 @@ function openRevokePermissionDialog(permissionId) {
 }
 
 function revokePermission(permissionId) {
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  const csrfHeader = document.querySelector('meta[name="csrf-header"]').getAttribute('content');
+
   fetch(`${BASE_URL}/${permissionId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      [csrfHeader]: csrfToken,
     },
     body: JSON.stringify({
       operation: "REVOKE",

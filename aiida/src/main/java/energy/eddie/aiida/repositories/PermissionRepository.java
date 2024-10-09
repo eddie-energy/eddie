@@ -6,14 +6,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface PermissionRepository extends JpaRepository<Permission, String> {
     /**
-     * Returns all permission objects stored within the database, sorted by their grantTime descending.
+     * Returns all permission objects for the given userId, sorted by their grantTime descending.
      *
      * @return A list of permissions, sorted by grantTime descending, i.e. the permission with the newest grantTime is the first item.
      */
-    List<Permission> findAllByOrderByGrantTimeDesc();
+    List<Permission> findByUserIdOrderByGrantTimeDesc(UUID userId);
 
     /**
      * Returns a list of all active permission, i.e. all permissions, whose status is either {@link PermissionStatus#ACCEPTED} or {@link PermissionStatus#WAITING_FOR_START} or {@link PermissionStatus#STREAMING_DATA}.

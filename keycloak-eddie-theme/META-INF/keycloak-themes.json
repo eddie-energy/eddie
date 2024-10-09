@@ -1,0 +1,6 @@
+{
+    "themes": [{
+        "name" : "eddie-theme",
+        "types": [ "login" ]
+    }]
+}

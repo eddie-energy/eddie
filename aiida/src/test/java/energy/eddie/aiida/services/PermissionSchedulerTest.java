@@ -18,6 +18,7 @@ import org.springframework.scheduling.TaskScheduler;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
 
@@ -48,7 +49,7 @@ class PermissionSchedulerTest {
     private final Permission permission = new Permission(new QrCodeDto(permissionId,
                                                                        serviceName,
                                                                        handshakeUrl,
-                                                                       accessToken));
+                                                                       accessToken), UUID.randomUUID());
 
     @BeforeEach
     void setUp() {

@@ -9,6 +9,7 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
 
@@ -70,17 +71,23 @@ public class Permission {
     @Nullable
     @JsonProperty
     private AiidaLocalDataNeed dataNeed;
+    @Schema(description = "UUID of the user that owns the permission.")
+    @Column
+    @JsonProperty
+    @Nullable
+    private UUID userId;
 
     /**
      * Create a new permission from the contents of the QR code. The status will be set to
      * {@link PermissionStatus#CREATED}.
      */
-    public Permission(QrCodeDto qrCodeDto) {
+    public Permission(QrCodeDto qrCodeDto, UUID userId) {
         this.permissionId = qrCodeDto.permissionId();
         this.serviceName = qrCodeDto.serviceName();
         this.handshakeUrl = qrCodeDto.handshakeUrl();
         this.accessToken = qrCodeDto.accessToken();
         this.status = PermissionStatus.CREATED;
+        this.userId = userId;
     }
 
     /**
@@ -164,6 +171,10 @@ public class Permission {
 
     public String accessToken() {
         return accessToken;
+    }
+
+    public @Nullable UUID userId() {
+        return userId;
     }
 
     /**

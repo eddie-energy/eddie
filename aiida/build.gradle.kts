@@ -32,6 +32,10 @@ dependencies {
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.openapi.webmvc.ui)
+    implementation(libs.spring.boot.security)
+    implementation(libs.spring.boot.starter.keycloak)
+    implementation(libs.spring.boot.starter.thymeleaf)
+    implementation(libs.spring.boot.starter.oauth2.client)
 
     implementation(libs.reactor.core)
     implementation(libs.flyway.core)
@@ -42,6 +46,7 @@ dependencies {
 
     runtimeOnly(libs.postgresql)
 
+    testImplementation(libs.spring.security.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.reactor.test)
     testImplementation(libs.apache.http.client)
