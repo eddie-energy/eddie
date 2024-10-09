@@ -139,11 +139,12 @@ class IntermediatePermissionMarketDocumentTest {
                                        .getMktActivityRecords().getFirst().getMRID()),
                 () -> assertNotNull(pmd.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
                                        .getMktActivityRecords().getFirst().getCreatedDateTime()),
-                () -> assertEquals("", pmd.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
-                                          .getMktActivityRecords().getFirst().getDescription()),
+                () -> assertEquals("ACCEPTED",
+                                   pmd.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
+                                      .getMktActivityRecords().getFirst().getDescription()),
                 () -> assertEquals("rc", pmd.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
                                             .getMktActivityRecords().getFirst().getType()),
-                () -> assertEquals(StatusTypeList.A107,
+                () -> assertEquals(StatusTypeList.A37,
                                    pmd.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
                                       .getMktActivityRecords().getFirst().getStatus())
         );

@@ -2877,7 +2877,7 @@ PURPOSE
             </xs:enumeration>
             <xs:enumeration value="VALIDATED">
                 <xs:annotation>
-                    <xs:documentation>A100</xs:documentation>
+                    <xs:documentation>Z02</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="MALFORMED">
@@ -2907,7 +2907,7 @@ PURPOSE
             </xs:enumeration>
             <xs:enumeration value="TIMED_OUT">
                 <xs:annotation>
-                    <xs:documentation>A106</xs:documentation>
+                    <xs:documentation>Z03</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="ACCEPTED">
@@ -2932,7 +2932,7 @@ PURPOSE
             </xs:enumeration>
             <xs:enumeration value="INVALID">
                 <xs:annotation>
-                    <xs:documentation>A111</xs:documentation>
+                    <xs:documentation>Z01</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="CREATED">
