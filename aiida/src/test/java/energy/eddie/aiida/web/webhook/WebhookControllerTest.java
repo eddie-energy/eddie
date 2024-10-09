@@ -10,9 +10,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -37,6 +39,7 @@ class WebhookControllerTest {
     }
 
     @Test
+    @WithMockUser
     void testClientConnackRequest() throws Exception {
         // Given
         var clientConnackPayload = """
@@ -52,7 +55,7 @@ class WebhookControllerTest {
         var clientConnackRequest = objectMapper.readValue(clientConnackPayload, ClientConnAckRequest.class);
 
         // When
-        mockMvc.perform(post("/webhook/event").contentType(MediaType.APPLICATION_JSON).content(clientConnackPayload))
+        mockMvc.perform(post("/webhook/event").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(clientConnackPayload))
                .andExpect(status().isOk());
 
         assertTrue(logCaptor.getDebugLogs()
@@ -62,6 +65,7 @@ class WebhookControllerTest {
     }
 
     @Test
+    @WithMockUser
     void testClientDisconnectedRequest() throws Exception {
         // Given
         var clientDisconnectedPayload = """
@@ -76,7 +80,7 @@ class WebhookControllerTest {
                                                                ClientDisconnectedRequest.class);
 
         // When
-        mockMvc.perform(post("/webhook/event").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/webhook/event").with(csrf()).contentType(MediaType.APPLICATION_JSON)
                                               .content(clientDisconnectedPayload)).andExpect(status().isOk());
 
         assertTrue(logCaptor.getDebugLogs()
@@ -87,6 +91,7 @@ class WebhookControllerTest {
     }
 
     @Test
+    @WithMockUser
     void testUnsupportedEvent() throws Exception {
         // Given
         var clientDisconnectedPayload = """
@@ -99,7 +104,7 @@ class WebhookControllerTest {
                 """;
 
         // When, Then
-        mockMvc.perform(post("/webhook/event").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/webhook/event").with(csrf()).contentType(MediaType.APPLICATION_JSON)
                                               .content(clientDisconnectedPayload)).andExpect(status().isBadRequest());
     }
 }

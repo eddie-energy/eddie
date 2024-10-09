@@ -34,6 +34,7 @@ public class OAuth2SecurityConfig {
                                 "/img/icon.svg",
                                 "/css/style.css",
                                 "/css/login.css",
+                                "/webhook/event",
                                 "/js/main.js")
                         .permitAll()
                         .anyRequest().authenticated()

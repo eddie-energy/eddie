@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,7 +17,7 @@ class PermissionTest {
     private final Permission permission = new Permission(new QrCodeDto(permissionId,
                                                                        serviceName,
                                                                        handshakeUrl,
-                                                                       accessToken));
+                                                                       accessToken), UUID.randomUUID());
 
     @Test
     void constructor_setsStatusToCreated() {
