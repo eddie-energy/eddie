@@ -8,6 +8,7 @@ import jakarta.persistence.Entity;
 @Entity
 public class MqttCredentialsCreatedEvent extends PersistablePermissionEvent implements InternalPermissionEvent {
     @Column(name = "mqtt_username", nullable = false)
+    @SuppressWarnings("unused")
     private final String mqttUsername;
 
     @SuppressWarnings("NullAway")

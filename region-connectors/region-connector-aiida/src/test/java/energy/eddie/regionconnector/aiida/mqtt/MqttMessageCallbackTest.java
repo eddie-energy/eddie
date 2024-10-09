@@ -10,32 +10,33 @@ import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class MqttMessageCallbackTest {
     private final LogCaptor logCaptor = LogCaptor.forClass(MqttMessageCallback.class);
     private final ObjectMapper realObjectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .registerModule(new Jdk8Module());
+    @Mock
     private Sinks.Many<String> revocationSink;
+    @Mock
     private ObjectMapper objectMapper;
+    @InjectMocks
     private MqttMessageCallback mqttMessageCallback;
-
-    @BeforeEach
-    void setUp() {
-        revocationSink = mock(Sinks.Many.class);
-        objectMapper = mock(ObjectMapper.class);
-        mqttMessageCallback = new MqttMessageCallback(revocationSink, objectMapper);
-    }
 
     @AfterEach
     void tearDown() {
@@ -50,8 +51,8 @@ class MqttMessageCallbackTest {
         String permissionId = "test";
         String payload = "{\"connectionId\":\"30\",\"dataNeedId\":\"test\",\"timestamp\":1725458241.237425343,\"status\":\"REVOKED\",\"permissionId\":\"test\"}";
 
-        MqttMessage mqttMessage = new MqttMessage(payload.getBytes());
-        ConnectionStatusMessage connectionStatusMessage = realObjectMapper.readValue(payload.getBytes(),
+        MqttMessage mqttMessage = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
+        ConnectionStatusMessage connectionStatusMessage = realObjectMapper.readValue(payload.getBytes(StandardCharsets.UTF_8),
                                                                                      ConnectionStatusMessage.class);
 
         when(objectMapper.readValue(anyString(),
@@ -73,8 +74,8 @@ class MqttMessageCallbackTest {
         String topic = "some/topic/status";
         String payload = "{\"connectionId\":\"30\",\"dataNeedId\":\"test\",\"timestamp\":1725458241.237425343,\"status\":\"ACCEPTED\",\"permissionId\":\"test\"}";
 
-        MqttMessage mqttMessage = new MqttMessage(payload.getBytes());
-        ConnectionStatusMessage connectionStatusMessage = realObjectMapper.readValue(payload.getBytes(),
+        MqttMessage mqttMessage = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
+        ConnectionStatusMessage connectionStatusMessage = realObjectMapper.readValue(payload.getBytes(StandardCharsets.UTF_8),
                                                                                      ConnectionStatusMessage.class);
 
         when(objectMapper.readValue(anyString(),

@@ -11,7 +11,6 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.ap.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
-import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -26,6 +25,7 @@ import java.io.Closeable;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Future;
 
 public class KafkaConnector implements
         ConnectionStatusMessageOutboundConnector,
@@ -44,10 +44,6 @@ public class KafkaConnector implements
         this.kafkaProducer = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new CustomSerializer());
     }
 
-    KafkaConnector(KafkaProducer<String, Object> kafkaProducer) {
-        this.kafkaProducer = kafkaProducer;
-    }
-
     @Override
     public void setConnectionStatusMessageStream(Flux<ConnectionStatusMessage> statusMessageStream) {
         statusMessageStream
@@ -55,41 +51,11 @@ public class KafkaConnector implements
                 .subscribe(this::produceStatusMessage);
     }
 
-    private void produceStatusMessage(ConnectionStatusMessage statusMessage) {
-        kafkaProducer.send(new ProducerRecord<>("status-messages", statusMessage),
-                           new KafkaCallback("Could not produce connection status message"));
-        LOGGER.debug("Produced connection status {} message for permission request {}",
-                     statusMessage.status(),
-                     statusMessage.permissionId());
-    }
-
     @Override
     public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
         permissionMarketDocumentStream
                 .publishOn(Schedulers.boundedElastic())
                 .subscribe(this::producePermissionMarketDocument);
-    }
-
-    private void producePermissionMarketDocument(PermissionEnvelope permissionMarketDocument) {
-        var header = permissionMarketDocument.getMessageDocumentHeader()
-                                             .getMessageDocumentHeaderMetaInformation();
-        var permissionId = header.getPermissionid();
-        var toSend = new ProducerRecord<String, Object>(
-                "permission-market-documents",
-                null,
-                permissionId,
-                permissionMarketDocument,
-                cimToHeaders(header)
-        );
-        kafkaProducer.send(toSend, new KafkaCallback("Could not produce permission market document"));
-    }
-
-    private Iterable<Header> cimToHeaders(energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderMetaInformationComplexType header) {
-        return List.of(
-                new StringHeader(PERMISSION_ID, header.getPermissionid()),
-                new StringHeader(CONNECTION_ID, header.getConnectionid()),
-                new StringHeader(DATA_NEED_ID, header.getDataNeedid())
-        );
     }
 
     @Override
@@ -101,43 +67,11 @@ public class KafkaConnector implements
                 .subscribe(this::produceEddieValidatedHistoricalDataMarketDocument);
     }
 
-    private void produceEddieValidatedHistoricalDataMarketDocument(
-            ValidatedHistoricalDataEnvelope marketDocument
-    ) {
-        var info = marketDocument.getMessageDocumentHeader()
-                                 .getMessageDocumentHeaderMetaInformation();
-        var toSend = new ProducerRecord<String, Object>("validated-historical-data",
-                                                        null,
-                                                        info.getConnectionid(),
-                                                        marketDocument,
-                                                        cimToHeaders(info));
-        kafkaProducer.send(toSend,
-                           new KafkaCallback("Could not produce validated historical data market document message"));
-        LOGGER.debug("Produced validated historical data market document message for permission request {}",
-                     info.getPermissionid());
-    }
-
-    private static Iterable<Header> cimToHeaders(energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderMetaInformationComplexType header) {
-        return List.of(
-                new StringHeader(PERMISSION_ID, header.getPermissionid()),
-                new StringHeader(CONNECTION_ID, header.getConnectionid()),
-                new StringHeader(DATA_NEED_ID, header.getDataNeedid())
-        );
-    }
-
     @Override
     public void setRawDataStream(Flux<RawDataMessage> rawDataStream) {
         rawDataStream
                 .publishOn(Schedulers.boundedElastic())
                 .subscribe(this::produceRawDataMessage);
-    }
-
-    private void produceRawDataMessage(RawDataMessage message) {
-        var toSend = new ProducerRecord<String, Object>("raw-data-in-proprietary-format",
-                                                        message.connectionId(),
-                                                        message);
-        kafkaProducer.send(toSend, new KafkaCallback("Could not produce raw data message"));
-        LOGGER.debug("Produced raw data message for permission request {}", message.permissionId());
     }
 
     @Override
@@ -152,6 +86,83 @@ public class KafkaConnector implements
                 .subscribe(this::produceAccountingPointEnvelope);
     }
 
+    private void produceStatusMessage(ConnectionStatusMessage statusMessage) {
+        var future = kafkaProducer.send(new ProducerRecord<>("status-messages", statusMessage));
+        awaitFuture(future, "Could not produce connection status message");
+        LOGGER.debug("Produced connection status {} message for permission request {}",
+                     statusMessage.status(),
+                     statusMessage.permissionId());
+    }
+
+    private static void awaitFuture(Future<RecordMetadata> future, String errorMessage) {
+        Thread.startVirtualThread(() -> {
+            try {
+                LOGGER.debug("Produced kafka message {}", future.get());
+            } catch (InterruptedException e) {
+                LOGGER.warn(errorMessage, e);
+                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+                LOGGER.warn(errorMessage, e);
+            }
+        });
+    }
+
+    private void producePermissionMarketDocument(PermissionEnvelope permissionMarketDocument) {
+        var header = permissionMarketDocument.getMessageDocumentHeader()
+                                             .getMessageDocumentHeaderMetaInformation();
+        var permissionId = header.getPermissionid();
+        var toSend = new ProducerRecord<String, Object>(
+                "permission-market-documents",
+                null,
+                permissionId,
+                permissionMarketDocument,
+                cimToHeaders(header)
+        );
+        var future = kafkaProducer.send(toSend);
+        awaitFuture(future, "Could not produce permission market document");
+    }
+
+    private Iterable<Header> cimToHeaders(energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderMetaInformationComplexType header) {
+        return List.of(
+                new StringHeader(PERMISSION_ID, header.getPermissionid()),
+                new StringHeader(CONNECTION_ID, header.getConnectionid()),
+                new StringHeader(DATA_NEED_ID, header.getDataNeedid())
+        );
+    }
+
+    private void produceEddieValidatedHistoricalDataMarketDocument(
+            ValidatedHistoricalDataEnvelope marketDocument
+    ) {
+        var info = marketDocument.getMessageDocumentHeader()
+                                 .getMessageDocumentHeaderMetaInformation();
+        var toSend = new ProducerRecord<String, Object>("validated-historical-data",
+                                                        null,
+                                                        info.getConnectionid(),
+                                                        marketDocument,
+                                                        cimToHeaders(info));
+        var kafka = kafkaProducer.send(toSend);
+        awaitFuture(kafka, "Could not produce validated historical data market document message");
+        LOGGER.debug("Produced validated historical data market document message for permission request {}",
+                     info.getPermissionid());
+    }
+
+    private static Iterable<Header> cimToHeaders(energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderMetaInformationComplexType header) {
+        return List.of(
+                new StringHeader(PERMISSION_ID, header.getPermissionid()),
+                new StringHeader(CONNECTION_ID, header.getConnectionid()),
+                new StringHeader(DATA_NEED_ID, header.getDataNeedid())
+        );
+    }
+
+    private void produceRawDataMessage(RawDataMessage message) {
+        var toSend = new ProducerRecord<String, Object>("raw-data-in-proprietary-format",
+                                                        message.connectionId(),
+                                                        message);
+        var future = kafkaProducer.send(toSend);
+        awaitFuture(future, "Could not produce raw data message");
+        LOGGER.debug("Produced raw data message for permission request {}", message.permissionId());
+    }
+
     private void produceAccountingPointEnvelope(
             AccountingPointEnvelope marketDocument
     ) {
@@ -164,8 +175,8 @@ public class KafkaConnector implements
                 marketDocument,
                 cimToHeaders(header)
         );
-        kafkaProducer.send(toSend,
-                           new KafkaCallback("Could not produce accounting point market document message"));
+        var future = kafkaProducer.send(toSend);
+        awaitFuture(future, "Could not produce accounting point market document message");
         LOGGER.debug("Produced accounting point market document message for permission request {}",
                      header.getPermissionid());
     }
@@ -178,15 +189,6 @@ public class KafkaConnector implements
                 new StringHeader(CONNECTION_ID, header.getConnectionid()),
                 new StringHeader(DATA_NEED_ID, header.getDataNeedid())
         );
-    }
-
-    private record KafkaCallback(String errorLogMessage) implements Callback {
-        @Override
-        public void onCompletion(RecordMetadata metadata, Exception exception) {
-            if (exception != null) {
-                LOGGER.error(errorLogMessage, exception);
-            }
-        }
     }
 
     private record StringHeader(String key, String payload) implements Header {

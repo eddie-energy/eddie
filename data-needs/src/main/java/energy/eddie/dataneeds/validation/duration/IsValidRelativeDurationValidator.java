@@ -13,10 +13,6 @@ import java.util.Optional;
 public class IsValidRelativeDurationValidator implements ConstraintValidator<IsValidRelativeDuration, RelativeDuration> {
     private final Clock clock;
 
-    public IsValidRelativeDurationValidator() {
-        this(Clock.systemDefaultZone());
-    }
-
     public IsValidRelativeDurationValidator(Clock clock) {
         this.clock = clock;
     }

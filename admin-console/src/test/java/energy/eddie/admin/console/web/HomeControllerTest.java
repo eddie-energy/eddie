@@ -7,6 +7,7 @@ import energy.eddie.admin.console.services.TerminationAdminConsoleConnector;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -32,6 +33,8 @@ class HomeControllerTest {
     private TerminationAdminConsoleConnector terminationConnector;
     @Mock
     private Model model;
+    @Captor
+    private ArgumentCaptor<List<StatusMessageDTO>> captor;
     @InjectMocks
     private HomeController homeController;
 
@@ -59,7 +62,6 @@ class HomeControllerTest {
 
         // When
         homeController.home(model);
-        ArgumentCaptor<List<StatusMessageDTO>> captor = ArgumentCaptor.forClass((Class) List.class);
         verify(model, times(1)).addAttribute(eq("statusMessages"), captor.capture());
         List<StatusMessageDTO> statusMessages = captor.getValue();
 
@@ -96,7 +98,6 @@ class HomeControllerTest {
 
         // When
         homeController.home(model);
-        ArgumentCaptor<List<StatusMessageDTO>> captor = ArgumentCaptor.forClass((Class) List.class);
         verify(model, times(1)).addAttribute(eq("statusMessages"), captor.capture());
         List<StatusMessageDTO> statusMessages = captor.getValue();
 

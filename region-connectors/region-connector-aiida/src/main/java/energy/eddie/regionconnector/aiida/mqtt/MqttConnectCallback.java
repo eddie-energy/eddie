@@ -41,6 +41,7 @@ public class MqttConnectCallback implements MqttActionListener {
     }
 
     @Override
+    @SuppressWarnings("FutureReturnValueIgnored")
     public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
         LOGGER.atError()
               .addArgument(asyncActionToken.getClient().getServerURI())
