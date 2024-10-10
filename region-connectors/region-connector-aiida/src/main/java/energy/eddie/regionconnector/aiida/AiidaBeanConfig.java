@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.aiida;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
@@ -92,12 +91,6 @@ public class AiidaBeanConfig {
         return Clock.systemUTC();
     }
 
-
-    @Bean
-    public Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
     @Bean
     public Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
@@ -135,11 +128,10 @@ public class AiidaBeanConfig {
     @Bean
     public ConnectionStatusMessageHandler<AiidaPermissionRequest> connectionStatusMessageHandler(
             EventBus eventBus,
-            Sinks.Many<ConnectionStatusMessage> messageSink,
             AiidaPermissionRequestViewRepository repository
     ) {
         // AIIDA does not populate additional info for messages
-        return new ConnectionStatusMessageHandler<>(eventBus, messageSink, repository, request -> "");
+        return new ConnectionStatusMessageHandler<>(eventBus, repository, request -> "");
     }
 
     @Bean

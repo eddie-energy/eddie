@@ -1,6 +1,7 @@
 package energy.eddie.api.agnostic;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.annotation.Nullable;
 
@@ -30,7 +31,15 @@ public record ConnectionStatusMessage(
         String message,
         @Nullable JsonNode additionalInformation
 ) {
-
+    public ConnectionStatusMessage(PermissionRequest pr) {
+        this(
+                pr.connectionId(),
+                pr.permissionId(),
+                pr.dataNeedId(),
+                pr.dataSourceInformation(),
+                pr.status()
+        );
+    }
 
     public ConnectionStatusMessage(
             String connectionId,

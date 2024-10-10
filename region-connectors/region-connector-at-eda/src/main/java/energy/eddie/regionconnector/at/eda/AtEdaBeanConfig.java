@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.ponton.xp.adapter.api.ConnectionException;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
@@ -150,14 +149,6 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink() {
-        return Sinks
-                .many()
-                .multicast()
-                .onBackpressureBuffer();
-    }
-
-    @Bean
     public Sinks.Many<PermissionEnvelope> consentMarketDocumentSink() {
         return Sinks
                 .many()
@@ -227,12 +218,10 @@ public class AtEdaBeanConfig {
     @Bean
     public ConnectionStatusMessageHandler<AtPermissionRequest> connectionStatusMessageHandler(
             EventBus eventBus,
-            Sinks.Many<ConnectionStatusMessage> messages,
             AtPermissionRequestRepository repository
     ) {
         return new ConnectionStatusMessageHandler<>(
                 eventBus,
-                messages,
                 repository,
                 AtPermissionRequest::message,
                 pr -> objectMapper().createObjectNode().put("cmRequestId", pr.cmRequestId())

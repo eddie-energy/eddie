@@ -20,7 +20,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
-import static energy.eddie.regionconnector.dk.energinet.utils.JwtValidations.isValidUntil;
+import static energy.eddie.regionconnector.shared.jwt.JwtValidations.isValidUntil;
 
 @Service
 public class PermissionCreationService {

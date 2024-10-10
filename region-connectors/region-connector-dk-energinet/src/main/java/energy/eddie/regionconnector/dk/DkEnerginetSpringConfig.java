@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.dk;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnector;
@@ -66,11 +65,6 @@ public class DkEnerginetSpringConfig {
             @Value("${" + ENERGINET_CUSTOMER_BASE_PATH_KEY + "}") String customerBasePath
     ) {
         return new PlainEnerginetConfiguration(customerBasePath);
-    }
-
-    @Bean
-    public Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
     }
 
     @Bean
@@ -148,10 +142,9 @@ public class DkEnerginetSpringConfig {
     @Bean
     public ConnectionStatusMessageHandler<DkEnerginetPermissionRequest> connectionStatusMessageHandler(
             EventBus eventBus,
-            Sinks.Many<ConnectionStatusMessage> messages,
             DkPermissionRequestRepository repository
     ) {
-        return new ConnectionStatusMessageHandler<>(eventBus, messages, repository, pr -> "");
+        return new ConnectionStatusMessageHandler<>(eventBus, repository, pr -> "");
     }
 
     @Bean

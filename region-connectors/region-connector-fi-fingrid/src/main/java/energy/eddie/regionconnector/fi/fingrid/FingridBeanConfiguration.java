@@ -16,6 +16,7 @@ import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRe
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.spring.regionconnector.extensions.cim.v0_82.pmd.CommonPermissionMarketDocumentProvider;
@@ -97,6 +98,14 @@ public class FingridBeanConfiguration {
                 pr -> "",
                 FingridRegionConnectorMetadata.ZONE_ID_FINLAND
         );
+    }
+
+    @Bean
+    public ConnectionStatusMessageHandler<FingridPermissionRequest> connectionStatusMessageHandler(
+            FiPermissionRequestRepository fiPermissionRequestRepository,
+            EventBus eventBus
+    ) {
+        return new ConnectionStatusMessageHandler<>(eventBus, fiPermissionRequestRepository, pr -> "");
     }
 
     @Bean

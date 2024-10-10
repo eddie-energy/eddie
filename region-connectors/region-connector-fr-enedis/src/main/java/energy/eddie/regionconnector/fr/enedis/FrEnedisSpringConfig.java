@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.fr.enedis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
@@ -91,11 +90,6 @@ public class FrEnedisSpringConfig {
     }
 
     @Bean
-    public Sinks.Many<ConnectionStatusMessage> messages() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
     public Sinks.Many<PermissionEnvelope> pmdSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
@@ -127,22 +121,6 @@ public class FrEnedisSpringConfig {
     @Bean
     public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnvelope> sink) {
         return new CommonPermissionMarketDocumentProvider(sink);
-    }
-
-    @Bean
-    FulfillmentService fulfillmentService(Outbox outbox) {
-        return new FulfillmentService(outbox, FrSimpleEvent::new);
-    }
-
-    @Bean
-    MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService(
-            FulfillmentService fulfillmentService,
-            Outbox outbox
-    ) {
-        return new MeterReadingPermissionUpdateAndFulfillmentService(
-                fulfillmentService,
-                (pr, meterReading) -> outbox.commit(new FrInternalPollingEvent(pr.permissionId(), meterReading))
-        );
     }
 
     @Bean
@@ -188,15 +166,9 @@ public class FrEnedisSpringConfig {
     @Bean
     public ConnectionStatusMessageHandler<FrEnedisPermissionRequest> connectionStatusMessageHandler(
             EventBus eventBus,
-            Sinks.Many<ConnectionStatusMessage> csm,
             FrPermissionRequestRepository repository
     ) {
-        return new ConnectionStatusMessageHandler<>(
-                eventBus,
-                csm,
-                repository,
-                pr -> ""
-        );
+        return new ConnectionStatusMessageHandler<>(eventBus, repository, pr -> "");
     }
 
     @Bean
@@ -211,6 +183,22 @@ public class FrEnedisSpringConfig {
                 objectMapper,
                 identifiableMeterReadingFlux,
                 accountingPointDataFlux
+        );
+    }
+
+    @Bean
+    FulfillmentService fulfillmentService(Outbox outbox) {
+        return new FulfillmentService(outbox, FrSimpleEvent::new);
+    }
+
+    @Bean
+    MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService(
+            FulfillmentService fulfillmentService,
+            Outbox outbox
+    ) {
+        return new MeterReadingPermissionUpdateAndFulfillmentService(
+                fulfillmentService,
+                (pr, meterReading) -> outbox.commit(new FrInternalPollingEvent(pr.permissionId(), meterReading))
         );
     }
 }

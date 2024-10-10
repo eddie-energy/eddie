@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.shared.event.sourcing.handlers.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.events.InternalPermissionEvent;
@@ -10,34 +11,32 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.util.function.Function;
 
-public class ConnectionStatusMessageHandler<T extends PermissionRequest> implements EventHandler<PermissionEvent> {
+public class ConnectionStatusMessageHandler<T extends PermissionRequest> implements EventHandler<PermissionEvent>, ConnectionStatusMessageProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusMessageHandler.class);
-    private final Sinks.Many<ConnectionStatusMessage> messages;
+    private final Sinks.Many<ConnectionStatusMessage> messages = Sinks.many().multicast().onBackpressureBuffer();
     private final PermissionRequestRepository<T> repository;
     private final Function<T, String> messageFunc;
     private final Function<T, JsonNode> additionalDataFunc;
 
     public ConnectionStatusMessageHandler(
             EventBus eventBus,
-            Sinks.Many<ConnectionStatusMessage> messages,
             PermissionRequestRepository<T> repository,
             Function<T, String> messageFunc
     ) {
-        this(eventBus, messages, repository, messageFunc, permissionRequest -> null);
+        this(eventBus, repository, messageFunc, permissionRequest -> null);
     }
 
     public ConnectionStatusMessageHandler(
             EventBus eventBus,
-            Sinks.Many<ConnectionStatusMessage> messages,
             PermissionRequestRepository<T> repository,
             Function<T, String> messageFunc,
             Function<T, JsonNode> additionalDataFunc
     ) {
-        this.messages = messages;
         this.repository = repository;
         this.messageFunc = messageFunc;
         this.additionalDataFunc = additionalDataFunc;
@@ -68,5 +67,15 @@ public class ConnectionStatusMessageHandler<T extends PermissionRequest> impleme
                         additionalDataFunc.apply(permissionRequest)
                 )
         );
+    }
+
+    @Override
+    public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
+        return messages.asFlux();
+    }
+
+    @Override
+    public void close() {
+        messages.tryEmitComplete();
     }
 }

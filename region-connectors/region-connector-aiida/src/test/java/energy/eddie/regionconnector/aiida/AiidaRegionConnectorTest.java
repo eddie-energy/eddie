@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.aiida;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,12 +21,11 @@ class AiidaRegionConnectorTest {
     @Mock
     private AiidaPermissionService mockService;
     private AiidaRegionConnector connector;
-    private final Sinks.Many<ConnectionStatusMessage> statusSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<PermissionEnvelope> documentSink = Sinks.many().multicast().onBackpressureBuffer();
 
     @BeforeEach
     void setUp() {
-        connector = new AiidaRegionConnector(statusSink, documentSink, mockService);
+        connector = new AiidaRegionConnector(documentSink, mockService);
     }
 
     @Test
@@ -45,14 +43,6 @@ class AiidaRegionConnectorTest {
 
         // Then
         verify(mockService).terminatePermission(permissionId);
-    }
-
-    @Test
-    void close_emitsCompleteOnStatusMessageFlux() {
-        StepVerifier.create(connector.getConnectionStatusMessageStream())
-                    .then(() -> connector.close())
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
     }
 
     @Test

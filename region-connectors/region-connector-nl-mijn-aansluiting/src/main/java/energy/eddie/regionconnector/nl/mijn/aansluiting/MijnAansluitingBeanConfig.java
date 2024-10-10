@@ -18,7 +18,6 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.oauth2.sdk.GeneralException;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
@@ -29,6 +28,7 @@ import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.data.needs.SupportsEnergyTypePredicate;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
@@ -133,11 +133,6 @@ public class MijnAansluitingBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
     public Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
@@ -155,13 +150,12 @@ public class MijnAansluitingBeanConfig {
     public Set<EventHandler<PermissionEvent>> integrationEventHandlers(
             EventBus eventBus,
             NlPermissionRequestRepository repository,
-            Sinks.Many<ConnectionStatusMessage> messages,
             Sinks.Many<PermissionEnvelope> permissionMarketDocuments,
             MijnAansluitingConfiguration config,
             CommonInformationModelConfiguration cimConfig
     ) {
         return Set.of(
-                new ConnectionStatusMessageHandler<>(eventBus, messages, repository, pr -> ""),
+                new ConnectionStatusMessageHandler<>(eventBus, repository, pr -> ""),
                 new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                              repository,
                                                              permissionMarketDocuments,
@@ -204,5 +198,13 @@ public class MijnAansluitingBeanConfig {
                 pollingService.identifiableMeteredDataFlux(),
                 pollingService.identifiableAccountingPointDataFlux()
         );
+    }
+
+    @Bean
+    public ConnectionStatusMessageHandler<NlPermissionRequest> connectionStatusMessageHandler(
+            NlPermissionRequestRepository nlPermissionRequestRepository,
+            EventBus eventBus
+    ) {
+        return new ConnectionStatusMessageHandler<>(eventBus, nlPermissionRequestRepository, pr -> "");
     }
 }

@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.es.datadis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
@@ -93,11 +92,6 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    public Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
     public Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
@@ -171,15 +165,9 @@ public class DatadisSpringConfig {
     @Bean
     public ConnectionStatusMessageHandler<EsPermissionRequest> connectionStatusMessageHandler(
             EventBus eventBus,
-            Sinks.Many<ConnectionStatusMessage> csm,
             EsPermissionRequestRepository repository
     ) {
-        return new ConnectionStatusMessageHandler<>(
-                eventBus,
-                csm,
-                repository,
-                EsPermissionRequest::errorMessage
-        );
+        return new ConnectionStatusMessageHandler<>(eventBus, repository, EsPermissionRequest::errorMessage);
     }
 
     @Bean
