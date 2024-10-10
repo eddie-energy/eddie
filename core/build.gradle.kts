@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":region-connectors:shared"))
     implementation(project(":region-connectors:region-connector-aiida"))
     implementation(project(":region-connectors:region-connector-at-eda"))
+    implementation(project(":region-connectors:region-connector-be-fluvius"))
     implementation(project(":region-connectors:region-connector-dk-energinet"))
     implementation(project(":region-connectors:region-connector-fr-enedis"))
     implementation(project(":region-connectors:region-connector-es-datadis"))

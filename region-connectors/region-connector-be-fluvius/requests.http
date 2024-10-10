@@ -1,0 +1,59 @@
+#### Request to create a mock mandate
+# In our case the referenceNumber is the connectionId, so for test requests, just use a random uuid
+# The eanNumber is assembled, based on the required services, for more information checkout the docs
+# EanNumber Assembly:
+# 54144 (0 -> electricity, 1 -> gas) (0 -> decrease only, 1 -> sampling & injection) (0 -> VH_day, 1 -> VH_quarter_hour) 0000000 (xxx -> 1000 meters per group)
+< {%
+  const shortendUUid = $uuid.replace(/-/g, "");
+  client.global.set("referenceNumber", shortendUUid)
+%}
+POST {{baseUrl}}/api/v2.0/Mandate/mock
+Authorization: Bearer {{$auth.token("fluvius")}}
+Content-Type: application/json
+Ocp-Apim-Subscription-Key: {{subscriptionKey}}
+
+{
+  "referenceNumber": "{{referenceNumber}}",
+  "eanNumber": "541440110000000001",
+  "dataServiceType": "VH_kwartier_uur",
+  "dataPeriodFrom": "2024-01-25T00:00:00Z",
+  "dataPeriodTo": "2024-09-30T23:59:59Z",
+  "status": "Approved",
+  "mandateExpirationDate": "2024-12-29T23:00:00Z",
+  "renewalStatus": "ToBeRenewed"
+}
+
+#### Request to create a permission request
+POST {{baseUrl}}//api/v2.0/shortUrlIdentifier
+Authorization: Bearer {{$auth.token("fluvius")}}
+Content-Type: application/json
+Ocp-Apim-Subscription-Key: {{subscriptionKey}}
+
+{
+  "dataAccessContractNumber": "{{contractNumber}}",
+  "referenceNumber": "{{referenceNumber}}",
+  "flow": "B2C",
+  "dataServices": [
+    {
+      "dataServiceType": "VH_kwartier_uur",
+      "dataPeriodFrom": "2024-01-25T00:00:00Z",
+      "dataPeriodTo": "2024-09-30T23:59:59Z"
+    }
+  ],
+  "numberOfEans": "1",
+  "returnUrlSuccess": null,
+  "returnUrlFailed": null,
+  "sso": true,
+  "enterpriseNumber": null
+}
+
+
+#### Request specific mandates
+GET {{baseUrl}}/api/v2.0/Mandate?ReferenceNumber={{referenceNumber}}
+Authorization: Bearer {{$auth.token("fluvius")}}
+Ocp-Apim-Subscription-Key: {{subscriptionKey}}
+
+#### Request all mandates
+GET {{baseUrl}}/api/v2.0/Mandate
+Authorization: Bearer {{$auth.token("fluvius")}}
+Ocp-Apim-Subscription-Key: {{subscriptionKey}}
