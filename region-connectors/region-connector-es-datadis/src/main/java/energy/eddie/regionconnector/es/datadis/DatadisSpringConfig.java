@@ -6,10 +6,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -35,7 +33,6 @@ import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
-import energy.eddie.spring.regionconnector.extensions.cim.v0_82.pmd.CommonPermissionMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -92,11 +89,6 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    public Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
     public HttpClient httpClient(DatadisApiHealthIndicator datadisApiHealthIndicator) {
         return HttpClient.create()
                          .doOnResponse((httpClientResponse, connection) -> datadisApiHealthIndicator.up())
@@ -110,11 +102,6 @@ public class DatadisSpringConfig {
             @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
     ) {
         return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
-    }
-
-    @Bean
-    public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnvelope> sink) {
-        return new CommonPermissionMarketDocumentProvider(sink);
     }
 
     @Bean
@@ -147,14 +134,12 @@ public class DatadisSpringConfig {
     public PermissionMarketDocumentMessageHandler<EsPermissionRequest> pmdHandler(
             EventBus eventBus,
             EsPermissionRequestRepository esPermissionRequestRepository,
-            Sinks.Many<PermissionEnvelope> sink,
             DatadisConfig config,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,
                 esPermissionRequestRepository,
-                sink,
                 config.username(),
                 cimConfig,
                 pr -> null,

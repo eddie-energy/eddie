@@ -24,7 +24,6 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -48,7 +47,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import reactor.core.publisher.Sinks;
 
 import javax.net.ssl.X509KeyManager;
 import java.io.IOException;
@@ -133,11 +131,6 @@ public class MijnAansluitingBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
     public CommonInformationModelConfiguration commonInformationModelConfiguration(
             @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingSchemeTypeList,
             @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallback
@@ -150,7 +143,6 @@ public class MijnAansluitingBeanConfig {
     public Set<EventHandler<PermissionEvent>> integrationEventHandlers(
             EventBus eventBus,
             NlPermissionRequestRepository repository,
-            Sinks.Many<PermissionEnvelope> permissionMarketDocuments,
             MijnAansluitingConfiguration config,
             CommonInformationModelConfiguration cimConfig
     ) {
@@ -158,7 +150,6 @@ public class MijnAansluitingBeanConfig {
                 new ConnectionStatusMessageHandler<>(eventBus, repository, pr -> ""),
                 new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                              repository,
-                                                             permissionMarketDocuments,
                                                              config.continuousClientId().getValue(),
                                                              cimConfig,
                                                              pr -> null,

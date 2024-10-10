@@ -6,10 +6,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -33,7 +31,6 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.P
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
-import energy.eddie.spring.regionconnector.extensions.cim.v0_82.pmd.CommonPermissionMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -90,11 +87,6 @@ public class FrEnedisSpringConfig {
     }
 
     @Bean
-    public Sinks.Many<PermissionEnvelope> pmdSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
     public Sinks.Many<IdentifiableMeterReading> identifiableMeterReadingMany() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
@@ -119,11 +111,6 @@ public class FrEnedisSpringConfig {
     }
 
     @Bean
-    public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnvelope> sink) {
-        return new CommonPermissionMarketDocumentProvider(sink);
-    }
-
-    @Bean
     public EventBus eventBus() {
         return new EventBusImpl();
     }
@@ -137,14 +124,12 @@ public class FrEnedisSpringConfig {
     public PermissionMarketDocumentMessageHandler<FrEnedisPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
             FrPermissionRequestRepository repository,
-            Sinks.Many<PermissionEnvelope> sink,
             EnedisConfiguration config,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,
                 repository,
-                sink,
                 config.clientId(),
                 cimConfig,
                 pr -> null,

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -92,11 +91,6 @@ public class AiidaBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
     public Sinks.Many<String> revocationSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
@@ -138,14 +132,12 @@ public class AiidaBeanConfig {
     public PermissionMarketDocumentMessageHandler<AiidaPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
             AiidaPermissionRequestViewRepository repository,
-            Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink,
             AiidaConfiguration configuration,
             CommonInformationModelConfiguration cimConfig,
             TransmissionScheduleProvider<AiidaPermissionRequest> transmissionScheduleProvider
     ) {
         return new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                             repository,
-                                                            permissionMarketDocumentSink,
                                                             configuration.customerId(),
                                                             cimConfig,
                                                             transmissionScheduleProvider,

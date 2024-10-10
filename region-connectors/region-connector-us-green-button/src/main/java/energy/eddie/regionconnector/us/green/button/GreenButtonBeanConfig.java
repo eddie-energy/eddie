@@ -1,10 +1,8 @@
 package energy.eddie.regionconnector.us.green.button;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -22,7 +20,6 @@ import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEv
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionEventRepository;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
-import energy.eddie.spring.regionconnector.extensions.cim.v0_82.pmd.CommonPermissionMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +29,6 @@ import org.springframework.http.codec.xml.Jaxb2XmlDecoder;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Sinks;
 
 import java.time.ZoneOffset;
 import java.util.List;
@@ -106,11 +102,6 @@ public class GreenButtonBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<PermissionEnvelope> permissionEnvelopeMany() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
     public CommonInformationModelConfiguration cimConfig(
             @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
             @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
@@ -119,21 +110,14 @@ public class GreenButtonBeanConfig {
     }
 
     @Bean
-    public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnvelope> sink) {
-        return new CommonPermissionMarketDocumentProvider(sink);
-    }
-
-    @Bean
     public PermissionMarketDocumentMessageHandler<UsGreenButtonPermissionRequest> pmdHandler(
             EventBus eventBus,
             UsPermissionRequestRepository repository,
-            Sinks.Many<PermissionEnvelope> sink,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,
                 repository,
-                sink,
                 cimConfig.eligiblePartyFallbackId(),
                 cimConfig,
                 pr -> null,

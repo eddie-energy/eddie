@@ -4,7 +4,6 @@ import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
@@ -24,6 +22,7 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("resource")
 @ExtendWith(MockitoExtension.class)
 class PermissionMarketDocumentMessageHandlerTest {
     @Mock
@@ -32,7 +31,6 @@ class PermissionMarketDocumentMessageHandlerTest {
     @Test
     void testAccept_emitsPermissionMarketDocument() {
         // Given
-        Sinks.Many<PermissionEnvelope> messages = Sinks.many().multicast().onBackpressureBuffer();
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(10);
         var permissionRequest = new SimplePermissionRequest(
@@ -42,20 +40,19 @@ class PermissionMarketDocumentMessageHandlerTest {
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "fallbackId");
         EventBus eventBus = new EventBusImpl();
-        new PermissionMarketDocumentMessageHandler<>(eventBus,
-                                                     repository,
-                                                     messages,
-                                                     "EP-ID",
-                                                     cimConfig,
-                                                  pr -> null,
-                                                     ZoneOffset.UTC);
+        var handler = new PermissionMarketDocumentMessageHandler<>(eventBus,
+                                                                   repository,
+                                                                   "EP-ID",
+                                                                   cimConfig,
+                                                                   pr -> null,
+                                                                   ZoneOffset.UTC);
 
         // When
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.VALIDATED));
 
         // Then
-        StepVerifier.create(messages.asFlux())
-                    .then(messages::tryEmitComplete)
+        StepVerifier.create(handler.getPermissionMarketDocumentStream())
+                    .then(handler::close)
                     .expectNextCount(1)
                     .verifyComplete();
     }
@@ -63,25 +60,23 @@ class PermissionMarketDocumentMessageHandlerTest {
     @Test
     void testAccept_doesNotEmitStatus_ifNoPermissionIsFound() {
         // Given
-        Sinks.Many<PermissionEnvelope> messages = Sinks.many().multicast().onBackpressureBuffer();
         when(repository.findByPermissionId("pid")).thenReturn(Optional.empty());
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "fallbackId");
         EventBus eventBus = new EventBusImpl();
-        new PermissionMarketDocumentMessageHandler<>(eventBus,
+        var handler = new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                      repository,
-                                                     messages,
                                                      "EP-ID",
                                                      cimConfig,
-                                                  pr -> null,
+                                                                   pr -> null,
                                                      ZoneOffset.UTC);
 
         // When
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.VALIDATED));
 
         // Then
-        StepVerifier.create(messages.asFlux())
-                    .then(messages::tryEmitComplete)
+        StepVerifier.create(handler.getPermissionMarketDocumentStream())
+                    .then(handler::close)
                     .expectError(PermissionNotFoundException.class)
                     .verify();
     }
@@ -89,24 +84,22 @@ class PermissionMarketDocumentMessageHandlerTest {
     @Test
     void testAccept_doesNotEmitStatus_onInternalEvent() {
         // Given
-        Sinks.Many<PermissionEnvelope> messages = Sinks.many().multicast().onBackpressureBuffer();
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "fallbackId");
         EventBus eventBus = new EventBusImpl();
-        new PermissionMarketDocumentMessageHandler<>(eventBus,
+        var handler = new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                      repository,
-                                                     messages,
                                                      "EP-ID",
                                                      cimConfig,
-                                                  pr -> null,
+                                                                   pr -> null,
                                                      ZoneOffset.UTC);
 
         // When
         eventBus.emit(new InternalEvent("pid", PermissionProcessStatus.VALIDATED));
 
         // Then
-        StepVerifier.create(messages.asFlux())
-                    .then(messages::tryEmitComplete)
+        StepVerifier.create(handler.getPermissionMarketDocumentStream())
+                    .then(handler::close)
                     .verifyComplete();
     }
 }
