@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.dk.energinet.utils;
+package energy.eddie.regionconnector.shared.jwt;
 
 import org.junit.jupiter.api.Test;
 
@@ -7,6 +7,7 @@ import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 class JwtValidationsTest {
     private static final String VALID_REFRESH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0Ijo1NTE2MjM5MDIyLCJleHAiOjU1MTYyMzkwMjJ9.Gce4NCqCL64_1GvTP7gVzHkyC4kXEG0RAgAfxfNdVno";
