@@ -38,6 +38,16 @@ importers:
         specifier: ^4.5.2
         version: 4.5.2
 
+  region-connectors/region-connector-be-fluvius:
+    dependencies:
+      lit:
+        specifier: ^2.7.5
+        version: 2.7.5
+    devDependencies:
+      vite:
+        specifier: ^4.5.2
+        version: 4.5.2
+
   region-connectors/region-connector-dk-energinet:
     dependencies:
       lit:

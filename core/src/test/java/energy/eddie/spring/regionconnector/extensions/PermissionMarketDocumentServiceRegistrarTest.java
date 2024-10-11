@@ -2,7 +2,6 @@ package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.core.services.PermissionMarketDocumentService;
-import energy.eddie.spring.regionconnector.extensions.cim.v0_82.pmd.CommonPermissionMarketDocumentProvider;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -39,7 +38,7 @@ class PermissionMarketDocumentServiceRegistrarTest {
     void givenProvider_registersAtService() {
         // Given
         var mockService = mock(PermissionMarketDocumentService.class);
-        var mockProvider = mock(CommonPermissionMarketDocumentProvider.class);
+        var mockProvider = mock(PermissionMarketDocumentProvider.class);
 
         // When
         new PermissionMarketDocumentServiceRegistrar(Optional.of(mockProvider), mockService);

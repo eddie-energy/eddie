@@ -18,17 +18,16 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.oauth2.sdk.GeneralException;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.data.needs.SupportsEnergyTypePredicate;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
@@ -48,7 +47,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import reactor.core.publisher.Sinks;
 
 import javax.net.ssl.X509KeyManager;
 import java.io.IOException;
@@ -133,16 +131,6 @@ public class MijnAansluitingBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
-    public Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
     public CommonInformationModelConfiguration commonInformationModelConfiguration(
             @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingSchemeTypeList,
             @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallback
@@ -155,16 +143,13 @@ public class MijnAansluitingBeanConfig {
     public Set<EventHandler<PermissionEvent>> integrationEventHandlers(
             EventBus eventBus,
             NlPermissionRequestRepository repository,
-            Sinks.Many<ConnectionStatusMessage> messages,
-            Sinks.Many<PermissionEnvelope> permissionMarketDocuments,
             MijnAansluitingConfiguration config,
             CommonInformationModelConfiguration cimConfig
     ) {
         return Set.of(
-                new ConnectionStatusMessageHandler<>(eventBus, messages, repository, pr -> ""),
+                new ConnectionStatusMessageHandler<>(eventBus, repository, pr -> ""),
                 new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                              repository,
-                                                             permissionMarketDocuments,
                                                              config.continuousClientId().getValue(),
                                                              cimConfig,
                                                              pr -> null,
@@ -204,5 +189,13 @@ public class MijnAansluitingBeanConfig {
                 pollingService.identifiableMeteredDataFlux(),
                 pollingService.identifiableAccountingPointDataFlux()
         );
+    }
+
+    @Bean
+    public ConnectionStatusMessageHandler<NlPermissionRequest> connectionStatusMessageHandler(
+            NlPermissionRequestRepository nlPermissionRequestRepository,
+            EventBus eventBus
+    ) {
+        return new ConnectionStatusMessageHandler<>(eventBus, nlPermissionRequestRepository, pr -> "");
     }
 }

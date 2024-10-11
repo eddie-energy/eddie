@@ -1,7 +1,5 @@
 package energy.eddie.regionconnector.fr.enedis;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
-import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
@@ -11,24 +9,19 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 @Component
-public class EnedisRegionConnector implements RegionConnector, ConnectionStatusMessageProvider {
+public class EnedisRegionConnector implements RegionConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisRegionConnector.class);
-    private final Sinks.Many<ConnectionStatusMessage> connectionStatusSink;
     private final FrPermissionRequestRepository repository;
     private final Outbox outbox;
 
     public EnedisRegionConnector(
-            Sinks.Many<ConnectionStatusMessage> connectionStatusSink,
             FrPermissionRequestRepository repository,
             Outbox outbox
     ) {
-        this.connectionStatusSink = connectionStatusSink;
         this.repository = repository;
         this.outbox = outbox;
     }
@@ -46,15 +39,5 @@ public class EnedisRegionConnector implements RegionConnector, ConnectionStatusM
             return;
         }
         outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.TERMINATED));
-    }
-
-    @Override
-    public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
-        return connectionStatusSink.asFlux();
-    }
-
-    @Override
-    public void close() {
-        connectionStatusSink.tryEmitComplete();
     }
 }

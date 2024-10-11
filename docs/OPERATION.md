@@ -197,11 +197,13 @@ under `region-connectors/region-connector-<country-code>-<permission-administrat
 Or you can use the following links:
 
 - [Austria (EDA)](./../region-connectors/region-connector-at-eda/README.md)
+- [Belgium (Fluvius)](./../region-connectors/region-connector-be-fluvius/README.md)
 - [Denmark (Energinet)](./../region-connectors/region-connector-dk-energinet/README.md)
 - [France (Enedis)](./../region-connectors/region-connector-fr-enedis/README.md)
 - [Spain (Datadis)](./../region-connectors/region-connector-es-datadis/README.md)
 - [AIIDA (Near real-time data)](./../region-connectors/region-connector-aiida/README.md)
 - [Netherlands (Mijn Aansluiting)](./../region-connectors/region-connector-nl-mijn-aansluiting/README.md)
+- [US/Canada (Green Button)](./../region-connectors/region-connector-us-green-button/README.md)
 
 ### Business domain related configuration
 

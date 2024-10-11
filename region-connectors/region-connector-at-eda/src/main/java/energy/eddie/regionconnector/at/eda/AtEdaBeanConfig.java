@@ -4,14 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.ponton.xp.adapter.api.ConnectionException;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
-import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -46,7 +43,6 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.P
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
-import energy.eddie.spring.regionconnector.extensions.cim.v0_82.pmd.CommonPermissionMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
@@ -57,7 +53,6 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 
 import java.io.IOException;
 import java.util.List;
@@ -150,22 +145,6 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink() {
-        return Sinks
-                .many()
-                .multicast()
-                .onBackpressureBuffer();
-    }
-
-    @Bean
-    public Sinks.Many<PermissionEnvelope> consentMarketDocumentSink() {
-        return Sinks
-                .many()
-                .multicast()
-                .onBackpressureBuffer();
-    }
-
-    @Bean
     public CommonInformationModelConfiguration cimConfig(
             @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
             @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
@@ -185,11 +164,6 @@ public class AtEdaBeanConfig {
                 ),
                 identifiableConsumptionRecordFlux
         );
-    }
-
-    @Bean
-    public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnvelope> sink) {
-        return new CommonPermissionMarketDocumentProvider(sink);
     }
 
     @Bean
@@ -227,12 +201,10 @@ public class AtEdaBeanConfig {
     @Bean
     public ConnectionStatusMessageHandler<AtPermissionRequest> connectionStatusMessageHandler(
             EventBus eventBus,
-            Sinks.Many<ConnectionStatusMessage> messages,
             AtPermissionRequestRepository repository
     ) {
         return new ConnectionStatusMessageHandler<>(
                 eventBus,
-                messages,
                 repository,
                 AtPermissionRequest::message,
                 pr -> objectMapper().createObjectNode().put("cmRequestId", pr.cmRequestId())
@@ -250,13 +222,11 @@ public class AtEdaBeanConfig {
     public PermissionMarketDocumentMessageHandler<AtPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
             AtPermissionRequestRepository repository,
-            Sinks.Many<PermissionEnvelope> pmdSink,
             AtConfiguration atConfig,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                             repository,
-                                                            pmdSink,
                                                             atConfig.eligiblePartyId(),
                                                             cimConfig,
                                                             pr -> TRANSMISSION_CYCLE.name(),

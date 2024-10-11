@@ -1,10 +1,8 @@
 package energy.eddie.regionconnector.fi.fingrid;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -16,16 +14,15 @@ import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRe
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
-import energy.eddie.spring.regionconnector.extensions.cim.v0_82.pmd.CommonPermissionMarketDocumentProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientSsl;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Sinks;
 
 import java.util.List;
 
@@ -76,22 +73,15 @@ public class FingridBeanConfiguration {
     }
 
     @Bean
-    public PermissionMarketDocumentProvider consentMarketDocumentProvider(Sinks.Many<PermissionEnvelope> cmdSink) {
-        return new CommonPermissionMarketDocumentProvider(cmdSink);
-    }
-
-    @Bean
     public PermissionMarketDocumentMessageHandler<FingridPermissionRequest> cmdMessageHandler(
             EventBus eventBus,
             FiPermissionRequestRepository fiPermissionRequestRepository,
-            Sinks.Many<PermissionEnvelope> cmdSink,
             FingridConfiguration fingridConfiguration,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,
                 fiPermissionRequestRepository,
-                cmdSink,
                 fingridConfiguration.organisationUser(),
                 cimConfig,
                 pr -> "",
@@ -100,7 +90,10 @@ public class FingridBeanConfiguration {
     }
 
     @Bean
-    public Sinks.Many<PermissionEnvelope> cmdSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
+    public ConnectionStatusMessageHandler<FingridPermissionRequest> connectionStatusMessageHandler(
+            FiPermissionRequestRepository fiPermissionRequestRepository,
+            EventBus eventBus
+    ) {
+        return new ConnectionStatusMessageHandler<>(eventBus, fiPermissionRequestRepository, pr -> "");
     }
 }

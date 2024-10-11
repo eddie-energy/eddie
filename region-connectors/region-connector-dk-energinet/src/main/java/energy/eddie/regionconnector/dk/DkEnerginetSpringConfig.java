@@ -3,15 +3,12 @@ package energy.eddie.regionconnector.dk;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -40,7 +37,6 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.P
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
-import energy.eddie.spring.regionconnector.extensions.cim.v0_82.pmd.CommonPermissionMarketDocumentProvider;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +45,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
@@ -69,11 +64,6 @@ public class DkEnerginetSpringConfig {
     }
 
     @Bean
-    public Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
     public Flux<IdentifiableApiResponse> identifiableMeterReadingFlux(PollingService pollingService) {
         return pollingService.identifiableMeterReadings();
     }
@@ -81,11 +71,6 @@ public class DkEnerginetSpringConfig {
     @Bean
     public Flux<IdentifiableAccountingPointDetails> identifiableAccountingPointDetailsFlux(AccountingPointDetailsService accountingPointDetailsService) {
         return accountingPointDetailsService.identifiableMeteringPointDetailsFlux();
-    }
-
-    @Bean
-    public Sinks.Many<PermissionEnvelope> permissionMarketDocumentSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
     }
 
     @Bean
@@ -104,11 +89,6 @@ public class DkEnerginetSpringConfig {
                 commonInformationModelConfiguration,
                 new TimeSeriesBuilderFactory(new SeriesPeriodBuilderFactory())
         );
-    }
-
-    @Bean
-    public PermissionMarketDocumentProvider permissionMarketDocumentProvider(Sinks.Many<PermissionEnvelope> sink) {
-        return new CommonPermissionMarketDocumentProvider(sink);
     }
 
     @Bean
@@ -148,22 +128,19 @@ public class DkEnerginetSpringConfig {
     @Bean
     public ConnectionStatusMessageHandler<DkEnerginetPermissionRequest> connectionStatusMessageHandler(
             EventBus eventBus,
-            Sinks.Many<ConnectionStatusMessage> messages,
             DkPermissionRequestRepository repository
     ) {
-        return new ConnectionStatusMessageHandler<>(eventBus, messages, repository, pr -> "");
+        return new ConnectionStatusMessageHandler<>(eventBus, repository, pr -> "");
     }
 
     @Bean
     public PermissionMarketDocumentMessageHandler<DkEnerginetPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
-            Sinks.Many<PermissionEnvelope> pmdSink,
             DkPermissionRequestRepository repository,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                             repository,
-                                                            pmdSink,
                                                             cimConfig.eligiblePartyFallbackId(),
                                                             cimConfig,
                                                             pr -> Granularity.P1D.toString(),

@@ -13,6 +13,9 @@ findProject(":region-connectors:region-connector-aiida")?.name = "region-connect
 include("region-connectors:region-connector-at-eda")
 findProject(":region-connectors:region-connector-at-eda")?.name = "region-connector-at-eda"
 
+include("region-connectors:region-connector-be-fluvius")
+findProject(":region-connectors:region-connector-be-fluvius")?.name = "region-connector-be-fluvius"
+
 include("region-connectors:region-connector-dk-energinet")
 findProject(":region-connectors:region-connector-dk-energinet")?.name = "region-connector-dk-energinet"
 

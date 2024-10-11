@@ -957,5 +957,12 @@
     "companyId": "DEMOUTILITY",
     "jumpOffUrl": "https://greenbutton.demoutility.com",
     "regionConnector": "us-green-button"
+  },
+  {
+    "country": "be",
+    "company": "Fluvius",
+    "companyId": "Fluvius",
+    "jumpOffUrl": "https://fluvius.be",
+    "regionConnector": "be-fluvius"
   }
 ]

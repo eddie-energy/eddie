@@ -57,15 +57,6 @@ public class CoreSpringConfig implements WebMvcConfigurer {
         this.allowedCorsOrigins = allowedCorsOrigins;
     }
 
-    /**
-     * Beans returning a {@link org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor} need to
-     * be static for Spring to be able to "enhance @Configuration bean definition".
-     */
-    @Bean
-    static RegionConnectorRegistrationBeanPostProcessor regionConnectorRegistrationBeanPostProcessor(Environment environment) {
-        return new RegionConnectorRegistrationBeanPostProcessor(environment);
-    }
-
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // add a resource handler that serves all public files of this region connector
@@ -94,7 +85,8 @@ public class CoreSpringConfig implements WebMvcConfigurer {
      * registered in this core context by {@link SharedBeansRegistrar}.
      */
     @Bean
-    public ServletRegistrationBean<DispatcherServlet> dataNeedsDispatcherServlet() {
+    static ServletRegistrationBean<DispatcherServlet> dataNeedsDispatcherServlet() {
+        LOGGER.info("Starting data needs servlet");
         AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
         context.register(DataNeedsSpringConfig.class);
         context.register(SharedBeansRegistrar.class);
@@ -110,7 +102,7 @@ public class CoreSpringConfig implements WebMvcConfigurer {
         );
 
         connectorServletBean.setName("data-needs");
-        connectorServletBean.setLoadOnStartup(2);
+        connectorServletBean.setLoadOnStartup(1);
 
         LOGGER.info("Created ServletRegistrationBean for data needs, urlMapping is {}", urlMapping);
         return connectorServletBean;
@@ -159,5 +151,14 @@ public class CoreSpringConfig implements WebMvcConfigurer {
     @Bean
     public TimeoutConfiguration timeoutConfiguration(@Value("${eddie.permission.request.timeout.duration:168}") int timeoutDuration) {
         return new TimeoutConfiguration(timeoutDuration);
+    }
+
+    /**
+     * Beans returning a {@link org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor} need to
+     * be static for Spring to be able to "enhance @Configuration bean definition".
+     */
+    @Bean
+    static RegionConnectorRegistrationBeanPostProcessor regionConnectorRegistrationBeanPostProcessor(Environment environment) {
+        return new RegionConnectorRegistrationBeanPostProcessor(environment);
     }
 }

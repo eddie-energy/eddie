@@ -135,3 +135,6 @@ application-local.properties
 
 # Ignore IntelliJ Run Configurations
 .run
+
+# IntelliJ HTTP Client environment secrets
+*.private.env.json
