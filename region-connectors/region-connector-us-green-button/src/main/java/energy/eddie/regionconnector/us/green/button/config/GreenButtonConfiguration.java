@@ -3,13 +3,14 @@ package energy.eddie.regionconnector.us.green.button.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 @ConfigurationProperties(value = "region-connector.us.green.button")
 public class GreenButtonConfiguration {
     private final String apiToken;
     private final String basePath;
-    private final Map<String, String> clientIds;
-    private final Map<String, String> clientSecrets;
+    private final Map<String, String> clientIds = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private final Map<String, String> clientSecrets = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final String redirectUri;
     private final int activationBatchSize;
 
@@ -25,8 +26,8 @@ public class GreenButtonConfiguration {
     ) {
         this.apiToken = apiToken;
         this.basePath = basePath;
-        this.clientIds = clientIds;
-        this.clientSecrets = clientSecrets;
+        this.clientIds.putAll(clientIds);
+        this.clientSecrets.putAll(clientSecrets);
         this.redirectUri = redirectUri;
         this.activationBatchSize = activationBatchSize;
     }
