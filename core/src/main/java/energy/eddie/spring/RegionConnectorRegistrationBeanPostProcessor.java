@@ -3,7 +3,6 @@ package energy.eddie.spring;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.regionconnector.shared.utils.CommonPaths;
-import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springdoc.core.configuration.SpringDocConfiguration;
@@ -22,7 +21,6 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -91,7 +89,6 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         }
 
         registerEnabledRegionConnectorsBeanDefinition(registry, enabledRegionConnectorNames);
-        registerFlywayStrategy(registry, enabledRegionConnectorNames);
     }
 
     // Ignore warning to use .toList because it doesn't return a List<Class<?>> but a List<? extends Class<?>>
@@ -211,42 +208,6 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
                 .genericBeanDefinition(List.class, () -> copy)
                 .getBeanDefinition();
         registry.registerBeanDefinition(ENABLED_REGION_CONNECTOR_BEAN_NAME, beanDefinition);
-    }
-
-    /**
-     * Creates a {@link FlywayMigrationStrategy} for each enabled region connector, as well as for the {@code core},
-     * {@code data-needs} and {@code admin-console} module. The migration strategy creates the schema for the module and
-     * executes any migration scripts found in the respective folders on the classpath. The folder pattern is:
-     * "db/migration/&lt;region-connector-name&gt;". Any minus ('-') in the region connector's name will be replaced by
-     * an underscore ('_') for a valid schema name.
-     *
-     * @param registry                    BeanDefinitionRegistry where the {@link FlywayMigrationStrategy} is
-     *                                    registered.
-     * @param enabledRegionConnectorNames List of all the region connector names.
-     */
-    private void registerFlywayStrategy(BeanDefinitionRegistry registry, List<String> enabledRegionConnectorNames) {
-        List<String> modulesForFlyway = new ArrayList<>();
-        modulesForFlyway.add("core");
-        modulesForFlyway.add("data-needs");
-        modulesForFlyway.add("admin-console");
-        modulesForFlyway.addAll(enabledRegionConnectorNames);
-
-        FlywayMigrationStrategy strategy = flyway ->
-                // also execute flyway migration for core
-                modulesForFlyway.forEach(regionConnectorName -> {
-                    LOGGER.info("Starting Flyway migration for '{}'", regionConnectorName);
-                    var schemaName = regionConnectorName.replace('-', '_');
-                    Flyway.configure()
-                          .configuration(flyway.getConfiguration())
-                          .schemas(schemaName)
-                          .locations("db/migration/" + regionConnectorName)
-                          .load()
-                          .migrate();
-                });
-
-        registry.registerBeanDefinition("flywayMigrationStrategy", BeanDefinitionBuilder
-                .genericBeanDefinition(FlywayMigrationStrategy.class, () -> strategy)
-                .getBeanDefinition());
     }
 
     private Set<BeanDefinition> findAllSpringRegionConnectorBeanDefinitions() {

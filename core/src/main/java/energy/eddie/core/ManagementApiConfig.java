@@ -18,6 +18,8 @@ import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 
+import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH;
+
 /**
  * This Spring Configuration modifies the embedded webserver by opening a second port for the management api. Because
  * adding a second independent server and activating all spring boot features is error-prone (possibly using additional
@@ -78,10 +80,11 @@ public class ManagementApiConfig {
         ) throws IOException, ServletException {
             var httpRequest = (HttpServletRequest) request;
             var isRequestOnManagementPort = httpRequest.getServerPort() == managementPort;
-            var isRequestOnManagementUrl = httpRequest.getRequestURI()
-                                                      .startsWith(CoreSpringConfig.DATA_NEEDS_URL_MAPPING_PREFIX + managementUrlPrefix);
+            var requestURI = httpRequest.getRequestURI();
+            var isRequestOnManagementUrl = requestURI.startsWith(CoreSpringConfig.DATA_NEEDS_URL_MAPPING_PREFIX + managementUrlPrefix)
+                                           || requestURI.startsWith("/" + ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH);
             IEF_LOGGER.debug("{} requested on port {}, managementPort: {}, managementUrl: {}",
-                             httpRequest.getRequestURI(),
+                             requestURI,
                              request.getLocalPort(),
                              isRequestOnManagementPort,
                              isRequestOnManagementUrl);

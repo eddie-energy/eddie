@@ -1,7 +1,6 @@
-package energy.eddie.core.services;
+package energy.eddie.admin.console.services;
 
 import energy.eddie.api.utils.Pair;
-import energy.eddie.api.v0_82.outbound.ManualTermination;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.cim.v0_82.pmd.*;
 import org.slf4j.Logger;
@@ -11,13 +10,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @Component
-public class TerminationAdminConsoleConnector implements TerminationConnector, ManualTermination {
+public class TerminationAdminConsoleConnector implements TerminationConnector, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(TerminationAdminConsoleConnector.class);
     private final Sinks.Many<Pair<String, PermissionEnvelope>> sink = Sinks.many()
-                                                                            .multicast()
-                                                                            .onBackpressureBuffer();
+                                                                           .multicast()
+                                                                           .onBackpressureBuffer();
 
-    @Override
     public void terminate(String permissionId, String regionConnectorId) {
         LOGGER.debug("Terminating permission with id {} for region connector with id {}",
                      permissionId,
@@ -55,5 +53,10 @@ public class TerminationAdminConsoleConnector implements TerminationConnector, M
     @Override
     public Flux<Pair<String, PermissionEnvelope>> getTerminationMessages() {
         return sink.asFlux();
+    }
+
+    @Override
+    public void close() {
+        sink.tryEmitComplete();
     }
 }

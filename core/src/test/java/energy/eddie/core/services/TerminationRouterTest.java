@@ -11,10 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.publisher.TestPublisher;
 
-import java.util.Collections;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,19 +27,12 @@ class TerminationRouterTest {
     private TerminationConnector connector;
 
     @Test
-    void testTerminationConnector_withEmptyCtor() {
-        // Give
-        // When
-        var router = new TerminationRouter(Collections.emptySet());        // Then
-        assertNotNull(router);
-    }
-
-    @Test
     void testTerminationMessage_withRegionConnectorId() {
         // Given
         TestPublisher<Pair<String, PermissionEnvelope>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
-        var router = new TerminationRouter(Set.of(connector));
+        var router = new TerminationRouter();
+        router.registerTerminationConnector(connector);
 
         when(metadata1.id()).thenReturn("id");
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
@@ -53,7 +42,7 @@ class TerminationRouterTest {
 
         router.registerRegionConnector(regionConnector1);
         router.registerRegionConnector(regionConnector2);
-        PermissionEnvelope pmd = new PermissionEnvelope()
+        var pmd = new PermissionEnvelope()
                 .withPermissionMarketDocument(
                         new PermissionMarketDocumentComplexType()
                                 .withMRID("pid")
@@ -89,7 +78,8 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, PermissionEnvelope>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
-        var router = new TerminationRouter(Set.of(connector));
+        var router = new TerminationRouter();
+        router.registerTerminationConnector(connector);
 
         when(metadata1.id()).thenReturn("id");
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
@@ -137,7 +127,8 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, PermissionEnvelope>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
-        var router = new TerminationRouter(Set.of(connector));
+        var router = new TerminationRouter();
+        router.registerTerminationConnector(connector);
 
         when(metadata1.id()).thenReturn("id");
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
@@ -185,7 +176,8 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, PermissionEnvelope>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
-        var router = new TerminationRouter(Set.of(connector));
+        var router = new TerminationRouter();
+        router.registerTerminationConnector(connector);
 
         when(metadata1.id()).thenReturn("id");
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
@@ -227,7 +219,8 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, PermissionEnvelope>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
-        var router = new TerminationRouter(Set.of(connector));
+        var router = new TerminationRouter();
+        router.registerTerminationConnector(connector);
 
         when(metadata1.id()).thenReturn("id");
         when(regionConnector1.getMetadata()).thenReturn(metadata1);
@@ -266,7 +259,8 @@ class TerminationRouterTest {
         // Given
         TestPublisher<Pair<String, PermissionEnvelope>> publisher = TestPublisher.create();
         when(connector.getTerminationMessages()).thenReturn(publisher.flux());
-        var router = new TerminationRouter(Set.of(connector));
+        var router = new TerminationRouter();
+        router.registerTerminationConnector(connector);
 
         when(metadata1.id()).thenReturn("id");
         when(regionConnector1.getMetadata()).thenReturn(metadata1);

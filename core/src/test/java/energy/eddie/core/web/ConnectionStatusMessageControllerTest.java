@@ -18,7 +18,7 @@ import static org.mockito.BDDMockito.given;
 
 @WebMvcTest(ConnectionStatusMessageController.class)
 @AutoConfigureMockMvc(addFilters = false) // disables spring security filters
-public class ConnectionStatusMessageControllerTest {
+class ConnectionStatusMessageControllerTest {
 
     @MockBean
     private PermissionService permissionService;
@@ -27,7 +27,7 @@ public class ConnectionStatusMessageControllerTest {
     private WebTestClient webTestClient;
 
     @Test
-    public void connectionStatusMessageByPermissionId_sendsStatus() {
+    void connectionStatusMessageByPermissionId_sendsStatus() {
         var message1 = statusMessage(PermissionProcessStatus.CREATED);
         var message2 = statusMessage(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
 

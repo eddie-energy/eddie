@@ -3,11 +3,11 @@ package energy.eddie.admin.console.web;
 import energy.eddie.admin.console.data.StatusMessage;
 import energy.eddie.admin.console.data.StatusMessageDTO;
 import energy.eddie.admin.console.data.StatusMessageRepository;
-import energy.eddie.api.v0_82.outbound.ManualTermination;
-import org.junit.jupiter.api.BeforeEach;
+import energy.eddie.admin.console.services.TerminationAdminConsoleConnector;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -29,16 +29,11 @@ class HomeControllerTest {
     @Mock
     private StatusMessageRepository statusMessageRepository;
     @Mock
-    private ManualTermination terminationConnector;
+    private TerminationAdminConsoleConnector terminationConnector;
     @Mock
     private Model model;
-
+    @InjectMocks
     private HomeController homeController;
-
-    @BeforeEach
-    public void setup() {
-        homeController = new HomeController(statusMessageRepository, terminationConnector);
-    }
 
     @Test
     void testHome() {
