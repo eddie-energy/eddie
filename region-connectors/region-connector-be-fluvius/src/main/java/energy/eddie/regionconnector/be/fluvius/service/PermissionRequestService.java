@@ -44,13 +44,11 @@ public class PermissionRequestService {
     }
 
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequestForCreation) throws UnsupportedDataNeedException, DataNeedNotFoundException {
-        // EventBus mitteilen, dass PermissionRequest erstellt wird/wurde
         String permissionId = UUID.randomUUID().toString();
         outbox.commit(new CreatedEvent(permissionId,
                                        permissionRequestForCreation.dataNeedId(),
                                        permissionRequestForCreation.connectionId()));
 
-        // Validieren der Response mittels calculationService
         switch (calculationService.calculate(permissionRequestForCreation.dataNeedId())) {
             case AccountingPointDataNeedResult ignored -> {
                 outbox.commit(new MalformedEvent(permissionId,

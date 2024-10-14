@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.be.fluvius.service;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.clients.FluviusApi;
+import energy.eddie.regionconnector.be.fluvius.permission.events.AcceptedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
@@ -59,7 +60,7 @@ public class AcceptanceOrRejectionService {
             case "Requested" -> LOGGER.info("Status of Permission request {} has not changed", permissionId);
             case "Approved" -> {
                 LOGGER.info("Permission request approved {}", permissionId);
-                outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
+                outbox.commit(new AcceptedEvent(permissionId, res.getData().getMandates().getFirst().getEanNumber()));
             }
             case "Rejected" -> {
                 LOGGER.info("Permission request rejected {}", permissionId);

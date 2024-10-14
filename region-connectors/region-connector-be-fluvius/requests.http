@@ -1,7 +1,9 @@
 #### Request to create a permission request
 < {%
-  const shortendUUid = $uuid.replace(/-/g, "");
-  client.global.set("referenceNumber", shortendUUid)
+    const shortendUUid = $uuid.replace(/-/g, "");
+
+    console.log(shortendUUid)
+    client.global.set("referenceNumber", shortendUUid)
 %}
 POST {{baseUrl}}//api/v2.0/shortUrlIdentifier
 Authorization: Bearer {{$auth.token("fluvius")}}
@@ -14,13 +16,13 @@ Ocp-Apim-Subscription-Key: {{subscriptionKey}}
   "flow": "B2C",
   "dataServices": [
     {
-      "dataServiceType": "VH_kwartier_uur",
-      "dataPeriodFrom": "2024-01-25T00:00:00Z",
+      "dataServiceType": "VH_dag",
+      "dataPeriodFrom": "2024-01-01T00:00:00Z",
       "dataPeriodTo": "2024-09-30T23:59:59Z"
     }
   ],
   "numberOfEans": "1",
-  "returnUrlSuccess": "https://eddie.projekte.fh-hagenberg.at/rc/fluvius/callback/",
+  "returnUrlSuccess": null,
   "returnUrlFailed": null,
   "sso": true,
   "enterpriseNumber": null
@@ -38,16 +40,14 @@ Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 
 {
   "referenceNumber": "{{referenceNumber}}",
-  "eanNumber": "541440110000000001",
-  "dataServiceType": "VH_kwartier_uur",
-  "dataPeriodFrom": "2024-01-25T00:00:00Z",
+  "eanNumber": "541440100000000001",
+  "dataServiceType": "VH_dag",
+  "dataPeriodFrom": "2024-01-01T00:00:00Z",
   "dataPeriodTo": "2024-09-30T23:59:59Z",
   "status": "Approved",
   "mandateExpirationDate": "2024-12-29T23:00:00Z",
   "renewalStatus": "ToBeRenewed"
 }
-
-
 
 #### Request specific mandates
 GET {{baseUrl}}/api/v2.0/Mandate?ReferenceNumber={{referenceNumber}}
@@ -58,3 +58,20 @@ Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 GET {{baseUrl}}/api/v2.0/Mandate
 Authorization: Bearer {{$auth.token("fluvius")}}
 Ocp-Apim-Subscription-Key: {{subscriptionKey}}
+
+#### Request Installation
+GET {{baseUrl}}/api/v2.0/Mandate/installation?referenceNumber={{referenceNumber}}&eanNumber=541440100000000001
+Authorization: Bearer {{$auth.token("fluvius")}}
+Ocp-Apim-Subscription-Key: {{subscriptionKey}}
+
+### Request energy consumption data from mandate
+GET {{baseUrl}}/api/v2.0/Mandate/energy?
+                                referenceNumber={{referenceNumber}}&
+                                eanNumber=541440100000000001&
+                                DataServiceType=VH_dag&
+                                PeriodType=readTime&
+                                from=2024-01-02T00:00:00Z&
+                                to=2024-05-03T00:00:00Z
+Authorization: Bearer {{$auth.token("fluvius")}}
+Ocp-Apim-Subscription-Key: {{subscriptionKey}}
+

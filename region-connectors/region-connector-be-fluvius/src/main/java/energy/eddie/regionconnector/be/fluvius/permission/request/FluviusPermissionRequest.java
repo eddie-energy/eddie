@@ -39,6 +39,8 @@ public class FluviusPermissionRequest implements PermissionRequest {
     private final Flow flow;
     @Column(name = "short_url_identifier")
     private final String shortUrlIdentifier;
+    @Column(name = "ean_number")
+    private final String eanNumber;
 
     @SuppressWarnings("java:S107")
     public FluviusPermissionRequest(
@@ -62,6 +64,7 @@ public class FluviusPermissionRequest implements PermissionRequest {
                 end,
                 created,
                 flow,
+                null,
                 null
         );
     }
@@ -78,7 +81,9 @@ public class FluviusPermissionRequest implements PermissionRequest {
             ZonedDateTime created,
             Flow flow,
             @Nullable
-            String shortUrlIdentifier
+            String shortUrlIdentifier,
+            @Nullable
+            String eanNumber
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -90,6 +95,7 @@ public class FluviusPermissionRequest implements PermissionRequest {
         this.created = created;
         this.flow = flow;
         this.shortUrlIdentifier = shortUrlIdentifier;
+        this.eanNumber = eanNumber;
     }
 
     protected FluviusPermissionRequest() {
@@ -103,6 +109,7 @@ public class FluviusPermissionRequest implements PermissionRequest {
         created = null;
         flow = null;
         shortUrlIdentifier = null;
+        eanNumber = null;
     }
 
     @Override
@@ -155,5 +162,9 @@ public class FluviusPermissionRequest implements PermissionRequest {
 
     public String shortUrlIdentifier() {
         return shortUrlIdentifier;
+    }
+
+    public String eanNumber() {
+        return eanNumber;
     }
 }
