@@ -389,6 +389,7 @@ class EddieConnectButton extends LitElement {
     }
 
     this._enabledCountries = await getEnabledCountries();
+    this._enabledCountries.sort((a, b) => a.localeCompare(b));
 
     this._supportedConnectors = await getSupportedRegionConnectors(
       this.dataNeedId
