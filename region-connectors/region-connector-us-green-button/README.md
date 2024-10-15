@@ -48,6 +48,10 @@ depends on the way you deploy the region connector.
 | `region-connector.us.green-button.activation-batch-size`     | The batch size in which the collection of metering data should be triggered. The green button defers collecting data from the metered data administrator until it has been triggered. This means that no data is lost if the collection is triggered at a later point. If immediate activation is needed set to `1`. Recommended maximum is `1000` to avoid paging API calls. Keep in mind that if the collection is not finished before the data is polled incomplete or no data can be requested for the batch. Related to `region-connector.us.green-button.data-ready.polling`. |
 | `region-connector.us.green.button.termination.retry`         | When termination of permission requests with the green button API should be retried. Uses Spring cron syntax. Default is hourly                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
+**IMPORTANT:** If the client IDs and secrets are to be configured via environment variables, leave the default configuration in the application.properties file.
+Otherwise, spring is not able to pick up the overridden client IDs and secrets.
+If the configuration is primarily done via `.properties` or `.yaml` files, this can be ignored, as spring can pick up the configuration from those.
+
 ### .properties file
 
 Example configuration for an `application.properties` file:
