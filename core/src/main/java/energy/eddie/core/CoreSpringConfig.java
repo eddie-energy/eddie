@@ -2,10 +2,10 @@ package energy.eddie.core;
 
 import eddie.energy.europeanmasterdata.EuropeanMasterDataSpringConfig;
 import energy.eddie.OpenApiDocs;
-import energy.eddie.admin.console.AdminConsoleSpringConfig;
 import energy.eddie.api.utils.Shared;
 import energy.eddie.dataneeds.DataNeedsSpringConfig;
 import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
+import energy.eddie.spring.OutboundConnectorRegistrationBeanPostProcessor;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
 import energy.eddie.spring.SharedBeansRegistrar;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
@@ -55,6 +55,20 @@ public class CoreSpringConfig implements WebMvcConfigurer {
 
     protected CoreSpringConfig(@Value("${eddie.cors.allowed-origins:}") String allowedCorsOrigins) {
         this.allowedCorsOrigins = allowedCorsOrigins;
+    }
+
+    /**
+     * Beans returning a {@link org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor} need to
+     * be static for Spring to be able to "enhance @Configuration bean definition".
+     */
+    @Bean
+    static RegionConnectorRegistrationBeanPostProcessor regionConnectorRegistrationBeanPostProcessor(Environment environment) {
+        return new RegionConnectorRegistrationBeanPostProcessor(environment);
+    }
+
+    @Bean
+    static OutboundConnectorRegistrationBeanPostProcessor outboundConnectorRegistrationBeanPostProcessor(Environment environment) {
+        return new OutboundConnectorRegistrationBeanPostProcessor(environment);
     }
 
     @Override
@@ -129,36 +143,7 @@ public class CoreSpringConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public ServletRegistrationBean<DispatcherServlet> adminConsoleDispatcherServlet() {
-        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-        context.register(AdminConsoleSpringConfig.class);
-        enableSpringDoc(context);
-
-        DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
-        String urlMapping = "/admin-console/*";
-        ServletRegistrationBean<DispatcherServlet> connectorServletBean = new ServletRegistrationBean<>(
-                dispatcherServlet,
-                urlMapping
-        );
-
-        connectorServletBean.setName("admin-console");
-        connectorServletBean.setLoadOnStartup(2);
-
-        LOGGER.info("Created ServletRegistrationBean for admin-console, urlMapping is {}", urlMapping);
-        return connectorServletBean;
-    }
-
-    @Bean
     public TimeoutConfiguration timeoutConfiguration(@Value("${eddie.permission.request.timeout.duration:168}") int timeoutDuration) {
         return new TimeoutConfiguration(timeoutDuration);
-    }
-
-    /**
-     * Beans returning a {@link org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor} need to
-     * be static for Spring to be able to "enhance @Configuration bean definition".
-     */
-    @Bean
-    static RegionConnectorRegistrationBeanPostProcessor regionConnectorRegistrationBeanPostProcessor(Environment environment) {
-        return new RegionConnectorRegistrationBeanPostProcessor(environment);
     }
 }

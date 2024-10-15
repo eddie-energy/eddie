@@ -1,34 +1,30 @@
-package energy.eddie.admin.console.data;
+package energy.eddie.admin.console.services;
 
-import energy.eddie.api.v0_82.PermissionMarketDocumentServiceInterface;
+import energy.eddie.admin.console.data.StatusMessage;
+import energy.eddie.admin.console.data.StatusMessageRepository;
+import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionMarketDocumentComplexType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
 
 @Service
-public class StatusMessageService {
+public class StatusMessageService implements PermissionMarketDocumentOutboundConnector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StatusMessageService.class);
     private final StatusMessageRepository statusMessageRepository;
-    private final PermissionMarketDocumentServiceInterface permissionMarketDocumentService;
 
-    public StatusMessageService(
-            StatusMessageRepository statusMessageRepository,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-            PermissionMarketDocumentServiceInterface permissionMarketDocumentService
-    ) {
+    public StatusMessageService(StatusMessageRepository statusMessageRepository) {
         this.statusMessageRepository = statusMessageRepository;
-        this.permissionMarketDocumentService = permissionMarketDocumentService;
-        subscribeToFlux();
     }
 
-    private void subscribeToFlux() {
-        var flux = permissionMarketDocumentService.getPermissionMarketDocumentStream();
-        flux
+    @Override
+    public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
+        permissionMarketDocumentStream
                 .publishOn(Schedulers.boundedElastic())
                 .doOnError(error -> LOGGER.error("Error receiving messages from the Flux stream: {}",
                                                  error.getMessage(),
@@ -36,7 +32,7 @@ public class StatusMessageService {
                 .subscribe(this::processMessage);
     }
 
-    private void processMessage(PermissionEnvelope message) {
+    void processMessage(PermissionEnvelope message) {
         try {
             StatusMessage statusMessage = createStatusMessage(message.getPermissionMarketDocument());
             statusMessageRepository.save(statusMessage);
@@ -56,7 +52,7 @@ public class StatusMessageService {
         return new StatusMessage(
                 message.getMRID(),
                 message.getPermissionList().getPermissions().getFirst()
-                        .getMktActivityRecordList().getMktActivityRecords().getFirst().getType(),
+                       .getMktActivityRecordList().getMktActivityRecords().getFirst().getType(),
                 country,
                 message.getReceiverMarketParticipantMRID().getValue(),
                 message.getPermissionList().getPermissions().getFirst()

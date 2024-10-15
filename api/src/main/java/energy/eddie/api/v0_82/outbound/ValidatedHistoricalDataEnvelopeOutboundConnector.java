@@ -1,4 +1,4 @@
-package energy.eddie.api.v0_82;
+package energy.eddie.api.v0_82.outbound;
 
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import reactor.core.publisher.Flux;

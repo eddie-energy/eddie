@@ -59,9 +59,12 @@ function onTerminationButtonClick() {
 
   modal.addEventListener("close", () => {
     if (modal.returnValue === "confirm") {
-      fetch(`/admin-console/terminate/${permissionIdToTerminate}`, {
-        method: "POST",
-      })
+      fetch(
+        `/outbound-connectors/admin-console/terminate/${permissionIdToTerminate}`,
+        {
+          method: "POST",
+        }
+      )
         .then((response) => {
           if (response.ok) {
             console.log(
@@ -105,7 +108,7 @@ function controlRowExpansion(table) {
 async function fetchAdditionalData(row) {
   try {
     const response = await fetch(
-      `/admin-console/statusMessages/${row.data().PermissionId}`,
+      `/outbound-connectors/admin-console/statusMessages/${row.data().PermissionId}`,
       { method: "GET" }
     );
     if (!response.ok) {

@@ -17,6 +17,7 @@ import static java.util.Objects.requireNonNull;
 public class RawDataServiceRegistrar {
     private static final Logger LOGGER = LoggerFactory.getLogger(RawDataServiceRegistrar.class);
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     RawDataServiceRegistrar(
             Optional<RawDataProvider> rawDataProvider,
             RawDataService rawDataService,

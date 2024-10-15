@@ -205,6 +205,14 @@ Or you can use the following links:
 - [Netherlands (Mijn Aansluiting)](./../region-connectors/region-connector-nl-mijn-aansluiting/README.md)
 - [US/Canada (Green Button)](./../region-connectors/region-connector-us-green-button/README.md)
 
+### Configuring outbound connectors
+
+There are two outbound connectors, which can be used by the eligible party to interact with eddie.
+If the outbound connector provides a web interface, it will be available via the configured `eddie.management.server.port`.
+
+- Kafka Connector: described in the [Kafka Connector section](#kafka-connector).
+- [Admin Console](./../admin-console/README.md)
+
 ### Business domain related configuration
 
 #### Common Information Model (CIM)
@@ -311,11 +319,11 @@ prefix `kafka.` has to be used.
 
 The following parameters are of special interest:
 
-| Parameter               | Type                                           | Description                                                                                                       |
-|-------------------------|------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| kafka.bootstrap.servers | comma-separated _host:port_ tuples (mandatory) | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.                    |
-| kafka.enable            | true/false                                     | Enables or disables the kafka connector.                                                                          |
-| kafka.termination.topic | valid kafka topic name                         | The topic on which the kafka connector listens for termination requests. Optional, the default is `terminations`. |
+| Parameter                        | Type                                           | Description                                                                                                       |
+|----------------------------------|------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| kafka.bootstrap.servers          | comma-separated _host:port_ tuples (mandatory) | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.                    |
+| outbound-connector.kafka.enabled | true/false                                     | Enables or disables the kafka connector.                                                                          |
+| kafka.termination.topic          | valid kafka topic name                         | The topic on which the kafka connector listens for termination requests. Optional, the default is `terminations`. |
 
 E.g. if Kafka is installed locally:
 
