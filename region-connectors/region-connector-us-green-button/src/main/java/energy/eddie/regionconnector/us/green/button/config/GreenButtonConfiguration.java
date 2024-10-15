@@ -14,8 +14,6 @@ public class GreenButtonConfiguration {
     private final String redirectUri;
     private final int activationBatchSize;
 
-    @SuppressWarnings("java:S107")
-    // Config class is only instantiated by spring
     public GreenButtonConfiguration(
             String apiToken,
             String basePath,
