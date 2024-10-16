@@ -30,6 +30,8 @@ public class PasswordGenerator {
     }
 
     /**
+     * Generates a new password.
+     *
      * @param length Total length of the password, must be greater than 0.
      * @see #generatePassword(int)
      */

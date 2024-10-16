@@ -21,6 +21,7 @@ public abstract class WebhookRequest {
     @JsonProperty("clientid")
     private String clientId;
     @JsonProperty
+    @SuppressWarnings("unused")
     private String username;
 
     public SupportedWebhookActions action() {

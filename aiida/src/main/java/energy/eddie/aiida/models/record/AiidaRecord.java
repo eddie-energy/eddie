@@ -25,7 +25,7 @@ public abstract class AiidaRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     // Used just as JPA ID
-    @SuppressWarnings({"Unused", "NullAway"})
+    @SuppressWarnings({"unused", "NullAway"})
     private Long id;
     @JsonProperty
     protected Instant timestamp;
