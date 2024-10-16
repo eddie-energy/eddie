@@ -48,10 +48,6 @@ depends on the way you deploy the region connector.
 | `region-connector.us.green-button.activation-batch-size`     | The batch size in which the collection of metering data should be triggered. The green button defers collecting data from the metered data administrator until it has been triggered. This means that no data is lost if the collection is triggered at a later point. If immediate activation is needed set to `1`. Recommended maximum is `1000` to avoid paging API calls. Keep in mind that if the collection is not finished before the data is polled incomplete or no data can be requested for the batch. Related to `region-connector.us.green-button.data-ready.polling`. |
 | `region-connector.us.green.button.termination.retry`         | When termination of permission requests with the green button API should be retried. Uses Spring cron syntax. Default is hourly                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
-**IMPORTANT:** If the client IDs and secrets are to be configured via environment variables, leave the default configuration in the application.properties file.
-Otherwise, spring is not able to pick up the overridden client IDs and secrets.
-If the configuration is primarily done via `.properties` or `.yaml` files, this can be ignored, as spring can pick up the configuration from those.
-
 ### .properties file
 
 Example configuration for an `application.properties` file:
@@ -71,20 +67,21 @@ region-connector.us.green-button.activation-batch-size=1
 
 When using environment variables, the configuration values need to be converted in the following way:
 
-* Replace all non-alphanumeric characters with an underscore (`_`)
+* Replace all non-alphanumeric characters, **except the hyphen** (`-`), with an underscore (`_`)
+* Delete all hyphens (`-`)
 * Optionally convert all letters to upper case
 
 Example configuration for dotenv file:
 
 ```dotenv
-REGION_CONNECTOR_US_GREEN_BUTTON_BASEPATH=https://utilityapi.com/
-REGION_CONNECTOR_US_GREEN_BUTTON_REDIRECT_URL=https://your-eddie-instance.example/region-connectors/us-green-button/authorization-callback
-REGION_CONNECTOR_US_GREEN_BUTTON_CLIENT_API_TOKEN=REPLACE_ME
-REGION_CONNECTOR_US_GREEN_BUTTON_WEBHOOK_SECRET=REPLACE_ME
-REGION_CONNECTOR_US_GREEN_BUTTON_CLIENT_IDS_REPLACE_ME=REPLACE_ME
-REGION_CONNECTOR_US_GREEN_BUTTON_CLIENT_SECRETS_REPLACE_ME=REPLACE_ME
-REGION_CONNECTOR_US_GREEN_BUTTON_DATA_READY_POLLING=0 0 * * * *
-REGION_CONNECTOR_US_GREEN_BUTTON_ACTIVATION_BATCH_SIZE=1
+REGIONCONNECTOR_US_GREEN_BUTTON_BASEPATH=https://utilityapi.com/
+REGIONCONNECTOR_US_GREEN_BUTTON_REDIRECTURI=https://your-eddie-instance.example/region-connectors/us-green-button/authorization-callback
+REGIONCONNECTOR_US_GREEN_BUTTON_APITOKEN=REPLACE_ME
+REGIONCONNECTOR_US_GREEN_BUTTON_WEBHOOK_SECRET=REPLACE_ME
+REGIONCONNECTOR_US_GREEN_BUTTON_CLIENTIDS_REPLACEME=REPLACE_ME
+REGIONCONNECTOR_US_GREEN_BUTTON_CLIENTSECRETS_REPLACEME=REPLACE_ME
+REGIONCONNECTOR_US_GREEN_BUTTON_DATAREADY_POLLING=0 0 * * * *
+REGIONCONNECTOR_US_GREEN_BUTTON_ACTIVATIONBATCHSIZE=1
 ```
 
 ## Running the Region Connector via EDDIE
