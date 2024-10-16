@@ -2,9 +2,13 @@ package energy.eddie.regionconnector.be.fluvius;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusConfiguration;
+import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
 import energy.eddie.regionconnector.be.fluvius.data.needs.FluviusEnergyTimeframeStrategy;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionEventRepository;
@@ -13,8 +17,10 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientSsl;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +29,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.ZoneOffset;
 import java.util.List;
+
+import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
+import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 
 @Configuration
 public class FluviusBeanConfig {
@@ -70,6 +79,31 @@ public class FluviusBeanConfig {
                 repository,
                 pr -> "",
                 pr -> jacksonObjectMapper.createObjectNode().put("shortUrlIdentifier", pr.shortUrlIdentifier())
+        );
+    }
+
+    @Bean
+    public CommonInformationModelConfiguration cimConfig(
+            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
+            @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
+    ) {
+        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
+    }
+
+    @Bean
+    public PermissionMarketDocumentMessageHandler<FluviusPermissionRequest> permissionMarketDocumentMessageHandler(
+            EventBus eventBus,
+            BePermissionRequestRepository bePermissionRequestRepository,
+            FluviusOAuthConfiguration fluviusOAuthConfiguration,
+            CommonInformationModelConfiguration cimConfig
+    ) {
+        return new PermissionMarketDocumentMessageHandler<>(
+                eventBus,
+                bePermissionRequestRepository,
+                fluviusOAuthConfiguration.clientId(),
+                cimConfig,
+                pr -> null,
+                ZoneOffset.UTC
         );
     }
 }
