@@ -222,7 +222,7 @@ class PollingServiceTest {
                 )
         );
         when(apiClient.energy(any(), any(), any(), any(), any())).thenReturn(
-                createSampleEnergyResponse(List.of())
+                createSampleEnergyResponse(null)
         );
 
         // When

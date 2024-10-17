@@ -98,7 +98,9 @@ public class PollingService {
                 .doOnError(e -> handleFetchError(permissionId, energyDataStart, energyDataEnd, e))
                 .map(energyResponse -> new IdentifiableMeteringData(
                         permissionRequest,
-                        energyResponse.getData() != null ? energyResponse.getData().getElectricityMeters() : List.of()
+                        energyResponse.getData() != null && energyResponse.getData().getElectricityMeters() != null
+                                ? energyResponse.getData().getElectricityMeters()
+                                : List.of()
                 ))
                 .subscribe(identifiableMeteringData ->
                         meteringData.emitNext(
