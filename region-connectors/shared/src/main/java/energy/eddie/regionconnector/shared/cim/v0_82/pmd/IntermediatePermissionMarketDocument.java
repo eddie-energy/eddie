@@ -14,12 +14,31 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 import static energy.eddie.api.CommonInformationModelVersions.V0_82;
+import static java.util.Map.entry;
 
 public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
+    private static final Map<PermissionProcessStatus, StatusTypeList> EDDIE_STATUS_TO_CIM = Map.ofEntries(
+            entry(PermissionProcessStatus.CREATED, StatusTypeList.A14),
+            entry(PermissionProcessStatus.VALIDATED, StatusTypeList.Z02),
+            entry(PermissionProcessStatus.MALFORMED, StatusTypeList.A33),
+            entry(PermissionProcessStatus.UNABLE_TO_SEND, StatusTypeList.A33),
+            entry(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, StatusTypeList.A08),
+            entry(PermissionProcessStatus.REJECTED, StatusTypeList.A34),
+            entry(PermissionProcessStatus.TIMED_OUT, StatusTypeList.Z03),
+            entry(PermissionProcessStatus.INVALID, StatusTypeList.Z01),
+            entry(PermissionProcessStatus.ACCEPTED, StatusTypeList.A37),
+            entry(PermissionProcessStatus.REVOKED, StatusTypeList.A13),
+            entry(PermissionProcessStatus.UNFULFILLABLE, StatusTypeList.A33),
+            entry(PermissionProcessStatus.FULFILLED, StatusTypeList.A37),
+            entry(PermissionProcessStatus.TERMINATED, StatusTypeList.A16),
+            entry(PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION, StatusTypeList.A08),
+            entry(PermissionProcessStatus.FAILED_TO_TERMINATE, StatusTypeList.A33),
+            entry(PermissionProcessStatus.EXTERNALLY_TERMINATED, StatusTypeList.A16)
+    );
     private final T permissionRequest;
     private final String customerIdentifier;
     private final TransmissionScheduleProvider<T> transmissionScheduleProvider;
@@ -105,7 +124,7 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
                                                                         new MktActivityRecordComplexType()
                                                                                 .withMRID(UUID.randomUUID().toString())
                                                                                 .withCreatedDateTime(now.toString())
-                                                                                .withDescription("")
+                                                                                .withDescription(status.toString())
                                                                                 .withType(permissionRequest.dataSourceInformation()
                                                                                                            .regionConnectorId())
                                                                                 .withStatus(getStatusTypeList())
@@ -130,12 +149,8 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
     }
 
     private StatusTypeList getStatusTypeList() {
-        String permissionRequestStatus = status.toString().toUpperCase(Locale.ROOT);
-        for (var statusType : StatusTypeList.values()) {
-            if (statusType.value().toUpperCase(Locale.ROOT).equals(permissionRequestStatus)) {
-                return statusType;
-            }
-        }
-        throw new IllegalArgumentException("Unknown enum value for StatusTypeList " + permissionRequestStatus);
+        if (EDDIE_STATUS_TO_CIM.containsKey(status))
+            return EDDIE_STATUS_TO_CIM.get(status);
+        throw new IllegalArgumentException("Unknown enum value for StatusTypeList " + status);
     }
 }
