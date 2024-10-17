@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.oauth2.sdk.ParseException;
 import energy.eddie.regionconnector.be.fluvius.client.model.CreateMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusConfiguration;
 import energy.eddie.regionconnector.be.fluvius.oauth.OAuthException;
@@ -143,6 +144,42 @@ class FluviusApiClientTest {
         StepVerifier.create(res)
                     .expectNextCount(1)
                     .verifyComplete();
+    }
+
+    @Test
+    void testEnergy_returnsSuccessMessage() throws IOException, OAuthException, URISyntaxException, ParseException {
+        // Given
+        SERVER.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/json")
+                .setResponseCode(200)
+                .setBody(OBJECT_MAPPER.writeValueAsString(new GetEnergyResponseModelApiDataResponse())));
+        when(oAuthTokenService.accessToken()).thenReturn("token");
+        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService);
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+
+        // When
+        var res = api.energy("pid", "eanNumber", FluviusApi.DataServiceType.DAILY, now, now);
+
+        // Then
+        StepVerifier.create(res)
+                .expectNextCount(1)
+                .verifyComplete();
+    }
+
+    @Test
+    void testEnergy_returnsError_onInvalidAccessToken() throws IOException, OAuthException, URISyntaxException, ParseException {
+        // Given
+        when(oAuthTokenService.accessToken()).thenThrow(OAuthException.class);
+        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService);
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+
+        // When
+        var res = api.energy("pid", "eanNumber", FluviusApi.DataServiceType.DAILY, now, now);
+
+        // Then
+        StepVerifier.create(res)
+                .expectError(OAuthRequestException.class)
+                .verify();
     }
 
     private static FluviusConfiguration getConfiguration() {

@@ -15,8 +15,8 @@ import energy.eddie.regionconnector.be.fluvius.permission.events.SentToPaEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.ValidatedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
-import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
+import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -32,7 +32,6 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -80,7 +79,7 @@ class ValidatedEventHandlerTest {
     @Test
     void testAccept_UnsupportedDataNeed_doesNothing() {
         // Given
-        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(createPermissionRequest());
+        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(DefaultFluviusPermissionRequestBuilder.create().build());
         when(dataNeedCalculationService.calculate("did")).thenReturn(new DataNeedNotSupportedResult("Not Found!"));
 
         // When
@@ -96,7 +95,7 @@ class ValidatedEventHandlerTest {
         // Given
         var customEnergyTimeframe = new Timeframe(start, LocalDate.now(ZoneOffset.UTC));
 
-        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(createPermissionRequest());
+        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(DefaultFluviusPermissionRequestBuilder.create().build());
         when(dataNeedCalculationService.calculate("did")).thenReturn(new
                                                                              ValidatedHistoricalDataDataNeedResult(List.of(
                 Granularity.PT15M), permissionTimeFrame, customEnergyTimeframe)
@@ -115,7 +114,7 @@ class ValidatedEventHandlerTest {
     @Test
     void testAccept_invalidRequest_sentToPa_and_invalidEvent() {
         // Given
-        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(createPermissionRequest());
+        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(DefaultFluviusPermissionRequestBuilder.create().build());
         when(dataNeedCalculationService.calculate("did")).thenReturn(
                 new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                           permissionTimeFrame,
@@ -138,7 +137,7 @@ class ValidatedEventHandlerTest {
     @Test
     void testAccept_invalidResponse_sentToPa_and_invalidEvent() {
         // Given
-        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(createPermissionRequest());
+        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(DefaultFluviusPermissionRequestBuilder.create().build());
         when(dataNeedCalculationService.calculate("did")).thenReturn(new
                                                                              ValidatedHistoricalDataDataNeedResult(List.of(
                 Granularity.PT15M), permissionTimeFrame, energyTimeFrame)
@@ -162,7 +161,7 @@ class ValidatedEventHandlerTest {
     @MethodSource
     void testAccept_unexpectedRequestException_unableToSend(Exception ex) {
         // Given
-        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(createPermissionRequest());
+        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(DefaultFluviusPermissionRequestBuilder.create().build());
         when(dataNeedCalculationService.calculate("did")).thenReturn(
                 new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                           permissionTimeFrame,
@@ -178,20 +177,6 @@ class ValidatedEventHandlerTest {
         // Then
         verify(outbox).commit(assertArg(event ->
                                                 assertEquals(PermissionProcessStatus.UNABLE_TO_SEND, event.status()))
-        );
-    }
-
-    private FluviusPermissionRequest createPermissionRequest() {
-        return new FluviusPermissionRequest(
-                "pid",
-                "cid",
-                "did",
-                PermissionProcessStatus.VALIDATED,
-                Granularity.PT15M,
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                ZonedDateTime.now(ZoneOffset.UTC),
-                Flow.B2C
         );
     }
 

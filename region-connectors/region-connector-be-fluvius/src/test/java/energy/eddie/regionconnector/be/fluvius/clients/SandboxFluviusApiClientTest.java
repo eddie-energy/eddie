@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.be.fluvius.clients;
 
 import energy.eddie.regionconnector.be.fluvius.client.model.CreateMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
 import org.junit.jupiter.api.Test;
@@ -55,5 +56,21 @@ class SandboxFluviusApiClientTest {
         StepVerifier.create(res)
                     .expectNextCount(1)
                     .verifyComplete();
+    }
+
+    @Test
+    void testEnergy_callsDecoratee() {
+        // Given
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        when(api.energy("pid", "eanNumber", FluviusApi.DataServiceType.DAILY, now, now))
+                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
+
+        // When
+        var res = sandboxFluviusApiClient.energy("pid", "eanNumber", FluviusApi.DataServiceType.DAILY, now, now);
+
+        // Then
+        StepVerifier.create(res)
+                .expectNextCount(1)
+                .verifyComplete();
     }
 }

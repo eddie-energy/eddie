@@ -88,7 +88,8 @@ public class PollingService {
                 .defer(() ->
                         apiClient.energy(
                                 permissionId,
-                                permissionRequest.eanNumber(), energyDataType,
+                                permissionRequest.eanNumber(),
+                                energyDataType,
                                 energyDataStart,
                                 energyDataEnd
                         )
@@ -125,8 +126,8 @@ public class PollingService {
         var end = DateTimeUtils.endOfDay(vhdResult.energyTimeframe().end(), ZoneOffset.UTC);
         var now = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
         if (end.isAfter(now)) {
-            return end;
+            return now;
         }
-        return now;
+        return end;
     }
 }

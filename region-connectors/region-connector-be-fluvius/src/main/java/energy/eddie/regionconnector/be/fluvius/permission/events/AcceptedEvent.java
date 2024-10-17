@@ -5,9 +5,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
 @Entity(name = "BeAcceptedEvent")
+@SuppressWarnings({"NullAway", "unused"})
 public class AcceptedEvent extends PersistablePermissionEvent {
     @Column(columnDefinition = "text")
-    private String eanNumber;
+    private final String eanNumber;
 
     public AcceptedEvent(String permissionId, String eanNumber) {
         super(permissionId, PermissionProcessStatus.ACCEPTED);
@@ -15,6 +16,6 @@ public class AcceptedEvent extends PersistablePermissionEvent {
     }
 
     public AcceptedEvent() {
-        eanNumber = null;
+        this.eanNumber = null;
     }
 }

@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.be.fluvius.clients;
 
 import energy.eddie.regionconnector.be.fluvius.client.model.CreateMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
 import jakarta.annotation.Priority;
@@ -48,5 +49,10 @@ public class SandboxFluviusApiClient implements FluviusApi {
             ZonedDateTime to
     ) {
         return api.mockMandate(permissionId, from, to);
+    }
+
+    @Override
+    public Mono<GetEnergyResponseModelApiDataResponse> energy(String permissionId, String eanNumber, DataServiceType dataServiceType, ZonedDateTime from, ZonedDateTime to) {
+        return api.energy(permissionId, eanNumber, dataServiceType, from, to);
     }
 }

@@ -11,8 +11,8 @@ import energy.eddie.regionconnector.be.fluvius.permission.events.CreatedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.MalformedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.ValidatedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
-import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
+import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -115,7 +114,12 @@ class PermissionRequestServiceTest {
     void testFindConnectionStatusMessage_mapsCorrectly() {
         // Given
         when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(getPermissionRequest(Granularity.PT15M, PermissionProcessStatus.ACCEPTED)));
+                .thenReturn(Optional.of(
+                                DefaultFluviusPermissionRequestBuilder.create()
+                                        .status(PermissionProcessStatus.ACCEPTED)
+                                        .build()
+                        )
+                );
 
         // When
         var res = permissionRequestService.findConnectionStatusMessageById("pid");
@@ -126,7 +130,7 @@ class PermissionRequestServiceTest {
         assertAll(
                 () -> assertEquals("cid", csm.connectionId()),
                 () -> assertEquals("pid", csm.permissionId()),
-                () -> assertEquals("dnid", csm.dataNeedId()),
+                () -> assertEquals("did", csm.dataNeedId()),
                 () -> assertEquals(PermissionProcessStatus.ACCEPTED, csm.status())
         );
     }
