@@ -23,10 +23,9 @@ dependencies {
     implementation(project(":api"))
 
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.kafka)
 
     implementation(libs.jakarta.annotation.api)
-    implementation(libs.kafka.clients)
-    implementation(libs.reactor.kafka)
 
     implementation(libs.reactor.core)
     implementation(libs.jackson.databind)
@@ -36,6 +35,7 @@ dependencies {
 
 
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.kafka.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.reactor.test)
     testImplementation(libs.testcontainers.kafka)

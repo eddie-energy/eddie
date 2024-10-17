@@ -40,7 +40,8 @@ findProject(":region-connectors:region-connector-us-green-button")?.name = "regi
 include("region-connectors:shared")
 findProject(":region-connectors:shared")?.name = "shared"
 
-include("outbound-kafka")
+include("outbound-connectors:outbound-kafka")
+findProject(":outbound-connectors:outbound-kafka")?.name = "outbound-kafka"
 
 include("examples:example-app")
 findProject(":examples:example-app")?.name = "example-app"
