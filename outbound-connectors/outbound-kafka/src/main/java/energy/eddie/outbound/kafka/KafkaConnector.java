@@ -11,37 +11,35 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.ap.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
-import java.io.Closeable;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Future;
 
+@Component
 public class KafkaConnector implements
         ConnectionStatusMessageOutboundConnector,
         ValidatedHistoricalDataEnvelopeOutboundConnector,
         PermissionMarketDocumentOutboundConnector,
         RawDataOutboundConnector,
-        AccountingPointEnvelopeOutboundConnector,
-        Closeable {
+        AccountingPointEnvelopeOutboundConnector {
     public static final String PERMISSION_ID = "permission-id";
     public static final String CONNECTION_ID = "connection-id";
     public static final String DATA_NEED_ID = "data-need-id";
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
-    private final KafkaProducer<String, Object> kafkaProducer;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public KafkaConnector(Properties kafkaProperties) {
-        this.kafkaProducer = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new CustomSerializer());
+    public KafkaConnector(KafkaTemplate<String, Object> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @Override
@@ -75,11 +73,6 @@ public class KafkaConnector implements
     }
 
     @Override
-    public void close() {
-        kafkaProducer.close();
-    }
-
-    @Override
     public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .publishOn(Schedulers.boundedElastic())
@@ -87,14 +80,14 @@ public class KafkaConnector implements
     }
 
     private void produceStatusMessage(ConnectionStatusMessage statusMessage) {
-        var future = kafkaProducer.send(new ProducerRecord<>("status-messages", statusMessage));
+        var future = kafkaTemplate.send(new ProducerRecord<>("status-messages", statusMessage));
         awaitFuture(future, "Could not produce connection status message");
         LOGGER.debug("Produced connection status {} message for permission request {}",
                      statusMessage.status(),
                      statusMessage.permissionId());
     }
 
-    private static void awaitFuture(Future<RecordMetadata> future, String errorMessage) {
+    private static void awaitFuture(Future<SendResult<String, Object>> future, String errorMessage) {
         Thread.startVirtualThread(() -> {
             try {
                 LOGGER.debug("Produced kafka message {}", future.get());
@@ -118,7 +111,7 @@ public class KafkaConnector implements
                 permissionMarketDocument,
                 cimToHeaders(header)
         );
-        var future = kafkaProducer.send(toSend);
+        var future = kafkaTemplate.send(toSend);
         awaitFuture(future, "Could not produce permission market document");
     }
 
@@ -140,7 +133,7 @@ public class KafkaConnector implements
                                                         info.getConnectionid(),
                                                         marketDocument,
                                                         cimToHeaders(info));
-        var kafka = kafkaProducer.send(toSend);
+        var kafka = kafkaTemplate.send(toSend);
         awaitFuture(kafka, "Could not produce validated historical data market document message");
         LOGGER.debug("Produced validated historical data market document message for permission request {}",
                      info.getPermissionid());
@@ -158,7 +151,7 @@ public class KafkaConnector implements
         var toSend = new ProducerRecord<String, Object>("raw-data-in-proprietary-format",
                                                         message.connectionId(),
                                                         message);
-        var future = kafkaProducer.send(toSend);
+        var future = kafkaTemplate.send(toSend);
         awaitFuture(future, "Could not produce raw data message");
         LOGGER.debug("Produced raw data message for permission request {}", message.permissionId());
     }
@@ -175,7 +168,7 @@ public class KafkaConnector implements
                 marketDocument,
                 cimToHeaders(header)
         );
-        var future = kafkaProducer.send(toSend);
+        var future = kafkaTemplate.send(toSend);
         awaitFuture(future, "Could not produce accounting point market document message");
         LOGGER.debug("Produced accounting point market document message for permission request {}",
                      header.getPermissionid());
