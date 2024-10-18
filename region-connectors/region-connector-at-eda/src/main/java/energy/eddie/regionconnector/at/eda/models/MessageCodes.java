@@ -57,4 +57,10 @@ public class MessageCodes {
         }
     }
 
+    public static class CPRequest {
+        public static final String CODE = "ANFORDERUNG_PT";
+
+        private CPRequest() {
+        }
+    }
 }
