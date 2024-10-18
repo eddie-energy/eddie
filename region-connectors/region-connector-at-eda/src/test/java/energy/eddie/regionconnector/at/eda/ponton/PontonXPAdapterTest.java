@@ -12,12 +12,11 @@ import energy.eddie.regionconnector.at.eda.dto.*;
 import energy.eddie.regionconnector.at.eda.dto.masterdata.*;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.ConsentData;
-import energy.eddie.regionconnector.at.eda.ponton.messenger.HealthCheck;
-import energy.eddie.regionconnector.at.eda.ponton.messenger.MessengerStatus;
-import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageType;
-import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnectionTestImpl;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.*;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
+import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
+import energy.eddie.regionconnector.at.eda.requests.CPRequestResult;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableMasterDataService;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
@@ -35,6 +34,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.testcontainers.shaded.org.checkerframework.checker.nullness.qual.Nullable;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -56,6 +56,8 @@ class PontonXPAdapterTest {
     private CCMORequest ccmoRequest;
     @Mock
     private CCMORevoke ccmoRevoke;
+    @Mock
+    private CPRequestCR cpRequestCR;
 
     @Spy
     private PontonMessengerConnectionTestImpl pontonMessengerConnection = new PontonMessengerConnectionTestImpl();
@@ -71,30 +73,8 @@ class PontonXPAdapterTest {
     @InjectMocks
     private PontonXPAdapter pontonXPAdapter;
 
-    private static Stream<Arguments> outboundMessageStatusUpdateStream() {
-        StatusMetaData metaData = StatusMetaDataImpl
-                .newBuilder()
-                .setConversationId(new ConversationId("conversationId"))
-                .build();
-        var builder = OutboundMessageStatusUpdateImpl
-                .newBuilder()
-                .setStatusMetaData(metaData)
-                .setTransferId(new TransferId("transferId"));
-        return Stream.of(
-                Arguments.of(builder.setResult(OutboundStatusEnum.CONTENT_ERROR).build(),
-                             NotificationMessageType.PONTON_ERROR),
-                Arguments.of(builder.setResult(OutboundStatusEnum.CONFIG_ERROR).build(),
-                             NotificationMessageType.PONTON_ERROR),
-                Arguments.of(builder.setResult(OutboundStatusEnum.CONTENT_ERROR).build(),
-                             NotificationMessageType.PONTON_ERROR),
-                Arguments.of(builder.setResult(OutboundStatusEnum.FAILED).build(),
-                             NotificationMessageType.PONTON_ERROR),
-                Arguments.of(builder.setResult(OutboundStatusEnum.INFO).build(), null),
-                Arguments.of(builder.setResult(OutboundStatusEnum.SUCCESS).build(), null),
-                Arguments.of(builder.setResult(OutboundStatusEnum.PROCESSED_AND_QUEUED).build(), null)
-        );
-    }
 
+    //region SendCMRequest, SendCMRevoke, SendCPRequest
     @Test
     void sendCMRequest_callsPontonMessengerConnection() throws TransmissionException, de.ponton.xp.adapter.api.TransmissionException, ConnectionException {
         // When
@@ -138,12 +118,6 @@ class PontonXPAdapterTest {
         verify(pontonMessengerConnection).sendCMRevoke(ccmoRevoke);
     }
 
-    private void setupCCMORevoke() {
-        when(ccmoRevoke.permissionRequest()).thenReturn(new SimplePermissionRequest("pid",
-                                                                                    "cmRequestId",
-                                                                                    "conversationId"));
-    }
-
     @Test
     void sendCMRevoke_PontonMessengerConnectionThrowsTransmissionException() {
         // Given
@@ -166,6 +140,41 @@ class PontonXPAdapterTest {
         pontonXPAdapter.close();
     }
 
+    @Test
+    void sendCPRequest_callsPontonMessengerConnection() throws TransmissionException, de.ponton.xp.adapter.api.TransmissionException, ConnectionException {
+        // When
+        when(cpRequestCR.messageId()).thenReturn("messageId");
+        pontonXPAdapter.sendCPRequest(cpRequestCR);
+        pontonXPAdapter.close();
+
+        // Then
+        verify(pontonMessengerConnection).sendCPRequest(cpRequestCR);
+    }
+
+    @Test
+    void sendCPRequest_PontonMessengerConnectionThrowsTransmissionException() {
+        // Given
+        when(cpRequestCR.messageId()).thenReturn("messageId");
+        pontonMessengerConnection.setThrowTransmissionException(true);
+
+        // When & Then
+        assertThrows(TransmissionException.class, () -> pontonXPAdapter.sendCPRequest(cpRequestCR));
+        pontonXPAdapter.close();
+    }
+
+    @Test
+    void sendCPRequest_PontonMessengerConnectionThrowsConnectionException() {
+        // Given
+        when(cpRequestCR.messageId()).thenReturn("messageId");
+        pontonMessengerConnection.setThrowConnectionException(true);
+
+        // When & Then
+        assertThrows(TransmissionException.class, () -> pontonXPAdapter.sendCPRequest(cpRequestCR));
+        pontonXPAdapter.close();
+    }
+    //endregion
+
+    //region HandleMessages
     @ParameterizedTest
     @EnumSource(NotificationMessageType.class)
     void handleCMNotificationMessage_whenPontonMessengerConnectionCallsCMNotificationHandler_withoutResponseData_emitsSuccess(
@@ -192,23 +201,48 @@ class PontonXPAdapterTest {
         stepVerifier.verify();
     }
 
-    private static EdaCMNotification createEdaCMNotification(List<ResponseData> responseData) {
-        return new EdaCMNotification() {
+    @ParameterizedTest
+    @MethodSource("cpNotifications")
+    void handleCPNotificationMessage_whenPontonMessengerConnectionCallsCMNotificationHandler_emitsSuccess(
+            List<Integer> responseCodes,
+            CPNotificationMessageType messageType,
+            CPRequestResult.Result expectedSendResult
+    ) {
+        // Given
+        var messageId = "messageId";
+        var edaCPNotification = new EdaCPNotification() {
             @Override
             public String conversationId() {
-                return "conversationId";
+                return messageId;
             }
 
             @Override
-            public String cmRequestId() {
-                return "cmRequestId";
+            public String originalMessageId() {
+                return messageId;
             }
 
             @Override
-            public List<ResponseData> responseData() {
-                return responseData;
+            public List<Integer> responseCodes() {
+                return responseCodes;
             }
         };
+
+        // When
+        var stepVerifier = StepVerifier
+                .create(pontonXPAdapter.getCPRequestResultStream())
+                .assertNext(cpRequestResult -> assertAll(
+                        () -> assertEquals(messageId, cpRequestResult.messageId()),
+                        () -> assertEquals(expectedSendResult, cpRequestResult.result())
+                ))
+                .expectComplete();
+
+        var messageResult = pontonMessengerConnection.cpNotificationHandler
+                .handle(edaCPNotification, messageType);
+
+        // Then
+        assertEquals(InboundStatusEnum.SUCCESS, messageResult.status());
+        pontonXPAdapter.close();
+        stepVerifier.verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -279,75 +313,6 @@ class PontonXPAdapterTest {
         );
         pontonXPAdapter.close();
         stepVerifier.verify();
-    }
-
-    private static EdaMasterData masterData() {
-        return new EdaMasterData() {
-            @Override
-            public String conversationId() {
-                return null;
-            }
-
-            @Override
-            public String messageId() {
-                return "";
-            }
-
-            @Override
-            public Sector sector() {
-                return null;
-            }
-
-            @Override
-            public ZonedDateTime documentCreationDateTime() {
-                return ZonedDateTime.now(ZoneOffset.UTC);
-            }
-
-            @Override
-            public String senderMessageAddress() {
-                return "";
-            }
-
-            @Override
-            public String receiverMessageAddress() {
-                return "";
-            }
-
-            @Override
-            public String meteringPoint() {
-                return null;
-            }
-
-            @Override
-            public MeteringPointData meteringPointData() {
-                return null;
-            }
-
-            @Override
-            public Optional<BillingData> billingData() {
-                return Optional.empty();
-            }
-
-            @Override
-            public Optional<ContractPartner> contractPartner() {
-                return Optional.empty();
-            }
-
-            @Override
-            public Optional<DeliveryAddress> installationAddress() {
-                return Optional.empty();
-            }
-
-            @Override
-            public Optional<InvoiceRecipient> invoiceRecipient() {
-                return Optional.empty();
-            }
-
-            @Override
-            public Object originalMasterData() {
-                return null;
-            }
-        };
     }
 
     @Test
@@ -450,6 +415,34 @@ class PontonXPAdapterTest {
         stepVerifier.expectComplete().verify();
     }
 
+    @ParameterizedTest
+    @MethodSource("outboundMessageStatusUpdateStreamForCPRequests")
+    void handleCMNotificationMessage_whenPontonMessengerConnectionCallsCMNotificationHandler_forCPRequestCR_emitsCPRequestResult(
+            OutboundMessageStatusUpdate outboundMessageStatusUpdate,
+            CPRequestResult.Result expectedResult
+    ) throws TransmissionException {
+        when(cpRequestCR.messageId()).thenReturn("conversationId");
+        // When
+        StepVerifier.Step<CPRequestResult> stepVerifier = StepVerifier
+                .create(pontonXPAdapter.getCPRequestResultStream());
+
+        if (expectedResult != null) {
+            stepVerifier = stepVerifier
+                    .assertNext(cpRequestResult -> {
+                        // Then
+                        assertEquals(expectedResult, cpRequestResult.result());
+                    });
+        }
+
+        pontonXPAdapter.sendCPRequest(cpRequestCR);
+        pontonMessengerConnection.outboundMessageStatusUpdateHandler
+                .onOutboundMessageStatusUpdate(outboundMessageStatusUpdate);
+
+        // Then
+        pontonXPAdapter.close();
+        stepVerifier.expectComplete().verify();
+    }
+
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @ParameterizedTest
     @EnumSource(NotificationMessageType.class)
@@ -491,10 +484,6 @@ class PontonXPAdapterTest {
         stepVerifier.verify();
     }
 
-    private ResponseData createResponseData(String consentId) {
-        return new SimpleResponseData(consentId, null, List.of(1));
-    }
-
     @Test
     void start_callsPontonMessengerConnectionStart() throws TransmissionException, de.ponton.xp.adapter.api.TransmissionException {
         // When
@@ -504,6 +493,7 @@ class PontonXPAdapterTest {
         verify(pontonMessengerConnection).start();
         pontonXPAdapter.close();
     }
+//endregion
 
     @Test
     void health() {
@@ -538,5 +528,175 @@ class PontonXPAdapterTest {
         // When & Then
         assertThrows(TransmissionException.class, pontonXPAdapter::start);
         pontonXPAdapter.close();
+    }
+
+    private static Stream<Arguments> cpNotifications() {
+        return Stream.of(
+                Arguments.of(List.of(70), CPNotificationMessageType.ANTWORT_PT, CPRequestResult.Result.ACCEPTED),
+                Arguments.of(List.of(55, 56, 82, 94, 70),
+                             CPNotificationMessageType.ANTWORT_PT,
+                             CPRequestResult.Result.ACCEPTED),
+                Arguments.of(List.of(213),
+                             CPNotificationMessageType.ABLEHNUNG_PT,
+                             CPRequestResult.Result.UNKNOWN_RESPONSE_CODE_ERROR),
+                Arguments.of(List.of(55),
+                             CPNotificationMessageType.ABLEHNUNG_PT,
+                             CPRequestResult.Result.METERING_POINT_NOT_ASSIGNED),
+                Arguments.of(List.of(56),
+                             CPNotificationMessageType.ABLEHNUNG_PT,
+                             CPRequestResult.Result.METERING_POINT_NOT_FOUND),
+                Arguments.of(List.of(82),
+                             CPNotificationMessageType.ABLEHNUNG_PT,
+                             CPRequestResult.Result.PROCESS_DATE_INVALID),
+                Arguments.of(List.of(94),
+                             CPNotificationMessageType.ABLEHNUNG_PT,
+                             CPRequestResult.Result.NO_DATA_AVAILABLE)
+        );
+    }
+
+    private static Stream<Arguments> outboundMessageStatusUpdateStream() {
+        StatusMetaData metaData = StatusMetaDataImpl
+                .newBuilder()
+                .setConversationId(new ConversationId("conversationId"))
+                .build();
+        var builder = OutboundMessageStatusUpdateImpl
+                .newBuilder()
+                .setStatusMetaData(metaData)
+                .setTransferId(new TransferId("transferId"));
+        return Stream.of(
+                Arguments.of(builder.setResult(OutboundStatusEnum.CONTENT_ERROR).build(),
+                             NotificationMessageType.PONTON_ERROR),
+                Arguments.of(builder.setResult(OutboundStatusEnum.CONFIG_ERROR).build(),
+                             NotificationMessageType.PONTON_ERROR),
+                Arguments.of(builder.setResult(OutboundStatusEnum.CONTENT_ERROR).build(),
+                             NotificationMessageType.PONTON_ERROR),
+                Arguments.of(builder.setResult(OutboundStatusEnum.FAILED).build(),
+                             NotificationMessageType.PONTON_ERROR),
+                Arguments.of(builder.setResult(OutboundStatusEnum.INFO).build(), null),
+                Arguments.of(builder.setResult(OutboundStatusEnum.SUCCESS).build(), null),
+                Arguments.of(builder.setResult(OutboundStatusEnum.PROCESSED_AND_QUEUED).build(), null)
+        );
+    }
+
+    private static Stream<Arguments> outboundMessageStatusUpdateStreamForCPRequests() {
+        StatusMetaData metaData = StatusMetaDataImpl
+                .newBuilder()
+                .setConversationId(new ConversationId("conversationId"))
+                .build();
+        var builder = OutboundMessageStatusUpdateImpl
+                .newBuilder()
+                .setStatusMetaData(metaData)
+                .setTransferId(new TransferId("transferId"));
+        return Stream.of(
+                Arguments.of(builder.setResult(OutboundStatusEnum.CONTENT_ERROR).build(),
+                             CPRequestResult.Result.PONTON_ERROR),
+                Arguments.of(builder.setResult(OutboundStatusEnum.CONFIG_ERROR).build(),
+                             CPRequestResult.Result.PONTON_ERROR),
+                Arguments.of(builder.setResult(OutboundStatusEnum.CONTENT_ERROR).build(),
+                             CPRequestResult.Result.PONTON_ERROR),
+                Arguments.of(builder.setResult(OutboundStatusEnum.FAILED).build(),
+                             CPRequestResult.Result.PONTON_ERROR),
+                Arguments.of(builder.setResult(OutboundStatusEnum.INFO).build(), null),
+                Arguments.of(builder.setResult(OutboundStatusEnum.SUCCESS).build(), null),
+                Arguments.of(builder.setResult(OutboundStatusEnum.PROCESSED_AND_QUEUED).build(), null)
+        );
+    }
+
+    private void setupCCMORevoke() {
+        when(ccmoRevoke.permissionRequest()).thenReturn(new SimplePermissionRequest("pid",
+                                                                                    "cmRequestId",
+                                                                                    "conversationId"));
+    }
+
+    private static EdaCMNotification createEdaCMNotification(List<ResponseData> responseData) {
+        return new EdaCMNotification() {
+            @Override
+            public String conversationId() {
+                return "conversationId";
+            }
+
+            @Override
+            public String cmRequestId() {
+                return "cmRequestId";
+            }
+
+            @Override
+            public List<ResponseData> responseData() {
+                return responseData;
+            }
+        };
+    }
+
+    private static EdaMasterData masterData() {
+        return new EdaMasterData() {
+            @Override
+            public String conversationId() {
+                return null;
+            }
+
+            @Override
+            public String messageId() {
+                return "";
+            }
+
+            @Override
+            public Sector sector() {
+                return null;
+            }
+
+            @Override
+            public ZonedDateTime documentCreationDateTime() {
+                return ZonedDateTime.now(ZoneOffset.UTC);
+            }
+
+            @Override
+            public String senderMessageAddress() {
+                return "";
+            }
+
+            @Override
+            public String receiverMessageAddress() {
+                return "";
+            }
+
+            @Override
+            public String meteringPoint() {
+                return null;
+            }
+
+            @Override
+            public MeteringPointData meteringPointData() {
+                return null;
+            }
+
+            @Override
+            public Optional<BillingData> billingData() {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<ContractPartner> contractPartner() {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<DeliveryAddress> installationAddress() {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<InvoiceRecipient> invoiceRecipient() {
+                return Optional.empty();
+            }
+
+            @Override
+            public Object originalMasterData() {
+                return null;
+            }
+        };
+    }
+
+    private ResponseData createResponseData(String consentId) {
+        return new SimpleResponseData(consentId, null, List.of(1));
     }
 }

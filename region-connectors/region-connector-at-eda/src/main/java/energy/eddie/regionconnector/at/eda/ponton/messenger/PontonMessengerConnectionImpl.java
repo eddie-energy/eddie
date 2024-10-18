@@ -19,6 +19,7 @@ import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactory
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
+import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,8 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     private ConsumptionRecordHandler consumptionRecordHandler;
     @Nullable
     private MasterDataHandler masterDataHandler;
+    @Nullable
+    private CPNotificationHandler cpNotificationHandler;
     private MessengerConnection messengerConnection;
 
     public PontonMessengerConnectionImpl(
@@ -65,6 +68,101 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
         final AdapterInfo adapterInfo = createAdapterInfo(config);
         this.messengerConnectionBuilder = createMessengerConnectionBuilder(config, workFolder, adapterInfo);
         this.messengerConnection = this.messengerConnectionBuilder.build();
+    }
+
+    @Override
+    public void close() {
+        messengerConnection.close();
+    }
+
+    @Override
+    public void start() throws TransmissionException {
+        messengerConnection.startReception();
+    }
+
+    @Override
+    public void sendCMRevoke(CCMORevoke ccmoRevoke) throws TransmissionException, ConnectionException {
+        sendMessage(outboundMessageFactoryCollection.activeCmRevokeFactory().createOutboundMessage(ccmoRevoke));
+    }
+
+    @Override
+    public void sendCMRequest(CCMORequest ccmoRequest) throws TransmissionException, ConnectionException {
+        sendMessage(outboundMessageFactoryCollection.activeCmRequestFactory().createOutboundMessage(ccmoRequest));
+    }
+
+    @Override
+    public void sendCPRequest(CPRequestCR cpRequestCR) throws TransmissionException, ConnectionException {
+        sendMessage(outboundMessageFactoryCollection.activeCPRequestFactory().createOutboundMessage(cpRequestCR));
+    }
+
+    @Override
+    public PontonMessengerConnection withOutboundMessageStatusUpdateHandler(OutboundMessageStatusUpdateHandler outboundMessageStatusUpdateHandler) {
+        this.outboundMessageStatusUpdateHandler = outboundMessageStatusUpdateHandler;
+        return this;
+    }
+
+    @Override
+    public PontonMessengerConnection withCMNotificationHandler(CMNotificationHandler cmNotificationHandler) {
+        this.cmNotificationHandler = cmNotificationHandler;
+        return this;
+    }
+
+    @Override
+    public PontonMessengerConnection withCMRevokeHandler(CMRevokeHandler cmRevokeHandler) {
+        this.cmRevokeHandler = cmRevokeHandler;
+        return this;
+    }
+
+    @Override
+    public PontonMessengerConnection withConsumptionRecordHandler(ConsumptionRecordHandler consumptionRecordHandler) {
+        this.consumptionRecordHandler = consumptionRecordHandler;
+        return this;
+    }
+
+    @Override
+    public PontonMessengerConnection withMasterDataHandler(MasterDataHandler masterDataHandler) {
+        this.masterDataHandler = masterDataHandler;
+        return this;
+    }
+
+    @Override
+    public PontonMessengerConnection withCPNotificationHandler(CPNotificationHandler cpNotificationHandler) {
+        this.cpNotificationHandler = cpNotificationHandler;
+        return this;
+    }
+
+    public void sendMessage(
+            OutboundMessage outboundMessage
+    ) throws de.ponton.xp.adapter.api.TransmissionException, ConnectionException {
+        try {
+            messengerConnection.sendMessage(outboundMessage);
+        } catch (Exception sendException) {
+            LOGGER.error("Error while sending message to Ponton XP Messenger", sendException);
+            // check if the exception is retryable and no other thread is already trying to restart the connection
+            if (!(isRetryable(sendException) && lock.tryLock())) {
+                throw new ConnectionException("Error while sending message to Ponton XP Messenger", sendException);
+            }
+            LOGGER.info("Restarting Ponton XP adapter messengerConnection.");
+            try {
+                messengerConnection.close();
+                messengerConnection = messengerConnectionBuilder.build();
+                messengerConnection.startReception();
+                LOGGER.info("Ponton XP adapter messengerConnection restarted.");
+                messengerConnection.sendMessage(outboundMessage);
+            } finally {
+                lock.unlock();
+            }
+        }
+    }
+
+    @Override
+    public MessengerStatus messengerStatus() {
+        return healthApi.messengerStatus();
+    }
+
+    @Override
+    public void resendFailedMessages(ZonedDateTime date) {
+        messengerMonitor.resendFailedMessages(date);
     }
 
     private static AdapterInfo createAdapterInfo(PontonXPAdapterConfiguration config) {
@@ -119,6 +217,10 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
                 case MessageCodes.MASTER_DATA -> handleMasterData(inputStream);
                 case MessageCodes.CONSUMPTION_RECORD -> handleConsumptionRecord(inputStream);
                 case MessageCodes.Revoke.CUSTOMER, MessageCodes.Revoke.IMPLICIT -> handleRevoke(inputStream);
+                case MessageCodes.CPNotification.ANSWER ->
+                        handleCPNotification(inputStream, CPNotificationMessageType.ANTWORT_PT);
+                case MessageCodes.CPNotification.REJECT ->
+                        handleCPNotification(inputStream, CPNotificationMessageType.ABLEHNUNG_PT);
                 default -> {
                     LOGGER.warn("Received message type '{}' (version '{}') is not supported.",
                                 messageType,
@@ -171,6 +273,24 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
         return cmNotificationHandler.handle(notification, notificationMessageType);
     }
 
+    private InboundMessageResult handleCPNotification(
+            InputStream inputStream,
+            CPNotificationMessageType cpNotificationMessageType
+    ) {
+        if (cpNotificationHandler == null) {
+            LOGGER.warn("Received cpnotification message, but no handler is available.");
+            return new InboundMessageResult(
+                    InboundStatusEnum.REJECTED,
+                    "No handler available for cpnotification message."
+            );
+        }
+
+        var notification = inboundMessageFactoryCollection
+                .activeCPNotificationFactory()
+                .parseInputStream(inputStream);
+        return cpNotificationHandler.handle(notification, cpNotificationMessageType);
+    }
+
     private InboundMessageResult handleMasterData(InputStream inputStream) {
         if (masterDataHandler == null) {
             LOGGER.warn("Received master data message, but no handler is available.");
@@ -213,91 +333,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
         return cmRevokeHandler.handle(cmRevoke);
     }
 
-    @Override
-    public void close() {
-        messengerConnection.close();
-    }
-
-    @Override
-    public void start() throws TransmissionException {
-        messengerConnection.startReception();
-    }
-
-    @Override
-    public void sendCMRevoke(CCMORevoke ccmoRevoke) throws TransmissionException, ConnectionException {
-        sendMessage(outboundMessageFactoryCollection.activeCmRevokeFactory().createOutboundMessage(ccmoRevoke));
-    }
-
-    public void sendMessage(
-            OutboundMessage outboundMessage
-    ) throws de.ponton.xp.adapter.api.TransmissionException, ConnectionException {
-        try {
-            messengerConnection.sendMessage(outboundMessage);
-        } catch (Exception sendException) {
-            LOGGER.error("Error while sending message to Ponton XP Messenger", sendException);
-            // check if the exception is retryable and no other thread is already trying to restart the connection
-            if (!(isRetryable(sendException) && lock.tryLock())) {
-                throw new ConnectionException("Error while sending message to Ponton XP Messenger", sendException);
-            }
-            LOGGER.info("Restarting Ponton XP adapter messengerConnection.");
-            try {
-                messengerConnection.close();
-                messengerConnection = messengerConnectionBuilder.build();
-                messengerConnection.startReception();
-                LOGGER.info("Ponton XP adapter messengerConnection restarted.");
-                messengerConnection.sendMessage(outboundMessage);
-            } finally {
-                lock.unlock();
-            }
-        }
-    }
-
     private boolean isRetryable(Exception sendException) {
         return sendException instanceof IOException && healthApi.messengerStatus().ok();
-    }
-
-    @Override
-    public void sendCMRequest(CCMORequest ccmoRequest) throws TransmissionException, ConnectionException {
-        sendMessage(outboundMessageFactoryCollection.activeCmRequestFactory().createOutboundMessage(ccmoRequest));
-    }
-
-    @Override
-    public PontonMessengerConnection withOutboundMessageStatusUpdateHandler(OutboundMessageStatusUpdateHandler outboundMessageStatusUpdateHandler) {
-        this.outboundMessageStatusUpdateHandler = outboundMessageStatusUpdateHandler;
-        return this;
-    }
-
-    @Override
-    public PontonMessengerConnection withCMNotificationHandler(CMNotificationHandler cmNotificationHandler) {
-        this.cmNotificationHandler = cmNotificationHandler;
-        return this;
-    }
-
-    @Override
-    public PontonMessengerConnection withCMRevokeHandler(CMRevokeHandler cmRevokeHandler) {
-        this.cmRevokeHandler = cmRevokeHandler;
-        return this;
-    }
-
-    @Override
-    public PontonMessengerConnection withConsumptionRecordHandler(ConsumptionRecordHandler consumptionRecordHandler) {
-        this.consumptionRecordHandler = consumptionRecordHandler;
-        return this;
-    }
-
-    @Override
-    public PontonMessengerConnection withMasterDataHandler(MasterDataHandler masterDataHandler) {
-        this.masterDataHandler = masterDataHandler;
-        return this;
-    }
-
-    @Override
-    public MessengerStatus messengerStatus() {
-        return healthApi.messengerStatus();
-    }
-
-    @Override
-    public void resendFailedMessages(ZonedDateTime date) {
-        messengerMonitor.resendFailedMessages(date);
     }
 }

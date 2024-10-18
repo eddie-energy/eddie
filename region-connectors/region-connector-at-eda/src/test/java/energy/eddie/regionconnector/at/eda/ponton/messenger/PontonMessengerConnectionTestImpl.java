@@ -5,6 +5,7 @@ import de.ponton.xp.adapter.api.OutboundMessageStatusUpdateHandler;
 import de.ponton.xp.adapter.api.TransmissionException;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
+import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -16,6 +17,7 @@ public class PontonMessengerConnectionTestImpl implements PontonMessengerConnect
     public CMRevokeHandler cmRevokeHandler;
     public ConsumptionRecordHandler consumptionRecordHandler;
     public MasterDataHandler masterDataHandler;
+    public CPNotificationHandler cpNotificationHandler;
 
     private boolean throwTransmissionException = false;
     private boolean throwConnectionException = false;
@@ -71,6 +73,16 @@ public class PontonMessengerConnectionTestImpl implements PontonMessengerConnect
     }
 
     @Override
+    public void sendCPRequest(CPRequestCR cpRequestCR) throws TransmissionException, ConnectionException {
+        if (throwTransmissionException) {
+            throw new TransmissionException("TransmissionException");
+        }
+        if (throwConnectionException) {
+            throw new ConnectionException("ConnectionException", new Throwable());
+        }
+    }
+
+    @Override
     public PontonMessengerConnection withOutboundMessageStatusUpdateHandler(OutboundMessageStatusUpdateHandler outboundMessageStatusUpdateHandler) {
         this.outboundMessageStatusUpdateHandler = outboundMessageStatusUpdateHandler;
         return this;
@@ -97,6 +109,12 @@ public class PontonMessengerConnectionTestImpl implements PontonMessengerConnect
     @Override
     public PontonMessengerConnection withMasterDataHandler(MasterDataHandler masterDataHandler) {
         this.masterDataHandler = masterDataHandler;
+        return this;
+    }
+
+    @Override
+    public PontonMessengerConnection withCPNotificationHandler(CPNotificationHandler cpNotificationHandler) {
+        this.cpNotificationHandler = cpNotificationHandler;
         return this;
     }
 
