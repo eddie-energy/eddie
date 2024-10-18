@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:CPNotification xmlns:ns0="http://www.ebutilities.at/schemata/customerprocesses/cpnotification/01p13"
+                    xmlns:ns1="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20">
+    <ns0:MarketParticipantDirectory DocumentMode="PROD" Duplicate="false" SchemaVersion="01.13">
+        <ns1:RoutingHeader>
+            <ns1:Sender AddressType="ECNumber">
+                <ns1:MessageAddress>ATXXXXXX</ns1:MessageAddress>
+            </ns1:Sender>
+            <ns1:Receiver AddressType="ECNumber">
+                <ns1:MessageAddress>EPXXXXXX</ns1:MessageAddress>
+            </ns1:Receiver>
+            <ns1:DocumentCreationDateTime>2024-10-18T11:34:45.6361850Z</ns1:DocumentCreationDateTime>
+        </ns1:RoutingHeader>
+        <ns1:Sector>01</ns1:Sector>
+        <ns0:MessageCode>ABLEHNUNG_PT</ns0:MessageCode>
+    </ns0:MarketParticipantDirectory>
+    <ns0:ProcessDirectory>
+        <ns1:MessageId>ATXXXXXX202410181334439100320691194</ns1:MessageId>
+        <ns1:ConversationId>EPXXXXXXT1729251281919</ns1:ConversationId>
+        <ns0:ResponseData>
+            <ns0:OriginalMessageID>EPXXXXXXT1729251281919</ns0:OriginalMessageID>
+            <ns0:ResponseCode>82</ns0:ResponseCode>
+        </ns0:ResponseData>
+    </ns0:ProcessDirectory>
+</ns0:CPNotification>
