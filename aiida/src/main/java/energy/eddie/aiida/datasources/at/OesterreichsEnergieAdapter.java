@@ -2,7 +2,7 @@ package energy.eddie.aiida.datasources.at;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import energy.eddie.aiida.datasources.MqttDataSource;
+import energy.eddie.aiida.datasources.AiidaMqttDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.MqttConfig;
@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OesterreichsEnergieAdapter extends MqttDataSource {
+public class OesterreichsEnergieAdapter extends AiidaMqttDataSource {
     private static final Logger LOGGER = LoggerFactory.getLogger(OesterreichsEnergieAdapter.class);
     private final ObjectMapper mapper;
 

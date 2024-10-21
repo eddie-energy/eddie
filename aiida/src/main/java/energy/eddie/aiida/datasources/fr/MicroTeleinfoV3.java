@@ -2,7 +2,7 @@ package energy.eddie.aiida.datasources.fr;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import energy.eddie.aiida.datasources.MqttDataSource;
+import energy.eddie.aiida.datasources.AiidaMqttDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.MqttConfig;
@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MicroTeleinfoV3 extends MqttDataSource {
+public class MicroTeleinfoV3 extends AiidaMqttDataSource {
     private static final String DATASOURCE_NAME = "MicroTeleinfoV3";
     private static final Logger LOGGER = LoggerFactory.getLogger(MicroTeleinfoV3.class);
     private static final String HEALTH_TOPIC = "/status";

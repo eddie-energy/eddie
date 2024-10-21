@@ -17,7 +17,7 @@ import reactor.core.publisher.Flux;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
-public abstract class MqttDataSource extends AiidaDataSource implements MqttCallback {
+public abstract class AiidaMqttDataSource extends AiidaDataSource implements MqttCallback {
     private static final Duration DISCONNECT_TIMEOUT = Duration.ofSeconds(30);
     private final Logger logger;
     private final MqttConfig mqttConfig;
@@ -32,7 +32,7 @@ public abstract class MqttDataSource extends AiidaDataSource implements MqttCall
      * @param name       Display name of this new datasource.
      * @param mqttConfig The mqttConfiguration for the specified data source
      */
-    protected MqttDataSource(
+    protected AiidaMqttDataSource(
             String id,
             String name,
             MqttConfig mqttConfig,

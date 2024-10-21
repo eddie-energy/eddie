@@ -45,6 +45,18 @@ public class Aggregator implements AutoCloseable {
                     .subscribe();
     }
 
+    private void saveRecordToDatabase(AiidaRecord aiidaRecord) {
+        LOGGER.trace("Saving new record to db");
+        for (AiidaRecordValue value : aiidaRecord.aiidaRecordValue()) {
+            value.setAiidaRecord(aiidaRecord);
+        }
+        repository.save(aiidaRecord);
+    }
+
+    private void handleCombinedSinkError(Throwable throwable) {
+        LOGGER.error("Got error from combined sink", throwable);
+    }
+
     /**
      * Adds a new {@link AiidaDataSource} to this aggregator and will subscribe to the Flux returned by
      * {@link AiidaDataSource#start()}.
@@ -58,6 +70,29 @@ public class Aggregator implements AutoCloseable {
         sources.add(dataSource);
         dataSource.start()
                   .subscribe(this::publishRecordToCombinedFlux, throwable -> handleError(throwable, dataSource));
+    }
+
+    /**
+     * Removes a {@link AiidaDataSource} from this aggregator and will close the datasource.
+     * @param dataSource The datasource to remove.
+     */
+    public void removeAiidaDataSource(AiidaDataSource dataSource) {
+        LOGGER.info("Will remove datasource {} with ID {} from aggregator", dataSource.name(), dataSource.id());
+
+        healthContributorRegistry.unregisterContributor(dataSource.id() + "_" + dataSource.name());
+        sources.remove(dataSource);
+        dataSource.close();
+    }
+
+    private void publishRecordToCombinedFlux(AiidaRecord data) {
+        var result = combinedSink.tryEmitNext(data);
+
+        if (result.isFailure()) LOGGER.error("Error while emitting record to combined sink. Error was: {}", result);
+    }
+
+    private void handleError(Throwable throwable, AiidaDataSource dataSource) {
+        // TODO: GH-1304 do we try to restart the affected datasource or only notify user?
+        LOGGER.error("Error from datasource {}", dataSource.name(), throwable);
     }
 
     /**
@@ -109,29 +144,6 @@ public class Aggregator implements AutoCloseable {
         for (AiidaDataSource source : sources) {
             source.close();
         }
-    }
-
-    private void saveRecordToDatabase(AiidaRecord aiidaRecord) {
-        LOGGER.trace("Saving new record to db");
-        for (AiidaRecordValue value : aiidaRecord.aiidaRecordValue()) {
-            value.setAiidaRecord(aiidaRecord);
-        }
-        repository.save(aiidaRecord);
-    }
-
-    private void handleCombinedSinkError(Throwable throwable) {
-        LOGGER.error("Got error from combined sink", throwable);
-    }
-
-    private void publishRecordToCombinedFlux(AiidaRecord aiidaRecord) {
-        var result = combinedSink.tryEmitNext(aiidaRecord);
-
-        if (result.isFailure()) LOGGER.error("Error while emitting record to combined sink. Error was: {}", result);
-    }
-
-    private void handleError(Throwable throwable, AiidaDataSource dataSource) {
-        // TODO: GH-1304 do we try to restart the affected datasource or only notify user?
-        LOGGER.error("Error from datasource {}", dataSource.name(), throwable);
     }
 
     private AiidaRecord filterAllowedDataTags(AiidaRecord aiidaRecord, Set<String> allowedDataTags) {

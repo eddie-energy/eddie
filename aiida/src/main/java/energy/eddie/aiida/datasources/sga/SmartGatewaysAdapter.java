@@ -1,6 +1,6 @@
 package energy.eddie.aiida.datasources.sga;
 
-import energy.eddie.aiida.datasources.MqttDataSource;
+import energy.eddie.aiida.datasources.AiidaMqttDataSource;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class SmartGatewaysAdapter extends MqttDataSource {
+public class SmartGatewaysAdapter extends AiidaMqttDataSource {
     private static final String DATASOURCE_NAME = "SmartGatewaysAdapter";
     private static final Logger LOGGER = LoggerFactory.getLogger(SmartGatewaysAdapter.class);
     private static final String DSMR_TARIFF_LOW = "0001";
