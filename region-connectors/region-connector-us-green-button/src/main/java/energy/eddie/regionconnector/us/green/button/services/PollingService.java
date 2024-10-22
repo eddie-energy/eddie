@@ -1,9 +1,6 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
@@ -30,7 +27,6 @@ public class PollingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     private final UsPermissionRequestRepository permissionRequestRepository;
     private final GreenButtonApi api;
-    private final DataNeedCalculationService<DataNeed> calculationService;
     private final CredentialService credentialService;
     private final PublishService publishService;
     private final Outbox outbox;
@@ -38,14 +34,12 @@ public class PollingService {
     public PollingService(
             UsPermissionRequestRepository permissionRequestRepository,
             GreenButtonApi api,
-            DataNeedCalculationService<DataNeed> calculationService,
             CredentialService credentialService,
             PublishService publishService,
             Outbox outbox
     ) {
         this.permissionRequestRepository = permissionRequestRepository;
         this.api = api;
-        this.calculationService = calculationService;
         this.credentialService = credentialService;
         this.publishService = publishService;
         this.outbox = outbox;
@@ -61,30 +55,26 @@ public class PollingService {
             LOGGER.info("Permission request {} has not started yet", permissionId);
             return;
         }
-        var dataNeedId = permissionRequest.dataNeedId();
-        var calc = calculationService.calculate(dataNeedId);
-        if (!(calc instanceof ValidatedHistoricalDataDataNeedResult res)) {
-            LOGGER.warn("DataNeed {} not supported for permission request {}", dataNeedId, permissionId);
-            return;
-        }
         credentialService.retrieveAccessToken(permissionRequest)
-                         .subscribe(credentials -> pollValidatedHistoricalData(permissionRequest, credentials, res),
+                         .subscribe(credentials -> pollValidatedHistoricalData(permissionRequest, credentials),
                                     throwable -> handleAccessTokenError(throwable, permissionId));
     }
 
     private void pollValidatedHistoricalData(
             UsGreenButtonPermissionRequest permissionRequest,
-            OAuthTokenDetails creds,
-            ValidatedHistoricalDataDataNeedResult vhdResult
+            OAuthTokenDetails creds
     ) {
         var permissionId = permissionRequest.permissionId();
-        LOGGER.info("Polling validated historical data for permission request {}", permissionId);
-        var start = vhdResult.energyTimeframe().start().atStartOfDay(ZoneOffset.UTC);
+        var start = permissionRequest.start().atStartOfDay(ZoneOffset.UTC);
         var energyDataStart = permissionRequest.latestMeterReadingEndDateTime()
                                                .orElse(start);
-        var end = DateTimeUtils.endOfDay(vhdResult.energyTimeframe().end(), ZoneOffset.UTC);
+        var end = DateTimeUtils.endOfDay(permissionRequest.end(), ZoneOffset.UTC);
         var now = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
         var energyDataEnd = end.isBefore(now) ? end : now;
+        LOGGER.info("Polling validated historical data for permission request {} from {} to {}",
+                    permissionId,
+                    energyDataStart,
+                    energyDataEnd);
         api.batchSubscription(creds.authUid(),
                               creds.accessToken(),
                               permissionRequest.allowedMeters(),

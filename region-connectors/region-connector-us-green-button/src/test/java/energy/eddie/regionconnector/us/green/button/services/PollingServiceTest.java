@@ -2,9 +2,7 @@ package energy.eddie.regionconnector.us.green.button.services;
 
 import com.rometools.rome.feed.synd.SyndFeedImpl;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
@@ -45,8 +43,6 @@ class PollingServiceTest {
     @Mock
     private GreenButtonApi api;
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
-    @Mock
     private CredentialService credentialService;
     @Mock
     private PublishService publishService;
@@ -66,12 +62,14 @@ class PollingServiceTest {
     void pollOfValidatedHistoricalData_publishes() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
+        var start = now.minusDays(10);
+        var end = now.minusDays(1);
         var pr = new GreenButtonPermissionRequest(
                 "pid",
                 "cid",
                 "dnid",
-                now,
-                now,
+                start,
+                end,
                 Granularity.PT15M,
                 PermissionProcessStatus.ACCEPTED,
                 now.atStartOfDay(ZoneOffset.UTC),
@@ -83,14 +81,6 @@ class PollingServiceTest {
                 "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var start = now.minusDays(10);
-        var end = now.minusDays(1);
-        var calc = new ValidatedHistoricalDataDataNeedResult(
-                List.of(Granularity.PT15M),
-                new Timeframe(now, now),
-                new Timeframe(start, end)
-        );
-        when(calculationService.calculate("dnid")).thenReturn(calc);
         var credentials = new OAuthTokenDetails("pid",
                                                 "token",
                                                 Instant.now(Clock.systemUTC()),
@@ -116,12 +106,14 @@ class PollingServiceTest {
     void pollOfValidatedHistoricalData_forFuture_publishes() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
+        var start = now.minusDays(10);
+        var end = now.plusDays(1);
         var pr = new GreenButtonPermissionRequest(
                 "pid",
                 "cid",
                 "dnid",
-                now,
-                now,
+                start,
+                end,
                 Granularity.PT15M,
                 PermissionProcessStatus.ACCEPTED,
                 now.atStartOfDay(ZoneOffset.UTC),
@@ -133,14 +125,6 @@ class PollingServiceTest {
                 "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var start = now.minusDays(10);
-        var end = now.plusDays(1);
-        var calc = new ValidatedHistoricalDataDataNeedResult(
-                List.of(Granularity.PT15M),
-                new Timeframe(now, now),
-                new Timeframe(start, end)
-        );
-        when(calculationService.calculate("dnid")).thenReturn(calc);
         var credentials = new OAuthTokenDetails("pid",
                                                 "token",
                                                 Instant.now(Clock.systemUTC()),
@@ -152,7 +136,7 @@ class PollingServiceTest {
                                    "token",
                                    Set.of("uid"),
                                    start.atStartOfDay(ZoneOffset.UTC),
-                                   LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC)))
+                                   now.atStartOfDay(ZoneOffset.UTC)))
                 .thenReturn(Flux.just(new SyndFeedImpl()));
 
         // When
@@ -166,6 +150,8 @@ class PollingServiceTest {
     void pollOfValidatedHistoricalData_whereSomeDataAlreadyHasBeenPolled() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
+        var start = now.minusDays(10);
+        var end = now.plusDays(1);
         var actualStart = ZonedDateTime.now(ZoneOffset.UTC).minusDays(8);
         var meters = List.of(
                 new MeterReading("pid", "1", actualStart),
@@ -175,8 +161,8 @@ class PollingServiceTest {
                 "pid",
                 "cid",
                 "dnid",
-                now,
-                now,
+                start,
+                end,
                 Granularity.PT15M,
                 PermissionProcessStatus.ACCEPTED,
                 now.atStartOfDay(ZoneOffset.UTC),
@@ -188,14 +174,6 @@ class PollingServiceTest {
                 "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var start = now.minusDays(10);
-        var end = now.plusDays(1);
-        var calc = new ValidatedHistoricalDataDataNeedResult(
-                List.of(Granularity.PT15M),
-                new Timeframe(now, now),
-                new Timeframe(start, end)
-        );
-        when(calculationService.calculate("dnid")).thenReturn(calc);
         var credentials = new OAuthTokenDetails("pid",
                                                 "token",
                                                 Instant.now(Clock.systemUTC()),
@@ -207,7 +185,7 @@ class PollingServiceTest {
                                    "token",
                                    Set.of("2", "1"),
                                    actualStart,
-                                   LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC)))
+                                   now.atStartOfDay(ZoneOffset.UTC)))
                 .thenReturn(Flux.just(new SyndFeedImpl(), new SyndFeedImpl()));
 
         // When
@@ -247,38 +225,6 @@ class PollingServiceTest {
     }
 
     @Test
-    void pollOfUnsupportedDataNeed_doesNothing() {
-        // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
-        when(repository.getByPermissionId("pid"))
-                .thenReturn(pr);
-        var calc = new DataNeedNotSupportedResult("");
-        when(calculationService.calculate("dnid")).thenReturn(calc);
-
-        // When
-        pollingService.poll("pid");
-
-        // Then
-        verify(api, never()).batchSubscription(any(), any(), any(), any(), any());
-        verify(publishService, never()).publish(any());
-    }
-
-
-    @Test
     void pollWithCredentialsWithoutRefreshToken_emitsUnfulfillableEvent() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
@@ -298,14 +244,6 @@ class PollingServiceTest {
                 "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var start = now.minusDays(10);
-        var end = now.minusDays(1);
-        var calc = new ValidatedHistoricalDataDataNeedResult(
-                List.of(Granularity.PT15M),
-                new Timeframe(now, now),
-                new Timeframe(start, end)
-        );
-        when(calculationService.calculate("dnid")).thenReturn(calc);
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.error(new NoRefreshTokenException()));
 
         // When
@@ -337,14 +275,6 @@ class PollingServiceTest {
                 "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var start = now.minusDays(10);
-        var end = now.minusDays(1);
-        var calc = new ValidatedHistoricalDataDataNeedResult(
-                List.of(Granularity.PT15M),
-                new Timeframe(now, now),
-                new Timeframe(start, end)
-        );
-        when(calculationService.calculate("dnid")).thenReturn(calc);
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.error(new Exception()));
 
         // When
@@ -376,14 +306,6 @@ class PollingServiceTest {
                 "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var start = now.minusDays(10);
-        var end = now.minusDays(1);
-        var calc = new ValidatedHistoricalDataDataNeedResult(
-                List.of(Granularity.PT15M),
-                new Timeframe(now, now),
-                new Timeframe(start, end)
-        );
-        when(calculationService.calculate("dnid")).thenReturn(calc);
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.error(
                 WebClientResponseException.create(HttpStatus.FORBIDDEN, "", null, null, null, null)));
 
@@ -392,37 +314,6 @@ class PollingServiceTest {
 
         // Then
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
-    }
-
-    @Test
-    void pollWithNonValidatedHistoricalDataNeed_doesNothing() {
-        // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
-        when(repository.getByPermissionId("pid"))
-                .thenReturn(pr);
-        var calc = new AccountingPointDataNeedResult(new Timeframe(now, now));
-        when(calculationService.calculate("dnid")).thenReturn(calc);
-
-        // When
-        pollingService.poll("pid");
-
-        // Then
-        verify(api, never()).batchSubscription(any(), any(), any(), any(), any());
-        verify(publishService, never()).publish(any());
     }
 
     @Test
@@ -445,14 +336,6 @@ class PollingServiceTest {
                 "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var start = now.minusDays(10);
-        var end = now.minusDays(1);
-        var calc = new ValidatedHistoricalDataDataNeedResult(
-                List.of(Granularity.PT15M),
-                new Timeframe(now, now),
-                new Timeframe(start, end)
-        );
-        when(calculationService.calculate("dnid")).thenReturn(calc);
         var credentials = new OAuthTokenDetails("pid",
                                                 "token",
                                                 Instant.now(Clock.systemUTC()),
@@ -495,14 +378,6 @@ class PollingServiceTest {
                 "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var start = now.minusDays(10);
-        var end = now.minusDays(1);
-        var calc = new ValidatedHistoricalDataDataNeedResult(
-                List.of(Granularity.PT15M),
-                new Timeframe(now, now),
-                new Timeframe(start, end)
-        );
-        when(calculationService.calculate("dnid")).thenReturn(calc);
         var credentials = new OAuthTokenDetails("pid",
                                                 "token",
                                                 Instant.now(Clock.systemUTC()),
@@ -542,14 +417,6 @@ class PollingServiceTest {
                 "1111");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
-        var start = now.minusDays(10);
-        var end = now.minusDays(1);
-        var calc = new ValidatedHistoricalDataDataNeedResult(
-                List.of(Granularity.PT15M),
-                new Timeframe(now, now),
-                new Timeframe(start, end)
-        );
-        when(calculationService.calculate("dnid")).thenReturn(calc);
         var credentials = new OAuthTokenDetails("pid",
                                                 "token",
                                                 Instant.now(Clock.systemUTC()),
