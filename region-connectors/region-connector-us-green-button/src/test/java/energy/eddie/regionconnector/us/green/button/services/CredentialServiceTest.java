@@ -51,8 +51,8 @@ class CredentialServiceTest {
             Map.of("company", "client-id"),
             Map.of("compand", "client-secret"),
             "http://localhost",
-            GreenButtonApi.MAX_METER_RESULTS
-    );
+            GreenButtonApi.MAX_METER_RESULTS,
+            "secret");
     @SuppressWarnings("unused")
     @Mock
     private Outbox outbox;

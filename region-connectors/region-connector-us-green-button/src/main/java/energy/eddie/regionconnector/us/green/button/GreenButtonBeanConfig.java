@@ -15,6 +15,7 @@ import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
+import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
@@ -23,6 +24,7 @@ import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequ
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.xml.Jaxb2XmlDecoder;
@@ -39,6 +41,7 @@ import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConn
 import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata.US_ZONE_ID;
 
 @Configuration
+@Import(ObjectMapperConfig.class)
 public class GreenButtonBeanConfig {
     @Bean
     public ConnectionStatusMessageHandler<UsGreenButtonPermissionRequest> connectionStatusMessageHandler(

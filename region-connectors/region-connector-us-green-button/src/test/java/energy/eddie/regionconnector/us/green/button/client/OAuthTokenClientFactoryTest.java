@@ -18,8 +18,8 @@ class OAuthTokenClientFactoryTest {
             Map.of("company", "client-id", "only-id", "client-id"),
             Map.of("company", "client-secret", "only-secret", "client-secret"),
             "http://localhost",
-            GreenButtonApi.MAX_METER_RESULTS
-    );
+            GreenButtonApi.MAX_METER_RESULTS,
+            "secret");
     private final OAuthTokenClientFactory factory = new OAuthTokenClientFactory(config);
 
     @Test

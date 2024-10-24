@@ -11,11 +11,11 @@ import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
+import energy.eddie.regionconnector.us.green.button.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsCreatedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMalformedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsValidatedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
-import energy.eddie.regionconnector.us.green.button.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,8 +50,8 @@ class PermissionRequestCreationServiceTest {
             Map.of("company", "client-id", "only-id", "client-id"),
             Map.of("company", "client-secret", "only-secret", "client-secret"),
             "http://localhost",
-            GreenButtonApi.MAX_METER_RESULTS
-    );
+            GreenButtonApi.MAX_METER_RESULTS,
+            "secret");
     @Mock
     private UsPermissionRequestRepository repository;
     @Mock

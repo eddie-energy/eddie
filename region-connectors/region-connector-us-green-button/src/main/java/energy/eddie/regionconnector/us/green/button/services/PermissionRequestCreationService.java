@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
-import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -11,12 +11,12 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
+import energy.eddie.regionconnector.us.green.button.dtos.CreatedPermissionRequest;
+import energy.eddie.regionconnector.us.green.button.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.us.green.button.permission.GreenButtonDataSourceInformation;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsCreatedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMalformedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsValidatedEvent;
-import energy.eddie.regionconnector.us.green.button.permission.request.dtos.CreatedPermissionRequest;
-import energy.eddie.regionconnector.us.green.button.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.us.green.button.permission.request.helper.Scope;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
 import org.slf4j.Logger;
