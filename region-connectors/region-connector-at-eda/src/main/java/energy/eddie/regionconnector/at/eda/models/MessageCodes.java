@@ -40,6 +40,14 @@ public class MessageCodes {
         }
     }
 
+    public static class CPNotification {
+        public static final String ANSWER = "ANTWORT_PT";
+        public static final String REJECT = "ABLEHNUNG_PT";
+
+        private CPNotification() {
+        }
+    }
+
     public static class Request {
         public static final String CODE = "ANFORDERUNG_CCMO";
         public static final String SCHEMA = "CM_REQ_ONL_01.10";
@@ -49,4 +57,10 @@ public class MessageCodes {
         }
     }
 
+    public static class CPRequest {
+        public static final String CODE = "ANFORDERUNG_PT";
+
+        private CPRequest() {
+        }
+    }
 }

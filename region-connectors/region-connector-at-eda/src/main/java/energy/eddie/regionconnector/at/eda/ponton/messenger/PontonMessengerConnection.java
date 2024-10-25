@@ -5,6 +5,7 @@ import de.ponton.xp.adapter.api.OutboundMessageStatusUpdateHandler;
 import de.ponton.xp.adapter.api.TransmissionException;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
+import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 
 public interface PontonMessengerConnection extends MessengerHealth, MessengerMonitor {
     static PontonMessengerConnectionBuilder newBuilder() {
@@ -19,6 +20,8 @@ public interface PontonMessengerConnection extends MessengerHealth, MessengerMon
 
     void sendCMRequest(CCMORequest ccmoRequest) throws TransmissionException, ConnectionException;
 
+    void sendCPRequest(CPRequestCR cpRequestCR) throws TransmissionException, ConnectionException;
+
     PontonMessengerConnection withOutboundMessageStatusUpdateHandler(OutboundMessageStatusUpdateHandler outboundMessageStatusUpdateHandler);
 
     PontonMessengerConnection withCMNotificationHandler(CMNotificationHandler cmNotificationHandler);
@@ -28,4 +31,6 @@ public interface PontonMessengerConnection extends MessengerHealth, MessengerMon
     PontonMessengerConnection withConsumptionRecordHandler(ConsumptionRecordHandler consumptionRecordHandler);
 
     PontonMessengerConnection withMasterDataHandler(MasterDataHandler masterDataHandler);
+
+    PontonMessengerConnection withCPNotificationHandler(CPNotificationHandler cpNotificationHandler);
 }

@@ -7,6 +7,8 @@ import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
+import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
+import energy.eddie.regionconnector.at.eda.requests.CPRequestResult;
 import reactor.core.publisher.Flux;
 
 import java.util.Map;
@@ -41,6 +43,11 @@ public interface EdaAdapter extends AutoCloseable {
      */
     Flux<IdentifiableMasterData> getMasterDataStream();
 
+    /**
+     * Returns a stream of CPRequestResult objects that contain information regarding the response of a CPRequestCR.
+     */
+    Flux<CPRequestResult> getCPRequestResultStream();
+
 
     /**
      * This method sends a CCMORequest to EDA. A CCORequest can be used to request either metering or master data.
@@ -59,6 +66,15 @@ public interface EdaAdapter extends AutoCloseable {
      *                               request.
      */
     void sendCMRevoke(CCMORevoke revoke) throws TransmissionException;
+
+    /**
+     * This method sends a CPRequest that request the retransmission of Consumption Records.
+     *
+     * @param cpRequestCR The CPRequestCR message that should be sent to EDA.
+     * @throws TransmissionException If the request could not be sent. Reasons can be a connection error or a malformed
+     *                               request.
+     */
+    void sendCPRequest(CPRequestCR cpRequestCR) throws TransmissionException;
 
     /**
      * This method starts the connection to EDA. It must be called before any of the methods that use the connection can
