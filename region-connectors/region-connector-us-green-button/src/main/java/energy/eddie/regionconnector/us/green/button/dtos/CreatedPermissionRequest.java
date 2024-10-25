@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.us.green.button.permission.request.dtos;
+package energy.eddie.regionconnector.us.green.button.dtos;
 
 import java.net.URI;
 

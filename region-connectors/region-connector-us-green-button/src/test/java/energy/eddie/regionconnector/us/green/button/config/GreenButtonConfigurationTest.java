@@ -19,8 +19,8 @@ class GreenButtonConfigurationTest {
                 Map.of("id", "value"),
                 Map.of("id", "secret"),
                 "http://localhost",
-                1
-        );
+                1,
+                "secret");
 
         // When
         var res = config.clientIds().containsKey(clientId);
@@ -39,8 +39,8 @@ class GreenButtonConfigurationTest {
                 Map.of("id", "value"),
                 Map.of("id", "secret"),
                 "http://localhost",
-                1
-        );
+                1,
+                "secret");
 
         // When
         var res = config.clientSecrets().containsKey(clientId);

@@ -32,6 +32,7 @@ dependencies {
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.oxm)
     implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.boot.security)
 
     // for atom feed
     implementation(libs.rometools.rome)

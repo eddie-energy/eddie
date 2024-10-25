@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.permission.handlers;
 
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
@@ -92,7 +91,7 @@ public class AcceptedHandler implements EventHandler<List<UsAcceptedEvent>> {
                    if (metersOfPermission.isEmpty()) {
                        LOGGER.info("Marking permission request {} as unfulfillable, since no meter supports data need",
                                    permissionId);
-                       outbox.commit(new UsSimpleEvent(permissionId, PermissionProcessStatus.UNFULFILLABLE));
+                       outbox.commit(new UsUnfulfillableEvent(permissionId, true));
                    } else {
                        LOGGER.info("Adding meters with UIDs {} to permission request {}",
                                    metersOfPermission,

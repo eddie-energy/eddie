@@ -34,8 +34,8 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
             Map.of("company", "client-id"),
             Map.of("company", "client-secret"),
             "http://localhost",
-            1
-    );
+            1,
+            "secret");
 
     @Test
     @SuppressWarnings("java:S5961")

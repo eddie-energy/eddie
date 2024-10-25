@@ -1,11 +1,15 @@
 package energy.eddie.regionconnector.us.green.button.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;
 import java.util.TreeMap;
 
+import static energy.eddie.regionconnector.us.green.button.security.WebhookSecurityConfig.US_GREEN_BUTTON_ENABLED;
+
 @ConfigurationProperties(value = "region-connector.us.green.button")
+@ConditionalOnProperty(value = US_GREEN_BUTTON_ENABLED, havingValue = "true")
 public class GreenButtonConfiguration {
     private final String apiToken;
     private final String basePath;
@@ -13,6 +17,7 @@ public class GreenButtonConfiguration {
     private final Map<String, String> clientSecrets = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final String redirectUri;
     private final int activationBatchSize;
+    private final String webhookSecret;
 
     public GreenButtonConfiguration(
             String apiToken,
@@ -20,7 +25,8 @@ public class GreenButtonConfiguration {
             Map<String, String> clientIds,
             Map<String, String> clientSecrets,
             String redirectUri,
-            int activationBatchSize
+            int activationBatchSize,
+            String webhookSecret
     ) {
         this.apiToken = apiToken;
         this.basePath = basePath;
@@ -28,6 +34,7 @@ public class GreenButtonConfiguration {
         this.clientSecrets.putAll(clientSecrets);
         this.redirectUri = redirectUri;
         this.activationBatchSize = activationBatchSize;
+        this.webhookSecret = webhookSecret;
     }
 
     public String apiToken() {return apiToken;}
@@ -41,4 +48,6 @@ public class GreenButtonConfiguration {
     public String redirectUri() {return redirectUri;}
 
     public int activationBatchSize() {return activationBatchSize;}
+
+    public String webhookSecret() {return webhookSecret;}
 }

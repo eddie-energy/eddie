@@ -45,8 +45,8 @@ class ValidatedHistoricalDataProviderTest {
             Map.of("company", "client-id"),
             Map.of("company", "client-secret"),
             "http://localhost",
-            1
-    );
+            1,
+            "secret");
     @InjectMocks
     private ValidatedHistoricalDataProvider provider;
 

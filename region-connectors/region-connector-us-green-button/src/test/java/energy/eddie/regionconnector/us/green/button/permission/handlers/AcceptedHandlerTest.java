@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.permission.handlers;
 
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -11,6 +10,7 @@ import energy.eddie.regionconnector.us.green.button.client.dtos.meter.*;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsAcceptedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
+import energy.eddie.regionconnector.us.green.button.permission.events.UsUnfulfillableEvent;
 import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
 import energy.eddie.regionconnector.us.green.button.services.DataNeedMatcher;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,8 +41,8 @@ class AcceptedHandlerTest {
             Map.of(),
             Map.of(),
             "http://localhost",
-            2
-    );
+            2,
+            "secret");
     @Spy
     private final EventBus eventBus = new EventBusImpl();
     @Mock
@@ -57,6 +58,8 @@ class AcceptedHandlerTest {
     private AcceptedHandler handler;
     @Captor
     private ArgumentCaptor<UsMeterReadingUpdateEvent> meterReadingEventCaptor;
+    @Captor
+    private ArgumentCaptor<UsUnfulfillableEvent> unfulfillableEventCaptor;
 
     @Test
     void testAccept_addsActivatedMeters_toPermissionRequest() {
@@ -111,8 +114,9 @@ class AcceptedHandlerTest {
         eventBus.emit(new UsAcceptedEvent("pid2", "2222"));
 
         // Then
-        verify(outbox, times(2))
-                .commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, event.status())));
+        verify(outbox, times(2)).commit(unfulfillableEventCaptor.capture());
+        var res = unfulfillableEventCaptor.getValue();
+        assertTrue(res.requiresExternalTermination());
     }
 
     private static Meter createMeter(String uid, String authUid) {
