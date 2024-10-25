@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.fi.fingrid.services;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
@@ -37,7 +38,9 @@ class PermissionRequestServiceTest {
                                 ZonedDateTime.now(ZoneOffset.UTC),
                                 null,
                                 null,
-                                "identifier"
+                                "identifier",
+                                "mid",
+                                Granularity.PT1H, null
                         )
                 ));
 

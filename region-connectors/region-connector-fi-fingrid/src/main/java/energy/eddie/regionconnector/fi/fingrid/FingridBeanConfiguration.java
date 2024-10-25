@@ -17,11 +17,13 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
+import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientSsl;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -30,16 +32,19 @@ import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfigurat
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 
 @Configuration
+@Import(ObjectMapperConfig.class)
 public class FingridBeanConfiguration {
 
     @Bean
     public WebClient webClient(
             WebClient.Builder builder,
             SslBundles sslBundles,
-            WebClientSsl webClientSsl
+            WebClientSsl webClientSsl,
+            FingridConfiguration configuration
     ) {
         return builder
                 .apply(webClientSsl.fromBundle(sslBundles.getBundle("fingrid")))
+                .baseUrl(configuration.apiUrl())
                 .build();
     }
 

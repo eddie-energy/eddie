@@ -98,7 +98,8 @@ class PermissionRequestControllerTest {
         // Given
         var permissionRequest = new PermissionRequestForCreation("cid",
                                                                  "0".repeat(36),
-                                                                 "identifier");
+                                                                 "identifier",
+                                                                 "mid");
         when(creationService.createAndValidatePermissionRequest(permissionRequest))
                 .thenReturn(new CreatedPermissionRequest("pid", ""));
 
@@ -117,7 +118,8 @@ class PermissionRequestControllerTest {
         // Given
         var permissionRequest = new PermissionRequestForCreation("cid",
                                                                  "0".repeat(15),
-                                                                 "identifier");
+                                                                 "identifier",
+                                                                 "mid");
 
         // When
         mockMvc.perform(MockMvcRequestBuilders.post("/permission-request")
@@ -131,7 +133,8 @@ class PermissionRequestControllerTest {
         // Given
         var permissionRequest = new PermissionRequestForCreation("cid",
                                                                  "0".repeat(36),
-                                                                 "identifier");
+                                                                 "identifier",
+                                                                 "mid");
         when(creationService.createAndValidatePermissionRequest(permissionRequest))
                 .thenThrow(DataNeedNotFoundException.class);
 
@@ -147,7 +150,8 @@ class PermissionRequestControllerTest {
         // Given
         var permissionRequest = new PermissionRequestForCreation("cid",
                                                                  "0".repeat(36),
-                                                                 "identifier");
+                                                                 "identifier",
+                                                                 "mid");
         when(creationService.createAndValidatePermissionRequest(permissionRequest))
                 .thenThrow(UnsupportedDataNeedException.class);
 
