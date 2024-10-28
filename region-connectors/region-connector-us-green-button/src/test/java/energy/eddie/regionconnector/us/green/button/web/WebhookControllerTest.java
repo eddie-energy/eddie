@@ -52,7 +52,8 @@ class WebhookControllerTest {
                                 "webhook",
                                 URI.create("http://localhost"),
                                 false,
-                                "0000"
+                                "0000",
+                                null
                         )
                 ),
                 null

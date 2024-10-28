@@ -55,7 +55,7 @@ class MeterReadingUpdateHandlerTest {
                 "1111");
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         var readingDate = ZonedDateTime.of(2024, 9, 10, 0, 0, 0, 0, ZoneOffset.UTC);
-        var meterReading = new MeterReading("pid", "usagePoint", readingDate);
+        var meterReading = new MeterReading("pid", "usagePoint", readingDate, PollingStatus.DATA_NOT_READY);
         var event = new UsMeterReadingUpdateEvent("pid",
                                                   List.of(meterReading),
                                                   PollingStatus.DATA_READY);
@@ -97,7 +97,7 @@ class MeterReadingUpdateHandlerTest {
                 "1111");
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         var readingDate = ZonedDateTime.of(2024, 10, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var meterReading = new MeterReading("pid", "usagePoint", readingDate);
+        var meterReading = new MeterReading("pid", "usagePoint", readingDate, PollingStatus.DATA_NOT_READY);
         var event = new UsMeterReadingUpdateEvent("pid", List.of(meterReading), PollingStatus.DATA_READY);
         // When
         eventBus.emit(event);
@@ -125,7 +125,7 @@ class MeterReadingUpdateHandlerTest {
                 "1111");
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         var readingDate = ZonedDateTime.of(2024, 9, 30, 23, 59, 59, 0, ZoneOffset.UTC);
-        var meterReading = new MeterReading("pid", "usagePoint", readingDate);
+        var meterReading = new MeterReading("pid", "usagePoint", readingDate, PollingStatus.DATA_NOT_READY);
         var event = new UsMeterReadingUpdateEvent("pid", List.of(meterReading), PollingStatus.DATA_READY);
         // When
         eventBus.emit(event);
