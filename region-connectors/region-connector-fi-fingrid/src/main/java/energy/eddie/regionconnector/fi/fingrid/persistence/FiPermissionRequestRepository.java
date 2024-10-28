@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.fi.fingrid.persistence;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
 import energy.eddie.regionconnector.shared.timeout.StalePermissionRequestRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +23,6 @@ public interface FiPermissionRequestRepository extends
     )
     @Override
     List<FingridPermissionRequest> findStalePermissionRequests(@Param("hours") int duration);
+
+    List<FingridPermissionRequest> findByStatus(PermissionProcessStatus status);
 }
