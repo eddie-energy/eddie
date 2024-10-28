@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.us.green.button.GreenButtonBeanConfig;
 import energy.eddie.regionconnector.us.green.button.XmlLoader;
 import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
+import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsPollingNotReadyEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
@@ -116,7 +117,7 @@ class PermissionUpdateServiceTest {
     }
 
     private static GreenButtonPermissionRequest createPermissionRequest(ZonedDateTime created, LocalDate start) {
-        var meterReading = new MeterReading("pid", "1669851", created.minusDays(1));
+        var meterReading = new MeterReading("pid", "1669851", created.minusDays(1), PollingStatus.DATA_NOT_READY);
         return new GreenButtonPermissionRequest(
                 "pid",
                 "cid",

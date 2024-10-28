@@ -86,7 +86,7 @@ public class AcceptedHandler implements EventHandler<List<UsAcceptedEvent>> {
                    List<MeterReading> meterReadings = new ArrayList<>(metersOfPermission.size());
                    var permissionId = entry.getKey();
                    for (var meter : metersOfPermission) {
-                       meterReadings.add(new MeterReading(permissionId, meter, null));
+                       meterReadings.add(new MeterReading(permissionId, meter, null, PollingStatus.DATA_NOT_READY));
                    }
                    if (metersOfPermission.isEmpty()) {
                        LOGGER.info("Marking permission request {} as unfulfillable, since no meter supports data need",

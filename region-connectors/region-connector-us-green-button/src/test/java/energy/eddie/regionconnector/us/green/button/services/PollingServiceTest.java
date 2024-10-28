@@ -10,6 +10,7 @@ import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
 import energy.eddie.regionconnector.us.green.button.exceptions.DataNotReadyException;
 import energy.eddie.regionconnector.us.green.button.oauth.persistence.OAuthTokenDetails;
 import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
+import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsPollingNotReadyEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
@@ -37,7 +38,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PollingServiceTest {
-    private static final List<MeterReading> METERS = List.of(new MeterReading("pid", "uid", null));
+    private static final List<MeterReading> METERS = List.of(new MeterReading("pid", "uid", null,
+                                                                              PollingStatus.DATA_NOT_READY));
     @Mock
     private UsPermissionRequestRepository repository;
     @Mock
@@ -154,8 +156,9 @@ class PollingServiceTest {
         var end = now.plusDays(1);
         var actualStart = ZonedDateTime.now(ZoneOffset.UTC).minusDays(8);
         var meters = List.of(
-                new MeterReading("pid", "1", actualStart),
-                new MeterReading("pid", "2", ZonedDateTime.now(ZoneOffset.UTC).minusDays(1))
+                new MeterReading("pid", "1", actualStart, PollingStatus.DATA_NOT_READY),
+                new MeterReading("pid", "2", ZonedDateTime.now(ZoneOffset.UTC).minusDays(1),
+                                 PollingStatus.DATA_NOT_READY)
         );
         var pr = new GreenButtonPermissionRequest(
                 "pid",

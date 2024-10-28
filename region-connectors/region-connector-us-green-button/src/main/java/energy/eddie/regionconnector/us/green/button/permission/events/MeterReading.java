@@ -24,17 +24,27 @@ public class MeterReading implements Persistable<MeterReadingPk> {
     @Column(name = "last_meter_reading")
     @Nullable
     private ZonedDateTime lastMeterReading;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "historical_collection_status", columnDefinition = "text")
+    private final PollingStatus historicalCollectionStatus;
 
-    public MeterReading(String permissionId, String meterUid, @Nullable ZonedDateTime lastMeterReading) {
+    public MeterReading(
+            String permissionId,
+            String meterUid,
+            @Nullable ZonedDateTime lastMeterReading,
+            PollingStatus historicalCollectionStatus
+    ) {
         this.permissionId = permissionId;
         this.meterUid = meterUid;
         this.lastMeterReading = lastMeterReading;
+        this.historicalCollectionStatus = historicalCollectionStatus;
     }
 
     protected MeterReading() {
         permissionId = null;
         meterUid = null;
         lastMeterReading = null;
+        historicalCollectionStatus = null;
     }
 
     public static List<ZonedDateTime> lastMeterReadingDates(List<MeterReading> readings) {
@@ -66,5 +76,9 @@ public class MeterReading implements Persistable<MeterReadingPk> {
 
     public void setLastMeterReading(@Nullable ZonedDateTime lastReading) {
         this.lastMeterReading = lastReading;
+    }
+
+    public boolean isReadyToPoll() {
+        return historicalCollectionStatus == PollingStatus.DATA_READY;
     }
 }

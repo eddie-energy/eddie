@@ -26,6 +26,7 @@ public record WebhookEvent(
         @JsonProperty(required = true)
         boolean isDelivered,
         @Nullable
-        String authorizationUid
+        String authorizationUid,
+        @Nullable String meterUid
 ) {
 }
