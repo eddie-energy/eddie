@@ -1,6 +1,6 @@
 package energy.eddie.outbound.kafka;
 
-import energy.eddie.api.agnostic.OutboundConnector;
+import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.StringDeserializer;

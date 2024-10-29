@@ -1,9 +1,9 @@
 package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
-import energy.eddie.api.agnostic.ConnectionStatusMessageOutboundConnector;
 import energy.eddie.api.agnostic.RawDataMessage;
-import energy.eddie.api.agnostic.RawDataOutboundConnector;
+import energy.eddie.api.agnostic.outbound.ConnectionStatusMessageOutboundConnector;
+import energy.eddie.api.agnostic.outbound.RawDataOutboundConnector;
 import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;

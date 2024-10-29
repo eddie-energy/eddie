@@ -1,6 +1,6 @@
 package energy.eddie.admin.console;
 
-import energy.eddie.api.agnostic.OutboundConnector;
+import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
