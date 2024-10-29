@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.us.green.button;
 
+import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.timeout.CommonTimeoutService;
-import energy.eddie.regionconnector.shared.timeout.StalePermissionRequestRepository;
 import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEvent;
 import org.springframework.context.annotation.Bean;

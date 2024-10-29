@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.us.green.button.persistence;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.shared.timeout.StalePermissionRequestRepository;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
 import org.springframework.data.jpa.repository.Query;

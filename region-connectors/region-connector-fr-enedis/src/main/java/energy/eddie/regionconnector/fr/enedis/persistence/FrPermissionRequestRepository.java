@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis.persistence;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
-import energy.eddie.regionconnector.shared.timeout.StalePermissionRequestRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;

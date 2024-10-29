@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.be.fluvius.persistence;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
-import energy.eddie.regionconnector.shared.timeout.StalePermissionRequestRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;

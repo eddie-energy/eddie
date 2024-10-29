@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.api;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.annotation.Nullable;
 

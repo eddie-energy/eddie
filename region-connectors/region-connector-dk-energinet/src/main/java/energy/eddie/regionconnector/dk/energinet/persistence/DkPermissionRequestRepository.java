@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.persistence;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
