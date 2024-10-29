@@ -198,4 +198,21 @@ public class MijnAansluitingBeanConfig {
     ) {
         return new ConnectionStatusMessageHandler<>(eventBus, nlPermissionRequestRepository, pr -> "");
     }
+
+    @Bean
+    public PermissionMarketDocumentMessageHandler<NlPermissionRequest> permissionMarketDocumentMessageHandler(
+            EventBus eventBus,
+            NlPermissionRequestRepository repository,
+            MijnAansluitingConfiguration config,
+            CommonInformationModelConfiguration cimConfig
+    ) {
+        return new PermissionMarketDocumentMessageHandler<>(
+                eventBus,
+                repository,
+                config.continuousClientId().getValue(),
+                cimConfig,
+                pr -> null,
+                NL_ZONE_ID
+        );
+    }
 }
