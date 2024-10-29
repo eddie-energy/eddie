@@ -82,7 +82,8 @@ public class ManagementApiConfig {
             var isRequestOnManagementPort = httpRequest.getServerPort() == managementPort;
             var requestURI = httpRequest.getRequestURI();
             var isRequestOnManagementUrl = requestURI.startsWith(CoreSpringConfig.DATA_NEEDS_URL_MAPPING_PREFIX + managementUrlPrefix)
-                                           || requestURI.startsWith("/" + ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH);
+                                           || requestURI.startsWith("/" + ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH)
+                                           || requestURI.startsWith(managementUrlPrefix);
             IEF_LOGGER.debug("{} requested on port {}, managementPort: {}, managementUrl: {}",
                              requestURI,
                              request.getLocalPort(),

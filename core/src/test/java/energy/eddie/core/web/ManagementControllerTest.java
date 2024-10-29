@@ -1,0 +1,38 @@
+package energy.eddie.core.web;
+
+import energy.eddie.core.services.SupportedFeatureService;
+import energy.eddie.spring.regionconnector.extensions.RegionConnectorSupportedFeatureExtension;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(value = ManagementController.class, properties = "eddie.management.server.urlprefix=management")
+@AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
+class ManagementControllerTest {
+    @Autowired
+    private MockMvc mockMvc;
+    @MockBean
+    private SupportedFeatureService service;
+    @MockBean
+    private RegionConnectorSupportedFeatureExtension extension;
+
+    @Test
+    void testSupportedFeatures_returns200() throws Exception {
+        // Given
+        when(service.getSupportedFeatureExtensions()).thenReturn(List.of(extension));
+
+        // When
+        mockMvc.perform(get("/management/region-connectors/supported-features"))
+               // Then
+               .andExpect(status().isOk());
+    }
+}

@@ -2,6 +2,7 @@ package energy.eddie.spring;
 
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
+import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.shared.utils.CommonPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration;
 import org.springdoc.webmvc.ui.SwaggerConfig;
 import org.springdoc.webmvc.ui.SwaggerController;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -27,6 +29,7 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.lang.NonNull;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -49,6 +52,39 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
     private final Environment environment;
 
     public RegionConnectorRegistrationBeanPostProcessor(Environment environment) {this.environment = environment;}
+
+    public static Class<?> classForBeanDefinition(BeanDefinition definition) {
+        try {
+            return Class.forName(definition.getBeanClassName());
+        } catch (ClassNotFoundException e) {
+            throw new InitializationException(
+                    "Found region connector bean definition for class '%s', but couldn't get the class for it, this must not happen, will abort launch".formatted(
+                            definition.getBeanClassName()),
+                    e);
+        }
+    }
+
+    /**
+     * Enables SpringDoc OpenAPI in the specified {@code applicationContext} by in registering the necessary Spring and
+     * Swagger Beans. The documentation will be available at the {@code urlMapping} of the context's dispatcher servlet,
+     * e.g. "/region-connectors/dk-energinet/v3/api-docs".
+     *
+     * @param applicationContext Context for which to enable the SpringDoc support.
+     */
+    public static void enableSpringDoc(AnnotationConfigWebApplicationContext applicationContext) {
+        applicationContext.register(
+                SwaggerConfig.class,
+                SwaggerUiConfigProperties.class,
+                SwaggerUiConfigParameters.class,
+                SwaggerUiOAuthProperties.class,
+                SpringDocWebMvcConfiguration.class,
+                MultipleOpenApiSupportConfiguration.class,
+                SpringDocConfiguration.class,
+                SpringDocConfigProperties.class,
+                JacksonAutoConfiguration.class,
+                SwaggerController.class
+        );
+    }
 
     /**
      * Scans the {@value REGION_CONNECTORS_SCAN_BASE_PACKAGE} package for any classes that are annotated with
@@ -80,15 +116,52 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
             var regionConnectorName = configClass.getAnnotation(RegionConnector.class).name();
             enabledRegionConnectorNames.add(regionConnectorName);
 
+            var metadata = findMetadataClass(configClass, regionConnectorName);
             var applicationContext = createWebContext(configClass,
                                                       regionConnectorName,
-                                                      regionConnectorProcessorClasses);
+                                                      regionConnectorProcessorClasses,
+                                                      metadata);
             var beanDefinition = createRegionConnectorBeanDefinition(applicationContext, regionConnectorName);
 
             registry.registerBeanDefinition(regionConnectorName, beanDefinition);
         }
 
         registerEnabledRegionConnectorsBeanDefinition(registry, enabledRegionConnectorNames);
+    }
+
+    @Override
+    public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory unusedBeanFactory) throws BeansException {
+        // not needed by this processor
+    }
+
+    /**
+     * Run this processor as the last one. Spring documentation recommends to implement {@link Ordered} interface for
+     * bean post processors.
+     *
+     * @return Integer.MAX_VALUE
+     */
+    @Override
+    public int getOrder() {
+        return Integer.MAX_VALUE;
+    }
+
+    private Class<?> findMetadataClass(Class<?> configClass, String regionConnectorName) {
+        var scanner = new ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new AssignableTypeFilter(RegionConnectorMetadata.class));
+        scanner.setEnvironment(environment);
+        var candidates = scanner.findCandidateComponents(configClass.getPackage().getName());
+        if (candidates.size() != 1) {
+            var names = candidates.stream()
+                                  .map(BeanDefinition::getBeanClassName)
+                                  .collect(Collectors.joining(", "));
+            throw new BeanCreationException(regionConnectorName + " contains less or more than one metadata definition! " + names);
+        }
+        try {
+            return Class.forName(candidates.iterator().next().getBeanClassName());
+        } catch (ClassNotFoundException e) {
+            throw new InitializationException("Couldn't find class for RegionConnectorMetadata. %s".formatted(e.getMessage()),
+                                              e);
+        }
     }
 
     // Ignore warning to use .toList because it doesn't return a List<Class<?>> but a List<? extends Class<?>>
@@ -143,19 +216,22 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      *                                        {@link RegionConnector}.
      * @param regionConnectorProcessorClasses List of classes that should be registered in the newly created
      *                                        WebContext.
+     * @param metadata                        Automatically registers the metadata as a bean, since it has to be present in every region-connector
      * @return AnnotationConfigWebApplicationContext for the region connector.
      */
     @NonNull
     private static AnnotationConfigWebApplicationContext createWebContext(
             Class<?> regionConnectorConfigClass,
             String regionConnectorName,
-            List<Class<?>> regionConnectorProcessorClasses
+            List<Class<?>> regionConnectorProcessorClasses,
+            Class<?> metadata
     ) {
         // DispatcherServlet will set the parent automatically and do initialization work like calling refresh
         // see https://web.archive.org/web/20231207072642/https://ccbill.com/blog/spring-boot-and-context-handling
         AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
         applicationContext.setId(regionConnectorName);
         applicationContext.register(regionConnectorConfigClass);
+        applicationContext.register(metadata);
 
         enableSpringDoc(applicationContext);
 
@@ -217,17 +293,6 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         return scanner.findCandidateComponents(REGION_CONNECTORS_SCAN_BASE_PACKAGE);
     }
 
-    public static Class<?> classForBeanDefinition(BeanDefinition definition) {
-        try {
-            return Class.forName(definition.getBeanClassName());
-        } catch (ClassNotFoundException e) {
-            throw new InitializationException(
-                    "Found region connector bean definition for class '%s', but couldn't get the class for it, this must not happen, will abort launch".formatted(
-                            definition.getBeanClassName()),
-                    e);
-        }
-    }
-
     private boolean isRegionConnectorEnabled(Class<?> configClass) {
         var regionConnectorName = configClass.getAnnotation(RegionConnector.class).name();
         var propertyName = "region-connector.%s.enabled".formatted(regionConnectorName.replace('-', '.'));
@@ -240,43 +305,5 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         }
 
         return isEnabled;
-    }
-
-    /**
-     * Enables SpringDoc OpenAPI in the specified {@code applicationContext} by in registering the necessary Spring and
-     * Swagger Beans. The documentation will be available at the {@code urlMapping} of the context's dispatcher servlet,
-     * e.g. "/region-connectors/dk-energinet/v3/api-docs".
-     *
-     * @param applicationContext Context for which to enable the SpringDoc support.
-     */
-    public static void enableSpringDoc(AnnotationConfigWebApplicationContext applicationContext) {
-        applicationContext.register(
-                SwaggerConfig.class,
-                SwaggerUiConfigProperties.class,
-                SwaggerUiConfigParameters.class,
-                SwaggerUiOAuthProperties.class,
-                SpringDocWebMvcConfiguration.class,
-                MultipleOpenApiSupportConfiguration.class,
-                SpringDocConfiguration.class,
-                SpringDocConfigProperties.class,
-                JacksonAutoConfiguration.class,
-                SwaggerController.class
-        );
-    }
-
-    @Override
-    public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory unusedBeanFactory) throws BeansException {
-        // not needed by this processor
-    }
-
-    /**
-     * Run this processor as the last one. Spring documentation recommends to implement {@link Ordered} interface for
-     * bean post processors.
-     *
-     * @return Integer.MAX_VALUE
-     */
-    @Override
-    public int getOrder() {
-        return Integer.MAX_VALUE;
     }
 }
