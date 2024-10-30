@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.shared.timeout;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
+import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;

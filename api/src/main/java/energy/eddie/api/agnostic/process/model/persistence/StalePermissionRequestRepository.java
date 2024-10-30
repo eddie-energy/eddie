@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.shared.timeout;
+package energy.eddie.api.agnostic.process.model.persistence;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 

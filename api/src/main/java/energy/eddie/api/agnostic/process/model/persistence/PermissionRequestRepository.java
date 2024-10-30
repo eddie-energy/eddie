@@ -1,4 +1,6 @@
-package energy.eddie.api.agnostic.process.model;
+package energy.eddie.api.agnostic.process.model.persistence;
+
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 
 import java.util.Optional;
 

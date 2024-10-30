@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.aiida.permission.request.persistence;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
-import energy.eddie.regionconnector.shared.timeout.StalePermissionRequestRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
