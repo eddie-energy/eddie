@@ -53,6 +53,7 @@ public class PollingService {
                    error -> LOGGER
                            .atInfo()
                            .addArgument(permissionRequest::permissionId)
+                           .setCause(error)
                            .log("Error while requesting data for permission request {}")
            );
     }
