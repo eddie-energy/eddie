@@ -1,6 +1,6 @@
 package energy.eddie.spring.outboundconnector.extensions;
 
-import energy.eddie.api.agnostic.RawDataOutboundConnector;
+import energy.eddie.api.agnostic.outbound.RawDataOutboundConnector;
 import energy.eddie.core.services.RawDataService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

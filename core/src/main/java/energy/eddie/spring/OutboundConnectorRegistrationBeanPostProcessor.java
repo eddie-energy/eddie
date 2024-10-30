@@ -1,8 +1,8 @@
 package energy.eddie.spring;
 
-import energy.eddie.api.agnostic.OutboundConnector;
-import energy.eddie.api.agnostic.OutboundConnectorExtension;
 import energy.eddie.api.agnostic.RegionConnector;
+import energy.eddie.api.agnostic.outbound.OutboundConnector;
+import energy.eddie.api.agnostic.outbound.OutboundConnectorExtension;
 import energy.eddie.regionconnector.shared.utils.CommonPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

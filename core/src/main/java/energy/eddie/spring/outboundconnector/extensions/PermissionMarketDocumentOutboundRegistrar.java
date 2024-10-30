@@ -1,6 +1,6 @@
 package energy.eddie.spring.outboundconnector.extensions;
 
-import energy.eddie.api.agnostic.OutboundConnectorExtension;
+import energy.eddie.api.agnostic.outbound.OutboundConnectorExtension;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.core.services.PermissionMarketDocumentService;
 

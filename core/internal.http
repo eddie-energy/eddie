@@ -1,0 +1,8 @@
+### GET actuator endpoint
+GET http://localhost:8080/actuator
+
+### GET health information of region-connectors
+GET http://localhost:8080/actuator/health
+
+### GET supported features of region-connectors
+GET http://localhost:9090/management/region-connectors/supported-features

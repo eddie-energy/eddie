@@ -1,5 +1,6 @@
-package energy.eddie.api.agnostic;
+package energy.eddie.api.agnostic.outbound;
 
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import reactor.core.publisher.Flux;
 
 /**

@@ -1,4 +1,4 @@
-package energy.eddie.api.agnostic;
+package energy.eddie.api.agnostic.outbound;
 
 
 import java.lang.annotation.ElementType;
