@@ -28,7 +28,9 @@ const COUNTRIES = [
   ...new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country)),
 ];
 
-const BASE_URL = import.meta.url.replace("/lib/eddie-components.js", "");
+const CORE_URL =
+  import.meta.env.VITE_CORE_URL ??
+  import.meta.url.replace("/lib/eddie-components.js", "");
 
 const dialogOpenEvent = new Event("eddie-dialog-open", {
   bubbles: true,
@@ -41,7 +43,7 @@ const dialogCloseEvent = new Event("eddie-dialog-close", {
 });
 
 function fetchJson(path) {
-  return fetch(BASE_URL + path)
+  return fetch(CORE_URL + path)
     .then((response) => {
       if (!response.ok) {
         throw new Error(
@@ -249,7 +251,8 @@ class EddieConnectButton extends LitElement {
       // loaded module needs to have the custom element class as its default export
       try {
         const module = await import(
-          `${BASE_URL}/region-connectors/${regionConnectorId}/ce.js`
+          /* @vite-ignore */
+          `${CORE_URL}/region-connectors/${regionConnectorId}/ce.js`
         );
         customElements.define(customElementName, module.default);
       } catch (error) {
