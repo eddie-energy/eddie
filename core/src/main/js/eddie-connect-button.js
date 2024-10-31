@@ -494,15 +494,6 @@ class EddieConnectButton extends LitElement {
       if (statusHandler) {
         Function(`"use strict";${statusHandler}`)();
       }
-
-      // Dispatch a specific event for the current status
-      const statusEventString = status.toLowerCase().replaceAll("_", "-");
-      this.dispatchEvent(
-        new Event(statusEventString, {
-          bubbles: true,
-          composed: true,
-        })
-      );
     });
 
     // Handle creation event separately, as it is not passed as a status change
