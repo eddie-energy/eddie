@@ -24,9 +24,7 @@ setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn");
 
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
-const COUNTRIES = [
-  ...new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country)),
-];
+const COUNTRIES = new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country));
 
 const CORE_URL =
   import.meta.env.VITE_CORE_URL ??
@@ -59,7 +57,7 @@ function getEnabledCountries(regionConnectors) {
   return regionConnectors
     .flatMap((rc) => rc.countryCodes)
     .map((countryCode) => countryCode.toLowerCase())
-    .filter((country) => COUNTRIES.includes(country));
+    .filter((country) => COUNTRIES.has(country));
 }
 
 function getSupportedRegionConnectors(dataNeedId) {
@@ -191,10 +189,10 @@ class EddieConnectButton extends LitElement {
 
     /**
      * Country codes which region connectors support the selected data need.
-     * @type {string[]}
+     * @type {Set<string>}
      * @private
      */
-    this._supportedCountries = [];
+    this._supportedCountries = undefined;
 
     /**
      * Permission administrators that match the selected country.
@@ -412,11 +410,9 @@ class EddieConnectButton extends LitElement {
       (pa) => this._supportedConnectors.includes(pa.regionConnector)
     );
 
-    this._supportedCountries = [
-      ...new Set(
-        this._supportedPermissionAdministrators.map((pa) => pa.country)
-      ),
-    ];
+    this._supportedCountries = new Set(
+      this._supportedPermissionAdministrators.map((pa) => pa.country)
+    );
 
     if (this.permissionAdministratorId) {
       const pa = this.getPermissionAdministratorByCompanyId(
@@ -567,7 +563,7 @@ class EddieConnectButton extends LitElement {
                 this._selectedCountry ??
                 ""}"
                 ?disabled="${!!this._presetPermissionAdministrator}"
-                help-text="${this._supportedCountries.length !==
+                help-text="${this._supportedCountries.size !==
                 this._enabledCountries.length
                   ? "Some countries do not support the given data requirements."
                   : ""}"
@@ -576,7 +572,7 @@ class EddieConnectButton extends LitElement {
                   (country) => html`
                     <sl-option
                       value="${country}"
-                      ?disabled="${!this._supportedCountries.includes(country)}"
+                      ?disabled="${!this._supportedCountries.has(country)}"
                     >
                       ${COUNTRY_NAMES.of(country.toUpperCase())}
                     </sl-option>
