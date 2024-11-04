@@ -10,7 +10,6 @@ import energy.eddie.regionconnector.us.green.button.XmlLoader;
 import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
-import energy.eddie.regionconnector.us.green.button.permission.events.UsPollingNotReadyEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
 import energy.eddie.regionconnector.us.green.button.providers.IdentifiableSyndFeed;
@@ -30,8 +29,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -100,7 +100,7 @@ class PermissionUpdateServiceTest {
     }
 
     @Test
-    void updatePermissionRequest_withoutIntervalBlock_doesNotReadyToPollEvent() throws FeedException {
+    void updatePermissionRequest_withoutIntervalBlock_emitsUnfulfillable() throws FeedException {
         // Given
         var xml = XmlLoader.xmlFromResource("/xml/batch/BatchWithoutIntervalBlock.xml");
         var feed = new SyndFeedInput().build(new StringReader(xml));
@@ -113,7 +113,7 @@ class PermissionUpdateServiceTest {
         permissionUpdateService.updatePermissionRequest(payload);
 
         // Then
-        verify(outbox).commit(isA(UsPollingNotReadyEvent.class));
+        verify(outbox).commit(assertArg(res -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, res.status())));
     }
 
     private static GreenButtonPermissionRequest createPermissionRequest(ZonedDateTime created, LocalDate start) {

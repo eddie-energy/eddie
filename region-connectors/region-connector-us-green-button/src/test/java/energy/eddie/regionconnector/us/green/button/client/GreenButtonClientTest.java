@@ -10,7 +10,6 @@ import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Exports;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.HistoricalCollectionResponse;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.OngoingMonitoring;
-import energy.eddie.regionconnector.us.green.button.exceptions.DataNotReadyException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -126,13 +125,20 @@ class GreenButtonClientTest {
 
 
     @Test
-    void batchSubscription_respondsWith202_causesException() {
+    void batchSubscription_respondsWith202_retriesAfterHeader() {
         // Given
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         var client = WebClient.create(basePath);
         mockBackEnd.enqueue(
                 new MockResponse()
                         .setResponseCode(202)
+                        .setHeader("Retry-After", "0")
+        );
+        mockBackEnd.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader("Content-Type", "application/xml")
+                        .setBody(XmlLoader.xmlFromResource("/xml/usagepoint/UsagePoint.xml"))
         );
         var api = new GreenButtonClient(client);
 
@@ -141,8 +147,13 @@ class GreenButtonClientTest {
 
         // Then
         StepVerifier.create(res)
-                    .expectError(DataNotReadyException.class)
-                    .verify();
+                    .assertNext(syndFeed -> assertAll(
+                            () -> assertEquals(1, syndFeed.getEntries().size()),
+                            () -> assertEquals(1, syndFeed.getEntries().getFirst().getContents().size()),
+                            () -> assertEquals("atom+xml",
+                                               syndFeed.getEntries().getFirst().getContents().getFirst().getType())
+                    ))
+                    .verifyComplete();
     }
 
     @Test

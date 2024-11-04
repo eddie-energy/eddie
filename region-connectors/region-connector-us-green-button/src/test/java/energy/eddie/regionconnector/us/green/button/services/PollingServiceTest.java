@@ -7,11 +7,9 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
-import energy.eddie.regionconnector.us.green.button.exceptions.DataNotReadyException;
 import energy.eddie.regionconnector.us.green.button.oauth.persistence.OAuthTokenDetails;
 import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
-import energy.eddie.regionconnector.us.green.button.permission.events.UsPollingNotReadyEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
@@ -359,44 +357,6 @@ class PollingServiceTest {
         // Then
         verify(publishService, never()).publish(any());
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
-    }
-
-    @Test
-    void pollWithDataNotReady_emitsPollingNotReadyEvent() {
-        // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
-        when(repository.getByPermissionId("pid"))
-                .thenReturn(pr);
-        var credentials = new OAuthTokenDetails("pid",
-                                                "token",
-                                                Instant.now(Clock.systemUTC()),
-                                                Instant.now(Clock.systemUTC()),
-                                                "token",
-                                                "1111");
-        when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.just(credentials));
-        when(api.batchSubscription(any(), any(), any(), any(), any()))
-                .thenReturn(Flux.error(new DataNotReadyException()));
-
-        // When
-        pollingService.poll("pid");
-
-        // Then
-        verify(publishService, never()).publish(any());
-        verify(outbox).commit(isA(UsPollingNotReadyEvent.class));
     }
 
     @ParameterizedTest
