@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>EDDIE Button</title>
+
+    <script type="module" src="./src/main/js/eddie-components.js"></script>
+  </head>
+  <body>
+    <label>
+      <select class="js-data-need-select" autocomplete="off">
+        <option selected disabled hidden>Select a data need</option>
+      </select>
+    </label>
+    <br />
+    <br />
+    <div class="js-data-need-select-container">
+      <eddie-connect-button
+        connection-id="1"
+        data-need-id="9bd0668f-cc19-40a8-99db-dc2cb2802b17"
+      ></eddie-connect-button>
+    </div>
+
+    <script>
+      let connectionId = 1;
+
+      const select = document.querySelector(".js-data-need-select");
+      const container = document.querySelector(
+        ".js-data-need-select-container"
+      );
+
+      // Fetch data needs from the API
+      fetch("http://localhost:8080/data-needs/api")
+        .then((response) => response.json())
+        .then((dataNeeds) => {
+          // Create an option for each data need
+          dataNeeds.forEach((dataNeed) => {
+            const option = document.createElement("option");
+            option.value = dataNeed.id;
+            option.textContent = dataNeed.name;
+            select.appendChild(option);
+          });
+        })
+        .catch((error) => {
+          console.error(error);
+          select.disabled = true;
+        });
+
+      // Reload button as data need changes
+      select.addEventListener("change", (event) => {
+        const dataNeedId = event.target.value;
+
+        const button = document.createElement("eddie-connect-button");
+        button.setAttribute("connection-id", `${connectionId++}`);
+        button.setAttribute("data-need-id", dataNeedId);
+
+        container.replaceChildren(button);
+      });
+    </script>
+  </body>
+</html>
