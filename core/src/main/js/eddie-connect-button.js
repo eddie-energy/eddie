@@ -53,8 +53,7 @@ function fetchJson(path) {
     .catch((error) => console.error(error));
 }
 
-async function getEnabledCountries() {
-  const regionConnectors = await fetchJson("/api/region-connectors-metadata");
+function getEnabledCountries(regionConnectors) {
   return regionConnectors
     .flatMap((rc) => rc.countryCodes)
     .map((countryCode) => countryCode.toLowerCase())
@@ -159,6 +158,13 @@ class EddieConnectButton extends LitElement {
      * @private
      */
     this._isValidConfiguration = undefined;
+
+    /**
+     * Region connectors that are supported.
+     * @type {string[]}
+     * @private
+     */
+    this._enabledConnectors = [];
 
     /**
      * Region connectors that support the selected data need.
@@ -388,7 +394,11 @@ class EddieConnectButton extends LitElement {
       return;
     }
 
-    this._enabledCountries = await getEnabledCountries();
+    this._enabledConnectors = await fetchJson(
+      "/api/region-connectors-metadata"
+    );
+
+    this._enabledCountries = await getEnabledCountries(this._enabledConnectors);
     this._enabledCountries.sort((a, b) => a.localeCompare(b));
 
     this._supportedConnectors = await getSupportedRegionConnectors(
@@ -501,6 +511,10 @@ class EddieConnectButton extends LitElement {
     });
   }
 
+  simIsEnabled() {
+    return this._enabledConnectors.some((rc) => rc.id === "sim");
+  }
+
   render() {
     if (!this._isValidConfiguration) {
       return html`
@@ -549,7 +563,9 @@ class EddieConnectButton extends LitElement {
 
         <!-- Render data need summary -->
         <h2>Request for Permission</h2>
-        <data-need-summary data-need-id="${this.dataNeedId}"></data-need-summary>
+        <data-need-summary
+          data-need-id="${this.dataNeedId}"
+        ></data-need-summary>
         <br />
 
         <!-- Render country selection -->
@@ -578,9 +594,13 @@ class EddieConnectButton extends LitElement {
                     </sl-option>
                   `
                 )}
-                <sl-divider></sl-divider>
-                <small>Development</small>
-                <sl-option value="sim">Simulation</sl-option>
+                ${this.simIsEnabled()
+                  ? html`
+                      <sl-divider></sl-divider>
+                      <small>Development</small>
+                      <sl-option value="sim">Simulation</sl-option>
+                    `
+                  : ""}
               </sl-select>
               <br />
             `

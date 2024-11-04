@@ -49,7 +49,7 @@ public class HomeController {
         this.terminationConnector = terminationConnector;
     }
 
-    @GetMapping("/")
+    @GetMapping
     public String home(Model model) {
         List<StatusMessage> statusMessages = statusMessageRepository.findLatestStatusMessageForAllPermissions();
 

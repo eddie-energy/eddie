@@ -94,7 +94,7 @@ content = @`
       const container = document.querySelector("#data-need-select-button");
 
       // Fetch data needs from the API
-      fetch("http://localhost:8080/data-needs/api")
+      fetch("${eddieUrl}/data-needs/api")
         .then(response => response.json())
         .then(dataNeeds => {
           // Create an option for each data need
