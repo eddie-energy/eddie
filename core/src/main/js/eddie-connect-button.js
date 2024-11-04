@@ -3,11 +3,13 @@ import { createRef, ref } from "lit/directives/ref.js";
 import { until } from "lit/directives/until.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { ifDefined } from "lit/directives/if-defined.js";
+import { choose } from "lit/directives/choose.js";
 
 // Shoelace
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/dialog/dialog.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/icon/icon.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/alert/alert.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/button/button.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/select/select.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/option/option.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/divider/divider.js";
@@ -29,6 +31,13 @@ const COUNTRIES = new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country));
 const CORE_URL =
   import.meta.env.VITE_CORE_URL ??
   import.meta.url.replace("/lib/eddie-components.js", "");
+
+const eventRoutes = new Map([
+  ["eddie-data-need-confirmed", { view: "pa" }],
+  ["eddie-permission-administrator-selected", { view: "rc" }],
+  ["eddie-request-accepted", { view: "accepted" }],
+  ["eddie-request-rejected", { view: "rejected" }],
+]);
 
 const dialogOpenEvent = new Event("eddie-dialog-open", {
   bubbles: true,
@@ -100,6 +109,7 @@ class EddieConnectButton extends LitElement {
     _selectedCountry: { type: String },
     _selectedPermissionAdministrator: { type: Object },
     _filteredPermissionAdministrators: { type: Array },
+    _activeView: { type: String },
   };
 
   static styles = css`
@@ -214,16 +224,26 @@ class EddieConnectButton extends LitElement {
      * @private
      */
     this._disabled = false;
+
+    /**
+     * Always use {@link navigateToView} to update this value.
+     * @type {string}
+     * @private
+     */
+    this._activeView = "dn";
   }
 
   connectedCallback() {
     super.connectedCallback();
 
     this.configure()
-      .then(() => (this._isValidConfiguration = true))
-      .catch(() => (this._isValidConfiguration = false));
+      .then(() => {
+        this._isValidConfiguration = true;
 
-    this.addRequestStatusHandlers();
+        this.addRequestStatusHandlers();
+        this.addViewChangeHandlers();
+      })
+      .catch(() => (this._isValidConfiguration = false));
   }
 
   openDialog() {
@@ -241,7 +261,7 @@ class EddieConnectButton extends LitElement {
   async getRegionConnectorElement() {
     const regionConnectorId =
       this._selectedPermissionAdministrator.regionConnector;
-    console.log(regionConnectorId);
+    console.debug(`Loading region connector for ${regionConnectorId}`);
 
     const customElementName = regionConnectorId + "-pa-ce";
 
@@ -260,12 +280,7 @@ class EddieConnectButton extends LitElement {
         if (!customElements.get(customElementName)) {
           console.error(error);
 
-          return html`<sl-alert variant="danger" open>
-            <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
-            Could not load region connector for
-            ${this._selectedPermissionAdministrator.company}. Please contact the
-            service provider.
-          </sl-alert>`;
+          return this.renderRegionConnectorError();
         }
       }
     }
@@ -290,17 +305,37 @@ class EddieConnectButton extends LitElement {
       element.setAttribute("accounting-point-id", this.accountingPointId);
     }
 
-    const notificationHandler = document.createElement(
-      "eddie-notification-handler"
-    );
-    const requestStatusHandler = document.createElement(
-      "eddie-request-status-handler"
-    );
+    return html`
+      <h3>Follow the instructions for your region</h3>
 
-    requestStatusHandler.appendChild(element);
-    notificationHandler.appendChild(requestStatusHandler);
+      <eddie-notification-handler>
+        <eddie-request-status-handler>
+          <div>${element}</div>
+        </eddie-request-status-handler>
+      </eddie-notification-handler>
 
-    return notificationHandler;
+      <br />
+      <sl-button
+        @click="${() =>
+          this.isAiida()
+            ? this.navigateToView("dn")
+            : this.navigateToView("pa")}"
+      >
+        <sl-icon name="arrow-left"></sl-icon>
+      </sl-button>
+    `;
+  }
+
+  renderRegionConnectorError() {
+    // TODO: Configure EP contact email: <a href="mailto:support@ep.local">support@ep.local</a>
+    return html`<h3>Error loading region connector</h3>
+      <sl-alert variant="danger" open>
+        <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+        We were unable to communicate with of our service that handles
+        permission requests for
+        ${this._selectedPermissionAdministrator.company}. Please contact the
+        customer support of the service provider.
+      </sl-alert>`;
   }
 
   /**
@@ -324,9 +359,21 @@ class EddieConnectButton extends LitElement {
     }
   }
 
+  handleDataNeedConfirmed() {
+    if (this.isAiida()) {
+      this.navigateToView("rc");
+    } else {
+      this.navigateToView("pa");
+    }
+  }
+
+  handlePermissionAdministratorSelected() {
+    this.navigateToView("rc");
+  }
+
   selectPermissionAdministrator(permissionAdministrator) {
-    this._selectedPermissionAdministrator = permissionAdministrator;
     this.selectCountry(permissionAdministrator?.country);
+    this._selectedPermissionAdministrator = permissionAdministrator;
   }
 
   loadPermissionAdministratorFromLocalStorage() {
@@ -341,19 +388,13 @@ class EddieConnectButton extends LitElement {
     }
   }
 
-  handleCountrySelect(event) {
-    this._selectedPermissionAdministrator = null;
-
-    if (event.target.value === "sim") {
-      this._selectedCountry = null;
-      this._selectedPermissionAdministrator = { regionConnector: "sim" };
-    } else {
-      this.selectCountry(event.target.value);
-    }
-  }
-
   selectCountry(country) {
+    this._selectedPermissionAdministrator = null;
     this._selectedCountry = country;
+
+    if (country === "sim") {
+      this._selectedPermissionAdministrator = { regionConnector: "sim" };
+    }
 
     if (!country) {
       this._filteredPermissionAdministrators = [];
@@ -505,6 +546,17 @@ class EddieConnectButton extends LitElement {
     return this._enabledConnectors.some((rc) => rc.id === "sim");
   }
 
+  addViewChangeHandlers() {
+    for (const [event, { view }] of eventRoutes) {
+      this.addEventListener(event, () => {
+        this.navigateToView(view);
+      });
+    }
+
+  navigateToView(view) {
+    this._activeView = view;
+  }
+
   render() {
     if (!this._isValidConfiguration) {
       return html`
@@ -523,10 +575,11 @@ class EddieConnectButton extends LitElement {
       return html`
         <button class="eddie-connect-button" disabled>
           ${unsafeSVG(buttonIcon)}
-          <span> Disabled Configuration </span>
+          <span>Disabled Configuration</span>
         </button>
       `;
     }
+
     return html`
       <link
         rel="stylesheet"
@@ -545,24 +598,36 @@ class EddieConnectButton extends LitElement {
       >
         <div slot="label">${unsafeSVG(headerImage)}</div>
 
-        <!-- Render data need summary -->
-        <h2>Request for Permission</h2>
-        <data-need-summary
-          data-need-id="${this.dataNeedId}"
-        ></data-need-summary>
-        <br />
+        ${choose(this._activeView, [
+          [
+            "dn",
+            () => html`
+              <h3>Confirm the data usage policy</h3>
+              <data-need-summary
+                data-need-id="${this.dataNeedId}"
+              ></data-need-summary>
+              <br />
+              <sl-button
+                @click="${this.handleDataNeedConfirmed}"
+                variant="primary"
+              >
+                Continue
+              </sl-button>
+            `,
+          ],
+          [
+            "pa",
+            () => html`
+              <h3>Select your country and permission administrator</h3>
 
-        <!-- Render country selection -->
-        ${!this.isAiida()
-          ? html`
+              <!-- Render country selection -->
               <sl-select
                 label="Country"
                 placeholder="Select your country"
-                @sl-change="${this.handleCountrySelect}"
-                value="${this._selectedPermissionAdministrator?.country ??
-                this._selectedCountry ??
-                ""}"
-                ?disabled="${!!this._presetPermissionAdministrator}"
+                @sl-change="${(event) =>
+                  this.selectCountry(event.target.value)}"
+                value="${this._selectedCountry}"
+                ?disabled="${ifDefined(this._presetPermissionAdministrator)}"
                 help-text="${this._supportedCountries.size !==
                 this._enabledCountries.length
                   ? "Some countries do not support the given data requirements."
@@ -586,13 +651,10 @@ class EddieConnectButton extends LitElement {
                     `
                   : ""}
               </sl-select>
-              <br />
-            `
-          : ""}
 
-        <!-- Render permission administrator selection -->
-        ${this._selectedCountry
-          ? html`
+              <br />
+
+              <!-- Render permission administrator selection -->
               <sl-select
                 label="Permission Administrator"
                 placeholder="Select your Permission Administrator"
@@ -607,32 +669,74 @@ class EddieConnectButton extends LitElement {
               >
                 ${this._filteredPermissionAdministrators.map(
                   (pa) => html`
-                    <sl-option value="${pa.companyId}">
-                      ${pa.company}
-                    </sl-option>
+                    <sl-option value="${pa.companyId}">${pa.company}</sl-option>
                   `
                 )}
               </sl-select>
-              <br />
-            `
-          : ""}
 
-        <div>
-          ${this._selectedPermissionAdministrator
-            ? html`
-                ${until(
-                  this.getRegionConnectorElement(),
-                  html`<sl-spinner></sl-spinner>`
-                )}
-              `
-            : html`
-                <sl-alert variant="warning" open>
-                  <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
-                  Please select your country and permission administrator to
-                  continue.
-                </sl-alert>
-              `}
-        </div>
+              <br />
+              <sl-button @click="${() => this.navigateToView("dn")}">
+                <sl-icon name="arrow-left"></sl-icon>
+              </sl-button>
+              <sl-button
+                @click="${this.handlePermissionAdministratorSelected}"
+                ?disabled="${!this._selectedPermissionAdministrator}"
+                variant="primary"
+              >
+                Continue
+              </sl-button>
+            `,
+          ],
+          [
+            "rc",
+            () => html`
+              <!-- RCs are always one step since it is not possible to navigate their contents -->
+              ${this._selectedPermissionAdministrator
+                ? html`
+                    ${until(
+                      this.getRegionConnectorElement(),
+                      html`<sl-spinner></sl-spinner>`
+                    )}
+                  `
+                : ""}
+            `,
+          ],
+          [
+            "accepted",
+            () => html`
+              <h3>Permission granted</h3>
+              <p>
+                You successfully granted permission for the service provider to
+                access to your data. The permission can be terminated by either
+                party at any time.
+              </p>
+
+              <p>
+                You may now close this dialog and continue on the website of the
+                service provider.
+              </p>
+
+              <sl-button @click="${this.closeDialog}">Close</sl-button>
+            `,
+          ],
+          [
+            "rejected",
+            () => html`
+              <h3>Permission request rejected</h3>
+              <p>
+                You rejected the permission request for the service provider to
+                access to your data. No data will be processed.
+              </p>
+
+              <p>
+                You may now close this dialog. Please start again if the request
+                was rejected unintentionally.
+              </p>
+
+              <sl-button @click="${this.closeDialog}">Close</sl-button>
+            `,
+          ],
+        ])}
 
         <div slot="footer">
           <div class="version-indicator">
