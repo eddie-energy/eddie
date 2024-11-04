@@ -35,8 +35,12 @@ const CORE_URL =
 const eventRoutes = new Map([
   ["eddie-data-need-confirmed", { view: "pa" }],
   ["eddie-permission-administrator-selected", { view: "rc" }],
+  ["eddie-request-unable-to-send", { view: "unable-to-send" }],
   ["eddie-request-accepted", { view: "accepted" }],
   ["eddie-request-rejected", { view: "rejected" }],
+  ["eddie-request-timed-out", { view: "timed-out" }],
+  ["eddie-request-invalid", { view: "invalid" }],
+  ["eddie-request-unfulfillable", { view: "unfulfillable" }],
 ]);
 
 const dialogOpenEvent = new Event("eddie-dialog-open", {
@@ -702,6 +706,19 @@ class EddieConnectButton extends LitElement {
             `,
           ],
           [
+            "unable-to-send",
+            () => html`
+              <h3>Unable to send permission request</h3>
+              <p>
+                We were unable to send the permission request to your permission
+                administrator. Please contact the customer support of the
+                service provider.
+              </p>
+
+              <sl-button @click="${this.closeDialog}">Close</sl-button>
+            `,
+          ],
+          [
             "accepted",
             () => html`
               <h3>Permission granted</h3>
@@ -731,6 +748,58 @@ class EddieConnectButton extends LitElement {
               <p>
                 You may now close this dialog. Please start again if the request
                 was rejected unintentionally.
+              </p>
+
+              <sl-button @click="${this.closeDialog}">Close</sl-button>
+            `,
+          ],
+          [
+            "timed-out",
+            () => html`
+              <h3>Permission request timed out</h3>
+              <p>
+                The permission request was not accepted in the expected
+                timeframe. No data will be processed.
+              </p>
+
+              <p>
+                You may close this dialog and start again. Please contact the
+                service provider if the permission request does not show up in
+                the portal of your permission administrator.
+              </p>
+
+              <sl-button @click="${this.closeDialog}">Close</sl-button>
+            `,
+          ],
+          [
+            "invalid",
+            () => html`
+              <h3>Request was declined as invalid</h3>
+              <p>
+                Your permission administrator declined our permission request as
+                invalid.
+              </p>
+
+              <p>
+                You may close this dialog and start again. Please contact the
+                service provider if the issue persists.
+              </p>
+
+              <sl-button @click="${this.closeDialog}">Close</sl-button>
+            `,
+          ],
+          [
+            "unfulfillable",
+            () => html`
+              <h3>Unable to fulfill the request</h3>
+              <p>
+                Your energy data provider is unable to provide the requested
+                data. No data will be processed.
+              </p>
+
+              <p>
+                You may now close this dialog and continue on the website of the
+                service provider.
               </p>
 
               <sl-button @click="${this.closeDialog}">Close</sl-button>
