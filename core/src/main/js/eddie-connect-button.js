@@ -135,7 +135,7 @@ class EddieConnectButton extends LitElement {
       cursor: pointer;
     }
 
-    .eddie-connect-button--disabled {
+    .eddie-connect-button:disabled {
       cursor: default;
       filter: grayscale(100%);
     }
@@ -512,10 +512,7 @@ class EddieConnectButton extends LitElement {
   render() {
     if (!this._isValidConfiguration) {
       return html`
-        <button
-          class="eddie-connect-button eddie-connect-button--disabled"
-          disabled
-        >
+        <button class="eddie-connect-button" disabled>
           ${unsafeSVG(buttonIcon)}
           <span>
             ${this._isValidConfiguration === undefined
@@ -528,10 +525,7 @@ class EddieConnectButton extends LitElement {
 
     if (this._disabled) {
       return html`
-        <button
-          class="eddie-connect-button eddie-connect-button--disabled"
-          disabled
-        >
+        <button class="eddie-connect-button" disabled>
           ${unsafeSVG(buttonIcon)}
           <span> Disabled Configuration </span>
         </button>
