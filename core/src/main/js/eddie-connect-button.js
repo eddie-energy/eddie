@@ -601,8 +601,9 @@ class EddieConnectButton extends LitElement {
                 value="${ifDefined(
                   this._selectedPermissionAdministrator?.companyId
                 )}"
-                ?disabled="${!!this._presetPermissionAdministrator ||
-                this._filteredPermissionAdministrators.length === 1}"
+                ?disabled="${!this._selectedCountry ||
+                !!this._presetPermissionAdministrator ||
+                this._filteredPermissionAdministrators.length <= 1}"
               >
                 ${this._filteredPermissionAdministrators.map(
                   (pa) => html`
