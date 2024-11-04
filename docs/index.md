@@ -7,12 +7,15 @@ hero:
   text: "Using and Extending the EDDIE Framework"
   tagline: My great project tagline
   actions:
-    - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: Running
+      link: /OPERATION
+    - theme: brand
+      text: Using
+      link: /PERMISSION_STATES
+    - theme: alt
+      text: Extending
+      link: /DEVELOPMENT
 
 features:
   - title: Feature A
