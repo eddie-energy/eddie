@@ -32,6 +32,18 @@ const CORE_URL =
   import.meta.env.VITE_CORE_URL ??
   import.meta.url.replace("/lib/eddie-components.js", "");
 
+const views = new Map([
+  ["dn", { step: 1 }],
+  ["pa", { step: 2 }],
+  ["rc", { step: 3 }],
+  ["unable-to-send", { step: 3, error: true }],
+  ["accepted", { step: 5 }],
+  ["rejected", { step: 5 }],
+  ["timed-out", { step: 5, error: true }],
+  ["invalid", { step: 5, error: true }],
+  ["unfulfillable", { step: 5, error: true }],
+]);
+
 const eventRoutes = new Map([
   ["eddie-data-need-confirmed", { view: "pa" }],
   ["eddie-permission-administrator-selected", { view: "rc" }],
@@ -235,6 +247,14 @@ class EddieConnectButton extends LitElement {
      * @private
      */
     this._activeView = "dn";
+
+    /**
+     * Tracks the current step of the step indicator
+     * @type {number}
+     * @private
+     */
+    this._currentStep = 1;
+    this._isErrorStep = false;
   }
 
   connectedCallback() {
@@ -557,8 +577,19 @@ class EddieConnectButton extends LitElement {
       });
     }
 
+    // Step change status change happens inside RC element
+    this.addEventListener(
+      "eddie-request-sent-to-permission-administrator",
+      () => {
+        this._currentStep = 4;
+      }
+    );
+  }
+
   navigateToView(view) {
     this._activeView = view;
+    this._currentStep = views.get(view).step;
+    this._isErrorStep = views.get(view).error;
   }
 
   render() {
@@ -601,6 +632,10 @@ class EddieConnectButton extends LitElement {
         @sl-hide="${this.handleDialogHide}"
       >
         <div slot="label">${unsafeSVG(headerImage)}</div>
+        <eddie-step-indicator
+          .step="${this._currentStep}"
+          .error="${this._isErrorStep}"
+        ></eddie-step-indicator>
 
         ${choose(this._activeView, [
           [
