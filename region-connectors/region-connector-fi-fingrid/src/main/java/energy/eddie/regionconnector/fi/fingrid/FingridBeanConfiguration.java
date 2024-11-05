@@ -5,7 +5,6 @@ import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.config.FingridConfiguration;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
@@ -25,8 +24,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.util.List;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
@@ -72,7 +69,7 @@ public class FingridBeanConfiguration {
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
-                List.of(ValidatedHistoricalDataDataNeed.class),
+                FingridRegionConnectorMetadata.SUPPORTED_DATA_NEEDS,
                 FingridRegionConnectorMetadata.INSTANCE
         );
     }
