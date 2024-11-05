@@ -33,6 +33,6 @@ OUTBOUND_CONNECTOR_ADMIN_CONSOLE_ENABLED=true
 
 ## Current Appearances
 
-![Admin Console Dark Theme](src/docs/Admin-console-dark.png)
+![Admin Console Dark Theme](Admin-console-dark.png)
 
-![Admin Console Light Theme](src/docs/Admin-console-light.png)
+![Admin Console Light Theme](Admin-console-light.png)

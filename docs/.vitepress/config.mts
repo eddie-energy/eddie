@@ -16,6 +16,22 @@ export default defineConfig({
         text: "Running",
         items: [
           { text: "Operation", link: "/OPERATION" },
+          {
+            text: "Region Connectors",
+            items: [
+              { text: "AIIDA", link: "region-connectors/region-connector-aiida.md" },
+              { text: "AT: EDA", link: "region-connectors/region-connector-at-eda.md" },
+              { text: "BE: Fluvius", link: "region-connectors/region-connector-be-fluvius.md" },
+              { text: "DK: Energinet", link: "region-connectors/region-connector-dk-energinet.md" },
+              { text: "ES: Datadis", link: "region-connectors/region-connector-es-datadis.md" },
+              { text: "FI: Fingrid", link: "region-connectors/region-connector-fi-fingrid.md" },
+              { text: "FR: Enedis", link: "region-connectors/region-connector-fr-enedis.md" },
+              { text: "NL: Mijn Aansluiting", link: "region-connectors/region-connector-nl-mijn-aansluiting.md" },
+              { text: "US: Green Button", link: "region-connectors/region-connector-us-green-button.md" },
+            ],
+          },
+          { text: "Admin Console", link: "/admin-console" },
+          { text: "Example App", link: "/example-app" },
         ],
       },
       {

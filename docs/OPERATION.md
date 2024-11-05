@@ -198,15 +198,15 @@ under `region-connectors/region-connector-<country-code>-<permission-administrat
 
 Or you can use the following links:
 
-- [AIIDA (Near real-time data)](./../region-connectors/region-connector-aiida/README.md)
-- [Austria (EDA)](./../region-connectors/region-connector-at-eda/README.md)
-- [Belgium (Fluvius)](./../region-connectors/region-connector-be-fluvius/README.md)
-- [Denmark (Energinet)](./../region-connectors/region-connector-dk-energinet/README.md)
-- [Finland (Fingrid)](./../region-connectors/region-connector-fi-fingrid/README.md)
-- [France (Enedis)](./../region-connectors/region-connector-fr-enedis/README.md)
-- [Netherlands (Mijn Aansluiting)](./../region-connectors/region-connector-nl-mijn-aansluiting/README.md)
-- [Spain (Datadis)](./../region-connectors/region-connector-es-datadis/README.md)
-- [US/Canada (Green Button)](./../region-connectors/region-connector-us-green-button/README.md)
+- [AIIDA (Near real-time data)](region-connectors/region-connector-aiida.md)
+- [Austria (EDA)](region-connectors/region-connector-at-eda.md)
+- [Belgium (Fluvius)](region-connectors/region-connector-be-fluvius.md)
+- [Denmark (Energinet)](region-connectors/region-connector-dk-energinet.md)
+- [Finland (Fingrid)](region-connectors/region-connector-fi-fingrid.md)
+- [France (Enedis)](region-connectors/region-connector-fr-enedis.md)
+- [Netherlands (Mijn Aansluiting)](region-connectors/region-connector-nl-mijn-aansluiting.md)
+- [Spain (Datadis)](region-connectors/region-connector-es-datadis.md)
+- [US/Canada (Green Button)](region-connectors/region-connector-us-green-button.md)
 
 ### Configuring outbound connectors
 
@@ -215,7 +215,7 @@ If the outbound connector provides a web interface, it will be available via the
 `eddie.management.server.port`.
 
 - Kafka Connector: described in the [Kafka Connector section](#kafka-connector).
-- [Admin Console](./../admin-console/README.md)
+- [Admin Console](admin-console.md)
 
 ### Business domain related configuration
 
@@ -381,7 +381,7 @@ connector id.
 
 If you are using the example app and you change configuration parameters for the _core_, you might need to update its
 configuration as well.
-Please refer to the [readme.md](../examples/example-app/README.md) of the example app.
+Please refer to the [readme.md](example-app.md) of the example app.
 
 ## Internal APIs
 
