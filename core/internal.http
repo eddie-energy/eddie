@@ -6,3 +6,6 @@ GET http://localhost:8080/actuator/health
 
 ### GET supported features of region-connectors
 GET http://localhost:9090/management/region-connectors/supported-features
+
+### GET supported data needs of region-connectors
+GET http://localhost:9090/management/region-connectors/supported-data-needs

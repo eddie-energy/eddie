@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.regionconnector.shared.utils.DataNeedUtils;
 
 import java.time.Period;
 import java.time.ZoneId;
@@ -66,5 +67,10 @@ public class FluviusRegionConnectorMetadata implements RegionConnectorMetadata {
     @Override
     public ZoneId timeZone() {
         return ZoneId.of("Europe/Brussels");
+    }
+
+    @Override
+    public List<String> supportedDataNeeds() {
+        return DataNeedUtils.convertDataNeedClassesToString(SUPPORTED_DATA_NEEDS);
     }
 }

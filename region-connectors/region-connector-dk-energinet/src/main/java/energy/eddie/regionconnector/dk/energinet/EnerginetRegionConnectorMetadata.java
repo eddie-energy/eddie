@@ -5,6 +5,7 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.regionconnector.shared.utils.DataNeedUtils;
 
 import javax.annotation.Nullable;
 import java.time.Period;
@@ -79,5 +80,10 @@ public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata
     @Override
     public ZoneId timeZone() {
         return DK_ZONE_ID;
+    }
+
+    @Override
+    public List<String> supportedDataNeeds() {
+        return DataNeedUtils.convertDataNeedClassesToString(SUPPORTED_DATA_NEEDS);
     }
 }

@@ -1,6 +1,8 @@
 package energy.eddie.core.web;
 
+import energy.eddie.core.services.SupportedDataNeedService;
 import energy.eddie.core.services.SupportedFeatureService;
+import energy.eddie.spring.regionconnector.extensions.RegionConnectorSupportedDataNeedExtension;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorSupportedFeatureExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +15,21 @@ import java.util.List;
 @RestController
 public class ManagementController {
     private final SupportedFeatureService supportedFeatureService;
+    private final SupportedDataNeedService supportedDataNeedService;
 
-    public ManagementController(SupportedFeatureService supportedFeatureService) {this.supportedFeatureService = supportedFeatureService;}
+    public ManagementController(SupportedFeatureService supportedFeatureService, SupportedDataNeedService supportedDataNeedService) {
+        this.supportedFeatureService = supportedFeatureService;
+        this.supportedDataNeedService = supportedDataNeedService;
+    }
 
     @GetMapping("/${eddie.management.server.urlprefix}/region-connectors/supported-features")
     public ResponseEntity<List<RegionConnectorSupportedFeatureExtension>> supportedFeatures() {
         return ResponseEntity.ok(supportedFeatureService.getSupportedFeatureExtensions());
+    }
+
+    @GetMapping("/${eddie.management.server.urlprefix}/region-connectors/supported-data-needs")
+    public ResponseEntity<List<RegionConnectorSupportedDataNeedExtension>> supportedDataNeeds() {
+        return ResponseEntity.ok(supportedDataNeedService.getSupportedDataNeedExtensions());
     }
 
     /**

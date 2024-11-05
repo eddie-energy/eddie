@@ -6,6 +6,7 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
+import energy.eddie.regionconnector.shared.utils.DataNeedUtils;
 
 import javax.annotation.Nullable;
 import java.time.Period;
@@ -20,7 +21,7 @@ public class EdaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final ZoneId AT_ZONE_ID = ZoneId.of("Europe/Vienna");
     public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.PT15M, Granularity.P1D);
     public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(ValidatedHistoricalDataDataNeed.class,
-                                                                                       AccountingPointDataNeed.class);
+            AccountingPointDataNeed.class);
     @Nullable
     private static EdaRegionConnectorMetadata instance = null;
 
@@ -67,5 +68,10 @@ public class EdaRegionConnectorMetadata implements RegionConnectorMetadata {
     @Override
     public ZoneId timeZone() {
         return AT_ZONE_ID;
+    }
+
+    @Override
+    public List<String> supportedDataNeeds() {
+        return DataNeedUtils.convertDataNeedClassesToString(SUPPORTED_DATA_NEEDS);
     }
 }

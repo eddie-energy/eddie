@@ -62,4 +62,10 @@ public interface RegionConnectorMetadata {
 
     @JsonProperty
     ZoneId timeZone();
+
+    /**
+     * List of supported data needs
+     */
+    @JsonProperty
+    List<String> supportedDataNeeds();
 }
