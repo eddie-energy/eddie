@@ -235,7 +235,7 @@ class EddieConnectButton extends LitElement {
   }
 
   reset() {
-    this.selectPermissionAdministrator(this._presetPermissionAdministrator);
+    this.replaceWith(this.cloneNode());
   }
 
   async getRegionConnectorElement() {
