@@ -2,7 +2,7 @@
 
 The topic **accounting-point-market-documents** delivers account point data in a CIM-compliant format.
 For possible values see
-the [AccountingPointMarketDocument.xsd](../../../api/src/main/schemas/cim/xsd/v0_82/ap/AccountingPoint_MarketDocument_2024-04-26T17.01.04.xsd)
+the [AccountingPointMarketDocument.xsd](https://github.com/eddie-energy/eddie/blob/main/api/src/main/schemas/cim/xsd/v0_82/ap/AccountingPoint_MarketDocument_2024-06-21T11.38.58.xsd)
 file.
 
 ```json

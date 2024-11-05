@@ -4,6 +4,7 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
   title: "EDDIE Framework",
   description: "Using and Extending the EDDIE Framework",
+  ignoreDeadLinks: "localhostLinks",
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [

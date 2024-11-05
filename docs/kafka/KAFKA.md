@@ -8,7 +8,7 @@ As of the 20th of February 2024, there are 5 different kind of topics available 
 2. [raw-data-in-proprietary-format](topics/RAW_DATA_IN_PROPRIETARY_FORMAT.md)
 3. [status-messages](topics/STATUS_MESSAGES.md)
 4. [validated-historical-data](topics/VALIDATED_HISTORICAL_DATA.md)
-5. [accounting-point-market-documents](topics/ACCOUNTING_POINT_MARKET_DOCUMENTS.MD)
+5. [accounting-point-market-documents](topics/ACCOUNTING_POINT_MARKET_DOCUMENTS.md)
 
 ### Terminology
 
