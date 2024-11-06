@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.us.green.button.services;
+package energy.eddie.regionconnector.us.green.button.services.historical.collection;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;

@@ -1,9 +1,11 @@
 package energy.eddie.regionconnector.us.green.button.persistence;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.us.green.button.permission.GreenButtonDataSourceInformation;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsCreatedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEvent;
+import energy.eddie.regionconnector.us.green.button.permission.events.UsValidatedEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -13,6 +15,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -83,5 +86,27 @@ class UsPermissionRequestRepositoryTest {
         assertEquals(1, res.size());
         var pr = res.getFirst();
         assertEquals("pid", pr.permissionId());
+    }
+
+    @Test
+    void testFindActiveOutPermissionRequests_findsActivePermissionRequests() {
+        // Given
+        var now = LocalDate.now(ZoneOffset.UTC);
+        var start1 = now.minusDays(1);
+        var end1 = now.plusDays(1);
+        var start2 = now.plusDays(1);
+        var end2 = now.plusDays(2);
+        permissionEventRepository.saveAndFlush(new UsValidatedEvent("pid1", start1, end1, Granularity.PT15M, "scope"));
+        permissionEventRepository.saveAndFlush(new UsSimpleEvent("pid1", PermissionProcessStatus.ACCEPTED));
+        permissionEventRepository.saveAndFlush(new UsValidatedEvent("pid2", start2, end2, Granularity.PT15M, "scope"));
+        permissionEventRepository.saveAndFlush(new UsSimpleEvent("pid2", PermissionProcessStatus.ACCEPTED));
+
+        // When
+        var res = permissionRequestRepository.findActivePermissionRequests();
+
+        // Then
+        assertEquals(1, res.size());
+        var pr = res.getFirst();
+        assertEquals("pid1", pr.permissionId());
     }
 }

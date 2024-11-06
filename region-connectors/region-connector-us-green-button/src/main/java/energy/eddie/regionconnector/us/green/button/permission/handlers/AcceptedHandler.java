@@ -1,107 +1,93 @@
 package energy.eddie.regionconnector.us.green.button.permission.handlers;
 
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
-import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
-import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
-import energy.eddie.regionconnector.us.green.button.api.Pages;
-import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
-import energy.eddie.regionconnector.us.green.button.permission.events.*;
-import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
-import energy.eddie.regionconnector.us.green.button.services.DataNeedMatcher;
+import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
+import energy.eddie.regionconnector.us.green.button.permission.events.UsAcceptedEvent;
+import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
+import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
+import energy.eddie.regionconnector.us.green.button.services.PermissionRequestService;
+import energy.eddie.regionconnector.us.green.button.services.historical.collection.HistoricalCollectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Component
 public class AcceptedHandler implements EventHandler<List<UsAcceptedEvent>> {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(AcceptedHandler.class);
-    private final GreenButtonApi api;
-    private final boolean requiresPagination;
-    private final DataNeedMatcher dataNeedMatcher;
-    private final Outbox outbox;
-    private final MeterReadingRepository meterReadingRepository;
+    private final HistoricalCollectionService historicalCollectionService;
+    private final PermissionRequestService permissionRequestService;
+    private final UsPermissionRequestRepository repository;
 
     public AcceptedHandler(
             EventBus eventBus,
-            GreenButtonApi api,
             GreenButtonConfiguration config,
-            DataNeedMatcher dataNeedMatcher,
-            Outbox outbox,
-            MeterReadingRepository meterReadingRepository
+            HistoricalCollectionService historicalCollectionService,
+            PermissionRequestService permissionRequestService,
+            UsPermissionRequestRepository repository
     ) {
-        this.api = api;
-        // Pagination is not required if the batch size is smaller-equals the maximum amount of meters.
-        requiresPagination = config.activationBatchSize() > GreenButtonApi.MAX_METER_RESULTS;
-        this.meterReadingRepository = meterReadingRepository;
+        this.historicalCollectionService = historicalCollectionService;
+        this.permissionRequestService = permissionRequestService;
+        this.repository = repository;
         eventBus.filteredFlux(UsAcceptedEvent.class)
                 .buffer(config.activationBatchSize())
                 .subscribe(this::accept);
-        this.dataNeedMatcher = dataNeedMatcher;
-        this.outbox = outbox;
     }
 
     @Override
     public void accept(List<UsAcceptedEvent> events) {
-        var authIds = events.stream().map(UsAcceptedEvent::authUid).toList();
-        var authIndex = events
-                .stream()
-                .collect(Collectors.toMap(UsAcceptedEvent::authUid, PersistablePermissionEvent::permissionId));
-        var page = requiresPagination ? Pages.SLURP : Pages.NO_SLURP;
-        api.fetchInactiveMeters(page, authIds)
-           .map(dataNeedMatcher::filterMetersNotMeetingDataNeedCriteria)
-           .flatMap(Flux::fromIterable)
-           .collectList()
-           .subscribe(meters -> consume(meters, authIndex));
+        var permissionIds = events.stream().map(UsAcceptedEvent::permissionId).toList();
+        var prs = repository.findAllById(permissionIds);
+        // copyOf doesn't copy the list since toList() returns an unmodifiable list
+        List<UsGreenButtonPermissionRequest> permissionRequests = List.copyOf(
+                StreamSupport.stream(prs.spliterator(), false)
+                             .toList()
+        );
+        var now = LocalDate.now(ZoneOffset.UTC);
+        historicalCollectionService.persistMetersForPermissionRequests(permissionRequests)
+                                   .filter(meterReading -> filterInactivePermissionRequests(
+                                           meterReading, permissionRequests, now
+                                   ))
+                                   .collectList()
+                                   .filter(list -> !list.isEmpty())
+                                   .flatMap(historicalCollectionService::triggerHistoricalDataCollection)
+                                   .publishOn(Schedulers.boundedElastic())
+                                   .doFinally(
+                                           v -> permissionRequestService.removeUnfulfillablePermissionRequests(
+                                                   permissionIds
+                                           )
+                                   )
+                                   .subscribe();
     }
 
-    private void consume(List<Meter> meters, Map<String, String> authIndex) {
-        Map<String, List<String>> permissionToMeters = HashMap.newHashMap(authIndex.size());
-        for (var permissionId : authIndex.values()) {
-            permissionToMeters.put(permissionId, new ArrayList<>());
+    private static boolean filterInactivePermissionRequests(
+            MeterReading meterReading,
+            List<UsGreenButtonPermissionRequest> permissionRequests,
+            LocalDate now
+    ) {
+        for (var request : permissionRequests) {
+            var permissionId = request.permissionId();
+            if (!permissionId.equals(meterReading.permissionId())) {
+                continue;
+            }
+            if (request.start().isAfter(now)) {
+                LOGGER.info("Permission request {} is not active yet, will not trigger historical collection",
+                            permissionId);
+                return false;
+            } else {
+                return true;
+            }
         }
-        for (var meter : meters) {
-            var authUid = meter.authorizationUid();
-            var permissionId = authIndex.get(authUid);
-            var meterUid = meter.uid();
-            if (permissionToMeters.containsKey(permissionId))
-                permissionToMeters.get(permissionId).add(meterUid);
-        }
-        api.collectHistoricalData(meters.stream().map(Meter::uid).toList())
-           .subscribe(res -> {
-               var activatedMeters = res.meters();
-               for (var entry : permissionToMeters.entrySet()) {
-                   var metersOfPermission = new ArrayList<>(entry.getValue());
-                   // Remove all meters that where not activated
-                   metersOfPermission.retainAll(activatedMeters);
-                   List<MeterReading> meterReadings = new ArrayList<>(metersOfPermission.size());
-                   var permissionId = entry.getKey();
-                   for (var meter : metersOfPermission) {
-                       meterReadings.add(new MeterReading(permissionId, meter, null, PollingStatus.DATA_NOT_READY));
-                   }
-                   if (metersOfPermission.isEmpty()) {
-                       LOGGER.info("Marking permission request {} as unfulfillable, since no meter supports data need",
-                                   permissionId);
-                       outbox.commit(new UsUnfulfillableEvent(permissionId, true));
-                   } else {
-                       LOGGER.info("Adding meters with UIDs {} to permission request {}",
-                                   metersOfPermission,
-                                   permissionId);
-                       meterReadings = meterReadingRepository.saveAll(meterReadings);
-                       outbox.commit(new UsMeterReadingUpdateEvent(permissionId,
-                                                                   meterReadings,
-                                                                   PollingStatus.DATA_NOT_READY));
-                   }
-               }
-           });
+        // Impossible to end up here, since a permission request is required to create a meter reading
+        throw new IllegalStateException(
+                "Got meter reading without matching permission request %s".formatted(meterReading.permissionId())
+        );
     }
 }
