@@ -15,14 +15,7 @@ class DkEnerginetTest extends E2eTestSetup {
 
     @Test
     void givenInvalidRefreshToken_displaysErrorMessage() {
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue").setExact(true)).click();
-
-        page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
-        page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Denmark")).locator("slot").nth(1).click();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue").setExact(true)).click();
-
-        page.locator("dk-energinet-pa-ce").waitFor(new Locator.WaitForOptions().setTimeout(5000)); // 5 sec
+        this.navigateToRegionConnector(null, "Denmark", null);
 
         page.getByLabel("Metering Point").fill("foo");
         page.getByLabel("Refresh Token").fill("bar");
@@ -38,14 +31,7 @@ class DkEnerginetTest extends E2eTestSetup {
 
     @Test
     void givenValidInput_showsAcceptedInfo() {
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue").setExact(true)).click();
-
-        page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
-        page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Denmark")).locator("slot").nth(1).click();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue").setExact(true)).click();
-
-        page.locator("dk-energinet-pa-ce").waitFor(new Locator.WaitForOptions().setTimeout(5000)); // 5 sec
+        this.navigateToRegionConnector(null, "Denmark", null);
 
         page.getByLabel("Refresh Token").fill(DK_ENERGINET_REFRESH_TOKEN);
         page.getByLabel("Metering Point").fill(DK_ENERGINET_METERING_POINT);

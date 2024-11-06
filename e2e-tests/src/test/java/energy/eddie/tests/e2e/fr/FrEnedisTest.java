@@ -19,12 +19,7 @@ class FrEnedisTest extends E2eTestSetup {
     @Test
     @Disabled("Until Enedis' sandbox is working again")
     void buttonClickOpensNewPage_statusIsFulfilled() {
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue").setExact(true)).click();
-
-        page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
-        page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("France")).locator("slot").nth(1).click();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue").setExact(true)).click();
+        this.navigateToRegionConnector(null, "France", null);
 
         RequestDetails requestDetails = new RequestDetails();
         page.onResponse(response -> {
