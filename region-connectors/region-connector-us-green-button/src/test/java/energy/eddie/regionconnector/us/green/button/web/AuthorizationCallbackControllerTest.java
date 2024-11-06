@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.us.green.button.web;
 
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
+import energy.eddie.regionconnector.us.green.button.exceptions.UnauthorizedException;
 import energy.eddie.regionconnector.us.green.button.services.PermissionRequestAuthorizationService;
 import energy.eddie.regionconnector.us.green.button.services.PermissionRequestCreationService;
-import energy.eddie.regionconnector.us.green.button.services.UnauthorizedException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

@@ -7,6 +7,7 @@ import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundExceptio
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
 import energy.eddie.regionconnector.us.green.button.exceptions.InvalidScopesException;
+import energy.eddie.regionconnector.us.green.button.exceptions.UnauthorizedException;
 import energy.eddie.regionconnector.us.green.button.oauth.OAuthCallback;
 import energy.eddie.regionconnector.us.green.button.oauth.enums.OAuthErrorResponse;
 import energy.eddie.regionconnector.us.green.button.oauth.persistence.OAuthTokenDetails;
