@@ -199,6 +199,16 @@ class PermissionRequestFormBase extends LitElement {
         })
       );
 
+      // Dispatch a specific event for the current status
+      const statusEventString = data.status.toLowerCase().replaceAll("_", "-");
+      const statusEvent = new Event("eddie-request-" + statusEventString, {
+        bubbles: true,
+        composed: true,
+      });
+
+      this.dispatchEvent(statusEvent);
+      console.debug(statusEvent);
+
       if (TERMINAL_STATES.includes(data.status)) {
         eventSource.close();
       }

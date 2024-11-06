@@ -3,7 +3,8 @@ import { GRANULARITIES } from "./constants/granularities.js";
 import { relativeDateFromDuration } from "./duration.js";
 import { ENERGY_TYPES } from "./constants/energy-types.js";
 
-const BASE_URL = new URL(import.meta.url).origin;
+const CORE_URL =
+  import.meta.env.VITE_CORE_URL ?? new URL(import.meta.url).origin;
 
 class DataNeedSummary extends HTMLElement {
   static get observedAttributes() {
@@ -26,7 +27,7 @@ class DataNeedSummary extends HTMLElement {
   async render() {
     const dataNeedId = this.getAttribute("data-need-id");
 
-    const response = await fetch(`${BASE_URL}/data-needs/api/${dataNeedId}`);
+    const response = await fetch(`${CORE_URL}/data-needs/api/${dataNeedId}`);
 
     if (!response.ok) {
       return;

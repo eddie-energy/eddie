@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>EDDIE Button</title>
+
+    <script type="module" src="./src/main/js/eddie-components.js"></script>
+
+    <style>
+      form {
+        margin-top: 1.5rem;
+        display: grid;
+        justify-items: start;
+        gap: 0.5rem;
+      }
+
+      span + input,
+      span + select {
+        margin-top: 0.1rem;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <eddie-connect-button
+      data-need-id="9bd0668f-cc19-40a8-99db-dc2cb2802b17"
+      connection-id="1"
+    ></eddie-connect-button>
+
+    <form autocomplete="off">
+      <label>
+        <span>Data need</span>
+        <select name="data-need-id" autocomplete="off"></select>
+      </label>
+      <label>
+        <span>Connection ID</span>
+        <input type="text" name="connection-id" value="1" />
+      </label>
+      <label>
+        <span>Permission administrator</span>
+        <input type="text" name="permission-administrator" />
+      </label>
+      <label>
+        <span>Accounting point ID</span>
+        <input type="text" name="accounting-point-id" />
+      </label>
+      <label>
+        <input type="checkbox" name="remember-permission-administrator" />
+        <span>Remember permission administrator</span>
+      </label>
+    </form>
+
+    <script type="module">
+      // Fetch data needs from the API
+      const dataNeeds = await fetch(
+        "http://localhost:8080/data-needs/api"
+      ).then((response) => response.json());
+
+      // Populate the select element with data needs
+      const select = document.querySelector("select[name='data-need-id']");
+      for (const { id, name } of dataNeeds) {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = name;
+        select.appendChild(option);
+      }
+
+      // Set button attributes and form values from query parameters
+      const button = document.querySelector("eddie-connect-button");
+      const inputs = document.querySelectorAll("input, select");
+
+      inputs.forEach((input) => {
+        input.addEventListener("change", (event) => {
+          const { name, value, type, checked } = event.target;
+          button.setAttribute(name, type === "checkbox" ? checked : value);
+          button.replaceWith(button.cloneNode());
+        });
+      });
+    </script>
+  </body>
+</html>

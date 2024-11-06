@@ -24,11 +24,11 @@ setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn");
 
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
-const COUNTRIES = [
-  ...new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country)),
-];
+const COUNTRIES = new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country));
 
-const BASE_URL = import.meta.url.replace("/lib/eddie-components.js", "");
+const CORE_URL =
+  import.meta.env.VITE_CORE_URL ??
+  import.meta.url.replace("/lib/eddie-components.js", "");
 
 const dialogOpenEvent = new Event("eddie-dialog-open", {
   bubbles: true,
@@ -41,7 +41,7 @@ const dialogCloseEvent = new Event("eddie-dialog-close", {
 });
 
 function fetchJson(path) {
-  return fetch(BASE_URL + path)
+  return fetch(CORE_URL + path)
     .then((response) => {
       if (!response.ok) {
         throw new Error(
@@ -57,7 +57,7 @@ function getEnabledCountries(regionConnectors) {
   return regionConnectors
     .flatMap((rc) => rc.countryCodes)
     .map((countryCode) => countryCode.toLowerCase())
-    .filter((country) => COUNTRIES.includes(country));
+    .filter((country) => COUNTRIES.has(country));
 }
 
 function getSupportedRegionConnectors(dataNeedId) {
@@ -133,7 +133,7 @@ class EddieConnectButton extends LitElement {
       cursor: pointer;
     }
 
-    .eddie-connect-button--disabled {
+    .eddie-connect-button:disabled {
       cursor: default;
       filter: grayscale(100%);
     }
@@ -189,10 +189,10 @@ class EddieConnectButton extends LitElement {
 
     /**
      * Country codes which region connectors support the selected data need.
-     * @type {string[]}
+     * @type {Set<string>}
      * @private
      */
-    this._supportedCountries = [];
+    this._supportedCountries = undefined;
 
     /**
      * Permission administrators that match the selected country.
@@ -235,7 +235,7 @@ class EddieConnectButton extends LitElement {
   }
 
   reset() {
-    this.selectPermissionAdministrator(this._presetPermissionAdministrator);
+    this.replaceWith(this.cloneNode());
   }
 
   async getRegionConnectorElement() {
@@ -249,7 +249,8 @@ class EddieConnectButton extends LitElement {
       // loaded module needs to have the custom element class as its default export
       try {
         const module = await import(
-          `${BASE_URL}/region-connectors/${regionConnectorId}/ce.js`
+          /* @vite-ignore */
+          `${CORE_URL}/region-connectors/${regionConnectorId}/ce.js`
         );
         customElements.define(customElementName, module.default);
       } catch (error) {
@@ -409,11 +410,9 @@ class EddieConnectButton extends LitElement {
       (pa) => this._supportedConnectors.includes(pa.regionConnector)
     );
 
-    this._supportedCountries = [
-      ...new Set(
-        this._supportedPermissionAdministrators.map((pa) => pa.country)
-      ),
-    ];
+    this._supportedCountries = new Set(
+      this._supportedPermissionAdministrators.map((pa) => pa.country)
+    );
 
     if (this.permissionAdministratorId) {
       const pa = this.getPermissionAdministratorByCompanyId(
@@ -494,15 +493,6 @@ class EddieConnectButton extends LitElement {
       if (statusHandler) {
         Function(`"use strict";${statusHandler}`)();
       }
-
-      // Dispatch a specific event for the current status
-      const statusEventString = status.toLowerCase().replaceAll("_", "-");
-      this.dispatchEvent(
-        new Event(statusEventString, {
-          bubbles: true,
-          composed: true,
-        })
-      );
     });
 
     // Handle creation event separately, as it is not passed as a status change
@@ -518,10 +508,7 @@ class EddieConnectButton extends LitElement {
   render() {
     if (!this._isValidConfiguration) {
       return html`
-        <button
-          class="eddie-connect-button eddie-connect-button--disabled"
-          disabled
-        >
+        <button class="eddie-connect-button" disabled>
           ${unsafeSVG(buttonIcon)}
           <span>
             ${this._isValidConfiguration === undefined
@@ -534,10 +521,7 @@ class EddieConnectButton extends LitElement {
 
     if (this._disabled) {
       return html`
-        <button
-          class="eddie-connect-button eddie-connect-button--disabled"
-          disabled
-        >
+        <button class="eddie-connect-button" disabled>
           ${unsafeSVG(buttonIcon)}
           <span> Disabled Configuration </span>
         </button>
@@ -579,7 +563,7 @@ class EddieConnectButton extends LitElement {
                 this._selectedCountry ??
                 ""}"
                 ?disabled="${!!this._presetPermissionAdministrator}"
-                help-text="${this._supportedCountries.length !==
+                help-text="${this._supportedCountries.size !==
                 this._enabledCountries.length
                   ? "Some countries do not support the given data requirements."
                   : ""}"
@@ -588,7 +572,7 @@ class EddieConnectButton extends LitElement {
                   (country) => html`
                     <sl-option
                       value="${country}"
-                      ?disabled="${!this._supportedCountries.includes(country)}"
+                      ?disabled="${!this._supportedCountries.has(country)}"
                     >
                       ${COUNTRY_NAMES.of(country.toUpperCase())}
                     </sl-option>
@@ -617,8 +601,9 @@ class EddieConnectButton extends LitElement {
                 value="${ifDefined(
                   this._selectedPermissionAdministrator?.companyId
                 )}"
-                ?disabled="${!!this._presetPermissionAdministrator ||
-                this._filteredPermissionAdministrators.length === 1}"
+                ?disabled="${!this._selectedCountry ||
+                !!this._presetPermissionAdministrator ||
+                this._filteredPermissionAdministrators.length <= 1}"
               >
                 ${this._filteredPermissionAdministrators.map(
                   (pa) => html`
