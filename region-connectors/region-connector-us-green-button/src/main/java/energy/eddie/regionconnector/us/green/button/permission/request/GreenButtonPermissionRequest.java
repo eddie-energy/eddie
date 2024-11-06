@@ -48,7 +48,7 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
     private final String scope;
     @Column(name = "created")
     private final ZonedDateTime created;
-    @OneToMany(fetch = FetchType.LAZY, targetEntity = MeterReading.class)
+    @OneToMany(fetch = FetchType.EAGER, targetEntity = MeterReading.class)
     @JoinColumn(insertable = false, updatable = false, name = "permission_id", referencedColumnName = "permission_id")
     private final List<MeterReading> lastMeterReadings;
     @SuppressWarnings("unused")

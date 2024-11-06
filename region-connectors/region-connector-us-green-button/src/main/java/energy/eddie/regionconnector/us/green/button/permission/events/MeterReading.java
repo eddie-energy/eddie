@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.us.green.button.permission.events;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import org.springframework.data.domain.Persistable;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.stream.Collectors;
 @Entity
 @IdClass(MeterReadingPk.class)
 @SuppressWarnings("NullAway")
-public class MeterReading implements Persistable<MeterReadingPk> {
+public class MeterReading {
     @SuppressWarnings("unused")
     @Column(name = "permission_id", nullable = false)
     @Id
@@ -21,12 +20,12 @@ public class MeterReading implements Persistable<MeterReadingPk> {
     @Id
     @Column(name = "meter_uid", nullable = false)
     private final String meterUid;
-    @Column(name = "last_meter_reading")
-    @Nullable
-    private ZonedDateTime lastMeterReading;
     @Enumerated(EnumType.STRING)
     @Column(name = "historical_collection_status", columnDefinition = "text")
     private final PollingStatus historicalCollectionStatus;
+    @Column(name = "last_meter_reading")
+    @Nullable
+    private ZonedDateTime lastMeterReading;
 
     public MeterReading(
             String permissionId,
@@ -64,14 +63,8 @@ public class MeterReading implements Persistable<MeterReadingPk> {
         return meterUid;
     }
 
-    @Override
-    public MeterReadingPk getId() {
-        return null;
-    }
-
-    @Override
-    public boolean isNew() {
-        return lastMeterReading == null;
+    public String permissionId() {
+        return permissionId;
     }
 
     public void setLastMeterReading(@Nullable ZonedDateTime lastReading) {
