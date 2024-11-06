@@ -63,6 +63,10 @@ public class UtilityEventService {
                                 permissionId);
                     break;
                 }
+                if (res.status() != PermissionProcessStatus.ACCEPTED) {
+                    LOGGER.info("Got event {} for not accepted permission request {}", event.type(), permissionId);
+                    break;
+                }
                 LOGGER.info("Historical collection finished for meter {} for permission request {}",
                             meterUid,
                             permissionId);

@@ -165,7 +165,7 @@ class UtilityEventServiceTest {
     }
 
     @Test
-    void testReceiveEvents_withHistoricalCollectionFinishedEvent_emitsStartPollingEvent_ifCollectionFinished() throws PermissionNotFoundException {
+    void testReceiveEvents_withHistoricalCollectionFinishedEvent_emitsStartPollingEvent_ifCollectionFinishedAndPermissionRequestAccepted() throws PermissionNotFoundException {
         // Given
         var events = List.of(getWebhookEvent("meter_historical_collection_finished_successful", "uid"));
         when(repository.findByAuthUid("0000")).thenReturn(getPermissionRequest(PermissionProcessStatus.ACCEPTED));
@@ -178,6 +178,19 @@ class UtilityEventServiceTest {
 
         // Then
         verify(outbox).commit(isA(UsStartPollingEvent.class));
+    }
+
+    @Test
+    void testReceiveEvents_withHistoricalCollectionFinishedEvent_emitsNothing_ifPermissionRequestNotAccepted() throws PermissionNotFoundException {
+        // Given
+        var events = List.of(getWebhookEvent("meter_historical_collection_finished_successful", "uid"));
+        when(repository.findByAuthUid("0000")).thenReturn(getPermissionRequest(PermissionProcessStatus.FULFILLED));
+
+        // When
+        utilityEventService.receiveEvents(events);
+
+        // Then
+        verify(outbox, never()).commit(any());
     }
 
     private static WebhookEvent getWebhookEvent(String type, String meterUid) {
