@@ -1,11 +1,17 @@
 import { defineConfig } from "vitepress";
+import { withMermaid } from "vitepress-plugin-mermaid";
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: "EDDIE Framework",
   description: "Using and Extending the EDDIE Framework",
   ignoreDeadLinks: "localhostLinks",
   head: [["link", { rel: "icon", href: "/images/favicon-32x32.png" }]],
+  vite: {
+    // workaround for a vite/pnpm related mermaid bug: https://github.com/mermaid-js/mermaid/issues/4320
+    // bug occurs in vitepress dev mode only
+    optimizeDeps: { include: ["mermaid"] },
+  },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: "/images/favicon-32x32.png",
@@ -64,4 +70,4 @@ export default defineConfig({
       { icon: "github", link: "https://github.com/eddie-energy/eddie" },
     ],
   },
-});
+}));
