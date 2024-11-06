@@ -3,26 +3,34 @@
 layout: home
 
 hero:
-  name: "EDDIE Framework Documentation"
+  name: "EDDIE Framework"
+  tagline: "European Distributed Data Infrastructure for Energy"
   text: "Using and Extending the EDDIE Framework"
-  tagline: My great project tagline
+  image:
+    src: /images/Lego-Eddie.png
+    alt: EDDIE Lego figure
   actions:
-    - theme: alt
-      text: Running
+    - text: Run the EDDIE Framework
       link: /OPERATION
-    - theme: brand
-      text: Using
+      theme: alt
+    - text: Integrate into your application
       link: /PERMISSION_STATES
-    - theme: alt
-      text: Extending
+    - text: Extend and Contribute
       link: /DEVELOPMENT
+      theme: alt
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: EDDIE
+    details: Website of the EDDIE project
+    link: https://eddie.energy/
+    linkText: learn more
+  - title: EDDIE Architecture
+    details: Architecture documentation of the EDDIE components
+    link: https://eddie-web.projekte.fh-hagenberg.at/architecture/
+    linkText: learn more
+  - title: EDDIE on GitHub
+    details: Sourcecode of the EDDIE Framework
+    link: https://github.com/eddie-energy/eddie
+    linkText: learn more
 ---
 

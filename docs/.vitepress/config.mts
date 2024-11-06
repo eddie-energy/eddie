@@ -5,8 +5,10 @@ export default defineConfig({
   title: "EDDIE Framework",
   description: "Using and Extending the EDDIE Framework",
   ignoreDeadLinks: "localhostLinks",
+  head: [["link", { rel: "icon", href: "/images/favicon-32x32.png" }]],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
+    logo: "/images/favicon-32x32.png",
     nav: [
       { text: "Home", link: "/" },
     ],
@@ -35,7 +37,7 @@ export default defineConfig({
         ],
       },
       {
-        text: "Using",
+        text: "Integrating",
         items: [
           { text: "Permission States", link: "/PERMISSION_STATES" },
           {
