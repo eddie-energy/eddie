@@ -56,6 +56,11 @@ tasks.register<PnpmTask>("pnpmBuild") {
     pnpmCommand.set(listOf("run", "build"))
 }
 
+tasks.register<PnpmTask>("pnpmBuildDocs") {
+    dependsOn("pnpmInstall")
+    pnpmCommand.set(listOf("run", "build-docs"))
+}
+
 sonar {
     properties {
         property("sonar.projectName", "EDDIE")

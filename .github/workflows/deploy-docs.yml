@@ -1,0 +1,27 @@
+name: Deploy EDDIE Framework docs
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  docs-deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Gradle/pnpm build
+        run: ./gradlew pnpmBuildDocs
+      - name: Deploy to webserver
+        uses: SamKirkland/web-deploy@v1
+        with:
+          target-server: ${{ secrets.WEBSERVER_SSH_HOST }}
+          remote-user: ${{ secrets.WEBSERVER_SSH_USERNAME }}
+          private-ssh-key: ${{ secrets.WEBSERVER_SSH_KEY }}
+          source-path: ./docs/.vitepress/dist/
+          destination-path: /web/framework/

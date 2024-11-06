@@ -4,7 +4,8 @@
   "type": "module",
   "homepage": "https://eddie.energy",
   "scripts": {
-    "build": "pnpm -r --filter=./region-connectors/* --filter=./core --filter=./administrative-console --filter=./aiida/ui run build"
+    "build": "pnpm -r --filter=./region-connectors/* --filter=./core --filter=./administrative-console --filter=./aiida/ui run build",
+    "build-docs": "pnpm -C docs run docs:build"
   },
   "engines": {
     "node": ">=18.14.0",
