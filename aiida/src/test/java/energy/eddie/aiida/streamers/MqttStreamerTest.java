@@ -5,8 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.FailedToSendEntity;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
+import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.aiida.models.record.AiidaRecordFactory;
+import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
@@ -48,8 +49,16 @@ class MqttStreamerTest {
     private ConnectionStatusMessage mockStatusMessage;
     private final TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
     private final Sinks.One<String> terminationSink = Sinks.one();
-    private final AiidaRecord record1 = AiidaRecordFactory.createRecord("1.8.0", Instant.now(), 444);
-    private final AiidaRecord record2 = AiidaRecordFactory.createRecord("2.8.0", Instant.now(), 888);
+    private final AiidaRecord record1 = new AiidaRecord(Instant.now(), "Test", List.of(
+            new AiidaRecordValue("1.8.0", "1.8.0", "444", "kWh", "10", "kWh")));
+    private final AiidaRecord record2 = new AiidaRecord(Instant.now(),
+                                                        "Test",
+                                                        List.of(new AiidaRecordValue("2.8.0",
+                                                                                     "2.8.0",
+                                                                                     "888",
+                                                                                     "kWh",
+                                                                                     "10",
+                                                                                     "kWh")));
     private MqttStreamingConfig mqttStreamingConfig;
     private static final String expectedDataTopic = "aiida/v1/permission-id/data";
     private static final String expectedStatusTopic = "aiida/v1/permission-id/status";
@@ -67,7 +76,7 @@ class MqttStreamerTest {
                                                       expectedTerminationTopic);
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
 
-        streamer = new MqttStreamer(recordPublisher.flux(),
+        streamer = new MqttStreamer(new Permission(), recordPublisher.flux(),
                                     terminationSink,
                                     mqttStreamingConfig,
                                     mockClient,

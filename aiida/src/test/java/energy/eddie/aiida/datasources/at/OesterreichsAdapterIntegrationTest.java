@@ -2,7 +2,6 @@ package energy.eddie.aiida.datasources.at;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.models.record.IntegerAiidaRecord;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.aiida.utils.MqttConfig.MqttConfigBuilder;
 import eu.rekawek.toxiproxy.Proxy;
@@ -98,7 +97,7 @@ class OesterreichsAdapterIntegrationTest {
 
         StepVerifier.create(adapter.start())
                 .then(() -> publishSampleMqttMessage(config.subscribeTopic(), sampleJson))
-                .expectNextCount(7)
+                .expectNextCount(1)
                 .then(adapter::close)
                 .expectComplete()
                 .verify(Duration.ofSeconds(33));    // internal timeout for .close is 30 seconds
@@ -152,7 +151,8 @@ class OesterreichsAdapterIntegrationTest {
 
 
         StepVerifier.create(adapter.start())
-                .expectNextMatches(aiidaRecord -> ((IntegerAiidaRecord) aiidaRecord).value() == 20)
+                .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValue().stream()
+                        .anyMatch(aiidaRecordValue -> aiidaRecordValue.value().equals("20")))
                 .then(adapter::close)
                 .expectComplete()
                 .verify(Duration.ofSeconds(10));

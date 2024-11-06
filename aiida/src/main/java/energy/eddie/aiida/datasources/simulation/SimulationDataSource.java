@@ -2,7 +2,8 @@ package energy.eddie.aiida.datasources.simulation;
 
 import energy.eddie.aiida.datasources.AiidaDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.aiida.models.record.AiidaRecordFactory;
+import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.utils.ObisCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.health.Health;
@@ -13,7 +14,7 @@ import reactor.core.scheduler.Schedulers;
 import javax.annotation.Nullable;
 import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -21,9 +22,8 @@ import static energy.eddie.aiida.utils.ObisCode.*;
 
 public class SimulationDataSource extends AiidaDataSource {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimulationDataSource.class);
-    private final Clock clock;
     private final Random random;
-    private final List<String> obisCodes;
+    private final List<ObisCode> obisCodes;
     private final Duration simulationPeriod;
     @Nullable
     private Disposable periodicFlux;
@@ -47,17 +47,18 @@ public class SimulationDataSource extends AiidaDataSource {
      */
     public SimulationDataSource(String id, String name, Clock clock, Duration simulationPeriod) {
         super(id, name);
-        this.clock = clock;
         this.simulationPeriod = simulationPeriod;
 
         random = new Random();
-        obisCodes = List.of(POSITIVE_ACTIVE_ENERGY.code(),
-                NEGATIVE_ACTIVE_ENERGY.code(),
-                POSITIVE_ACTIVE_INSTANTANEOUS_POWER.code(),
-                NEGATIVE_ACTIVE_INSTANTANEOUS_POWER.code());
+        obisCodes = List.of(POSITIVE_ACTIVE_ENERGY,
+                            NEGATIVE_ACTIVE_ENERGY,
+                            POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
+                            NEGATIVE_ACTIVE_INSTANTANEOUS_POWER);
 
-        LOGGER.info("Created new SimulationDataSource that will publish random values every {} seconds for obis codes {}",
-                simulationPeriod.toSeconds(), obisCodes);
+        LOGGER.info(
+                "Created new SimulationDataSource that will publish random values every {} seconds for obis codes {}",
+                simulationPeriod.toSeconds(),
+                obisCodes);
     }
 
     /**
@@ -74,22 +75,27 @@ public class SimulationDataSource extends AiidaDataSource {
         LOGGER.info("Starting {}", name());
 
         periodicFlux = Flux.interval(simulationPeriod)
-                .subscribeOn(Schedulers.parallel())
-                .subscribe(unused -> emitRandomAiidaRecords());
+                   .subscribeOn(Schedulers.parallel())
+                   .subscribe(unused -> emitRandomAiidaRecords());
 
         // use a separate Flux instead of just returning periodicFlux to be able to emit complete signal in close()
         return recordSink.asFlux();
     }
 
     private void emitRandomAiidaRecords() {
-        Instant now = clock.instant();
-        for (String code : obisCodes) {
-            var randomRecord = AiidaRecordFactory.createRecord(code, now, random.nextInt(2000));
-            var result = recordSink.tryEmitNext(randomRecord);
+        List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
 
-            if (result.isFailure())
-                LOGGER.error("Error while publishing {}. Error was: {}", randomRecord, result);
+        for (ObisCode code : obisCodes) {
+            var value = String.valueOf(random.nextInt(2000));
+
+            aiidaRecordValues.add(new AiidaRecordValue(
+                    code.code(), code.code(),
+                    value, code.unitOfMeasurement(),
+                    value, code.unitOfMeasurement()
+            ));
         }
+
+        emitAiidaRecord("SIMULATION", aiidaRecordValues);
     }
 
     /**

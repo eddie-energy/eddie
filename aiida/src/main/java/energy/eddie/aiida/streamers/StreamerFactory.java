@@ -40,6 +40,6 @@ public class StreamerFactory {
         var client = MqttFactory.getMqttAsyncClient(mqttConfig.serverUri(),
                                                     mqttConfig.username(),
                                                     new MqttDefaultFilePersistence("mqtt-persistence/" + permissionId));
-        return new MqttStreamer(recordFlux, terminationRequestSink, mqttConfig, client, mapper, failedToSendRepository);
+        return new MqttStreamer(permission, recordFlux, terminationRequestSink, mqttConfig, client, mapper, failedToSendRepository);
     }
 }

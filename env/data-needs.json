@@ -44,6 +44,9 @@
       "end": "2024-04-05"
     },
     "transmissionSchedule":"*/5 * * * * *",
+    "schemas": [
+      "SMART-METER-P1-RAW"
+    ],
     "dataTags": [
       "1.8.0",
       "1.7.0"

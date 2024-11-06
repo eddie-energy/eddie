@@ -2,25 +2,14 @@ package energy.eddie.aiida.models.record;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
-import org.hibernate.annotations.DiscriminatorFormula;
 
 import java.time.Instant;
+import java.util.List;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = IntegerAiidaRecord.class, name = "IntegerAiidaRecord"),
-        @JsonSubTypes.Type(value = StringAiidaRecord.class, name = "StringAiidaRecord")
-})
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorFormula(
-        "CASE WHEN integer_value IS NOT NULL THEN 'IntegerAiidaRecord' " +
-                " WHEN string_value IS NOT NULL THEN 'StringAiidaRecord' end"
-)
-public abstract class AiidaRecord {
+public class AiidaRecord {
     @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,11 +19,21 @@ public abstract class AiidaRecord {
     @JsonProperty
     protected Instant timestamp;
     @JsonProperty
-    protected String code;
+    protected String asset;
+    @OneToMany(mappedBy = "aiidaRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonProperty("values")
+    private List<AiidaRecordValue> aiidaRecordValues;
 
-    protected AiidaRecord(Instant timestamp, String code) {
+    @SuppressWarnings("NullAway.Init")
+    protected AiidaRecord(Instant timestamp, String asset) {
         this.timestamp = timestamp;
-        this.code = code;
+        this.asset = asset;
+    }
+
+    public AiidaRecord(Instant timestamp, String asset, List<AiidaRecordValue> aiidaRecordValues) {
+        this.timestamp = timestamp;
+        this.asset = asset;
+        this.aiidaRecordValues = aiidaRecordValues;
     }
 
     /**
@@ -44,11 +43,19 @@ public abstract class AiidaRecord {
     protected AiidaRecord() {
     }
 
-    public String code() {
-        return code;
-    }
-
     public Instant timestamp() {
         return timestamp;
+    }
+
+    public List<AiidaRecordValue> aiidaRecordValue() {
+        return aiidaRecordValues;
+    }
+
+    public String asset() {
+        return asset;
+    }
+
+    public Long id() {
+        return id;
     }
 }

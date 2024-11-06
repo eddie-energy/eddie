@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import energy.eddie.aiida.datasources.MqttDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.aiida.models.record.AiidaRecordFactory;
+import energy.eddie.aiida.models.record.AiidaRecordValidator;
+import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.MqttConfig;
+import energy.eddie.aiida.utils.ObisCode;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
@@ -14,8 +16,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-
-import static energy.eddie.aiida.datasources.at.OesterreichAdapterJson.AdapterValue;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OesterreichsEnergieAdapter extends MqttDataSource {
     private static final Logger LOGGER = LoggerFactory.getLogger(OesterreichsEnergieAdapter.class);
@@ -53,27 +55,23 @@ public class OesterreichsEnergieAdapter extends MqttDataSource {
         try {
             var json = mapper.readValue(message.getPayload(), OesterreichAdapterJson.class);
 
-            var energyData = json.energyData();
-            for (var entry : energyData.entrySet()) {
-                emitNextAiidaRecord(entry.getKey(), entry.getValue());
+            List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
+            for (var entry : json.energyData().entrySet()) {
+                var obisCode = ObisCode.from(entry.getKey());
+                var value = String.valueOf(entry.getValue().value());
+
+                aiidaRecordValues.add(new AiidaRecordValue(entry.getKey(),
+                                                           obisCode.code(),
+                                                           value,
+                                                           obisCode.unitOfMeasurement(),
+                                                           value,
+                                                           obisCode.unitOfMeasurement()
+                ));
             }
+            emitAiidaRecord("AT", aiidaRecordValues);
         } catch (IOException e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
                          new String(message.getPayload(), StandardCharsets.UTF_8), e);
-        }
-    }
-
-    private void emitNextAiidaRecord(String code, AdapterValue entry) {
-        try {
-            Instant timestamp = Instant.ofEpochSecond(entry.time());
-
-            var aiidaRecord = AiidaRecordFactory.createRecord(code, timestamp, entry.value());
-            var result = recordSink.tryEmitNext(aiidaRecord);
-
-            if (result.isFailure())
-                LOGGER.error("Error while emitting new AiidaRecord {}. Error was {}", aiidaRecord, result);
-        } catch (IllegalArgumentException e) {
-            LOGGER.warn("Got OBIS code {} from SMA, but AiidaRecordFactory does not know how to handle it", code, e);
         }
     }
 

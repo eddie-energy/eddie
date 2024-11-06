@@ -3,8 +3,6 @@ package energy.eddie.aiida.utils;
 import energy.eddie.aiida.dtos.AiidaRecordStreamingDto;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.aiida.models.record.IntegerAiidaRecord;
-import energy.eddie.aiida.models.record.StringAiidaRecord;
 
 import static java.util.Objects.requireNonNull;
 
@@ -25,13 +23,7 @@ public class AiidaRecordConverter {
         var connectionId = requireNonNull(permission.connectionId());
         var dataNeed = requireNonNull(permission.dataNeed());
 
-        Object value = switch (aiidaRecord) {
-            case IntegerAiidaRecord intRecord -> intRecord.value();
-            case StringAiidaRecord stringRecord -> stringRecord.value();
-            default -> throw new IllegalArgumentException("No conversion logic for this type of record is implemented");
-        };
-
-        return new AiidaRecordStreamingDto(aiidaRecord.timestamp(), aiidaRecord.code(), value,
-                                           connectionId, dataNeed.dataNeedId(), permission.permissionId());
+        return new AiidaRecordStreamingDto(aiidaRecord.timestamp(), aiidaRecord.asset(),
+                                           connectionId, dataNeed.dataNeedId(), permission.permissionId(), aiidaRecord.aiidaRecordValue());
     }
 }

@@ -5,8 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.FailedToSendEntity;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
+import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import energy.eddie.aiida.schemas.SchemaFormatter;
+import energy.eddie.aiida.schemas.Schemas;
 import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -25,6 +28,7 @@ import java.util.List;
 
 public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttStreamer.class);
+    private final Permission permission;
     private final MqttStreamingConfig streamingConfig;
     private final MqttAsyncClient client;
     private final ObjectMapper mapper;
@@ -44,7 +48,8 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
      * @param mapper                 {@link ObjectMapper} used to transform the values to be sent into JSON strings.
      * @param failedToSendRepository Repository where messages that could not be transmitted are stored.
      */
-    protected MqttStreamer(
+    public MqttStreamer(
+            Permission permission,
             Flux<AiidaRecord> recordFlux,
             Sinks.One<String> terminationRequestSink,
             MqttStreamingConfig streamingConfig,
@@ -54,6 +59,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     ) {
         super(recordFlux, terminationRequestSink);
 
+        this.permission = permission;
         this.streamingConfig = streamingConfig;
         this.client = client;
         this.mapper = mapper;
@@ -98,9 +104,16 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                      aiidaRecord);
 
         try {
-            byte[] jsonBytes = mapper.writeValueAsBytes(aiidaRecord);
-            publishMessage(streamingConfig.dataTopic(), jsonBytes);
-        } catch (JsonProcessingException exception) {
+            var schemas = (permission.dataNeed() == null)
+                    ? List.of(Schemas.SMART_METER_P1_RAW)
+                    : permission.dataNeed().schemas();
+
+            for (var schema : schemas) {
+                var schemaFormatter = SchemaFormatter.getFormatter(schema);
+                var messageData = schemaFormatter.toSchema(aiidaRecord, mapper);
+                publishMessage(streamingConfig.dataTopic(), messageData);
+            }
+        } catch (RuntimeException exception) {
             LOGGER.error("MqttStreamer for permission {} cannot convert AiidaRecord {} to JSON, will ignore it",
                          streamingConfig.permissionId(),
                          aiidaRecord,

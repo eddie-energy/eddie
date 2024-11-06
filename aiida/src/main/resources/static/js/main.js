@@ -142,6 +142,7 @@ function toLocalDateString(time) {
 }
 
 function permissionElement(permission) {
+  console.log(permission)
   const { permissionId, status, serviceName } = permission;
   const dataTags = permission.hasOwnProperty("dataNeed")
     ? permission.dataNeed.dataTags
@@ -152,6 +153,9 @@ function permissionElement(permission) {
   const expirationTime = permission.hasOwnProperty("expirationTime")
     ? toLocalDateString(permission.expirationTime)
     : "Not available yet.";
+  const schemas = permission.hasOwnProperty("dataNeed")
+    ? permission.dataNeed.schemas
+    : ["Not available yet."];
 
   return /* HTML */ `
     <sl-details>
@@ -182,6 +186,9 @@ function permissionElement(permission) {
 
         <dt>End</dt>
         <dd>${expirationTime}</dd>
+        
+        <dt>Schemas</dt>
+        <dd>${schemas.map((schema) => `<span>${schema}</span>`).join("<br>")}</dd>
 
         <dt>OBIS-Codes</dt>
         <dd>${dataTags.map((code) => `<span>${code}</span>`).join("<br>")}</dd>
@@ -296,7 +303,7 @@ function updatePermissionDialogWithDetails(permission) {
     serviceName,
     startTime,
     expirationTime,
-    dataNeed: { dataTags },
+    dataNeed: { dataTags, schemas },
   } = permission;
 
   permissionDialogContent.innerHTML = /* HTML */ `
@@ -318,6 +325,9 @@ function updatePermissionDialogWithDetails(permission) {
 
       <dt>End</dt>
       <dd>${toLocalDateString(expirationTime)}</dd>
+      
+      <dt>Schemas</dt>
+      <dd>${schemas.map((schema) => `<span>${schema}</span>`).join("<br>")}</dd>
 
       <dt>OBIS-Codes</dt>
       <dd>${dataTags.map((code) => `<span>${code}</span>`).join("<br>")}</dd>

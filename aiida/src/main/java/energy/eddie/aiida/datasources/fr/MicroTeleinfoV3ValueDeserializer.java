@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import energy.eddie.aiida.models.record.UnitOfMeasurement;
+import energy.eddie.aiida.utils.ObisCode;
 import jakarta.annotation.Nullable;
 
 import java.io.IOException;
@@ -20,13 +22,30 @@ public class MicroTeleinfoV3ValueDeserializer extends StdDeserializer<MicroTelei
     ) throws IOException {
         JsonNode node = jp.getCodec().readTree(jp);
 
-        // use value either as Integer or String
         String raw = node.get("raw").asText();
         JsonNode valueNode = node.get("value");
-        Object value = valueNode.isInt()
-                ? valueNode.intValue()
-                : valueNode.asText();
+        Object value = valueNode.asText();
 
-        return new MicroTeleinfoV3Json.TeleinfoDataField(raw, value);
+        UnitOfMeasurement unit = determineUnit(jp.getCurrentName());
+        ObisCode obisCode = determineObisCode(jp.getCurrentName());
+
+        return new MicroTeleinfoV3Json.TeleinfoDataField(raw, value, unit, obisCode);
+    }
+
+    private UnitOfMeasurement determineUnit(String fieldName) {
+        return switch (fieldName) {
+            case "ISOUSC", "IINST", "IMAX" -> UnitOfMeasurement.ampere;
+            case "BASE" -> UnitOfMeasurement.wh;
+            case "PAPP" -> UnitOfMeasurement.voltAmpera;
+            default -> UnitOfMeasurement.unkown;
+        };
+    }
+
+    private ObisCode determineObisCode(String fieldName) {
+        return switch (fieldName) {
+            case "BASE" -> ObisCode.POSITIVE_ACTIVE_ENERGY;
+            case "PAPP" -> ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
+            default -> ObisCode.UNKNOWN;
+        };
     }
 }

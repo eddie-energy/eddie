@@ -44,6 +44,9 @@
       "end": "P10D"
     },
     "transmissionSchedule": "*/5 * * * * *",
+    "schemas": [
+      "SMART-METER-P1-RAW"
+    ],
     "dataTags": [
       "1-0:1.8.0",
       "1-0:1.7.0"

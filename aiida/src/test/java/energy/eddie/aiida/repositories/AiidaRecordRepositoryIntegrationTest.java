@@ -1,9 +1,7 @@
 package energy.eddie.aiida.repositories;
 
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.aiida.models.record.AiidaRecordFactory;
-import energy.eddie.aiida.models.record.IntegerAiidaRecord;
-import energy.eddie.aiida.models.record.StringAiidaRecord;
+import energy.eddie.aiida.models.record.AiidaRecordValue;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -16,6 +14,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Instant;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,7 +31,7 @@ class AiidaRecordRepositoryIntegrationTest {
     @ServiceConnection
     private static final PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(
             DockerImageName.parse("timescale/timescaledb:2.11.2-pg15")
-                    .asCompatibleSubstituteFor("postgres")
+                           .asCompatibleSubstituteFor("postgres")
     );
 
     @Autowired
@@ -41,8 +40,10 @@ class AiidaRecordRepositoryIntegrationTest {
     @Test
     void givenIntegerAndStringRecord_valueIsDeserializedProperly() {
         Instant now = Instant.now();
-        AiidaRecord intRecord = AiidaRecordFactory.createRecord("1.8.0", now, 237);
-        AiidaRecord stringRecord = AiidaRecordFactory.createRecord("C.1.0", now, "Hello Test");
+        AiidaRecord intRecord = new AiidaRecord(now, "Test", List.of(
+                new AiidaRecordValue("1.8.0", "1.8.0", "237", "kWh", "237", "kWh")));
+        AiidaRecord stringRecord = new AiidaRecord(now, "Test", List.of(
+                new AiidaRecordValue("C.1.0", "C.1.0", "Hello Test", "text", "Hello Test", "text")));
 
         repository.save(intRecord);
         repository.save(stringRecord);
@@ -52,15 +53,13 @@ class AiidaRecordRepositoryIntegrationTest {
         assertEquals(2, all.size());
 
         AiidaRecord first = all.get(0);
-        assertTrue(first instanceof IntegerAiidaRecord);
-        assertEquals("1.8.0", first.code());
+        assertEquals("1.8.0", first.aiidaRecordValue().getFirst().dataTag());
         assertEquals(now.toEpochMilli(), first.timestamp().toEpochMilli());
-        assertEquals(237, ((IntegerAiidaRecord) first).value());
+        assertEquals("237", first.aiidaRecordValue().getFirst().value());
 
         AiidaRecord second = all.get(1);
-        assertTrue(second instanceof StringAiidaRecord);
-        assertEquals("C.1.0", second.code());
+        assertEquals("C.1.0", second.aiidaRecordValue().getFirst().dataTag());
         assertEquals(now.toEpochMilli(), second.timestamp().toEpochMilli());
-        assertEquals("Hello Test", ((StringAiidaRecord) second).value());
+        assertEquals("Hello Test", second.aiidaRecordValue().getFirst().value());
     }
 }

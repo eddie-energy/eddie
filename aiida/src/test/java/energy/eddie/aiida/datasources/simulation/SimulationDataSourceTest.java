@@ -47,9 +47,9 @@ class SimulationDataSourceTest {
         StepVerifier.withVirtualTime(() -> simulator.start())
                     .expectSubscription()
                     .thenAwait(period)
-                    .expectNextCount(4)
+                    .expectNextCount(1)
                     .thenAwait(period)
-                    .expectNextCount(4)
+                    .expectNextCount(1)
                     .then(simulator::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(1));
