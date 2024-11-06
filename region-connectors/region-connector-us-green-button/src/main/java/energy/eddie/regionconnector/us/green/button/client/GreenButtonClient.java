@@ -72,6 +72,9 @@ public class GreenButtonClient implements GreenButtonApi {
     @Override
     public Mono<HistoricalCollectionResponse> collectHistoricalData(List<String> meterIds) {
         LOGGER.info("Triggering historical data collection for meters {}", meterIds);
+        if (meterIds.isEmpty()) {
+            return Mono.error(new IllegalArgumentException("meterIds is empty"));
+        }
         var meterList = new MeterList(meterIds);
         synchronized (webClient) {
             return webClient.post()

@@ -25,7 +25,10 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -157,7 +160,27 @@ class GreenButtonClientTest {
     }
 
     @Test
-    void collectHistoricalDAta_respondsWithActivatedMeteringPoints() throws JsonProcessingException {
+    void batchSubscription_respondsWith202WithoutRetryHeader_emitsError() {
+        // Given
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var client = WebClient.create(basePath);
+        mockBackEnd.enqueue(
+                new MockResponse()
+                        .setResponseCode(202)
+        );
+        var api = new GreenButtonClient(client);
+
+        // When
+        var res = api.batchSubscription("1111", "token", List.of("uid"), now, now);
+
+        // Then
+        StepVerifier.create(res)
+                    .expectError(NoSuchElementException.class)
+                    .verify();
+    }
+
+    @Test
+    void collectHistoricalData_respondsWithActivatedMeteringPoints() throws JsonProcessingException {
         // Given
         mockBackEnd.enqueue(
                 new MockResponse()
@@ -180,6 +203,21 @@ class GreenButtonClientTest {
                             () -> assertEquals(resp.meters(), List.of("mid1", "mid2"))
                     ))
                     .verifyComplete();
+    }
+
+    @Test
+    void collectHistoricalData_withEmptyMeterList_returnsMonoWithError() {
+        // Given
+        var client = WebClient.create(basePath);
+        var api = new GreenButtonClient(client);
+
+        // When
+        var res = api.collectHistoricalData(Collections.emptyList());
+
+        // Then
+        StepVerifier.create(res)
+                    .expectError(IllegalArgumentException.class)
+                    .verify();
     }
 
     @Test
@@ -231,7 +269,8 @@ class GreenButtonClientTest {
     void revoke_returnsAuthorization() throws IOException {
         // Given
         var json = new String(
-                getClass().getResourceAsStream("/json/authorization/authorization.json").readAllBytes(),
+                Objects.requireNonNull(getClass().getResourceAsStream("/json/authorization/authorization.json"))
+                       .readAllBytes(),
                 StandardCharsets.UTF_8
         );
         mockBackEnd.enqueue(
