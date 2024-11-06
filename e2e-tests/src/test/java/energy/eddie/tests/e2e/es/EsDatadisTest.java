@@ -12,8 +12,12 @@ class EsDatadisTest extends E2eTestSetup {
     @Test
     void givenInvalidNif_showsNifDoesNotExist() {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(4).click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue").setExact(true)).click();
+
         page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
         page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Spain")).locator("slot").nth(1).click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue").setExact(true)).click();
+
         page.getByLabel("DNI/Nif").click();
         page.getByLabel("DNI/Nif").fill("foo");
         page.getByLabel("DNI/Nif").press("Tab");
@@ -21,10 +25,9 @@ class EsDatadisTest extends E2eTestSetup {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
         // Datadis API may take a long time to respond
-        var locator = page.locator("body", new Page.LocatorOptions().setHasText("Status: Invalid Request"));
+        var locator = page.getByText("Request was declined as invalid");
         locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));  // 2 min
 
-        assertThat(locator).containsText("Status: Invalid Request");
-        assertThat(locator).containsText("Given NIF does not exist");
+        assertThat(locator).isVisible();
     }
 }

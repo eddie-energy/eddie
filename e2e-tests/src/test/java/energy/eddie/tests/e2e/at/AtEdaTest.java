@@ -14,6 +14,7 @@ class AtEdaTest extends E2eTestSetup {
     @Test
     void buttonClick_statusIsSent() {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue").setExact(true)).click();
         page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
 
         page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Austria")).locator("slot").nth(1).click();
@@ -22,11 +23,13 @@ class AtEdaTest extends E2eTestSetup {
             .locator("slot")
             .nth(1)
             .click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue").setExact(true)).click();
+
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
         assertThat(page.locator("at-eda-pa-ce")).containsText(Pattern.compile("Please wait"));
 
         var locator = page.getByText("Status: Request Sent");
-        locator.waitFor(new Locator.WaitForOptions().setTimeout(360_000));
+        locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));  // 2 min
     }
 }
