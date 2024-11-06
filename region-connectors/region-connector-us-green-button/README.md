@@ -46,6 +46,7 @@ depends on the way you deploy the region connector.
 | `region-connector.us.green.button.client-secrets.REPLACE_ME` | The client secrets of the utilities you want to support. The name of the utility should replace the `REPLACE_ME` placeholder.                                                                                                                                                                                                                                                                                                                                                                                     |
 | `region-connector.us.green-button.activation-batch-size`     | The batch size in which the collection of metering data should be triggered. The green button defers collecting data from the metered data administrator until it has been triggered. This means that no data is lost if the collection is triggered at a later point. If immediate activation is needed set to `1`. Recommended maximum is `1000` to avoid paging API calls. Keep in mind that if the collection is not finished before the data is polled incomplete or no data can be requested for the batch. |
 | `region-connector.us.green.button.termination.retry`         | When termination of permission requests with the green button API should be retried. Uses Spring cron syntax. Default is hourly                                                                                                                                                                                                                                                                                                                                                                                   |
+| `region-connector.us.green.button.polling`                   | Optional configuration variable that sets the time when the region-connector should poll future validated historical data. Uses Spring CRON syntax. Default is `0 0 17 * * *`.                                                                                                                                                                                                                                                                                                                                    |
 
 ### .properties file
 
@@ -59,6 +60,7 @@ region-connector.us.green.button.webhook.secret=REPLACE_ME
 region-connector.us.green.button.client-ids.REPLACE_ME=REPLACE_ME
 region-connector.us.green.button.client-secrets.REPLACE_ME=REPLACE_ME
 region-connector.us.green-button.activation-batch-size=1
+region-connector.us.green.button.polling=0 0 17 * * *
 ```
 
 ### Environment variables
@@ -79,6 +81,7 @@ REGIONCONNECTOR_US_GREEN_BUTTON_WEBHOOK_SECRET=REPLACE_ME
 REGIONCONNECTOR_US_GREEN_BUTTON_CLIENTIDS_REPLACEME=REPLACE_ME
 REGIONCONNECTOR_US_GREEN_BUTTON_CLIENTSECRETS_REPLACEME=REPLACE_ME
 REGIONCONNECTOR_US_GREEN_BUTTON_ACTIVATIONBATCHSIZE=1
+REGIONCONNECTOR_US_GREEN_BUTTON_POLLING=0 0 17 * * *
 ```
 
 ## Running the Region Connector via EDDIE
