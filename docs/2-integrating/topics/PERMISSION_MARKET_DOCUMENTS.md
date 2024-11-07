@@ -617,7 +617,7 @@ The value `processProcessType` indicates the nature of process that the document
 
 The attribute `status` describes the current status of a permission request.
 For EDDIE, this will most likely only range from **Code A100-A112** which are further explained in
-the [permission state](../../PERMISSION_STATES.md) documentation.
+the [permission state](../PERMISSION_STATES.md) documentation.
 
 | code | description                                      |
 |------|--------------------------------------------------|
@@ -696,7 +696,7 @@ the [permission state](../../PERMISSION_STATES.md) documentation.
 
 The attribute `code` describes coded reason why a status of a permission changed.
 For EDDIE, this will most likely only range from **Code Z01-Z03** which are further explained in
-the [permission state](../../PERMISSION_STATES.md) documentation.
+the [permission state](../PERMISSION_STATES.md) documentation.
 
 | Code | Description                                                                                                   |
 |------|---------------------------------------------------------------------------------------------------------------|

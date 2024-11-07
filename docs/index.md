@@ -11,12 +11,12 @@ hero:
     alt: EDDIE Lego figure
   actions:
     - text: Run the EDDIE Framework
-      link: /OPERATION
+      link: 1-running/OPERATION
       theme: alt
     - text: Integrate into your application
-      link: /PERMISSION_STATES
+      link: 2-integrating/PERMISSION_STATES
     - text: Extend and Contribute
-      link: /3-extending/tech-stack
+      link: 3-extending/tech-stack
       theme: alt
 
 features:

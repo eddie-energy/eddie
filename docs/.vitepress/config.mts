@@ -23,37 +23,43 @@ export default withMermaid(defineConfig({
       {
         text: "Running",
         items: [
-          { text: "Operation", link: "/OPERATION" },
+          { text: "Operation", link: "1-running/OPERATION" },
           {
             text: "Region Connectors",
             items: [
-              { text: "AIIDA", link: "region-connectors/region-connector-aiida.md" },
-              { text: "AT: EDA", link: "region-connectors/region-connector-at-eda.md" },
-              { text: "BE: Fluvius", link: "region-connectors/region-connector-be-fluvius.md" },
-              { text: "DK: Energinet", link: "region-connectors/region-connector-dk-energinet.md" },
-              { text: "ES: Datadis", link: "region-connectors/region-connector-es-datadis.md" },
-              { text: "FI: Fingrid", link: "region-connectors/region-connector-fi-fingrid.md" },
-              { text: "FR: Enedis", link: "region-connectors/region-connector-fr-enedis.md" },
-              { text: "NL: Mijn Aansluiting", link: "region-connectors/region-connector-nl-mijn-aansluiting.md" },
-              { text: "US: Green Button", link: "region-connectors/region-connector-us-green-button.md" },
+              { text: "AIIDA", link: "1-running/region-connectors/region-connector-aiida.md" },
+              { text: "AT: EDA", link: "1-running/region-connectors/region-connector-at-eda.md" },
+              { text: "BE: Fluvius", link: "1-running/region-connectors/region-connector-be-fluvius.md" },
+              { text: "DK: Energinet", link: "1-running/region-connectors/region-connector-dk-energinet.md" },
+              { text: "ES: Datadis", link: "1-running/region-connectors/region-connector-es-datadis.md" },
+              { text: "FI: Fingrid", link: "1-running/region-connectors/region-connector-fi-fingrid.md" },
+              { text: "FR: Enedis", link: "1-running/region-connectors/region-connector-fr-enedis.md" },
+              {
+                text: "NL: Mijn Aansluiting",
+                link: "1-running/region-connectors/region-connector-nl-mijn-aansluiting.md",
+              },
+              { text: "US: Green Button", link: "1-running/region-connectors/region-connector-us-green-button.md" },
             ],
           },
-          { text: "Admin Console", link: "/admin-console" },
-          { text: "Example App", link: "/example-app" },
+          { text: "Admin Console", link: "1-running/admin-console" },
+          { text: "Example App", link: "1-running/example-app" },
         ],
       },
       {
         text: "Integrating",
         items: [
-          { text: "Permission States", link: "/PERMISSION_STATES" },
+          { text: "Permission States", link: "2-integrating//PERMISSION_STATES" },
           {
-            text: "Kafka Topics", link: "/kafka/KAFKA",
+            text: "Kafka Topics", link: "2-integrating/KAFKA",
             items: [
-              { text: "accounting point market documents", link: "/kafka/topics/ACCOUNTING_POINT_MARKET_DOCUMENTS" },
-              { text: "permission market documents", link: "/kafka/topics/PERMISSION_MARKET_DOCUMENTS" },
-              { text: "raw data in proprietary format", link: "/kafka/topics/RAW_DATA_IN_PROPRIETARY_FORMAT" },
-              { text: "status messages", link: "/kafka/topics/STATUS_MESSAGES" },
-              { text: "validated historical data", link: "/kafka/topics/VALIDATED_HISTORICAL_DATA" },
+              {
+                text: "accounting point market documents",
+                link: "2-integrating/topics/ACCOUNTING_POINT_MARKET_DOCUMENTS",
+              },
+              { text: "permission market documents", link: "2-integrating/topics/PERMISSION_MARKET_DOCUMENTS" },
+              { text: "raw data in proprietary format", link: "2-integrating/topics/RAW_DATA_IN_PROPRIETARY_FORMAT" },
+              { text: "status messages", link: "2-integrating/topics/STATUS_MESSAGES" },
+              { text: "validated historical data", link: "2-integrating/topics/VALIDATED_HISTORICAL_DATA" },
             ],
           },
         ],
@@ -61,8 +67,8 @@ export default withMermaid(defineConfig({
       {
         text: "Extending",
         items: [
-          { text: "Tech Stack", link: "/3-extending/tech-stack" },
-          { text: "Add a region connector", link: "/3-extending/add-region-connector" },
+          { text: "Tech Stack", link: "3-extending/tech-stack" },
+          { text: "Add a region connector", link: "3-extending/add-region-connector" },
           { text: "Edit Documentation", link: "3-extending/documentation" },
         ],
       },

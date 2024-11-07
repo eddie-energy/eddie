@@ -22,17 +22,17 @@ for sharing their energy data is created.
 These permission requests are handled by the *EDDIE Core*.
 Any status messages (see
 the [permission process](https://github.com/eddie-energy/eddie/wiki/EDDIE-Permission-Process-Model)) and data messages
-(in various formats as described [here](docs/kafka/KAFKA.md)) are published by the core to a Kafka cluster. Your
+(in various formats as described [here](docs/1-running/OPERATION.md)) are published by the core to a Kafka cluster. Your
 website or application can then get these messages directly from the Kafka cluster (see used
-topics [here](docs/kafka/KAFKA.md))
+topics [here](docs/2-integrating/KAFKA.md))
 
 You can configure the data that is requested by creating a *Data Need* and passing its ID to the connect button.
 For possible settings, see the *Data Needs* section, and the section *"Using the EDDIE Button in an application*
-in [operation.md](docs/OPERATION.md).
+in [operation.md](docs/1-running/OPERATION.md).
 
 ## Running EDDIE with Docker
 
-See the [operation.md](docs/OPERATION.md) file to get started.
+See the [operation.md](docs/1-running/OPERATION.md) file to get started.
 
 ## Running EDDIE locally
 
@@ -61,7 +61,7 @@ A simple demo app to check and try EDDIE's functionality.
 - access the web-interface at <http://localhost:8081/login>
 - login is possible with every email/password (not checked)
 
-See [example app readme](./examples/example-app/README.md) for further information.
+See [example app readme](docs/1-running/example-app.md) for further information.
 
 #### EDDIE core
 
@@ -95,13 +95,13 @@ local test run with compiling the software, building and starting a local docker
 
 Although the docker compose file and local configuration should run out of the box, EDDIE requires further
 configuration.
-Please read the *"Configuration*" section in the [operation.md](./docs/OPERATION.md) file.
+Please read the *"Configuration*" section in the [operation.md](docs/1-running/OPERATION.md) file.
 
 # Contributing
 
 Development & Deployment Strategy can be
 found [here](https://github.com/eddie-energy/eddie/wiki/EDDIE-Development-&-Deployment-Strategy).
 
-To get started with the development process see [DEVELOPMENT.md](docs/DEVELOPMENT.md).
+To get started with the development process see [DEVELOPMENT.md](docs/3-extending/tech-stack.md).
 
-To install, integrate and operate EDDIE, see the operation manual: [operation.md](docs/OPERATION.md).
+To install, integrate and operate EDDIE, see the operation manual: [operation.md](docs/1-running/OPERATION.md).
