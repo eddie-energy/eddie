@@ -5,9 +5,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
-import energy.eddie.regionconnector.us.green.button.exceptions.DataNotReadyException;
 import energy.eddie.regionconnector.us.green.button.oauth.persistence.OAuthTokenDetails;
-import energy.eddie.regionconnector.us.green.button.permission.events.UsPollingNotReadyEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
@@ -106,10 +104,6 @@ public class PollingService {
                                                                        StandardCharsets.UTF_8))
                                                                .log("Got bad request on poll of permission request {}. \n{}",
                                                                     exception);
-            case DataNotReadyException ignored -> {
-                LOGGER.info("Data not ready for permission request {}", permissionId);
-                outbox.commit(new UsPollingNotReadyEvent(permissionId));
-            }
             default -> LOGGER.warn("Got unexpected exception for permission {}", permissionId, throwable);
         }
     }

@@ -14,10 +14,6 @@ public class Scope {
 
     private final ScopeBuilder builder;
 
-    private Scope() {
-        throw new UnsupportedOperationException("Scope cannot be created without a builder.");
-    }
-
     private Scope(ScopeBuilder builder) {this.builder = builder;}
 
     @Override

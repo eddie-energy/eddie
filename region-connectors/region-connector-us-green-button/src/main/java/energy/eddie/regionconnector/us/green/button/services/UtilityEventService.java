@@ -4,7 +4,11 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.us.green.button.dtos.WebhookEvent;
-import energy.eddie.regionconnector.us.green.button.permission.events.*;
+import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
+import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEvent;
+import energy.eddie.regionconnector.us.green.button.permission.events.UsStartPollingEvent;
+import energy.eddie.regionconnector.us.green.button.permission.events.UsUnfulfillableEvent;
+import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
 import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
 import org.slf4j.Logger;
@@ -61,6 +65,10 @@ public class UtilityEventService {
                     LOGGER.warn("Got event {} for permission request {} without meter_uid",
                                 event.type(),
                                 permissionId);
+                    break;
+                }
+                if (res.status() != PermissionProcessStatus.ACCEPTED) {
+                    LOGGER.info("Got event {} for not accepted permission request {}", event.type(), permissionId);
                     break;
                 }
                 LOGGER.info("Historical collection finished for meter {} for permission request {}",

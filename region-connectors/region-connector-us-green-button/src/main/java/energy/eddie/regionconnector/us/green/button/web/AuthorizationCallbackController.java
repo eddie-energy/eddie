@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.us.green.button.web;
 
+import energy.eddie.regionconnector.us.green.button.exceptions.UnauthorizedException;
 import energy.eddie.regionconnector.us.green.button.oauth.OAuthCallback;
 import energy.eddie.regionconnector.us.green.button.services.PermissionRequestAuthorizationService;
 import energy.eddie.regionconnector.us.green.button.services.PermissionRequestCreationService;
-import energy.eddie.regionconnector.us.green.button.services.UnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;

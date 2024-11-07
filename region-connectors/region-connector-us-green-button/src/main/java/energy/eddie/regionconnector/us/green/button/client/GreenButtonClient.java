@@ -8,20 +8,23 @@ import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
 import energy.eddie.regionconnector.us.green.button.client.dtos.authorization.Authorization;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.HistoricalCollectionResponse;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.MeterList;
-import energy.eddie.regionconnector.us.green.button.exceptions.DataNotReadyException;
 import energy.eddie.regionconnector.us.green.button.xml.helper.Status;
+import jakarta.annotation.Nullable;
 import org.naesb.espi.ServiceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.StringReader;
 import java.net.URI;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -69,6 +72,9 @@ public class GreenButtonClient implements GreenButtonApi {
     @Override
     public Mono<HistoricalCollectionResponse> collectHistoricalData(List<String> meterIds) {
         LOGGER.info("Triggering historical data collection for meters {}", meterIds);
+        if (meterIds.isEmpty()) {
+            return Mono.error(new IllegalArgumentException("meterIds is empty"));
+        }
         var meterList = new MeterList(meterIds);
         synchronized (webClient) {
             return webClient.post()
@@ -120,26 +126,59 @@ public class GreenButtonClient implements GreenButtonApi {
     ) {
         LOGGER.info("Polling for batch subscription for meter {}", meter);
         synchronized (webClient) {
-            return webClient.get()
-                            .uri(builder -> builder.path("/DataCustodian/espi/1_1/resource/Batch/Subscription/")
-                                                   .path(authId)
-                                                   .path("/UsagePoint/")
-                                                   .path(meter)
-                                                   .queryParam("published-min",
-                                                               publishedMin.format(
-                                                                       DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-                                                   .queryParam("published-max",
-                                                               publishedMax.format(
-                                                                       DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-                                                   .build()
-                            )
-                            .header("Authorization", "Bearer " + accessToken)
-                            .retrieve()
-                            .onStatus(status -> status == HttpStatus.ACCEPTED,
-                                      resp -> Mono.just(new DataNotReadyException()))
-                            .bodyToMono(String.class)
-                            .flatMap(this::parsePayload);
+            return batchSubscriptionApiCall(authId, accessToken, publishedMin, publishedMax, meter)
+                    .expand(prevResponse -> {
+                        var header = prevResponse.headers().header("Retry-After");
+                        if (header.isEmpty() || prevResponse.status() != HttpStatus.ACCEPTED) {
+                            return Mono.empty();
+                        }
+                        long delayInSeconds = Long.parseLong(header.getFirst());
+                        LOGGER.info("Batch Subscription not available yet for authUid {}, retrying after {}s",
+                                    authId,
+                                    delayInSeconds);
+                        return Mono.delay(Duration.ofSeconds(delayInSeconds))
+                                   .then(batchSubscriptionApiCall(authId,
+                                                                  accessToken,
+                                                                  publishedMin,
+                                                                  publishedMax,
+                                                                  meter));
+                    })
+                    .mapNotNull(ResponseWithHeaders::rawResponse)
+                    .flatMap(this::parsePayload)
+                    .last();
         }
+    }
+
+    private Mono<ResponseWithHeaders> batchSubscriptionApiCall(
+            String authId,
+            String accessToken,
+            ZonedDateTime publishedMin,
+            ZonedDateTime publishedMax,
+            String meter
+    ) {
+        return webClient.get()
+                        .uri(builder -> builder.path("/DataCustodian/espi/1_1/resource/Batch/Subscription/")
+                                               .path(authId)
+                                               .path("/UsagePoint/")
+                                               .path(meter)
+                                               .queryParam("published-min",
+                                                           publishedMin.format(
+                                                                   DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                                               .queryParam("published-max",
+                                                           publishedMax.format(
+                                                                   DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                                               .build()
+                        )
+                        .header("Authorization", "Bearer " + accessToken)
+                        .exchangeToMono(response -> response.bodyToMono(String.class)
+                                                            .map(rawResponse -> new ResponseWithHeaders(
+                                                                    rawResponse,
+                                                                    response.headers(),
+                                                                    response.statusCode()
+                                                            ))
+                                                            .defaultIfEmpty(new ResponseWithHeaders(null,
+                                                                                                    response.headers(),
+                                                                                                    response.statusCode())));
     }
 
     private Mono<MeterListing> fetchAdditionalMeters(URI url) {
@@ -156,4 +195,7 @@ public class GreenButtonClient implements GreenButtonApi {
             return Mono.error(e);
         }
     }
+
+    private record ResponseWithHeaders(@Nullable String rawResponse, ClientResponse.Headers headers,
+                                       HttpStatusCode status) {}
 }

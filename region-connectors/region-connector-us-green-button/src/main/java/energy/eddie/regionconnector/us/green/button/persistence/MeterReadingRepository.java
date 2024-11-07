@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.us.green.button.persistence;
 
-import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
-import energy.eddie.regionconnector.us.green.button.permission.events.MeterReadingPk;
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
+import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
+import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReadingPk;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

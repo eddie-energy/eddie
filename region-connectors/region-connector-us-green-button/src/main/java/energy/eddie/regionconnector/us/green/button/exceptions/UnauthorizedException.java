@@ -1,4 +1,4 @@
 package energy.eddie.regionconnector.us.green.button.exceptions;
 
-public class DataNotReadyException extends Exception {
+public class UnauthorizedException extends Exception {
 }

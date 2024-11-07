@@ -29,4 +29,11 @@ public interface UsPermissionRequestRepository extends
     )
     @Override
     List<GreenButtonPermissionRequest> findStalePermissionRequests(@Param("hours") int duration);
+
+    @Query(
+            value = "SELECT permission_id, connection_id, data_need_id, status, granularity, permission_start, permission_end, dso_id, country_code, jump_off_url, scope, created, auth_uid " +
+                    "FROM us_green_button.permission_request WHERE status = 'ACCEPTED' AND permission_start <= NOW() AND permission_end >= NOW()",
+            nativeQuery = true
+    )
+    List<GreenButtonPermissionRequest> findActivePermissionRequests();
 }

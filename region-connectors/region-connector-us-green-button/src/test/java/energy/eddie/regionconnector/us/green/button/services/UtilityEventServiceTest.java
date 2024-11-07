@@ -5,11 +5,11 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.us.green.button.dtos.WebhookEvent;
-import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsStartPollingEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsUnfulfillableEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
+import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
 import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
@@ -165,7 +165,7 @@ class UtilityEventServiceTest {
     }
 
     @Test
-    void testReceiveEvents_withHistoricalCollectionFinishedEvent_emitsStartPollingEvent_ifCollectionFinished() throws PermissionNotFoundException {
+    void testReceiveEvents_withHistoricalCollectionFinishedEvent_emitsStartPollingEvent_ifCollectionFinishedAndPermissionRequestAccepted() throws PermissionNotFoundException {
         // Given
         var events = List.of(getWebhookEvent("meter_historical_collection_finished_successful", "uid"));
         when(repository.findByAuthUid("0000")).thenReturn(getPermissionRequest(PermissionProcessStatus.ACCEPTED));
@@ -178,6 +178,19 @@ class UtilityEventServiceTest {
 
         // Then
         verify(outbox).commit(isA(UsStartPollingEvent.class));
+    }
+
+    @Test
+    void testReceiveEvents_withHistoricalCollectionFinishedEvent_emitsNothing_ifPermissionRequestNotAccepted() throws PermissionNotFoundException {
+        // Given
+        var events = List.of(getWebhookEvent("meter_historical_collection_finished_successful", "uid"));
+        when(repository.findByAuthUid("0000")).thenReturn(getPermissionRequest(PermissionProcessStatus.FULFILLED));
+
+        // When
+        utilityEventService.receiveEvents(events);
+
+        // Then
+        verify(outbox, never()).commit(any());
     }
 
     private static WebhookEvent getWebhookEvent(String type, String meterUid) {

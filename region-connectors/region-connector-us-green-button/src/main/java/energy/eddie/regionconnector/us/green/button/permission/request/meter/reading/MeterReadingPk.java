@@ -1,6 +1,7 @@
-package energy.eddie.regionconnector.us.green.button.permission.events;
+package energy.eddie.regionconnector.us.green.button.permission.request.meter.reading;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 @SuppressWarnings({"NullAway", "unused"})
 public class MeterReadingPk implements Serializable {
@@ -15,6 +16,21 @@ public class MeterReadingPk implements Serializable {
     protected MeterReadingPk() {
         permissionId = null;
         meterUid = null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(permissionId);
+        result = 31 * result + Objects.hashCode(meterUid);
+        return result;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MeterReadingPk that)) return false;
+
+        return Objects.equals(permissionId, that.permissionId) && Objects.equals(meterUid, that.meterUid);
     }
 
     public String getPermissionId() {

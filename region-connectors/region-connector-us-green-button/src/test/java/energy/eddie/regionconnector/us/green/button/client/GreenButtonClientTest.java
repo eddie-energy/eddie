@@ -10,7 +10,6 @@ import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Exports;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.HistoricalCollectionResponse;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.OngoingMonitoring;
-import energy.eddie.regionconnector.us.green.button.exceptions.DataNotReadyException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -26,7 +25,10 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -126,7 +128,39 @@ class GreenButtonClientTest {
 
 
     @Test
-    void batchSubscription_respondsWith202_causesException() {
+    void batchSubscription_respondsWith202_retriesAfterHeader() {
+        // Given
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var client = WebClient.create(basePath);
+        mockBackEnd.enqueue(
+                new MockResponse()
+                        .setResponseCode(202)
+                        .setHeader("Retry-After", "0")
+        );
+        mockBackEnd.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader("Content-Type", "application/xml")
+                        .setBody(XmlLoader.xmlFromResource("/xml/usagepoint/UsagePoint.xml"))
+        );
+        var api = new GreenButtonClient(client);
+
+        // When
+        var res = api.batchSubscription("1111", "token", List.of("uid"), now, now);
+
+        // Then
+        StepVerifier.create(res)
+                    .assertNext(syndFeed -> assertAll(
+                            () -> assertEquals(1, syndFeed.getEntries().size()),
+                            () -> assertEquals(1, syndFeed.getEntries().getFirst().getContents().size()),
+                            () -> assertEquals("atom+xml",
+                                               syndFeed.getEntries().getFirst().getContents().getFirst().getType())
+                    ))
+                    .verifyComplete();
+    }
+
+    @Test
+    void batchSubscription_respondsWith202WithoutRetryHeader_emitsError() {
         // Given
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         var client = WebClient.create(basePath);
@@ -141,12 +175,12 @@ class GreenButtonClientTest {
 
         // Then
         StepVerifier.create(res)
-                    .expectError(DataNotReadyException.class)
+                    .expectError(NoSuchElementException.class)
                     .verify();
     }
 
     @Test
-    void collectHistoricalDAta_respondsWithActivatedMeteringPoints() throws JsonProcessingException {
+    void collectHistoricalData_respondsWithActivatedMeteringPoints() throws JsonProcessingException {
         // Given
         mockBackEnd.enqueue(
                 new MockResponse()
@@ -169,6 +203,21 @@ class GreenButtonClientTest {
                             () -> assertEquals(resp.meters(), List.of("mid1", "mid2"))
                     ))
                     .verifyComplete();
+    }
+
+    @Test
+    void collectHistoricalData_withEmptyMeterList_returnsMonoWithError() {
+        // Given
+        var client = WebClient.create(basePath);
+        var api = new GreenButtonClient(client);
+
+        // When
+        var res = api.collectHistoricalData(Collections.emptyList());
+
+        // Then
+        StepVerifier.create(res)
+                    .expectError(IllegalArgumentException.class)
+                    .verify();
     }
 
     @Test
@@ -220,7 +269,8 @@ class GreenButtonClientTest {
     void revoke_returnsAuthorization() throws IOException {
         // Given
         var json = new String(
-                getClass().getResourceAsStream("/json/authorization/authorization.json").readAllBytes(),
+                Objects.requireNonNull(getClass().getResourceAsStream("/json/authorization/authorization.json"))
+                       .readAllBytes(),
                 StandardCharsets.UTF_8
         );
         mockBackEnd.enqueue(
