@@ -7,6 +7,8 @@ import energy.eddie.regionconnector.es.datadis.PointType;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -40,7 +42,7 @@ class FutureDataServiceTest {
                                                                                            inactivePermissionRequest));
 
 
-        FutureDataService futureDataService = new FutureDataService(repository, dataApiService);
+        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService);
 
         // When
         futureDataService.fetchMeteringData();
@@ -61,7 +63,7 @@ class FutureDataServiceTest {
         when(repository.findByStatus(PermissionProcessStatus.ACCEPTED))
                 .thenReturn(List.of(activePermissionRequest));
 
-        FutureDataService futureDataService = new FutureDataService(repository, dataApiService);
+        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService);
 
         // When
         futureDataService.fetchMeteringData();
@@ -82,7 +84,7 @@ class FutureDataServiceTest {
 
         when(repository.findByStatus(PermissionProcessStatus.ACCEPTED)).thenReturn(List.of(activePermissionRequest));
 
-        FutureDataService futureDataService = new FutureDataService(repository, dataApiService);
+        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService);
 
         // When
         futureDataService.fetchMeteringData();

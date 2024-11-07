@@ -10,6 +10,8 @@ import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.services.CommonDataApiService;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +26,7 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
 @Service
-public class DataApiService implements AutoCloseable {
+public class DataApiService implements AutoCloseable, CommonDataApiService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataApiService.class);
     private final DataApi dataApi;
     private final Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink;
@@ -45,7 +47,7 @@ public class DataApiService implements AutoCloseable {
     }
 
 
-    public void fetchDataForPermissionRequest(EsPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
+    public void fetchDataForPermissionRequest(CommonPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
         LOGGER.atInfo()
               .addArgument(permissionRequest::permissionId)
               .addArgument(start)
@@ -53,8 +55,8 @@ public class DataApiService implements AutoCloseable {
               .log("Polling metering data for permission request {} from {} to {}");
 
         tryGetConsumptionKwh(
-                MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end),
-                permissionRequest
+                MeteringDataRequest.fromPermissionRequest((EsPermissionRequest) permissionRequest, start, end),
+                (EsPermissionRequest) permissionRequest
         );
     }
 

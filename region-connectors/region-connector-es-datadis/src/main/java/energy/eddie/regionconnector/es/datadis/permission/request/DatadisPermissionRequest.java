@@ -204,6 +204,21 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
     @Override
+    public String customerIdentification() {
+        return "";
+    }
+
+    @Override
+    public String meteringPointEAN() {
+        return "";
+    }
+
+    @Override
+    public Optional<ZonedDateTime> latestMeterReading() {
+        return Optional.empty();
+    }
+
+    @Override
     public Optional<LocalDate> latestMeterReadingEndDate() {
         return Optional.ofNullable(this.latestMeterReadingEndDate);
     }

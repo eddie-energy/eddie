@@ -5,11 +5,12 @@ import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import jakarta.annotation.Nullable;
 
 import java.util.Optional;
 
-public interface EsPermissionRequest extends MeterReadingPermissionRequest {
+public interface EsPermissionRequest extends MeterReadingPermissionRequest, CommonPermissionRequest {
     /**
      * The NIF of the customer that requested the permission. This is the username which is used to log in to the
      * Datadis portal.

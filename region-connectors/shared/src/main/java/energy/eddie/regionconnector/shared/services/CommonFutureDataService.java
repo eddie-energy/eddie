@@ -5,12 +5,12 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.List;
 
 @Service
 public class CommonFutureDataService {
@@ -24,19 +24,32 @@ public class CommonFutureDataService {
     private final CommonPermissionRequestRepository repository;
     private final String ZONE;
     private final DataNeedsService dataNeedsService;
+    private final CommonDataApiService dataApiService;
 
     //Finland
     public CommonFutureDataService(
             CommonPollingService pollingService,
             CommonPermissionRequestRepository repository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-            DataNeedsService dataNeedsService
+            DataNeedsService dataNeedsService,
+            CommonDataApiService dataApiService
     ) {
         this.pollingService = pollingService;
         this.repository = repository;
         this.dataNeedsService = dataNeedsService;
+        this.dataApiService = dataApiService;
         this.ZONE = "Europe/Oslo";
     }
+
+//    public CommonFutureDataService(
+//            CommonPermissionRequestRepository repository,
+//            CommonDataApiService dataApiService) {
+//        this.pollingService = null;
+//        this.repository = repository;
+//        this.dataNeedsService = null;
+//        this.dataApiService = dataApiService;
+//        ZONE = "Europe/Madrid";
+//    }
 
     @Scheduled(cron = "${region-connector.fi.fingrid.polling:0 0 17 * * *}", zone = "Europe/Oslo")
     public void schedulePolling() {
@@ -74,6 +87,31 @@ public class CommonFutureDataService {
         }
     }
 
+    @Scheduled(cron = "${region-connector.es.datadis.polling:0 0 17 * * *}", zone = "Europe/Madrid")
+    public void fetchMeteringData() {
+        LOGGER.info("Polling for metering data");
+        LocalDate today = LocalDate.now(ZoneId.of(ZONE));
+        LocalDate yesterday = today.minusDays(1);
+
+        var acceptedPermissionRequests = repository.findByStatus(PermissionProcessStatus.ACCEPTED);
+        for (var permissionRequest : acceptedPermissionRequests) {
+            if (isActive((CommonPermissionRequest) permissionRequest, today)) {
+                fetchMeteringDataForRequest((CommonPermissionRequest) permissionRequest, yesterday);
+            }
+        }
+    }
+
+    private boolean isActive(CommonPermissionRequest permissionRequest, LocalDate today) {
+        return permissionRequest.start().isBefore(today);
+    }
+
+    private void fetchMeteringDataForRequest(CommonPermissionRequest permissionRequest, LocalDate yesterday) {
+        LocalDate lastPulledOrStart = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
+        LocalDate startDate = lastPulledOrStart.isBefore(yesterday) ? lastPulledOrStart : yesterday;
+
+        dataApiService.fetchDataForPermissionRequest(permissionRequest, startDate, yesterday);
+    }
+
 
     // France
 
@@ -90,7 +128,7 @@ public class CommonFutureDataService {
 //        this.dataApiService = null;
 //        ZONE = "Europe/Paris";
 //    }
-
+//
 //    @SuppressWarnings("java:S6857") // Sonar thinks this is malformed, but it's not
 //    @Scheduled(cron = "${region-connector.fr.enedis.polling:0 0 17 * * *}", zone = "Europe/Paris")
 //    public void fetchMeterReadings() {
@@ -131,43 +169,6 @@ public class CommonFutureDataService {
 //    }
 
     //Spain
-//    private final EsPermissionRequestRepository repository;
-//    private final CommonDataApiService dataApiService;
-
-//    public CommonFutureDataService(CommonPermissionRequestRepository repository, CommonDataApiService dataApiService) {
-//        this.repository = repository;
-//        this.dataApiService = dataApiService;
-////        this.dataNeedsService = null;
-////        this.pollingService = null;
-//        ZONE = "Europe/Madrid";
-//    }
-
-//    @Scheduled(cron = "${region-connector.es.datadis.polling:0 0 17 * * *}", zone = "Europe/Madrid")
-//    public void fetchMeteringData() {
-//        LOGGER.info("Polling for metering data");
-//        LocalDate today = LocalDate.now(ZoneId.of(ZONE));
-//        LocalDate yesterday = today.minusDays(1);
-//
-//        var acceptedPermissionRequests = repository.findByStatus(PermissionProcessStatus.ACCEPTED);
-//        for (EsPermissionRequest permissionRequest : acceptedPermissionRequests) {
-//            if (isActive(permissionRequest, today)) {
-//                fetchMeteringDataForRequest(permissionRequest, yesterday);
-//            }
-//        }
-//    }
-//
-//    private boolean isActive(EsPermissionRequest permissionRequest, LocalDate today) {
-//        return permissionRequest.start().isBefore(today);
-//    }
-//
-//    private void fetchMeteringDataForRequest(EsPermissionRequest permissionRequest, LocalDate yesterday) {
-//        LocalDate lastPulledOrStart = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
-//        LocalDate startDate = lastPulledOrStart.isBefore(yesterday) ? lastPulledOrStart : yesterday;
-//
-//        dataApiService.fetchDataForPermissionRequest(permissionRequest, startDate, yesterday);
-//    }
-
-
 
 
 }

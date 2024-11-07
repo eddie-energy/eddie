@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.process.model.persistence.StalePermissionReques
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequestRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +17,8 @@ import java.util.List;
 public interface EsPermissionRequestRepository extends
         PermissionRequestRepository<EsPermissionRequest>,
         JpaRepository<DatadisPermissionRequest, String>,
-        StalePermissionRequestRepository<DatadisPermissionRequest> {
+        StalePermissionRequestRepository<DatadisPermissionRequest>,
+        CommonPermissionRequestRepository {
 
     List<EsPermissionRequest> findByStatus(PermissionProcessStatus status);
 
