@@ -1,8 +1,11 @@
 package energy.eddie.regionconnector.fi.fingrid.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.client.FingridApiClient;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
+import energy.eddie.regionconnector.shared.services.CommonPollingService;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +15,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 
 @Service
-public class PollingService {
+public class PollingService implements CommonPollingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     private final EnergyDataService energyDataService;
     private final FingridApiClient api;
@@ -27,11 +30,11 @@ public class PollingService {
         this.updateGranularityService = updateGranularityService;
     }
 
-    public void pollTimeSeriesData(FingridPermissionRequest permissionRequest) {
+    public void pollTimeSeriesData(CommonPermissionRequest permissionRequest) {
         pollTimeSeriesData(permissionRequest, permissionRequest.granularity());
     }
 
-    public void pollTimeSeriesData(FingridPermissionRequest permissionRequest, Granularity granularity) {
+    public void pollTimeSeriesData(CommonPermissionRequest permissionRequest, Granularity granularity) {
         var now = LocalDate.now(ZoneOffset.UTC);
         if (permissionRequest.start().isAfter(now) || permissionRequest.start().isEqual(now)) {
             return;
@@ -47,9 +50,9 @@ public class PollingService {
                    granularity.name(),
                    null
            )
-           .flatMap(resp -> updateGranularityService.updateGranularity(resp, permissionRequest))
+           .flatMap(resp -> updateGranularityService.updateGranularity(resp, (FingridPermissionRequest) permissionRequest))
            .subscribe(
-                   energyDataService.publish(permissionRequest),
+                   energyDataService.publish((FingridPermissionRequest) permissionRequest),
                    error -> LOGGER
                            .atInfo()
                            .addArgument(permissionRequest::permissionId)

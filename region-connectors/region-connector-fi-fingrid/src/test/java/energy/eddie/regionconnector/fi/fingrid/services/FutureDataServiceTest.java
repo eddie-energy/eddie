@@ -9,6 +9,7 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,7 +33,7 @@ class FutureDataServiceTest {
     @Mock
     private DataNeedsService dataNeedsService;
     @InjectMocks
-    private FutureDataService futureDataService;
+    private CommonFutureDataService futureDataService;
 
     @Test
     void testScheduleNextMeterReading_pollsData() {

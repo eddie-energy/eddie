@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fi.fingrid.permission.FingridDataSourceInformation;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
@@ -15,7 +16,7 @@ import java.util.Optional;
 @Entity
 @Table(schema = "fi_fingrid", name = "permission_request")
 @SuppressWarnings({"NullAway", "unused"})
-public class FingridPermissionRequest implements PermissionRequest {
+public class FingridPermissionRequest implements PermissionRequest, CommonPermissionRequest {
     @Id
     @Column(length = 36)
     private final String permissionId;
