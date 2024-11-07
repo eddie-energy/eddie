@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermission
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -59,7 +60,7 @@ public class AcceptedEventHandler implements EventHandler<PermissionEvent> {
             LOGGER.atInfo()
                   .addArgument(request::permissionId)
                   .log("Fetching data for accepted permission request {}");
-            pollingService.fetchConsumptionData(request);
+            pollingService.pollTimeSeriesData((CommonPermissionRequest) request);
         }
     }
 }

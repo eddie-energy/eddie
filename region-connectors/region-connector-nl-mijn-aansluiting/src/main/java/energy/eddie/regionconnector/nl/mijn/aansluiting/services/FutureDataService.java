@@ -5,6 +5,7 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -38,7 +39,7 @@ public class FutureDataService {
                 LOGGER.atInfo()
                       .addArgument(activePermission::permissionId)
                       .log("Fetching energy data for permission request {}");
-                pollingService.fetchConsumptionData(activePermission);
+                pollingService.pollTimeSeriesData((CommonPermissionRequest) activePermission);
             } else {
                 LOGGER.atInfo()
                       .addArgument(activePermission::permissionId)

@@ -5,16 +5,18 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.MijnAansluitingDataSourceInformation;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 @Entity
 @Table(schema = "nl_mijn_aansluiting", name = "permission_request")
 @SuppressWarnings({"NullAway", "unused"})
-public class MijnAansluitingPermissionRequest implements NlPermissionRequest {
+public class MijnAansluitingPermissionRequest implements NlPermissionRequest, CommonPermissionRequest {
     @Id
     private final String permissionId;
     private final String connectionId;
@@ -107,6 +109,21 @@ public class MijnAansluitingPermissionRequest implements NlPermissionRequest {
     @Override
     public LocalDate end() {
         return end;
+    }
+
+    @Override
+    public String customerIdentification() {
+        return "";
+    }
+
+    @Override
+    public String meteringPointEAN() {
+        return "";
+    }
+
+    @Override
+    public Optional<ZonedDateTime> latestMeterReading() {
+        return Optional.empty();
     }
 
     @Override

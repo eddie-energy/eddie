@@ -19,6 +19,8 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlInte
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlSimpleEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
+import energy.eddie.regionconnector.shared.services.CommonPollingService;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +36,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 @Service
-public class PollingService implements AutoCloseable {
+public class PollingService implements AutoCloseable, CommonPollingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     private final Outbox outbox;
     private final OAuthManager oAuthManager;
@@ -76,7 +78,7 @@ public class PollingService implements AutoCloseable {
                  .subscribe(this::consume);
     }
 
-    public void fetchConsumptionData(NlPermissionRequest permissionRequest) {
+    public void pollTimeSeriesData(CommonPermissionRequest permissionRequest) {
         String permissionId = permissionRequest.permissionId();
         var res = fetchAccessToken(permissionId, MijnAansluitingApi.CONTINUOUS_CONSENT_API);
         if (res.isEmpty()) {
@@ -87,7 +89,7 @@ public class PollingService implements AutoCloseable {
         apiClient.fetchConsumptionData(accessTokenAndSingleSyncUrl.singleSync(),
                                        accessTokenAndSingleSyncUrl.accessToken())
                  .filter(meteredData -> !meteredData.isEmpty())
-                 .map(meteredData -> new IdentifiableMeteredData(permissionRequest, meteredData))
+                 .map(meteredData -> new IdentifiableMeteredData((NlPermissionRequest) permissionRequest, meteredData))
                  .subscribe(this::consume);
     }
 

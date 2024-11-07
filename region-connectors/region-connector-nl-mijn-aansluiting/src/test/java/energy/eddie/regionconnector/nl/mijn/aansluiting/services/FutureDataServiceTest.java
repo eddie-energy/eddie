@@ -9,6 +9,8 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,7 +47,7 @@ class FutureDataServiceTest {
     @Mock
     private DataNeedsService dataNeedsService;
     @InjectMocks
-    private FutureDataService futureDataService;
+    private CommonFutureDataService futureDataService;
 
     @Test
     void testScheduleNextMeterReading_pollsData() {
@@ -64,7 +66,7 @@ class FutureDataServiceTest {
         futureDataService.scheduleNextMeterReading();
 
         // Then
-        verify(pollingService).fetchConsumptionData(PERMISSION_REQUEST);
+        verify(pollingService).pollTimeSeriesData((CommonPermissionRequest) PERMISSION_REQUEST);
     }
 
     @Test
@@ -79,6 +81,6 @@ class FutureDataServiceTest {
         futureDataService.scheduleNextMeterReading();
 
         // Then
-        verify(pollingService, never()).fetchConsumptionData(PERMISSION_REQUEST);
+        verify(pollingService, never()).pollTimeSeriesData((CommonPermissionRequest) PERMISSION_REQUEST);
     }
 }

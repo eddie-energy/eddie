@@ -13,7 +13,7 @@ public interface CommonPermissionRequest {
     Granularity granularity();
     LocalDate start();
     LocalDate end();
-    public String customerIdentification();
+    String customerIdentification();
     String meteringPointEAN();
     Optional<ZonedDateTime> latestMeterReading();
 }

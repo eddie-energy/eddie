@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.process.model.persistence.StalePermissionReques
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequestRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,7 +16,8 @@ import java.util.Optional;
 public interface NlPermissionRequestRepository extends
         JpaRepository<MijnAansluitingPermissionRequest, String>,
         PermissionRequestRepository<NlPermissionRequest>,
-        StalePermissionRequestRepository<MijnAansluitingPermissionRequest> {
+        StalePermissionRequestRepository<MijnAansluitingPermissionRequest>,
+        CommonPermissionRequestRepository {
     Optional<NlPermissionRequest> findByStateAndPermissionId(String state, String permissionId);
 
     List<NlPermissionRequest> findByStatus(PermissionProcessStatus status);

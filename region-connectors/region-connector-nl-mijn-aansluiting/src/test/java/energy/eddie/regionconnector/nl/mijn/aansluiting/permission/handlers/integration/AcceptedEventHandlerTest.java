@@ -14,6 +14,7 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermission
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -57,7 +58,7 @@ class AcceptedEventHandlerTest {
         eventBus.emit(new NlInternalPollingEvent());
 
         // Then
-        verify(pollingService, never()).fetchConsumptionData(any());
+        verify(pollingService, never()).pollTimeSeriesData(any());
     }
 
     @Test
@@ -82,7 +83,7 @@ class AcceptedEventHandlerTest {
         eventBus.emit(new NlSimpleEvent("pid", PermissionProcessStatus.ACCEPTED));
 
         // Then
-        verify(pollingService).fetchConsumptionData(pr);
+        verify(pollingService).pollTimeSeriesData((CommonPermissionRequest) pr);
     }
 
     @Test
@@ -132,6 +133,6 @@ class AcceptedEventHandlerTest {
         eventBus.emit(new NlSimpleEvent("pid", PermissionProcessStatus.ACCEPTED));
 
         // Then
-        verify(pollingService, never()).fetchConsumptionData(any());
+        verify(pollingService, never()).pollTimeSeriesData(any());
     }
 }

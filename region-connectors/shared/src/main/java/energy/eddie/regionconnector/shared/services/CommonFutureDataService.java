@@ -15,13 +15,17 @@ import java.util.List;
 @Service
 public class CommonFutureDataService {
 
+    //TODO check out different time zones with @Scheduled annotation
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonFutureDataService.class);
 
-    //Finland
-    //private final PollingService pollingService;
-    //private final FiPermissionRequestRepository repository;
-    //private final DataNeedsService dataNeedsService;
+    private final CommonPollingService pollingService;
+    //    private final AccountingPointDataService accountingPointDataService;
+    private final CommonPermissionRequestRepository repository;
+    private final String ZONE;
+    private final DataNeedsService dataNeedsService;
 
+    //Finland
     public CommonFutureDataService(
             CommonPollingService pollingService,
             CommonPermissionRequestRepository repository,
@@ -50,13 +54,29 @@ public class CommonFutureDataService {
         }
     }
 
+    @Scheduled(cron = "${region-connector.nl.mijn-aansluting.polling:0 0 17 * * *}", zone = "Europe/Amsterdam")
+    public void scheduleNextMeterReading() {
+        var activePermissions = repository.findByStatus(PermissionProcessStatus.ACCEPTED);
+        for (var activePermission : activePermissions) {
+            var dataNeedId = activePermission.dataNeedId();
+            var dataNeed = dataNeedsService.getById(dataNeedId);
+            if (dataNeed instanceof ValidatedHistoricalDataDataNeed) {
+                LOGGER.atInfo()
+                        .addArgument(activePermission::permissionId)
+                        .log("Fetching energy data for permission request {}");
+                pollingService.pollTimeSeriesData((CommonPermissionRequest) activePermission);
+            } else {
+                LOGGER.atInfo()
+                        .addArgument(activePermission::permissionId)
+                        .addArgument(dataNeedId)
+                        .log("Cannot fetch validated historical data for permission request {}, since it's not the correct data need {}");
+            }
+        }
+    }
+
 
     // France
-    private final CommonPollingService pollingService;
-//    private final AccountingPointDataService accountingPointDataService;
-    private final CommonPermissionRequestRepository repository;
-    private final String ZONE;
-    private final DataNeedsService dataNeedsService;
+
 
 //    public CommonFutureDataService(
 //            CommonPollingService pollingService,
@@ -148,41 +168,6 @@ public class CommonFutureDataService {
 //    }
 
 
-    //Netherlands
-//    private final PollingService pollingService;
-//    private final NlPermissionRequestRepository repository;
-//    private final DataNeedsService dataNeedsService;
 
-//    public CommonFutureDataService(
-//            CommonPollingService pollingService,
-//            CommonPermissionRequestRepository repository,
-//            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-//            DataNeedsService dataNeedsService
-//    ) {
-//        this.pollingService = pollingService;
-//        this.repository = repository;
-//        this.dataNeedsService = dataNeedsService;
-//        this.dataApiService = null;
-//        ZONE = "Europe/Amsterdam";
-//    }
 
-//    @Scheduled(cron = "${region-connector.nl.mijn-aansluting.polling:0 0 17 * * *}", zone = "Europe/Amsterdam")
-//    public void scheduleNextMeterReading() {
-//        var activePermissions = repository.findByStatus(PermissionProcessStatus.ACCEPTED);
-//        for (NlPermissionRequest activePermission : activePermissions) {
-//            var dataNeedId = activePermission.dataNeedId();
-//            var dataNeed = dataNeedsService.getById(dataNeedId);
-//            if (dataNeed instanceof ValidatedHistoricalDataDataNeed) {
-//                LOGGER.atInfo()
-//                        .addArgument(activePermission::permissionId)
-//                        .log("Fetching energy data for permission request {}");
-//                pollingService.fetchConsumptionData(activePermission);
-//            } else {
-//                LOGGER.atInfo()
-//                        .addArgument(activePermission::permissionId)
-//                        .addArgument(dataNeedId)
-//                        .log("Cannot fetch validated historical data for permission request {}, since it's not the correct data need {}");
-//            }
-//        }
-//    }
 }
