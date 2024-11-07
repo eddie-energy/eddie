@@ -153,6 +153,9 @@ function permissionElement(permission) {
   const expirationTime = permission.hasOwnProperty("expirationTime")
     ? toLocalDateString(permission.expirationTime)
     : "Not available yet.";
+  const transmissionSchedule = permission.hasOwnProperty("dataNeed")
+    ? permission.dataNeed.transmissionSchedule
+    : "Not available yet.";
   const schemas = permission.hasOwnProperty("dataNeed")
     ? permission.dataNeed.schemas
     : ["Not available yet."];
@@ -186,6 +189,9 @@ function permissionElement(permission) {
 
         <dt>End</dt>
         <dd>${expirationTime}</dd>
+        
+        <dt>Transmission Schedule</dt>
+        <dd>${transmissionSchedule}</dd>
         
         <dt>Schemas</dt>
         <dd>${schemas.map((schema) => `<span>${schema}</span>`).join("<br>")}</dd>
@@ -303,7 +309,7 @@ function updatePermissionDialogWithDetails(permission) {
     serviceName,
     startTime,
     expirationTime,
-    dataNeed: { dataTags, schemas },
+    dataNeed: { dataTags, transmissionSchedule, schemas },
   } = permission;
 
   permissionDialogContent.innerHTML = /* HTML */ `
@@ -325,6 +331,9 @@ function updatePermissionDialogWithDetails(permission) {
 
       <dt>End</dt>
       <dd>${toLocalDateString(expirationTime)}</dd>
+      
+      <dt>Transmission Schedule</dt>
+      <dd>${transmissionSchedule}</dd>
       
       <dt>Schemas</dt>
       <dd>${schemas.map((schema) => `<span>${schema}</span>`).join("<br>")}</dd>
