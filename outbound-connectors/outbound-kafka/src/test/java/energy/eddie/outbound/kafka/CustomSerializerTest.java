@@ -26,10 +26,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class CustomSerializerTest {
 
     private CustomSerializer customSerializer;
+    private final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
 
     @BeforeEach
     void setup() {
-        customSerializer = new CustomSerializer();
+        customSerializer = new CustomSerializer(objectMapper);
     }
 
     @AfterEach
@@ -53,7 +54,7 @@ class CustomSerializerTest {
                                                                    "Granted",
                                                                    new ObjectMapper().createObjectNode()
                                                                                      .put("test", "value"));
-        byte[] expected = "{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"dataNeedId\":\"dataNeedId\",\"dataSourceInformation\":{\"countryCode\":\"cc\",\"meteredDataAdministratorId\":\"mda\",\"permissionAdministratorId\":\"pa\",\"regionConnectorId\":\"rc\"},\"timestamp\":1672531200.000000000,\"status\":\"ACCEPTED\",\"message\":\"Granted\",\"additionalInformation\":{\"test\":\"value\"}}"
+        byte[] expected = "{\"connectionId\":\"connectionId\",\"permissionId\":\"permissionId\",\"dataNeedId\":\"dataNeedId\",\"dataSourceInformation\":{\"countryCode\":\"cc\",\"meteredDataAdministratorId\":\"mda\",\"permissionAdministratorId\":\"pa\",\"regionConnectorId\":\"rc\"},\"timestamp\":\"2023-01-01T00:00:00Z\",\"status\":\"ACCEPTED\",\"message\":\"Granted\",\"additionalInformation\":{\"test\":\"value\"}}"
                 .getBytes(StandardCharsets.UTF_8);
 
         byte[] result = customSerializer.serialize(topic, data);
@@ -246,16 +247,15 @@ class CustomSerializerTest {
                                                 )
                                 )
                 );
-        var serializer = new CustomSerializer();
 
         // When
-        var res = serializer.serialize("anyTopic", pmd);
+        var res = customSerializer.serialize("anyTopic", pmd);
 
         // Then
         assertEquals(json, new String(res, StandardCharsets.UTF_8));
 
         // Clean-Up
-        serializer.close();
+        customSerializer.close();
     }
 
     private record TestDataSourceInformation(String countryCode,

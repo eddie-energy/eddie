@@ -2,9 +2,6 @@ package energy.eddie.outbound.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
@@ -15,12 +12,9 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 class CustomSerializer implements Serializer<Object> {
     private final StringSerializer stringSerializer = new StringSerializer();
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper objectMapper;
 
-    private final ObjectMapper vhdObjectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .registerModule(new Jdk8Module())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    CustomSerializer(ObjectMapper objectMapper) {this.objectMapper = objectMapper;}
 
     @Override
     public byte[] serialize(String topic, Object data) {
@@ -36,6 +30,11 @@ class CustomSerializer implements Serializer<Object> {
         };
     }
 
+    @Override
+    public void close() {
+        stringSerializer.close();
+    }
+
     private byte[] serializeConnectionStatusMessage(ConnectionStatusMessage data) {
         try {
             return objectMapper.writeValueAsBytes(data);
@@ -46,7 +45,7 @@ class CustomSerializer implements Serializer<Object> {
 
     private byte[] serializeEddieValidatedHistoricalDataMarketDocument(ValidatedHistoricalDataEnvelope data) {
         try {
-            return vhdObjectMapper.writeValueAsBytes(data);
+            return objectMapper.writeValueAsBytes(data);
         } catch (JsonProcessingException e) {
             throw new ValidatedHistoricalDataEnvelopeSerializationException(e);
         }
@@ -54,7 +53,7 @@ class CustomSerializer implements Serializer<Object> {
 
     private byte[] serializePermissionMarketDocument(PermissionEnvelope pmd) {
         try {
-            return vhdObjectMapper.writeValueAsBytes(pmd);
+            return objectMapper.writeValueAsBytes(pmd);
         } catch (JsonProcessingException e) {
             throw new PermissionMarketDocumentSerializationException(e);
         }
@@ -62,8 +61,7 @@ class CustomSerializer implements Serializer<Object> {
 
     private byte[] serializeRawDataMessage(RawDataMessage message) {
         try {
-            // use vhdObjectMapper to make timestamps human-readable
-            return vhdObjectMapper.writeValueAsBytes(message);
+            return objectMapper.writeValueAsBytes(message);
         } catch (JsonProcessingException e) {
             throw new RawDataMessageSerializationException(e);
         }
@@ -71,15 +69,10 @@ class CustomSerializer implements Serializer<Object> {
 
     private byte[] serializeAccountingPointEnvelope(AccountingPointEnvelope data) {
         try {
-            return vhdObjectMapper.writeValueAsBytes(data);
+            return objectMapper.writeValueAsBytes(data);
         } catch (JsonProcessingException e) {
             throw new AccountingPointEnvelopeSerializationException(e);
         }
-    }
-
-    @Override
-    public void close() {
-        stringSerializer.close();
     }
 
     public static class ConnectionStatusMessageSerializationException extends RuntimeException {

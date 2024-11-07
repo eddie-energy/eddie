@@ -28,7 +28,7 @@ import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = {KafkaConnector.class, KafkaTestConfig.class})
+@SpringBootTest(classes = {KafkaConnector.class, KafkaTestConfig.class, ObjectMapperConfig.class})
 @EmbeddedKafka
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Tag("Integration")

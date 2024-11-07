@@ -46,7 +46,7 @@ hakky-logcaptor = "2.9.2"
 paho-mqtt-client = "1.2.5"
 nimbus = "11.10.1"
 bouncycastle = "1.78"
-keycloak="25.0.3"
+keycloak = "25.0.3"
 
 swagger-codegen-version = "3.0.45"
 swagger-annotations = "2.2.22"
@@ -117,6 +117,8 @@ commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
 reactor-kafka = { module = "io.projectreactor.kafka:reactor-kafka", version.ref = "reactor-kafka" }
 testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers" }
+jackson-dataformat-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core" }
 
 # used by core
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
@@ -149,7 +151,7 @@ spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-s
 spring-boot-starter-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
-spring-boot-starter-oauth2-client = { module = "org.springframework.boot:spring-boot-starter-oauth2-client"}
+spring-boot-starter-oauth2-client = { module = "org.springframework.boot:spring-boot-starter-oauth2-client" }
 spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-kafka = { module = "org.springframework.kafka:spring-kafka", version.ref = "spring-kafka" }
 spring-kafka-test = { module = "org.springframework.kafka:spring-kafka-test", version.ref = "spring-kafka" }
@@ -158,8 +160,8 @@ spring-retry = { module = "org.springframework.retry:spring-retry", version.ref 
 spring-aspects = { module = "org.springframework:spring-aspects", version.ref = "spring-aspects" }
 spring-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "openapi-webmvc-ui" }
 spring-oxm = { module = "org.springframework:spring-oxm", version.ref = "spring-oxm" }
-spring-security-test = { module = "org.springframework.security:spring-security-test", version.ref="spring-security-test" }
-spring-boot-starter-keycloak = { module = "org.keycloak:keycloak-spring-boot-starter", version.ref="keycloak" }
+spring-security-test = { module = "org.springframework.security:spring-security-test", version.ref = "spring-security-test" }
+spring-boot-starter-keycloak = { module = "org.keycloak:keycloak-spring-boot-starter", version.ref = "keycloak" }
 
 
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernate-validator" }

@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = {TerminationKafkaConnector.class, KafkaTestConfig.class})
+@SpringBootTest(classes = {TerminationKafkaConnector.class, KafkaTestConfig.class, ObjectMapperConfig.class})
 @EnableKafka
 @EmbeddedKafka
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -29,6 +29,7 @@ class TerminationKafkaConnectorTest {
     @Autowired
     private TerminationKafkaConnector terminationConnector;
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void testGettingTermination() throws ExecutionException, InterruptedException {
         // Given
