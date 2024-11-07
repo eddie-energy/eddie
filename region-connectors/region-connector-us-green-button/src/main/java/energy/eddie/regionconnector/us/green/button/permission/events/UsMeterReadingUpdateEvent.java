@@ -3,12 +3,12 @@ package energy.eddie.regionconnector.us.green.button.permission.events;
 import energy.eddie.api.agnostic.process.model.events.InternalPermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
+import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
 import jakarta.persistence.*;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Entity
 @SuppressWarnings("NullAway")
@@ -36,9 +36,5 @@ public class UsMeterReadingUpdateEvent extends PersistablePermissionEvent implem
 
     public Optional<ZonedDateTime> latestMeterReadingEndDateTime() {
         return DateTimeUtils.oldestDateTime(MeterReading.lastMeterReadingDates(List.copyOf(lastMeterReadings)));
-    }
-
-    public Set<String> allowedMeters() {
-        return MeterReading.allowedMeters(List.copyOf(lastMeterReadings));
     }
 }

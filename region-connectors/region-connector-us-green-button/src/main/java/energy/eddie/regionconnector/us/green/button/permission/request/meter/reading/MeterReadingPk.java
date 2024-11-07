@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.us.green.button.permission.events;
+package energy.eddie.regionconnector.us.green.button.permission.request.meter.reading;
 
 import java.io.Serializable;
 import java.util.Objects;

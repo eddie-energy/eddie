@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.us.green.button.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
+import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
 import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
 import energy.eddie.regionconnector.us.green.button.services.historical.collection.HistoricalCollectionService;
 import org.junit.jupiter.api.Test;

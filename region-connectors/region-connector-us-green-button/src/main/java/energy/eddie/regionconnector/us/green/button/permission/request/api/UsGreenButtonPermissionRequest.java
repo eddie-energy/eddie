@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.us.green.button.permission.request.api;
 
 import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
-import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
+import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
 
 import java.time.ZonedDateTime;
 import java.util.List;

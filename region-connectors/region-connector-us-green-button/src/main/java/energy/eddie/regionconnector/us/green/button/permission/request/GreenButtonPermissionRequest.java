@@ -5,8 +5,8 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import energy.eddie.regionconnector.us.green.button.permission.GreenButtonDataSourceInformation;
-import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
+import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 

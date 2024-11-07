@@ -1,5 +1,6 @@
-package energy.eddie.regionconnector.us.green.button.permission.events;
+package energy.eddie.regionconnector.us.green.button.permission.request.meter.reading;
 
+import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 

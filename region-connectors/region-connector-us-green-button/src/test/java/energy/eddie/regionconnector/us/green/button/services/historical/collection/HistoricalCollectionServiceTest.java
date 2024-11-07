@@ -7,10 +7,10 @@ import energy.eddie.regionconnector.us.green.button.api.Pages;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.HistoricalCollectionResponse;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
-import energy.eddie.regionconnector.us.green.button.permission.events.MeterReading;
-import energy.eddie.regionconnector.us.green.button.permission.events.MeterReadingPk;
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
+import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
+import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReadingPk;
 import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -98,9 +98,8 @@ class HistoricalCollectionServiceTest {
 
         // Then
         StepVerifier.create(res)
-                    .then(() -> {
-                        verify(repository).deleteAllById(List.of(new MeterReadingPk("pid", "uid2")));
-                    })
+                    .then(() -> verify(repository)
+                            .deleteAllById(List.of(new MeterReadingPk("pid", "uid2"))))
                     .verifyComplete();
     }
 

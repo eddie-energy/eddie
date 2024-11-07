@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.us.green.button.permission.events;
+package energy.eddie.regionconnector.us.green.button.permission.request.meter.reading;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
