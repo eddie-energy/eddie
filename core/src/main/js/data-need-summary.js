@@ -44,6 +44,7 @@ class DataNeedSummary extends HTMLElement {
       maxGranularity,
       energyType,
       transmissionSchedule,
+      schemas,
       dataTags,
     } = dataNeed;
 
@@ -100,6 +101,11 @@ class DataNeedSummary extends HTMLElement {
             ? `<dt>Transmission Schedule</dt><dd>${transmissionSchedule}</dd>`
             : ""}
 
+          <!-- For AIIDA schemas -->
+          ${schemas
+            ? `<dt>Schemas:</dt><dd>${schemas.join(", ")}</dd>`
+            : ""}
+          
           <!-- For AIIDA smart meter data needs -->
           ${dataTags
             ? `<dt>OBIS Points</dt><dd>${dataTags.join(", ")}</dd>`
