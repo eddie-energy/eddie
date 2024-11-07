@@ -16,7 +16,7 @@ hero:
     - text: Integrate into your application
       link: /PERMISSION_STATES
     - text: Extend and Contribute
-      link: /DEVELOPMENT
+      link: /3-extending/tech-stack
       theme: alt
 
 features:
