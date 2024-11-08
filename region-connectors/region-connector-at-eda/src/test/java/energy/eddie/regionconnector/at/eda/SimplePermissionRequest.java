@@ -5,11 +5,13 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
+import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public record SimplePermissionRequest(String permissionId,
                                       String connectionId,
                                       String dataNeedId,
@@ -20,7 +22,9 @@ public record SimplePermissionRequest(String permissionId,
                                       LocalDate start,
                                       LocalDate end,
                                       PermissionProcessStatus status,
-                                      Optional<String> consentId) implements AtPermissionRequest {
+                                      Optional<String> consentId,
+                                      @Nullable AllowedGranularity granularity
+) implements AtPermissionRequest {
 
     public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId) {
         this(permissionId,
@@ -44,6 +48,23 @@ public record SimplePermissionRequest(String permissionId,
              status, Optional.empty());
     }
 
+    public SimplePermissionRequest(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            String cmRequestId,
+            String conversationId,
+            String dsoId,
+            Optional<String> meteringPointId,
+            LocalDate start,
+            LocalDate end,
+            PermissionProcessStatus status,
+            Optional<String> consentId
+    ) {
+        this(permissionId, connectionId, dataNeedId, cmRequestId, conversationId, dsoId, meteringPointId, start, end,
+             status, consentId, AllowedGranularity.PT15M);
+    }
+
     @Override
     public Optional<String> consentId() {
         return consentId;
@@ -56,7 +77,7 @@ public record SimplePermissionRequest(String permissionId,
 
     @Override
     public AllowedGranularity granularity() {
-        return AllowedGranularity.PT15M;
+        return granularity;
     }
 
     @Override
