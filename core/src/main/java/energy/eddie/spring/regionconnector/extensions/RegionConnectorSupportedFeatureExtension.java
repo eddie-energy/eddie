@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
+import energy.eddie.api.agnostic.retransmission.RegionConnectorRetransmissionService;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
@@ -24,9 +25,9 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
 
     public RegionConnectorSupportedFeatureExtension(
             SupportedFeatureService supportedFeatureService,
-            RegionConnectorMetadata metadata
+            RegionConnectorMetadata regionConnectorMetadata
     ) {
-        this.metadata = metadata;
+        this.metadata = regionConnectorMetadata;
         supportedFeatureService.register(this);
     }
 
@@ -68,6 +69,11 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
     @JsonProperty
     public boolean supportsValidatedHistoricalDataMarketDocuments() {
         return hasBean(ValidatedHistoricalDataEnvelopeProvider.class);
+    }
+
+    @JsonProperty
+    public boolean supportsRetransmissionRequests() {
+        return hasBean(RegionConnectorRetransmissionService.class);
     }
 
     private boolean hasBean(Class<?> clazz) {
