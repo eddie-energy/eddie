@@ -3,6 +3,8 @@ package energy.eddie.core.web;
 import energy.eddie.core.services.SupportedFeatureService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorSupportedFeatureExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -34,5 +36,15 @@ class ManagementControllerTest {
         mockMvc.perform(get("/management/region-connectors/supported-features"))
                // Then
                .andExpect(status().isOk());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "/"})
+    void testIndex_returns404(String path) throws Exception {
+        // Given
+        // When
+        mockMvc.perform(get(path))
+               // Then
+               .andExpect(status().isNotFound());
     }
 }
