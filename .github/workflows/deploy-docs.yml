@@ -1,6 +1,8 @@
 name: Deploy EDDIE Framework docs
 on:
   push:
+    paths:
+      - 'docs/**'
     branches:
       - main
   workflow_dispatch:
