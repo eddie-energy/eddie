@@ -31,6 +31,8 @@ dependencies {
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.datatype.jdk8)
+    implementation(libs.jackson.dataformat.xml)
+    implementation(libs.jackson.core)
     implementation(libs.slf4j.simple)
 
 

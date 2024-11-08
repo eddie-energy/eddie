@@ -320,11 +320,12 @@ prefix `kafka.` has to be used.
 
 The following parameters are of special interest:
 
-| Parameter                        | Type                                           | Description                                                                                                       |
-|----------------------------------|------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| kafka.bootstrap.servers          | comma-separated _host:port_ tuples (mandatory) | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.                    |
-| outbound-connector.kafka.enabled | true/false                                     | Enables or disables the kafka connector.                                                                          |
-| kafka.termination.topic          | valid kafka topic name                         | The topic on which the kafka connector listens for termination requests. Optional, the default is `terminations`. |
+| Parameter                        | Type                                           | Description                                                                                                                                             |
+|----------------------------------|------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| kafka.bootstrap.servers          | comma-separated _host:port_ tuples (mandatory) | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.                                                          |
+| outbound-connector.kafka.enabled | true/false                                     | Enables or disables the kafka connector.                                                                                                                |
+| kafka.termination.topic          | valid kafka topic name                         | The topic on which the kafka connector listens for termination requests. Optional, the default is `terminations`.                                       |
+| outbound-connector.kafka.format  | `json` or `xml`                                | Sets the output and input format for kafka topics. If set to json will only accept and produce json messages, same for xml. Defaults to json if not set |
 
 E.g. if Kafka is installed locally:
 

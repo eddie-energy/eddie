@@ -1,5 +1,6 @@
 package energy.eddie.outbound.kafka;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -34,9 +35,14 @@ public class KafkaOutboundConnector {
     }
 
     @Bean
-    public ConsumerFactory<String, PermissionEnvelope> consumerFactory(@Qualifier("kafkaPropertiesMap") Map<String, String> kafkaProperties) {
+    public ConsumerFactory<String, PermissionEnvelope> consumerFactory(
+            @Qualifier("kafkaPropertiesMap") Map<String, String> kafkaProperties,
+            @Qualifier("objectMapper") ObjectMapper objectMapper
+    ) {
         var config = kafkaProperties(kafkaProperties);
-        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), new CustomDeserializer());
+        return new DefaultKafkaConsumerFactory<>(config,
+                                                 new StringDeserializer(),
+                                                 new CustomDeserializer(objectMapper));
     }
 
     @Bean
@@ -55,9 +61,12 @@ public class KafkaOutboundConnector {
     }
 
     @Bean
-    public ProducerFactory<String, Object> producerFactory(@Qualifier("kafkaPropertiesMap") Map<String, String> kafkaProperties) {
+    public ProducerFactory<String, Object> producerFactory(
+            @Qualifier("kafkaPropertiesMap") Map<String, String> kafkaProperties,
+            @Qualifier("objectMapper") ObjectMapper objectMapper
+    ) {
         var config = kafkaProperties(kafkaProperties);
-        return new DefaultKafkaProducerFactory<>(config, new StringSerializer(), new CustomSerializer());
+        return new DefaultKafkaProducerFactory<>(config, new StringSerializer(), new CustomSerializer(objectMapper));
     }
 
     @Bean
