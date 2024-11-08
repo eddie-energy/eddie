@@ -58,7 +58,7 @@ tasks.register<PnpmTask>("pnpmBuild") {
 
 tasks.register<PnpmTask>("pnpmBuildDocs") {
     dependsOn("pnpmInstall")
-    pnpmCommand.set(listOf("run", "build-docs"))
+    pnpmCommand.set(listOf("-C", "docs", "run", "docs:build"))
 }
 
 sonar {
