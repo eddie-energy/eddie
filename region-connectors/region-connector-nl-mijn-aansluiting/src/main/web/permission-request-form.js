@@ -65,7 +65,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             us your data.
           </p>
 
-          <input id="submit" type="submit" value="Submit" />
+          <sl-button type="submit" variant="primary">Submit</sl-button>
         </form>
       </div>
     `;
