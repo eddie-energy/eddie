@@ -138,7 +138,3 @@ application-local.properties
 
 # IntelliJ HTTP Client environment secrets
 *.private.env.json
-
-# Ignores from docs
-/docs/.vitepress/cache/
-/docs/.vitepress/dist/
