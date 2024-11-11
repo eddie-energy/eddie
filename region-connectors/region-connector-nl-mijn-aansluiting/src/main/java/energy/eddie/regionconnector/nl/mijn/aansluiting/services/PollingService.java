@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,6 +77,11 @@ public class PollingService implements AutoCloseable, CommonPollingService {
                                      accessTokenAndSingleSyncUrl.accessToken())
                  .map(apData -> new IdentifiableAccountingPointData(permissionRequest, apData))
                  .subscribe(this::consume);
+    }
+
+    @Override
+    public void fetchMeterReadings(CommonPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
+
     }
 
     public void pollTimeSeriesData(CommonPermissionRequest permissionRequest) {

@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class RetryService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RetryService.class);
@@ -25,7 +27,7 @@ public class RetryService {
     @Scheduled(cron = "${region-connector.es.datadis.retry:0 0 * * * *}")
     public void retry() {
         LOGGER.info("Retrying failed permission requests");
-        var permissionRequests = repository.findByStatus(PermissionProcessStatus.UNABLE_TO_SEND);
+        List<EsPermissionRequest> permissionRequests = repository.findByStatus(PermissionProcessStatus.UNABLE_TO_SEND);
         for (EsPermissionRequest pr : permissionRequests) {
             var permissionId = pr.permissionId();
             LOGGER.info("Retrying permission request {}", permissionId);

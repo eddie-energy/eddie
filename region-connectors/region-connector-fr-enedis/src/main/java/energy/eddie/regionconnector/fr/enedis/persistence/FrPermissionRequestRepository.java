@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.process.model.persistence.StalePermissionReques
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequestRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -16,9 +17,10 @@ import java.util.List;
 public interface FrPermissionRequestRepository extends
         PermissionRequestRepository<FrEnedisPermissionRequest>,
         CrudRepository<EnedisPermissionRequest, String>,
-        StalePermissionRequestRepository<EnedisPermissionRequest> {
+        StalePermissionRequestRepository<EnedisPermissionRequest>,
+        CommonPermissionRequestRepository {
 
-    List<FrEnedisPermissionRequest> findAllByStatus(PermissionProcessStatus status);
+    List<FrEnedisPermissionRequest> findByStatus(PermissionProcessStatus status);
 
     @Query(
             value = "SELECT permission_id, connection_id, permission_start, permission_end, data_need_id, status, granularity, usage_point_id, latest_meter_reading_end_date, created, usage_point_type " +

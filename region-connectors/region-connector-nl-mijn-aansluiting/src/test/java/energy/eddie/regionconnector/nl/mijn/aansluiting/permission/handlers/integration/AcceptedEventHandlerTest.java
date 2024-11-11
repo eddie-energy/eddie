@@ -83,7 +83,7 @@ class AcceptedEventHandlerTest {
         eventBus.emit(new NlSimpleEvent("pid", PermissionProcessStatus.ACCEPTED));
 
         // Then
-        verify(pollingService).pollTimeSeriesData((CommonPermissionRequest) pr);
+        verify(pollingService).pollTimeSeriesData(pr);
     }
 
     @Test

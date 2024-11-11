@@ -42,7 +42,7 @@ class FutureDataServiceTest {
                                                                                            inactivePermissionRequest));
 
 
-        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService);
+        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService, null);
 
         // When
         futureDataService.fetchMeteringData();
@@ -63,7 +63,7 @@ class FutureDataServiceTest {
         when(repository.findByStatus(PermissionProcessStatus.ACCEPTED))
                 .thenReturn(List.of(activePermissionRequest));
 
-        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService);
+        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService, null);
 
         // When
         futureDataService.fetchMeteringData();
@@ -84,7 +84,7 @@ class FutureDataServiceTest {
 
         when(repository.findByStatus(PermissionProcessStatus.ACCEPTED)).thenReturn(List.of(activePermissionRequest));
 
-        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService);
+        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService, null);
 
         // When
         futureDataService.fetchMeteringData();

@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface CommonPermissionRequestRepository  {
 
-    List<? extends PermissionRequest> findByStatus(PermissionProcessStatus status);
+    List<? extends CommonPermissionRequest> findByStatus(PermissionProcessStatus status);
 
 }

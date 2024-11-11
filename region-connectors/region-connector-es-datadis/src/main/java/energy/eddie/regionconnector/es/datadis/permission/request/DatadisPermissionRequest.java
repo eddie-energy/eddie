@@ -219,6 +219,11 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     }
 
     @Override
+    public String usagePointId() {
+        return "";
+    }
+
+    @Override
     public Optional<LocalDate> latestMeterReadingEndDate() {
         return Optional.ofNullable(this.latestMeterReadingEndDate);
     }

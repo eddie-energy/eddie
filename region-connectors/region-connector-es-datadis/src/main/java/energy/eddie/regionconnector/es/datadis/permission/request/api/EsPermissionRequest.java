@@ -10,7 +10,7 @@ import jakarta.annotation.Nullable;
 
 import java.util.Optional;
 
-public interface EsPermissionRequest extends MeterReadingPermissionRequest, CommonPermissionRequest {
+public interface EsPermissionRequest extends CommonPermissionRequest {
     /**
      * The NIF of the customer that requested the permission. This is the username which is used to log in to the
      * Datadis portal.

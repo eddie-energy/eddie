@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisMeterReadingApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
@@ -9,6 +8,7 @@ import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import energy.eddie.regionconnector.shared.services.CommonPollingService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 @Service
-public class PollingService implements AutoCloseable {
+public class PollingService implements AutoCloseable, CommonPollingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
                                                                    .filter(PollingService::isRetryable);
@@ -55,7 +55,7 @@ public class PollingService implements AutoCloseable {
     }
 
     public void fetchMeterReadings(
-            FrEnedisPermissionRequest permissionRequest,
+            CommonPermissionRequest permissionRequest,
             LocalDate start,
             LocalDate end
     ) {
@@ -65,20 +65,20 @@ public class PollingService implements AutoCloseable {
 
         // If the granularity is PT30M, we need to fetch the data in batches
         switch (permissionRequest.granularity()) {
-            case PT30M -> fetchDataInBatches(permissionRequest, start, end)
+            case PT30M -> fetchDataInBatches((FrEnedisPermissionRequest) permissionRequest, start, end)
                     .doOnComplete(() -> LOGGER.info(
                             "Finished fetching half hourly data from ENEDIS for permission request '{}'",
                             permissionId))
                     .subscribe(identifiableMeterReading -> handleIdentifiableMeterReading(
                                        Granularity.PT30M,
-                                       permissionRequest,
+                            (FrEnedisPermissionRequest) permissionRequest,
                                        identifiableMeterReading
                                )
                     );
-            case P1D -> fetchData(permissionRequest, start, end)
+            case P1D -> fetchData((FrEnedisPermissionRequest) permissionRequest, start, end)
                     .subscribe(identifiableMeterReading -> handleIdentifiableMeterReading(
                                        Granularity.P1D,
-                                       permissionRequest,
+                            (FrEnedisPermissionRequest) permissionRequest,
                                        identifiableMeterReading
                                )
                     );
@@ -169,7 +169,7 @@ public class PollingService implements AutoCloseable {
                     // Calculate the end date for this batch, ensuring it's within the overall end date and not in the future
                     LocalDate batchEnd = batchStart.plusWeeks(1);
                     batchEnd = batchEnd.isAfter(end) ? end : batchEnd; // Ensure not to exceed the end date
-                    return fetchData(permissionRequest, batchStart, batchEnd);
+                    return fetchData((FrEnedisPermissionRequest) permissionRequest, batchStart, batchEnd);
                 })
                 .onErrorComplete(); // stop the stream if an error occurs
     }
@@ -185,5 +185,10 @@ public class PollingService implements AutoCloseable {
     @Override
     public void close() throws Exception {
         meterReadings.tryEmitComplete();
+    }
+
+    @Override
+    public void pollTimeSeriesData(CommonPermissionRequest activePermission) {
+
     }
 }

@@ -66,7 +66,7 @@ class FutureDataServiceTest {
         futureDataService.scheduleNextMeterReading();
 
         // Then
-        verify(pollingService).pollTimeSeriesData((CommonPermissionRequest) PERMISSION_REQUEST);
+        verify(pollingService).pollTimeSeriesData(PERMISSION_REQUEST);
     }
 
     @Test
@@ -81,6 +81,6 @@ class FutureDataServiceTest {
         futureDataService.scheduleNextMeterReading();
 
         // Then
-        verify(pollingService, never()).pollTimeSeriesData((CommonPermissionRequest) PERMISSION_REQUEST);
+        verify(pollingService, never()).pollTimeSeriesData(PERMISSION_REQUEST);
     }
 }

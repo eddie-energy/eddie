@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,7 +34,7 @@ class FutureDataServiceTest {
     private FrPermissionRequestRepository repository;
 
     @InjectMocks
-    private FutureDataService futureDataService;
+    private CommonFutureDataService futureDataService;
 
     static Stream<Arguments> activePermission_that_needsToBeFetched() {
         LocalDate today = LocalDate.now(ZONE_ID_FR);
@@ -89,13 +90,13 @@ class FutureDataServiceTest {
     @Test
     void fetchMeterReadings_doesNothingIfNoAcceptedPermissionRequestsAreFound() {
         // Given
-        when(repository.findAllByStatus(PermissionProcessStatus.ACCEPTED)).thenReturn(Collections.emptyList());
+        when(repository.findByStatus(PermissionProcessStatus.ACCEPTED)).thenReturn(Collections.emptyList());
 
         // When
         futureDataService.fetchMeterReadings();
 
         // Then
-        verify(repository).findAllByStatus(PermissionProcessStatus.ACCEPTED);
+        verify(repository).findByStatus(PermissionProcessStatus.ACCEPTED);
         verifyNoMoreInteractions(pollingService); // No interaction with pollingService should occur
     }
 
@@ -106,14 +107,14 @@ class FutureDataServiceTest {
             String description
     ) {
         // Given
-        when(repository.findAllByStatus(PermissionProcessStatus.ACCEPTED))
+        when(repository.findByStatus(PermissionProcessStatus.ACCEPTED))
                 .thenReturn(Collections.singletonList(permissionRequest));
 
         // When
         futureDataService.fetchMeterReadings();
 
         // Then
-        verify(repository).findAllByStatus(PermissionProcessStatus.ACCEPTED);
+        verify(repository).findByStatus(PermissionProcessStatus.ACCEPTED);
         LocalDate startFetchDate = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
         verify(pollingService).fetchMeterReadings(permissionRequest,
                                                   startFetchDate,
@@ -128,14 +129,14 @@ class FutureDataServiceTest {
             String description
     ) {
         // Given
-        when(repository.findAllByStatus(PermissionProcessStatus.ACCEPTED))
+        when(repository.findByStatus(PermissionProcessStatus.ACCEPTED))
                 .thenReturn(Collections.singletonList(permissionRequest));
 
         // Execute
         futureDataService.fetchMeterReadings();
 
         // Then
-        verify(repository).findAllByStatus(PermissionProcessStatus.ACCEPTED);
+        verify(repository).findByStatus(PermissionProcessStatus.ACCEPTED);
         verifyNoMoreInteractions(pollingService); // No interaction with pollingService should occur
     }
 }

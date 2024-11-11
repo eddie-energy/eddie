@@ -111,7 +111,7 @@ class PollingServiceTest {
         );
 
         // When
-        pollingService.pollTimeSeriesData((CommonPermissionRequest) pr);
+        pollingService.pollTimeSeriesData(pr);
 
         // Then
         verify(outbox, never()).commit(any());
@@ -141,7 +141,7 @@ class PollingServiceTest {
         );
 
         // When
-        pollingService.pollTimeSeriesData((CommonPermissionRequest) pr);
+        pollingService.pollTimeSeriesData(pr);
 
         // Then
         verify(outbox).commit(captor.capture());
@@ -178,7 +178,7 @@ class PollingServiceTest {
         );
 
         // When
-        pollingService.pollTimeSeriesData((CommonPermissionRequest) pr);
+        pollingService.pollTimeSeriesData(pr);
 
         // Then
         verify(outbox).commit(internalPollingEventCaptor.capture());
@@ -210,7 +210,7 @@ class PollingServiceTest {
         );
 
         // When
-        pollingService.pollTimeSeriesData((CommonPermissionRequest) pr);
+        pollingService.pollTimeSeriesData(pr);
 
         // Then
         verify(outbox, never()).commit(any());
@@ -249,7 +249,7 @@ class PollingServiceTest {
         );
 
         // When
-        pollingService.pollTimeSeriesData((CommonPermissionRequest) pr);
+        pollingService.pollTimeSeriesData(pr);
 
         // Then
         StepVerifier.create(pollingService.identifiableMeteredDataFlux())
@@ -291,7 +291,7 @@ class PollingServiceTest {
         );
 
         // When
-        pollingService.pollTimeSeriesData((CommonPermissionRequest) pr);
+        pollingService.pollTimeSeriesData(pr);
 
         // Then
         verify(outbox, never()).commit(any());
@@ -324,7 +324,7 @@ class PollingServiceTest {
         );
 
         // When
-        pollingService.pollTimeSeriesData((CommonPermissionRequest) pr);
+        pollingService.pollTimeSeriesData(pr);
 
         // Then
         verify(outbox, never()).commit(any());
@@ -360,7 +360,7 @@ class PollingServiceTest {
         );
 
         // When
-        pollingService.pollTimeSeriesData((CommonPermissionRequest) pr);
+        pollingService.pollTimeSeriesData(pr);
 
         // Then
         StepVerifier.create(pollingService.identifiableMeteredDataFlux())
@@ -409,7 +409,7 @@ class PollingServiceTest {
         );
 
         // When
-        pollingService.pollTimeSeriesData((CommonPermissionRequest) pr);
+        pollingService.pollTimeSeriesData(pr);
 
         // Then
         StepVerifier.create(pollingService.identifiableMeteredDataFlux())
@@ -458,7 +458,7 @@ class PollingServiceTest {
         );
 
         // When
-        pollingService.pollTimeSeriesData((CommonPermissionRequest) pr);
+        pollingService.pollTimeSeriesData(pr);
 
         // Then
         StepVerifier.create(pollingService.identifiableMeteredDataFlux())

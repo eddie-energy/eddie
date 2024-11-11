@@ -12,6 +12,8 @@ import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrUsagePointTypeEvent;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.services.CommonAccountingPointDataService;
+import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,7 +26,7 @@ import reactor.util.retry.RetryBackoffSpec;
 import java.time.Duration;
 
 @Service
-public class AccountingPointDataService {
+public class AccountingPointDataService implements CommonAccountingPointDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountingPointDataService.class);
     public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
                                                                    .filter(AccountingPointDataService::isRetryable);
@@ -52,7 +54,7 @@ public class AccountingPointDataService {
         return retryable;
     }
 
-    public void fetchAccountingPointData(FrEnedisPermissionRequest request, String usagePointId) {
+    public void fetchAccountingPointData(CommonPermissionRequest request, String usagePointId) {
         LOGGER.atInfo()
               .addArgument(request::permissionId)
               .log("Fetching accounting point data for permissionId '{}'");
@@ -65,9 +67,9 @@ public class AccountingPointDataService {
         Mono.zip(contractMono, addressMono, identityMono, contactMono)
             .subscribe(
                     tuple -> handleAccountingPointData(
-                            request,
+                            (FrEnedisPermissionRequest) request,
                             new IdentifiableAccountingPointData(
-                                    request, tuple.getT1(), tuple.getT2(), tuple.getT3(), tuple.getT4()
+                                    (FrEnedisPermissionRequest) request, tuple.getT1(), tuple.getT2(), tuple.getT3(), tuple.getT4()
                             )
                     ),
                     e -> handleError(request.permissionId(), e)

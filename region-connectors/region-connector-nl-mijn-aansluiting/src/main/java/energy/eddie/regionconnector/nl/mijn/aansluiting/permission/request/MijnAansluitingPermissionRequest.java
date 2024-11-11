@@ -127,6 +127,11 @@ public class MijnAansluitingPermissionRequest implements NlPermissionRequest, Co
     }
 
     @Override
+    public String usagePointId() {
+        return "";
+    }
+
+    @Override
     public String codeVerifier() {
         return codeVerifier;
     }
@@ -139,5 +144,10 @@ public class MijnAansluitingPermissionRequest implements NlPermissionRequest, Co
     @Override
     public Map<String, ZonedDateTime> lastMeterReadings() {
         return lastMeterReadings;
+    }
+
+    @Override
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return Optional.empty();
     }
 }

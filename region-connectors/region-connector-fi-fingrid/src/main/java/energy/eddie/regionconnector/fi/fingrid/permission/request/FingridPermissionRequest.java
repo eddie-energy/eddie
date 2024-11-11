@@ -16,7 +16,7 @@ import java.util.Optional;
 @Entity
 @Table(schema = "fi_fingrid", name = "permission_request")
 @SuppressWarnings({"NullAway", "unused"})
-public class FingridPermissionRequest implements PermissionRequest, CommonPermissionRequest {
+public class FingridPermissionRequest implements CommonPermissionRequest {
     @Id
     @Column(length = 36)
     private final String permissionId;
@@ -136,5 +136,15 @@ public class FingridPermissionRequest implements PermissionRequest, CommonPermis
 
     public Optional<ZonedDateTime> latestMeterReading() {
         return Optional.ofNullable(latestMeterReading);
+    }
+
+    @Override
+    public String usagePointId() {
+        return "";
+    }
+
+    @Override
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return Optional.empty();
     }
 }

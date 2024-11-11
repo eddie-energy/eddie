@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.fi.fingrid.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.client.FingridApiClient;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
 import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
@@ -28,6 +27,11 @@ public class PollingService implements CommonPollingService {
         this.energyDataService = energyDataService;
         this.api = api;
         this.updateGranularityService = updateGranularityService;
+    }
+
+    @Override
+    public void fetchMeterReadings(CommonPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
+
     }
 
     public void pollTimeSeriesData(CommonPermissionRequest permissionRequest) {
