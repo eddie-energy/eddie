@@ -1,8 +1,7 @@
 package energy.eddie.regionconnector.fi.fingrid.permission.request;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.DataSourceInformation;
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fi.fingrid.permission.FingridDataSourceInformation;
 import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;

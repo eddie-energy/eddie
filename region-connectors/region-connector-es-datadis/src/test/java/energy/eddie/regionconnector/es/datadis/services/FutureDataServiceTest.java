@@ -8,7 +8,6 @@ import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCod
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
-import energy.eddie.regionconnector.shared.services.CommonPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -42,10 +41,11 @@ class FutureDataServiceTest {
                                                                                            inactivePermissionRequest));
 
 
-        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService, null);
+        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService, null, "Europe/Madrid");
+        futureDataService.setCronExpression("0 0 17 * * *");
 
         // When
-        futureDataService.fetchMeteringData();
+        futureDataService.fetchMeterData();
 
         // Then
         verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest1, yesterday, yesterday);
@@ -63,10 +63,10 @@ class FutureDataServiceTest {
         when(repository.findByStatus(PermissionProcessStatus.ACCEPTED))
                 .thenReturn(List.of(activePermissionRequest));
 
-        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService, null);
+        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService, null, "Europe/Madrid");
 
         // When
-        futureDataService.fetchMeteringData();
+        futureDataService.fetchMeterData();
 
         // Then
         verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest,
@@ -84,10 +84,10 @@ class FutureDataServiceTest {
 
         when(repository.findByStatus(PermissionProcessStatus.ACCEPTED)).thenReturn(List.of(activePermissionRequest));
 
-        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService, null);
+        CommonFutureDataService futureDataService = new CommonFutureDataService(null, repository, null, dataApiService, null, "Europe/Madrid");
 
         // When
-        futureDataService.fetchMeteringData();
+        futureDataService.fetchMeterData();
 
         // Then
         verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, yesterday, yesterday);

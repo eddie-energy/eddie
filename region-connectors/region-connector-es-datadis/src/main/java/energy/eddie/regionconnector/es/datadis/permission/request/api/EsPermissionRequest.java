@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.permission.request.api;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;

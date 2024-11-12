@@ -7,6 +7,7 @@ import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,6 +16,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.shaded.org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -35,6 +37,13 @@ class FutureDataServiceTest {
 
     @InjectMocks
     private CommonFutureDataService futureDataService;
+
+    @BeforeEach
+    public void setCronAndTimeZone() throws Exception {
+        String ZONE = "Europe/Paris";
+        FieldUtils.writeField(futureDataService, "ZONE", ZONE, true);
+        futureDataService.setCronExpression("0 0 17 * * *");
+    }
 
     static Stream<Arguments> activePermission_that_needsToBeFetched() {
         LocalDate today = LocalDate.now(ZONE_ID_FR);
@@ -93,7 +102,7 @@ class FutureDataServiceTest {
         when(repository.findByStatus(PermissionProcessStatus.ACCEPTED)).thenReturn(Collections.emptyList());
 
         // When
-        futureDataService.fetchMeterReadings();
+        futureDataService.fetchMeterData();
 
         // Then
         verify(repository).findByStatus(PermissionProcessStatus.ACCEPTED);
@@ -111,7 +120,7 @@ class FutureDataServiceTest {
                 .thenReturn(Collections.singletonList(permissionRequest));
 
         // When
-        futureDataService.fetchMeterReadings();
+        futureDataService.fetchMeterData();
 
         // Then
         verify(repository).findByStatus(PermissionProcessStatus.ACCEPTED);
@@ -133,7 +142,7 @@ class FutureDataServiceTest {
                 .thenReturn(Collections.singletonList(permissionRequest));
 
         // Execute
-        futureDataService.fetchMeterReadings();
+        futureDataService.fetchMeterData();
 
         // Then
         verify(repository).findByStatus(PermissionProcessStatus.ACCEPTED);

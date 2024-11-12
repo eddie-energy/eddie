@@ -10,12 +10,13 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
-import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.shaded.org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -49,6 +50,13 @@ class FutureDataServiceTest {
     @InjectMocks
     private CommonFutureDataService futureDataService;
 
+    @BeforeEach
+    public void setCronAndTimeZone() throws Exception {
+        String ZONE = "Europe/Amsterdam";
+        FieldUtils.writeField(futureDataService, "ZONE", ZONE, true);
+        futureDataService.setCronExpression("0 0 17 * * *");
+    }
+
     @Test
     void testScheduleNextMeterReading_pollsData() {
         // Given
@@ -63,7 +71,7 @@ class FutureDataServiceTest {
                 ));
 
         // When
-        futureDataService.scheduleNextMeterReading();
+        futureDataService.fetchMeterData();
 
         // Then
         verify(pollingService).pollTimeSeriesData(PERMISSION_REQUEST);
@@ -78,7 +86,7 @@ class FutureDataServiceTest {
                 .thenReturn(new AccountingPointDataNeed());
 
         // When
-        futureDataService.scheduleNextMeterReading();
+        futureDataService.fetchMeterData();
 
         // Then
         verify(pollingService, never()).pollTimeSeriesData(PERMISSION_REQUEST);

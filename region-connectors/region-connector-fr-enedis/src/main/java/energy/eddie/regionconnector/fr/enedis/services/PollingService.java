@@ -169,7 +169,7 @@ public class PollingService implements AutoCloseable, CommonPollingService {
                     // Calculate the end date for this batch, ensuring it's within the overall end date and not in the future
                     LocalDate batchEnd = batchStart.plusWeeks(1);
                     batchEnd = batchEnd.isAfter(end) ? end : batchEnd; // Ensure not to exceed the end date
-                    return fetchData((FrEnedisPermissionRequest) permissionRequest, batchStart, batchEnd);
+                    return fetchData(permissionRequest, batchStart, batchEnd);
                 })
                 .onErrorComplete(); // stop the stream if an error occurs
     }

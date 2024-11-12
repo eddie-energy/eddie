@@ -14,7 +14,6 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermission
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
-import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
