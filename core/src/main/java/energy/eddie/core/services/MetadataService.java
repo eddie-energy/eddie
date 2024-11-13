@@ -2,10 +2,12 @@ package energy.eddie.core.services;
 
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.core.dtos.SupportedDataNeeds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +24,20 @@ public class MetadataService {
 
     public List<RegionConnectorMetadata> getRegionConnectorMetadata() {
         return regionConnectors.stream()
-                .map(RegionConnector::getMetadata)
-                .toList();
+                               .map(RegionConnector::getMetadata)
+                               .toList();
+    }
+
+
+    public List<SupportedDataNeeds> getSupportedDataNeeds() {
+        List<SupportedDataNeeds> supportedDataNeeds = new ArrayList<>();
+
+        for (var metadata : getRegionConnectorMetadata()) {
+            List<String> dataNeeds = metadata.supportedDataNeeds().stream()
+                                             .map(Class::getSimpleName)
+                                             .toList();
+            supportedDataNeeds.add(new SupportedDataNeeds(metadata.id(), dataNeeds));
+        }
+        return supportedDataNeeds;
     }
 }

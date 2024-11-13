@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 
 import java.time.Period;
 import java.time.ZoneId;
@@ -64,8 +65,8 @@ public interface RegionConnectorMetadata {
     ZoneId timeZone();
 
     /**
-     * List of supported data needs
+     * List of supported Data Needs
      */
-    @JsonProperty
-    List<String> supportedDataNeeds();
+    @JsonIgnore
+    List<Class<? extends DataNeedInterface>> supportedDataNeeds();
 }

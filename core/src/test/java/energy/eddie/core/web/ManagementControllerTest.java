@@ -1,8 +1,6 @@
 package energy.eddie.core.web;
 
-import energy.eddie.core.services.SupportedDataNeedService;
 import energy.eddie.core.services.SupportedFeatureService;
-import energy.eddie.spring.regionconnector.extensions.RegionConnectorSupportedDataNeedExtension;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorSupportedFeatureExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,11 +25,7 @@ class ManagementControllerTest {
     @MockBean
     private SupportedFeatureService service;
     @MockBean
-    private SupportedDataNeedService dataNeedService;
-    @MockBean
     private RegionConnectorSupportedFeatureExtension extension;
-    @MockBean
-    private RegionConnectorSupportedDataNeedExtension dataNeedExtension;
 
     @Test
     void testSupportedFeatures_returns200() throws Exception {
@@ -46,8 +40,6 @@ class ManagementControllerTest {
 
     @Test
     void testSupportedDataNeeds_returns200() throws Exception {
-        // Given
-        when(dataNeedService.getSupportedDataNeedExtensions()).thenReturn(List.of(dataNeedExtension));
 
         // When
         mockMvc.perform(get("/management/region-connectors/supported-data-needs"))

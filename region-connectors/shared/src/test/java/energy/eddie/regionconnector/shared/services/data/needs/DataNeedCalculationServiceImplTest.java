@@ -230,7 +230,7 @@ class DataNeedCalculationServiceImplTest {
                                                List<Granularity> supportedGranularities,
                                                ZoneId timeZone) implements RegionConnectorMetadata {
         @Override
-        public List<String> supportedDataNeeds() {
+        public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
             return List.of();
         }
     }
