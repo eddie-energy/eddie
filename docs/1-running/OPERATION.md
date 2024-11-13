@@ -82,7 +82,8 @@ responsible for storing previous connection IDs and linking them to the users of
 
 The EDDIE button fires events to inform the EP application about the status of the user interaction, and the status of the permission request. These events can be listened to by the EP application to update the UI or to trigger further actions.
 
-Permission request states are described in [PERMISSION_STATES.md](PERMISSION_STATES.md). To match the naming of event and attribute names common in HTML and JavaScript, the status names are converted to lowercase and hyphens are used as separators. Event handler attributes also have the hyphens removed. For example, the status `UNABLE_TO_SEND` is converted to `unable-to-send` for events and `onunabletosend` for the event handler attribute.
+Permission request states are described in [PERMISSION_STATES.md](../2-integrating/PERMISSION_STATES.md). To match the naming of event and attribute names common in HTML and JavaScript, the status names are converted to lowercase and hyphens are used as separators. Event handler attributes also have the hyphens removed. For example, the status
+`UNABLE_TO_SEND` is converted to `unable-to-send` for events and `onunabletosend` for the event handler attribute.
 
 > [!IMPORTANT]
 > Please note that status events on the client side are not a reliable source of information about the status of the permission request!
@@ -160,31 +161,32 @@ the `docker-compose.yml` file.
 ### Configuring EDDIE Core
 
 EDDIE Core can be configured by the following environment variables.
-You can also modify the [application.properties](../core/src/main/resources/application.properties) file directly, but
-the recommendation is to use the `.env` which accompanies the [docker-compose.yml](../env/docker-compose.yml) file.
+You can also modify the [application.properties](https://github.com/eddie-energy/eddie/blob/main/core/src/main/resources/application.properties)
+file directly, but the recommendation is to use the `.env` which accompanies the
+[docker-compose.yml](https://github.com/eddie-energy/eddie/blob/main/env/docker-compose.yml) file.
 
-| Parameter                                                            | Description                                                                                                                                                                                                                                                                                                    |
-|----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| CORE_PORT                                                            | Port on which the server should listen. 8080 by default.                                                                                                                                                                                                                                                       |
-| JDBC_URL                                                             | JDB URL to PostgreSQL database where EDDIE will store permission requests and data needs.                                                                                                                                                                                                                      |
-| JDBC_USER                                                            | Username to authenticate with the PostgreSQL server.                                                                                                                                                                                                                                                           |
-| JDBC_PASSWORD                                                        | Password to authenticate with the PostgreSQL server.                                                                                                                                                                                                                                                           |
-| EDDIE_CORS_ALLOWED_ORIGINS                                           | Pattern for allowed CORS origins. See [SpringDoc](<https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/servlet/config/annotation/CorsRegistration.html#allowedOriginPatterns(java.lang.String...)>) for more details. If not specified, no CORS requests will be allowed. |
-| EDDIE_JWT_HMAC_SECRET                                                | Secret used to sign JWTs issued by EDDIE. Supply 32 random (!) bytes encoded as Base64 string.                                                                                                                                                                                                                 |
-| EDDIE_PUBLIC_URL                                                     | Public URL where external clients can reach EDDIE core.                                                                                                                                                                                                                                                        |
-| KAFKA_ENABLED                                                        | Set to `true` to enable publishing of status & data messages to the specified Kafka cluster.                                                                                                                                                                                                                   |
-| KAFKA_BOOTSTRAP_SERVERS                                              | Comma separated list of Kafka server IPs/hostnames.                                                                                                                                                                                                                                                            |
-| EDDIE_RAW_DATA_OUTPUT_ENABLED                                        | If set to `true`, supporting region connectors will publish the raw message as they receive it from the MDA to a dedicated Kafka topic.                                                                                                                                                                        |
-| EDDIE_PERMISSION_REQUEST_TIMEOUT_DURATION                            | Sets the duration after which a permission request, which was neither accepted nor rejected, is considered stale. Default is 168 hours (7 days).                                                                                                                                                               |
-| EDDIE_PERMISSION_REQUEST_TIMEOUT_SCHEDULE                            | Sets the schedule when stale permission requests should be timed out. Uses Spring Cron syntax. Default is hourly.                                                                                                                                                                                              |
-| EDDIE_MANAGEMENT_SERVER_PORT                                         | Port for the management api (only available if _EDDIE_DATA_NEEDS_CONFIG_DATA_NEED_SOURCE=DATABASE_).                                                                                                                                                                                                           |
-| EDDIE_MANAGEMENT_SERVER_URLPREFIX                                    | Url prefix for the management api (must not be used for other purposes).                                                                                                                                                                                                                                       |
-| EDDIE_DATA_NEEDS_CONFIG_DATA_NEED_SOURCE                             | Source where to read data needs from. Either `config` or `database`.                                                                                                                                                                                                                                           |
-| EDDIE_DATA_NEEDS_CONFIG_FILE                                         | File containing data needs definitions.                                                                                                                                                                                                                                                                        |
-| EDDIE_CONVERTERS_POWER                                               | When set to `true` enables the converter to convert energy to power measurements.                                                                                                                                                                                                                              |
-| EDDIE_CONVERTERS_ENERGY                                              | When set to `true` enables the converter to convert power to energy measurements.                                                                                                                                                                                                                              |
-| REGION*CONNECTOR*<country-code>\_<permission-administrator>\_ENABLED | `true` to enable the specific region connector. By default, only region connectors requiring no explicit configuration are enabled. Ensure that you set any other required configuration for the region connector as otherwise EDDIE may fail to start.                                                        |
-| `SPRING_CODEC_MAX_IN_MEMORY_SIZE`                                    | Sets the maximum size that is used for webclients and webserver. Recommended is at least `20MB`, which can be increased, if the `DataBufferLimitException` occurs.                                                                                                                                             |
+| Parameter                                                              | Description                                                                                                                                                                                                                                                                                                    |
+|------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| CORE_PORT                                                              | Port on which the server should listen. 8080 by default.                                                                                                                                                                                                                                                       |
+| JDBC_URL                                                               | JDB URL to PostgreSQL database where EDDIE will store permission requests and data needs.                                                                                                                                                                                                                      |
+| JDBC_USER                                                              | Username to authenticate with the PostgreSQL server.                                                                                                                                                                                                                                                           |
+| JDBC_PASSWORD                                                          | Password to authenticate with the PostgreSQL server.                                                                                                                                                                                                                                                           |
+| EDDIE_CORS_ALLOWED_ORIGINS                                             | Pattern for allowed CORS origins. See [SpringDoc](<https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/servlet/config/annotation/CorsRegistration.html#allowedOriginPatterns(java.lang.String...)>) for more details. If not specified, no CORS requests will be allowed. |
+| EDDIE_JWT_HMAC_SECRET                                                  | Secret used to sign JWTs issued by EDDIE. Supply 32 random (!) bytes encoded as Base64 string.                                                                                                                                                                                                                 |
+| EDDIE_PUBLIC_URL                                                       | Public URL where external clients can reach EDDIE core.                                                                                                                                                                                                                                                        |
+| KAFKA_ENABLED                                                          | Set to `true` to enable publishing of status & data messages to the specified Kafka cluster.                                                                                                                                                                                                                   |
+| KAFKA_BOOTSTRAP_SERVERS                                                | Comma separated list of Kafka server IPs/hostnames.                                                                                                                                                                                                                                                            |
+| EDDIE_RAW_DATA_OUTPUT_ENABLED                                          | If set to `true`, supporting region connectors will publish the raw message as they receive it from the MDA to a dedicated Kafka topic.                                                                                                                                                                        |
+| EDDIE_PERMISSION_REQUEST_TIMEOUT_DURATION                              | Sets the duration after which a permission request, which was neither accepted nor rejected, is considered stale. Default is 168 hours (7 days).                                                                                                                                                               |
+| EDDIE_PERMISSION_REQUEST_TIMEOUT_SCHEDULE                              | Sets the schedule when stale permission requests should be timed out. Uses Spring Cron syntax. Default is hourly.                                                                                                                                                                                              |
+| EDDIE_MANAGEMENT_SERVER_PORT                                           | Port for the management api (only available if _EDDIE_DATA_NEEDS_CONFIG_DATA_NEED_SOURCE=DATABASE_).                                                                                                                                                                                                           |
+| EDDIE_MANAGEMENT_SERVER_URLPREFIX                                      | Url prefix for the management api (must not be used for other purposes).                                                                                                                                                                                                                                       |
+| EDDIE_DATA_NEEDS_CONFIG_DATA_NEED_SOURCE                               | Source where to read data needs from. Either `config` or `database`.                                                                                                                                                                                                                                           |
+| EDDIE_DATA_NEEDS_CONFIG_FILE                                           | File containing data needs definitions.                                                                                                                                                                                                                                                                        |
+| EDDIE_CONVERTERS_POWER                                                 | When set to `true` enables the converter to convert energy to power measurements.                                                                                                                                                                                                                              |
+| EDDIE_CONVERTERS_ENERGY                                                | When set to `true` enables the converter to convert power to energy measurements.                                                                                                                                                                                                                              |
+| REGION*CONNECTOR*\<country-code>\_\<permission-administrator>\_ENABLED | `true` to enable the specific region connector. By default, only region connectors requiring no explicit configuration are enabled. Ensure that you set any other required configuration for the region connector as otherwise EDDIE may fail to start.                                                        |
+| `SPRING_CODEC_MAX_IN_MEMORY_SIZE`                                      | Sets the maximum size that is used for webclients and webserver. Recommended is at least `20MB`, which can be increased, if the `DataBufferLimitException` occurs.                                                                                                                                             |
 
 ### Configuring region connectors
 
@@ -196,23 +198,24 @@ under `region-connectors/region-connector-<country-code>-<permission-administrat
 
 Or you can use the following links:
 
-- [AIIDA (Near real-time data)](./../region-connectors/region-connector-aiida/README.md)
-- [Austria (EDA)](./../region-connectors/region-connector-at-eda/README.md)
-- [Belgium (Fluvius)](./../region-connectors/region-connector-be-fluvius/README.md)
-- [Denmark (Energinet)](./../region-connectors/region-connector-dk-energinet/README.md)
-- [Finland (Fingrid)](./../region-connectors/region-connector-fi-fingrid/README.md)
-- [France (Enedis)](./../region-connectors/region-connector-fr-enedis/README.md)
-- [Netherlands (Mijn Aansluiting)](./../region-connectors/region-connector-nl-mijn-aansluiting/README.md)
-- [Spain (Datadis)](./../region-connectors/region-connector-es-datadis/README.md)
-- [US/Canada (Green Button)](./../region-connectors/region-connector-us-green-button/README.md)
+- [AIIDA (Near real-time data)](region-connectors/region-connector-aiida.md)
+- [Austria (EDA)](region-connectors/region-connector-at-eda.md)
+- [Belgium (Fluvius)](region-connectors/region-connector-be-fluvius.md)
+- [Denmark (Energinet)](region-connectors/region-connector-dk-energinet.md)
+- [Finland (Fingrid)](region-connectors/region-connector-fi-fingrid.md)
+- [France (Enedis)](region-connectors/region-connector-fr-enedis.md)
+- [Netherlands (Mijn Aansluiting)](region-connectors/region-connector-nl-mijn-aansluiting.md)
+- [Spain (Datadis)](region-connectors/region-connector-es-datadis.md)
+- [US/Canada (Green Button)](region-connectors/region-connector-us-green-button.md)
 
 ### Configuring outbound connectors
 
 There are two outbound connectors, which can be used by the eligible party to interact with eddie.
-If the outbound connector provides a web interface, it will be available via the configured `eddie.management.server.port`.
+If the outbound connector provides a web interface, it will be available via the configured
+`eddie.management.server.port`.
 
 - Kafka Connector: described in the [Kafka Connector section](#kafka-connector).
-- [Admin Console](./../admin-console/README.md)
+- [Admin Console](admin-console.md)
 
 ### Business domain related configuration
 
@@ -250,7 +253,7 @@ It is not possible to combine `CONFIG` and `DATABASE` modes.
 
 #### Data needs in config mode
 
-See the file [env/data-needs.json](env/data-needs.json) for a full example configuration.
+See the file [env/data-needs.json](https://github.com/eddie-energy/eddie/blob/main/env/data-needs.json) for a full example configuration.
 While the REST-API ignores the ID field for creation requests, when supplying data needs via the JSON file,
 the ID is a mandatory field.
 
@@ -304,7 +307,7 @@ Depending on the `type`, a data need may require more fields, e.g. for validated
 
 A data need is mandatory for each _Connect with EDDIE_ Button.
 
-Please see the OpenAPI documentation (default: http://localhost:8080/data-needs/swagger-ui/index.html) for further
+Please see the OpenAPI documentation (default: <http://localhost:8080/data-needs/swagger-ui/index.html>) for further
 details about all possible data need types and their respective fields.
 Please note that while the REST-ful API allows that data needs are deleted, it might not be a good idea to delete a data
 need in production. This is because permission requests reference the data need and deleting the data need may render
@@ -378,12 +381,12 @@ connector id.
 
 If you are using the example app and you change configuration parameters for the _core_, you might need to update its
 configuration as well.
-Please refer to the [readme.md](../examples/example-app/README.md) of the example app.
+Please refer to the [readme.md](example-app.md) of the example app.
 
 ## Internal APIs
 
 EDDIE provides internal APIs for additional information about it.
-For usages for the endpoints see [internal.http](../core/internal.http).
+For usages for the endpoints see [internal.http](https://github.com/eddie-energy/eddie/blob/main/core/internal.http).
 
 ### Actuator API
 
@@ -396,4 +399,5 @@ There are multiple APIs to gather information about region-connectors.
 
 #### Supported features
 
-The endpoint for supported features is available under `<host>:<port>/<eddie.management.server.urlprefix>/region-connectors/supported-features`.
+The endpoint for supported features is available under
+`<host>:<port>/<eddie.management.server.urlprefix>/region-connectors/supported-features`.

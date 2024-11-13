@@ -1,0 +1,3 @@
+# Ignores from docs
+.vitepress/cache/
+.vitepress/dist/

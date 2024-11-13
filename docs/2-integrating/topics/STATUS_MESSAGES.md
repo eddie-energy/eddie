@@ -3,7 +3,7 @@
 The topic **status-messages** provides status messages for a certain permission. The permission status represents the
 current state of the permission with details.
 A list of available options for the attribute `status` can be found in
-the [permission states](../../PERMISSION_STATES.md) documentation.
+the [permission states](../PERMISSION_STATES.md) documentation.
 
 The schema for status messages looks as follows:
 

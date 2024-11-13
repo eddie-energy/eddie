@@ -11,7 +11,7 @@ AIIDA instances are run by customers in their homes, and they can share their in
 The customer visits the EP's website and clicks on the EDDIE connect button.
 If the EP service requires near real-time data, the connect button sends a request to this region connector, requesting
 a new permission. The region connector sends a response with the handshake information for AIIDA. See
-the [E2E flow diagram](./../../aiida/docs/diagrams/aiida_permission_e2e.plantuml) for more information in the handshake
+the [E2E flow diagram](https://github.com/eddie-energy/eddie/blob/main/aiida/docs/diagrams/aiida_permission_e2e.plantuml) for more information in the handshake
 and E2E flow. When the customer grants the permission, their AIIDA instance will send data and status messages to
 separate topics
 on the MQTT broker.
