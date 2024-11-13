@@ -19,9 +19,7 @@ class FrEnedisTest extends E2eTestSetup {
     @Test
     @Disabled("Until Enedis' sandbox is working again")
     void buttonClickOpensNewPage_statusIsFulfilled() {
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).nth(1).click();
-        page.getByRole(AriaRole.COMBOBOX, new Page.GetByRoleOptions().setName("Country")).click();
-        page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("France")).locator("slot").nth(1).click();
+        this.navigateToRegionConnector(null, "France", null);
 
         RequestDetails requestDetails = new RequestDetails();
         page.onResponse(response -> {
@@ -48,10 +46,10 @@ class FrEnedisTest extends E2eTestSetup {
         page.close();
         page = buttonPage;
 
-        var locator = buttonPage.locator("body", new Page.LocatorOptions().setHasText("Fulfilled"));
-        locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));
-        assertThat(locator).containsText(
-                "Status: Request Fulfilled The permission request has been fulfilled, i.e. all data has been delivered.");
+        var locator = page.getByText("Permission granted");
+        locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));  // 2 min
+
+        assertThat(locator).isVisible();
     }
 
     static class RequestDetails {

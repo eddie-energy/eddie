@@ -3,6 +3,7 @@ import EddieNotificationHandler from "./eddie-notification-handler.js";
 import EddieRequestStatusHandler from "./eddie-request-status-handler.js";
 
 import "./data-need-summary.js";
+import "./step-indicator.js";
 
 customElements.define("eddie-connect-button", EddieConnectButton);
 customElements.define("eddie-notification-handler", EddieNotificationHandler);
