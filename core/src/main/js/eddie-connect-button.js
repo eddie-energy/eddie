@@ -126,8 +126,6 @@ class EddieConnectButton extends LitElement {
     _selectedPermissionAdministrator: { type: Object },
     _filteredPermissionAdministrators: { type: Array },
     _activeView: { type: String },
-    _currentStep: { type: Number },
-    _isErrorStep: { type: Boolean },
   };
 
   static styles = css`
@@ -174,6 +172,7 @@ class EddieConnectButton extends LitElement {
   `;
 
   dialogRef = createRef();
+  stepIndicatorRef = createRef();
 
   constructor() {
     super();
@@ -249,14 +248,6 @@ class EddieConnectButton extends LitElement {
      * @private
      */
     this._activeView = "dn";
-
-    /**
-     * Tracks the current step of the step indicator
-     * @type {number}
-     * @private
-     */
-    this._currentStep = 1;
-    this._isErrorStep = false;
   }
 
   connectedCallback() {
@@ -577,11 +568,15 @@ class EddieConnectButton extends LitElement {
   addViewChangeHandlers() {
     for (const [event, { view, step, error }] of eventRoutes) {
       this.addEventListener(event, () => {
-        console.debug(`Route change to ${view} due to ${event}.`);
+        if (view) {
+          this._activeView = view;
+        }
 
-        this._activeView = view;
-        this._currentStep = step;
-        this._isErrorStep = error;
+        if (step) {
+          this.stepIndicatorRef.value.step = step;
+        }
+
+        this.stepIndicatorRef.value.error = !!error;
       });
     }
   }
@@ -627,8 +622,8 @@ class EddieConnectButton extends LitElement {
       >
         <div slot="label">${unsafeSVG(headerImage)}</div>
         <eddie-step-indicator
-          .step="${this._currentStep}"
-          .error="${this._isErrorStep}"
+          ${ref(this.stepIndicatorRef)}
+          step="1"
         ></eddie-step-indicator>
 
         ${choose(this._activeView, [
