@@ -12,6 +12,7 @@ export default withMermaid(defineConfig({
     // bug occurs in vitepress dev mode only
     optimizeDeps: { include: ["mermaid"] },
   },
+  base: "/framework/",
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: "/images/favicon-32x32.png",
