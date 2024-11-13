@@ -32,27 +32,27 @@ const CORE_URL =
   import.meta.env.VITE_CORE_URL ??
   import.meta.url.replace("/lib/eddie-components.js", "");
 
-const views = new Map([
-  ["dn", { step: 1 }],
-  ["pa", { step: 2 }],
-  ["rc", { step: 3 }],
-  ["unable-to-send", { step: 3, error: true }],
-  ["accepted", { step: 5 }],
-  ["rejected", { step: 5 }],
-  ["timed-out", { step: 5, error: true }],
-  ["invalid", { step: 5, error: true }],
-  ["unfulfillable", { step: 5, error: true }],
-]);
-
+/**
+ * Maps events dispatched by the button to the view they should navigate to.
+ * @type {Map<string, {view: string, step: number, error: boolean?}>}
+ */
 const eventRoutes = new Map([
-  ["eddie-data-need-confirmed", { view: "pa" }],
-  ["eddie-permission-administrator-selected", { view: "rc" }],
-  ["eddie-request-unable-to-send", { view: "unable-to-send" }],
-  ["eddie-request-accepted", { view: "accepted" }],
-  ["eddie-request-rejected", { view: "rejected" }],
-  ["eddie-request-timed-out", { view: "timed-out" }],
-  ["eddie-request-invalid", { view: "invalid" }],
-  ["eddie-request-unfulfillable", { view: "unfulfillable" }],
+  ["eddie-view-data-need", { view: "dn", step: 1 }],
+  ["eddie-view-permission-administrator", { view: "pa", step: 2 }],
+  ["eddie-view-region-connector", { view: "rc", step: 3 }],
+  [
+    "eddie-request-unable-to-send",
+    { view: "unable-to-send", step: 3, error: true },
+  ],
+  ["eddie-request-sent-to-permission-administrator", { view: "rc", step: 4 }],
+  ["eddie-request-accepted", { view: "accepted", step: 5 }],
+  ["eddie-request-rejected", { view: "rejected", step: 5 }],
+  ["eddie-request-timed-out", { view: "timed-out", step: 5, error: true }],
+  ["eddie-request-invalid", { view: "invalid", step: 5, error: true }],
+  [
+    "eddie-request-unfulfillable",
+    { view: "unfulfillable", step: 5, error: true },
+  ],
 ]);
 
 const dialogOpenEvent = new Event("eddie-dialog-open", {
@@ -126,6 +126,8 @@ class EddieConnectButton extends LitElement {
     _selectedPermissionAdministrator: { type: Object },
     _filteredPermissionAdministrators: { type: Array },
     _activeView: { type: String },
+    _currentStep: { type: Number },
+    _isErrorStep: { type: Boolean },
   };
 
   static styles = css`
@@ -242,7 +244,7 @@ class EddieConnectButton extends LitElement {
     this._disabled = false;
 
     /**
-     * Always use {@link navigateToView} to update this value.
+     * Should only be updated through {@link addViewChangeHandlers}.
      * @type {string}
      * @private
      */
@@ -342,8 +344,10 @@ class EddieConnectButton extends LitElement {
       <sl-button
         @click="${() =>
           this.isAiida()
-            ? this.navigateToView("dn")
-            : this.navigateToView("pa")}"
+            ? this.dispatchEvent(new Event("eddie-view-data-need"))
+            : this.dispatchEvent(
+                new Event("eddie-view-permission-administrator")
+              )}"
       >
         <sl-icon name="arrow-left"></sl-icon>
       </sl-button>
@@ -385,14 +389,14 @@ class EddieConnectButton extends LitElement {
 
   handleDataNeedConfirmed() {
     if (this.isAiida()) {
-      this.navigateToView("rc");
+      this.dispatchEvent(new Event("eddie-view-region-connector"));
     } else {
-      this.navigateToView("pa");
+      this.dispatchEvent(new Event("eddie-view-permission-administrator"));
     }
   }
 
   handlePermissionAdministratorSelected() {
-    this.navigateToView("rc");
+    this.dispatchEvent(new Event("eddie-view-region-connector"));
   }
 
   selectPermissionAdministrator(permissionAdministrator) {
@@ -571,25 +575,15 @@ class EddieConnectButton extends LitElement {
   }
 
   addViewChangeHandlers() {
-    for (const [event, { view }] of eventRoutes) {
+    for (const [event, { view, step, error }] of eventRoutes) {
       this.addEventListener(event, () => {
-        this.navigateToView(view);
+        console.debug(`Route change to ${view} due to ${event}.`);
+
+        this._activeView = view;
+        this._currentStep = step;
+        this._isErrorStep = error;
       });
     }
-
-    // Step change status change happens inside RC element
-    this.addEventListener(
-      "eddie-request-sent-to-permission-administrator",
-      () => {
-        this._currentStep = 4;
-      }
-    );
-  }
-
-  navigateToView(view) {
-    this._activeView = view;
-    this._currentStep = views.get(view).step;
-    this._isErrorStep = views.get(view).error;
   }
 
   render() {
@@ -714,7 +708,10 @@ class EddieConnectButton extends LitElement {
               </sl-select>
 
               <br />
-              <sl-button @click="${() => this.navigateToView("dn")}">
+              <sl-button
+                @click="${() =>
+                  this.dispatchEvent(new Event("eddie-view-data-need"))}"
+              >
                 <sl-icon name="arrow-left"></sl-icon>
               </sl-button>
               <sl-button
