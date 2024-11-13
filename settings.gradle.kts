@@ -43,6 +43,9 @@ findProject(":region-connectors:shared")?.name = "shared"
 include("outbound-connectors:outbound-kafka")
 findProject(":outbound-connectors:outbound-kafka")?.name = "outbound-kafka"
 
+include("outbound-connectors:outbound-amqp")
+findProject(":outbound-connectors:outbound-amqp")?.name = "outbound-amqp"
+
 include("examples:example-app")
 findProject(":examples:example-app")?.name = "example-app"
 
