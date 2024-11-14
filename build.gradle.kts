@@ -19,9 +19,6 @@ repositories {
 group = "energy.eddie"
 version = "0.0.0"
 
-dependencies {
-    runtimeOnly(libs.h2database)
-}
 
 node {
     version.set("18.14.0")
@@ -34,29 +31,17 @@ licenseReport {
     filters = arrayOf<DependencyFilter>(LicenseBundleNormalizer())
 }
 
-tasks.register("run-db-server-create-db", JavaExec::class) {
-    mainClass.set("org.h2.tools.Shell")
-    classpath = sourceSets["main"].runtimeClasspath
-    args = listOf("-url", "jdbc:h2:./examples/example-app")
-    group = "development"
-    description = "create the local H2 database"
-}
-
-tasks.register("run-db-server", JavaExec::class) {
-    dependsOn("run-db-server-create-db")
-    mainClass.set("org.h2.tools.Server")
-    classpath = sourceSets["main"].runtimeClasspath
-    args = listOf("-tcp", "-tcpPort", "9091", "-web")
-    group = "development"
-    description = "run the H2 db server"
-}
 
 tasks.register<PnpmTask>("pnpmBuild") {
+    group = "build"
+    description = "builds the eddie button and custom elements"
     dependsOn("pnpmInstall")
     pnpmCommand.set(listOf("run", "build"))
 }
 
 tasks.register<PnpmTask>("pnpmBuildDocs") {
+    group = "documentation"
+    description = "builds the eddie framework documentation"
     dependsOn("pnpmInstall")
     pnpmCommand.set(listOf("-C", "docs", "run", "docs:build"))
 }
@@ -92,4 +77,25 @@ tasks.register<JacocoReport>("codeCoverageReport") {
         xml.required.set(true)
         html.required.set(true)
     }
+}
+
+val projDef = arrayListOf<Project>()
+rootProject.subprojects.forEach { subproject ->
+    subproject.plugins.withId("java") {
+        projDef.add(subproject)
+    }
+}
+tasks.register<Javadoc>("allJavadoc") {
+    group = "documentation"
+    description = "Generates a combined javadoc of all subprojects."
+    projDef.forEach {
+        dependsOn(it.tasks.named("compileJava"))
+    }
+    val fileTree: List<File> = (projDef.flatMap { it.sourceSets.main.get().allJava })
+    setSource(fileTree)
+    classpath = files(projDef.flatMap { it.sourceSets.main.get().compileClasspath })
+    setDestinationDir(file("${project.rootDir}/build/docs/javadoc-all"))
+    val opt = options as StandardJavadocDocletOptions
+    // Disable linting in generated CIM classes
+    opt.addStringOption("Xdoclint/package:-energy.eddie.cim.*", "-quiet")
 }

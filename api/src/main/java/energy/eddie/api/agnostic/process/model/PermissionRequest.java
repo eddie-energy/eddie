@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
  * different states depending on where in the process of a specific Permission Administrator the request currently is.
  * This is the context class of the state pattern.
  *
- * @see <a href="https://refactoring.guru/design-patterns/state">State Pattern</link>
+ * @see <a href="https://refactoring.guru/design-patterns/state">State Pattern</a>
  */
 public interface PermissionRequest {
 

@@ -29,6 +29,8 @@ public abstract class DataNeedDuration {
 
     /**
      * Returns the ID of the data need with which this {@link DataNeedDuration} is associated.
+     *
+     * @return the ID of the data need.
      */
     public String dataNeedId() {
         return dataNeedId;
@@ -36,6 +38,8 @@ public abstract class DataNeedDuration {
 
     /**
      * Sets the id of the data need with which this {@link DataNeedDuration} should be associated.
+     *
+     * @param dataNeedId new data need ID.,
      */
     public void setDataNeedId(String dataNeedId) {
         this.dataNeedId = dataNeedId;

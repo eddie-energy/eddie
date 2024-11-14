@@ -1,6 +1,7 @@
 package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.agnostic.RegionConnectorExtension;
+import energy.eddie.regionconnector.shared.utils.CommonPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -17,9 +17,9 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Gradle/pnpm build
-        run: ./gradlew pnpmBuildDocs
-      - name: Deploy to webserver
+      - name: Gradle build framework-docs and javadocs
+        run: ./gradlew pnpmBuildDocs allJavadoc
+      - name: Deploy docs to webserver
         uses: SamKirkland/web-deploy@v1
         with:
           target-server: ${{ secrets.WEBSERVER_SSH_HOST }}
@@ -27,3 +27,11 @@ jobs:
           private-ssh-key: ${{ secrets.WEBSERVER_SSH_KEY }}
           source-path: ./docs/.vitepress/dist/
           destination-path: /web/framework/
+      - name: Deploy javadoc to webserver
+        uses: SamKirkland/web-deploy@v1
+        with:
+          target-server: ${{ secrets.WEBSERVER_SSH_HOST }}
+          remote-user: ${{ secrets.WEBSERVER_SSH_USERNAME }}
+          private-ssh-key: ${{ secrets.WEBSERVER_SSH_KEY }}
+          source-path: ./build/docs/javadoc-all/
+          destination-path: /web/javadoc/

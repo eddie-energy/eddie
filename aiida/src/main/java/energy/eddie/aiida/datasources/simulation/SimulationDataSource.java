@@ -36,10 +36,12 @@ public class SimulationDataSource extends AiidaDataSource {
      * Creates a new SimulationDataSource with the given name.
      * It will publish an {@link AiidaRecord} with a random value in {@code simulationPeriod} time gaps
      * for these OBIS codes:
+     * <ul>
      * <li>1.8.0</li>
      * <li>2.8.0</li>
      * <li>1.7.0</li>
      * <li>2.7.0</li>
+     * </ul>
      *
      * @param name             Display name of this datasource.
      * @param clock            The timestamps of the generated messages will be taken from this clock.
@@ -75,27 +77,11 @@ public class SimulationDataSource extends AiidaDataSource {
         LOGGER.info("Starting {}", name());
 
         periodicFlux = Flux.interval(simulationPeriod)
-                   .subscribeOn(Schedulers.parallel())
-                   .subscribe(unused -> emitRandomAiidaRecords());
+                           .subscribeOn(Schedulers.parallel())
+                           .subscribe(unused -> emitRandomAiidaRecords());
 
         // use a separate Flux instead of just returning periodicFlux to be able to emit complete signal in close()
         return recordSink.asFlux();
-    }
-
-    private void emitRandomAiidaRecords() {
-        List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
-
-        for (ObisCode code : obisCodes) {
-            var value = String.valueOf(random.nextInt(2000));
-
-            aiidaRecordValues.add(new AiidaRecordValue(
-                    code.code(), code.code(),
-                    value, code.unitOfMeasurement(),
-                    value, code.unitOfMeasurement()
-            ));
-        }
-
-        emitAiidaRecord("SIMULATION", aiidaRecordValues);
     }
 
     /**
@@ -116,5 +102,21 @@ public class SimulationDataSource extends AiidaDataSource {
     @Override
     public Health health() {
         return Health.up().build();
+    }
+
+    private void emitRandomAiidaRecords() {
+        List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
+
+        for (ObisCode code : obisCodes) {
+            var value = String.valueOf(random.nextInt(2000));
+
+            aiidaRecordValues.add(new AiidaRecordValue(
+                    code.code(), code.code(),
+                    value, code.unitOfMeasurement(),
+                    value, code.unitOfMeasurement()
+            ));
+        }
+
+        emitAiidaRecord("SIMULATION", aiidaRecordValues);
     }
 }

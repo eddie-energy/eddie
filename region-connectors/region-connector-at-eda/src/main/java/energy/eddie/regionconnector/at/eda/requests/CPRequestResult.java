@@ -2,6 +2,9 @@ package energy.eddie.regionconnector.at.eda.requests;
 
 /**
  * CPRequestResult, the enum represents the ResponseCodes described in the <a href="https://www.ebutilities.at/prozesse/304">CR_REQ_PT</a> process
+ *
+ * @param messageId The ID of the message.
+ * @param result The result type.
  */
 public record CPRequestResult(
         String messageId,
