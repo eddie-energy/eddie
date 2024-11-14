@@ -104,7 +104,6 @@ button.addEventListener("eddie-dialog-open", () => {
 | `eddie-dialog-open`      | Dispatched when the dialog is opened.                                                                                                    |
 | `eddie-dialog-close`     | Dispatched when the dialog is closed.                                                                                                    |
 | `eddie-request-status`   | Dispatched when the status of the permission request changes. The event detail contains the new status.                                  |
-| `eddie-request-created`  | Dispatched when the permission request has been created. The event detail contains an endpoint to query the current status from.         |
 | `eddie-request-{status}` | In addition to `eddie-request-status`, an event with the name of the request status is dispatched. For example, `eddie-request-created`. |
 
 #### Callback functions
