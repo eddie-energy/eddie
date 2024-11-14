@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
@@ -79,5 +80,10 @@ public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata
     @Override
     public ZoneId timeZone() {
         return DK_ZONE_ID;
+    }
+
+    @Override
+    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
+        return List.copyOf(SUPPORTED_DATA_NEEDS);
     }
 }

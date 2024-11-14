@@ -228,5 +228,10 @@ class DataNeedCalculationServiceImplTest {
                                                Period earliestStart,
                                                Period latestEnd,
                                                List<Granularity> supportedGranularities,
-                                               ZoneId timeZone) implements RegionConnectorMetadata {}
+                                               ZoneId timeZone) implements RegionConnectorMetadata {
+        @Override
+        public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
+            return List.of();
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
@@ -67,5 +68,10 @@ public class EdaRegionConnectorMetadata implements RegionConnectorMetadata {
     @Override
     public ZoneId timeZone() {
         return AT_ZONE_ID;
+    }
+
+    @Override
+    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
+        return List.copyOf(SUPPORTED_DATA_NEEDS);
     }
 }

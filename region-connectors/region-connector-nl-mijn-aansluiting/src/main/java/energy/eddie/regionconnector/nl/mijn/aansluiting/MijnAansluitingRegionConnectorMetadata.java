@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.EnergyType;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
@@ -73,5 +74,10 @@ public class MijnAansluitingRegionConnectorMetadata implements RegionConnectorMe
     @Override
     public ZoneId timeZone() {
         return NL_ZONE_ID;
+    }
+
+    @Override
+    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
+        return List.copyOf(SUPPORTED_DATA_NEEDS);
     }
 }

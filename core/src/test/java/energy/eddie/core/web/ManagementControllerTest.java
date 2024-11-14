@@ -1,5 +1,6 @@
 package energy.eddie.core.web;
 
+import energy.eddie.core.services.MetadataService;
 import energy.eddie.core.services.SupportedFeatureService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorSupportedFeatureExtension;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,8 @@ class ManagementControllerTest {
     private SupportedFeatureService service;
     @MockBean
     private RegionConnectorSupportedFeatureExtension extension;
+    @MockBean
+    private MetadataService metadataService;
 
     @Test
     void testSupportedFeatures_returns200() throws Exception {
@@ -34,6 +37,15 @@ class ManagementControllerTest {
 
         // When
         mockMvc.perform(get("/management/region-connectors/supported-features"))
+               // Then
+               .andExpect(status().isOk());
+    }
+
+    @Test
+    void testSupportedDataNeeds_returns200() throws Exception {
+
+        // When
+        mockMvc.perform(get("/management/region-connectors/supported-data-needs"))
                // Then
                .andExpect(status().isOk());
     }

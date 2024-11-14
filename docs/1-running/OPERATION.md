@@ -401,3 +401,8 @@ There are multiple APIs to gather information about region-connectors.
 
 The endpoint for supported features is available under
 `<host>:<port>/<eddie.management.server.urlprefix>/region-connectors/supported-features`.
+
+#### Supported Data Needs
+
+The endpoint to query the supported data needs per region connector is available under
+`<host>:<port>/<eddie.management.server.urlprefix>/region-connectors/supported-data-needs`.

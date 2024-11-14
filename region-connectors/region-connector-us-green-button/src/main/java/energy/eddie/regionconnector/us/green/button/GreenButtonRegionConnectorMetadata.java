@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.us.green.button;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -68,5 +69,10 @@ public class GreenButtonRegionConnectorMetadata implements RegionConnectorMetada
     @Override
     public ZoneId timeZone() {
         return US_ZONE_ID;
+    }
+
+    @Override
+    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
+        return List.copyOf(SUPPORTED_DATA_NEEDS);
     }
 }

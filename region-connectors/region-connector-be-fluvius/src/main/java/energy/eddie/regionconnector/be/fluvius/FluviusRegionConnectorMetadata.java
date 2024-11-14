@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.be.fluvius;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -66,5 +67,10 @@ public class FluviusRegionConnectorMetadata implements RegionConnectorMetadata {
     @Override
     public ZoneId timeZone() {
         return ZoneId.of("Europe/Brussels");
+    }
+
+    @Override
+    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
+        return List.copyOf(SUPPORTED_DATA_NEEDS);
     }
 }

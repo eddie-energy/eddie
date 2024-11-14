@@ -1,5 +1,7 @@
 package energy.eddie.core.web;
 
+import energy.eddie.core.dtos.SupportedDataNeeds;
+import energy.eddie.core.services.MetadataService;
 import energy.eddie.core.services.SupportedFeatureService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorSupportedFeatureExtension;
 import org.springframework.http.HttpStatus;
@@ -13,12 +15,21 @@ import java.util.List;
 @RestController
 public class ManagementController {
     private final SupportedFeatureService supportedFeatureService;
+    private final MetadataService metadataService;
 
-    public ManagementController(SupportedFeatureService supportedFeatureService) {this.supportedFeatureService = supportedFeatureService;}
+    public ManagementController(SupportedFeatureService supportedFeatureService, MetadataService metadataService) {
+        this.supportedFeatureService = supportedFeatureService;
+        this.metadataService = metadataService;
+    }
 
     @GetMapping("/${eddie.management.server.urlprefix}/region-connectors/supported-features")
     public ResponseEntity<List<RegionConnectorSupportedFeatureExtension>> supportedFeatures() {
         return ResponseEntity.ok(supportedFeatureService.getSupportedFeatureExtensions());
+    }
+
+    @GetMapping("/${eddie.management.server.urlprefix}/region-connectors/supported-data-needs")
+    public ResponseEntity<List<SupportedDataNeeds>> supportedDataNeeds() {
+        return ResponseEntity.ok(metadataService.getSupportedDataNeeds());
     }
 
     /**
