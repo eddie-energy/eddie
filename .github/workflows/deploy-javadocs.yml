@@ -1,8 +1,6 @@
-name: Deploy EDDIE Framework docs
+name: Deploy EDDIE javadocs
 on:
   push:
-    paths:
-      - 'docs/**'
     branches:
       - main
   workflow_dispatch:
@@ -17,13 +15,13 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Gradle build framework-docs
-        run: ./gradlew pnpmBuildDocs
-      - name: Deploy docs to webserver
+      - name: Gradle build javadocs
+        run: ./gradlew allJavadoc
+      - name: Deploy javadoc to webserver
         uses: SamKirkland/web-deploy@v1
         with:
           target-server: ${{ secrets.WEBSERVER_SSH_HOST }}
           remote-user: ${{ secrets.WEBSERVER_SSH_USERNAME }}
           private-ssh-key: ${{ secrets.WEBSERVER_SSH_KEY }}
-          source-path: ./docs/.vitepress/dist/
-          destination-path: /web/framework/
+          source-path: ./build/docs/javadoc-all/
+          destination-path: /web/javadoc/
