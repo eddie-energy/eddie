@@ -26,7 +26,6 @@ public interface PermissionRequestRepository<T extends PermissionRequest> {
      *
      * @param permissionId the id of the permission request.
      * @return the permission request
-     * @throws EntityNotFoundException if the entity cannot be found
      */
     T getByPermissionId(String permissionId);
 }

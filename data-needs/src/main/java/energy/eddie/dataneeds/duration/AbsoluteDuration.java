@@ -48,6 +48,8 @@ public class AbsoluteDuration extends DataNeedDuration {
 
     /**
      * Returns the inclusive start date of the timeframe for which data is required by the associated data need.
+     *
+     * @return the absolute start date.
      */
     public LocalDate start() {
         return start;
@@ -55,6 +57,8 @@ public class AbsoluteDuration extends DataNeedDuration {
 
     /**
      * Returns the inclusive end date of the timeframe for which data is required by the associated data need.
+     *
+     * @return the absolute end date.
      */
     public LocalDate end() {
         return end;

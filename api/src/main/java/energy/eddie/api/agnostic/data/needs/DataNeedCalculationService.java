@@ -3,6 +3,7 @@ package energy.eddie.api.agnostic.data.needs;
 /**
  * Used to by a region-connector to calculate start and end data of a data need, as well as reporting if it supports a
  * certain data need.
+ * @param <T> Should always be {@code DataNeed}, but this is only available in the core itself.
  */
 public interface DataNeedCalculationService<T extends DataNeedInterface> {
     /**

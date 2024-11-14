@@ -20,6 +20,7 @@ public class IsValidRelativeDurationValidator implements ConstraintValidator<IsV
     /**
      * Validates whether the passed {@code duration} is valid. The following table lists valid combinations:
      * <table>
+     *     <caption>Valid and invalid durations</caption>
      *     <thead>
      *         <tr>
      *             <th>Start</th>

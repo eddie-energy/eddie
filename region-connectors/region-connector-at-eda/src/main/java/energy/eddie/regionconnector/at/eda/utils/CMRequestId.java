@@ -24,7 +24,6 @@ public class CMRequestId {
      *      <li> checksum = append CRC8 to CRC32 </li>
      *      <li> CMRequestId = base32 encoding of the checksum </li>
      *  </ol>
-     * </p>
      *
      * @param messageId the message id to be used as input for the request id
      */

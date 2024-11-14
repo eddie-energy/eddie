@@ -24,6 +24,8 @@ public class AccountingPointDataService {
     /**
      * Fetches the {@link AccountingPointData} for a given permission request.
      *
+     * @param permissionRequest the permission request that is used to fetch the accounting point data.
+     *
      * @return A {@link AccountingPointData} object containing the accounting point details if successful.
      * <p>{@link NoSuppliesException} If no supplies are found for the provided NIF a nd distributor code.
      * <p>{@link NoSupplyForMeteringPointException} If no supply is found for the given metering point of the
