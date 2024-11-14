@@ -21,7 +21,7 @@ public class EdaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final ZoneId AT_ZONE_ID = ZoneId.of("Europe/Vienna");
     public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.PT15M, Granularity.P1D);
     public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(ValidatedHistoricalDataDataNeed.class,
-            AccountingPointDataNeed.class);
+                                                                                       AccountingPointDataNeed.class);
     @Nullable
     private static EdaRegionConnectorMetadata instance = null;
 
