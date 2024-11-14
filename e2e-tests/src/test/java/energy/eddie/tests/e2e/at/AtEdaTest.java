@@ -12,13 +12,18 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 
 class AtEdaTest extends E2eTestSetup {
     @Test
-    void buttonClick_statusIsSent() {
+    void withoutAccountingPointId() {
         this.navigateToRegionConnector(null, "Austria", "Netz Niederösterreich GmbH");
+
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
-        assertThat(page.locator("at-eda-pa-ce")).containsText(Pattern.compile("Please wait"));
+        page.getByText("Your permission request was created successfully.");
 
-        var locator = page.getByText("Status: Request Sent");
-        locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));  // 2 min
+        var locator = page.getByText("Your request was successfully sent");
+        locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));
+        assertThat(locator).isVisible();
+
+        // Continue button should show the name of the PA
+        page.getByText("Continue to Netz Niederösterreich").click();
     }
 }
