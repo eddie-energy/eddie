@@ -2,6 +2,7 @@
   {
     "country": "at",
     "company": "AAE Wasserkraft GmbH",
+    "name": "AAE Wasserkraft",
     "companyId": "AT007240",
     "jumpOffUrl": "https://kundenportal.aae-wasserkraft.at/",
     "regionConnector": "at-eda"
@@ -9,6 +10,7 @@
   {
     "country": "at",
     "company": "Alfenzwerke Elektrizitätserzeugung GmbH",
+    "name": "Alfenzwerke",
     "companyId": "AT006250",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -16,6 +18,7 @@
   {
     "country": "at",
     "company": "Andreas Braunstein",
+    "name": "Andreas Braunstein",
     "companyId": "AT008550",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -23,6 +26,7 @@
   {
     "country": "at",
     "company": "Anton Kittel Mühle Plaika GmbH",
+    "name": "Anton Kittel Mühle Plaika",
     "companyId": "AT002220",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -30,6 +34,7 @@
   {
     "country": "at",
     "company": "Austrian Power Grid AG",
+    "name": "Austrian Power Grid",
     "companyId": "AT000000",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -37,6 +42,7 @@
   {
     "country": "at",
     "company": "Bad Gleichenberger Energie GmbH",
+    "name": "Bad Gleichenberger Energie",
     "companyId": "AT008310",
     "jumpOffUrl": "https://gleichenberg-davidvo.mein-portal.at/Kundenportal/",
     "regionConnector": "at-eda"
@@ -44,6 +50,7 @@
   {
     "country": "at",
     "company": "E-Werk Altenfelden GmbH",
+    "name": "E-Werk Altenfelden",
     "companyId": "AT003900",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -51,6 +58,7 @@
   {
     "country": "at",
     "company": "E-Werk Dietrichschlag eGen",
+    "name": "E-Werk Dietrichschlag",
     "companyId": "AT003920",
     "jumpOffUrl": "https://ewerk-dietrichschlag.verbrauch.at/auth/login?returnUrl=%2Fauth%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dportal-ewerk-dietrichschlag%26redirect_uri%3Dhttps%253A%252F%252Fewerk-dietrichschlag.verbrauch.at%252Fportal%252Fsignin-oidc%26response_type%3Dcode%2520id_token%26scope%3Dopenid%2520profile%26response_mode%3Dform_post%26nonce%3D638161062750956632.OGE5NzAwMWYtOWM5OS00ZmNjLWE4ZGUtNTIwMDFjMWIyYTMxYWY4NWJjMmQtYWUwNC00YWY5LTk1ZjQtM2I3NDQ3MmUyYTIy%26state%3DCfDJ8Grvdk_ryxxOvGjEtLmD7hVGrpyncbGVQl_zHyUY1j-pcm8xVYBWkm7yj2ExB4hsk-i5EC5S27pU_h0I3dDJbQc_pLqRGv5vYn3AX0M4QfE0nN9WwMZK-egDBB7pNu26S96trOFPoV2Gg0eLrcQoDo-_IP5PHssTrx4lHI6o1tk0tXrgfcOOamdMANW-1ORIw7TaVkXl7D1b1RpWmbj1GX6UmlWDpamNXS4CMgVkCHIZ4Juzp9vD0dG0NPh8RFa1nrHZ9FUJ7N2eFbibnLj-q2jQAdD8JnaCuK0zz-x06K605Pqk-lvnLZPcl5oA2Eooj70-uu_BTkXBFVccgali5HcxPibSi75zlt4XmylKegQzN76JIPngKYPx7WbVlAPQAl03NW2IN9LUoTK_pVsySQ4%26x-client-SKU%3DID_NETSTANDARD2_0%26x-client-ver%3D5.3.0.0",
     "regionConnector": "at-eda"
@@ -58,6 +66,7 @@
   {
     "country": "at",
     "company": "E-Werk Ebner GesmbH",
+    "name": "E-Werk Ebner",
     "companyId": "AT008730",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -65,6 +74,7 @@
   {
     "country": "at",
     "company": "E-Werk Gleinstätten GmbH",
+    "name": "E-Werk Gleinstätten",
     "companyId": "AT008740",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -72,6 +82,7 @@
   {
     "country": "at",
     "company": "E-Werk Gösting Stromversorgung GmbH",
+    "name": "E-Werk Gösting",
     "companyId": "AT008210",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -79,6 +90,7 @@
   {
     "country": "at",
     "company": "E-Werk Piwetz",
+    "name": "E-Werk Piwetz",
     "companyId": "AT008950",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -86,6 +98,7 @@
   {
     "country": "at",
     "company": "E-Werk Ranklleiten",
+    "name": "E-Werk Ranklleiten",
     "companyId": "AT003590",
     "jumpOffUrl": "https://ranklleiten-davidvo.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -93,6 +106,7 @@
   {
     "country": "at",
     "company": "E-Werk Redlmühle B. Drack Elektrotechnik ",
+    "name": "Elektrotechnik Drack / E-Werk Redlmühle",
     "companyId": "AT003910",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -100,6 +114,7 @@
   {
     "country": "at",
     "company": "E-Werk Sarmingstein Ing. H. Engelmann & Co KG",
+    "name": "E-Werk Sarmingstein",
     "companyId": "AT002900",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -107,6 +122,7 @@
   {
     "country": "at",
     "company": "E-Werk Schattwald e.U.",
+    "name": "E-Werk Schattwald",
     "companyId": "AT005340",
     "jumpOffUrl": "https://kundenportal.ew-schattwald.at/",
     "regionConnector": "at-eda"
@@ -114,6 +130,7 @@
   {
     "country": "at",
     "company": "E-Werk Schwaighofer GmbH",
+    "name": "E-Werk Schwaighofer",
     "companyId": "AT002250",
     "jumpOffUrl": "https://schwaighofer-davidvo.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -121,6 +138,7 @@
   {
     "country": "at",
     "company": "E-Werk Sigl GmbH & Co KG",
+    "name": "E-Werk Sigl",
     "companyId": "AT008540",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -128,6 +146,7 @@
   {
     "country": "at",
     "company": "E-Werk Stadler GmbH",
+    "name": "E-Werk Stadler",
     "companyId": "AT005470",
     "jumpOffUrl": "https://portal.elektro-stadler.at/",
     "regionConnector": "at-eda"
@@ -135,6 +154,7 @@
   {
     "country": "at",
     "company": "E-Werk Stubenberg eGen",
+    "name": "E-Werk Stubenberg",
     "companyId": "AT008910",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -142,6 +162,7 @@
   {
     "country": "at",
     "company": "E-Werk der Marktgemeinde Unzmarkt-Frauenburg",
+    "name": "E-Werk Unzmarkt-Frauenburg",
     "companyId": "AT008410",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -149,6 +170,7 @@
   {
     "country": "at",
     "company": "ENVESTA Energie- und Dienstleistungs GmbH",
+    "name": "ENVESTA",
     "companyId": "AT008560",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -156,6 +178,7 @@
   {
     "country": "at",
     "company": "EVU Gerald Mathe e.U.",
+    "name": "EVU Gerald Mathe",
     "companyId": "AT003570",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -163,6 +186,7 @@
   {
     "country": "at",
     "company": "EVU der Marktgemeinde Eibiswald",
+    "name": "EVU Eibiswald",
     "companyId": "AT008390",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -170,6 +194,7 @@
   {
     "country": "at",
     "company": "EVU der Stadtgemeinde Mureck",
+    "name": "EVU Mureck",
     "companyId": "AT008360",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -177,6 +202,7 @@
   {
     "country": "at",
     "company": "EWA Energie- u Wirtschaftsbetriebe der Gemeinde St. Anton GmbH",
+    "name": "EWA St. Anton",
     "companyId": "AT005320",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -184,6 +210,7 @@
   {
     "country": "at",
     "company": "Ebner Strom GmbH",
+    "name": "Ebner Strom",
     "companyId": "AT003460",
     "jumpOffUrl": "https://ebnerstrom.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -191,6 +218,7 @@
   {
     "country": "at",
     "company": "Elektrizitätsgenossenschaft Laintal eGen",
+    "name": "Elektrizitätsgenossenschaft Laintal",
     "companyId": "AT008510",
     "jumpOffUrl": "https://www.endkundenwebportal.at/enVIEW.Portal/Account/Login?ReturnUrl=%2FenVIEW.Portal%2F",
     "regionConnector": "at-eda"
@@ -198,6 +226,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerk Bad Hofgastein Gesellschaft m.b.H.",
+    "name": "Elektrizitätswerk Bad Hofgastein",
     "companyId": "AT004110",
     "jumpOffUrl": "https://ewh.verbrauch.at/auth/login?returnUrl=%2Fauth%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dportal-ewh%26redirect_uri%3Dhttps%253A%252F%252Fewh.verbrauch.at%252Fportal%252Fsignin-oidc%26response_type%3Dcode%2520id_token%26scope%3Dopenid%2520profile%26response_mode%3Dform_post%26nonce%3D638161052071340792.NmMwODY4NTItODYzNy00Y2NkLTgyOGQtMTkwYzljMjAzNGUyMDZmNTNlYzQtM2ZkYy00ZmY3LWJhYmEtYjI4NGM3MmI1YzU4%26state%3DCfDJ8C_usdthVTpCvJiYObe4SJ6-zn9jMtGFm1lRWtKpejs4iWS7JJHwjYkrdK_-fgqEbtFLcDIzWR8ZCX7aRMjfcLpzKLNHkqOBLBA8bXPwrge2IvPAq07wu6ZoyvwpiJsSzsRhxggNQq9vuiFvC7eu8Am85ZMdTL2Px-Z-Dcr023IrlvWkOq4SOdU6CPOOaKOoCFMq9scy5ygXmbmhMcIxRGPi7IOWRd63JzOURmQWv9NYvk9M6F_gAexIQ0E-lQzm49k37RYwZZnfSJkpv-YxemuW8uhN2GFHxZeEx0Y6q36-VNFwcOBJFmUEYElMFE6K21TYo3qiNDbxD74ynwhTu9M%26x-client-SKU%3DID_NETSTANDARD2_0%26x-client-ver%3D5.3.0.0",
     "regionConnector": "at-eda"
@@ -205,6 +234,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerk Clam Carl-Philip Clam-Martinic e. U.",
+    "name": "Elektrizitätswerk Clam",
     "companyId": "AT002910",
     "jumpOffUrl": "https://www.endkundenwebportal.at/enVIEW.Portal/Account/Login?ReturnUrl=%2FenVIEW.Portal%2F",
     "regionConnector": "at-eda"
@@ -212,6 +242,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerk Eisenhuber GmbH & Co KG",
+    "name": "Elektrizitätswerk Eisenhuber",
     "companyId": "AT002210",
     "jumpOffUrl": "https://eisenhuber-davidvo.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -219,6 +250,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerk Fernitz, Ing. Franz Purkarthofer GmbH & Co KG.",
+    "name": "Elektrizitätswerk Fernitz",
     "companyId": "AT008570",
     "jumpOffUrl": "https://smartmeter.ewerkfernitz.at/SEM.Portal/Login.aspx?ReturnUrl=%2fSEM.Portal",
     "regionConnector": "at-eda"
@@ -226,6 +258,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerk Gröbming KG",
+    "name": "Elektrizitätswerk Gröbming",
     "companyId": "AT008620",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -233,6 +266,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerk Mürzsteg",
+    "name": "Elektrizitätswerk Mürzsteg",
     "companyId": "AT008370",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -240,6 +274,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerk Perg GmbH",
+    "name": "Elektrizitätswerk Perg",
     "companyId": "AT003310",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -247,6 +282,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerk Prantl Gesellschaft m.b.H.",
+    "name": "Elektrizitätswerk Prantl",
     "companyId": "AT005460",
     "jumpOffUrl": "https://portal.prantlstrom.at/",
     "regionConnector": "at-eda"
@@ -254,6 +290,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerk Winkler GmbH",
+    "name": "Elektrizitätswerk Winkler",
     "companyId": "AT005480",
     "jumpOffUrl": "https://kundenportal.e-werk-winkler.at/",
     "regionConnector": "at-eda"
@@ -261,6 +298,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerk der Gemeinde Gries am Brenner",
+    "name": "Elektrizitätswerk Gries am Brenner",
     "companyId": "AT005540",
     "jumpOffUrl": "https://griesambrenner.snw.at/",
     "regionConnector": "at-eda"
@@ -268,6 +306,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerk der Gemeinde Kematen",
+    "name": "Elektrizitätswerk Kematen",
     "companyId": "AT005350",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -275,6 +314,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerk der Stadtgemeinde Kindberg",
+    "name": "Elektrizitätswerk Kindberg",
     "companyId": "AT008110",
     "jumpOffUrl": "https://kindberg-davidvo.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -282,6 +322,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerke Bad Radkersburg GmbH",
+    "name": "Elektrizitätswerke Bad Radkersburg",
     "companyId": "AT008450",
     "jumpOffUrl": "https://meinkundenportal.ewerk-badradkersburg.at/auth/login?returnUrl=%2Fauth%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dportal-ewerk-badradkersburg%26redirect_uri%3Dhttps%253A%252F%252Fmeinkundenportal.ewerk-badradkersburg.at%252Fportal%252Fsignin-oidc%26response_type%3Dcode%2520id_token%26scope%3Dopenid%2520profile%26response_mode%3Dform_post%26nonce%3D638161056202686885.NjZiMTQ2YjQtYzQ2YS00MDI4LTgzY2MtOGIyMzY2MjU3ZTZmZDk2YTZmZTUtYTU1MS00NzM1LTllMjktY2U0MzJjODhjN2Zl%26state%3DCfDJ8NyFwDxMCwtPmpUthlu-su5bz2EDlctPDEgpXJfrUWY9Ju6W49nVKXLZPly-asgo1aC1ZQQhnJuaAGu3PNd0Q9C0HpNAjiYRdL7rZRvpE2He8Mfg66yq4uwp9oikQ6-uNwrI84WkVn0vzx0131TkRrLKZLF4PsIDNtsKz76F2NxtIGDSQvvT_0tSk6eB2vAzVOvKXL7jgNdQvM5JnAhZOrBveYPypXgCKITYJZZu6Ry1-x0FdOt35bGVxO53wOBC2dx3nARx73oHDLsorMbtWt1KOJT2lkJ6l-_YpxX67NDsoayfCPmXmcyNbWQu4IwKbydBz4LjdSHkTnFcD-3S9N5kzVjP9_Xk4nzMMnPnHGhX-mCODrRJmCq_YpUGA0MmwzSinMlwQhUIZvQLTz6-tcc%26x-client-SKU%3DID_NETSTANDARD2_0%26x-client-ver%3D5.3.0.0",
     "regionConnector": "at-eda"
@@ -289,6 +330,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerke Frastanz Gesellschaft m.b.H.",
+    "name": "Elektrizitätswerke Frastanz",
     "companyId": "AT006210",
     "jumpOffUrl": "https://identity.ewerke.at/Identity/Login?ReturnUrl=http%3A%2F%2Fidentity%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dcustomer-portal%26redirect_uri%3Dhttp%253A%252F%252Fvkwweb%252Fsignin-oidc%26response_type%3Dcode%26scope%3Dopenid%2520profile%2520phone%2520email%2520offline_access%2520sap%2520applogs%26code_challenge%3DWEr4kBw6YAo8gRnP64Pw261CS85O_1zXT9g3Jri62MU%26code_challenge_method%3DS256%26response_mode%3Dform_post%26nonce%3D638161056816976948.M2ZhOWFlNTItYzA3ZS00OWY0LWIwYzMtNzBkNzhlZTZhMjQ4YWEwZWMwZWYtY2I4ZC00MWJjLTk0NDQtNGE0MDIyNTVmYWZl%26state%3DCfDJ8HH5HCMzjmFNptSC6sVP0d0luCKuo5WIpxYEYBVhEa5iaIPjzq50LJhZonrxef3H9Pq8EgUUBCPkMXjLIPKw69k6GH9VgQELbCT1gJVOCz01ltMOTsJ8GTLCZsJye3BrA5NW_f6MDKi9WfgrIUQJkyZjKKoWU2T-1FEqQE4AeH9oH8GTjHX7_mPRAb-Ibn6Ld3hjYnHfwxBSdTyq40nqS6bFVPK7j_aiI939sq1sntGps5SW9EBOBdzRANzNvpFmbbD8Qkd-rL-43QgzD4kajjd-YMxpf-Fgfw-Pgu-z991o3L_ndwi11WzyuuOR-qEa_8fAt53ek1bbLPmjZ5PAveTkAIxlJnKNhz-d3EYQ4RGCnXoTVWTWsxJoFSiVf1pxIHXAE8mogi6xDaTlutqeihewq7oOjq8Jl4dgPLo076tZasXsVOqVKU2nHXdrsvQekFWqd32PnMycArxt1KT5Kqw%26x-client-SKU%3DID_NETSTANDARD2_0%26x-client-ver%3D6.10.0.0",
     "regionConnector": "at-eda"
@@ -296,6 +338,7 @@
   {
     "country": "at",
     "company": "Elektrizitätswerke Reutte AG",
+    "name": "Elektrizitätswerke Reutte",
     "companyId": "AT005110",
     "jumpOffUrl": "https://kundenportal.ewr-energie.at/",
     "regionConnector": "at-eda"
@@ -303,6 +346,7 @@
   {
     "country": "at",
     "company": "Elektriztätswerk Mariahof GmbH",
+    "name": "Elektriztätswerk Mariahof",
     "companyId": "AT008650",
     "jumpOffUrl": "https://mariahof-davidvo.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -310,6 +354,7 @@
   {
     "country": "at",
     "company": "Elektrogenossenschaft Weerberg reg. Gen.m.b.H.",
+    "name": "Elektrogenossenschaft Weerberg",
     "companyId": "AT005630",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -317,6 +362,7 @@
   {
     "country": "at",
     "company": "Elektrowerk Assling reg. Gen.m.b.H.",
+    "name": "Elektrowerk Assling",
     "companyId": "AT005490",
     "jumpOffUrl": "https://kundenportal.ewa.at/",
     "regionConnector": "at-eda"
@@ -324,6 +370,7 @@
   {
     "country": "at",
     "company": "Elektrowerk Schöder GmbH",
+    "name": "Elektrowerk Schöder",
     "companyId": "AT008720",
     "jumpOffUrl": "https://schoeder-davidvo.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -331,6 +378,7 @@
   {
     "country": "at",
     "company": "Elektrowerkgenossenschaft Hopfgarten i. Def. reg. Gen. m. b. H.",
+    "name": "Elektrowerkgenossenschaft Hopfgarten",
     "companyId": "AT005600",
     "jumpOffUrl": "https://portal.ew-hopfgarten.at/",
     "regionConnector": "at-eda"
@@ -338,6 +386,7 @@
   {
     "country": "at",
     "company": "Energie Güssing GmbH",
+    "name": "Energie Güssing",
     "companyId": "AT009220",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -345,6 +394,7 @@
   {
     "country": "at",
     "company": "Energie Klagenfurt GmbH",
+    "name": "Energie Klagenfurt",
     "companyId": "AT007100",
     "jumpOffUrl": "https://www.energieklagenfurt.at/login/",
     "regionConnector": "at-eda"
@@ -352,6 +402,7 @@
   {
     "country": "at",
     "company": "Energie Ried Gesellschaft m.b.H.",
+    "name": "Energie Ried Gesellschaft",
     "companyId": "AT003200",
     "jumpOffUrl": "https://kundenportal.energie-ried.at/portal/",
     "regionConnector": "at-eda"
@@ -359,6 +410,7 @@
   {
     "country": "at",
     "company": "Energienetze Steiermark GmbH",
+    "name": "Energienetze Steiermark",
     "companyId": "AT008000",
     "jumpOffUrl": "https://login.e-netze.at/auth/realms/enetze/protocol/openid-connect/auth?client_id=enetze-en&redirect_uri=https%3A%2F%2Fportal.e-netze.at%2Fkunde&response_mode=query&response_type=code&scope=openid#/",
     "regionConnector": "at-eda"
@@ -366,6 +418,7 @@
   {
     "country": "at",
     "company": "Energieversorgung Kleinwalsertal Ges. m. b. H.",
+    "name": "Kleinwalsertal",
     "companyId": "AT006230",
     "jumpOffUrl": "https://account.evk.at/login",
     "regionConnector": "at-eda"
@@ -373,6 +426,7 @@
   {
     "country": "at",
     "company": "Energieversorgungs GmbH",
+    "name": "Energieversorgungs GmbH",
     "companyId": "AT003580",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -380,6 +434,7 @@
   {
     "country": "at",
     "company": "Energieversorgungsunternehmen der Florian Lugitsch Gruppe GmbH",
+    "name": "Florian Lugitsch Gruppe",
     "companyId": "AT008580",
     "jumpOffUrl": "https://lugitsch.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -387,6 +442,7 @@
   {
     "country": "at",
     "company": "Feistritzthaler Elektrizitätswerk eGen",
+    "name": "Feistritzthaler Elektrizitätswerk",
     "companyId": "AT008770",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -394,6 +450,7 @@
   {
     "country": "at",
     "company": "Feistritzwerke-STEWEAG-GmbH",
+    "name": "Feistritzwerke STEWEAG",
     "companyId": "AT008130",
     "jumpOffUrl": "https://kundenportal.feistritzwerke.at/benutzer/login",
     "regionConnector": "at-eda"
@@ -401,6 +458,7 @@
   {
     "country": "at",
     "company": "Forstverwaltung Seehof GmbH",
+    "name": "Forstverwaltung Seehof",
     "companyId": "AT002280",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -408,6 +466,7 @@
   {
     "country": "at",
     "company": "Gertraud Schafler GmbH",
+    "name": "Gertraud Schafler",
     "companyId": "AT008690",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -415,6 +474,7 @@
   {
     "country": "at",
     "company": "Getzner, Mutter & Cie. Gesellschaft m.b.H. & Co. KG",
+    "name": "Getzner, Mutter & Cie.",
     "companyId": "AT006240",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -422,6 +482,7 @@
   {
     "country": "at",
     "company": "HALLAG Kommunal GmbH",
+    "name": "HALLAG Kommunal GmbH",
     "companyId": "AT005120",
     "jumpOffUrl": "https://kundenportal.hall.ag/",
     "regionConnector": "at-eda"
@@ -429,6 +490,7 @@
   {
     "country": "at",
     "company": "Heinrich Polsterer UND MITGES.GES.N.B.R.",
+    "name": "Heinrich Polsterer UND MITGES.GES.N.B.R.",
     "companyId": "AT002400",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -436,6 +498,7 @@
   {
     "country": "at",
     "company": "Innsbrucker Kommunalbetriebe AG",
+    "name": "Innsbrucker Kommunalbetriebe",
     "companyId": "AT005100",
     "jumpOffUrl": "https://www.ikb.at/kundenservice/ikb-direkt",
     "regionConnector": "at-eda"
@@ -443,6 +506,7 @@
   {
     "country": "at",
     "company": "Joh. Pengg Holding Gesellschaft m.b.H.",
+    "name": "Joh. Pengg Holding",
     "companyId": "AT008930",
     "jumpOffUrl": "http://www.pengg-holding.com/",
     "regionConnector": "at-eda"
@@ -450,6 +514,7 @@
   {
     "country": "at",
     "company": "K. u. F. Drack Gesellschaft m.b.H. & Co. KG.",
+    "name": "K. u. F. Drack",
     "companyId": "AT003520",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -457,6 +522,7 @@
   {
     "country": "at",
     "company": "KARLSTROM e.U.",
+    "name": "KARLSTROM",
     "companyId": "AT003470",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -464,6 +530,7 @@
   {
     "country": "at",
     "company": "KNG-Kärnten Netz GmbH",
+    "name": "KNG-Kärnten Netz",
     "companyId": "AT007000",
     "jumpOffUrl": "https://services.kaerntennetz.at/meinPortal/login.aspx?service=Services",
     "regionConnector": "at-eda"
@@ -471,6 +538,7 @@
   {
     "country": "at",
     "company": "Klausbauer Wasser Kraft GesmbH & Co KG",
+    "name": "Klausbauer Wasser Kraft",
     "companyId": "AT008250",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -478,6 +546,7 @@
   {
     "country": "at",
     "company": "Kommunalbetriebe Hopfgarten GmbH",
+    "name": "Kommunalbetriebe Hopfgarten",
     "companyId": "AT005330",
     "jumpOffUrl": "https://kundenportal.ewhopf.at/",
     "regionConnector": "at-eda"
@@ -485,6 +554,7 @@
   {
     "country": "at",
     "company": "Kommunalbetriebe Rinn GmbH",
+    "name": "Kommunalbetriebe Rinn",
     "companyId": "AT005650",
     "jumpOffUrl": "https://kundenportal.kbrinn.at/",
     "regionConnector": "at-eda"
@@ -492,6 +562,7 @@
   {
     "country": "at",
     "company": "Kraftwerk Glatzing-Rüstorf eGen",
+    "name": "Kraftwerk Glatzing-Rüstorf",
     "companyId": "AT003510",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -499,6 +570,7 @@
   {
     "country": "at",
     "company": "Kraftwerk Reinisch GmbH",
+    "name": "Kraftwerk Reinisch",
     "companyId": "AT005690",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -506,6 +578,7 @@
   {
     "country": "at",
     "company": "Kraftwerke Haim K.G.",
+    "name": "Kraftwerke Haim",
     "companyId": "AT005210",
     "jumpOffUrl": "https://portal.kraftwerkhaim.at/",
     "regionConnector": "at-eda"
@@ -513,6 +586,7 @@
   {
     "country": "at",
     "company": "Kraut E-Werk KG",
+    "name": "Kraut E-Werk",
     "companyId": "AT008970",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -520,6 +594,7 @@
   {
     "country": "at",
     "company": "LINZ NETZ GmbH",
+    "name": "LINZ NETZ GmbH",
     "companyId": "AT003100",
     "jumpOffUrl": "https://sso.linznetz.at/auth/realms/netzsso/protocol/openid-connect/auth/?client_id=portal&scope=openid&response_type=code&state=3052b878-82c6-4830-9424-416ba63dd2a7&redirect_uri=https://www.linznetz.at/portal/de/home/online_services/serviceportal/mein_serviceportal#",
     "regionConnector": "at-eda"
@@ -527,6 +602,7 @@
   {
     "country": "at",
     "company": "Licht- u. Kraftstromvertrieb d. Marktgemeinde Göstling a.d. Ybbs",
+    "name": "Marktgemeinde Göstling",
     "companyId": "AT002120",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -534,6 +610,7 @@
   {
     "country": "at",
     "company": "Licht- und Kraftstromvertrieb der Gemeinde Opponitz",
+    "name": "Gemeinde Opponitz",
     "companyId": "AT002300",
     "jumpOffUrl": "https://www.endkundenwebportal.at/enVIEW.Portal/Account/Login?ReturnUrl=%2FenVIEW.Portal%2F",
     "regionConnector": "at-eda"
@@ -541,6 +618,7 @@
   {
     "country": "at",
     "company": "Licht- und Kraftvertrieb der Gemeinde Hollenstein",
+    "name": "Gemeinde Hollenstein",
     "companyId": "AT002130",
     "jumpOffUrl": "https://hollenstein-davidvo.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -548,6 +626,7 @@
   {
     "country": "at",
     "company": "Lichtgenossenschaft Neukirchen eGen",
+    "name": "Lichtgenossenschaft Neukirchen",
     "companyId": "AT004120",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -555,6 +634,7 @@
   {
     "country": "at",
     "company": "Mag. Engelbert Julius Tassotti jun. (E-Werk Tassotti) ",
+    "name": "E-Werk Tassotti",
     "companyId": "AT008990",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -562,6 +642,7 @@
   {
     "country": "at",
     "company": "Marktgemeinde Neumarkt Versorgungsbetriebsges.mbH",
+    "name": "Marktgemeinde Neumarkt",
     "companyId": "AT008420",
     "jumpOffUrl": "https://neumarkt.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -569,6 +650,7 @@
   {
     "country": "at",
     "company": "Marktgemeinde Niklasdorf, EVU Niklasdorf",
+    "name": "Marktgemeinde Niklasdorf",
     "companyId": "AT008330",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -576,6 +658,7 @@
   {
     "country": "at",
     "company": "Montafonerbahn AG",
+    "name": "Montafonerbahn",
     "companyId": "AT006220",
     "jumpOffUrl": "https://identity.energieportal.montafonerbahn.at/Identity/Login?ReturnUrl=http%3A%2F%2Fidentity%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dcustomer-portal%26redirect_uri%3Dhttp%253A%252F%252Fvkwweb%252Fsignin-oidc%26response_type%3Dcode%26scope%3Dopenid%2520profile%2520phone%2520email%2520offline_access%2520sap%2520applogs%26code_challenge%3DP0N6HlQI4hNPJfRt6-E9Epu-PiGRv6dd5aKlJNAD1RU%26code_challenge_method%3DS256%26response_mode%3Dform_post%26nonce%3D638161072218576729.Y2Q3MjdiNWItNmU3OS00ZjRiLTg1NzctYzZjN2M0ZjdlYjVhODBjZDI4Y2ItOTM1Ny00ZTU3LTg4ZjEtZTUyODdiZmQ5NzM1%26state%3DCfDJ8Gp6lLOFoFJGpGn75rCAc0Qr-JEHjDcCTsyv0Cka-_ZiuwUa56oe2jr7jQVVvRyI2_c7XBZt-jE9Dxc4yBzmfnZQTUxzpaZyEoQJfQ_Uz5RTt6N8RhdSGLbR6cqWQmrCuRHYpA5ULyQPGbSrNhC3vzXh3m9iSDNcpTjORUPNdhr4Hb8d7tI0HimpU_8nnGxVu0waPYNRSgg7VW5M_I52cHQN17E1bjT1NTTNUcW175gTFfH2Hjb1PRHxO1fWXUj1X19vJ0_iontzHCijn3geaZIeYVqcLT9rPa9ZTcH3AP0wgd1dqPxsrWUlkLUnbv8_s7g_zIcgpSvc8dbh_9SeJ-1l5lOBAf8Q135RZKKBKaSopKL-l12nLFccWqfJYXpQ7F5wQ6YPimb15MgBlOjrv5rQ08pW6ufRWzGYVvnQ5K4bbFnIpQpjrNwsm00Oe0bBNy-AJXG58FQkhlXFI3TbQqM%26x-client-SKU%3DID_NETSTANDARD2_0%26x-client-ver%3D6.10.0.0",
     "regionConnector": "at-eda"
@@ -583,6 +666,7 @@
   {
     "country": "at",
     "company": "Murauer Stadtwerke GmbH",
+    "name": "Murauer Stadtwerke",
     "companyId": "AT008430",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -590,6 +674,7 @@
   {
     "country": "at",
     "company": "Netz Burgenland GmbH",
+    "name": "Netz Burgenland",
     "companyId": "AT009000",
     "jumpOffUrl": "https://login.netzburgenland.at:8453/auth/realms/netzburgenland/protocol/openid-connect/auth?redirect_uri=https%3A%2F%2Fsmartmeter.netzburgenland.at%2FEnView.Portal%2Fowin%2Fsecurity%2Fkeycloak%2FKeycloakAuthentication%2Fcallback&response_type=code&scope=openid+username&state=oidc_state_fc4c7074263140efbf69665aca3689c8&client_id=smartmeter-portal&client_secret=c61effac-658f-4973-a089-c03e3d539911",
     "regionConnector": "at-eda"
@@ -597,6 +682,7 @@
   {
     "country": "at",
     "company": "Netz Niederösterreich GmbH",
+    "name": "Netz Niederösterreich",
     "companyId": "AT002000",
     "jumpOffUrl": "https://smartmeter.netz-noe.at/#/",
     "regionConnector": "at-eda"
@@ -604,6 +690,7 @@
   {
     "country": "at",
     "company": "Netz Oberösterreich GmbH",
+    "name": "Netz Oberösterreich",
     "companyId": "AT003000",
     "jumpOffUrl": "https://eservice.netzooe.at/app/login",
     "regionConnector": "at-eda"
@@ -611,6 +698,7 @@
   {
     "country": "at",
     "company": "P.K. Energieversorgungs-GmbH",
+    "name": "P.K. Energieversorgungs-GmbH",
     "companyId": "AT008630",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -618,6 +706,7 @@
   {
     "country": "at",
     "company": "Plövner Schmiede Betriebs GesmbH",
+    "name": "Plövner Schmiede",
     "companyId": "AT005670",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -625,6 +714,7 @@
   {
     "country": "at",
     "company": "Polsterer Kerres Ruttin Holding GmbH",
+    "name": "Polsterer Kerres Ruttin",
     "companyId": "AT002270",
     "jumpOffUrl": "https://www.polsterer-holding.at/?menu=12&request=9000",
     "regionConnector": "at-eda"
@@ -632,6 +722,7 @@
   {
     "country": "at",
     "company": "Revertera'sches E-Werk",
+    "name": "Revertera'sches E-Werk",
     "companyId": "AT003540",
     "jumpOffUrl": "https://revertera.verbrauch.at/auth/login?returnUrl=%2Fauth%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dportal-revertera%26redirect_uri%3Dhttps%253A%252F%252Frevertera.verbrauch.at%252Fportal%252Fsignin-oidc%26response_type%3Dcode%2520id_token%26scope%3Dopenid%2520profile%26response_mode%3Dform_post%26nonce%3D638161073851327464.ZjE0Y2UwMTEtYmUxNy00NDJiLThhMmUtZDRiNzc3NzNhZjNhMDdlODE1NWQtYjQ2OC00NTllLWFiMDItZDMxOWRjY2YzMGRl%26state%3DCfDJ8GjbU5vvFE5MuZUsWB84EY-6ncgh86KzcFQAkIcNVginKpyjiHxT_epefWoGVKcioviVTjn5vJIlEWAf5p7E2-aZGQNGQWeehgmyaBw_PXu8-QjuxEMObKNWa3dk8Ggytk5IXqvvSCxX-iJilMHffAuT437IYKKi1vBJ6ps4yOajaRsLsK7VkOa3eh0lV7eK-_cLm4hh70nqHh0AlF1Id0W2T4xupXH2zYrxgmWcCOCAHEw1EH6NGK-z64VxlNpytWhWTJYqbR6xUG3aQUYGJOvB0ug3JIkGXiG5z_7vuCrfDOEndLNk_L-phTXmC6AujGQ_6jIItrunr7alokCBEPRn33bSIb7Kk9yN8KZERVu2%26x-client-SKU%3DID_NETSTANDARD2_0%26x-client-ver%3D5.3.0.0",
     "regionConnector": "at-eda"
@@ -639,6 +730,7 @@
   {
     "country": "at",
     "company": "Salzburg Netz GmbH",
+    "name": "Salzburg Netz",
     "companyId": "AT004000",
     "jumpOffUrl": "https://login.salzburgnetz.at/login.salzburgnetz.at/B2C_1A_signup_signin/oauth2/v2.0/authorize?response_type=token%20id_token&client_id=2d97aeeb-ea30-444e-9a2b-b91c0c6a4d68&state=VklWLURFRzEzMnA4eTJmR2xwSVNTUE1wMDZEQkVmYkw5NmdjfkdJaWtUQ3lN&redirect_uri=https%3A%2F%2Fportal.salzburgnetz.at&scope=openid%20https%3A%2F%2Flogin.salzburgnetz.at%2F2d97aeeb-ea30-444e-9a2b-b91c0c6a4d68%2Fuser_impersonation&nonce=VklWLURFRzEzMnA4eTJmR2xwSVNTUE1wMDZEQkVmYkw5NmdjfkdJaWtUQ3lN",
     "regionConnector": "at-eda"
@@ -646,6 +738,7 @@
   {
     "country": "at",
     "company": "Schwarz, Wagendorffer & Co, Elektrizitätswerk GmbH ",
+    "name": "Schwarz, Wagendorffer & Co",
     "companyId": "AT008850",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -653,6 +746,7 @@
   {
     "country": "at",
     "company": "Stadtbetriebe Mariazell GmbH",
+    "name": "Stadtbetriebe Mariazell",
     "companyId": "AT008440",
     "jumpOffUrl": "https://mariazell-davidvo.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -660,6 +754,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Amstetten ",
+    "name": "Stadtwerke Amstetten ",
     "companyId": "AT002110",
     "jumpOffUrl": "https://amstetten-davidvo.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -667,6 +762,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Bruck an der Mur GmbH",
+    "name": "Stadtwerke Bruck an der Mur",
     "companyId": "AT008140",
     "jumpOffUrl": "https://bruck-davidvo.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -674,6 +770,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Feldkirch",
+    "name": "Stadtwerke Feldkirch",
     "companyId": "AT006110",
     "jumpOffUrl": "https://swf-portal.stadtwerke-feldkirch.at/index.php",
     "regionConnector": "at-eda"
@@ -681,6 +778,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Fürstenfeld GmbH",
+    "name": "Stadtwerke Fürstenfeld",
     "companyId": "AT008150",
     "jumpOffUrl": "",
     "regionConnector": "at-eda"
@@ -688,6 +786,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Hartberg Energieversorgungs GmbH",
+    "name": "Stadtwerke Hartberg",
     "companyId": "AT008470",
     "jumpOffUrl": "https://hartberg.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -695,6 +794,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Imst",
+    "name": "Stadtwerke Imst",
     "companyId": "AT005370",
     "jumpOffUrl": "https://kundenportal.stwimst.at/",
     "regionConnector": "at-eda"
@@ -702,6 +802,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Judenburg Aktiengesellschaft",
+    "name": "Stadtwerke Judenburg",
     "companyId": "AT008160",
     "jumpOffUrl": "https://judenburg.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -709,6 +810,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Kapfenberg GmbH",
+    "name": "Stadtwerke Kapfenberg",
     "companyId": "AT008170",
     "jumpOffUrl": "https://services.stadtwerke-kapfenberg.at/Portal/Services.aspx",
     "regionConnector": "at-eda"
@@ -716,6 +818,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Kitzbühel e.U.",
+    "name": "Stadtwerke Kitzbühel",
     "companyId": "AT005130",
     "jumpOffUrl": "https://portal.stadtwerke-kitzbuehel.at/?page=registration",
     "regionConnector": "at-eda"
@@ -723,6 +826,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Kufstein GmbH",
+    "name": "Stadtwerke Kufstein",
     "companyId": "AT005140",
     "jumpOffUrl": "https://portal.stwk.at/",
     "regionConnector": "at-eda"
@@ -730,6 +834,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Köflach GmbH",
+    "name": "Stadtwerke Köflach",
     "companyId": "AT008180",
     "jumpOffUrl": "https://koeflach.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -737,6 +842,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Mürzzuschlag Gesellschaft m.b.H.",
+    "name": "Stadtwerke Mürzzuschlag",
     "companyId": "AT008190",
     "jumpOffUrl": "https://muerzzuschlag.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -744,6 +850,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Schwaz GmbH",
+    "name": "Stadtwerke Schwaz",
     "companyId": "AT005150",
     "jumpOffUrl": "https://kundenportal.stadtwerkeschwaz.at/",
     "regionConnector": "at-eda"
@@ -751,6 +858,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Trofaiach Gesellschaft m.b.H.",
+    "name": "Stadtwerke Trofaiach",
     "companyId": "AT008490",
     "jumpOffUrl": "https://trofaiach-davidvo.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -758,6 +866,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Voitsberg GmbH",
+    "name": "Stadtwerke Voitsberg",
     "companyId": "AT008120",
     "jumpOffUrl": "https://voitsberg.mein-portal.at/kundenportal",
     "regionConnector": "at-eda"
@@ -765,6 +874,7 @@
   {
     "country": "at",
     "company": "Stadtwerke Wörgl GmbH",
+    "name": "Stadtwerke Wörgl",
     "companyId": "AT005160",
     "jumpOffUrl": "https://kundenportal.stadtwerke.woergl.at/",
     "regionConnector": "at-eda"
@@ -772,6 +882,7 @@
   {
     "country": "at",
     "company": "Stromnetz Graz GmbH & Co KG",
+    "name": "Stromnetz Graz",
     "companyId": "AT008100",
     "jumpOffUrl": "https://www.stromnetz-graz.at/sgg/customer/account/login/",
     "regionConnector": "at-eda"
@@ -779,6 +890,7 @@
   {
     "country": "at",
     "company": "Städtische Betriebe Rottenmann GmbH",
+    "name": "Städtische Betriebe Rottenmann",
     "companyId": "AT008350",
     "jumpOffUrl": "http://www.sb-rottenmann.at/login",
     "regionConnector": "at-eda"
@@ -786,6 +898,7 @@
   {
     "country": "at",
     "company": "TINETZ-Tiroler Netze GmbH",
+    "name": "TINETZ-Tiroler Netze",
     "companyId": "AT005000",
     "jumpOffUrl": "https://kundenportal.tinetz.at/",
     "regionConnector": "at-eda"
@@ -793,6 +906,7 @@
   {
     "country": "at",
     "company": "Vorarlberger Energienetze GmbH",
+    "name": "Vorarlberger Energienetze",
     "companyId": "AT006000",
     "jumpOffUrl": "https://identity.vorarlbergnetz.at/Identity/Login?ReturnUrl=http%3A%2F%2Fidentity%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dcustomer-portal%26redirect_uri%3Dhttp%253A%252F%252Fvkwweb%252Fsignin-oidc%26response_type%3Dcode%26scope%3Dopenid%2520profile%2520phone%2520email%2520offline_access%2520sap%2520applogs%26code_challenge%3DudfUE5z9jeiIcQKfbmKYRzhsqlBNlzCkvdgW1bADD-g%26code_challenge_method%3DS256%26response_mode%3Dform_post%26nonce%3D638161080497378142.NWIwMDM0ODQtYzYxZC00ZTg3LTgzZjYtN2JlYjE0NzY4NmJjYjI1ODM2ZTMtMmQ4ZS00NjUyLWFkNWUtNWYyYmU1ZTUwY2Ri%26state%3DCfDJ8LHRWicpcz1Nu0zhm_xAp6WHJqNOX8CxICjrnQAIg0rnq4uTi9yCxFJlxo61zAgJALB1vcyA80s4u7OWt1kmD0OnAux9pozgVNCD3QGr_7Y_KQe4NTaof5y4OKJNS9Am8mnHaY1rIBHkZCvmqBeWwno91VFdTr0SgDZJko3rMkHCVlJQy-uPWq3kbvZKgt5aaWqSBcF9ZAkY7n3LPwr6KZeMBYaspVYNH9Xzu7BYkohYrixRYQfzuErbhgFJUrshVEVnG0i7ZmskE8N0K5iDLMAMn4q2P2Cw74Btpli7KgpmkGIScUzUq4JE0RXX52obunBC1loCdBeLvpLTfOF2bjizOsu8RYY6zeA2vzQBUBzehlLizBGLgKqLd1sEdiSH30PM5DYdXKSGYmXHXnFzwL4JSZyE_xhl6Hu8M3mMpUD28FwluKoIqiwqECKFsl0n0G5Z8zhypBltBuGF6L3kbXk%26x-client-SKU%3DID_NETSTANDARD2_0%26x-client-ver%3D6.10.0.0",
     "regionConnector": "at-eda"
@@ -800,6 +914,7 @@
   {
     "country": "at",
     "company": "Wasserkraft Sölden eGen",
+    "name": "Wasserkraft Sölden",
     "companyId": "AT005610",
     "jumpOffUrl": "https://kundenportal.wasserkraft-soelden.at/",
     "regionConnector": "at-eda"
@@ -807,6 +922,7 @@
   {
     "country": "at",
     "company": "Wiener Netze GmbH",
+    "name": "Wiener Netze",
     "companyId": "AT001000",
     "jumpOffUrl": "https://log.wien/auth/realms/logwien/protocol/openid-connect/auth?client_id=wn-smartmeter&redirect_uri=https%3A%2F%2Fsmartmeter-web.wienernetze.at%2F&state=d101979d-9ba3-402f-8b9c-1b8afc35c409&response_mode=fragment&response_type=code&scope=openid&nonce=3c352e2a-09af-4df3-9c5a-8c2cbd78b73f",
     "regionConnector": "at-eda"
@@ -814,6 +930,7 @@
   {
     "country": "at",
     "company": "eww AG",
+    "name": "eww AG",
     "companyId": "AT003300",
     "jumpOffUrl": "https://mein.eww.at/de/login",
     "regionConnector": "at-eda"
@@ -821,111 +938,39 @@
   {
     "country": "at",
     "company": "wüsterstrom E-Werk GmbH",
+    "name": "wüsterstrom E-Werk",
     "companyId": "AT002230",
     "jumpOffUrl": "https://energieportal.wuesterstrom.at/enVIEW.Portal/Account/Login?ReturnUrl=%2FenVIEW.Portal%2F",
     "regionConnector": "at-eda"
   },
   {
-    "country": "dk",
-    "company": "Energinet",
-    "companyId": "energinet",
-    "jumpOffUrl": "https://eloverblik.dk/customer/login",
-    "regionConnector": "dk-energinet"
-  },
-  {
-    "country": "es",
-    "company": "Datadis",
-    "companyId": "datadis",
-    "jumpOffUrl": "https://datadis.es",
-    "regionConnector": "es-datadis"
-  },
-  {
-    "country": "fi",
-    "company": "Fingrid Datahub",
-    "companyId": "fingrid-datahub",
-    "jumpOffUrl": "https://oma.datahub.fi/#/login",
-    "regionConnector": "fi-fingrid"
-  },
-  {
-    "country": "fr",
-    "company": "Enedis",
-    "companyId": "enedis",
-    "jumpOffUrl": "",
-    "regionConnector": "fr-enedis"
-  },
-  {
-    "country": "it",
-    "company": "Acquirente Unico / Portale SII / Portale Consumi",
-    "companyId": "acquirente-unico--portale-sii--portale-consumi",
-    "jumpOffUrl": "https://www.consumienergia.it/eid-gateway/?client_id=Ah5HdneY38Nc9Ifd#0",
-    "regionConnector": "it"
-  },
-  {
-    "country": "nl",
-    "company": "BAS/MFF",
-    "companyId": "basmff",
-    "jumpOffUrl": "",
-    "regionConnector": "nl-mijn-aansluiting"
-  },
-  {
-    "country": "us",
-    "company": "National Grid New York",
-    "companyId": "NGNY",
-    "jumpOffUrl": "https://greenbutton.nationalgrid.com",
-    "regionConnector": "us-green-button"
-  },
-  {
-    "country": "us",
-    "company": "Fort Collins Utilities",
-    "companyId": "FCU",
-    "jumpOffUrl": "https://data.fcgov.utilityapi.com",
-    "regionConnector": "us-green-button"
-  },
-  {
-    "country": "us",
-    "company": "Silicon Valley Clean Energy",
-    "companyId": "SVCE",
-    "jumpOffUrl": "https://data.svcleanenergy.org",
-    "regionConnector": "us-green-button"
-  },
-  {
-    "country": "us",
-    "company": "Peninsula Clean Energy",
-    "companyId": "PCE",
-    "jumpOffUrl": "https://www.peninsulacleanenergy.com/data-connect",
-    "regionConnector": "us-green-button"
-  },
-  {
-    "country": "us",
-    "company": "Consumers Energy",
-    "companyId": "CONSUMERSENERGY",
-    "jumpOffUrl": "https://greenbutton.consumersenergy.com",
-    "regionConnector": "us-green-button"
-  },
-  {
-    "country": "ca",
-    "company": "Essex Powerlines",
-    "companyId": "ESSEX",
-    "jumpOffUrl": "https://greenbutton.essexpowerlines.ca",
-    "regionConnector": "us-green-button"
-  },
-  {
-    "country": "ca",
-    "company": "Welland Hydro-Electric System Corp",
-    "companyId": "WELLAND",
-    "jumpOffUrl": "https://greenbutton.wellandhydro.com",
-    "regionConnector": "us-green-button"
+    "country": "be",
+    "company": "Fluvius",
+    "name": "Fluvius",
+    "companyId": "fluvius",
+    "jumpOffUrl": "https://fluvius.be",
+    "regionConnector": "be-fluvius"
   },
   {
     "country": "ca",
     "company": "Bluewater Power Distribution Corporation",
+    "name": "Bluewater Power Distribution Corporation",
     "companyId": "BLUEWATER",
     "jumpOffUrl": "https://greenbutton.bluewaterpower.com",
     "regionConnector": "us-green-button"
   },
   {
     "country": "ca",
+    "company": "Essex Powerlines",
+    "name": "Essex Powerlines",
+    "companyId": "ESSEX",
+    "jumpOffUrl": "https://greenbutton.essexpowerlines.ca",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "ca",
     "company": "Lakefront Utilities Inc.",
+    "name": "Lakefront Utilities Inc.",
     "companyId": "LAKEFRONT",
     "jumpOffUrl": "https://greenbutton.lakefrontutilities.com",
     "regionConnector": "us-green-button"
@@ -933,36 +978,137 @@
   {
     "country": "ca",
     "company": "PUC Distribution Inc.",
+    "name": "PUC Distribution Inc.",
     "companyId": "SSMPUC",
     "jumpOffUrl": "https://greenbutton.ssmpuc.com",
     "regionConnector": "us-green-button"
   },
   {
+    "country": "ca",
+    "company": "Welland Hydro-Electric System Corp",
+    "name": "Welland Hydro-Electric System Corp",
+    "companyId": "WELLAND",
+    "jumpOffUrl": "https://greenbutton.wellandhydro.com",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "dk",
+    "company": "Energinet",
+    "name": "Energinet",
+    "companyId": "energinet",
+    "jumpOffUrl": "https://eloverblik.dk/customer/login",
+    "regionConnector": "dk-energinet"
+  },
+  {
+    "country": "es",
+    "company": "Datadis",
+    "name": "Datadis",
+    "companyId": "datadis",
+    "jumpOffUrl": "https://datadis.es",
+    "regionConnector": "es-datadis"
+  },
+  {
+    "country": "fi",
+    "company": "Fingrid Datahub",
+    "name": "Fingrid",
+    "companyId": "fingrid",
+    "jumpOffUrl": "https://oma.datahub.fi/#/login",
+    "regionConnector": "fi-fingrid"
+  },
+  {
+    "country": "fr",
+    "company": "Enedis",
+    "name": "Enedis",
+    "companyId": "enedis",
+    "jumpOffUrl": "",
+    "regionConnector": "fr-enedis"
+  },
+  {
+    "country": "fr",
+    "company": "SRD Energies",
+    "name": "SRD Energies",
+    "companyId": "srd-energies",
+    "jumpOffUrl": "",
+    "regionConnector": "fr-enedis"
+  },
+  {
+    "country": "it",
+    "company": "Acquirente Unico / Portale SII / Portale Consumi",
+    "name": "Acquirente Unico / Portale SII / Portale Consumi",
+    "companyId": "acquirente-unico-portale-sii-portale-consumi",
+    "jumpOffUrl": "https://www.consumienergia.it/eid-gateway/?client_id=Ah5HdneY38Nc9Ifd#0",
+    "regionConnector": "it"
+  },
+  {
+    "country": "nl",
+    "company": "BAS/MFF",
+    "name": "BAS/MFF",
+    "companyId": "basmff",
+    "jumpOffUrl": "",
+    "regionConnector": "nl-mijn-aansluiting"
+  },
+  {
     "country": "us",
-    "company": "Integrated Energy Data Resource Program",
-    "companyId": "IEDR",
-    "jumpOffUrl": "http://greenbutton.iedr.nyserda.ny.gov",
+    "company": "Consumers Energy",
+    "name": "Consumers Energy",
+    "companyId": "CONSUMERSENERGY",
+    "jumpOffUrl": "https://greenbutton.consumersenergy.com",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "us",
+    "company": "Demo Utility",
+    "name": "Demo Utility",
+    "companyId": "DEMOUTILITY",
+    "jumpOffUrl": "https://greenbutton.demoutility.com",
     "regionConnector": "us-green-button"
   },
   {
     "country": "us",
     "company": "El Paso Electric Company",
+    "name": "El Paso Electric Company",
     "companyId": "EPE",
     "jumpOffUrl": "https://greenbutton.epelectric.com",
     "regionConnector": "us-green-button"
   },
   {
     "country": "us",
-    "company": "Demo Utility",
-    "companyId": "DEMOUTILITY",
-    "jumpOffUrl": "https://greenbutton.demoutility.com",
+    "company": "Fort Collins Utilities",
+    "name": "Fort Collins Utilities",
+    "companyId": "FCU",
+    "jumpOffUrl": "https://data.fcgov.utilityapi.com",
     "regionConnector": "us-green-button"
   },
   {
-    "country": "be",
-    "company": "Fluvius",
-    "companyId": "Fluvius",
-    "jumpOffUrl": "https://fluvius.be",
-    "regionConnector": "be-fluvius"
+    "country": "us",
+    "company": "Integrated Energy Data Resource Program",
+    "name": "Integrated Energy Data Resource Program",
+    "companyId": "IEDR",
+    "jumpOffUrl": "http://greenbutton.iedr.nyserda.ny.gov",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "us",
+    "company": "National Grid New York",
+    "name": "National Grid New York",
+    "companyId": "NGNY",
+    "jumpOffUrl": "https://greenbutton.nationalgrid.com",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "us",
+    "company": "Peninsula Clean Energy",
+    "name": "Peninsula Clean Energy",
+    "companyId": "PCE",
+    "jumpOffUrl": "https://www.peninsulacleanenergy.com/data-connect",
+    "regionConnector": "us-green-button"
+  },
+  {
+    "country": "us",
+    "company": "Silicon Valley Clean Energy",
+    "name": "Silicon Valley Clean Energy",
+    "companyId": "SVCE",
+    "jumpOffUrl": "https://data.svcleanenergy.org",
+    "regionConnector": "us-green-button"
   }
 ]

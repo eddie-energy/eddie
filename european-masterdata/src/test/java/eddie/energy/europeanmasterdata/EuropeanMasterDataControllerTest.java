@@ -28,6 +28,7 @@ class EuropeanMasterDataControllerTest {
     void getPermissionAdministrators() throws Exception {
         final var permissionAdministrators = List.of(new PermissionAdministrator("country",
                                                                                  "company",
+                                                                                 "name",
                                                                                  "company-id",
                                                                                  "jumpOffUrl",
                                                                                  "regionConnector"));
@@ -43,6 +44,7 @@ class EuropeanMasterDataControllerTest {
     void getPermissionAdministrator() throws Exception {
         final var permissionAdministrator = new PermissionAdministrator("country",
                                                                         "company",
+                                                                        "name",
                                                                         "company-id",
                                                                         "jumpOffUrl",
                                                                         "regionConnector");
