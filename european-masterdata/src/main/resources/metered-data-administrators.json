@@ -4,2190 +4,1999 @@
     "company": "AAE Wasserkraft GmbH",
     "companyId": "AT007240",
     "websiteUrl": "https://aae.at/",
-    "officialContact": "office@aae-wasserkraft.at"
+    "officialContact": "office@aae-wasserkraft.at",
+    "permissionAdministrator": "AAE Wasserkraft GmbH"
   },
   {
     "country": "at",
     "company": "Alfenzwerke Elektrizitätserzeugung GmbH",
     "companyId": "AT006250",
     "websiteUrl": "",
-    "officialContact": "office@alfenzwerke.at"
+    "officialContact": "office@alfenzwerke.at",
+    "permissionAdministrator": "Alfenzwerke Elektrizitätserzeugung GmbH"
   },
   {
     "country": "at",
     "company": "Andreas Braunstein",
     "companyId": "AT008550",
     "websiteUrl": "",
-    "officialContact": "andy.braunstein@aon.at"
+    "officialContact": "andy.braunstein@aon.at",
+    "permissionAdministrator": "Andreas Braunstein"
   },
   {
     "country": "at",
     "company": "Anton Kittel Mühle Plaika GmbH",
     "companyId": "AT002220",
     "websiteUrl": "https://kittelmuehle.at/",
-    "officialContact": "office@kittelmuehle.at"
+    "officialContact": "office@kittelmuehle.at",
+    "permissionAdministrator": "Anton Kittel Mühle Plaika GmbH"
   },
   {
     "country": "at",
     "company": "Austrian Power Grid AG",
     "companyId": "AT000000",
     "websiteUrl": "https://www.apg.at/",
-    "officialContact": "office.uai@apg.at"
+    "officialContact": "office.uai@apg.at",
+    "permissionAdministrator": "Austrian Power Grid AG"
   },
   {
     "country": "at",
     "company": "Bad Gleichenberger Energie GmbH",
     "companyId": "AT008310",
     "websiteUrl": "https://bg-energie.at/",
-    "officialContact": "office@bg-energie.at"
+    "officialContact": "office@bg-energie.at",
+    "permissionAdministrator": "Bad Gleichenberger Energie GmbH"
   },
   {
     "country": "at",
     "company": "E-Werk Altenfelden GmbH",
     "companyId": "AT003900",
     "websiteUrl": "",
-    "officialContact": "strom@freistrom.at"
+    "officialContact": "strom@freistrom.at",
+    "permissionAdministrator": "E-Werk Altenfelden GmbH"
   },
   {
     "country": "at",
     "company": "E-Werk Dietrichschlag eGen",
     "companyId": "AT003920",
     "websiteUrl": "https://www.ewerk-dietrichschlag.at/startseite.html",
-    "officialContact": "e-werk.dietrichschlag@aon.at"
+    "officialContact": "e-werk.dietrichschlag@aon.at",
+    "permissionAdministrator": "E-Werk Dietrichschlag eGen"
   },
   {
     "country": "at",
     "company": "E-Werk Ebner GesmbH",
     "companyId": "AT008730",
     "websiteUrl": "",
-    "officialContact": "verwaltung@EWEbner.at"
+    "officialContact": "verwaltung@EWEbner.at",
+    "permissionAdministrator": "E-Werk Ebner GesmbH"
   },
   {
     "country": "at",
     "company": "E-Werk Gleinstätten GmbH",
     "companyId": "AT008740",
     "websiteUrl": "",
-    "officialContact": "office@ktg-austria.at"
+    "officialContact": "office@ktg-austria.at",
+    "permissionAdministrator": "E-Werk Gleinstätten GmbH"
   },
   {
     "country": "at",
     "company": "E-Werk Gösting Stromversorgung GmbH",
     "companyId": "AT008210",
     "websiteUrl": "",
-    "officialContact": "a.froehlich@ewg.at"
+    "officialContact": "a.froehlich@ewg.at",
+    "permissionAdministrator": "E-Werk Gösting Stromversorgung GmbH"
   },
   {
     "country": "at",
     "company": "E-Werk Piwetz",
     "companyId": "AT008950",
     "websiteUrl": "",
-    "officialContact": "office@ew-piwetz.at"
+    "officialContact": "office@ew-piwetz.at",
+    "permissionAdministrator": "E-Werk Piwetz"
   },
   {
     "country": "at",
     "company": "E-Werk Ranklleiten",
     "companyId": "AT003590",
     "websiteUrl": "https://ranklleiten.at",
-    "officialContact": "office@ranklleiten.at"
+    "officialContact": "office@ranklleiten.at",
+    "permissionAdministrator": "E-Werk Ranklleiten"
   },
   {
     "country": "at",
     "company": "E-Werk Redlmühle B. Drack Elektrotechnik ",
     "companyId": "AT003910",
     "websiteUrl": "http://www.drackstrom.at/ws/frontend/seite/SeiteCms.php?coId=2&coType=navigation1",
-    "officialContact": "office@drackstrom.at"
+    "officialContact": "office@drackstrom.at",
+    "permissionAdministrator": "E-Werk Redlmühle B. Drack Elektrotechnik"
   },
   {
     "country": "at",
     "company": "E-Werk Sarmingstein Ing. H. Engelmann & Co KG",
     "companyId": "AT002900",
     "websiteUrl": "",
-    "officialContact": "ewsa@e-werke.at"
+    "officialContact": "ewsa@e-werke.at",
+    "permissionAdministrator": "E-Werk Sarmingstein Ing. H. Engelmann & Co KG"
   },
   {
     "country": "at",
     "company": "E-Werk Schattwald e.U.",
     "companyId": "AT005340",
     "websiteUrl": "https://ew-schattwald.at/",
-    "officialContact": "office@ew-schattwald.at"
+    "officialContact": "office@ew-schattwald.at",
+    "permissionAdministrator": "E-Werk Schattwald e.U."
   },
   {
     "country": "at",
     "company": "E-Werk Schwaighofer GmbH",
     "companyId": "AT002250",
     "websiteUrl": "",
-    "officialContact": "e.werk@schwaighofer-lunz.at"
+    "officialContact": "e.werk@schwaighofer-lunz.at",
+    "permissionAdministrator": "E-Werk Schwaighofer GmbH"
   },
   {
     "country": "at",
     "company": "E-Werk Sigl GmbH & Co KG",
     "companyId": "AT008540",
     "websiteUrl": "",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "E-Werk Sigl GmbH & Co KG"
   },
   {
     "country": "at",
     "company": "E-Werk Stadler GmbH",
     "companyId": "AT005470",
     "websiteUrl": "",
-    "officialContact": "info@elektro-stadler.at"
+    "officialContact": "info@elektro-stadler.at",
+    "permissionAdministrator": "E-Werk Stadler GmbH"
   },
   {
     "country": "at",
     "company": "E-Werk Stubenberg eGen",
     "companyId": "AT008910",
     "websiteUrl": "",
-    "officialContact": "office@e-werk-stubenberg.at"
+    "officialContact": "office@e-werk-stubenberg.at",
+    "permissionAdministrator": "E-Werk Stubenberg eGen"
   },
   {
     "country": "at",
     "company": "E-Werk der Marktgemeinde Unzmarkt-Frauenburg",
     "companyId": "AT008410",
     "websiteUrl": "",
-    "officialContact": "evu@ainet.at"
+    "officialContact": "evu@ainet.at",
+    "permissionAdministrator": "E-Werk der Marktgemeinde Unzmarkt-Frauenburg"
   },
   {
     "country": "at",
     "company": "ENVESTA Energie- und Dienstleistungs GmbH",
     "companyId": "AT008560",
     "websiteUrl": "https://www.envesta.at/",
-    "officialContact": "office@envesta.at"
+    "officialContact": "office@envesta.at",
+    "permissionAdministrator": "ENVESTA Energie- und Dienstleistungs GmbH"
   },
   {
     "country": "at",
     "company": "EVU Gerald Mathe e.U.",
     "companyId": "AT003570",
     "websiteUrl": "http://www.mathestrom.at/",
-    "officialContact": "office@mathestrom.at"
+    "officialContact": "office@mathestrom.at",
+    "permissionAdministrator": "EVU Gerald Mathe e.U."
   },
   {
     "country": "at",
     "company": "EVU der Marktgemeinde Eibiswald",
     "companyId": "AT008390",
     "websiteUrl": "",
-    "officialContact": "evu@eibiswald.gv.at"
+    "officialContact": "evu@eibiswald.gv.at",
+    "permissionAdministrator": "EVU der Marktgemeinde Eibiswald"
   },
   {
     "country": "at",
     "company": "EVU der Stadtgemeinde Mureck",
     "companyId": "AT008360",
     "websiteUrl": "https://evu-mureck.at/",
-    "officialContact": "markus.neubauer@evu-mureck.at"
+    "officialContact": "markus.neubauer@evu-mureck.at",
+    "permissionAdministrator": "EVU der Stadtgemeinde Mureck"
   },
   {
     "country": "at",
     "company": "EWA Energie- u Wirtschaftsbetriebe der Gemeinde St. Anton GmbH",
     "companyId": "AT005320",
     "websiteUrl": "https://www.ewa-services.at/",
-    "officialContact": "office@ewa-services.at"
+    "officialContact": "office@ewa-services.at",
+    "permissionAdministrator": "EWA Energie- u Wirtschaftsbetriebe der Gemeinde St. Anton GmbH"
   },
   {
     "country": "at",
     "company": "Ebner Strom GmbH",
     "companyId": "AT003460",
     "websiteUrl": "https://www.ebnerstrom.at/",
-    "officialContact": "kontakt@ebnerstrom.at"
+    "officialContact": "kontakt@ebnerstrom.at",
+    "permissionAdministrator": "Ebner Strom GmbH"
   },
   {
     "country": "at",
     "company": "Elektrizitätsgenossenschaft Laintal eGen",
     "companyId": "AT008510",
     "websiteUrl": "https://www.laintal-strom.at/",
-    "officialContact": "office@laintal-strom.at"
+    "officialContact": "office@laintal-strom.at",
+    "permissionAdministrator": "Elektrizitätsgenossenschaft Laintal eGen"
   },
   {
     "country": "at",
     "company": "Elektrizitätswerk Bad Hofgastein Gesellschaft m.b.H.",
     "companyId": "AT004110",
     "websiteUrl": "https://ewh.co.at/",
-    "officialContact": "ewerk@ewh.co.at"
+    "officialContact": "ewerk@ewh.co.at",
+    "permissionAdministrator": "Elektrizitätswerk Bad Hofgastein Gesellschaft m.b.H."
   },
   {
     "country": "at",
     "company": "Elektrizitätswerk Clam Carl-Philip Clam-Martinic e. U.",
     "companyId": "AT002910",
     "websiteUrl": "http://www.clamstrom.at/",
-    "officialContact": "office@clamstrom.at"
+    "officialContact": "office@clamstrom.at",
+    "permissionAdministrator": "Elektrizitätswerk Clam Carl-Philip Clam-Martinic e. U."
   },
   {
     "country": "at",
     "company": "Elektrizitätswerk Eisenhuber GmbH & Co KG",
     "companyId": "AT002210",
     "websiteUrl": "https://www.eisenhuber.com/",
-    "officialContact": "johann.wagner@eisenhuber.com"
+    "officialContact": "johann.wagner@eisenhuber.com",
+    "permissionAdministrator": "Elektrizitätswerk Eisenhuber GmbH & Co KG"
   },
   {
     "country": "at",
     "company": "Elektrizitätswerk Fernitz, Ing. Franz Purkarthofer GmbH & Co KG.",
     "companyId": "AT008570",
     "websiteUrl": "https://ewerkfernitz.at/",
-    "officialContact": "office@ewerkfernitz.at"
+    "officialContact": "office@ewerkfernitz.at",
+    "permissionAdministrator": "Elektrizitätswerk Fernitz, Ing. Franz Purkarthofer GmbH & Co KG."
   },
   {
     "country": "at",
     "company": "Elektrizitätswerk Gröbming KG",
     "companyId": "AT008620",
     "websiteUrl": "https://www.das-ewerk.at/",
-    "officialContact": "office@ewerk-groebming.at"
+    "officialContact": "office@ewerk-groebming.at",
+    "permissionAdministrator": "Elektrizitätswerk Gröbming KG"
   },
   {
     "country": "at",
     "company": "Elektrizitätswerk Mürzsteg",
     "companyId": "AT008370",
     "websiteUrl": "http://www.neuberg-muerz.gv.at/e-werk-muerzsteg-2/",
-    "officialContact": "m.seiser@muerzsteg.at"
+    "officialContact": "m.seiser@muerzsteg.at",
+    "permissionAdministrator": "Elektrizitätswerk Mürzsteg"
   },
   {
     "country": "at",
     "company": "Elektrizitätswerk Perg GmbH",
     "companyId": "AT003310",
     "websiteUrl": "https://www.ewerk-perg.at/",
-    "officialContact": "ewerk@ewerk-perg.at"
+    "officialContact": "ewerk@ewerk-perg.at",
+    "permissionAdministrator": "Elektrizitätswerk Perg GmbH"
   },
   {
     "country": "at",
     "company": "Elektrizitätswerk Prantl Gesellschaft m.b.H.",
     "companyId": "AT005460",
     "websiteUrl": "https://www.prantlstrom.at/",
-    "officialContact": "ew-prantl@tirol.com"
+    "officialContact": "ew-prantl@tirol.com",
+    "permissionAdministrator": "Elektrizitätswerk Prantl Gesellschaft m.b.H."
   },
   {
     "country": "at",
     "company": "Elektrizitätswerk Winkler GmbH",
     "companyId": "AT005480",
     "websiteUrl": "http://www.e-werk-winkler.at/",
-    "officialContact": "e.werk.winkler@aon.at"
+    "officialContact": "e.werk.winkler@aon.at",
+    "permissionAdministrator": "Elektrizitätswerk Winkler GmbH"
   },
   {
     "country": "at",
     "company": "Elektrizitätswerk der Gemeinde Gries am Brenner",
     "companyId": "AT005540",
     "websiteUrl": "https://www.griesambrenner.tirol.gv.at/Elektrizitaetswerk_der_Gemeinde_Gries_am_Brenner",
-    "officialContact": "ewerk@griesambrenner.tirol.gv.at"
+    "officialContact": "ewerk@griesambrenner.tirol.gv.at",
+    "permissionAdministrator": "Elektrizitätswerk der Gemeinde Gries am Brenner"
   },
   {
     "country": "at",
     "company": "Elektrizitätswerk der Gemeinde Kematen",
     "companyId": "AT005350",
     "websiteUrl": "https://ewerk.kematenintirol.at/",
-    "officialContact": "gemeindewerke.kematen@aon.at"
+    "officialContact": "gemeindewerke.kematen@aon.at",
+    "permissionAdministrator": "Elektrizitätswerk der Gemeinde Kematen"
   },
   {
     "country": "at",
     "company": "Elektrizitätswerk der Stadtgemeinde Kindberg",
     "companyId": "AT008110",
     "websiteUrl": "https://www.ewerk-kindberg.at/",
-    "officialContact": "sekretariat@ewerk-kindberg.at"
+    "officialContact": "sekretariat@ewerk-kindberg.at",
+    "permissionAdministrator": "Elektrizitätswerk der Stadtgemeinde Kindberg"
   },
   {
     "country": "at",
     "company": "Elektrizitätswerke Bad Radkersburg GmbH",
     "companyId": "AT008450",
     "websiteUrl": "https://www.ewerk-badradkersburg.at/",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "Elektrizitätswerke Bad Radkersburg GmbH"
   },
   {
     "country": "at",
     "company": "Elektrizitätswerke Frastanz Gesellschaft m.b.H.",
     "companyId": "AT006210",
     "websiteUrl": "https://www.ewerke.at/",
-    "officialContact": "info@ewerke.at"
+    "officialContact": "info@ewerke.at",
+    "permissionAdministrator": "Elektrizitätswerke Frastanz Gesellschaft m.b.H."
   },
   {
     "country": "at",
     "company": "Elektrizitätswerke Reutte AG",
     "companyId": "AT005110",
     "websiteUrl": "https://www.ewr-energie.com/",
-    "officialContact": "edm@ewr.at"
+    "officialContact": "edm@ewr.at",
+    "permissionAdministrator": "Elektrizitätswerke Reutte AG"
   },
   {
     "country": "at",
     "company": "Elektriztätswerk Mariahof GmbH",
     "companyId": "AT008650",
     "websiteUrl": "http://www.ewerk-mariahof.at/",
-    "officialContact": "office@ewerk-mariahof.at"
+    "officialContact": "office@ewerk-mariahof.at",
+    "permissionAdministrator": "Elektriztätswerk Mariahof GmbH"
   },
   {
     "country": "at",
     "company": "Elektrogenossenschaft Weerberg reg. Gen.m.b.H.",
     "companyId": "AT005630",
     "websiteUrl": "",
-    "officialContact": "info@e-g-w.at"
+    "officialContact": "info@e-g-w.at",
+    "permissionAdministrator": "Elektrogenossenschaft Weerberg reg. Gen.m.b.H."
   },
   {
     "country": "at",
     "company": "Elektrowerk Assling reg. Gen.m.b.H.",
     "companyId": "AT005490",
     "websiteUrl": "https://www.ewa.at/",
-    "officialContact": "ewa@ewa.at"
+    "officialContact": "ewa@ewa.at",
+    "permissionAdministrator": "Elektrowerk Assling reg. Gen.m.b.H."
   },
   {
     "country": "at",
     "company": "Elektrowerk Schöder GmbH",
     "companyId": "AT008720",
     "websiteUrl": "https://www.evu-schoeder.at/",
-    "officialContact": "office@evu-schoeder.at"
+    "officialContact": "office@evu-schoeder.at",
+    "permissionAdministrator": "Elektrowerk Schöder GmbH"
   },
   {
     "country": "at",
     "company": "Elektrowerkgenossenschaft Hopfgarten i. Def. reg. Gen. m. b. H.",
     "companyId": "AT005600",
     "websiteUrl": "https://www.ew-hopfgarten.at/",
-    "officialContact": "office@ew-hopfgarten.at"
+    "officialContact": "office@ew-hopfgarten.at",
+    "permissionAdministrator": "Elektrowerkgenossenschaft Hopfgarten i. Def. reg. Gen. m. b. H."
   },
   {
     "country": "at",
     "company": "Energie Güssing GmbH",
     "companyId": "AT009220",
     "websiteUrl": "https://e-guessing.at/",
-    "officialContact": "office@e-guessing.at"
+    "officialContact": "office@e-guessing.at",
+    "permissionAdministrator": "Energie Güssing GmbH"
   },
   {
     "country": "at",
     "company": "Energie Klagenfurt GmbH",
     "companyId": "AT007100",
     "websiteUrl": "https://www.energieklagenfurt.at",
-    "officialContact": "office@energieklagenfurt.at"
+    "officialContact": "office@energieklagenfurt.at",
+    "permissionAdministrator": "Energie Klagenfurt GmbH"
   },
   {
     "country": "at",
     "company": "Energie Ried Gesellschaft m.b.H.",
     "companyId": "AT003200",
     "websiteUrl": "https://www.energie-ried.at/",
-    "officialContact": "office@energie-ried.at"
+    "officialContact": "office@energie-ried.at",
+    "permissionAdministrator": "Energie Ried Gesellschaft m.b.H."
   },
   {
     "country": "at",
     "company": "Energienetze Steiermark GmbH",
     "companyId": "AT008000",
     "websiteUrl": "https://www.e-netze.at/",
-    "officialContact": "office@e-netze.at"
+    "officialContact": "office@e-netze.at",
+    "permissionAdministrator": "Energienetze Steiermark GmbH"
   },
   {
     "country": "at",
     "company": "Energieversorgung Kleinwalsertal Ges. m. b. H.",
     "companyId": "AT006230",
     "websiteUrl": "https://www.evk.at/",
-    "officialContact": "info@evk.at"
+    "officialContact": "info@evk.at",
+    "permissionAdministrator": "Energieversorgung Kleinwalsertal Ges. m. b. H."
   },
   {
     "country": "at",
     "company": "Energieversorgungs GmbH",
     "companyId": "AT003580",
     "websiteUrl": "",
-    "officialContact": "strom@mitheis.at"
+    "officialContact": "strom@mitheis.at",
+    "permissionAdministrator": "Energieversorgungs GmbH"
   },
   {
     "country": "at",
     "company": "Energieversorgungsunternehmen der Florian Lugitsch Gruppe GmbH",
     "companyId": "AT008580",
     "websiteUrl": "https://www.e-lugitsch.at/",
-    "officialContact": "office@lugitsch.at"
+    "officialContact": "office@lugitsch.at",
+    "permissionAdministrator": "Energieversorgungsunternehmen der Florian Lugitsch Gruppe GmbH"
   },
   {
     "country": "at",
     "company": "Feistritzthaler Elektrizitätswerk eGen",
     "companyId": "AT008770",
     "websiteUrl": "",
-    "officialContact": "s.brantweiner@ewerk-growi.at"
+    "officialContact": "s.brantweiner@ewerk-growi.at",
+    "permissionAdministrator": "Feistritzthaler Elektrizitätswerk eGen"
   },
   {
     "country": "at",
     "company": "Feistritzwerke-STEWEAG-GmbH",
     "companyId": "AT008130",
     "websiteUrl": "",
-    "officialContact": "office@feistritzwerke.at"
+    "officialContact": "office@feistritzwerke.at",
+    "permissionAdministrator": "Feistritzwerke-STEWEAG-GmbH"
   },
   {
     "country": "at",
     "company": "Forstverwaltung Seehof GmbH",
     "companyId": "AT002280",
     "websiteUrl": "",
-    "officialContact": "office@kupelwieser-forst.at"
+    "officialContact": "office@kupelwieser-forst.at",
+    "permissionAdministrator": "Forstverwaltung Seehof GmbH"
   },
   {
     "country": "at",
     "company": "Gertraud Schafler GmbH",
     "companyId": "AT008690",
     "websiteUrl": "",
-    "officialContact": "office@schaflerstrom.at"
+    "officialContact": "office@schaflerstrom.at",
+    "permissionAdministrator": "Gertraud Schafler GmbH"
   },
   {
     "country": "at",
     "company": "Getzner, Mutter & Cie. Gesellschaft m.b.H. & Co. KG",
     "companyId": "AT006240",
     "websiteUrl": "",
-    "officialContact": "office.gmc@getzner.at"
+    "officialContact": "office.gmc@getzner.at",
+    "permissionAdministrator": "Getzner, Mutter & Cie. Gesellschaft m.b.H. & Co. KG"
   },
   {
     "country": "at",
     "company": "HALLAG Kommunal GmbH",
     "companyId": "AT005120",
     "websiteUrl": "https://www.hall.ag/",
-    "officialContact": "c.neuzil@hall.ag"
+    "officialContact": "c.neuzil@hall.ag",
+    "permissionAdministrator": "HALLAG Kommunal GmbH"
   },
   {
     "country": "at",
     "company": "Heinrich Polsterer UND MITGES.GES.N.B.R.",
     "companyId": "AT002400",
     "websiteUrl": "",
-    "officialContact": "h.polsterer@polsterer.co.at"
+    "officialContact": "h.polsterer@polsterer.co.at",
+    "permissionAdministrator": "Heinrich Polsterer UND MITGES.GES.N.B.R."
   },
   {
     "country": "at",
     "company": "Innsbrucker Kommunalbetriebe AG",
     "companyId": "AT005100",
     "websiteUrl": "",
-    "officialContact": "snot@ikb.at"
+    "officialContact": "snot@ikb.at",
+    "permissionAdministrator": "Innsbrucker Kommunalbetriebe AG"
   },
   {
     "country": "at",
     "company": "Joh. Pengg Holding Gesellschaft m.b.H.",
     "companyId": "AT008930",
     "websiteUrl": "",
-    "officialContact": "pengg.holding@aon.at"
+    "officialContact": "pengg.holding@aon.at",
+    "permissionAdministrator": "Joh. Pengg Holding Gesellschaft m.b.H."
   },
   {
     "country": "at",
     "company": "K. u. F. Drack Gesellschaft m.b.H. & Co. KG.",
     "companyId": "AT003520",
     "websiteUrl": "",
-    "officialContact": "office@kfd.at"
+    "officialContact": "office@kfd.at",
+    "permissionAdministrator": "K. u. F. Drack Gesellschaft m.b.H. & Co. KG."
   },
   {
     "country": "at",
     "company": "KARLSTROM e.U.",
     "companyId": "AT003470",
     "websiteUrl": "",
-    "officialContact": "service@karlstrom.at"
+    "officialContact": "service@karlstrom.at",
+    "permissionAdministrator": "KARLSTROM e.U."
   },
   {
     "country": "at",
     "company": "KNG-Kärnten Netz GmbH",
     "companyId": "AT007000",
     "websiteUrl": "",
-    "officialContact": "office@kaerntennetz.at"
+    "officialContact": "office@kaerntennetz.at",
+    "permissionAdministrator": "KNG-Kärnten Netz GmbH"
   },
   {
     "country": "at",
     "company": "Klausbauer Wasser Kraft GesmbH & Co KG",
     "companyId": "AT008250",
     "websiteUrl": "",
-    "officialContact": "office@klausbauerwasserkraft.at"
+    "officialContact": "office@klausbauerwasserkraft.at",
+    "permissionAdministrator": "Klausbauer Wasser Kraft GesmbH & Co KG"
   },
   {
     "country": "at",
     "company": "Kommunalbetriebe Hopfgarten GmbH",
     "companyId": "AT005330",
     "websiteUrl": "",
-    "officialContact": "office@kbh.at"
+    "officialContact": "office@kbh.at",
+    "permissionAdministrator": "Kommunalbetriebe Hopfgarten GmbH"
   },
   {
     "country": "at",
     "company": "Kommunalbetriebe Rinn GmbH",
     "companyId": "AT005650",
     "websiteUrl": "",
-    "officialContact": "office@kbrinn.at"
+    "officialContact": "office@kbrinn.at",
+    "permissionAdministrator": "Kommunalbetriebe Rinn GmbH"
   },
   {
     "country": "at",
     "company": "Kraftwerk Glatzing-Rüstorf eGen",
     "companyId": "AT003510",
     "websiteUrl": "",
-    "officialContact": "kwg@kwg.at"
+    "officialContact": "kwg@kwg.at",
+    "permissionAdministrator": "Kraftwerk Glatzing-Rüstorf eGen"
   },
   {
     "country": "at",
     "company": "Kraftwerk Reinisch GmbH",
     "companyId": "AT005690",
     "websiteUrl": "",
-    "officialContact": "office@kw-reinisch.at"
+    "officialContact": "office@kw-reinisch.at",
+    "permissionAdministrator": "Kraftwerk Reinisch GmbH"
   },
   {
     "country": "at",
     "company": "Kraftwerke Haim K.G.",
     "companyId": "AT005210",
     "websiteUrl": "",
-    "officialContact": "info@kraftwerkhaim.at"
+    "officialContact": "info@kraftwerkhaim.at",
+    "permissionAdministrator": "Kraftwerke Haim K.G."
   },
   {
     "country": "at",
     "company": "Kraut E-Werk KG",
     "companyId": "AT008970",
     "websiteUrl": "",
-    "officialContact": "reinhard.kraut@aon.at"
+    "officialContact": "reinhard.kraut@aon.at",
+    "permissionAdministrator": "Kraut E-Werk KG"
   },
   {
     "country": "at",
     "company": "LINZ NETZ GmbH",
     "companyId": "AT003100",
     "websiteUrl": "",
-    "officialContact": "office@linznetz.at"
+    "officialContact": "office@linznetz.at",
+    "permissionAdministrator": "LINZ NETZ GmbH"
   },
   {
     "country": "at",
     "company": "Licht- u. Kraftstromvertrieb d. Marktgemeinde Göstling a.d. Ybbs",
     "companyId": "AT002120",
     "websiteUrl": "",
-    "officialContact": "b.blamauer@goestling.com"
+    "officialContact": "b.blamauer@goestling.com",
+    "permissionAdministrator": "Licht- u. Kraftstromvertrieb d. Marktgemeinde Göstling a.d. Ybbs"
   },
   {
     "country": "at",
     "company": "Licht- und Kraftstromvertrieb der Gemeinde Opponitz",
     "companyId": "AT002300",
     "websiteUrl": "",
-    "officialContact": "gemeinde@opponitz.gv.at"
+    "officialContact": "gemeinde@opponitz.gv.at",
+    "permissionAdministrator": "Licht- und Kraftstromvertrieb der Gemeinde Opponitz"
   },
   {
     "country": "at",
     "company": "Licht- und Kraftvertrieb der Gemeinde Hollenstein",
     "companyId": "AT002130",
     "websiteUrl": "",
-    "officialContact": "lkv@hollenstein.at"
+    "officialContact": "lkv@hollenstein.at",
+    "permissionAdministrator": "Licht- und Kraftvertrieb der Gemeinde Hollenstein"
   },
   {
     "country": "at",
     "company": "Lichtgenossenschaft Neukirchen eGen",
     "companyId": "AT004120",
     "websiteUrl": "",
-    "officialContact": "info@lichtgenossenschaft.at"
+    "officialContact": "info@lichtgenossenschaft.at",
+    "permissionAdministrator": "Lichtgenossenschaft Neukirchen eGen"
   },
   {
     "country": "at",
     "company": "Mag. Engelbert Julius Tassotti jun. (E-Werk Tassotti) ",
     "companyId": "AT008990",
     "websiteUrl": "",
-    "officialContact": "tassotti@gmail.com"
+    "officialContact": "tassotti@gmail.com",
+    "permissionAdministrator": "Mag. Engelbert Julius Tassotti jun. (E-Werk Tassotti)"
   },
   {
     "country": "at",
     "company": "Marktgemeinde Neumarkt Versorgungsbetriebsges.mbH",
     "companyId": "AT008420",
     "websiteUrl": "",
-    "officialContact": "g.hofer@ew-nmkt.at"
+    "officialContact": "g.hofer@ew-nmkt.at",
+    "permissionAdministrator": "Marktgemeinde Neumarkt Versorgungsbetriebsges.mbH"
   },
   {
     "country": "at",
     "company": "Marktgemeinde Niklasdorf, EVU Niklasdorf",
     "companyId": "AT008330",
     "websiteUrl": "",
-    "officialContact": "evu@niklasdorf.steiermark.at"
+    "officialContact": "evu@niklasdorf.steiermark.at",
+    "permissionAdministrator": "Marktgemeinde Niklasdorf, EVU Niklasdorf"
   },
   {
     "country": "at",
     "company": "Montafonerbahn AG",
     "companyId": "AT006220",
     "websiteUrl": "",
-    "officialContact": "info@montafonerbahn.at"
+    "officialContact": "info@montafonerbahn.at",
+    "permissionAdministrator": "Montafonerbahn AG"
   },
   {
     "country": "at",
     "company": "Murauer Stadtwerke GmbH",
     "companyId": "AT008430",
     "websiteUrl": "",
-    "officialContact": "tarifstelle@stadtwerke-murau.at"
+    "officialContact": "tarifstelle@stadtwerke-murau.at",
+    "permissionAdministrator": "Murauer Stadtwerke GmbH"
   },
   {
     "country": "at",
     "company": "Netz Burgenland GmbH",
     "companyId": "AT009000",
     "websiteUrl": "",
-    "officialContact": "info@netzburgenland.at"
+    "officialContact": "info@netzburgenland.at",
+    "permissionAdministrator": "Netz Burgenland GmbH"
   },
   {
     "country": "at",
     "company": "Netz Niederösterreich GmbH",
     "companyId": "AT002000",
     "websiteUrl": "",
-    "officialContact": "pdf-rechnung@netz-noe.at "
+    "officialContact": "pdf-rechnung@netz-noe.at ",
+    "permissionAdministrator": "Netz Niederösterreich GmbH"
   },
   {
     "country": "at",
     "company": "Netz Oberösterreich GmbH",
     "companyId": "AT003000",
     "websiteUrl": "",
-    "officialContact": "service@netzooe.at"
+    "officialContact": "service@netzooe.at",
+    "permissionAdministrator": "Netz Oberösterreich GmbH"
   },
   {
     "country": "at",
     "company": "P.K. Energieversorgungs-GmbH",
     "companyId": "AT008630",
     "websiteUrl": "",
-    "officialContact": "strom@kiendler.at"
+    "officialContact": "strom@kiendler.at",
+    "permissionAdministrator": "P.K. Energieversorgungs-GmbH"
   },
   {
     "country": "at",
     "company": "Plövner Schmiede Betriebs GesmbH",
     "companyId": "AT005670",
     "websiteUrl": "",
-    "officialContact": "info@ploevnerschmiede.at"
+    "officialContact": "info@ploevnerschmiede.at",
+    "permissionAdministrator": "Plövner Schmiede Betriebs GesmbH"
   },
   {
     "country": "at",
     "company": "Polsterer Kerres Ruttin Holding GmbH",
     "companyId": "AT002270",
     "websiteUrl": "",
-    "officialContact": "office@polsterer-holding.at"
+    "officialContact": "office@polsterer-holding.at",
+    "permissionAdministrator": "Polsterer Kerres Ruttin Holding GmbH"
   },
   {
     "country": "at",
     "company": "Revertera'sches E-Werk",
     "companyId": "AT003540",
     "websiteUrl": "https://www.revertera.at/",
-    "officialContact": "strom@revertera.at"
+    "officialContact": "strom@revertera.at",
+    "permissionAdministrator": "Revertera'sches E-Werk"
   },
   {
     "country": "at",
     "company": "Salzburg Netz GmbH",
     "companyId": "AT004000",
     "websiteUrl": "https://www.salzburgnetz.at/",
-    "officialContact": "office@salzburg-ag.at"
+    "officialContact": "office@salzburg-ag.at",
+    "permissionAdministrator": "Salzburg Netz GmbH"
   },
   {
     "country": "at",
     "company": "Schwarz, Wagendorffer & Co, Elektrizitätswerk GmbH ",
     "companyId": "AT008850",
     "websiteUrl": "https://www.ewerk.at/",
-    "officialContact": "office@ewerk.at"
+    "officialContact": "office@ewerk.at",
+    "permissionAdministrator": "Schwarz, Wagendorffer & Co, Elektrizitätswerk GmbH "
   },
   {
     "country": "at",
     "company": "Stadtbetriebe Mariazell GmbH",
     "companyId": "AT008440",
     "websiteUrl": "https://www.sbm.or.at/",
-    "officialContact": "office@sbm.or.at"
+    "officialContact": "office@sbm.or.at",
+    "permissionAdministrator": "Stadtbetriebe Mariazell GmbH"
   },
   {
     "country": "at",
     "company": "Stadtwerke Amstetten ",
     "companyId": "AT002110",
     "websiteUrl": "https://stadtwerke.amstetten.at/home/",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "Stadtwerke Amstetten"
   },
   {
     "country": "at",
     "company": "Stadtwerke Bruck an der Mur GmbH",
     "companyId": "AT008140",
     "websiteUrl": "https://www.stadtwerke-bruck.at/",
-    "officialContact": "office@stadtwerke-bruck.at"
+    "officialContact": "office@stadtwerke-bruck.at",
+    "permissionAdministrator": "Stadtwerke Bruck an der Mur GmbH"
   },
   {
     "country": "at",
     "company": "Stadtwerke Feldkirch",
     "companyId": "AT006110",
     "websiteUrl": "https://www.stadtwerke-feldkirch.at/",
-    "officialContact": "kundencenter@stadtwerke-feldkirch.at"
+    "officialContact": "kundencenter@stadtwerke-feldkirch.at",
+    "permissionAdministrator": "Stadtwerke Feldkirch"
   },
   {
     "country": "at",
     "company": "Stadtwerke Fürstenfeld GmbH",
     "companyId": "AT008150",
     "websiteUrl": "http://www.stwff.at/",
-    "officialContact": "lang@stwff.at"
+    "officialContact": "lang@stwff.at",
+    "permissionAdministrator": "Stadtwerke Fürstenfeld GmbH"
   },
   {
     "country": "at",
     "company": "Stadtwerke Hartberg Energieversorgungs GmbH",
     "companyId": "AT008470",
     "websiteUrl": "https://www.stadtwerke-hartberg.at/",
-    "officialContact": "stadtwerke@stadtwerke-hartberg.at"
+    "officialContact": "stadtwerke@stadtwerke-hartberg.at",
+    "permissionAdministrator": "Stadtwerke Hartberg Energieversorgungs GmbH"
   },
   {
     "country": "at",
     "company": "Stadtwerke Imst",
     "companyId": "AT005370",
     "websiteUrl": "https://www.stwimst.at/",
-    "officialContact": "stadtwerke@stwimst.at"
+    "officialContact": "stadtwerke@stwimst.at",
+    "permissionAdministrator": "Stadtwerke Imst"
   },
   {
     "country": "at",
     "company": "Stadtwerke Judenburg Aktiengesellschaft",
     "companyId": "AT008160",
     "websiteUrl": "https://stadtwerke.co.at/",
-    "officialContact": "office@stadtwerke.co.at"
+    "officialContact": "office@stadtwerke.co.at",
+    "permissionAdministrator": "Stadtwerke Judenburg Aktiengesellschaft"
   },
   {
     "country": "at",
     "company": "Stadtwerke Kapfenberg GmbH",
     "companyId": "AT008170",
     "websiteUrl": "https://www.stadtwerke-kapfenberg.at/start.html",
-    "officialContact": "office@stadtwerke-kapfenberg.at"
+    "officialContact": "office@stadtwerke-kapfenberg.at",
+    "permissionAdministrator": "Stadtwerke Kapfenberg GmbH"
   },
   {
     "country": "at",
     "company": "Stadtwerke Kitzbühel e.U.",
     "companyId": "AT005130",
     "websiteUrl": "https://www.stadtwerke-kitzbuehel.at/",
-    "officialContact": "office@stwk.kitz.net"
+    "officialContact": "office@stwk.kitz.net",
+    "permissionAdministrator": "Stadtwerke Kitzbühel e.U."
   },
   {
     "country": "at",
     "company": "Stadtwerke Kufstein GmbH",
     "companyId": "AT005140",
     "websiteUrl": "https://www.stwk.at/",
-    "officialContact": "kundenberatung-backoffice@stwk.at"
+    "officialContact": "kundenberatung-backoffice@stwk.at",
+    "permissionAdministrator": "Stadtwerke Kufstein GmbH"
   },
   {
     "country": "at",
     "company": "Stadtwerke Köflach GmbH",
     "companyId": "AT008180",
     "websiteUrl": "https://www.stadtwerke-koeflach.at/",
-    "officialContact": "office@stadtwerke-koeflach.at"
+    "officialContact": "office@stadtwerke-koeflach.at",
+    "permissionAdministrator": "Stadtwerke Köflach GmbH"
   },
   {
     "country": "at",
     "company": "Stadtwerke Mürzzuschlag Gesellschaft m.b.H.",
     "companyId": "AT008190",
     "websiteUrl": "https://www.stadtwerke-mz.at/",
-    "officialContact": "office@stwmz.at;"
+    "officialContact": "office@stwmz.at;",
+    "permissionAdministrator": "Stadtwerke Mürzzuschlag Gesellschaft m.b.H."
   },
   {
     "country": "at",
     "company": "Stadtwerke Schwaz GmbH",
     "companyId": "AT005150",
     "websiteUrl": "https://www.stadtwerkeschwaz.at/",
-    "officialContact": "info@stadtwerkeschwaz.at"
+    "officialContact": "info@stadtwerkeschwaz.at",
+    "permissionAdministrator": "Stadtwerke Schwaz GmbH"
   },
   {
     "country": "at",
     "company": "Stadtwerke Trofaiach Gesellschaft m.b.H.",
     "companyId": "AT008490",
     "websiteUrl": "https://stadtwerke-trofaiach.at/",
-    "officialContact": "office@stadtwerke-trofaiach.at"
+    "officialContact": "office@stadtwerke-trofaiach.at",
+    "permissionAdministrator": "Stadtwerke Trofaiach Gesellschaft m.b.H."
   },
   {
     "country": "at",
     "company": "Stadtwerke Voitsberg GmbH",
     "companyId": "AT008120",
     "websiteUrl": "https://www.stadtwerke-voitsberg.at/",
-    "officialContact": "office@stadtwerkevoitsberg.at"
+    "officialContact": "office@stadtwerkevoitsberg.at",
+    "permissionAdministrator": "Stadtwerke Voitsberg GmbH"
   },
   {
     "country": "at",
     "company": "Stadtwerke Wörgl GmbH",
     "companyId": "AT005160",
     "websiteUrl": "https://www.stww.at/",
-    "officialContact": "info@stww.at"
+    "officialContact": "info@stww.at",
+    "permissionAdministrator": "Stadtwerke Wörgl GmbH"
   },
   {
     "country": "at",
     "company": "Stromnetz Graz GmbH & Co KG",
     "companyId": "AT008100",
     "websiteUrl": "https://www.stromnetz-graz.at/",
-    "officialContact": "office@stromnetz-graz.at"
+    "officialContact": "office@stromnetz-graz.at",
+    "permissionAdministrator": "Stromnetz Graz GmbH & Co KG"
   },
   {
     "country": "at",
     "company": "Städtische Betriebe Rottenmann GmbH",
     "companyId": "AT008350",
     "websiteUrl": "http://www.sb-rottenmann.at/",
-    "officialContact": "office.sbr@rottenmann.at"
+    "officialContact": "office.sbr@rottenmann.at",
+    "permissionAdministrator": "Städtische Betriebe Rottenmann GmbH"
   },
   {
     "country": "at",
     "company": "TINETZ-Tiroler Netze GmbH",
     "companyId": "AT005000",
     "websiteUrl": "https://www.tinetz.at/",
-    "officialContact": "sc@tinetz.at"
+    "officialContact": "sc@tinetz.at",
+    "permissionAdministrator": "TINETZ-Tiroler Netze GmbH"
   },
   {
     "country": "at",
     "company": "Vorarlberger Energienetze GmbH",
     "companyId": "AT006000",
     "websiteUrl": "https://www.vorarlbergnetz.at/",
-    "officialContact": "markus.eberle@vorarlbergnetz.at"
+    "officialContact": "markus.eberle@vorarlbergnetz.at",
+    "permissionAdministrator": "Vorarlberger Energienetze GmbH"
   },
   {
     "country": "at",
     "company": "Wasserkraft Sölden eGen",
     "companyId": "AT005610",
     "websiteUrl": "https://www.wasserkraft-soelden.at/",
-    "officialContact": "info@wasserkraft-soelden.at"
+    "officialContact": "info@wasserkraft-soelden.at",
+    "permissionAdministrator": "Wasserkraft Sölden eGen"
   },
   {
     "country": "at",
     "company": "Wiener Netze GmbH",
     "companyId": "AT001000",
     "websiteUrl": "https://www.wienernetze.at/",
-    "officialContact": "office@wienenergie.at"
+    "officialContact": "office@wienenergie.at",
+    "permissionAdministrator": "Wiener Netze GmbH"
   },
   {
     "country": "at",
     "company": "eww AG",
     "companyId": "AT003300",
     "websiteUrl": "",
-    "officialContact": "info@eww.at"
+    "officialContact": "info@eww.at",
+    "permissionAdministrator": "eww AG"
   },
   {
     "country": "at",
     "company": "wüsterstrom E-Werk GmbH",
     "companyId": "AT002230",
     "websiteUrl": "https://www.wuesterstrom.at/",
-    "officialContact": "office@wuesterstrom.at"
+    "officialContact": "office@wuesterstrom.at",
+    "permissionAdministrator": "wüsterstrom E-Werk GmbH"
   },
   {
     "country": "fi",
     "company": "Fingrid Datahub",
-    "companyId": "",
+    "companyId": "fingrid-datahub",
     "websiteUrl": "https://palvelut.datahub.fi/en",
-    "officialContact": "datahub@fingrid.fi"
+    "officialContact": "datahub@fingrid.fi",
+    "permissionAdministrator": "Fingrid Datahub"
   },
   {
     "country": "fr",
     "company": "Enedis",
-    "companyId": "",
+    "companyId": "enedis",
     "websiteUrl": "https://enedis.fr",
-    "officialContact": "serviceclients-api@enedis.fr"
+    "officialContact": "serviceclients-api@enedis.fr",
+    "permissionAdministrator": "Enedis"
   },
   {
     "country": "fr",
     "company": "SRD Energies",
-    "companyId": "",
+    "companyId": "srd-energies",
     "websiteUrl": "https://www.srd-energies.fr/",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "SRD Energies"
   },
   {
     "country": "it",
     "company": "A.S.S.M. S.P.A. - TOLENTINO",
     "companyId": "1392",
     "websiteUrl": "http://www.assm.it",
-    "officialContact": "segreteria@assm.it"
+    "officialContact": "segreteria@assm.it",
+    "permissionAdministrator": "A.S.S.M. S.P.A. - TOLENTINO"
   },
   {
     "country": "it",
     "company": "A.S.SE.M. SPA",
     "companyId": "230",
     "websiteUrl": "http://www.assemspa.it",
-    "officialContact": "p.migliozzi@assemspa.it"
+    "officialContact": "p.migliozzi@assemspa.it",
+    "permissionAdministrator": "A.S.SE.M. SPA"
   },
   {
     "country": "it",
     "company": "ACEGASAPSAMGA S.P.A.",
     "companyId": "926",
     "websiteUrl": "http://www.acegasapsamga.it",
-    "officialContact": "info.pd@acegasapsamga.it"
+    "officialContact": "info.pd@acegasapsamga.it",
+    "permissionAdministrator": "ACEGASAPSAMGA S.P.A."
   },
   {
     "country": "it",
     "company": "AIR AZIENDA INTERCOMUNALE ROTALIANA S.P.A. SOCIETÀ BENEFIT",
     "companyId": "1417",
     "websiteUrl": "https://www.airspa.it/",
-    "officialContact": "info@airspa.it"
+    "officialContact": "info@airspa.it",
+    "permissionAdministrator": "AIR AZIENDA INTERCOMUNALE ROTALIANA S.P.A. SOCIETÀ BENEFIT"
   },
   {
     "country": "it",
     "company": "ALTO GARDA SERVIZI SPA",
     "companyId": "927",
     "websiteUrl": "http://www.altogardaservizi.com",
-    "officialContact": "info@altogardaservizi.com"
+    "officialContact": "info@altogardaservizi.com",
+    "permissionAdministrator": "ALTO GARDA SERVIZI SPA"
   },
   {
     "country": "it",
     "company": "AMAIE SPA",
     "companyId": "439",
     "websiteUrl": "https://www.amaie.it",
-    "officialContact": "info@amaie.it"
+    "officialContact": "info@amaie.it",
+    "permissionAdministrator": "AMAIE SPA"
   },
   {
     "country": "it",
     "company": "AMEA S.P.A.",
     "companyId": "335",
     "websiteUrl": "http://www.amea.it",
-    "officialContact": "webmaster@amea.it"
+    "officialContact": "webmaster@amea.it",
+    "permissionAdministrator": "AMEA S.P.A."
   },
   {
     "country": "it",
     "company": "AMET S.P.A.",
     "companyId": "888",
     "websiteUrl": "http://www.ametspa.it",
-    "officialContact": "commerciale@ametspa.it"
+    "officialContact": "commerciale@ametspa.it",
+    "permissionAdministrator": "AMET S.P.A."
   },
   {
     "country": "it",
     "company": "AMIAS SERVIZI SRL",
     "companyId": "433",
     "websiteUrl": "https://comunediselvino.it/contenuti/64166/amias-servizi-sua-storia",
-    "officialContact": "pierangelo.bertocchi@amiasservizi.it"
+    "officialContact": "pierangelo.bertocchi@amiasservizi.it",
+    "permissionAdministrator": "AMIAS SERVIZI SRL"
   },
   {
     "country": "it",
     "company": "ARETI SPA",
     "companyId": "338",
     "websiteUrl": "https://www.areti.it/home.php",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "ARETI SPA"
   },
   {
     "country": "it",
     "company": "ASM BRESSANONE SPA",
     "companyId": "1343",
     "websiteUrl": "http://www.asmb.it",
-    "officialContact": "mail@asmb.it"
+    "officialContact": "mail@asmb.it",
+    "permissionAdministrator": "ASM BRESSANONE SPA"
   },
   {
     "country": "it",
     "company": "ASM TERNI S.P.A.",
     "companyId": "1095",
     "websiteUrl": "http://www.asmterni.it",
-    "officialContact": "asmterni@asmterni.it"
+    "officialContact": "asmterni@asmterni.it",
+    "permissionAdministrator": "ASM TERNI S.P.A."
   },
   {
     "country": "it",
     "company": "ASM TIONE - AZIENDA SERVIZI MUNICIPALIZZATI",
     "companyId": "780",
     "websiteUrl": "http://www.asmtione.it",
-    "officialContact": "asm@asmtione.it"
+    "officialContact": "asm@asmtione.it",
+    "permissionAdministrator": "ASM TIONE - AZIENDA SERVIZI MUNICIPALIZZATI"
   },
   {
     "country": "it",
     "company": "ASM VERCELLI SPA",
     "companyId": "990",
     "websiteUrl": "http://www.asmvercelli.it",
-    "officialContact": "paolo.roggero@asmvercelli.it"
+    "officialContact": "paolo.roggero@asmvercelli.it",
+    "permissionAdministrator": "ASM VERCELLI SPA"
   },
   {
     "country": "it",
     "company": "ASPM SORESINA SERVIZI SRL",
     "companyId": "896",
     "websiteUrl": "http://www.aspmsoresina.it/",
-    "officialContact": "info@aspmsoresina.it"
+    "officialContact": "info@aspmsoresina.it",
+    "permissionAdministrator": "ASPM SORESINA SERVIZI SRL"
   },
   {
     "country": "it",
     "company": "AURINO ENERGIA SRL",
     "companyId": "941",
     "websiteUrl": "",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "AURINO ENERGIA SRL"
   },
   {
     "country": "it",
     "company": "AZ. EL. HALLER SAS DI KRUSELBURGHER ANDREAS",
     "companyId": "471",
     "websiteUrl": "http://www.energy-dis.it/haller/",
-    "officialContact": "info@schneeberg.it"
+    "officialContact": "info@schneeberg.it",
+    "permissionAdministrator": "AZ. EL. HALLER SAS DI KRUSELBURGHER ANDREAS"
   },
   {
     "country": "it",
     "company": "AZIENDA ELETTRICA ANTERSELVA SRL",
     "companyId": "1039",
     "websiteUrl": "https://ew-antholz.e-bz.it/de",
-    "officialContact": "pallhuber@ewantholz.it"
+    "officialContact": "pallhuber@ewantholz.it",
+    "permissionAdministrator": "AZIENDA ELETTRICA ANTERSELVA SRL"
   },
   {
     "country": "it",
     "company": "AZIENDA ELETTRICA CASIES SOCIETÀ COOP.",
     "companyId": "1760",
     "websiteUrl": "https://customers.psaierenergies.it/gsies",
-    "officialContact": "info@ewerk-gsies.it"
+    "officialContact": "info@ewerk-gsies.it",
+    "permissionAdministrator": "AZIENDA ELETTRICA CASIES SOCIETÀ COOP."
   },
   {
     "country": "it",
     "company": "AZIENDA ELETTRICA CHIENES S.R.L.",
     "companyId": "617",
     "websiteUrl": "http://www.ew-kiens.it/",
-    "officialContact": "e-werk-kiens@rolmail.net"
+    "officialContact": "e-werk-kiens@rolmail.net",
+    "permissionAdministrator": "AZIENDA ELETTRICA CHIENES S.R.L."
   },
   {
     "country": "it",
     "company": "AZIENDA ELETTRICA DOBBIACO SPA",
     "companyId": "640",
     "websiteUrl": "http://www.ewtoblach.it",
-    "officialContact": "info@ewtoblach.it"
+    "officialContact": "info@ewtoblach.it",
+    "permissionAdministrator": "AZIENDA ELETTRICA DOBBIACO SPA"
   },
   {
     "country": "it",
     "company": "AZIENDA ELETTRICA GANTERER S.A.S.",
     "companyId": "1053",
     "websiteUrl": "http://www.energy-dis.it/ganterer/",
-    "officialContact": "info@sachsenklemme.it"
+    "officialContact": "info@sachsenklemme.it",
+    "permissionAdministrator": "AZIENDA ELETTRICA GANTERER S.A.S."
   },
   {
     "country": "it",
     "company": "AZIENDA ELETTRICA KALMTAL",
     "companyId": "581",
     "websiteUrl": "",
-    "officialContact": "ew-kalmtal@brennercom.net"
+    "officialContact": "ew-kalmtal@brennercom.net",
+    "permissionAdministrator": "AZIENDA ELETTRICA KALMTAL"
   },
   {
     "country": "it",
     "company": "AZIENDA ELETTRICA LA VALLE COOPERATIVA",
     "companyId": "663",
     "websiteUrl": "http://www.ael-eww.it/page1955.aspx",
-    "officialContact": "info@ael-eww.it"
+    "officialContact": "info@ael-eww.it",
+    "permissionAdministrator": "AZIENDA ELETTRICA LA VALLE COOPERATIVA"
   },
   {
     "country": "it",
     "company": "AZIENDA ELETTRICA LUSON",
     "companyId": "799",
     "websiteUrl": "http://www.ewerk-luesen.it/",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "AZIENDA ELETTRICA LUSON"
   },
   {
     "country": "it",
     "company": "AZIENDA ELETTRICA STEIN S.R.L.",
     "companyId": "1014",
     "websiteUrl": "http://www.energy-dis.it/stein/",
-    "officialContact": "stein@profimail.it"
+    "officialContact": "stein@profimail.it",
+    "permissionAdministrator": "AZIENDA ELETTRICA STEIN S.R.L."
   },
   {
     "country": "it",
     "company": "AZIENDA ELETTRICA STELVIO SOC. COOP",
     "companyId": "506",
     "websiteUrl": "http://www.ewstilfs.it",
-    "officialContact": "info@ewstilfs.it"
+    "officialContact": "info@ewstilfs.it",
+    "permissionAdministrator": "AZIENDA ELETTRICA STELVIO SOC. COOP"
   },
   {
     "country": "it",
     "company": "AZIENDA ELETTRICA VERSCIACO PRATO ALLA DRAVA SOC. COOP. A R.L.",
     "companyId": "914",
     "websiteUrl": "http://www.ewerk-vierschach.it/",
-    "officialContact": "info@ewerk-vierschach.it"
+    "officialContact": "info@ewerk-vierschach.it",
+    "permissionAdministrator": "AZIENDA ELETTRICA VERSCIACO PRATO ALLA DRAVA SOC. COOP. A R.L."
   },
   {
     "country": "it",
     "company": "AZIENDA ELETTRICA WEISSTEINER SRL",
     "companyId": "1603",
     "websiteUrl": "http://www.energy-dis.it/weissteiner/",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "AZIENDA ELETTRICA WEISSTEINER SRL"
   },
   {
     "country": "it",
     "company": "AZIENDA ENERGETICA FUNES SOCIETÀ COOPERATIVA",
     "companyId": "1015",
     "websiteUrl": "http://www.energie-villnoess.it/",
-    "officialContact": "info@energie-villnoess.it"
+    "officialContact": "info@energie-villnoess.it",
+    "permissionAdministrator": "AZIENDA ENERGETICA FUNES SOCIETÀ COOPERATIVA"
   },
   {
     "country": "it",
     "company": "AZIENDA ENERGETICA PRATO SOCIETÀ COOPERATIVA IN BREVE \"EWP SOCIETÀ COOPERATIVA\"",
     "companyId": "1118",
     "websiteUrl": "http://www.e-werk-prad.it",
-    "officialContact": "info@e-werk-prad.it"
+    "officialContact": "info@e-werk-prad.it",
+    "permissionAdministrator": "AZIENDA ENERGETICA PRATO SOCIETÀ COOPERATIVA IN BREVE \"EWP SOCIETÀ COOPERATIVA\""
   },
   {
     "country": "it",
     "company": "AZIENDA ENERGETICA S. MARTINO SRL",
     "companyId": "169",
     "websiteUrl": "http://www.ewerk-stmartin.it/",
-    "officialContact": "ewerk.stmartin@rolmail.net"
+    "officialContact": "ewerk.stmartin@rolmail.net",
+    "permissionAdministrator": "AZIENDA ENERGETICA S. MARTINO SRL"
   },
   {
     "country": "it",
     "company": "AZIENDA PUBBLISERVIZI BRUNICO",
     "companyId": "5",
     "websiteUrl": "http://www.pubbliservizi.it",
-    "officialContact": "info@pubbliservizi.it"
+    "officialContact": "info@pubbliservizi.it",
+    "permissionAdministrator": "AZIENDA PUBBLISERVIZI BRUNICO"
   },
   {
     "country": "it",
     "company": "AZIENDA RETI ELETTRICHE S.R.L.",
     "companyId": "24541",
     "websiteUrl": "https://www.aziendareti.com/",
-    "officialContact": "commerciale@aziendareti.com"
+    "officialContact": "commerciale@aziendareti.com",
+    "permissionAdministrator": "AZIENDA RETI ELETTRICHE S.R.L."
   },
   {
     "country": "it",
     "company": "C.E.G. SOCIETA' COOPERATIVA ELETTRICA GIGNOD",
     "companyId": "10",
     "websiteUrl": "http://www.ceg-energia.it",
-    "officialContact": "amministrazione@cafl.it"
+    "officialContact": "amministrazione@cafl.it",
+    "permissionAdministrator": "C.E.G. SOCIETA' COOPERATIVA ELETTRICA GIGNOD"
   },
   {
     "country": "it",
     "company": "CAMUNA ENERGIA SRL",
     "companyId": "1273",
     "websiteUrl": "https://www.camunaenergia.eu",
-    "officialContact": "camunaenergia@camunaenergia.eu"
+    "officialContact": "camunaenergia@camunaenergia.eu",
+    "permissionAdministrator": "CAMUNA ENERGIA SRL"
   },
   {
     "country": "it",
     "company": "CENTRALE ELETTRICA AHRNTAL",
     "companyId": "1179",
     "websiteUrl": "http://www.ahrntaler-e-werk.com",
-    "officialContact": "info@ahrntaler-e-werk.com"
+    "officialContact": "info@ahrntaler-e-werk.com",
+    "permissionAdministrator": "CENTRALE ELETTRICA AHRNTAL"
   },
   {
     "country": "it",
     "company": "CENTRALE ELETTRICA S.N.C. COLZ SPESSA",
     "companyId": "1708",
     "websiteUrl": "http://www.energy-dis.it/colz/",
-    "officialContact": "info@energy-dis.it"
+    "officialContact": "info@energy-dis.it",
+    "permissionAdministrator": "CENTRALE ELETTRICA S.N.C. COLZ SPESSA"
   },
   {
     "country": "it",
     "company": "COMUNE DI ANDALO",
     "companyId": "542",
     "websiteUrl": "http://www.comune.andalo.tn.it",
-    "officialContact": "tributi@comune.andalo.tn.it"
+    "officialContact": "tributi@comune.andalo.tn.it",
+    "permissionAdministrator": "COMUNE DI ANDALO"
   },
   {
     "country": "it",
     "company": "COMUNE DI ANVERSA DEGLI ABRUZZI",
     "companyId": "258",
     "websiteUrl": "http://www.comune.anversadegliabruzzi.aq.it",
-    "officialContact": "ufficiotecnico@comunedianversa.it"
+    "officialContact": "ufficiotecnico@comunedianversa.it",
+    "permissionAdministrator": "COMUNE DI ANVERSA DEGLI ABRUZZI"
   },
   {
     "country": "it",
     "company": "COMUNE DI BENETUTTI",
     "companyId": "1367",
     "websiteUrl": "http://www.comune.benetutti.ss.it",
-    "officialContact": "aec@comune.benetutti.ss.it"
+    "officialContact": "aec@comune.benetutti.ss.it",
+    "permissionAdministrator": "COMUNE DI BENETUTTI"
   },
   {
     "country": "it",
     "company": "COMUNE DI BERCHIDDA",
     "companyId": "44",
     "websiteUrl": "http://www.comune.berchidda.ot.it/",
-    "officialContact": "aec@comune.berchidda.ot.it"
+    "officialContact": "aec@comune.berchidda.ot.it",
+    "permissionAdministrator": "COMUNE DI BERCHIDDA"
   },
   {
     "country": "it",
     "company": "COMUNE DI CASTEL DEL MONTE",
     "companyId": "349",
     "websiteUrl": "http://www.comune.casteldelmonte.aq.it/",
-    "officialContact": "comune.casteldelmonte@gmail.com"
+    "officialContact": "comune.casteldelmonte@gmail.com",
+    "permissionAdministrator": "COMUNE DI CASTEL DEL MONTE"
   },
   {
     "country": "it",
     "company": "COMUNE DI CASTIGLIONE DI SICILIA",
     "companyId": "259",
     "websiteUrl": "http://www.comune.castiglionedisicilia.ct.it",
-    "officialContact": "idroelettrico@comune.castiglionedisicilia.ct.it"
+    "officialContact": "idroelettrico@comune.castiglionedisicilia.ct.it",
+    "permissionAdministrator": "COMUNE DI CASTIGLIONE DI SICILIA"
   },
   {
     "country": "it",
     "company": "COMUNE DI CAVALESE",
     "companyId": "79",
     "websiteUrl": "http://www.comunecavalese.it",
-    "officialContact": "aziendaelettrica@comunecavalese.it"
+    "officialContact": "aziendaelettrica@comunecavalese.it",
+    "permissionAdministrator": "COMUNE DI CAVALESE"
   },
   {
     "country": "it",
     "company": "COMUNE DI CHIOMONTE",
     "companyId": "64",
     "websiteUrl": "http://www.aemcomunechiomonte.it",
-    "officialContact": "aem@comune.chiomonte.to.it"
+    "officialContact": "aem@comune.chiomonte.to.it",
+    "permissionAdministrator": "COMUNE DI CHIOMONTE"
   },
   {
     "country": "it",
     "company": "COMUNE DI EXILLES",
     "companyId": "297",
     "websiteUrl": "http://www.comune.exilles.to.it",
-    "officialContact": "aziendaelettrica@comune.exilles.to.it"
+    "officialContact": "aziendaelettrica@comune.exilles.to.it",
+    "permissionAdministrator": "COMUNE DI EXILLES"
   },
   {
     "country": "it",
     "company": "COMUNE DI FRANCAVILLA DI SICILIA",
     "companyId": "314",
     "websiteUrl": "http://www.secfrancavilladisicilia.it/",
-    "officialContact": "ufficioelettrico@comune.francavilladisicilia.me.it"
+    "officialContact": "ufficioelettrico@comune.francavilladisicilia.me.it",
+    "permissionAdministrator": "COMUNE DI FRANCAVILLA DI SICILIA"
   },
   {
     "country": "it",
     "company": "COMUNE DI MAGLIANO DI TENNA",
     "companyId": "1755",
     "websiteUrl": "http://www.comune.maglianoditenna.fm.it",
-    "officialContact": "ragioneria@comune.maglianoditenna.fm.it"
+    "officialContact": "ragioneria@comune.maglianoditenna.fm.it",
+    "permissionAdministrator": "COMUNE DI MAGLIANO DI TENNA"
   },
   {
     "country": "it",
     "company": "COMUNE DI PACENTRO",
     "companyId": "1391",
     "websiteUrl": "http://www.comunepacentro.aq.it",
-    "officialContact": "tributi@comunepacentro.aq.it"
+    "officialContact": "tributi@comunepacentro.aq.it",
+    "permissionAdministrator": "COMUNE DI PACENTRO"
   },
   {
     "country": "it",
     "company": "COMUNE DI PERDIFUMO",
     "companyId": "1914",
     "websiteUrl": "http://www.comune.perdifumo.sa.it/",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "COMUNE DI PERDIFUMO"
   },
   {
     "country": "it",
     "company": "COMUNE DI ROCCA PIA",
     "companyId": "1879",
     "websiteUrl": "https://www.comune.roccapia.aq.it",
-    "officialContact": "ufficioragioneria@comune.roccapia.aq.it"
+    "officialContact": "ufficioragioneria@comune.roccapia.aq.it",
+    "permissionAdministrator": "COMUNE DI ROCCA PIA"
   },
   {
     "country": "it",
     "company": "COMUNE DI RONCO CANAVESE",
     "companyId": "296",
     "websiteUrl": "http://aemroncocanavese.it/",
-    "officialContact": "anagrafe@comune.roncocanavese.to.it"
+    "officialContact": "anagrafe@comune.roncocanavese.to.it",
+    "permissionAdministrator": "COMUNE DI RONCO CANAVESE"
   },
   {
     "country": "it",
     "company": "COMUNE DI SANTO STEFANO DI SESSANIO",
     "companyId": "2674",
     "websiteUrl": "http://www.comunesantostefanodisessanio.aq.it/",
-    "officialContact": "anagrafe@comunesantostefanodisessanio.aq.it"
+    "officialContact": "anagrafe@comunesantostefanodisessanio.aq.it",
+    "permissionAdministrator": "COMUNE DI SANTO STEFANO DI SESSANIO"
   },
   {
     "country": "it",
     "company": "COMUNE DI SARACINESCO",
     "companyId": "1353",
     "websiteUrl": "http://www.comune.saracinesco.rm.it",
-    "officialContact": "comunesaracinescorag@libero.it"
+    "officialContact": "comunesaracinescorag@libero.it",
+    "permissionAdministrator": "COMUNE DI SARACINESCO"
   },
   {
     "country": "it",
     "company": "COMUNE DI SELLA GIUDICARIE",
     "companyId": "24663",
     "websiteUrl": "http://www.comunesellagiudicarie.tn.it",
-    "officialContact": "comune@comune.sellagiudicarie.tn.it"
+    "officialContact": "comune@comune.sellagiudicarie.tn.it",
+    "permissionAdministrator": "COMUNE DI SELLA GIUDICARIE"
   },
   {
     "country": "it",
     "company": "COMUNE DI SESSA CILENTO",
     "companyId": "1909",
     "websiteUrl": "http://www.comune.sessacilento.sa.it",
-    "officialContact": "sessac@tiscali.it"
+    "officialContact": "sessac@tiscali.it",
+    "permissionAdministrator": "COMUNE DI SESSA CILENTO"
   },
   {
     "country": "it",
     "company": "COMUNE DI SILANDRO",
     "companyId": "14644",
     "websiteUrl": "http://www.schlanders.it",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "COMUNE DI SILANDRO"
   },
   {
     "country": "it",
     "company": "COMUNE DI USSITA",
     "companyId": "1812",
     "websiteUrl": "http://www.comune.ussita.mc.it/",
-    "officialContact": "info@comune.ussita.mc.it"
+    "officialContact": "info@comune.ussita.mc.it",
+    "permissionAdministrator": "COMUNE DI USSITA"
   },
   {
     "country": "it",
     "company": "COMUNE DI VILLA LATINA",
     "companyId": "1627",
     "websiteUrl": "http://www.comune.villalatina.fr.it",
-    "officialContact": "adiduc@tin.it"
+    "officialContact": "adiduc@tin.it",
+    "permissionAdministrator": "COMUNE DI VILLA LATINA"
   },
   {
     "country": "it",
     "company": "CONSORZIO ELETTRICO DI POZZA DI FASSA",
     "companyId": "172",
     "websiteUrl": "http://www.consorzioelettrico.com",
-    "officialContact": "info@consorzioelettrico.com"
+    "officialContact": "info@consorzioelettrico.com",
+    "permissionAdministrator": "CONSORZIO ELETTRICO DI POZZA DI FASSA"
   },
   {
     "country": "it",
     "company": "CONSORZIO ELETTRICO DI STORO SOCIETA' COOPERATIVA",
     "companyId": "731",
     "websiteUrl": "http://www.cedis.info",
-    "officialContact": "cedis@cedis.info"
+    "officialContact": "cedis@cedis.info",
+    "permissionAdministrator": "CONSORZIO ELETTRICO DI STORO SOCIETA' COOPERATIVA"
   },
   {
     "country": "it",
     "company": "CONSORZIO ELETTRICO INDUSTRIALE DI STENICO S.C.",
     "companyId": "4",
     "websiteUrl": "http://www.ceis-stenico.it",
-    "officialContact": "info@ceis-stenico.it"
+    "officialContact": "info@ceis-stenico.it",
+    "permissionAdministrator": "CONSORZIO ELETTRICO INDUSTRIALE DI STENICO S.C."
   },
   {
     "country": "it",
     "company": "CONSORZIO ELETTRICO PENNES",
     "companyId": "622",
     "websiteUrl": "http://www.egpens.it",
-    "officialContact": "info@egpens.it"
+    "officialContact": "info@egpens.it",
+    "permissionAdministrator": "CONSORZIO ELETTRICO PENNES"
   },
   {
     "country": "it",
     "company": "CONSORZIO ENERGETICO VAL VENOSTA",
     "companyId": "22678",
     "websiteUrl": "http://www.vek.bz.it",
-    "officialContact": "info@vion.bz.it"
+    "officialContact": "info@vion.bz.it",
+    "permissionAdministrator": "CONSORZIO ENERGETICO VAL VENOSTA"
   },
   {
     "country": "it",
     "company": "CONSORZIO PER I SERVIZI TERRITORIALI DEL NOCE - STN VAL DI SOLE",
     "companyId": "22276",
     "websiteUrl": "http://www.stnvaldisole.it",
-    "officialContact": "daniel.mosconi@stnvaldisole.it"
+    "officialContact": "daniel.mosconi@stnvaldisole.it",
+    "permissionAdministrator": "CONSORZIO PER I SERVIZI TERRITORIALI DEL NOCE - STN VAL DI SOLE"
   },
   {
     "country": "it",
     "company": "COOPERATIVA AZIENDA ELETTRICA RIDANNA",
     "companyId": "2337",
     "websiteUrl": "http://www.ewerk-ridnaun.it/",
-    "officialContact": "info@ewerk-ridnaun.it"
+    "officialContact": "info@ewerk-ridnaun.it",
+    "permissionAdministrator": "COOPERATIVA AZIENDA ELETTRICA RIDANNA"
   },
   {
     "country": "it",
     "company": "COOPERATIVA CENTRALE ELETTRICA FLERES",
     "companyId": "508",
     "websiteUrl": "https://www.ew-pflersch.it/it/energia-elettrica/",
-    "officialContact": "info@ew-pflersch.it"
+    "officialContact": "info@ew-pflersch.it",
+    "permissionAdministrator": "COOPERATIVA CENTRALE ELETTRICA FLERES"
   },
   {
     "country": "it",
     "company": "COOPERATIVA ELETTRICA VALGIOVO",
     "companyId": "851",
     "websiteUrl": "http://www.energy-dis.it/jaufental/",
-    "officialContact": "info@ewerk-jaufental.it"
+    "officialContact": "info@ewerk-jaufental.it",
+    "permissionAdministrator": "COOPERATIVA ELETTRICA VALGIOVO"
   },
   {
     "country": "it",
     "company": "COOPERATIVA PER L'UTILIZZO DI FONTI ENERGETICHE NOVA LEVANTE",
     "companyId": "454",
     "websiteUrl": "https://eg-welschnofen.e-bz.it",
-    "officialContact": "weg@welschnofen.net"
+    "officialContact": "weg@welschnofen.net",
+    "permissionAdministrator": "COOPERATIVA PER L'UTILIZZO DI FONTI ENERGETICHE NOVA LEVANTE"
   },
   {
     "country": "it",
     "company": "DEVAL",
     "companyId": "1290",
     "websiteUrl": "http://www.devalspa.it/",
-    "officialContact": "deval@pec.devalspa.it"
+    "officialContact": "deval@pec.devalspa.it",
+    "permissionAdministrator": "DEVAL"
   },
   {
     "country": "it",
     "company": "DISTRIBUZIONE ELETTRICA ADRIATICA S.P.A.",
     "companyId": "23023",
     "websiteUrl": "http://www.deaelettrica.it",
-    "officialContact": "dea@deaelettrica.it"
+    "officialContact": "dea@deaelettrica.it",
+    "permissionAdministrator": "DISTRIBUZIONE ELETTRICA ADRIATICA S.P.A."
   },
   {
     "country": "it",
     "company": "E-DISTRIBUZIONE S.P.A.",
     "companyId": "435",
     "websiteUrl": "http://www.e-distribuzione.it",
-    "officialContact": "info@e-distribuzione.com"
+    "officialContact": "info@e-distribuzione.com",
+    "permissionAdministrator": "E-DISTRIBUZIONE S.P.A."
   },
   {
     "country": "it",
     "company": "E-WERKE DI PILLING HELGA & C. S.A.S. - KG",
     "companyId": "533",
     "websiteUrl": "http://www.energy-dis.it/groebner/",
-    "officialContact": "groebner@gmx.it"
+    "officialContact": "groebner@gmx.it",
+    "permissionAdministrator": "E-WERKE DI PILLING HELGA & C. S.A.S. - KG"
   },
   {
     "country": "it",
     "company": "E.U.M. SOC. COOP. PER L'ENERGIA E L'AMBIENTE MOSO",
     "companyId": "501",
     "websiteUrl": "http://www.eum.bz",
-    "officialContact": "info@eum.bz"
+    "officialContact": "info@eum.bz",
+    "permissionAdministrator": "E.U.M. SOC. COOP. PER L'ENERGIA E L'AMBIENTE MOSO"
   },
   {
     "country": "it",
     "company": "EDYNA SRL",
     "companyId": "3255",
     "websiteUrl": "http://www.edyna.net/",
-    "officialContact": "alessandro.randon@edyna.net"
+    "officialContact": "alessandro.randon@edyna.net",
+    "permissionAdministrator": "EDYNA SRL"
   },
   {
     "country": "it",
     "company": "EGRA",
     "companyId": "3286",
     "websiteUrl": "http://www.energy-dis.it/egra/",
-    "officialContact": "egra@rolmail.net"
+    "officialContact": "egra@rolmail.net",
+    "permissionAdministrator": "EGRA"
   },
   {
     "country": "it",
     "company": "ELEKTROWERK PREIMS GMBH",
     "companyId": "1876",
     "websiteUrl": "http://www.energy-dis.it/preims/",
-    "officialContact": "info@energy-dis.it"
+    "officialContact": "info@energy-dis.it",
+    "permissionAdministrator": "ELEKTROWERK PREIMS GMBH"
   },
   {
     "country": "it",
     "company": "ENERGIE OFFIDA S.R.L.",
     "companyId": "1629",
     "websiteUrl": "http://www.energieoffida.it",
-    "officialContact": "info@energieoffida.it"
+    "officialContact": "info@energieoffida.it",
+    "permissionAdministrator": "ENERGIE OFFIDA S.R.L."
   },
   {
     "country": "it",
     "company": "EUP",
     "companyId": "3288",
     "websiteUrl": "http://eup.bz.it/",
-    "officialContact": "info@eup.bz.it"
+    "officialContact": "info@eup.bz.it",
+    "permissionAdministrator": "EUP"
   },
   {
     "country": "it",
     "company": "FAST WIND SPA",
     "companyId": "2145",
     "websiteUrl": "",
-    "officialContact": "FAST.WIND@LIERO.IT"
+    "officialContact": "FAST.WIND@LIERO.IT",
+    "permissionAdministrator": "FAST WIND SPA"
   },
   {
     "country": "it",
     "company": "GANNEBACH SRL / GMBH",
     "companyId": "858",
     "websiteUrl": "http://www.e-werk.it",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "GANNEBACH SRL / GMBH"
   },
   {
     "country": "it",
     "company": "GEMEINDE STERZING / COMUNE DI VIPITENO",
     "companyId": "805",
     "websiteUrl": "http://www.vipiteno.eu",
-    "officialContact": "aziendaelettrica@vipiteno.eu"
+    "officialContact": "aziendaelettrica@vipiteno.eu",
+    "permissionAdministrator": "GEMEINDE STERZING / COMUNE DI VIPITENO"
   },
   {
     "country": "it",
     "company": "GERMANO INDUSTRIE ELETTRICHE S.R.L.",
     "companyId": "48",
     "websiteUrl": "http://www.germano-srl.it",
-    "officialContact": "gie@germano-srl.it"
+    "officialContact": "gie@germano-srl.it",
+    "permissionAdministrator": "GERMANO INDUSTRIE ELETTRICHE S.R.L."
   },
   {
     "country": "it",
     "company": "IDROELETTRICA VALCANALE DI MARIO GABRIELE MASSARUTTO E C. S.A.S.",
     "companyId": "1906",
     "websiteUrl": "http://www.idroelettricavalcanale.it",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "IDROELETTRICA VALCANALE DI MARIO GABRIELE MASSARUTTO E C. S.A.S."
   },
   {
     "country": "it",
     "company": "IMPRESA CAMPO ELETTRICITA' I.C.EL. S.R.L.",
     "companyId": "1",
     "websiteUrl": "http://www.icelweb.it",
-    "officialContact": "icel@icelweb.it"
+    "officialContact": "icel@icelweb.it",
+    "permissionAdministrator": "IMPRESA CAMPO ELETTRICITA' I.C.EL. S.R.L."
   },
   {
     "country": "it",
     "company": "IMPRESA ELETTRICA D'ANNA E BONACCORSI S.R.L.",
     "companyId": "43",
     "websiteUrl": "https://www.dannabonaccorsi.com",
-    "officialContact": "ufficioamministrativo@dannabonaccorsi.it"
+    "officialContact": "ufficioamministrativo@dannabonaccorsi.it",
+    "permissionAdministrator": "IMPRESA ELETTRICA D'ANNA E BONACCORSI S.R.L."
   },
   {
     "country": "it",
     "company": "IMPRESA PRODUZIONE ENERGIA ELETTRICA PESENTI SRL",
     "companyId": "1471",
     "websiteUrl": "",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "IMPRESA PRODUZIONE ENERGIA ELETTRICA PESENTI SRL"
   },
   {
     "country": "it",
     "company": "INRETE DISTRIBUZIONE ENERGIA",
     "companyId": "25367",
     "websiteUrl": "http://www.inretedistribuzione.it",
-    "officialContact": "inrete_distribuzione@legalmail.it"
+    "officialContact": "inrete_distribuzione@legalmail.it",
+    "permissionAdministrator": "INRETE DISTRIBUZIONE ENERGIA"
   },
   {
     "country": "it",
     "company": "INTERESSENZA ELETTRICA VICINA ARMENTAROLA",
     "companyId": "500",
     "websiteUrl": "https://ew-armentarola.e-bz.it/it",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "INTERESSENZA ELETTRICA VICINA ARMENTAROLA"
   },
   {
     "country": "it",
     "company": "INTERESSENZA UTILIZZAZIONI IDRAULICHE PEDRACES - COSTALTA",
     "companyId": "1569",
     "websiteUrl": "http://www.werk-castalta.it",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "INTERESSENZA UTILIZZAZIONI IDRAULICHE PEDRACES - COSTALTA"
   },
   {
     "country": "it",
     "company": "IRETI S.P.A.",
     "companyId": "3045",
     "websiteUrl": "https://www.ireti.it/",
-    "officialContact": "posta@ireti.it"
+    "officialContact": "posta@ireti.it",
+    "permissionAdministrator": "IRETI S.P.A."
   },
   {
     "country": "it",
     "company": "KIRCHLER SRL",
     "companyId": "25427",
     "websiteUrl": "http://www.energy-dis.it/kirchler",
-    "officialContact": "Info@arturkirchler.com"
+    "officialContact": "Info@arturkirchler.com",
+    "permissionAdministrator": "KIRCHLER SRL"
   },
   {
     "country": "it",
     "company": "LD RETI S.R.L.",
     "companyId": "860",
     "websiteUrl": "http://www.ldreti.it",
-    "officialContact": "segreteria@ldreti.it"
+    "officialContact": "segreteria@ldreti.it",
+    "permissionAdministrator": "LD RETI S.R.L."
   },
   {
     "country": "it",
     "company": "ODOARDO ZECCA S.R.L.",
     "companyId": "242",
     "websiteUrl": "http://www.zeccaonline.it",
-    "officialContact": "segreteria@zeccaonline.it"
+    "officialContact": "segreteria@zeccaonline.it",
+    "permissionAdministrator": "ODOARDO ZECCA S.R.L."
   },
   {
     "country": "it",
     "company": "OFFICINA ELETTRICA SAN VIGILIO DI MAREBBE S.P.A.",
     "companyId": "20",
     "websiteUrl": "http://www.oesv.bz.it",
-    "officialContact": "info@oesv.bz.it"
+    "officialContact": "info@oesv.bz.it",
+    "permissionAdministrator": "OFFICINA ELETTRICA SAN VIGILIO DI MAREBBE S.P.A."
   },
   {
     "country": "it",
     "company": "RETI DI. VOGHERA S.R.L.",
     "companyId": "28120",
     "websiteUrl": "https://www.retidivoghera.it/",
-    "officialContact": "info@retidivoghera.it"
+    "officialContact": "info@retidivoghera.it",
+    "permissionAdministrator": "RETI DI. VOGHERA S.R.L."
   },
   {
     "country": "it",
     "company": "RETI VALTELLINA VALCHIAVENNA S.R.L. UNIPERSONALE",
     "companyId": "28064",
     "websiteUrl": "http://www.valtellinarevv.it",
-    "officialContact": "revv@valtellinarevv.it"
+    "officialContact": "revv@valtellinarevv.it",
+    "permissionAdministrator": "RETI VALTELLINA VALCHIAVENNA S.R.L. UNIPERSONALE"
   },
   {
     "country": "it",
     "company": "RETIPIÙ SRL",
     "companyId": "353",
     "websiteUrl": "http://www.retipiu.it",
-    "officialContact": "info@retipiu.it"
+    "officialContact": "info@retipiu.it",
+    "permissionAdministrator": "RETIPIÙ SRL"
   },
   {
     "country": "it",
     "company": "S.EL.I.S. LAMPEDUSA S.P.A.",
     "companyId": "14",
     "websiteUrl": "http://www.grupposofip.it/",
-    "officialContact": "lampedusa@selis.it"
+    "officialContact": "lampedusa@selis.it",
+    "permissionAdministrator": "S.EL.I.S. LAMPEDUSA S.P.A."
   },
   {
     "country": "it",
     "company": "S.EL.I.S. LINOSA S.P.A.",
     "companyId": "15",
     "websiteUrl": "http://www.grupposofip.it/",
-    "officialContact": "linosa@selis.it"
+    "officialContact": "linosa@selis.it",
+    "permissionAdministrator": "S.EL.I.S. LINOSA S.P.A."
   },
   {
     "country": "it",
     "company": "S.EL.I.S. MARETTIMO S.P.A.",
     "companyId": "16",
     "websiteUrl": "http://www.grupposofip.it/",
-    "officialContact": "marettimo@selis.it"
+    "officialContact": "marettimo@selis.it",
+    "permissionAdministrator": "S.EL.I.S. MARETTIMO S.P.A."
   },
   {
     "country": "it",
     "company": "S.I.E.C.  SOC. COOP.",
     "companyId": "361",
     "websiteUrl": "http://www.siec-chiavenna.it",
-    "officialContact": "siec@siec-chiavenna.it"
+    "officialContact": "siec@siec-chiavenna.it",
+    "permissionAdministrator": "S.I.E.C.  SOC. COOP."
   },
   {
     "country": "it",
     "company": "S.I.P.P.I.C. S.P.A.",
     "companyId": "1571",
     "websiteUrl": "http://www.sippicspa.it",
-    "officialContact": "sippicspa@yahoo.it"
+    "officialContact": "sippicspa@yahoo.it",
+    "permissionAdministrator": "S.I.P.P.I.C. S.P.A."
   },
   {
     "country": "it",
     "company": "S.MED.E. PANTELLERIA S.P.A.",
     "companyId": "17",
     "websiteUrl": "http://www.grupposofip.it/",
-    "officialContact": "pantelleria@smede.it"
+    "officialContact": "pantelleria@smede.it",
+    "permissionAdministrator": "S.MED.E. PANTELLERIA S.P.A."
   },
   {
     "country": "it",
     "company": "SEA S.C.",
     "companyId": "91",
     "websiteUrl": "http://www.sea.bz.it",
-    "officialContact": "info@sea.bz.it"
+    "officialContact": "info@sea.bz.it",
+    "permissionAdministrator": "SEA S.C."
   },
   {
     "country": "it",
     "company": "SEA SOC. ELETTRICA DI FAVIGNANA S.P.A.",
     "companyId": "82",
     "websiteUrl": "http://www.seafavignana.com",
-    "officialContact": "info@seafavignana.com"
+    "officialContact": "info@seafavignana.com",
+    "permissionAdministrator": "SEA SOC. ELETTRICA DI FAVIGNANA S.P.A."
   },
   {
     "country": "it",
     "company": "SECAB SOCIETÀ COOPERATIVA",
     "companyId": "1051",
     "websiteUrl": "http://www.secab.it",
-    "officialContact": "secab@secab.it"
+    "officialContact": "secab@secab.it",
+    "permissionAdministrator": "SECAB SOCIETÀ COOPERATIVA"
   },
   {
     "country": "it",
     "company": "SET DISTRIBUZIONE S.P.A.",
     "companyId": "198",
     "websiteUrl": "https://www.set.tn.it",
-    "officialContact": "info@setdistribuzione.it"
+    "officialContact": "info@setdistribuzione.it",
+    "permissionAdministrator": "SET DISTRIBUZIONE S.P.A."
   },
   {
     "country": "it",
     "company": "SIE - SOCIETA IMPIANTI ELETTRICI S.R.L.",
     "companyId": "1208",
     "websiteUrl": "http://www.siegiglio.it",
-    "officialContact": "martelli.giovanni@siegiglio.it"
+    "officialContact": "martelli.giovanni@siegiglio.it",
+    "permissionAdministrator": "SIE - SOCIETA IMPIANTI ELETTRICI S.R.L."
   },
   {
     "country": "it",
     "company": "SOC. COOP. AZ. ELETTRICA MONGUELFO",
     "companyId": "1069",
     "websiteUrl": "https://www.ewerk-welsberg.com/it/",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "SOC. COOP. AZ. ELETTRICA MONGUELFO"
   },
   {
     "country": "it",
     "company": "SOC. ELETTRICA LIPARESE S.R.L.",
     "companyId": "1093",
     "websiteUrl": "http://www.selenergia.it",
-    "officialContact": "sellip@tin.it"
+    "officialContact": "sellip@tin.it",
+    "permissionAdministrator": "SOC. ELETTRICA LIPARESE S.R.L."
   },
   {
     "country": "it",
     "company": "SOCIETA ELETTRICA PONZESE",
     "companyId": "158",
     "websiteUrl": "http://www.societaelettricaponzese.it",
-    "officialContact": "sep@societaelettricaponzese.it"
+    "officialContact": "sep@societaelettricaponzese.it",
+    "permissionAdministrator": "SOCIETA ELETTRICA PONZESE"
   },
   {
     "country": "it",
     "company": "SOCIETA' COOPERATIVA ELETTRICITA' BADIA",
     "companyId": "1911",
     "websiteUrl": "http://www.energy-dis.it/badia/",
-    "officialContact": "sevdata@sev.bz.it"
+    "officialContact": "sevdata@sev.bz.it",
+    "permissionAdministrator": "SOCIETA' COOPERATIVA ELETTRICITA' BADIA"
   },
   {
     "country": "it",
     "company": "SOCIETA' ELETTRICA IN MORBEGNO SOCIETA' COOPERATIVA PER AZIONI",
     "companyId": "726",
     "websiteUrl": "https://www.sem-morbegno.it/",
-    "officialContact": "mrapella@sem-morbegno.it"
+    "officialContact": "mrapella@sem-morbegno.it",
+    "permissionAdministrator": "SOCIETA' ELETTRICA IN MORBEGNO SOCIETA' COOPERATIVA PER AZIONI"
   },
   {
     "country": "it",
     "company": "SOCIETA' ELETTRICA LA BRUZOLESE S.R.L.",
     "companyId": "123",
     "websiteUrl": "http://www.labruzoleseelettrica.it",
-    "officialContact": "posta@pec.labruzoleseelettrica.it"
+    "officialContact": "posta@pec.labruzoleseelettrica.it",
+    "permissionAdministrator": "SOCIETA' ELETTRICA LA BRUZOLESE S.R.L."
   },
   {
     "country": "it",
     "company": "SOCIET` COOPERATIVA CANTUCCIO",
     "companyId": "126",
     "websiteUrl": "http://www.winkel.it",
-    "officialContact": "gen@winkel.it"
+    "officialContact": "gen@winkel.it",
+    "permissionAdministrator": "SOCIET` COOPERATIVA CANTUCCIO"
   },
   {
     "country": "it",
     "company": "SOCIETÀ COOPERATIVA ELETTRICA DI DISTRIBUZIONE CAMPO TURES",
     "companyId": "3373",
     "websiteUrl": "http://www.evg.bz.it/index.php?lang=de",
-    "officialContact": "info@evg.bz.it"
+    "officialContact": "info@evg.bz.it",
+    "permissionAdministrator": "SOCIETÀ COOPERATIVA ELETTRICA DI DISTRIBUZIONE CAMPO TURES"
   },
   {
     "country": "it",
     "company": "SOCIETÀ COOPERATIVA ENERGETICA SAN MARTINO-VALDURNA, IN BREVE \"ERD\"",
     "companyId": "1588",
     "websiteUrl": "http://www.erd.bz.it",
-    "officialContact": "info@erd.bz.it"
+    "officialContact": "info@erd.bz.it",
+    "permissionAdministrator": "SOCIETÀ COOPERATIVA ENERGETICA SAN MARTINO-VALDURNA, IN BREVE \"ERD\""
   },
   {
     "country": "it",
     "company": "SOCIETÀ COOPERATIVA IDROELETTRICA DI FORNI DI SOPRA",
     "companyId": "749",
     "websiteUrl": "http://www.sci-forni.it/",
-    "officialContact": "info@sci-forni.it"
+    "officialContact": "info@sci-forni.it",
+    "permissionAdministrator": "SOCIETÀ COOPERATIVA IDROELETTRICA DI FORNI DI SOPRA"
   },
   {
     "country": "it",
     "company": "SOCIETÀ NOLANA PER IMPRESE ELETTRICHE",
     "companyId": "548",
     "websiteUrl": "http://www.snie.it",
-    "officialContact": "distribuzione@snie.it"
+    "officialContact": "distribuzione@snie.it",
+    "permissionAdministrator": "SOCIETÀ NOLANA PER IMPRESE ELETTRICHE"
   },
   {
     "country": "it",
     "company": "UNARETI SPA",
     "companyId": "1247",
     "websiteUrl": "http://www.unareti.it",
-    "officialContact": "info@unareti.it"
+    "officialContact": "info@unareti.it",
+    "permissionAdministrator": "UNARETI SPA"
   },
   {
     "country": "it",
     "company": "V-RETI S.P.A.",
     "companyId": "301",
     "websiteUrl": "http://www.v-reti.it",
-    "officialContact": "segreteria@v-reti.it"
+    "officialContact": "segreteria@v-reti.it",
+    "permissionAdministrator": "V-RETI S.P.A."
   },
   {
     "country": "nl",
     "company": "Coteq Netbeheer",
     "companyId": "8716916000004",
     "websiteUrl": "https://coteqnetbeheer.nl/",
-    "officialContact": "info@coteq.nl"
+    "officialContact": "info@coteq.nl",
+    "permissionAdministrator": "Gegevens Uitwisselings Entiteit (BAS)"
   },
   {
     "country": "nl",
     "company": "Rendo",
     "companyId": "8716912000008",
     "websiteUrl": "https://www.rendogroep.nl/",
-    "officialContact": "info@rendo.nl"
+    "officialContact": "info@rendo.nl",
+    "permissionAdministrator": "Gegevens Uitwisselings Entiteit (BAS)"
   },
   {
     "country": "nl",
     "company": "Stedin Net",
     "companyId": "8716874000009",
     "websiteUrl": "https://www.stedin.net/",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "Gegevens Uitwisselings Entiteit (BAS)"
   },
   {
     "country": "nl",
     "company": "Westland Infra Netbeheer",
     "companyId": "8716878999996",
     "websiteUrl": "https://www.westlandinfra.nl/",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "Gegevens Uitwisselings Entiteit (BAS)"
   },
   {
     "country": "nl ",
     "company": "Enexis",
     "companyId": "8716879000004",
     "websiteUrl": "https://www.enexis.nl/",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "Gegevens Uitwisselings Entiteit (BAS)"
   },
   {
     "country": "nl ",
     "company": "Liander",
     "companyId": "8716871000002",
     "websiteUrl": "https://www.liander.nl/",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Atlantic City Electric",
-    "companyId": "ACE",
-    "websiteUrl": "https://www.atlanticcityelectric.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "American Electric Power Ohio",
-    "companyId": "AEPOHIO",
-    "websiteUrl": "https://www.aepohio.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Alabama Power",
-    "companyId": "ALPower",
-    "websiteUrl": "https://www.alabamapower.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Ameren",
-    "companyId": "Ameren",
-    "websiteUrl": "https://www.ameren.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Appalachian Power",
-    "companyId": "AppalachianPower",
-    "websiteUrl": "https://www.appalachianpower.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Arizona Public Service Company",
-    "companyId": "APS",
-    "websiteUrl": "https://www.aps.com/en/residential/Pages/home.aspx",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Austin Energy",
-    "companyId": "AustinEnergy",
-    "websiteUrl": "https://austinenergy.com/ae",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Baltimore Gas & Electric",
-    "companyId": "BGE",
-    "websiteUrl": "https://www.bge.com",
-    "officialContact": ""
-  },
-  {
-    "country": "ca",
-    "company": "Bluewater Power Distribution Corporation",
-    "companyId": "BLUEWATER",
-    "websiteUrl": "https://greenbutton.bluewaterpower.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Cleveland Electric Illuminating Company",
-    "companyId": "CEIC",
-    "websiteUrl": "https://www.firstenergycorp.com/content/customer/illuminating_company.html",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Commonwealth Edison",
-    "companyId": "ComEd",
-    "websiteUrl": "https://www.comed.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Consolidated Edison New York",
-    "companyId": "ConEd",
-    "websiteUrl": "https://www.coned.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Consumers Energy",
-    "companyId": "CONSUMERSENERGY",
-    "websiteUrl": "https://greenbutton.consumersenergy.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Demonstration Utility",
-    "companyId": "DEMO",
-    "websiteUrl": "",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Demo Utility",
-    "companyId": "DEMOUTILITY",
-    "websiteUrl": "https://greenbutton.demoutility.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Dominion Energy",
-    "companyId": "DOMINION",
-    "websiteUrl": "",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Duke Energy",
-    "companyId": "Duke",
-    "websiteUrl": "https://www.duke-energy.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "El Paso Electric Company",
-    "companyId": "EPE",
-    "websiteUrl": "https://greenbutton.epelectric.com",
-    "officialContact": ""
-  },
-  {
-    "country": "ca",
-    "company": "Essex Powerlines",
-    "companyId": "ESSEX",
-    "websiteUrl": "https://greenbutton.essexpowerlines.ca",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Eversource Energy",
-    "companyId": "EVRSRC",
-    "websiteUrl": "https://www.eversource.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Fort Collins Utilities",
-    "companyId": "FCU",
-    "websiteUrl": "https://data.fcgov.utilityapi.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Florida Power and Light Company",
-    "companyId": "FPL",
-    "websiteUrl": "",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Georgia Power",
-    "companyId": "GAPower",
-    "websiteUrl": "https://www.georgiapower.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Hawaii Electric",
-    "companyId": "HECO",
-    "websiteUrl": "https://www.hawaiianelectric.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Integrated Energy Data Resource Program",
-    "companyId": "IEDR",
-    "websiteUrl": "http://greenbutton.iedr.nyserda.ny.gov",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Jersey Central Power and Light",
-    "companyId": "JCPL",
-    "websiteUrl": "https://www.firstenergycorp.com/content/customer/jersey_central_power_light.html",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Los Angeles Department of Water & Power",
-    "companyId": "LADWP",
-    "websiteUrl": "https://www.ladwp.com",
-    "officialContact": ""
-  },
-  {
-    "country": "ca",
-    "company": "Lakefront Utilities Inc.",
-    "companyId": "LAKEFRONT",
-    "websiteUrl": "https://greenbutton.lakefrontutilities.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Mon Power",
-    "companyId": "MonPower",
-    "websiteUrl": "https://www.firstenergycorp.com/content/customer/mon_power.html",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "National Grid",
-    "companyId": "NATGD",
-    "websiteUrl": "https://www.nationalgridus.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "National Grid New York",
-    "companyId": "NGNY",
-    "websiteUrl": "https://greenbutton.nationalgrid.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Nevada Energy",
-    "companyId": "NVE",
-    "websiteUrl": "https://www.nvenergy.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "New York State Electric and Gas Corporation",
-    "companyId": "NYSEG",
-    "websiteUrl": "https://www.nyseg.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Ohio Edison",
-    "companyId": "OhioEd",
-    "websiteUrl": "https://www.firstenergycorp.com/content/customer/ohio_edison.html",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Orange and Rockland Utilities",
-    "companyId": "ORU",
-    "websiteUrl": "https://www.oru.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Pacific Power Utilities",
-    "companyId": "PacPower",
-    "websiteUrl": "https://www.pacificpower.net",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Peninsula Clean Energy",
-    "companyId": "PCE",
-    "websiteUrl": "https://www.peninsulacleanenergy.com/data-connect",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "PECO Energy",
-    "companyId": "PECO",
-    "websiteUrl": "https://www.peco.com/Pages/default.aspx",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Penelec",
-    "companyId": "Penelec",
-    "websiteUrl": "https://www.firstenergycorp.com/content/customer/penelec.html",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Potomac Electric Power Company",
-    "companyId": "PEPCO",
-    "websiteUrl": "https://www.pepco.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Pacific Gas and Electric",
-    "companyId": "PG&E",
-    "websiteUrl": "https://www.pge.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Portland General Electric",
-    "companyId": "PORTGE",
-    "websiteUrl": "https://www.portlandgeneral.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Potomac Edison",
-    "companyId": "PotomacEd",
-    "websiteUrl": "https://www.firstenergycorp.com/content/customer/potomac_edison.html",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Pennsylvania Power and Light",
-    "companyId": "PPL",
-    "websiteUrl": "https://www.pplelectric.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Public Services Electric and Gas",
-    "companyId": "PSEG",
-    "websiteUrl": "https://www.pseg.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Public Services Electric and Gas - Long Island",
-    "companyId": "PSEGLI",
-    "websiteUrl": "https://www.psegliny.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Public Service Company of Oklahoma",
-    "companyId": "PSO",
-    "websiteUrl": "https://www.psoklahoma.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Rocky Mountain Power",
-    "companyId": "RMP",
-    "websiteUrl": "https://www.rockymountainpower.net",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Southern California Edison",
-    "companyId": "SCE",
-    "websiteUrl": "https://www.sce.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "San Diego Gas and Electric",
-    "companyId": "SDG&E",
-    "websiteUrl": "https://www.sdge.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "San Francisco Public Utilities Commission",
-    "companyId": "SFPUC",
-    "websiteUrl": "https://sfwater.org",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Smart Meter Texas",
-    "companyId": "SMT",
-    "websiteUrl": "https://www.smartmetertexas.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Sacramento Municipal Utility District",
-    "companyId": "SMUD",
-    "websiteUrl": "https://www.smud.org",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Southern California Gas Company",
-    "companyId": "SoCalGas",
-    "websiteUrl": "https://www.socalgas.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Salt River Project",
-    "companyId": "SRP",
-    "websiteUrl": "https://www.srpnet.com",
-    "officialContact": ""
-  },
-  {
-    "country": "ca",
-    "company": "PUC Distribution Inc.",
-    "companyId": "SSMPUC",
-    "websiteUrl": "https://greenbutton.ssmpuc.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Silicon Valley Clean Energy",
-    "companyId": "SVCE",
-    "websiteUrl": "https://data.svcleanenergy.org",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Tucson Electric Power",
-    "companyId": "TEP",
-    "websiteUrl": "https://www.tep.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Texas Gas Service",
-    "companyId": "TEXGAS",
-    "websiteUrl": "https://www.texasgasservice.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Washington Gas",
-    "companyId": "WashingtonGas",
-    "websiteUrl": "https://my.washingtongas.com/portal/Dashboard.aspx",
-    "officialContact": ""
-  },
-  {
-    "country": "ca",
-    "company": "Welland Hydro-Electric System Corp",
-    "companyId": "WELLAND",
-    "websiteUrl": "https://greenbutton.wellandhydro.com",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "West Penn Power",
-    "companyId": "WestPennPower",
-    "websiteUrl": "https://www.firstenergycorp.com/content/customer/west_penn_power.html",
-    "officialContact": ""
-  },
-  {
-    "country": "us",
-    "company": "Xcel Energy",
-    "companyId": "XCEL",
-    "websiteUrl": "https://www.xcelenergy.com",
-    "officialContact": ""
+    "officialContact": "",
+    "permissionAdministrator": "Gegevens Uitwisselings Entiteit (BAS)"
   }
 ]

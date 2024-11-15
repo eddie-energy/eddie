@@ -66,7 +66,8 @@ class EuropeanMasterDataServiceTest {
                                                                                                         "company",
                                                                                                         "company-id",
                                                                                                         "websiteUrl",
-                                                                                                        "officialContact"));
+                                                                                                        "officialContact",
+                                                                                                        "permissionAdministrator"));
 
         Mockito.when(objectMapper.readValue(ArgumentMatchers.any(URL.class),
                                             ArgumentMatchers.any(JavaType.class)))
@@ -84,7 +85,8 @@ class EuropeanMasterDataServiceTest {
                                                                                          "company",
                                                                                          "company-id",
                                                                                          "websiteUrl",
-                                                                                         "officialContact");
+                                                                                         "officialContact",
+                                                                                         "permissionAdministrator");
 
         Mockito.when(objectMapper.readValue(ArgumentMatchers.any(URL.class), ArgumentMatchers.any(JavaType.class)))
                .thenReturn(List.of(meteredDataAdministrator));

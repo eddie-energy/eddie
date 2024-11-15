@@ -5,6 +5,7 @@ public record MeteredDataAdministrator(
         String company,
         String companyId,
         String websiteUrl,
-        String officialContact
+        String officialContact,
+        String permissionAdministrator
 ) {
 }
