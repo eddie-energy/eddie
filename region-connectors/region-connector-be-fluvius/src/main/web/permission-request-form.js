@@ -43,10 +43,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   render() {
     return html`
       <div>
-        <header>
-          <h2>Fluvius - Belgium Region Connector</h2>
-        </header>
-
         <form id="request-form">
           <sl-radio-group label="Your type: " name="flow" value="B2C">
             <sl-radio-button value="B2B">B2B</sl-radio-button>
