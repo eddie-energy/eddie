@@ -412,7 +412,7 @@ class EddieConnectButton extends LitElement {
   }
 
   selectCountry(country) {
-    this._selectedPermissionAdministrator = null;
+    this._selectedPermissionAdministrator = undefined;
     this._selectedCountry = country;
 
     if (country === "sim") {
