@@ -28,6 +28,7 @@ class EuropeanMasterDataControllerTest {
     void getPermissionAdministrators() throws Exception {
         final var permissionAdministrators = List.of(new PermissionAdministrator("country",
                                                                                  "company",
+                                                                                 "name",
                                                                                  "company-id",
                                                                                  "jumpOffUrl",
                                                                                  "regionConnector"));
@@ -43,6 +44,7 @@ class EuropeanMasterDataControllerTest {
     void getPermissionAdministrator() throws Exception {
         final var permissionAdministrator = new PermissionAdministrator("country",
                                                                         "company",
+                                                                        "name",
                                                                         "company-id",
                                                                         "jumpOffUrl",
                                                                         "regionConnector");
@@ -70,7 +72,8 @@ class EuropeanMasterDataControllerTest {
                                                                                    "company",
                                                                                    "company-id",
                                                                                    "websiteUrl",
-                                                                                   "officialContact"));
+                                                                                   "officialContact",
+                                                                                   "permissionAdministrator"));
         BDDMockito.given(this.europeanMasterDataService.getMeteredDataAdministrators())
                   .willReturn(meteredDataAdministrators);
         mvc.perform(MockMvcRequestBuilders.get("/api/metered-data-administrators").accept(MediaType.APPLICATION_JSON))
@@ -85,7 +88,8 @@ class EuropeanMasterDataControllerTest {
                                                                           "company",
                                                                           "company-id",
                                                                           "websiteUrl",
-                                                                          "officialContact");
+                                                                          "officialContact",
+                                                                          "permissionAdministrator");
         BDDMockito.given(this.europeanMasterDataService.getMeteredDataAdministrator("company-id"))
                   .willReturn(Optional.of(meteredDataAdministrator));
         mvc.perform(MockMvcRequestBuilders.get("/api/metered-data-administrators/company-id")

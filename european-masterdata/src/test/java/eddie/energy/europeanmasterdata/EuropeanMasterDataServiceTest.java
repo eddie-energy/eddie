@@ -27,6 +27,7 @@ class EuropeanMasterDataServiceTest {
     void getPermissionAdministrators() throws IOException {
         List<PermissionAdministrator> permissionAdministrators = List.of(new PermissionAdministrator("country",
                                                                                                      "company",
+                                                                                                     "name",
                                                                                                      "company-id",
                                                                                                      "jumpOffUrl",
                                                                                                      "regionConnector"));
@@ -44,6 +45,7 @@ class EuropeanMasterDataServiceTest {
     void getPermissionAdministrator() throws IOException {
         PermissionAdministrator permissionAdministrator = new PermissionAdministrator("country",
                                                                                       "company",
+                                                                                      "name",
                                                                                       "company-id",
                                                                                       "jumpOffUrl",
                                                                                       "regionConnector");
@@ -64,7 +66,8 @@ class EuropeanMasterDataServiceTest {
                                                                                                         "company",
                                                                                                         "company-id",
                                                                                                         "websiteUrl",
-                                                                                                        "officialContact"));
+                                                                                                        "officialContact",
+                                                                                                        "permissionAdministrator"));
 
         Mockito.when(objectMapper.readValue(ArgumentMatchers.any(URL.class),
                                             ArgumentMatchers.any(JavaType.class)))
@@ -82,7 +85,8 @@ class EuropeanMasterDataServiceTest {
                                                                                          "company",
                                                                                          "company-id",
                                                                                          "websiteUrl",
-                                                                                         "officialContact");
+                                                                                         "officialContact",
+                                                                                         "permissionAdministrator");
 
         Mockito.when(objectMapper.readValue(ArgumentMatchers.any(URL.class), ArgumentMatchers.any(JavaType.class)))
                .thenReturn(List.of(meteredDataAdministrator));

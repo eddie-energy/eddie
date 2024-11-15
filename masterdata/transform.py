@@ -11,6 +11,7 @@ Usage:
 import argparse
 import csv
 import json
+import re
 
 # Parse the command line arguments
 parser = argparse.ArgumentParser()
@@ -19,12 +20,23 @@ parser.add_argument('input_file', help='path to the input CSV file')
 parser.add_argument('output_file', help='path to the output JSON file')
 args = parser.parse_args()
 
-region_connectors = {
+REGION_CONNECTORS = {
     'at': 'at-eda',
+    'be': 'be-fluvius',
     'dk': 'dk-energinet',
     'es': 'es-datadis',
-    'fr': 'fr-enedis'
+    'fi': 'fi-fingrid',
+    'fr': 'fr-enedis',
+    'nl': 'nl-mijn-aansluiting',
+    'us': 'us-green-button',
+    'ca': 'us-green-button'
 }
+
+def kebab(value):
+    return re.sub('[^0-9a-z-]', '', value.lower().replace(' / ', '-').replace(' ', '-'))
+
+def empty(value):
+    return value.strip().lower() in ['n.a.', 'n/a', '-', '']
 
 # Read the contents of the input CSV file as a CSV
 with open(args.input_file, 'r', encoding='utf-8') as f:
@@ -34,16 +46,20 @@ with open(args.input_file, 'r', encoding='utf-8') as f:
 # Extract the required information from the rows
 result = []
 for row in rows[1:]:
+    if not row:
+        continue
 
     if (args.type == 'pa'):
         country = row[0].lower()
-        regionConnector = region_connectors.get(country, country)
+        name = row[3] if not empty(row[3]) else row[2]
+        regionConnector = REGION_CONNECTORS.get(country, country)
 
         result.append({
             'country': country,
             'company': row[2],
-            'companyId': row[4] if row[4] != 'n.a.' else '',
-            'jumpOffUrl': row[6] if 'http' in row[6] else '',
+            'name': name,
+            'companyId': row[5] if not empty(row[5]) else kebab(name),
+            'jumpOffUrl': row[7] if 'http' in row[7] or 'https' in row[7] else '',
             'regionConnector': regionConnector
         })
 
@@ -51,7 +67,7 @@ for row in rows[1:]:
         result.append({
             'country': row[0].lower(),
             'company': row[2],
-            'companyId': row[4] if row[4] != 'n.a.' else '',
+            'companyId': row[4] if not empty(row[4]) else kebab(row[2]),
             'websiteUrl': row[5] if 'http' in row[5] else '',
             'officialContact': row[6] if row[6] != 'n.a.' else '',
             'permissionAdministrator': row[13]

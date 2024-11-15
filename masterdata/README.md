@@ -13,11 +13,14 @@ The preferred way to convert the exported spreadsheet to a csv file is to use th
 pip install csvkit
 ```
 
-The following command can be used to convert the exported Excel spreadsheet to a set of csv files:
+The following commands can be used to convert the exported Excel spreadsheet to csv files:
 
 ```shell
-in2csv BPRT_Region_Roles.xlsx --write-sheets - --use-sheet-names
+in2csv BPRT_Region_Roles.xlsx --sheet "Permission Administrator" > permission_administrator.csv
+in2csv BPRT_Region_Roles.xlsx --sheet "Metered Data Administrators" > metered_data_administrators.csv
 ```
+
+This will create a csv file for each sheet in the Excel file. The csv files will be named after the sheet they were created from.
 
 ## CSV to JSON
 
@@ -27,11 +30,11 @@ The type of data to be transformed is specified as an argument to the script.
 To update the permission administrators, run the following command:
 
 ```shell
-python transform.py pa permission_administrator.csv ../core/src/main/resources/permission-administrators.json
+python transform.py pa permission_administrator.csv ../european-masterdata/src/main/resources/permission-administrators.json
 ```
 
 For metered data administrators, run this command instead.
 
 ```shell
-python transform.py mda metered_data_administrators.csv ../core/src/main/resources/metered-data-administrators.json
+python transform.py mda metered_data_administrators.csv ../european-masterdata/src/main/resources/metered-data-administrators.json
 ```
