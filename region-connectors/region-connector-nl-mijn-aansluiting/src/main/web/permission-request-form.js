@@ -5,23 +5,12 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/button/button.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/components/alert/alert.js";
 
-const BASE_URL = new URL(import.meta.url).href
-  .replace("ce.js", "")
-  .slice(0, -1);
-const REQUEST_URL = BASE_URL + "/permission-request";
-
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
     _isPermissionRequestCreated: { type: Boolean },
   };
-
-  constructor() {
-    super();
-
-    this._isPermissionRequestCreated = false;
-  }
 
   handleSubmit(event) {
     event.preventDefault();
@@ -37,7 +26,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       credentials: "include",
     })
       .then((result) => {
-        this._isPermissionRequestCreated = true;
         window.open(result["redirectUri"], "_blank");
       })
       .catch((error) => this.error(error));
