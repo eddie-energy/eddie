@@ -8,12 +8,14 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.time.Duration;
+
 @Service
 public class PermissionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink = Sinks.many()
-                                                                                         .multicast()
-                                                                                         .onBackpressureBuffer();
+                                                                                         .replay()
+                                                                                         .limit(Duration.ofSeconds(10));
 
     public void registerProvider(ConnectionStatusMessageProvider statusMessageProvider) {
         LOGGER.info("PermissionService: Registering {}", statusMessageProvider.getClass().getName());

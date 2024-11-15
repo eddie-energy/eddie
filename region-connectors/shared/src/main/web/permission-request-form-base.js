@@ -110,33 +110,6 @@ class PermissionRequestFormBase extends LitElement {
   }
 
   /**
-   * Dispatch a custom event to handle that a permission request was created.
-   * @param {string} permissionId The permission id to identify the created permission request.
-   * @param {string} location The location to get the current status of the permission request from.
-   */
-  handlePermissionRequestCreated(permissionId, location) {
-    const event = new CustomEvent("eddie-request-created", {
-      detail: {
-        permissionId,
-        location,
-      },
-      bubbles: true,
-      composed: true,
-    });
-
-    this.dispatchEvent(event);
-
-    this.notify({
-      title: "Permission request created!",
-      message: "Your permission request was created successfully.",
-      variant: "success",
-      duration: 10000,
-    });
-
-    this.pollRequestStatus(`${this.REQUEST_STATUS_URL}/${permissionId}`);
-  }
-
-  /**
    * Create a standard permission request with the given payload.
    * Errors are thrown as an `Error` object with the message as the error message.
    * This includes status codes outside the 2xx range.
@@ -159,15 +132,15 @@ class PermissionRequestFormBase extends LitElement {
 
     if (response.ok) {
       if (response.status === 201) {
-        const locationHeader = response.headers.get("Location");
-        if (!locationHeader) {
-          throw new Error("Header 'Location' is missing");
-        }
-
-        const location = this.BASE_URL + locationHeader;
+        this.notify({
+          title: "Permission request created!",
+          message: "Your permission request was created successfully.",
+          variant: "success",
+          duration: 10000,
+        });
 
         const { permissionId } = data;
-        this.handlePermissionRequestCreated(permissionId, location);
+        this.pollRequestStatus(`${this.REQUEST_STATUS_URL}/${permissionId}`);
       }
 
       return data;
@@ -199,15 +172,14 @@ class PermissionRequestFormBase extends LitElement {
         })
       );
 
-      // Dispatch a specific event for the current status
-      const statusEventString = data.status.toLowerCase().replaceAll("_", "-");
-      const statusEvent = new Event("eddie-request-" + statusEventString, {
-        bubbles: true,
-        composed: true,
-      });
+      const status = data.status.toLowerCase().replaceAll("_", "-");
 
-      this.dispatchEvent(statusEvent);
-      console.debug(statusEvent);
+      this.dispatchEvent(
+        new Event(`eddie-request-${status}`, {
+          bubbles: true,
+          composed: true,
+        })
+      );
 
       if (TERMINAL_STATES.includes(data.status)) {
         eventSource.close();
