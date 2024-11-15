@@ -2,6 +2,7 @@ package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
 import energy.eddie.api.agnostic.RawDataProvider;
+import energy.eddie.api.agnostic.retransmission.RegionConnectorRetransmissionService;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
@@ -43,6 +44,9 @@ class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
     @MockBean
     @SuppressWarnings("unused")
     private ValidatedHistoricalDataEnvelopeProvider validatedHistoricalDataEnvelopeProvider;
+    @MockBean
+    @SuppressWarnings("unused")
+    private RegionConnectorRetransmissionService regionConnectorRetransmissionService;
 
     @Test
     void testSupportedFeatures_returnsTrue_ifFeatureInApplicationContext() {
@@ -57,7 +61,8 @@ class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
                 () -> assertTrue(extension.supportsRawDataMessages()),
                 () -> assertTrue(extension.supportsAccountingPointMarketDocuments()),
                 () -> assertTrue(extension.supportsPermissionMarketDocuments()),
-                () -> assertTrue(extension.supportsValidatedHistoricalDataMarketDocuments())
+                () -> assertTrue(extension.supportsValidatedHistoricalDataMarketDocuments()),
+                () -> assertTrue(extension.supportsRetransmissionRequests())
         );
     }
 
@@ -107,7 +112,8 @@ class RegionConnectorSupportedFeatureExtensionWithoutBeansPresentTest {
                 () -> assertFalse(extension.supportsRawDataMessages()),
                 () -> assertFalse(extension.supportsAccountingPointMarketDocuments()),
                 () -> assertFalse(extension.supportsPermissionMarketDocuments()),
-                () -> assertFalse(extension.supportsValidatedHistoricalDataMarketDocuments())
+                () -> assertFalse(extension.supportsValidatedHistoricalDataMarketDocuments()),
+                () -> assertFalse(extension.supportsRetransmissionRequests())
         );
     }
 }

@@ -17,8 +17,7 @@ public record CPRequestResult(
         NO_DATA_AVAILABLE,
         METERING_POINT_NOT_ASSIGNED,
         UNKNOWN_RESPONSE_CODE_ERROR,
-        PONTON_ERROR, // Error in the Ponton system like transmission failure, misconfiguration
-        SHUTDOWN_ERROR;
+        PONTON_ERROR; // Error in the Ponton system like transmission failure, misconfiguration
 
         public static Result fromResponseCode(int responseCode) {
             return switch (responseCode) {

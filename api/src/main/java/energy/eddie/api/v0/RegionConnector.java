@@ -19,6 +19,7 @@ import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
  * @see energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider
  * @see energy.eddie.api.v0_82.AccountingPointEnvelopeProvider
  * @see energy.eddie.api.v0_82.PermissionMarketDocumentProvider
+ * @see energy.eddie.api.agnostic.retransmission.RegionConnectorRetransmissionService
  */
 public interface RegionConnector {
     /**
