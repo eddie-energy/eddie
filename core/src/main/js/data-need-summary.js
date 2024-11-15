@@ -2,6 +2,7 @@ import { DATA_NEED_TOOLTIPS } from "./constants/data-need-tooltips.js";
 import { GRANULARITIES } from "./constants/granularities.js";
 import { relativeDateFromDuration } from "./duration.js";
 import { ENERGY_TYPES } from "./constants/energy-types.js";
+import cronstrue from "cronstrue";
 
 const CORE_URL =
   import.meta.env.VITE_CORE_URL ?? new URL(import.meta.url).origin;
@@ -98,7 +99,7 @@ class DataNeedSummary extends HTMLElement {
 
           <!-- For AIIDA data needs -->
           ${transmissionSchedule
-            ? `<dt>Transmission Schedule</dt><dd>${transmissionSchedule}</dd>`
+            ? `<dt>Transmission Schedule</dt><dd>${cronstrue.toString(transmissionSchedule)}</dd>`
             : ""}
 
           <!-- For AIIDA schemas -->
