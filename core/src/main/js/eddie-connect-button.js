@@ -37,6 +37,14 @@ const COUNTRIES = new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country));
 
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
+/**
+ * Maps country codes to their respective flag emojis.
+ * @type {Map<string, string>}
+ */
+const COUNTRY_FLAGS = new Map(
+  [...COUNTRIES].map((country) => [country, countryFlag(country)])
+);
+
 const CORE_URL =
   import.meta.env.VITE_CORE_URL ??
   import.meta.url.replace("/lib/eddie-components.js", "");
@@ -73,6 +81,17 @@ const dialogCloseEvent = new Event("eddie-dialog-close", {
   bubbles: true,
   composed: true,
 });
+
+/**
+ * Returns the flag emoji for a given country code.
+ * @param countryCode {string} - The ISO 3166-1 alpha-2 country code.
+ * @returns {string} The flag emoji.
+ */
+function countryFlag(countryCode) {
+  return [...countryCode.toUpperCase()]
+    .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
+    .reduce((a, b) => `${a}${b}`);
+}
 
 /**
  * Filters the given region connectors to only include those that support the given data need.
@@ -306,7 +325,9 @@ class EddieConnectButton extends LitElement {
     }
 
     return html`
-      <h3>Follow the instructions for ${name}</h3>
+      <h3>
+        Follow the instructions for ${name} ${COUNTRY_FLAGS.get(country) ?? ""}
+      </h3>
 
       <eddie-notification-handler>
         <eddie-request-status-handler>
@@ -647,12 +668,22 @@ class EddieConnectButton extends LitElement {
                   ? "Some countries do not support the given data requirements."
                   : ""}"
               >
+                ${COUNTRY_FLAGS.has(this._selectedCountry)
+                  ? html`<span slot="prefix">
+                      ${COUNTRY_FLAGS.get(this._selectedCountry)}
+                    </span>`
+                  : ""}
                 ${this._enabledCountries.map(
                   (country) => html`
                     <sl-option
                       value="${country}"
                       ?disabled="${!this._supportedCountries.has(country)}"
                     >
+                      ${COUNTRY_FLAGS.has(country)
+                        ? html`<span slot="prefix">
+                            ${COUNTRY_FLAGS.get(country)}
+                          </span>`
+                        : ""}
                       ${COUNTRY_NAMES.of(country.toUpperCase())}
                     </sl-option>
                   `
