@@ -260,7 +260,11 @@ class EddieConnectButton extends LitElement {
         this.addRequestStatusHandlers();
         this.addViewChangeHandlers();
       })
-      .catch(() => (this._isValidConfiguration = false));
+      .catch((error) => {
+        this._isValidConfiguration = false;
+
+        console.error(error);
+      });
   }
 
   openDialog() {
@@ -408,7 +412,7 @@ class EddieConnectButton extends LitElement {
   }
 
   selectCountry(country) {
-    this._selectedPermissionAdministrator = null;
+    this._selectedPermissionAdministrator = undefined;
     this._selectedCountry = country;
 
     if (country === "sim") {
@@ -458,6 +462,10 @@ class EddieConnectButton extends LitElement {
     this._enabledConnectors = await fetchJson(
       "/api/region-connectors-metadata"
     );
+
+    if (this._enabledConnectors.length === 0) {
+      throw new Error("No enabled region connectors.");
+    }
 
     this._enabledCountries = await getEnabledCountries(this._enabledConnectors);
     this._enabledCountries.sort((a, b) => a.localeCompare(b));

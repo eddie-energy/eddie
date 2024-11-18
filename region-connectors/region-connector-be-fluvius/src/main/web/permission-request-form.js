@@ -7,12 +7,11 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/radio-group/radio-group.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/radio-button/radio-button.js";
 
-const shortUrlPrefix = "https://mijn.fluvius.be/verbruik/dienstverlener?id=";
-
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
+    jumpOffUrl: { attribute: "jump-off-url" },
     _requestStatus: { type: String },
     _shortUrlIdentifier: { type: String },
   };
@@ -65,7 +64,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       </div>
       <div ?hidden="${!this._shortUrlIdentifier}">
         <p>Please accept the authorization request in your Fluvius portal.</p>
-        <a href="${shortUrlPrefix + this._shortUrlIdentifier}" target="_blank">
+        <a href="${this.jumpOffUrl + this._shortUrlIdentifier}" target="_blank">
           Go to Fluvius
         </a>
       </div>
