@@ -1,0 +1,6 @@
+### GET region connector metadata
+GET http://localhost:8080/api/region-connectors-metadata
+
+### GET data need calculations of region connectors for a specific data need
+@dataNeedId = 9bd0668f-cc19-40a8-99db-dc2cb2802b17
+GET http://localhost:8080/api/region-connectors/data-needs/{{dataNeedId}}

@@ -21,12 +21,21 @@ import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
 
 import PERMISSION_ADMINISTRATORS from "../../../../european-masterdata/src/main/resources/permission-administrators.json";
+import {
+  getDataNeedAttributes,
+  getRegionConnectorMetadata,
+  getSupportedRegionConnectors,
+} from "./api.js";
 
 setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn");
 
-const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
-
+/**
+ * All countries with at least one permission administrator as lowercase ISO 3166-1 alpha-2 country code.
+ * @type {Set<string>}
+ */
 const COUNTRIES = new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country));
+
+const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
 const CORE_URL =
   import.meta.env.VITE_CORE_URL ??
@@ -65,39 +74,16 @@ const dialogCloseEvent = new Event("eddie-dialog-close", {
   composed: true,
 });
 
-function fetchJson(path) {
-  return fetch(CORE_URL + path)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(
-          `Fetch to ${path} returned invalid status code ${response.status}`
-        );
-      }
-      return response.json();
-    })
-    .catch((error) => console.error(error));
-}
-
+/**
+ * Filters the given region connectors to only include those that support the given data need.
+ * @param regionConnectors {RegionConnectorMetadata[]} - The region connectors to filter.
+ * @returns {string[]} - The country codes of all enabled region connectors.
+ */
 function getEnabledCountries(regionConnectors) {
   return regionConnectors
     .flatMap((rc) => rc.countryCodes)
     .map((countryCode) => countryCode.toLowerCase())
     .filter((country) => COUNTRIES.has(country));
-}
-
-function getSupportedRegionConnectors(dataNeedId) {
-  return fetchJson(`/api/region-connectors/data-needs/${dataNeedId}`).then(
-    (json) => Object.keys(json).filter((key) => json[key].supportsDataNeed)
-  );
-}
-
-/**
- *
- * @param {string} dataNeedId - The ID of the data need to fetch attributes for.
- * @returns {Promise<DataNeedAttributes | void>}
- */
-function getDataNeedAttributes(dataNeedId) {
-  return fetchJson(`/data-needs/api/${dataNeedId}`);
 }
 
 class EddieConnectButton extends LitElement {
@@ -187,8 +173,8 @@ class EddieConnectButton extends LitElement {
     this._isValidConfiguration = undefined;
 
     /**
-     * Region connectors that are supported.
-     * @type {string[]}
+     * Region connectors that support the given data need.
+     * @type {RegionConnectorMetadata[]}
      * @private
      */
     this._enabledConnectors = [];
@@ -459,15 +445,13 @@ class EddieConnectButton extends LitElement {
       return;
     }
 
-    this._enabledConnectors = await fetchJson(
-      "/api/region-connectors-metadata"
-    );
+    this._enabledConnectors = await getRegionConnectorMetadata();
 
     if (this._enabledConnectors.length === 0) {
       throw new Error("No enabled region connectors.");
     }
 
-    this._enabledCountries = await getEnabledCountries(this._enabledConnectors);
+    this._enabledCountries = getEnabledCountries(this._enabledConnectors);
     this._enabledCountries.sort((a, b) => a.localeCompare(b));
 
     this._supportedConnectors = await getSupportedRegionConnectors(
