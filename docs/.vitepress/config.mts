@@ -42,6 +42,13 @@ export default withMermaid(defineConfig({
               { text: "Green Button (USA)", link: "1-running/region-connectors/region-connector-us-green-button.md" },
             ],
           },
+          {
+            text: "Outbound-connectors",
+            link: "1-running/outbound-connectors/outbound-connectors.md",
+            items: [
+              { text: "AMQP", link: "1-running/outbound-connectors/outbound-connector-amqp.md" },
+            ],
+          },
           { text: "Admin Console", link: "1-running/admin-console" },
           { text: "Example App", link: "1-running/example-app" },
         ],
