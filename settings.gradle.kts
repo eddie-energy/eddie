@@ -61,3 +61,5 @@ include("european-masterdata")
 include("admin-console")
 
 include("examples:new-example-app")
+include("outbound-connectors:outbound-shared")
+findProject(":outbound-connectors:outbound-shared")?.name = "outbound-shared"

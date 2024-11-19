@@ -21,6 +21,7 @@ configurations.all {
 }
 dependencies {
     implementation(project(":api"))
+    implementation(project((":outbound-connectors:outbound-shared")))
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.kafka)

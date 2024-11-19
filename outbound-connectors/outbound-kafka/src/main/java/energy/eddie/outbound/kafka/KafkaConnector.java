@@ -11,6 +11,8 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.ap.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.outbound.shared.Endpoints;
+import energy.eddie.outbound.shared.Headers;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.slf4j.Logger;
@@ -32,9 +34,6 @@ public class KafkaConnector implements
         PermissionMarketDocumentOutboundConnector,
         RawDataOutboundConnector,
         AccountingPointEnvelopeOutboundConnector {
-    public static final String PERMISSION_ID = "permission-id";
-    public static final String CONNECTION_ID = "connection-id";
-    public static final String DATA_NEED_ID = "data-need-id";
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -80,7 +79,8 @@ public class KafkaConnector implements
     }
 
     private void produceStatusMessage(ConnectionStatusMessage statusMessage) {
-        var future = kafkaTemplate.send(new ProducerRecord<>("status-messages", statusMessage));
+        var future = kafkaTemplate.send(new ProducerRecord<>(Endpoints.Agnostic.CONNECTION_STATUS_MESSAGE,
+                                                             statusMessage));
         awaitFuture(future, "Could not produce connection status message");
         LOGGER.debug("Produced connection status {} message for permission request {}",
                      statusMessage.status(),
@@ -105,7 +105,7 @@ public class KafkaConnector implements
                                              .getMessageDocumentHeaderMetaInformation();
         var permissionId = header.getPermissionid();
         var toSend = new ProducerRecord<String, Object>(
-                "permission-market-documents",
+                Endpoints.V0_82.PERMISSION_MARKET_DOCUMENTS,
                 null,
                 permissionId,
                 permissionMarketDocument,
@@ -117,9 +117,9 @@ public class KafkaConnector implements
 
     private Iterable<Header> cimToHeaders(energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderMetaInformationComplexType header) {
         return List.of(
-                new StringHeader(PERMISSION_ID, header.getPermissionid()),
-                new StringHeader(CONNECTION_ID, header.getConnectionid()),
-                new StringHeader(DATA_NEED_ID, header.getDataNeedid())
+                new StringHeader(Headers.PERMISSION_ID, header.getPermissionid()),
+                new StringHeader(Headers.CONNECTION_ID, header.getConnectionid()),
+                new StringHeader(Headers.DATA_NEED_ID, header.getDataNeedid())
         );
     }
 
@@ -128,7 +128,7 @@ public class KafkaConnector implements
     ) {
         var info = marketDocument.getMessageDocumentHeader()
                                  .getMessageDocumentHeaderMetaInformation();
-        var toSend = new ProducerRecord<String, Object>("validated-historical-data",
+        var toSend = new ProducerRecord<String, Object>(Endpoints.V0_82.VALIDATED_HISTORICAL_DATA,
                                                         null,
                                                         info.getConnectionid(),
                                                         marketDocument,
@@ -141,14 +141,14 @@ public class KafkaConnector implements
 
     private static Iterable<Header> cimToHeaders(energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderMetaInformationComplexType header) {
         return List.of(
-                new StringHeader(PERMISSION_ID, header.getPermissionid()),
-                new StringHeader(CONNECTION_ID, header.getConnectionid()),
-                new StringHeader(DATA_NEED_ID, header.getDataNeedid())
+                new StringHeader(Headers.PERMISSION_ID, header.getPermissionid()),
+                new StringHeader(Headers.CONNECTION_ID, header.getConnectionid()),
+                new StringHeader(Headers.DATA_NEED_ID, header.getDataNeedid())
         );
     }
 
     private void produceRawDataMessage(RawDataMessage message) {
-        var toSend = new ProducerRecord<String, Object>("raw-data-in-proprietary-format",
+        var toSend = new ProducerRecord<String, Object>(Endpoints.Agnostic.RAW_DATA_IN_PROPRIETARY_FORMAT,
                                                         message.connectionId(),
                                                         message);
         var future = kafkaTemplate.send(toSend);
@@ -162,7 +162,7 @@ public class KafkaConnector implements
         var header = marketDocument.getMessageDocumentHeader()
                                    .getMessageDocumentHeaderMetaInformation();
         var toSend = new ProducerRecord<String, Object>(
-                "accounting-point-market-documents",
+                Endpoints.V0_82.ACCOUNTING_POINT_MARKET_DOCUMENTS,
                 null,
                 header.getConnectionid(),
                 marketDocument,
@@ -178,9 +178,9 @@ public class KafkaConnector implements
             MessageDocumentHeaderMetaInformationComplexType header
     ) {
         return List.of(
-                new StringHeader(PERMISSION_ID, header.getPermissionid()),
-                new StringHeader(CONNECTION_ID, header.getConnectionid()),
-                new StringHeader(DATA_NEED_ID, header.getDataNeedid())
+                new StringHeader(Headers.PERMISSION_ID, header.getPermissionid()),
+                new StringHeader(Headers.CONNECTION_ID, header.getConnectionid()),
+                new StringHeader(Headers.DATA_NEED_ID, header.getDataNeedid())
         );
     }
 

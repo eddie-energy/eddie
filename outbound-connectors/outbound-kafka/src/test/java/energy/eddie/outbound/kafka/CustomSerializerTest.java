@@ -6,12 +6,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
-import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.pmd.*;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocumentComplexType;
+import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +45,7 @@ class CustomSerializerTest {
         ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId",
                                                                    "permissionId",
                                                                    "dataNeedId",
-                                                                   new TestDataSourceInformation("cc",
+                                                                   new MockDataSourceInformation("cc",
                                                                                                  "rc",
                                                                                                  "pa",
                                                                                                  "mda"),
@@ -113,7 +113,7 @@ class CustomSerializerTest {
         // Given
         var expectedString = "{\"permissionId\":\"foo\",\"connectionId\":\"bar\",\"dataNeedId\":\"id1\",\"dataSourceInformation\":{\"countryCode\":\"TEST\",\"meteredDataAdministratorId\":\"tEsT\",\"permissionAdministratorId\":\"TeSt\",\"regionConnectorId\":\"test\"},\"timestamp\":\"2024-01-16T12:00:00Z\",\"rawPayload\":\"rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters\"}";
         var topic = "myTest";
-        var dataSourceInformation = new TestDataSourceInformation("TEST", "test", "TeSt", "tEsT");
+        var dataSourceInformation = new MockDataSourceInformation("TEST", "test", "TeSt", "tEsT");
         var message = new RawDataMessage("foo",
                                          "bar",
                                          "id1",
@@ -256,11 +256,5 @@ class CustomSerializerTest {
 
         // Clean-Up
         customSerializer.close();
-    }
-
-    private record TestDataSourceInformation(String countryCode,
-                                             String regionConnectorId,
-                                             String permissionAdministratorId,
-                                             String meteredDataAdministratorId) implements DataSourceInformation {
     }
 }
