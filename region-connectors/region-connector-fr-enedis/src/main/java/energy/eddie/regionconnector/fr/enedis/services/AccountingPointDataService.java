@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
+import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
@@ -13,7 +14,6 @@ import energy.eddie.regionconnector.fr.enedis.permission.events.FrUsagePointType
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.CommonAccountingPointDataService;
-import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -54,7 +54,7 @@ public class AccountingPointDataService implements CommonAccountingPointDataServ
         return retryable;
     }
 
-    public void fetchAccountingPointData(CommonPermissionRequest request, String usagePointId) {
+    public void fetchAccountingPointData(MeterReadingPermissionRequest request, String usagePointId) {
         LOGGER.atInfo()
               .addArgument(request::permissionId)
               .log("Fetching accounting point data for permissionId '{}'");

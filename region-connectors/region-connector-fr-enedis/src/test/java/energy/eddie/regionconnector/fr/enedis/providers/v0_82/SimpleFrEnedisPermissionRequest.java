@@ -24,18 +24,5 @@ public record SimpleFrEnedisPermissionRequest(
         LocalDate start,
         LocalDate end
 ) implements FrEnedisPermissionRequest {
-    @Override
-    public String customerIdentification() {
-        return "";
-    }
 
-    @Override
-    public String meteringPointEAN() {
-        return "";
-    }
-
-    @Override
-    public Optional<ZonedDateTime> latestMeterReading() {
-        return Optional.empty();
-    }
 }

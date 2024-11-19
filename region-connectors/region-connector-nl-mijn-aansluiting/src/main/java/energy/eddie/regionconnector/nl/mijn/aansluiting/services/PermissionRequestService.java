@@ -10,6 +10,7 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
@@ -41,7 +42,7 @@ public class PermissionRequestService {
     private final OAuthManager oAuthManager;
     private final Outbox outbox;
     private final DataNeedsService dataNeedService;
-    private final NlPermissionRequestRepository permissionRequestRepository;
+    private final NlPermissionRequestRepository<NlPermissionRequest> permissionRequestRepository;
     private final DataNeedCalculationService<DataNeed> calculationService;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -50,7 +51,7 @@ public class PermissionRequestService {
             OAuthManager oAuthManager,
             Outbox outbox,
             DataNeedsService dataNeedService,
-            NlPermissionRequestRepository permissionRequestRepository,
+            NlPermissionRequestRepository<NlPermissionRequest> permissionRequestRepository,
             DataNeedCalculationService<DataNeed> calculationService
     ) {
         this.oAuthManager = oAuthManager;

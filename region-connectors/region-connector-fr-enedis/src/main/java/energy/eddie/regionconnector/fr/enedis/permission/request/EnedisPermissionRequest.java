@@ -126,21 +126,6 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
     }
 
     @Override
-    public String customerIdentification() {
-        return "";
-    }
-
-    @Override
-    public String meteringPointEAN() {
-        return "";
-    }
-
-    @Override
-    public Optional<ZonedDateTime> latestMeterReading() {
-        return Optional.empty();
-    }
-
-    @Override
     public UsagePointType usagePointType() {
         return usagePointType;
     }

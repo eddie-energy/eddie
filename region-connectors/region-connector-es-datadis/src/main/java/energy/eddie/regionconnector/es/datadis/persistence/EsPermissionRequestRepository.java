@@ -1,11 +1,9 @@
 package energy.eddie.regionconnector.es.datadis.persistence;
 
-import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
-import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.FullPermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import energy.eddie.regionconnector.shared.services.CommonPermissionRequestRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,10 +13,8 @@ import java.util.List;
 
 @Repository
 public interface EsPermissionRequestRepository extends
-        PermissionRequestRepository<EsPermissionRequest>,
         JpaRepository<DatadisPermissionRequest, String>,
-        StalePermissionRequestRepository<DatadisPermissionRequest>,
-        CommonPermissionRequestRepository {
+        FullPermissionRequestRepository<EsPermissionRequest> {
 
     List<EsPermissionRequest> findByStatus(PermissionProcessStatus status);
 
@@ -28,5 +24,5 @@ public interface EsPermissionRequestRepository extends
             nativeQuery = true
     )
     @Override
-    List<DatadisPermissionRequest> findStalePermissionRequests(@Param("hours") int timeoutDuration);
+    List<EsPermissionRequest> findStalePermissionRequests(@Param("hours") int timeoutDuration);
 }

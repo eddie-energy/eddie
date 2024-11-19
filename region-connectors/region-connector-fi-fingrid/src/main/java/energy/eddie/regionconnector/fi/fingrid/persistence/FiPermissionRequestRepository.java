@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.fi.fingrid.persistence;
 import energy.eddie.api.agnostic.process.model.persistence.FullPermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
-import energy.eddie.regionconnector.shared.services.CommonPermissionRequestRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,8 +12,7 @@ import java.util.List;
 @Repository
 public interface FiPermissionRequestRepository extends
         FullPermissionRequestRepository<FingridPermissionRequest>,
-        org.springframework.data.repository.Repository<FingridPermissionRequest, String>,
-        CommonPermissionRequestRepository {
+        org.springframework.data.repository.Repository<FingridPermissionRequest, String> {
 
     @Query(
             value = "SELECT permission_id, connection_id, created, data_need_id, granularity, permission_start, permission_end, status, customer_identification, metering_point, latest_meter_reading " +

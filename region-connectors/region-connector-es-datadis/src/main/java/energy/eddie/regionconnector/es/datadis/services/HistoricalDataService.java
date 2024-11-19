@@ -12,9 +12,9 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 @Service
 public class HistoricalDataService {
 
-    private final DataApiService dataApiService;
+    private final DataApiService<EsPermissionRequest> dataApiService;
 
-    public HistoricalDataService(DataApiService dataApiService) {
+    public HistoricalDataService(DataApiService<EsPermissionRequest> dataApiService) {
         this.dataApiService = dataApiService;
     }
 
@@ -27,11 +27,6 @@ public class HistoricalDataService {
             return;
         }
 
-        LocalDate end = Optional.of(permissionRequest.end())
-                                .filter(permissionRequestEnd -> !permissionRequestEnd.isAfter(now))
-                                .map(permissionRequestEnd -> permissionRequestEnd.plusDays(1))
-                                .orElse(now.minusDays(1));
-
-        dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
+        dataApiService.pollTimeSeriesData(permissionRequest, "Europe/Madrid");
     }
 }

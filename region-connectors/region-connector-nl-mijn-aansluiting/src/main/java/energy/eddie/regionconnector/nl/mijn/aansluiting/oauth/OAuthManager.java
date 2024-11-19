@@ -17,6 +17,7 @@ import com.nimbusds.oauth2.sdk.pkce.CodeVerifier;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.oauth2.sdk.token.Tokens;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.exceptions.*;
@@ -44,7 +45,7 @@ public class OAuthManager {
     private final OIDCProviderMetadata providerMetadata;
     private final JWTProcessor<SecurityContext> jwtProcessor;
     private final OAuthTokenRepository repository;
-    private final NlPermissionRequestRepository permissionRequestRepository;
+    private final NlPermissionRequestRepository<NlPermissionRequest> permissionRequestRepository;
 
     public OAuthManager(
             MijnAansluitingConfiguration configuration,
@@ -52,7 +53,7 @@ public class OAuthManager {
             OIDCProviderMetadata providerMetadata,
             JWTProcessor<SecurityContext> jwtProcessor,
             OAuthTokenRepository repository,
-            NlPermissionRequestRepository permissionRequestRepository
+            NlPermissionRequestRepository<NlPermissionRequest> permissionRequestRepository
     ) {
         this.configuration = configuration;
         this.privateKey = privateKey;

@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.shared.services;
 
+import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
+
 public interface CommonAccountingPointDataService {
-    void fetchAccountingPointData(CommonPermissionRequest request, String usagePointId);
+    void fetchAccountingPointData(MeterReadingPermissionRequest request, String usagePointId);
 }

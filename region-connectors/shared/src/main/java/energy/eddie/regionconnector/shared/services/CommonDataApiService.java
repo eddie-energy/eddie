@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.shared.services;
 
-import java.time.LocalDate;
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 
-public interface CommonDataApiService {
-    void fetchDataForPermissionRequest(CommonPermissionRequest permissionRequest, LocalDate start, LocalDate end);
+public interface CommonDataApiService<T extends PermissionRequest> {
+    void pollTimeSeriesData(T permissionRequest, String timeZone);
 }

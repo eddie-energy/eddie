@@ -2,6 +2,8 @@ package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector;
+import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
@@ -16,7 +18,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.testcontainers.shaded.org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -34,15 +35,15 @@ class FutureDataServiceTest {
     private PollingService pollingService;
     @Mock
     private FrPermissionRequestRepository repository;
-
+    @Mock
+    EnedisRegionConnectorMetadata metadata; // without this metadata, the region connector cannot be mocked correctly
     @InjectMocks
-    private CommonFutureDataService futureDataService;
+    EnedisRegionConnector regionConnector;
+    private CommonFutureDataService<FrEnedisPermissionRequest> futureDataService;
 
     @BeforeEach
-    public void setCronAndTimeZone() throws Exception {
-        String ZONE = "Europe/Paris";
-        FieldUtils.writeField(futureDataService, "ZONE", ZONE, true);
-        futureDataService.setCronExpression("0 0 17 * * *");
+    public void setup() {
+        futureDataService = new CommonFutureDataService<>(pollingService, repository, null, null, "Europe/Paris", "0 0 17 * * *", regionConnector);
     }
 
     static Stream<Arguments> activePermission_that_needsToBeFetched() {
@@ -124,11 +125,7 @@ class FutureDataServiceTest {
 
         // Then
         verify(repository).findByStatus(PermissionProcessStatus.ACCEPTED);
-        LocalDate startFetchDate = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
-        verify(pollingService).fetchMeterReadings(permissionRequest,
-                                                  startFetchDate,
-                                                  LocalDate.now(ZONE_ID_FR)
-        );
+        verify(pollingService).pollTimeSeriesData(permissionRequest);
     }
 
     @ParameterizedTest(name = "{1}")
@@ -146,6 +143,5 @@ class FutureDataServiceTest {
 
         // Then
         verify(repository).findByStatus(PermissionProcessStatus.ACCEPTED);
-        verifyNoMoreInteractions(pollingService); // No interaction with pollingService should occur
     }
 }

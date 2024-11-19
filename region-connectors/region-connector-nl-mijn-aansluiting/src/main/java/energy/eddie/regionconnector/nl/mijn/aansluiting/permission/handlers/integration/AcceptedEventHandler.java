@@ -11,7 +11,6 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermission
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
-import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -24,13 +23,13 @@ import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRe
 public class AcceptedEventHandler implements EventHandler<PermissionEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AcceptedEventHandler.class);
     private final PollingService pollingService;
-    private final NlPermissionRequestRepository repository;
+    private final NlPermissionRequestRepository<NlPermissionRequest> repository;
     private final DataNeedsService dataNeedsService;
 
     public AcceptedEventHandler(
             EventBus eventBus,
             PollingService pollingService,
-            NlPermissionRequestRepository repository,
+            NlPermissionRequestRepository<NlPermissionRequest> repository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
     ) {
         this.pollingService = pollingService;
@@ -60,7 +59,7 @@ public class AcceptedEventHandler implements EventHandler<PermissionEvent> {
             LOGGER.atInfo()
                   .addArgument(request::permissionId)
                   .log("Fetching data for accepted permission request {}");
-            pollingService.pollTimeSeriesData((CommonPermissionRequest) request);
+            pollingService.pollTimeSeriesData(request);
         }
     }
 }

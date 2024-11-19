@@ -7,6 +7,8 @@ import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnector;
+import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnectorMetadata;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
@@ -16,7 +18,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.testcontainers.shaded.org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -34,14 +35,15 @@ class FutureDataServiceTest {
     private FiPermissionRequestRepository repository;
     @Mock
     private DataNeedsService dataNeedsService;
+    @Mock
+    FingridRegionConnectorMetadata metadata; // without this metadata, the region connector cannot be mocked correctly
     @InjectMocks
-    private CommonFutureDataService futureDataService;
+    FingridRegionConnector regionConnector;
+    private CommonFutureDataService<FingridPermissionRequest> futureDataService;
 
     @BeforeEach
-    public void setCronAndTimeZone() throws Exception {
-        String ZONE = "Europe/Oslo";
-        FieldUtils.writeField(futureDataService, "ZONE", ZONE, true);
-        futureDataService.setCronExpression("0 0 17 * * *");
+    public void setup() {
+        futureDataService = new CommonFutureDataService<>(pollingService, repository, dataNeedsService, null, "Europe/Oslo", "0 0 17 * * *", regionConnector);
     }
 
 

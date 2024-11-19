@@ -1,12 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis.api;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
+import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 
-public interface FrEnedisPermissionRequest extends CommonPermissionRequest {
-    @Override
+public interface FrEnedisPermissionRequest extends MeterReadingPermissionRequest {
     String usagePointId();
-    @Override
     Granularity granularity();
 
     UsagePointType usagePointType();

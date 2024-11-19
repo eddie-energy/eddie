@@ -1,11 +1,10 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.persistence;
 
-import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
-import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
+import energy.eddie.api.agnostic.process.model.persistence.FullPermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
-import energy.eddie.regionconnector.shared.services.CommonPermissionRequestRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,14 +12,12 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface NlPermissionRequestRepository extends
+public interface NlPermissionRequestRepository<T extends MeterReadingPermissionRequest> extends
         JpaRepository<MijnAansluitingPermissionRequest, String>,
-        PermissionRequestRepository<NlPermissionRequest>,
-        StalePermissionRequestRepository<MijnAansluitingPermissionRequest>,
-        CommonPermissionRequestRepository {
+        FullPermissionRequestRepository<T> {
     Optional<NlPermissionRequest> findByStateAndPermissionId(String state, String permissionId);
 
-    List<NlPermissionRequest> findByStatus(PermissionProcessStatus status);
+    List<T> findByStatus(PermissionProcessStatus status);
 
     boolean existsByPermissionIdAndStatus(String permissionId, PermissionProcessStatus status);
 
@@ -30,5 +27,5 @@ public interface NlPermissionRequestRepository extends
             nativeQuery = true
     )
     @Override
-    List<MijnAansluitingPermissionRequest> findStalePermissionRequests(@Param("hours") int timeoutDuration);
+    List<T> findStalePermissionRequests(@Param("hours") int timeoutDuration);
 }

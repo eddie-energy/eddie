@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.fi.fingrid.services;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.fi.fingrid.client.FingridApiClient;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
-import energy.eddie.regionconnector.shared.services.CommonPermissionRequest;
 import energy.eddie.regionconnector.shared.services.CommonPollingService;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import org.slf4j.Logger;
@@ -14,7 +13,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 
 @Service
-public class PollingService implements CommonPollingService {
+public class PollingService implements CommonPollingService<FingridPermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     private final EnergyDataService energyDataService;
     private final FingridApiClient api;
@@ -29,16 +28,11 @@ public class PollingService implements CommonPollingService {
         this.updateGranularityService = updateGranularityService;
     }
 
-    @Override
-    public void fetchMeterReadings(CommonPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
-
-    }
-
-    public void pollTimeSeriesData(CommonPermissionRequest permissionRequest) {
+    public void pollTimeSeriesData(FingridPermissionRequest permissionRequest) {
         pollTimeSeriesData(permissionRequest, permissionRequest.granularity());
     }
 
-    public void pollTimeSeriesData(CommonPermissionRequest permissionRequest, Granularity granularity) {
+    public void pollTimeSeriesData(FingridPermissionRequest permissionRequest, Granularity granularity) {
         var now = LocalDate.now(ZoneOffset.UTC);
         if (permissionRequest.start().isAfter(now) || permissionRequest.start().isEqual(now)) {
             return;
@@ -47,21 +41,21 @@ public class PollingService implements CommonPollingService {
         var yesterday = now.minusDays(1);
         var end = permissionRequest.end().isAfter(yesterday) ? yesterday : permissionRequest.end();
         api.getTimeSeriesData(
-                   permissionRequest.meteringPointEAN(),
-                   permissionRequest.customerIdentification(),
-                   permissionRequest.latestMeterReading().orElse(start),
-                   DateTimeUtils.endOfDay(end, ZoneOffset.UTC),
-                   granularity.name(),
-                   null
-           )
-           .flatMap(resp -> updateGranularityService.updateGranularity(resp, (FingridPermissionRequest) permissionRequest))
-           .subscribe(
-                   energyDataService.publish((FingridPermissionRequest) permissionRequest),
-                   error -> LOGGER
-                           .atInfo()
-                           .addArgument(permissionRequest::permissionId)
-                           .setCause(error)
-                           .log("Error while requesting data for permission request {}")
-           );
+                        permissionRequest.meteringPointEAN(),
+                        permissionRequest.customerIdentification(),
+                        permissionRequest.latestMeterReading().orElse(start),
+                        DateTimeUtils.endOfDay(end, ZoneOffset.UTC),
+                        granularity.name(),
+                        null
+                )
+                .flatMap(resp -> updateGranularityService.updateGranularity(resp, permissionRequest))
+                .subscribe(
+                        energyDataService.publish(permissionRequest),
+                        error -> LOGGER
+                                .atInfo()
+                                .addArgument(permissionRequest::permissionId)
+                                .setCause(error)
+                                .log("Error while requesting data for permission request {}")
+                );
     }
 }
