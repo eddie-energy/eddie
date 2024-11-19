@@ -2,6 +2,10 @@ package energy.eddie.aiida.models.record;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import energy.eddie.aiida.utils.InstantDeserializer;
+import energy.eddie.aiida.utils.InstantSerializer;
 import jakarta.persistence.*;
 
 import java.time.Instant;
@@ -17,6 +21,8 @@ public class AiidaRecord {
     @SuppressWarnings({"unused", "NullAway"})
     private Long id;
     @JsonProperty
+    @JsonDeserialize(using = InstantDeserializer.class)
+    @JsonSerialize(using = InstantSerializer.class)
     protected Instant timestamp;
     @JsonProperty
     protected String asset;
