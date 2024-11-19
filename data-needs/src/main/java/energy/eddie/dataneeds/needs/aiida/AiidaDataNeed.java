@@ -45,7 +45,7 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed {
 
     @Column(name = "asset", nullable = false)
     @JsonProperty(required = true)
-    @Schema(description = "The kind of asset the data is retrieved from ('Connection Agreement Point', 'Controllable Unit', 'Dedicated Measurement Device', 'Submeter')")
+    @Schema(description = "The kind of asset the data is retrieved from ('CONNECTION-AGREEMENT-POINT', 'CONTROLLABLE-UNIT', 'DEDICATED-MEASUREMENT-DEVICE', 'SUBMETER')")
     @Enumerated(EnumType.STRING)
     private AiidaAsset asset;
 

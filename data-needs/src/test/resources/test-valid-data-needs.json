@@ -47,7 +47,7 @@
     "schemas": [
       "SMART-METER-P1-RAW"
     ],
-    "asset": "Connection Agreement Point",
+    "asset": "CONNECTION-AGREEMENT-POINT",
     "dataTags": [
       "1-0:1.8.0",
       "1-0:1.7.0"

@@ -6,10 +6,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
 public enum AiidaAsset {
-    CONNECTION_AGREEMENT_POINT("Connection Agreement Point"),
-    CONTROLLABLE_UNIT("Controllable Unit"),
-    DEDICATED_MEASUREMENT_DEVICE("Dedicated Measurement Device"),
-    SUBMETER("Submeter");
+    CONNECTION_AGREEMENT_POINT("CONNECTION-AGREEMENT-POINT"),
+    CONTROLLABLE_UNIT("CONTROLLABLE-UNIT"),
+    DEDICATED_MEASUREMENT_DEVICE("DEDICATED-MEASUREMENT-DEVICE"),
+    SUBMETER("SUBMETER");
 
     private final String asset;
 
