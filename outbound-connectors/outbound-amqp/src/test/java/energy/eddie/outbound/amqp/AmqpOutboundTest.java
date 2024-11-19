@@ -1,0 +1,247 @@
+package energy.eddie.outbound.amqp;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.amqp.Connection;
+import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.RawDataMessage;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
+import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderComplexType;
+import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderMetaInformationComplexType;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.outbound.shared.Endpoints;
+import energy.eddie.outbound.shared.Headers;
+import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
+import org.junit.jupiter.api.*;
+import org.testcontainers.containers.RabbitMQContainer;
+import org.testcontainers.utility.DockerImageName;
+import reactor.test.publisher.TestPublisher;
+
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class AmqpOutboundTest {
+    private static final RabbitMQContainer rabbit = new RabbitMQContainer(DockerImageName.parse(
+            "rabbitmq:4-management-alpine"));
+    private final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
+    private final MockDataSourceInformation dataSourceInformation = new MockDataSourceInformation("AT",
+                                                                                                  "at-eda",
+                                                                                                  "paid",
+                                                                                                  "mdaid");
+    private Connection connection;
+    private AmqpOutbound amqpOutbound;
+
+    @BeforeAll
+    static void setUpAll() {
+        rabbit.start();
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+        rabbit.stop();
+    }
+
+    @BeforeEach
+    void setUp() {
+        var connector = new AmqpOutboundConnector();
+        connection = connector.connection(connector.amqpEnvironment(), rabbit.getAmqpUrl());
+        amqpOutbound = new AmqpOutbound(connection, objectMapper);
+    }
+
+    @AfterEach
+    void tearDown() {
+        amqpOutbound.close();
+        connection.close();
+    }
+
+    @Test
+    void testConnectionStatusMessages_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<ConnectionStatusMessage> csmPublisher = TestPublisher.create();
+        amqpOutbound.setConnectionStatusMessageStream(csmPublisher.flux());
+        var connectionStatusMessage = new ConnectionStatusMessage("cid",
+                                                                  "pid",
+                                                                  "dnid",
+                                                                  dataSourceInformation,
+                                                                  PermissionProcessStatus.ACCEPTED);
+        // When
+        csmPublisher.emit(connectionStatusMessage);
+
+        // Then
+        var consumer = connection.consumerBuilder()
+                                 .queue(Endpoints.Agnostic.CONNECTION_STATUS_MESSAGE)
+                                 .messageHandler((ctx, msg) -> {
+                                     assertAll(
+                                             () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
+                                             () -> assertEquals("cid", msg.property(Headers.CONNECTION_ID)),
+                                             () -> assertEquals("dnid", msg.property(Headers.DATA_NEED_ID))
+                                     );
+                                     latch.countDown();
+                                 })
+                                 .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        csmPublisher.complete();
+    }
+
+    @Test
+    void testRawDataMessages_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<RawDataMessage> publisher = TestPublisher.create();
+        amqpOutbound.setRawDataStream(publisher.flux());
+        var message = new RawDataMessage("pid",
+                                         "cid",
+                                         "dnid",
+                                         dataSourceInformation,
+                                         ZonedDateTime.now(ZoneOffset.UTC),
+                                         "");
+        // When
+        publisher.emit(message);
+
+        // Then
+        var consumer = connection.consumerBuilder()
+                                 .queue(Endpoints.Agnostic.RAW_DATA_IN_PROPRIETARY_FORMAT)
+                                 .messageHandler((ctx, msg) -> {
+                                     assertAll(
+                                             () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
+                                             () -> assertEquals("cid", msg.property(Headers.CONNECTION_ID)),
+                                             () -> assertEquals("dnid", msg.property(Headers.DATA_NEED_ID))
+                                     );
+                                     latch.countDown();
+                                 })
+                                 .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        publisher.complete();
+    }
+
+    @Test
+    void testPermissionMarketDocuments_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<PermissionEnvelope> publisher = TestPublisher.create();
+        amqpOutbound.setPermissionMarketDocumentStream(publisher.flux());
+        var message = new PermissionEnvelope()
+                .withMessageDocumentHeader(
+                        new MessageDocumentHeaderComplexType()
+                                .withMessageDocumentHeaderMetaInformation(
+                                        new MessageDocumentHeaderMetaInformationComplexType()
+                                                .withPermissionid("pid")
+                                                .withConnectionid("cid")
+                                                .withDataNeedid("dnid")
+                                )
+                );
+        // When
+        publisher.emit(message);
+
+        // Then
+        var consumer = connection.consumerBuilder()
+                                 .queue(Endpoints.V0_82.PERMISSION_MARKET_DOCUMENTS)
+                                 .messageHandler((ctx, msg) -> {
+                                     assertAll(
+                                             () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
+                                             () -> assertEquals("cid", msg.property(Headers.CONNECTION_ID)),
+                                             () -> assertEquals("dnid", msg.property(Headers.DATA_NEED_ID))
+                                     );
+                                     latch.countDown();
+                                 })
+                                 .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        publisher.complete();
+    }
+
+    @Test
+    void testAccountingPointMarketDocuments_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<AccountingPointEnvelope> publisher = TestPublisher.create();
+        amqpOutbound.setAccountingPointEnvelopeStream(publisher.flux());
+        var message = new AccountingPointEnvelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v0_82.ap.MessageDocumentHeaderComplexType()
+                                .withMessageDocumentHeaderMetaInformation(
+                                        new energy.eddie.cim.v0_82.ap.MessageDocumentHeaderMetaInformationComplexType()
+                                                .withPermissionid("pid")
+                                                .withConnectionid("cid")
+                                                .withDataNeedid("dnid")
+                                )
+                );
+        // When
+        publisher.emit(message);
+
+        // Then
+        var consumer = connection.consumerBuilder()
+                                 .queue(Endpoints.V0_82.ACCOUNTING_POINT_MARKET_DOCUMENTS)
+                                 .messageHandler((ctx, msg) -> {
+                                     assertAll(
+                                             () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
+                                             () -> assertEquals("cid", msg.property(Headers.CONNECTION_ID)),
+                                             () -> assertEquals("dnid", msg.property(Headers.DATA_NEED_ID))
+                                     );
+                                     latch.countDown();
+                                 })
+                                 .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        publisher.complete();
+    }
+
+    @Test
+    void testValidatedHistoricalData_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<ValidatedHistoricalDataEnvelope> publisher = TestPublisher.create();
+        amqpOutbound.setEddieValidatedHistoricalDataMarketDocumentStream(publisher.flux());
+        var message = new ValidatedHistoricalDataEnvelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderComplexType()
+                                .withMessageDocumentHeaderMetaInformation(
+                                        new energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderMetaInformationComplexType()
+                                                .withPermissionid("pid")
+                                                .withConnectionid("cid")
+                                                .withDataNeedid("dnid")
+                                )
+                );
+        // When
+        publisher.emit(message);
+
+        // Then
+        var consumer = connection.consumerBuilder()
+                                 .queue(Endpoints.V0_82.VALIDATED_HISTORICAL_DATA)
+                                 .messageHandler((ctx, msg) -> {
+                                     assertAll(
+                                             () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
+                                             () -> assertEquals("cid", msg.property(Headers.CONNECTION_ID)),
+                                             () -> assertEquals("dnid", msg.property(Headers.DATA_NEED_ID))
+                                     );
+                                     latch.countDown();
+                                 })
+                                 .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        publisher.complete();
+    }
+}

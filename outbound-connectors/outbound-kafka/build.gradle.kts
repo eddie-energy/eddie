@@ -51,7 +51,7 @@ tasks.getByName<Test>("test") {
 
 configureJavaCompileWithErrorProne("energy.eddie.outbound.kafka")
 
-// disable bootJar task as it needs a main class and region connectors do not have one
+// disable bootJar task as it needs a main class and outbound connectors do not have one
 tasks.getByName<BootJar>("bootJar") {
     enabled = false
 }

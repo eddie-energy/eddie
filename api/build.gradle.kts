@@ -20,7 +20,6 @@ repositories {
 val jaxb: Configuration by configurations.creating
 
 dependencies {
-    implementation(libs.microprofile.config)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.annotations)
     implementation(libs.jakarta.annotation.api)

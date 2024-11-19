@@ -1,4 +1,5 @@
 import energy.eddie.configureJavaCompileWithErrorProne
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("energy.eddie.java-conventions")
@@ -20,17 +21,24 @@ repositories {
     mavenCentral()
 }
 
+configurations.all {
+    exclude(group = "ch.qos.logback", module = "logback-classic")
+    exclude(group = "ch.qos.logback", module = "logback-core")
+}
+
 dependencies {
     implementation(project(":api"))
+    implementation(project(":outbound-connectors:outbound-shared"))
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.jakarta.annotation.api)
-
+    implementation(libs.rabbitmq.amqp.client)
     implementation(libs.reactor.core)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.datatype.jdk8)
     implementation(libs.jackson.dataformat.xml)
+    implementation(libs.jackson.jakarta.xmlbind.annotations)
     implementation(libs.jackson.core)
     implementation(libs.slf4j.simple)
 
@@ -39,6 +47,7 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.reactor.test)
     testImplementation(libs.junit.mockito)
+    testImplementation(libs.testcontainers.rabbitmq)
 }
 
 tasks.withType<Test> {
@@ -46,3 +55,11 @@ tasks.withType<Test> {
 }
 configureJavaCompileWithErrorProne("energy.eddie.outbound.amqp")
 
+// disable bootJar task as it needs a main class and outbound connectors do not have one
+tasks.getByName<BootJar>("bootJar") {
+    enabled = false
+}
+
+tasks.getByName<Jar>("jar") {
+    enabled = true
+}
