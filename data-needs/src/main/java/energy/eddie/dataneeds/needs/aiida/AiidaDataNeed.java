@@ -4,20 +4,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
-import energy.eddie.dataneeds.validation.schema.IsValidSchema;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
 import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
+import energy.eddie.dataneeds.validation.asset.AiidaAsset;
+import energy.eddie.dataneeds.validation.asset.IsValidAiidaAsset;
+import energy.eddie.dataneeds.validation.schema.AiidaSchema;
+import energy.eddie.dataneeds.validation.schema.IsValidAiidaSchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import org.springframework.scheduling.support.CronExpression;
 import jakarta.validation.constraints.NotEmpty;
+import org.springframework.scheduling.support.CronExpression;
+
 import java.util.Set;
 
 @Entity
 @Table(schema = "data_needs")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@IsValidSchema
+@IsValidAiidaAsset
+@IsValidAiidaSchema
 public abstract class AiidaDataNeed extends TimeframedDataNeed {
     @Column(name = "transmission_schedule", nullable = false)
     @Convert(converter = CronExpressionConverter.class)
@@ -34,8 +39,15 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed {
             schema = "data_needs")
     @Column(name = "schemas")
     @JsonProperty(required = true)
+    @Enumerated(EnumType.STRING)
     @NotEmpty(message = "must contain at least one schema")
-    private Set<String> schemas;
+    private Set<AiidaSchema> schemas;
+
+    @Column(name = "asset", nullable = false)
+    @JsonProperty(required = true)
+    @Schema(description = "The kind of asset the data is retrieved from ('Connection Agreement Point', 'Controllable Unit', 'Dedicated Measurement Device', 'Submeter')")
+    @Enumerated(EnumType.STRING)
+    private AiidaAsset asset;
 
     @SuppressWarnings("NullAway.Init")
     protected AiidaDataNeed() {
@@ -49,9 +61,20 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed {
     }
 
     /**
-     * Returns the schema for the outgoing data (Raw, CIM, Saref)
+     * Returns the schema for the outgoing data
+     *
+     * @see AiidaSchema
      */
-    public Set<String> schemas() {
+    public Set<AiidaSchema> schemas() {
         return schemas;
+    }
+
+    /**
+     * Returns the kind of asset the data is retrieved from
+     *
+     * @see AiidaAsset
+     */
+    public AiidaAsset asset() {
+        return asset;
     }
 }

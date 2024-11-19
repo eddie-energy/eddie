@@ -6,7 +6,7 @@ import energy.eddie.aiida.datasources.MqttDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.MqttConfig;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.dataneeds.validation.asset.AiidaAsset;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
@@ -51,15 +51,6 @@ public class MicroTeleinfoV3 extends MqttDataSource {
     }
 
     /**
-     * Sets the health state to either up or down depending on the status sent by the mqtt broker
-     *
-     * @param healthState UP or DOWN
-     */
-    private void setHealthState(Health healthState) {
-        this.healthState = healthState;
-    }
-
-    /**
      * MQTT callback function that is called when a new message from the broker is received. Will convert the message to
      * {@link AiidaRecord}s and publish them on the Flux returned by {@link #start()}.
      *
@@ -97,21 +88,11 @@ public class MicroTeleinfoV3 extends MqttDataSource {
                                              baseValue, base.unitOfMeasurement().unit(),
                                              pappValue, base.unitOfMeasurement().unit()));
 
-                emitAiidaRecord("FR", aiidaRecordValues);
+                emitAiidaRecord(AiidaAsset.CONNECTION_AGREEMENT_POINT.toString(), aiidaRecordValues);
             } catch (IOException e) {
                 LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
                              new String(message.getPayload(), StandardCharsets.UTF_8), e);
             }
-        }
-    }
-
-    private void emitNextHealthCheck(Status status) {
-        if (status.equals(Status.UP) && !healthState.getStatus().equals(Status.UP)) {
-            healthSink.tryEmitNext(Health.up().build());
-        } else if (status.equals(Status.DOWN) && !healthState.getStatus().equals(Status.DOWN)) {
-            healthSink.tryEmitNext(Health.down()
-                                         .withDetail(DATASOURCE_NAME, "The datasource is not working properly.")
-                                         .build());
         }
     }
 
@@ -151,5 +132,24 @@ public class MicroTeleinfoV3 extends MqttDataSource {
         }
 
         return healthState;
+    }
+
+    /**
+     * Sets the health state to either up or down depending on the status sent by the mqtt broker
+     *
+     * @param healthState UP or DOWN
+     */
+    private void setHealthState(Health healthState) {
+        this.healthState = healthState;
+    }
+
+    private void emitNextHealthCheck(Status status) {
+        if (status.equals(Status.UP) && !healthState.getStatus().equals(Status.UP)) {
+            healthSink.tryEmitNext(Health.up().build());
+        } else if (status.equals(Status.DOWN) && !healthState.getStatus().equals(Status.DOWN)) {
+            healthSink.tryEmitNext(Health.down()
+                                         .withDetail(DATASOURCE_NAME, "The datasource is not working properly.")
+                                         .build());
+        }
     }
 }

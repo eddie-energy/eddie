@@ -2,11 +2,12 @@ package energy.eddie.aiida.datasources.at;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.datasources.AiidaDataSource;
-import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.datasources.AiidaDataSource;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.aiida.utils.MqttFactory;
+import energy.eddie.aiida.utils.TestUtils;
+import energy.eddie.dataneeds.validation.asset.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
@@ -21,7 +22,6 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.Instant;
 
 import static energy.eddie.aiida.utils.MqttConfig.MqttConfigBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -297,7 +297,7 @@ class OesterreichsEnergieAdapterTest {
                     .verify();
 
         assertThat(logCaptorAiidaDataSource.getWarnLogs()).contains(
-                "Found unknown OBIS-CODES from AT: [UNKNOWN-OBIS-CODE]");
+                "Found unknown OBIS-CODES from " + AiidaAsset.CONNECTION_AGREEMENT_POINT + ": [UNKNOWN-OBIS-CODE]");
     }
 
     @Test

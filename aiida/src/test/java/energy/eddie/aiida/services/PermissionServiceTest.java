@@ -11,6 +11,7 @@ import energy.eddie.api.agnostic.aiida.MqttDto;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.validation.schema.AiidaSchema;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -48,6 +49,18 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionServiceTest {
+    private final String permissionId = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
+    private final String handshakeUrl = "https://example.org";
+    private final String accessToken = "fooBar";
+    private final String serviceName = "Hello Service";
+    private final String connectionId = "NewAiidaRandomConnectionId";
+    private final LocalDate start = LocalDate.of(2020, 1, 1);
+    private final LocalDate end = LocalDate.of(2020, 5, 31);
+    private final TestPublisher<String> testPublisher = TestPublisher.create();
+    private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
+    private final Clock clock = Clock.fixed(fixedInstant, AIIDA_ZONE_ID);
+    private final UUID userId = UUID.randomUUID();
+    private final QrCodeDto qrCodeDto = new QrCodeDto(permissionId, serviceName, handshakeUrl, accessToken);
     @Mock
     private PermissionRepository mockRepository;
     @Mock
@@ -69,30 +82,17 @@ class PermissionServiceTest {
     @Captor
     private ArgumentCaptor<Permission> permissionCaptor;
     private PermissionService service;
-    private final String permissionId = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
-    private final String handshakeUrl = "https://example.org";
-    private final String accessToken = "fooBar";
-    private final String serviceName = "Hello Service";
-    private final String connectionId = "NewAiidaRandomConnectionId";
-    private final LocalDate start = LocalDate.of(2020, 1, 1);
-    private final LocalDate end = LocalDate.of(2020, 5, 31);
-    private final TestPublisher<String> testPublisher = TestPublisher.create();
-    private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
-    private final Clock clock = Clock.fixed(fixedInstant, AIIDA_ZONE_ID);
-    private final UUID userId = UUID.randomUUID();
-
-    private final QrCodeDto qrCodeDto = new QrCodeDto(permissionId, serviceName, handshakeUrl, accessToken);
 
     @BeforeEach
     void setUp() {
         doReturn(testPublisher.flux()).when(streamerManager).terminationRequestsFlux();
 
         service = new PermissionService(mockRepository,
-                clock,
-                streamerManager,
-                mockHandshakeService,
-                mockPermissionScheduler,
-                mockAuthService);
+                                        clock,
+                                        streamerManager,
+                                        mockHandshakeService,
+                                        mockPermissionScheduler,
+                                        mockAuthService);
     }
 
     @Test
@@ -140,10 +140,10 @@ class PermissionServiceTest {
     void givenExceptionFromHandshakeService_setupNewPermission_throws() throws InvalidUserException {
         // Given
         var exception = HttpClientErrorException.create(HttpStatus.GONE,
-                "Gone",
-                HttpHeaders.EMPTY,
-                "".getBytes(StandardCharsets.UTF_8),
-                StandardCharsets.UTF_8);
+                                                        "Gone",
+                                                        HttpHeaders.EMPTY,
+                                                        "".getBytes(StandardCharsets.UTF_8),
+                                                        StandardCharsets.UTF_8);
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.error(exception));
         when(mockRepository.save(any())).thenReturn(mockPermission);
         when(mockPermission.permissionId()).thenReturn(permissionId);
@@ -170,7 +170,7 @@ class PermissionServiceTest {
         when(mockDataNeed.policyLink()).thenReturn("https://example.org");
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0", "2.7.0"));
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
-        when(mockDataNeed.schemas()).thenReturn(Set.of("SMART-METER-P1-RAW"));
+        when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
         // When
         service.setupNewPermission(qrCodeDto);
@@ -199,7 +199,7 @@ class PermissionServiceTest {
         assertEquals("Some purpose", dataNeed.purpose());
         assertEquals("https://example.org", dataNeed.policyLink());
         assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of("1.8.0", "2.7.0"));
-        assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of("SMART-METER-P1-RAW"));
+        assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of(AiidaSchema.SMART_METER_P1_RAW));
     }
 
     @Disabled("// TODO GH-1040")  // TODO GH-1040
@@ -259,10 +259,10 @@ class PermissionServiceTest {
     void givenExceptionFromHandshakeService_acceptPermission_throws() {
         // Given
         var exception = HttpClientErrorException.create(HttpStatus.GONE,
-                "Gone",
-                HttpHeaders.EMPTY,
-                "".getBytes(StandardCharsets.UTF_8),
-                StandardCharsets.UTF_8);
+                                                        "Gone",
+                                                        HttpHeaders.EMPTY,
+                                                        "".getBytes(StandardCharsets.UTF_8),
+                                                        StandardCharsets.UTF_8);
         when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.error(exception));
         when(mockRepository.findById(any())).thenReturn(Optional.of(mockPermission));
         when(mockPermission.status()).thenReturn(FETCHED_DETAILS);
@@ -363,9 +363,9 @@ class PermissionServiceTest {
 
         public static Stream<Arguments> onStartupVariousPermissions() {
             var per = new Permission(new QrCodeDto("25ee5365-5d71-4b01-b21f-9c61f76a5cc9",
-                    "Test Service Name",
-                    "https://example.org",
-                    "fooBarToken"), UUID.randomUUID());
+                                                   "Test Service Name",
+                                                   "https://example.org",
+                                                   "fooBarToken"), UUID.randomUUID());
             return Stream.of(
                     Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-12-24T00:00:00.000Z", STREAMING_DATA),
                     Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-09-19T00:00:00.000Z", FULFILLED),
@@ -378,16 +378,16 @@ class PermissionServiceTest {
         @BeforeEach
         void setUp() {
             var permissionScheduler = new PermissionScheduler(mockClock,
-                    mockScheduler,
-                    mockRepository,
-                    new ConcurrentHashMap<>(),
-                    streamerManager);
+                                                              mockScheduler,
+                                                              mockRepository,
+                                                              new ConcurrentHashMap<>(),
+                                                              streamerManager);
             service = new PermissionService(mockRepository,
-                    mockClock,
-                    streamerManager,
-                    mockHandshakeService,
-                    permissionScheduler,
-                    mockAuthService);
+                                            mockClock,
+                                            streamerManager,
+                                            mockHandshakeService,
+                                            permissionScheduler,
+                                            mockAuthService);
         }
 
         /**

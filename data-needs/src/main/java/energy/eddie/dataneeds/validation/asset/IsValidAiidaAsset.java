@@ -1,4 +1,4 @@
-package energy.eddie.dataneeds.validation.schema;
+package energy.eddie.dataneeds.validation.asset;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = IsValidSchemaValidator.class)
-public @interface IsValidSchema {
+@Constraint(validatedBy = IsValidAiidaAssetValidator.class)
+public @interface IsValidAiidaAsset {
     String message() default "Validation for schema failed.";
 
     Class<?>[] groups() default {};

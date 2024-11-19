@@ -5,7 +5,7 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.schemas.SchemaFormatter;
-import energy.eddie.aiida.schemas.Schemas;
+import energy.eddie.dataneeds.validation.schema.AiidaSchema;
 import org.apache.commons.lang3.NotImplementedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,11 +45,11 @@ class SchemaTest {
     }
 
     @Test
-    public void schemaRaw() {
+    void schemaRaw() {
         var rawAiidaRecordAT = "{\"timestamp\":1729334.059000000,\"asset\":\"AT\",\"values\":[{\"rawTag\":\"1-0:1.7.0\",\"dataTag\":\"1-0:1.7.0\",\"rawValue\":\"10\",\"rawUnitOfMeasurement\":\"kW\",\"value\":\"10\",\"unitOfMeasurement\":\"kW\"},{\"rawTag\":\"1-0:1.8.0\",\"dataTag\":\"1-0:1.8.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"kWh\",\"value\":\"50\",\"unitOfMeasurement\":\"kWh\"}]}";
         var rawAiidaRecordFR = "{\"timestamp\":1729334.059000000,\"asset\":\"FR\",\"values\":[{\"rawTag\":\"PAPP\",\"dataTag\":\"1-0:1.7.0\",\"rawValue\":\"10\",\"rawUnitOfMeasurement\":\"VA\",\"value\":\"10\",\"unitOfMeasurement\":\"VA\"},{\"rawTag\":\"BASE\",\"dataTag\":\"1-0:1.8.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"Wh\",\"value\":\"50\",\"unitOfMeasurement\":\"Wh\"}]}";
 
-        var rawFormatter = SchemaFormatter.getFormatter(Schemas.SMART_METER_P1_RAW);
+        var rawFormatter = SchemaFormatter.getFormatter(AiidaSchema.SMART_METER_P1_RAW);
         var resultAT = rawFormatter.toSchema(aiidaRecordAT, objectMapper);
         var resultFR = rawFormatter.toSchema(aiidaRecordFR, objectMapper);
 
@@ -58,8 +58,8 @@ class SchemaTest {
     }
 
     @Test
-    public void schemaCim() {
-        var cimFormatter = SchemaFormatter.getFormatter(Schemas.SMART_METER_P1_CIM);
+    void schemaCim() {
+        var cimFormatter = SchemaFormatter.getFormatter(AiidaSchema.SMART_METER_P1_CIM);
         assertThrows(NotImplementedException.class, () -> cimFormatter.toSchema(aiidaRecordAT, objectMapper));
     }
 }

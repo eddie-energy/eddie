@@ -46,6 +46,7 @@ class DataNeedSummary extends HTMLElement {
       energyType,
       transmissionSchedule,
       schemas,
+      asset,
       dataTags,
     } = dataNeed;
 
@@ -102,11 +103,12 @@ class DataNeedSummary extends HTMLElement {
             ? `<dt>Transmission Schedule</dt><dd>${cronstrue.toString(transmissionSchedule)}</dd>`
             : ""}
 
-          <!-- For AIIDA schemas -->
-          ${schemas
-            ? `<dt>Schemas:</dt><dd>${schemas.join(", ")}</dd>`
-            : ""}
-          
+          <!-- For AIIDA data needs -->
+          ${schemas ? `<dt>Schemas:</dt><dd>${schemas.join(", ")}</dd>` : ""}
+
+          <!-- For AIIDA data needs -->
+          ${transmissionSchedule ? `<dt>Asset</dt><dd>${asset}</dd>` : ""}
+
           <!-- For AIIDA smart meter data needs -->
           ${dataTags
             ? `<dt>OBIS Points</dt><dd>${dataTags.join(", ")}</dd>`
