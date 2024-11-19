@@ -1,10 +1,9 @@
-package energy.eddie.aiida.schema;
+package energy.eddie.aiida.schemas;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.schemas.SchemaFormatter;
 import energy.eddie.dataneeds.validation.schema.AiidaSchema;
 import org.apache.commons.lang3.NotImplementedException;
 import org.junit.jupiter.api.BeforeEach;

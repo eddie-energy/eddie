@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public enum AiidaSchema {
     SMART_METER_P1_RAW("SMART-METER-P1-RAW"),
-    SMART_METER_P1_CIM("SMART-METER-P1-RAW");
+    SMART_METER_P1_CIM("SMART-METER-P1-CIM");
 
     private final String schema;
 
