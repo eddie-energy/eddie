@@ -26,6 +26,7 @@ import {
   getRegionConnectorMetadata,
   getSupportedRegionConnectors,
 } from "./api.js";
+import { flagStyles, hasFlag } from "./styles/flags.js";
 
 setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn");
 
@@ -36,14 +37,6 @@ setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn");
 const COUNTRIES = new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country));
 
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
-
-/**
- * Maps country codes to their respective flag emojis.
- * @type {Map<string, string>}
- */
-const COUNTRY_FLAGS = new Map(
-  [...COUNTRIES].map((country) => [country, countryFlag(country)])
-);
 
 const CORE_URL =
   import.meta.env.VITE_CORE_URL ??
@@ -81,17 +74,6 @@ const dialogCloseEvent = new Event("eddie-dialog-close", {
   bubbles: true,
   composed: true,
 });
-
-/**
- * Returns the flag emoji for a given country code.
- * @param countryCode {string} - The ISO 3166-1 alpha-2 country code.
- * @returns {string} The flag emoji.
- */
-function countryFlag(countryCode) {
-  return [...countryCode.toUpperCase()]
-    .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
-    .reduce((a, b) => `${a}${b}`);
-}
 
 /**
  * Filters the given region connectors to only include those that support the given data need.
@@ -133,48 +115,51 @@ class EddieConnectButton extends LitElement {
     _activeView: { type: String },
   };
 
-  static styles = css`
-    :host {
-      color: black;
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        ‘Segoe UI’,
-        Roboto,
-        Helvetica,
-        Arial,
-        sans-serif,
-        ‘Apple Color Emoji’,
-        ‘Segoe UI Emoji’,
-        ‘Segoe UI Symbol’;
-      font-size: 16px;
-      font-weight: normal;
-    }
+  static styles = [
+    flagStyles,
+    css`
+      :host {
+        color: black;
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          ‘Segoe UI’,
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif,
+          ‘Apple Color Emoji’,
+          ‘Segoe UI Emoji’,
+          ‘Segoe UI Symbol’;
+        font-size: 16px;
+        font-weight: normal;
+      }
 
-    .eddie-connect-button {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      background: white;
-      border: 2px solid #017aa0;
-      color: #017aa0;
-      border-radius: 9999px;
-      padding: 0.5rem 1.25rem 0.5rem 1rem;
-      font-weight: bold;
-      cursor: pointer;
-    }
+      .eddie-connect-button {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: white;
+        border: 2px solid #017aa0;
+        color: #017aa0;
+        border-radius: 9999px;
+        padding: 0.5rem 1.25rem 0.5rem 1rem;
+        font-weight: bold;
+        cursor: pointer;
+      }
 
-    .eddie-connect-button:disabled {
-      cursor: default;
-      filter: grayscale(100%);
-    }
+      .eddie-connect-button:disabled {
+        cursor: default;
+        filter: grayscale(100%);
+      }
 
-    .version-indicator {
-      font-size: var(--sl-font-size-x-small);
-      color: var(--sl-color-neutral-500);
-      padding: var(--sl-spacing-2x-small);
-    }
-  `;
+      .version-indicator {
+        font-size: var(--sl-font-size-x-small);
+        color: var(--sl-color-neutral-500);
+        padding: var(--sl-spacing-2x-small);
+      }
+    `,
+  ];
 
   dialogRef = createRef();
   stepIndicatorRef = createRef();
@@ -326,7 +311,10 @@ class EddieConnectButton extends LitElement {
 
     return html`
       <h3>
-        Follow the instructions for ${name} ${COUNTRY_FLAGS.get(country) ?? ""}
+        Follow the instructions for ${name}
+        ${hasFlag(country)
+          ? html`<span class="flag flag-${country}"></span>`
+          : ""}
       </h3>
 
       <eddie-notification-handler>
@@ -616,6 +604,7 @@ class EddieConnectButton extends LitElement {
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/themes/light.css"
       />
+
       <button class="eddie-connect-button" @click="${this.openDialog}">
         ${unsafeSVG(buttonIcon)}
         <span>Connect with EDDIE</span>
@@ -668,10 +657,11 @@ class EddieConnectButton extends LitElement {
                   ? "Some countries do not support the given data requirements."
                   : ""}"
               >
-                ${COUNTRY_FLAGS.has(this._selectedCountry)
-                  ? html`<span slot="prefix">
-                      ${COUNTRY_FLAGS.get(this._selectedCountry)}
-                    </span>`
+                ${hasFlag(this._selectedCountry)
+                  ? html`<span
+                      slot="prefix"
+                      class="flag flag-${this._selectedCountry}"
+                    ></span>`
                   : ""}
                 ${this._enabledCountries.map(
                   (country) => html`
@@ -679,10 +669,11 @@ class EddieConnectButton extends LitElement {
                       value="${country}"
                       ?disabled="${!this._supportedCountries.has(country)}"
                     >
-                      ${COUNTRY_FLAGS.has(country)
-                        ? html`<span slot="prefix">
-                            ${COUNTRY_FLAGS.get(country)}
-                          </span>`
+                      ${hasFlag(country)
+                        ? html`<span
+                            slot="prefix"
+                            class="flag flag-${country}"
+                          ></span>`
                         : ""}
                       ${COUNTRY_NAMES.of(country.toUpperCase())}
                     </sl-option>
