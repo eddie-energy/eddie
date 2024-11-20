@@ -51,10 +51,12 @@
     </form>
 
     <script type="module">
+      const coreUrl = import.meta.env.VITE_CORE_URL ?? "http://localhost:8080";
+
       // Fetch data needs from the API
-      const dataNeeds = await fetch(
-        "http://localhost:8080/data-needs/api"
-      ).then((response) => response.json());
+      const dataNeeds = await fetch(`${coreUrl}/data-needs/api`).then(
+        (response) => response.json()
+      );
 
       // Populate the select element with data needs
       const select = document.querySelector("select[name='data-need-id']");
