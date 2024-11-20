@@ -86,3 +86,29 @@
 /**
  * @typedef {ValidatedHistoricalDataDataNeed | SmartMeterAiidaDataNeed | GenericAiidaDataNeed | AccountingPointDataNeed} DataNeedAttributes
  */
+
+/**
+ * @typedef {Object} RegionConnectorMetadata
+ * @property {string} id - The unique identifier of the region connector.
+ * @property {string} timeZone - Time zone of the region covered by the region connector.
+ * @property {string[]} countryCodes - Country codes of the regions covered by the region connector in uppercase.
+ * @property {number} coveredMeteringPoints - Number of metering points that are accessible through the region connector.
+ * @property {string} earliestStart - The earliest possible start for permissions as a string such as P6Y3M1D.
+ * @property {string} latestEnd - The latest possible end for permissions as a string such as P6Y3M1D.
+ * @property {string[]} supportedGranularities - List of supported granularities.
+ */
+
+/**
+ * @typedef {Object} DataNeedCalculation
+ * @property {boolean} supportsDataNeed - Indicates if the data need is supported.
+ * @property {string} [unsupportedDataNeedMessage] - Message explaining why the data need is not supported.
+ * @property {string[]} [granularities] - List of granularities supported by the data need.
+ * @property {DataNeedCalculationTimeframe} [permissionTimeframe] - The timeframe for which permission is granted.
+ * @property {DataNeedCalculationTimeframe} [energyDataTimeframe] - The timeframe for which energy data is available.
+ */
+
+/**
+ * @typedef {Object} DataNeedCalculationTimeframe
+ * @property {string} start - The start of the timeframe.
+ * @property {string} end - The end of the timeframe.
+ */
