@@ -49,7 +49,7 @@ public class E2eTestSetup {
         }
 
         // Wait for RC element to load
-        page.getByText("Follow the instructions for your region")
+        page.getByText("Follow the instructions for")
             .waitFor(new Locator.WaitForOptions().setTimeout(5000)); // 5 sec
     }
 
