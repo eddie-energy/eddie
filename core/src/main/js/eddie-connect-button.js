@@ -266,18 +266,19 @@ class EddieConnectButton extends LitElement {
   }
 
   async getRegionConnectorElement() {
-    const regionConnectorId =
-      this._selectedPermissionAdministrator.regionConnector;
-    console.debug(`Loading region connector for ${regionConnectorId}`);
+    const { country, name, companyId, regionConnector, jumpOffUrl } =
+      this._selectedPermissionAdministrator;
 
-    const customElementName = regionConnectorId + "-pa-ce";
+    console.debug(`Loading region connector element for ${regionConnector}`);
+
+    const customElementName = regionConnector + "-pa-ce";
 
     if (!customElements.get(customElementName)) {
       // loaded module needs to have the custom element class as its default export
       try {
         const module = await import(
           /* @vite-ignore */
-          `${CORE_URL}/region-connectors/${regionConnectorId}/ce.js`
+          `${CORE_URL}/region-connectors/${regionConnector}/ce.js`
         );
         customElements.define(customElementName, module.default);
       } catch (error) {
@@ -295,25 +296,17 @@ class EddieConnectButton extends LitElement {
     const element = document.createElement(customElementName);
     element.setAttribute("connection-id", this.connectionId);
     element.setAttribute("data-need-id", this.dataNeedId);
-    element.setAttribute(
-      "country-code",
-      this._selectedPermissionAdministrator.country
-    );
-    element.setAttribute(
-      "jump-off-url",
-      this._selectedPermissionAdministrator.jumpOffUrl
-    );
-    element.setAttribute(
-      "company-id",
-      this._selectedPermissionAdministrator.companyId
-    );
+    element.setAttribute("country-code", country);
+    element.setAttribute("jump-off-url", jumpOffUrl);
+    element.setAttribute("company-id", companyId);
+    element.setAttribute("company-name", name);
 
     if (this.accountingPointId) {
       element.setAttribute("accounting-point-id", this.accountingPointId);
     }
 
     return html`
-      <h3>Follow the instructions for your region</h3>
+      <h3>Follow the instructions for ${name}</h3>
 
       <eddie-notification-handler>
         <eddie-request-status-handler>
@@ -488,6 +481,7 @@ class EddieConnectButton extends LitElement {
       }
 
       this._presetPermissionAdministrator = {
+        name: "AIIDA",
         company: "AIIDA",
         regionConnector: "aiida",
       };
