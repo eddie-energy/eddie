@@ -743,100 +743,145 @@ class EddieConnectButton extends LitElement {
             "unable-to-send",
             () => html`
               <h3>Unable to send permission request</h3>
-              <p>
-                We were unable to send the permission request to your permission
-                administrator. Please contact the customer support of the
-                service provider.
-              </p>
 
-              <sl-button @click="${this.closeDialog}">Close</sl-button>
+              <sl-alert variant="danger" open>
+                <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+
+                <p>
+                  We were unable to send the permission request to your
+                  permission administrator. Please contact the customer support
+                  of the service provider.
+                </p>
+              </sl-alert>
+
+              <br />
+              <sl-button variant="danger" @click="${this.closeDialog}">
+                Close
+              </sl-button>
             `,
           ],
           [
             "accepted",
             () => html`
               <h3>Permission granted</h3>
-              <p>
-                You successfully granted permission for the service provider to
-                access to your data. The permission can be terminated by either
-                party at any time.
-              </p>
 
-              <p>
-                You may now close this dialog and continue on the website of the
-                service provider.
-              </p>
+              <sl-alert variant="success" open>
+                <sl-icon slot="icon" name="check-circle"></sl-icon>
 
-              <sl-button @click="${this.closeDialog}">Close</sl-button>
+                <p>
+                  You successfully granted permission for the service provider
+                  to access to your data. The permission can be terminated by
+                  either party at any time.
+                </p>
+
+                <p>
+                  You may now close this dialog and continue on the website of
+                  the service provider.
+                </p>
+              </sl-alert>
+
+              <br />
+              <sl-button variant="success" @click="${this.closeDialog}">
+                Close
+              </sl-button>
             `,
           ],
           [
             "rejected",
             () => html`
               <h3>Permission request rejected</h3>
-              <p>
-                You rejected the permission request for the service provider to
-                access to your data. No data will be processed.
-              </p>
 
-              <p>
-                You may now close this dialog. Please start again if the request
-                was rejected unintentionally.
-              </p>
+              <sl-alert variant="primary" open>
+                <sl-icon slot="icon" name="info-circle"></sl-icon>
+                
+                <p>
+                  You rejected the permission request for the service provider
+                  to access to your data. No data will be processed.
+                </p>
 
-              <sl-button @click="${this.closeDialog}">Close</sl-button>
+                <p>
+                  You may now close this dialog. Please start again if the
+                  request was rejected unintentionally.
+                </p>
+              </sl-alert>
+
+              <br />
+              <sl-button variant="primary" @click="${this.closeDialog}">
+                Close
+              </sl-button>
             `,
           ],
           [
             "timed-out",
             () => html`
               <h3>Permission request timed out</h3>
-              <p>
-                The permission request was not accepted in the expected
-                timeframe. No data will be processed.
-              </p>
+              
+              <sl-alert variant="danger" open>
+                <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+                <p>
+                  The permission request was not accepted in the expected
+                  timeframe. No data will be processed.
+                </p>
 
-              <p>
-                You may close this dialog and start again. Please contact the
-                service provider if the permission request does not show up in
-                the portal of your permission administrator.
-              </p>
+                <p>
+                  You may close this dialog and start again. Please contact the
+                  service provider if the permission request does not show up in
+                  the portal of your permission administrator.
+                </p>
+              </sl-alert>
 
-              <sl-button @click="${this.closeDialog}">Close</sl-button>
+              <br />
+              <sl-button variant="danger" @click="${this.closeDialog}">
+                Close
+              </sl-button>
             `,
           ],
           [
             "invalid",
             () => html`
               <h3>Request was declined as invalid</h3>
-              <p>
-                Your permission administrator declined our permission request as
-                invalid.
-              </p>
 
-              <p>
-                You may close this dialog and start again. Please contact the
-                service provider if the issue persists.
-              </p>
+              <sl-alert variant="danger" open>
+                <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+                <p>
+                  Your permission administrator declined our permission request
+                  as invalid.
+                </p>
 
-              <sl-button @click="${this.closeDialog}">Close</sl-button>
+                <p>
+                  You may close this dialog and start again. Please contact the
+                  service provider if the issue persists.
+                </p>
+              </sl-alert>
+
+              <br />
+              <sl-button variant="danger" @click="${this.closeDialog}">
+                Close
+              </sl-button>
             `,
           ],
           [
             "unfulfillable",
             () => html`
               <h3>Unable to fulfill the request</h3>
-              <p>
-                Your energy data provider is unable to provide the requested
-                data. No data will be processed.
-              </p>
 
-              <p>
-                You may now close this dialog and continue on the website of the
-                service provider.
-              </p>
+              <sl-alert variant="danger" open>
+                <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+                <p>
+                  Your energy data provider is unable to provide the requested
+                  data. No data will be processed.
+                </p>
 
-              <sl-button @click="${this.closeDialog}">Close</sl-button>
+                <p>
+                  You may now close this dialog and continue on the website of
+                  the service provider.
+                </p>
+              </sl-alert>
+
+              <br />
+              <sl-button variant="danger" @click="${this.closeDialog}">
+                Close
+              </sl-button>
             `,
           ],
         ])}
