@@ -30,7 +30,7 @@ public record ConnectionStatusMessage(
         PermissionProcessStatus status,
         String message,
         @Nullable JsonNode additionalInformation
-) {
+) implements MessageWithHeaders {
     public ConnectionStatusMessage(PermissionRequest pr) {
         this(
                 pr.connectionId(),

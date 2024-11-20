@@ -22,7 +22,7 @@ public record RawDataMessage(
         DataSourceInformation dataSourceInformation,
         ZonedDateTime timestamp,
         String rawPayload
-) {
+) implements MessageWithHeaders {
     /**
      * Utility constructor to create a RawDataMessage from a permission request and payload. Will always use the current
      * ZonedDateTime for {@code timestamp}.

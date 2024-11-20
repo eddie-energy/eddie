@@ -9,7 +9,13 @@ plugins {
 }
 
 group = "energy.eddie"
-version = "0.0.0"
+version = "0.0.1-SNAPSHOT"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 repositories {
     mavenCentral()
@@ -19,37 +25,35 @@ configurations.all {
     exclude(group = "ch.qos.logback", module = "logback-classic")
     exclude(group = "ch.qos.logback", module = "logback-core")
 }
+
 dependencies {
     implementation(project(":api"))
-    implementation(project((":outbound-connectors:outbound-shared")))
+    implementation(project(":outbound-connectors:outbound-shared"))
 
     implementation(libs.spring.boot.starter.web)
-    implementation(libs.spring.kafka)
-
     implementation(libs.jakarta.annotation.api)
-
+    implementation(libs.rabbitmq.amqp.client)
     implementation(libs.reactor.core)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.datatype.jdk8)
     implementation(libs.jackson.dataformat.xml)
+    implementation(libs.jackson.jakarta.xmlbind.annotations)
     implementation(libs.jackson.core)
     implementation(libs.slf4j.simple)
 
 
     testImplementation(libs.spring.boot.starter.test)
-    testImplementation(libs.spring.kafka.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.reactor.test)
-    testImplementation(libs.testcontainers.kafka)
     testImplementation(libs.junit.mockito)
+    testImplementation(libs.testcontainers.rabbitmq)
 }
 
-tasks.getByName<Test>("test") {
+tasks.withType<Test> {
     useJUnitPlatform()
 }
-
-configureJavaCompileWithErrorProne("energy.eddie.outbound.kafka")
+configureJavaCompileWithErrorProne("energy.eddie.outbound.amqp")
 
 // disable bootJar task as it needs a main class and outbound connectors do not have one
 tasks.getByName<BootJar>("bootJar") {

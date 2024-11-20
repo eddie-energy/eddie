@@ -1,0 +1,71 @@
+package energy.eddie.outbound.amqp;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.amqp.Connection;
+import com.rabbitmq.client.amqp.Publisher;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.outbound.shared.Endpoints;
+import org.junit.jupiter.api.*;
+import org.testcontainers.containers.RabbitMQContainer;
+import org.testcontainers.utility.DockerImageName;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class AmqpInboundTest {
+    private static final RabbitMQContainer rabbit = new RabbitMQContainer(DockerImageName.parse(
+            "rabbitmq:4-management-alpine"));
+    private final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
+    private Connection connection;
+    private AmqpInbound amqpInbound;
+
+    @BeforeAll
+    static void setUpAll() {
+        rabbit.start();
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+        rabbit.stop();
+    }
+
+    @BeforeEach
+    void setUp() {
+        var connector = new AmqpOutboundConnector();
+        connection = connector.connection(connector.amqpEnvironment(), rabbit.getAmqpUrl());
+        amqpInbound = new AmqpInbound(connection, objectMapper);
+    }
+
+    @AfterEach
+    void tearDown() {
+        amqpInbound.close();
+        connection.close();
+    }
+
+    @Test
+    void testTermination_acceptsMessage() throws JsonProcessingException, InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        var publisher = connection.publisherBuilder()
+                                  .queue(Endpoints.V0_82.TERMINATIONS)
+                                  .build();
+        var msg = publisher.message(objectMapper.writeValueAsBytes(new PermissionEnvelope()));
+        // When
+        publisher.publish(msg, ctx -> {
+            assertEquals(Publisher.Status.ACCEPTED, ctx.status());
+            latch.countDown();
+        });
+
+        // Then
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "assertions in callback might have failed");
+        var pair = amqpInbound.getTerminationMessages().blockFirst();
+        assertNotNull(pair);
+
+        // Clean-Up
+        publisher.close();
+    }
+}

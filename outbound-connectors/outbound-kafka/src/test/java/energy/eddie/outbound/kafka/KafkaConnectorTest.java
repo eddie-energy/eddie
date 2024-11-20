@@ -10,6 +10,7 @@ import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderComplexType;
 import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Tag("Integration")
 class KafkaConnectorTest {
+    private final DataSourceInformation dataSourceInformation = new MockDataSourceInformation("AT",
+                                                                                              "at-eda",
+                                                                                              "paid",
+                                                                                              "mdaid");
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private EmbeddedKafkaBroker embeddedKafka;
@@ -45,7 +50,7 @@ class KafkaConnectorTest {
         var csm = new ConnectionStatusMessage("cid",
                                               "pid",
                                               "dnid",
-                                              new SimpleDataSourceInformation(),
+                                              dataSourceInformation,
                                               PermissionProcessStatus.ACCEPTED);
         kafkaConnector.setConnectionStatusMessageStream(Flux.just(csm));
         var consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafka);
@@ -150,7 +155,7 @@ class KafkaConnectorTest {
                 "pid",
                 "cid",
                 "dnid",
-                new SimpleDataSourceInformation(),
+                dataSourceInformation,
                 ZonedDateTime.now(ZoneOffset.UTC),
                 "blblblb"
         );
@@ -166,27 +171,5 @@ class KafkaConnectorTest {
 
         // Then
         assertThat(records).hasSize(1);
-    }
-
-    private static class SimpleDataSourceInformation implements DataSourceInformation {
-        @Override
-        public String countryCode() {
-            return "AT";
-        }
-
-        @Override
-        public String regionConnectorId() {
-            return "at-eda";
-        }
-
-        @Override
-        public String meteredDataAdministratorId() {
-            return "mdaid";
-        }
-
-        @Override
-        public String permissionAdministratorId() {
-            return "paid";
-        }
     }
 }

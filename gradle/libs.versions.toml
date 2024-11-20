@@ -17,6 +17,7 @@ jsr305 = "3.0.2"
 jaxb = "4.0.2"
 jaxb-plugins = "4.0.0"
 jakarta-xml-bind = "4.0.0"
+jackson-jakarta-xmlbind-annotations = "2.18.1"
 rometools = "2.1.0"
 jakarta-annotation = "2.1.0"
 jakarta-validation = "3.0.2"
@@ -37,8 +38,8 @@ jte = "2.3.0"
 log4j = "2.20.0"
 kafka-clients = "3.4.0"
 kafka-streams = "3.6.1"
+rabbitmq-amqp-client = "0.2.0"
 reactor-kafka = "1.3.22"
-microprofile-config = "3.0.3"
 hibernate-validator = "8.0.1.Final"
 mockwebserver = "4.12.0"
 flyway = "10.8.1"
@@ -58,7 +59,7 @@ jackson-databind-nullable-version = "0.2.6"
 dotenv-version = "3.0.0"
 google-jib = "3.4.0"
 
-testcontainers = "1.20.2"
+testcontainers = "1.20.3"
 
 [libraries]
 # Static analysis
@@ -111,14 +112,19 @@ slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
 
-# FR Enedis region connector
+# dependencies required by outbound-connectors
+jackson-jakarta-xmlbind-annotations = { module = "com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations", version.ref = "jackson-jakarta-xmlbind-annotations" }
 
-# dependencies required by kafka-outbound
+# dependencies required by outbound-kafka
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
 reactor-kafka = { module = "io.projectreactor.kafka:reactor-kafka", version.ref = "reactor-kafka" }
 testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers" }
 jackson-dataformat-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core" }
+
+# dpendencies required by outbound-amqp
+rabbitmq-amqp-client = { module = "com.rabbitmq.client:amqp-client", version.ref = "rabbitmq-amqp-client" }
+testcontainers-rabbitmq = { module = "org.testcontainers:rabbitmq", version.ref = "testcontainers" }
 
 # used by core
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
@@ -138,9 +144,6 @@ jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullab
 apache-http-client = { module = "org.apache.httpcomponents.client5:httpclient5", version.ref = "apache-httpcomponents-client-version" }
 apache-http-mime = { module = "org.apache.httpcomponents:httpmime", version.ref = "apache-httpcomponents-version" }
 dotenv = { module = "io.github.cdimascio:dotenv-java", version.ref = "dotenv-version" }
-
-# microprofile
-microprofile-config = { module = "org.eclipse.microprofile.config:microprofile-config-api", version.ref = "microprofile-config" }
 
 # Spring Boot
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
@@ -162,7 +165,6 @@ spring-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-w
 spring-oxm = { module = "org.springframework:spring-oxm", version.ref = "spring-oxm" }
 spring-security-test = { module = "org.springframework.security:spring-security-test", version.ref = "spring-security-test" }
 spring-boot-starter-keycloak = { module = "org.keycloak:keycloak-spring-boot-starter", version.ref = "keycloak" }
-
 
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernate-validator" }
 
