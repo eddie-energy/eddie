@@ -76,15 +76,15 @@ const dialogCloseEvent = new Event("eddie-dialog-close", {
 });
 
 /**
- * Filters the given region connectors to only include those that support the given data need.
+ * Returns the country codes of all countries that are supported by at least one enabled region connector.
  * @param regionConnectors {RegionConnectorMetadata[]} - The region connectors to filter.
- * @returns {string[]} - The country codes of all enabled region connectors.
+ * @returns {string[]} - The country codes of all enabled region connectors in lowercase.
  */
 function getEnabledCountries(regionConnectors) {
-  return regionConnectors
-    .flatMap((rc) => rc.countryCodes)
+  return [...new Set(regionConnectors.flatMap((rc) => rc.countryCodes))]
     .map((countryCode) => countryCode.toLowerCase())
-    .filter((country) => COUNTRIES.has(country));
+    .filter((country) => COUNTRIES.has(country))
+    .sort((a, b) => a.localeCompare(b));
 }
 
 class EddieConnectButton extends LitElement {
@@ -454,7 +454,6 @@ class EddieConnectButton extends LitElement {
     }
 
     this._enabledCountries = getEnabledCountries(this._enabledConnectors);
-    this._enabledCountries.sort((a, b) => a.localeCompare(b));
 
     this._supportedConnectors = await getSupportedRegionConnectors(
       this.dataNeedId
