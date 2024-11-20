@@ -1,5 +1,6 @@
 package energy.eddie.admin.console.services;
 
+import energy.eddie.api.agnostic.outbound.RetransmissionConnector;
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequestRouter;
 import org.slf4j.Logger;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 @Component
-public class RetransmissionAdminConsoleConnector {
+public class RetransmissionAdminConsoleConnector implements RetransmissionConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(RetransmissionAdminConsoleConnector.class);
     private final RetransmissionRequestRouter retransmissionRequestRouter;
 
@@ -19,6 +20,7 @@ public class RetransmissionAdminConsoleConnector {
     }
 
 
+    @Override
     public void retransmit(String regionConnectorId, RetransmissionRequest retransmissionRequest) {
         LOGGER.info("Requesting retransmission of {} for region connector with id {}",
                     retransmissionRequest,
@@ -32,13 +34,13 @@ public class RetransmissionAdminConsoleConnector {
                                       .log("Error while requesting retransmission of {} for region connector with id {}")
                 )
                 .onErrorComplete()
-                .subscribe(result -> {
-                    // Update this with GH-1388
-                    LOGGER.info(
-                            "Retransmission request for {} for region connector with id {} completed with result {}",
-                            retransmissionRequest,
-                            regionConnectorId,
-                            result);
-                });
+                .subscribe(result ->
+                                   // Update this with GH-1388
+                                   LOGGER.info(
+                                           "Retransmission request for {} for region connector with id {} completed with result {}",
+                                           retransmissionRequest,
+                                           regionConnectorId,
+                                           result)
+                );
     }
 }

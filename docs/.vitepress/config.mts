@@ -70,6 +70,10 @@ export default withMermaid(defineConfig({
         items: [
           { text: "Tech Stack", link: "3-extending/tech-stack" },
           { text: "Add a region connector", link: "3-extending/add-region-connector" },
+          {
+            text: "Add an outbound-connector",
+            link: "3-extending/add-outbound-connector",
+          },
           { text: "Edit Documentation", link: "3-extending/documentation" },
         ],
       },

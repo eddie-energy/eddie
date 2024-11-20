@@ -9,9 +9,9 @@ import reactor.core.publisher.Flux;
  */
 public interface AccountingPointEnvelopeOutboundConnector {
     /**
-     * Sets the stream of validated historical data market documents to be sent to the EP app.
+     * Sets the stream of accounting point market documents to be sent to the EP app.
      *
-     * @param marketDocumentStream stream of validated historical data market documents
+     * @param marketDocumentStream stream of accounting point market documents
      */
     void setAccountingPointEnvelopeStream(
             Flux<AccountingPointEnvelope> marketDocumentStream
