@@ -8,6 +8,12 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "admin-console/**"
+      - "aiida/**"
+      - "docs/**"
+      - "env/**"
+      - "outbound-connectors/**"
   workflow_dispatch:
 
 env:
