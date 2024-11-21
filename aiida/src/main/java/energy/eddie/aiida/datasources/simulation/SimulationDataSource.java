@@ -4,6 +4,7 @@ import energy.eddie.aiida.datasources.AiidaDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.dataneeds.validation.asset.AiidaAsset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.health.Health;
@@ -117,6 +118,6 @@ public class SimulationDataSource extends AiidaDataSource {
             ));
         }
 
-        emitAiidaRecord("SIMULATION", aiidaRecordValues);
+        emitAiidaRecord(AiidaAsset.CONNECTION_AGREEMENT_POINT.toString(), aiidaRecordValues);
     }
 }

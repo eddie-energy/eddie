@@ -69,8 +69,13 @@
  */
 
 /**
+ * @typedef {"CONNECTION_AGREEMENT_POINT", "CONTROLLABLE_UNIT", "DEDICATED_MEASUREMENT_DEVICE", "SUBMETER"} Asset
+ */
+
+/**
  * @typedef {DataNeed} AiidaDataNeed
  * @property {string} transmissionSchedule - The schedule at which data is transmitted.
+ * @property {Asset} asset - The asset type.
  */
 
 /**

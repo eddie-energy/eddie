@@ -1,0 +1,37 @@
+package energy.eddie.dataneeds.validation.asset;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Arrays;
+
+public enum AiidaAsset {
+    CONNECTION_AGREEMENT_POINT("CONNECTION-AGREEMENT-POINT"),
+    CONTROLLABLE_UNIT("CONTROLLABLE-UNIT"),
+    DEDICATED_MEASUREMENT_DEVICE("DEDICATED-MEASUREMENT-DEVICE"),
+    SUBMETER("SUBMETER");
+
+    private final String asset;
+
+    AiidaAsset(String asset) {
+        this.asset = asset;
+    }
+
+    @JsonCreator
+    public static AiidaAsset forValue(String value) {
+        return Arrays.stream(AiidaAsset.values())
+                     .filter(op -> op.getValue().equals(value))
+                     .findFirst()
+                     .orElseThrow();
+    }
+
+    @Override
+    public String toString() {
+        return asset;
+    }
+
+    @JsonValue
+    public String getValue() {
+        return asset;
+    }
+}

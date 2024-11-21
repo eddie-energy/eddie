@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
-import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
 import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
+import energy.eddie.dataneeds.validation.asset.AiidaAsset;
+import energy.eddie.dataneeds.validation.schema.AiidaSchema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.springframework.scheduling.support.CronExpression;
@@ -19,9 +21,6 @@ import java.util.Set;
  */
 @Entity
 public class AiidaLocalDataNeed {
-    @Id
-    @Column(nullable = false, name = "permission_id")
-    private String permissionId;
     @Column(nullable = false, name = "data_need_id")
     @JsonProperty
     private final String dataNeedId;
@@ -47,13 +46,21 @@ public class AiidaLocalDataNeed {
             joinColumns = @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id"))
     @Column(name = "schemas")
     @JsonProperty
-    private final Set<String> schemas;
+    @Enumerated(EnumType.STRING)
+    private final Set<AiidaSchema> schemas;
+    @Column(nullable = false, name = "asset")
+    @JsonProperty
+    @Enumerated(EnumType.STRING)
+    private final AiidaAsset asset;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_local_data_need_data_tags", joinColumns = @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id"))
     @Column(name = "data_tags")
     @Nullable
     @JsonProperty
     private final Set<String> dataTags;
+    @Id
+    @Column(nullable = false, name = "permission_id")
+    private String permissionId;
 
     /**
      * Constructor only for JPA.
@@ -67,6 +74,7 @@ public class AiidaLocalDataNeed {
         this.policyLink = null;
         this.transmissionSchedule = null;
         this.schemas = null;
+        this.asset = null;
         this.dataTags = null;
     }
 
@@ -79,6 +87,7 @@ public class AiidaLocalDataNeed {
         this.policyLink = details.dataNeed().policyLink();
         this.transmissionSchedule = details.dataNeed().transmissionSchedule();
         this.schemas = details.dataNeed().schemas();
+        this.asset = details.dataNeed().asset();
 
         if (details.dataNeed() instanceof GenericAiidaDataNeed genericAiida) {
             this.dataTags = Set.copyOf(genericAiida.dataTags());
@@ -115,8 +124,12 @@ public class AiidaLocalDataNeed {
         return transmissionSchedule;
     }
 
-    public Set<String> schemas() {
+    public Set<AiidaSchema> schemas() {
         return schemas;
+    }
+
+    public AiidaAsset asset() {
+        return asset;
     }
 
     public @Nullable Set<String> dataTags() {

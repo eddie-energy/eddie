@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS data_needs.generic_aiida_data_need
     policy_link           varchar(255) NOT NULL,
     purpose               varchar(255) NOT NULL,
     transmission_schedule varchar(36) NOT NULL,
+    asset text NOT NULL,
     enabled               boolean DEFAULT TRUE
 );
 
@@ -91,6 +92,7 @@ CREATE TABLE IF NOT EXISTS data_needs.smart_meter_aiida_data_need
     policy_link           varchar(255) NOT NULL,
     purpose               varchar(255) NOT NULL,
     transmission_schedule varchar(36) NOT NULL,
+    asset text NOT NULL,
     enabled               boolean DEFAULT TRUE
 );
 

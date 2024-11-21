@@ -1,0 +1,5 @@
+ALTER TABLE generic_aiida_data_need
+    ADD asset TEXT NOT NULL DEFAULT 'CONNECTION-AGREEMENT-POINT';
+
+ALTER TABLE smart_meter_aiida_data_need
+    ADD asset TEXT NOT NULL DEFAULT 'CONNECTION-AGREEMENT-POINT';

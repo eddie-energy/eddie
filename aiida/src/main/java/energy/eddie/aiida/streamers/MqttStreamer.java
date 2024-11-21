@@ -9,7 +9,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.SchemaFormatter;
-import energy.eddie.aiida.schemas.Schemas;
+import energy.eddie.dataneeds.validation.schema.AiidaSchema;
 import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -98,55 +98,6 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         subscription = recordFlux.publishOn(Schedulers.boundedElastic()).subscribe(this::publishRecord);
     }
 
-    private void publishRecord(AiidaRecord aiidaRecord) {
-        LOGGER.trace("MqttStreamer for permission {} publishing AiidaRecord {}",
-                     streamingConfig.permissionId(),
-                     aiidaRecord);
-
-        try {
-            var schemas = (permission.dataNeed() == null)
-                    ? List.of(Schemas.SMART_METER_P1_RAW)
-                    : permission.dataNeed().schemas();
-
-            for (var schema : schemas) {
-                var schemaFormatter = SchemaFormatter.getFormatter(schema);
-                var messageData = schemaFormatter.toSchema(aiidaRecord, mapper);
-                publishMessage(streamingConfig.dataTopic(), messageData);
-            }
-        } catch (RuntimeException exception) {
-            LOGGER.error("MqttStreamer for permission {} cannot convert AiidaRecord {} to JSON, will ignore it",
-                         streamingConfig.permissionId(),
-                         aiidaRecord,
-                         exception);
-        }
-    }
-
-    private void publishMessage(String topic, byte[] payload) {
-        if (isBeingTerminated) {
-            LOGGER.atDebug()
-                  .addArgument(streamingConfig.permissionId())
-                  .addArgument(new String(payload, StandardCharsets.UTF_8))
-                  .addArgument(topic)
-                  .log("MqttStreamer for permission {} got message {} to publish to topic {} but the streamer has already received a termination request, and will therefore not send the message");
-            return;
-        }
-
-        try {
-            // if client is not connected, it will not save published messages to its persistence module, but instead
-            // throws an exception, therefore we need to manually save messages that failed to send
-            client.publish(topic, payload, 1, false);
-        } catch (MqttException exception) {
-            LOGGER.atTrace()
-                  .addArgument(streamingConfig.permissionId())
-                  .addArgument(new String(payload, StandardCharsets.UTF_8))
-                  .addArgument(topic)
-                  .log("MqttStreamer for permission {} failed to send message {} to topic {}, will store it in the DB",
-                       exception);
-            // TODO need to delete these messages again if permission expires --> GH-981
-            failedToSendRepository.save(new FailedToSendEntity(streamingConfig.permissionId(), topic, payload));
-        }
-    }
-
     @Override
     public void close() {
         isBeingTerminated = true;
@@ -178,30 +129,6 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         close();
 
         failedToSendRepository.deleteAllByPermissionId(streamingConfig.permissionId());
-    }
-
-    private void publishStatusMessageSynchronously(ConnectionStatusMessage statusMessage) {
-        LOGGER.trace("MqttStreamer for permission {} synchronously publishing connectionStatusMessage {}",
-                     streamingConfig.permissionId(),
-                     statusMessage);
-
-        try {
-            byte[] jsonBytes = mapper.writeValueAsBytes(statusMessage);
-            client.publish(streamingConfig.statusTopic(), jsonBytes, 1, true)
-                  .waitForCompletion(Duration.ofMinutes(2).toMillis());
-        } catch (JsonProcessingException exception) {
-            LOGGER.atError()
-                  .addArgument(streamingConfig.permissionId())
-                  .addArgument(statusMessage)
-                  .setCause(exception)
-                  .log("MqttStreamer for permission {} cannot convert ConnectionStatusMessage {} to JSON, will ignore it");
-        } catch (MqttException exception) {
-            LOGGER.atError()
-                  .addArgument(streamingConfig.permissionId())
-                  .addArgument(statusMessage)
-                  .setCause(exception)
-                  .log("MqttStreamer for permission {} failed to send connectionStatusMessage {}, will close streamer without retrying to send");
-        }
     }
 
     @Override
@@ -250,6 +177,84 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         retryFailedToSendMessages();
     }
 
+    @Override
+    public void authPacketArrived(int reasonCode, MqttProperties properties) {
+        // Not needed
+    }
+
+    private void publishRecord(AiidaRecord aiidaRecord) {
+        LOGGER.trace("MqttStreamer for permission {} publishing AiidaRecord {}",
+                     streamingConfig.permissionId(),
+                     aiidaRecord);
+
+        try {
+            var schemas = (permission.dataNeed() == null)
+                    ? List.of(AiidaSchema.SMART_METER_P1_RAW)
+                    : permission.dataNeed().schemas();
+
+            for (var schema : schemas) {
+                var schemaFormatter = SchemaFormatter.getFormatter(schema);
+                var messageData = schemaFormatter.toSchema(aiidaRecord, mapper);
+                publishMessage(streamingConfig.dataTopic(), messageData);
+            }
+        } catch (RuntimeException exception) {
+            LOGGER.error("MqttStreamer for permission {} cannot convert AiidaRecord {} to JSON, will ignore it",
+                         streamingConfig.permissionId(),
+                         aiidaRecord,
+                         exception);
+        }
+    }
+
+    private void publishMessage(String topic, byte[] payload) {
+        if (isBeingTerminated) {
+            LOGGER.atDebug()
+                  .addArgument(streamingConfig.permissionId())
+                  .addArgument(new String(payload, StandardCharsets.UTF_8))
+                  .addArgument(topic)
+                  .log("MqttStreamer for permission {} got message {} to publish to topic {} but the streamer has already received a termination request, and will therefore not send the message");
+            return;
+        }
+
+        try {
+            // if client is not connected, it will not save published messages to its persistence module, but instead
+            // throws an exception, therefore we need to manually save messages that failed to send
+            client.publish(topic, payload, 1, false);
+        } catch (MqttException exception) {
+            LOGGER.atTrace()
+                  .addArgument(streamingConfig.permissionId())
+                  .addArgument(new String(payload, StandardCharsets.UTF_8))
+                  .addArgument(topic)
+                  .log("MqttStreamer for permission {} failed to send message {} to topic {}, will store it in the DB",
+                       exception);
+            // TODO need to delete these messages again if permission expires --> GH-981
+            failedToSendRepository.save(new FailedToSendEntity(streamingConfig.permissionId(), topic, payload));
+        }
+    }
+
+    private void publishStatusMessageSynchronously(ConnectionStatusMessage statusMessage) {
+        LOGGER.trace("MqttStreamer for permission {} synchronously publishing connectionStatusMessage {}",
+                     streamingConfig.permissionId(),
+                     statusMessage);
+
+        try {
+            byte[] jsonBytes = mapper.writeValueAsBytes(statusMessage);
+            client.publish(streamingConfig.statusTopic(), jsonBytes, 1, true)
+                  .waitForCompletion(Duration.ofMinutes(2).toMillis());
+        } catch (JsonProcessingException exception) {
+            LOGGER.atError()
+                  .addArgument(streamingConfig.permissionId())
+                  .addArgument(statusMessage)
+                  .setCause(exception)
+                  .log("MqttStreamer for permission {} cannot convert ConnectionStatusMessage {} to JSON, will ignore it");
+        } catch (MqttException exception) {
+            LOGGER.atError()
+                  .addArgument(streamingConfig.permissionId())
+                  .addArgument(statusMessage)
+                  .setCause(exception)
+                  .log("MqttStreamer for permission {} failed to send connectionStatusMessage {}, will close streamer without retrying to send");
+        }
+    }
+
     private void subscribeToTerminationTopic() {
         try {
             client.subscribe(streamingConfig.terminationTopic(), 2);
@@ -275,10 +280,5 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
               .addArgument(streamingConfig.permissionId())
               .addArgument(failedToSend.size())
               .log("MqttStreamer for permission {} fetched and enqueued {} messages for sending that previously failed to send");
-    }
-
-    @Override
-    public void authPacketArrived(int reasonCode, MqttProperties properties) {
-        // Not needed
     }
 }
