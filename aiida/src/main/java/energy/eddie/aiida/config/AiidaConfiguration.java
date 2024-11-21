@@ -1,6 +1,7 @@
 package energy.eddie.aiida.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +40,11 @@ public class AiidaConfiguration {
         // needed so that JsonTypeInformation for data need is deserialized
         module.disable(Hibernate6Module.Feature.USE_TRANSIENT_ANNOTATION);
         objectMapper.registerModule(module);
+
+        var jtm = new JavaTimeModule();
+        objectMapper.registerModule(jtm);
+        // setting this to false means timestamps are formatted according to ISO and not formatted in epoch millis any more
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         return objectMapper;
     }
