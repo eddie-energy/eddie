@@ -629,10 +629,12 @@ class EddieConnectButton extends LitElement {
               <data-need-summary
                 data-need-id="${this.dataNeedId}"
               ></data-need-summary>
+
               <br />
               <sl-button
                 @click="${this.handleDataNeedConfirmed}"
                 variant="primary"
+                style="float: right"
               >
                 Continue
               </sl-button>
@@ -720,6 +722,7 @@ class EddieConnectButton extends LitElement {
                 @click="${this.handlePermissionAdministratorSelected}"
                 ?disabled="${!this._selectedPermissionAdministrator}"
                 variant="primary"
+                style="float: right"
               >
                 Continue
               </sl-button>
@@ -755,7 +758,11 @@ class EddieConnectButton extends LitElement {
               </sl-alert>
 
               <br />
-              <sl-button variant="danger" @click="${this.closeDialog}">
+              <sl-button
+                variant="danger"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
                 Close
               </sl-button>
             `,
@@ -781,7 +788,11 @@ class EddieConnectButton extends LitElement {
               </sl-alert>
 
               <br />
-              <sl-button variant="success" @click="${this.closeDialog}">
+              <sl-button
+                variant="success"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
                 Close
               </sl-button>
             `,
@@ -793,7 +804,7 @@ class EddieConnectButton extends LitElement {
 
               <sl-alert variant="primary" open>
                 <sl-icon slot="icon" name="info-circle"></sl-icon>
-                
+
                 <p>
                   You rejected the permission request for the service provider
                   to access to your data. No data will be processed.
@@ -806,7 +817,11 @@ class EddieConnectButton extends LitElement {
               </sl-alert>
 
               <br />
-              <sl-button variant="primary" @click="${this.closeDialog}">
+              <sl-button
+                variant="primary"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
                 Close
               </sl-button>
             `,
@@ -815,7 +830,7 @@ class EddieConnectButton extends LitElement {
             "timed-out",
             () => html`
               <h3>Permission request timed out</h3>
-              
+
               <sl-alert variant="danger" open>
                 <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
                 <p>
@@ -831,7 +846,11 @@ class EddieConnectButton extends LitElement {
               </sl-alert>
 
               <br />
-              <sl-button variant="danger" @click="${this.closeDialog}">
+              <sl-button
+                variant="danger"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
                 Close
               </sl-button>
             `,
@@ -855,7 +874,11 @@ class EddieConnectButton extends LitElement {
               </sl-alert>
 
               <br />
-              <sl-button variant="danger" @click="${this.closeDialog}">
+              <sl-button
+                variant="danger"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
                 Close
               </sl-button>
             `,
@@ -879,7 +902,11 @@ class EddieConnectButton extends LitElement {
               </sl-alert>
 
               <br />
-              <sl-button variant="danger" @click="${this.closeDialog}">
+              <sl-button
+                variant="danger"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
                 Close
               </sl-button>
             `,
