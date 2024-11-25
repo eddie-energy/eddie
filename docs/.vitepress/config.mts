@@ -46,6 +46,7 @@ export default withMermaid(defineConfig({
             text: "Outbound-connectors",
             link: "1-running/outbound-connectors/outbound-connectors.md",
             items: [
+              { text: "Apache Kafka", link: "1-running/outbound-connectors/outbound-connector-kafka.md" },
               { text: "AMQP", link: "1-running/outbound-connectors/outbound-connector-amqp.md" },
             ],
           },

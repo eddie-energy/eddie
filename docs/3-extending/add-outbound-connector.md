@@ -74,7 +74,7 @@ The accounting point market documents are CIM compliant documents, for more info
 
 The [`TerminationConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/TerminationConnector.html) interface provides the eligible party with means to change the status of a permission request.
 If a permission request has the status accepted, the eligible party can terminate a permission request by sending a termination document, which is a permission market document.
-See subsection [termination of permission requests](../1-running/OPERATION.md#termination-of-permission-requests) and section [permission process model](../2-integrating/PERMISSION_STATES.md) for more information.
+See subsection [termination of permission requests](../1-running/outbound-connectors/outbound-connector-kafka.md#termination-of-permission-requests) and section [permission process model](../2-integrating/PERMISSION_STATES.md) for more information.
 This interface does not produce any documents, but receives them.
 
 ### `RetransmissionConnector`
@@ -84,6 +84,30 @@ This interface does not produce any documents, but receives them.
 
 The [`RetransmissionConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/RetransmissionConnector.html) interface provides the eligible party with means to re-request data of a permission request.
 This interface receives retransmission requests.
+
+## Shared Functionality
+
+A lot of protocols have similar concepts, for example, AMQP's queue and Apache Kafka's topics.
+To generalize a few aspects, the [outbound-shared](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/package-summary.html) module can be used.
+It provides classes for consistent naming or serialization and deserialization(SerDe).
+
+### Names
+
+To get the names for endpoints, which can be HTTP endpoints, AMQP Queues, or Kafka topics, the [Endpoints](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/Endpoints.html) class can be used.
+For names for headers, such as HTTP headers, Kafka headers, or AMQP properties, the [Headers](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/Headers.html) class provides constants for that.
+Of course, the endpoints and headers are not limited to those values, but it should provide standard names for endpoints/headers which provide the same data.
+
+### Serialization/Deserialization
+
+For common formats, there are already serializers and deserializers in place, which can be reused.
+
+- For `JSON` use the [JsonMessageSerde](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/JsonMessageSerde.html) class.
+- For `XML` use the [JsonMessageSerde](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/XmlMessageSerde.html) class.
+  Supports CIM documents as well as unknown types, which are serialized using the XmlMapper from jackson.
+
+#### Custom SerDe
+
+To implement a custom SerDe for other formats, such as `CSV` or `protobuf`, implement the [MessageSerde](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/MessageSerde.html) interface and either extend the [DefaultSerdeFactory](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/DefaultSerdeFactory.html) or implement a custom [SerdeFactory](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/SerdeFactory.html).
 
 ## Configuration
 
@@ -117,7 +141,7 @@ outbound-connector.kafka.enabled=true
 
 The format property is a convention that allows users of the outbound-connector to specify in which format the outbound-connector should send its data.
 While some outbound-connectors, like the [admin console](../1-running/admin-console.md) do not use that property, because they are showing the data in a human-readable format, others might support different formats in which data is produced and consumed.
-The [kafka outbound-connector](../1-running/OPERATION.md#kafka-connector) supports `json` and `xml`.
+The [kafka outbound-connector](../1-running/outbound-connectors/outbound-connector-kafka.md) supports `json` and `xml`.
 
 Outbound-connectors that send data in a machine-readable format can benefit from defining and using this property, but the core module does not enforce the usage of the format property.
 There is no rule on which formats need to be supported, but most [interfaces and their payload](#interfaces) are intended to be serialized to JSON or XML.
