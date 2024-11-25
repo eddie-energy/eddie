@@ -404,7 +404,10 @@ class EddieConnectButton extends LitElement {
     this._selectedCountry = country;
 
     if (country === "sim") {
-      this._selectedPermissionAdministrator = { regionConnector: "sim" };
+      this._selectedPermissionAdministrator = {
+        name: "Simulator",
+        regionConnector: "sim",
+      };
     }
 
     if (!country) {
@@ -478,7 +481,7 @@ class EddieConnectButton extends LitElement {
         );
       }
 
-      this._presetPermissionAdministrator = pa;
+      this.selectPermissionAdministrator(pa);
     }
 
     if (this.isAiida()) {
@@ -488,15 +491,11 @@ class EddieConnectButton extends LitElement {
         );
       }
 
-      this._presetPermissionAdministrator = {
+      this._selectedPermissionAdministrator = {
         name: "AIIDA",
         company: "AIIDA",
         regionConnector: "aiida",
       };
-    }
-
-    if (this._presetPermissionAdministrator) {
-      this.selectPermissionAdministrator(this._presetPermissionAdministrator);
     }
 
     if (
@@ -652,7 +651,7 @@ class EddieConnectButton extends LitElement {
                 @sl-change="${(event) =>
                   this.selectCountry(event.target.value)}"
                 value="${this._selectedCountry}"
-                ?disabled="${ifDefined(this._presetPermissionAdministrator)}"
+                ?disabled="${this.permissionAdministratorId}"
                 help-text="${this._supportedCountries.size !==
                 this._enabledCountries.length
                   ? "Some countries do not support the given data requirements."
@@ -701,7 +700,7 @@ class EddieConnectButton extends LitElement {
                   this._selectedPermissionAdministrator?.companyId
                 )}"
                 ?disabled="${!this._selectedCountry ||
-                !!this._presetPermissionAdministrator ||
+                this.permissionAdministratorId ||
                 this._filteredPermissionAdministrators.length <= 1}"
               >
                 ${this._filteredPermissionAdministrators.map(
