@@ -212,6 +212,13 @@ class EddieConnectButton extends LitElement {
     this._supportedCountries = undefined;
 
     /**
+     * The permission administrator that has been selected by configuration or user input.
+     * @type {PermissionAdministrator}
+     * @private
+     */
+    this._selectedPermissionAdministrator = undefined;
+
+    /**
      * Permission administrators that match the selected country.
      * @type {PermissionAdministrator[]}
      * @private

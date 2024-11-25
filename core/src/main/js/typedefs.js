@@ -1,10 +1,11 @@
 /**
  * @typedef {Object} PermissionAdministrator
- * @property {string} country
- * @property {string} company
- * @property {string} companyId
- * @property {string} jumpOffUrl
- * @property {string} regionConnector
+ * @property {string} country - The lowercase country code of the permission administrator.
+ * @property {string} company - The full legal name of the company.
+ * @property {string} name - The name of the permission administrator to be displayed to the user.
+ * @property {string} companyId - The unique identifier of the company.
+ * @property {string} [jumpOffUrl] - Optional URL to the permission administrator's portal.
+ * @property {string} regionConnector - The unique identifier of the region connector handling permissions for the permission administrator.
  */
 
 /**
