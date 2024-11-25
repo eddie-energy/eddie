@@ -64,10 +64,16 @@ sourceSets {
         java {
             srcDir(generatedXJCJavaDir)
         }
+        resources {
+            srcDir("${projectDir}/src/main/schemas")
+        }
     }
     test {
         java {
             srcDir(generatedXJCJavaDir)
+        }
+        resources {
+            srcDir("${projectDir}/src/main/schemas")
         }
     }
 }

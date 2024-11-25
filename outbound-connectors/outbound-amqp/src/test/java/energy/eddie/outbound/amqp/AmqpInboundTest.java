@@ -1,15 +1,17 @@
 package energy.eddie.outbound.amqp;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Publisher;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.outbound.shared.Endpoints;
+import energy.eddie.outbound.shared.serde.MessageSerde;
+import energy.eddie.outbound.shared.serde.SerializationException;
+import energy.eddie.outbound.shared.serde.XmlMessageSerde;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -18,9 +20,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class AmqpInboundTest {
     private static final RabbitMQContainer rabbit = new RabbitMQContainer(DockerImageName.parse(
             "rabbitmq:4-management-alpine"));
-    private final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
+    private final MessageSerde serde = new XmlMessageSerde();
     private Connection connection;
     private AmqpInbound amqpInbound;
+
+    AmqpInboundTest() throws Exception {}
 
     @BeforeAll
     static void setUpAll() {
@@ -36,7 +40,7 @@ class AmqpInboundTest {
     void setUp() {
         var connector = new AmqpOutboundConnector();
         connection = connector.connection(connector.amqpEnvironment(), rabbit.getAmqpUrl());
-        amqpInbound = new AmqpInbound(connection, objectMapper);
+        amqpInbound = new AmqpInbound(connection, serde);
     }
 
     @AfterEach
@@ -46,13 +50,13 @@ class AmqpInboundTest {
     }
 
     @Test
-    void testTermination_acceptsMessage() throws JsonProcessingException, InterruptedException {
+    void testTermination_acceptsMessage() throws InterruptedException, SerializationException {
         // Given
         CountDownLatch latch = new CountDownLatch(1);
         var publisher = connection.publisherBuilder()
                                   .queue(Endpoints.V0_82.TERMINATIONS)
                                   .build();
-        var msg = publisher.message(objectMapper.writeValueAsBytes(new PermissionEnvelope()));
+        var msg = publisher.message(serde.serialize(new PermissionEnvelope()));
         // When
         publisher.publish(msg, ctx -> {
             assertEquals(Publisher.Status.ACCEPTED, ctx.status());
@@ -64,6 +68,28 @@ class AmqpInboundTest {
         assertTrue(res, "assertions in callback might have failed");
         var pair = amqpInbound.getTerminationMessages().blockFirst();
         assertNotNull(pair);
+
+        // Clean-Up
+        publisher.close();
+    }
+
+    @Test
+    void testTermination_discardsInvalidMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        var publisher = connection.publisherBuilder()
+                                  .queue(Endpoints.V0_82.TERMINATIONS)
+                                  .build();
+        var msg = publisher.message("INVALID MESSAGE".getBytes(StandardCharsets.UTF_8));
+        // When
+        publisher.publish(msg, ctx -> {
+            assertEquals(Publisher.Status.ACCEPTED, ctx.status());
+            latch.countDown();
+        });
+
+        // Then
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "assertions in callback might have failed");
 
         // Clean-Up
         publisher.close();

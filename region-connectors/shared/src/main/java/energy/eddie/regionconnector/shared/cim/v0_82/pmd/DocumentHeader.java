@@ -18,7 +18,7 @@ public record DocumentHeader(PermissionRequest permissionRequest, DocumentType d
 
         var calendar = DatatypeFactory
                 .newDefaultInstance()
-                .newXMLGregorianCalendar(ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE));
+                .newXMLGregorianCalendar(ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME));
         var codingScheme = CimUtils.getCodingSchemePmd(permissionRequest.dataSourceInformation().countryCode());
         return new MessageDocumentHeaderComplexType()
                 .withCreationDateTime(calendar)

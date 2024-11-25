@@ -8,7 +8,7 @@ spring-kafka = "3.2.4"
 spring-websocket = "6.1.2"
 spring-oxm = "6.1.5"
 spring-security-test = "6.3.3"
-junit = "5.9.2"
+junit = "5.10.0"
 mockito-junit = "5.4.0"
 errorprone = "3.0.1"
 errorpronecore = "2.23.0"
@@ -72,6 +72,7 @@ sonar = { module = "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin", ver
 
 # Aggregator artifact of junit5
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-mockito = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito-junit" }
 
 # dependencies required by region-connector-api

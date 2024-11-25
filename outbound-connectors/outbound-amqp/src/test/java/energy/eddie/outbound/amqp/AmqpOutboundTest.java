@@ -1,6 +1,5 @@
 package energy.eddie.outbound.amqp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.amqp.Connection;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataMessage;
@@ -12,6 +11,7 @@ import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.outbound.shared.Endpoints;
 import energy.eddie.outbound.shared.Headers;
+import energy.eddie.outbound.shared.serde.XmlMessageSerde;
 import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.RabbitMQContainer;
@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class AmqpOutboundTest {
     private static final RabbitMQContainer rabbit = new RabbitMQContainer(DockerImageName.parse(
             "rabbitmq:4-management-alpine"));
-    private final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
     private final MockDataSourceInformation dataSourceInformation = new MockDataSourceInformation("AT",
                                                                                                   "at-eda",
                                                                                                   "paid",
@@ -47,10 +46,10 @@ class AmqpOutboundTest {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         var connector = new AmqpOutboundConnector();
         connection = connector.connection(connector.amqpEnvironment(), rabbit.getAmqpUrl());
-        amqpOutbound = new AmqpOutbound(connection, objectMapper);
+        amqpOutbound = new AmqpOutbound(connection, new XmlMessageSerde());
     }
 
     @AfterEach

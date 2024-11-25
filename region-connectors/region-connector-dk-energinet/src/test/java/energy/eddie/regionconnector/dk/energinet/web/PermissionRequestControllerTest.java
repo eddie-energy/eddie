@@ -82,7 +82,10 @@ class PermissionRequestControllerTest {
     @Test
     void givenNonExistingPermissionId_returnsNotFound() throws Exception {
         String permissionId = "NonExistingId";
-        mockMvc.perform(get("/permission-status/{permissionId}", permissionId))
+        mockMvc.perform(
+                       get("/permission-status/{permissionId}", permissionId)
+                               .accept(MediaType.APPLICATION_JSON)
+               )
                .andExpect(status().isNotFound())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
@@ -100,7 +103,10 @@ class PermissionRequestControllerTest {
                 PermissionProcessStatus.ACCEPTED);
         when(service.findConnectionStatusMessageById(permissionId)).thenReturn(Optional.of(statusMessage));
 
-        mockMvc.perform(get("/permission-status/{permissionId}", permissionId))
+        mockMvc.perform(
+                       get("/permission-status/{permissionId}", permissionId)
+                               .accept(MediaType.APPLICATION_JSON)
+               )
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.status", is("ACCEPTED")))
                .andExpect(jsonPath("$.connectionId", is("foo")))
@@ -122,8 +128,11 @@ class PermissionRequestControllerTest {
 
     @Test
     void givenNoRequestBody_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/permission-request")
-                                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(
+                       post("/permission-request")
+                               .contentType(MediaType.APPLICATION_JSON)
+                               .accept(MediaType.APPLICATION_JSON)
+               )
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
@@ -131,9 +140,12 @@ class PermissionRequestControllerTest {
 
     @Test
     void givenAllMissingFields_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/permission-request")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("{}"))
+        mockMvc.perform(
+                       post("/permission-request")
+                               .contentType(MediaType.APPLICATION_JSON)
+                               .accept(MediaType.APPLICATION_JSON)
+                               .content("{}")
+               )
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
                        iterableWithSize(4),
@@ -160,6 +172,7 @@ class PermissionRequestControllerTest {
 
         mockMvc.perform(post("/permission-request")
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
                                 .content(mapper.writeValueAsString(jsonNode)))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
@@ -177,6 +190,7 @@ class PermissionRequestControllerTest {
 
         mockMvc.perform(post("/permission-request")
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
                                 .content(mapper.writeValueAsString(jsonNode)))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(

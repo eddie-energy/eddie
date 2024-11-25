@@ -25,7 +25,7 @@ public class APEnvelope {
     public AccountingPointEnvelope wrap() {
         var calendar = DatatypeFactory
                 .newDefaultInstance()
-                .newXMLGregorianCalendar(ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE));
+                .newXMLGregorianCalendar(ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME));
         var codingScheme = CimUtils.getCodingSchemeAp(permissionRequest.dataSourceInformation().countryCode());
         var header = new energy.eddie.cim.v0_82.ap.MessageDocumentHeaderComplexType()
                 .withCreationDateTime(calendar)
