@@ -1,7 +1,8 @@
 package energy.eddie.outbound.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.cim.v0_82.pmd.*;
+import energy.eddie.outbound.shared.serde.SerdeFactory;
+import energy.eddie.outbound.shared.serde.SerdeInitializationException;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -9,17 +10,16 @@ import java.nio.charset.StandardCharsets;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CustomDeserializerTest {
-    private final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
 
     @Test
-    void testDeserialize_withInvalidJson() {
+    void testDeserialize_withInvalidJson() throws SerdeInitializationException {
         // Given
         var json = """
                 {
                     "key": "value"
                 }
                 """.getBytes(StandardCharsets.UTF_8);
-        var deserializer = new CustomDeserializer(objectMapper);
+        var deserializer = new CustomDeserializer(SerdeFactory.getInstance().create("json"));
 
         // When
         var res = deserializer.deserialize("anyTopic", json);
@@ -34,65 +34,65 @@ class CustomDeserializerTest {
     @Test
     @SuppressWarnings("java:S5961")
         // Mapping logic is sometimes this long
-    void testDeserialize_withValidPermissionMarketDocument() {
+    void testDeserialize_withValidPermissionMarketDocument() throws SerdeInitializationException {
         // Given
         // language=JSON
         var json = """
                    {
-                     "messageDocumentHeader": null,
-                     "permissionMarketDocument": {
-                       "mrid": "permissionId",
-                       "revisionNumber": "0.82",
-                       "type": "Z04",
-                       "createdDateTime": "2024-01-25T09:09Z",
-                       "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
-                       "senderMarketParticipantMRID": {
-                         "codingScheme": "NDK",
-                         "value": "epId"
-                       },
-                       "senderMarketParticipantMarketRoleType": "A20",
-                       "receiverMarketParticipantMRID": {
-                         "codingScheme": "NDK",
-                         "value": "Energinet"
-                       },
-                       "receiverMarketParticipantMarketRoleType": "A50",
-                       "processProcessType": "A55",
-                       "periodTimeInterval": {
-                         "start": "2023-10-27T00:00Z",
-                         "end": "2024-01-24T00:00Z"
-                       },
-                       "permissionList": {
-                         "permissions": [
-                           {
-                             "permissionMRID": "permissionId",
-                             "createdDateTime": "2024-01-25T10:09Z",
-                             "transmissionSchedule": null,
-                             "marketEvaluationPointMRID": {
-                               "codingScheme": "NDK",
-                               "value": "cid"
-                             },
-                             "reasonList": null,
-                             "mktActivityRecordList": {
-                               "mktActivityRecords": [
-                                 {
-                                   "mrid": "uniqueId",
-                                   "createdDateTime": "2024-01-25T09:09Z",
-                                   "description": "",
-                                   "type": "dk-energinet",
-                                   "reason": null,
-                                   "name": null,
-                                   "status": "CREATED"
-                                 }
-                               ]
-                             },
-                             "timeSeriesList": null
-                           }
-                         ]
-                       }
+                  "MessageDocumentHeader": null,
+                  "Permission_MarketDocument": {
+                    "mRID": "permissionId",
+                    "revisionNumber": "0.82",
+                    "type": "Z04",
+                    "createdDateTime": "2024-01-25T09:09Z",
+                    "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                    "sender_MarketParticipant.mRID": {
+                      "codingScheme": "NDK",
+                      "value": "epId"
+                    },
+                    "sender_MarketParticipant.marketRole.type": "A20",
+                    "receiver_MarketParticipant.mRID": {
+                      "codingScheme": "NDK",
+                      "value": "Energinet"
+                    },
+                    "receiver_MarketParticipant.marketRole.type": "A50",
+                    "process.processType": "A55",
+                    "period.timeInterval": {
+                      "start": "2023-10-27T00:00Z",
+                      "end": "2024-01-24T00:00Z"
+                    },
+                    "PermissionList": {
+                      "Permission": [
+                        {
+                          "permission.mRID": "permissionId",
+                          "createdDateTime": "2024-01-25T10:09Z",
+                          "transmissionSchedule": null,
+                          "marketEvaluationPoint.mRID": {
+                            "codingScheme": "NDK",
+                            "value": "cid"
+                          },
+                          "TimeSeriesList": null,
+                          "MktActivityRecordList": {
+                            "MktActivityRecord": [
+                              {
+                                "mRID": "uniqueId",
+                                "createdDateTime": "2024-01-25T09:09Z",
+                                "description": "",
+                                "type": "dk-energinet",
+                                "reason": null,
+                                "name": null,
+                                "status": "CREATED"
+                              }
+                            ]
+                          },
+                          "ReasonList": null
+                        }
+                      ]
                     }
                   }
+                }
                 """;
-        var deserializer = new CustomDeserializer(objectMapper);
+        var deserializer = new CustomDeserializer(SerdeFactory.getInstance().create("json"));
 
         // When
         PermissionEnvelope res = deserializer.deserialize("anyTopic", json.getBytes(StandardCharsets.UTF_8));
@@ -153,77 +153,74 @@ class CustomDeserializerTest {
     @Test
     @SuppressWarnings("java:S5961")
         // Mapping logic is sometimes this long
-    void testDeserialize_withValidPermissionMarketDocument_forXml() {
+    void testDeserialize_withValidPermissionMarketDocument_forXml() throws SerdeInitializationException {
         // Given
         // language=XML
         var xml = """
-                <PermissionEnvelope>
-                  <messageDocumentHeader>
-                    <creationDateTime>2024-11-07T00:00:00.000+00:00</creationDateTime>
-                    <messageDocumentHeaderMetaInformation>
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <Permission_Envelope xmlns="http://www.eddie.energy/Consent/EDD02/20240125"  >
+                  <MessageDocumentHeader>
+                    <creationDateTime>2024-11-07T00:00:00.000Z</creationDateTime>
+                    <MessageDocumentHeader_MetaInformation>
                       <connectionid>1</connectionid>
                       <permissionid>af54581f-c577-40b0-8402-4e60daa2b0f0</permissionid>
                       <dataNeedid>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedid>
                       <dataType>permission-market-document</dataType>
-                      <messageDocumentHeaderRegion>
+                      <MessageDocumentHeader_Region>
                         <connector>us-green-button</connector>
                         <country>NUS</country>
-                      </messageDocumentHeaderRegion>
-                    </messageDocumentHeaderMetaInformation>
-                  </messageDocumentHeader>
-                  <permissionMarketDocument>
-                    <mrid>permissionId</mrid>
+                      </MessageDocumentHeader_Region>
+                    </MessageDocumentHeader_MetaInformation>
+                  </MessageDocumentHeader>
+                  <Permission_MarketDocument>
+                    <mRID>permissionId</mRID>
                     <revisionNumber>0.82</revisionNumber>
                     <type>Z04</type>
                     <createdDateTime>2024-01-25T09:09Z</createdDateTime>
                     <description>9bd0668f-cc19-40a8-99db-dc2cb2802b17</description>
-                    <senderMarketParticipantMRID>
+                    <sender_MarketParticipant.mRID>
                       <codingScheme>NUS</codingScheme>
                       <value>REPLACE_ME</value>
-                    </senderMarketParticipantMRID>
-                    <senderMarketParticipantMarketRoleType>A20</senderMarketParticipantMarketRoleType>
-                    <receiverMarketParticipantMRID>
+                    </sender_MarketParticipant.mRID>
+                    <sender_MarketParticipant.marketRole.type>A20</sender_MarketParticipant.marketRole.type>
+                    <receiver_MarketParticipant.mRID>
                       <codingScheme>NUS</codingScheme>
                       <value>REPLACE_ME</value>
-                    </receiverMarketParticipantMRID>
-                    <receiverMarketParticipantMarketRoleType>A50</receiverMarketParticipantMarketRoleType>
-                    <processProcessType>A55</processProcessType>
-                    <periodTimeInterval>
+                    </receiver_MarketParticipant.mRID>
+                    <receiver_MarketParticipant.marketRole.type>A50</receiver_MarketParticipant.marketRole.type>
+                    <process.processType>A55</process.processType>
+                    <period.timeInterval>
                       <start>2023-10-27T00:00Z</start>
                       <end>2024-01-24T00:00Z</end>
-                    </periodTimeInterval>
-                    <permissionList>
-                      <permissions>
-                        <permissions>
-                          <permissionMRID>permissionId</permissionMRID>
-                          <createdDateTime>2024-01-25T10:09Z</createdDateTime>
-                          <transmissionSchedule />
-                          <marketEvaluationPointMRID>
-                            <codingScheme>NAT</codingScheme>
-                            <value>cid</value>
-                          </marketEvaluationPointMRID>
-                          <timeSeriesList />
-                          <mktActivityRecordList>
-                            <mktActivityRecords>
-                              <mktActivityRecords>
-                                <mrid>24e5d685-5e9e-4ca9-85c5-ad5d32de876e</mrid>
-                                <createdDateTime>2024-11-07T11:06:14Z</createdDateTime>
-                                <description>CREATED</description>
-                                <type>us-green-button</type>
-                                <reason />
-                                <name />
-                                <status>Creation</status>
-                              </mktActivityRecords>
-                            </mktActivityRecords>
-                          </mktActivityRecordList>
-                          <reasonList />
-                        </permissions>
-                      </permissions>
-                    </permissionList>
-                  </permissionMarketDocument>
-                </PermissionEnvelope>
+                    </period.timeInterval>
+                    <PermissionList>
+                      <Permission>
+                        <permission.mRID>permissionId</permission.mRID>
+                        <createdDateTime>2024-01-25T10:09Z</createdDateTime>
+                        <transmissionSchedule/>
+                        <marketEvaluationPoint.mRID>
+                          <codingScheme>NAT</codingScheme>
+                          <value>cid</value>
+                        </marketEvaluationPoint.mRID>
+                        <TimeSeriesList/>
+                        <MktActivityRecordList>
+                          <MktActivityRecord>
+                            <mRID>24e5d685-5e9e-4ca9-85c5-ad5d32de876e</mRID>
+                            <createdDateTime>2024-11-07T11:06:14Z</createdDateTime>
+                            <description>CREATED</description>
+                            <type>us-green-button</type>
+                            <reason/>
+                            <name/>
+                            <status>Creation</status>
+                          </MktActivityRecord>
+                        </MktActivityRecordList>
+                        <ReasonList/>
+                      </Permission>
+                    </PermissionList>
+                  </Permission_MarketDocument>
+                </Permission_Envelope>
                 """;
-        var deserializer = new CustomDeserializer(new ObjectMapperConfig().xmlMapper());
+        var deserializer = new CustomDeserializer(SerdeFactory.getInstance().create("xml"));
 
         // When
         var res = deserializer.deserialize("anyTopic", xml.getBytes(StandardCharsets.UTF_8));

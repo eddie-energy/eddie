@@ -1,6 +1,5 @@
 package energy.eddie.outbound.amqp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Consumer;
 import com.rabbitmq.client.amqp.Message;
@@ -8,13 +7,13 @@ import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.outbound.shared.Endpoints;
+import energy.eddie.outbound.shared.serde.DeserializationException;
+import energy.eddie.outbound.shared.serde.MessageSerde;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-
-import java.io.IOException;
 
 @Component
 public class AmqpInbound implements TerminationConnector, AutoCloseable {
@@ -23,14 +22,14 @@ public class AmqpInbound implements TerminationConnector, AutoCloseable {
     private final Sinks.Many<Pair<String, PermissionEnvelope>> terminations = Sinks.many()
                                                                                    .multicast()
                                                                                    .onBackpressureBuffer();
-    private final ObjectMapper objectMapper;
+    private final MessageSerde serde;
 
-    public AmqpInbound(Connection connection, ObjectMapper objectMapper) {
+    public AmqpInbound(Connection connection, MessageSerde serde) {
         consumer = connection.consumerBuilder()
                              .queue(Endpoints.V0_82.TERMINATIONS)
                              .messageHandler(this::consume)
                              .build();
-        this.objectMapper = objectMapper;
+        this.serde = serde;
     }
 
     @Override
@@ -46,13 +45,13 @@ public class AmqpInbound implements TerminationConnector, AutoCloseable {
 
     private void consume(Consumer.Context context, Message message) {
         try {
-            var envelope = objectMapper.readValue(message.body(), PermissionEnvelope.class);
+            var envelope = serde.deserialize(message.body(), PermissionEnvelope.class);
             LOGGER.atDebug()
                   .addArgument(() -> envelope.getPermissionMarketDocument().getMRID())
                   .log("Got new PermissionMarketDocument {}");
             terminations.tryEmitNext(new Pair<>(null, envelope));
             context.accept();
-        } catch (IOException e) {
+        } catch (DeserializationException e) {
             context.discard();
             LOGGER.info("Got invalid message", e);
         }

@@ -17,7 +17,7 @@ public record VhdEnvelope(ValidatedHistoricalDataMarketDocumentComplexType vhd, 
     public ValidatedHistoricalDataEnvelope wrap() {
         var calendar = DatatypeFactory
                 .newDefaultInstance()
-                .newXMLGregorianCalendar(ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE));
+                .newXMLGregorianCalendar(ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME));
         var codingScheme = CimUtils.getCodingSchemeVhd(permissionRequest.dataSourceInformation().countryCode());
         var header = new energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderComplexType()
                 .withCreationDateTime(calendar)

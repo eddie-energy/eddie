@@ -1,7 +1,5 @@
 package energy.eddie.outbound.amqp;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Publisher;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
@@ -17,6 +15,7 @@ import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.outbound.shared.Endpoints;
 import energy.eddie.outbound.shared.Headers;
+import energy.eddie.outbound.shared.serde.MessageSerde;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -36,11 +35,11 @@ public class AmqpOutbound implements
         AccountingPointEnvelopeOutboundConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpOutbound.class);
     private final Publisher publisher;
-    private final ObjectMapper objectMapper;
+    private final MessageSerde serde;
 
-    public AmqpOutbound(Connection connection, ObjectMapper objectMapper) {
+    public AmqpOutbound(Connection connection, MessageSerde serde) {
         publisher = connection.publisherBuilder().build();
-        this.objectMapper = objectMapper;
+        this.serde = serde;
     }
 
     @Override
@@ -80,14 +79,14 @@ public class AmqpOutbound implements
 
 
     private void publish(
-            Object connectionStatusMessage,
+            Object payload,
             String exchange,
             Map<String, String> headers
     ) {
         try {
             var message = publisher
                     .message()
-                    .body(objectMapper.writeValueAsBytes(connectionStatusMessage));
+                    .body(serde.serialize(payload));
             for (var entry : headers.entrySet()) {
                 message.property(entry.getKey(), entry.getValue());
             }
@@ -96,7 +95,7 @@ public class AmqpOutbound implements
                     .exchange(exchange)
                     .message();
             publisher.publish(message, this::callback);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             LOGGER.warn("Could not parse message for exchange {}", exchange, e);
         }
     }

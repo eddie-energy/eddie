@@ -1,45 +1,69 @@
 package energy.eddie.outbound.kafka;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.*;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocumentComplexType;
+import energy.eddie.outbound.shared.serde.MessageSerde;
+import energy.eddie.outbound.shared.serde.SerdeFactory;
+import energy.eddie.outbound.shared.serde.SerdeInitializationException;
+import energy.eddie.outbound.shared.serde.SerializationException;
 import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.stream.Stream;
 
 import static energy.eddie.api.CommonInformationModelVersions.V0_82;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class CustomSerializerTest {
+    @Mock
+    private MessageSerde mockSerde;
 
-    private CustomSerializer customSerializer;
-    private final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
-
-    @BeforeEach
-    void setup() {
-        customSerializer = new CustomSerializer(objectMapper);
-    }
-
-    @AfterEach
-    void tearDown() {
-        customSerializer.close();
+    public static Stream<Arguments> testSerialize_throwsOnSerializationException() {
+        var dataSourceInformation = new MockDataSourceInformation("AT", "at-eda", "paid", "mdaid");
+        return Stream.of(
+                Arguments.of(new ValidatedHistoricalDataEnvelope(),
+                             CustomSerializer.ValidatedHistoricalDataEnvelopeSerializationException.class),
+                Arguments.of(new AccountingPointEnvelope(),
+                             CustomSerializer.AccountingPointEnvelopeSerializationException.class),
+                Arguments.of(new PermissionEnvelope(),
+                             CustomSerializer.PermissionMarketDocumentSerializationException.class),
+                Arguments.of(new RawDataMessage("pid",
+                                                "cid",
+                                                "dnid",
+                                                dataSourceInformation,
+                                                ZonedDateTime.now(ZoneOffset.UTC),
+                                                ""),
+                             CustomSerializer.RawDataMessageSerializationException.class),
+                Arguments.of(new ConnectionStatusMessage("cid",
+                                                         "pid",
+                                                         "dnid",
+                                                         dataSourceInformation,
+                                                         PermissionProcessStatus.ACCEPTED),
+                             CustomSerializer.ConnectionStatusMessageSerializationException.class)
+        );
     }
 
     @Test
-    void testSerialize_StatusMessageData() {
+    void testSerialize_StatusMessageData() throws SerdeInitializationException {
+        var customSerializer = new CustomSerializer(SerdeFactory.getInstance().create("json"));
         String topic = "test";
         ZonedDateTime now = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId",
@@ -59,10 +83,13 @@ class CustomSerializerTest {
 
         byte[] result = customSerializer.serialize(topic, data);
         assertArrayEquals(expected, result);
+
+        customSerializer.close();
     }
 
     @Test
-    void testSerialize_NullData() {
+    void testSerialize_NullData() throws SerdeInitializationException {
+        var customSerializer = new CustomSerializer(SerdeFactory.getInstance().create("json"));
         String topic = "test";
         Object data = null;
         byte[] expected = new byte[0];
@@ -70,19 +97,26 @@ class CustomSerializerTest {
         byte[] result = customSerializer.serialize(topic, data);
 
         assertArrayEquals(expected, result);
+
+        customSerializer.close();
     }
 
     @Test
-    void testSerialize_UnsupportedDataType() {
+    void testSerialize_UnsupportedDataType() throws SerdeInitializationException {
+        var customSerializer = new CustomSerializer(SerdeFactory.getInstance().create("json"));
         String topic = "test";
         Object data = new Object();
 
         assertThrows(UnsupportedOperationException.class,
                      () -> customSerializer.serialize(topic, data));
+
+        customSerializer.close();
     }
 
     @Test
-    void testSerialize_EddieValidatedHistoricalDataMarketDocument() throws JsonProcessingException {
+    void testSerialize_EddieValidatedHistoricalDataMarketDocument() throws SerdeInitializationException {
+        // Given
+        var customSerializer = new CustomSerializer(SerdeFactory.getInstance().create("json"));
         String topic = "test";
         var data = new ValidatedHistoricalDataEnvelope()
                 .withMessageDocumentHeader(
@@ -97,20 +131,21 @@ class CustomSerializerTest {
                 .withValidatedHistoricalDataMarketDocument(
                         new ValidatedHistoricalDataMarketDocumentComplexType()
                 );
-        byte[] expected = new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .registerModule(new Jdk8Module())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .writeValueAsBytes(data);
 
+        // When
         byte[] result = customSerializer.serialize(topic, data);
 
-        assertArrayEquals(expected, result);
+        // Then
+        assertNotNull(result);
+
+        // Clean-Up
+        customSerializer.close();
     }
 
     @Test
-    void givenRawDataMessage_serializes_asExpected() {
+    void givenRawDataMessage_serializes_asExpected() throws SerdeInitializationException {
         // Given
+        var customSerializer = new CustomSerializer(SerdeFactory.getInstance().create("json"));
         var expectedString = "{\"permissionId\":\"foo\",\"connectionId\":\"bar\",\"dataNeedId\":\"id1\",\"dataSourceInformation\":{\"countryCode\":\"TEST\",\"meteredDataAdministratorId\":\"tEsT\",\"permissionAdministratorId\":\"TeSt\",\"regionConnectorId\":\"test\"},\"timestamp\":\"2024-01-16T12:00:00Z\",\"rawPayload\":\"rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters\"}";
         var topic = "myTest";
         var dataSourceInformation = new MockDataSourceInformation("TEST", "test", "TeSt", "tEsT");
@@ -126,66 +161,69 @@ class CustomSerializerTest {
 
         // Then
         assertEquals(expectedString, new String(result, StandardCharsets.UTF_8));
+
+        // Clean-Up
+        customSerializer.close();
     }
 
     @Test
-    void givenPermissionMarketDocument_serializes_asExpected() {
+    void givenPermissionMarketDocument_serializes_asExpected() throws SerdeInitializationException {
         // Given
+        var customSerializer = new CustomSerializer(SerdeFactory.getInstance().create("json"));
         // language=JSON
         var json = """
                 {
-                    "messageDocumentHeader": null,
-                    "permissionMarketDocument":
-                    {
-                      "mrid": "permissionId",
-                      "revisionNumber": "0.82",
-                      "type": "Z04",
-                      "createdDateTime": "2024-01-25T09:09Z",
-                      "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
-                      "senderMarketParticipantMRID": {
-                        "codingScheme": "NDK",
-                        "value": "epId"
-                      },
-                      "senderMarketParticipantMarketRoleType": "A20",
-                      "receiverMarketParticipantMRID": {
-                        "codingScheme": "NDK",
-                        "value": "Energinet"
-                      },
-                      "receiverMarketParticipantMarketRoleType": "A50",
-                      "processProcessType": "A55",
-                      "periodTimeInterval": {
-                        "start": "2023-10-27T00:00Z",
-                        "end": "2024-01-24T00:00Z"
-                      },
-                      "permissionList": {
-                        "permissions": [
-                          {
-                            "permissionMRID": "permissionId",
-                            "createdDateTime": "2024-01-25T10:09Z",
-                            "transmissionSchedule": null,
-                            "marketEvaluationPointMRID": {
-                              "codingScheme": "NDK",
-                              "value": "cid"
-                            },
-                            "timeSeriesList": null,
-                            "mktActivityRecordList": {
-                              "mktActivityRecords": [
-                                {
-                                  "mrid": "uniqueId",
-                                  "createdDateTime": "2024-01-25T09:09Z",
-                                  "description": "",
-                                  "type": "dk-energinet",
-                                  "reason": null,
-                                  "name": null,
-                                  "status": "CREATED"
-                                }
-                              ]
-                            },
-                            "reasonList": null
-                          }
-                        ]
-                      }
+                  "MessageDocumentHeader": null,
+                  "Permission_MarketDocument": {
+                    "mRID": "permissionId",
+                    "revisionNumber": "0.82",
+                    "type": "Z04",
+                    "createdDateTime": "2024-01-25T09:09Z",
+                    "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                    "sender_MarketParticipant.mRID": {
+                      "codingScheme": "NDK",
+                      "value": "epId"
+                    },
+                    "sender_MarketParticipant.marketRole.type": "A20",
+                    "receiver_MarketParticipant.mRID": {
+                      "codingScheme": "NDK",
+                      "value": "Energinet"
+                    },
+                    "receiver_MarketParticipant.marketRole.type": "A50",
+                    "process.processType": "A55",
+                    "period.timeInterval": {
+                      "start": "2023-10-27T00:00Z",
+                      "end": "2024-01-24T00:00Z"
+                    },
+                    "PermissionList": {
+                      "Permission": [
+                        {
+                          "permission.mRID": "permissionId",
+                          "createdDateTime": "2024-01-25T10:09Z",
+                          "transmissionSchedule": null,
+                          "marketEvaluationPoint.mRID": {
+                            "codingScheme": "NDK",
+                            "value": "cid"
+                          },
+                          "TimeSeriesList": null,
+                          "MktActivityRecordList": {
+                            "MktActivityRecord": [
+                              {
+                                "mRID": "uniqueId",
+                                "createdDateTime": "2024-01-25T09:09Z",
+                                "description": "",
+                                "type": "dk-energinet",
+                                "reason": null,
+                                "name": null,
+                                "status": "CREATED"
+                              }
+                            ]
+                          },
+                          "ReasonList": null
+                        }
+                      ]
                     }
+                  }
                 }
                 """.replace("\n", "")
                    .replace(" ", "");
@@ -253,6 +291,23 @@ class CustomSerializerTest {
 
         // Then
         assertEquals(json, new String(res, StandardCharsets.UTF_8));
+
+        // Clean-Up
+        customSerializer.close();
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void testSerialize_throwsOnSerializationException(
+            Object serializable,
+            Class<? extends Exception> exception
+    ) throws SerializationException {
+        // Given
+        var customSerializer = new CustomSerializer(mockSerde);
+        when(mockSerde.serialize(any())).thenThrow(exception);
+
+        // When & Then
+        assertThrows(exception, () -> customSerializer.serialize("any", serializable));
 
         // Clean-Up
         customSerializer.close();

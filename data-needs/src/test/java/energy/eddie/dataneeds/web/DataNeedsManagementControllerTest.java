@@ -130,12 +130,13 @@ class DataNeedsManagementControllerTest {
             List<String> expectedErrors
     ) throws Exception {
         mockMvc.perform(post("/management")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(expectedErrors.size())))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message",
-                        containsInAnyOrder(expectedErrors.toArray(new String[0]))));
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(json))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(expectedErrors.size())))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message",
+                                   containsInAnyOrder(expectedErrors.toArray(new String[0]))));
     }
 
     @Test
@@ -145,26 +146,27 @@ class DataNeedsManagementControllerTest {
 
         // When
         mockMvc.perform(get("/management")
-                        .contentType(MediaType.APPLICATION_JSON))
-                // Then
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", iterableWithSize(2)))
-                .andExpect(jsonPath("$[*].id", containsInAnyOrder("123", "fooBar")))
-                .andExpect(jsonPath("$[*].name", containsInAnyOrder("Name", "Accounting Point Need")))
-                .andExpect(jsonPath("$[*].type", containsInAnyOrder(ValidatedHistoricalDataDataNeed.DISCRIMINATOR_VALUE,
-                        AccountingPointDataNeed.DISCRIMINATOR_VALUE)));
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$", iterableWithSize(2)))
+               .andExpect(jsonPath("$[*].id", containsInAnyOrder("123", "fooBar")))
+               .andExpect(jsonPath("$[*].name", containsInAnyOrder("Name", "Accounting Point Need")))
+               .andExpect(jsonPath("$[*].type", containsInAnyOrder(ValidatedHistoricalDataDataNeed.DISCRIMINATOR_VALUE,
+                                                                   AccountingPointDataNeed.DISCRIMINATOR_VALUE)));
     }
 
     @Test
     void givenNonExistingId_getDataNeed_returnsNotFound() throws Exception {
         // When
         mockMvc.perform(get("/management/{dataNeedId}", "nonExisting")
-                        .accept(MediaType.APPLICATION_JSON))
-                // Then
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
-                        Matchers.is("No data need with ID 'nonExisting' found.")));
+                                .accept(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isNotFound())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
+                                   Matchers.is("No data need with ID 'nonExisting' found.")));
     }
 
     @Test
@@ -176,25 +178,25 @@ class DataNeedsManagementControllerTest {
 
         // When
         mockMvc.perform(get("/management/{dataNeedId}", id)
-                        .accept(MediaType.APPLICATION_JSON))
-                // Then
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(id)))
-                .andExpect(jsonPath("$.type", is(ValidatedHistoricalDataDataNeed.DISCRIMINATOR_VALUE)))
-                .andExpect(jsonPath("$.duration.start", is("P-90D")))
-                .andExpect(jsonPath("$.duration.stickyStartCalendarUnit").doesNotExist());
+                                .accept(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.id", is(id)))
+               .andExpect(jsonPath("$.type", is(ValidatedHistoricalDataDataNeed.DISCRIMINATOR_VALUE)))
+               .andExpect(jsonPath("$.duration.start", is("P-90D")))
+               .andExpect(jsonPath("$.duration.stickyStartCalendarUnit").doesNotExist());
     }
 
     @Test
     void givenNonExistingId_deleteDataNeed_returnsNotFound() throws Exception {
         // When
         mockMvc.perform(delete("/management/{dataNeedId}", "nonExisting2")
-                        .accept(MediaType.APPLICATION_JSON))
-                // Then
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
-                        Matchers.is("No data need with ID 'nonExisting2' found.")));
+                                .accept(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isNotFound())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
+                                   Matchers.is("No data need with ID 'nonExisting2' found.")));
     }
 
     @Test
@@ -206,9 +208,9 @@ class DataNeedsManagementControllerTest {
 
         // When
         mockMvc.perform(delete("/management/{dataNeedId}", id)
-                        .accept(MediaType.APPLICATION_JSON))
-                // Then
-                .andExpect(status().isNoContent());
+                                .accept(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isNoContent());
 
         // Then
         verify(mockService).deleteById(id);
@@ -223,11 +225,11 @@ class DataNeedsManagementControllerTest {
 
         // When
         mockMvc.perform(patch("/management/{dataNeedId}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(new EnableDisableBody(true))))
-                // Then
-                .andExpect(status().isNoContent());
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(mapper.writeValueAsString(new EnableDisableBody(true))))
+               // Then
+               .andExpect(status().isNoContent());
 
         // Then
         verify(mockService).enableOrDisableDataNeed(id, true);
@@ -256,6 +258,7 @@ class DataNeedsManagementFullTest {
     @Autowired
     private TestRestTemplate restTemplate;
     @MockBean
+    @SuppressWarnings("unused")
     private SecurityFilterChain mockSecurityFilterChain;
 
     public static Stream<Arguments> validDataNeedRequests() {
@@ -302,7 +305,7 @@ class DataNeedsManagementFullTest {
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
             http.securityMatcher("/**")
-                    .authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
+                .authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
 
             return http.build();
         }

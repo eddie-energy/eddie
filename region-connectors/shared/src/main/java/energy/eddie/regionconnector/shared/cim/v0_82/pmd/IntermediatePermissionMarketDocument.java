@@ -112,6 +112,8 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
                                                 .withPermissionMRID(permissionRequest.permissionId())
                                                 .withCreatedDateTime(created.toString())
                                                 .withTransmissionSchedule(transmissionSchedule())
+                                                .withTimeSeriesList(new PermissionComplexType.TimeSeriesList())
+                                                .withReasonList(new PermissionComplexType.ReasonList())
                                                 .withMarketEvaluationPointMRID(
                                                         new MeasurementPointIDStringComplexType()
                                                                 .withCodingScheme(CodingSchemeTypeList.fromValue(

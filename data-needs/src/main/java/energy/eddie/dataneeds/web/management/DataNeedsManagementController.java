@@ -79,7 +79,7 @@ public class DataNeedsManagementController {
                             examples = @ExampleObject("{\"errors\":[{\"message\":\"description: must not be blank\"},{\"message\":\"purpose: must not be blank\"}]}")
                     ))
     })
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DataNeed> createNewDataNeed(@Validated @RequestBody DataNeed newDataNeed) {
         DataNeed savedDataNeed = service.saveNewDataNeed(newDataNeed);
 
@@ -89,7 +89,7 @@ public class DataNeedsManagementController {
     }
 
     @Operation(summary = "Get details of all existing data needs")
-    @GetMapping
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     // Cannot use Page<DataNeed> because then the type information is not serialized; see https://github.com/FasterXML/jackson-databind/issues/2710#issuecomment-624839647
     public ResponseEntity<List<DataNeed>> getAllDataNeeds() {
         return ResponseEntity.ok(service.findAll());
@@ -113,7 +113,7 @@ public class DataNeedsManagementController {
                     array = @ArraySchema(schema = @Schema(implementation = EddieApiError.class)),
                     examples = @ExampleObject("{\"errors\":[{\"message\":\"No data need with ID '7f57cf16-5121-42a6-919e-7f7335826e64' found.\"}]}")
             ))
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DataNeed> getDataNeed(@PathVariable String id) throws DataNeedNotFoundException {
         return service.findById(id)
                       .map(ResponseEntity::ok)
@@ -131,7 +131,7 @@ public class DataNeedsManagementController {
                     array = @ArraySchema(schema = @Schema(implementation = EddieApiError.class)),
                     examples = @ExampleObject("{\"errors\":[{\"message\":\"No data need with ID '7f57cf16-5121-42a6-919e-7f7335826e64' found.\"}]}")
             ))
-    @DeleteMapping("/{id}")
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> deleteDataNeed(@PathVariable String id) throws DataNeedNotFoundException {
         if (!service.existsById(id)) {
             throw new DataNeedNotFoundException(id, false);
@@ -159,7 +159,7 @@ public class DataNeedsManagementController {
                     array = @ArraySchema(schema = @Schema(implementation = EddieApiError.class)),
                     examples = @ExampleObject("{\"errors\":[{\"message\":\"No data need with ID '7f57cf16-5121-42a6-919e-7f7335826e64' found.\"}]}")
             ))
-    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> enableOrDisableDataNeed(
             @PathVariable String id,
             @RequestBody EnableDisableBody enableDisableBody

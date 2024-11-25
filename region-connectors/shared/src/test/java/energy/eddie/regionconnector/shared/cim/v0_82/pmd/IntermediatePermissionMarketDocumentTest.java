@@ -133,7 +133,14 @@ class IntermediatePermissionMarketDocumentTest {
                 () -> assertEquals("cid",
                                    pmd.getPermissionList().getPermissions().getFirst().getMarketEvaluationPointMRID()
                                       .getValue()),
-                () -> assertNull(pmd.getPermissionList().getPermissions().getFirst().getReasonList()),
+                () -> assertNotNull(pmd.getPermissionList().getPermissions().getFirst().getReasonList()),
+                () -> assertEquals(0,
+                                   pmd.getPermissionList()
+                                      .getPermissions()
+                                      .getFirst()
+                                      .getReasonList()
+                                      .getReasons()
+                                      .size()),
                 () -> assertNull(pmd.getPermissionList().getPermissions().getFirst().getTransmissionSchedule()),
                 () -> assertNotNull(pmd.getPermissionList().getPermissions().getFirst().getMktActivityRecordList()
                                        .getMktActivityRecords().getFirst().getMRID()),

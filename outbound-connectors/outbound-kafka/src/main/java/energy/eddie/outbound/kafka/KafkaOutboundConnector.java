@@ -1,8 +1,10 @@
 package energy.eddie.outbound.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.outbound.shared.serde.MessageSerde;
+import energy.eddie.outbound.shared.serde.SerdeFactory;
+import energy.eddie.outbound.shared.serde.SerdeInitializationException;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -35,14 +37,19 @@ public class KafkaOutboundConnector {
     }
 
     @Bean
+    public MessageSerde serde(@Value("${outbound-connector.kafka.format:json}") String format) throws SerdeInitializationException {
+        return SerdeFactory.getInstance().create(format);
+    }
+
+    @Bean
     public ConsumerFactory<String, PermissionEnvelope> consumerFactory(
             @Qualifier("kafkaPropertiesMap") Map<String, String> kafkaProperties,
-            @Qualifier("objectMapper") ObjectMapper objectMapper
+            MessageSerde serde
     ) {
         var config = kafkaProperties(kafkaProperties);
         return new DefaultKafkaConsumerFactory<>(config,
                                                  new StringDeserializer(),
-                                                 new CustomDeserializer(objectMapper));
+                                                 new CustomDeserializer(serde));
     }
 
     @Bean
@@ -63,10 +70,10 @@ public class KafkaOutboundConnector {
     @Bean
     public ProducerFactory<String, Object> producerFactory(
             @Qualifier("kafkaPropertiesMap") Map<String, String> kafkaProperties,
-            @Qualifier("objectMapper") ObjectMapper objectMapper
+            MessageSerde serde
     ) {
         var config = kafkaProperties(kafkaProperties);
-        return new DefaultKafkaProducerFactory<>(config, new StringSerializer(), new CustomSerializer(objectMapper));
+        return new DefaultKafkaProducerFactory<>(config, new StringSerializer(), new CustomSerializer(serde));
     }
 
     @Bean

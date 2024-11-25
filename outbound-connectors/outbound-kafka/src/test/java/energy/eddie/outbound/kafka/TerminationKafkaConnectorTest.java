@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = {TerminationKafkaConnector.class, KafkaTestConfig.class, ObjectMapperConfig.class})
+@SpringBootTest(classes = {TerminationKafkaConnector.class, KafkaTestConfig.class})
 @EnableKafka
 @EmbeddedKafka
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
