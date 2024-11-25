@@ -38,7 +38,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     return html`
       <div>
         <header>
-          <h2>Who is ENEDIS?</h2>
+          <h4>Who is ENEDIS?</h4>
           <p>
             Enedis manages the electricity network right up to the electricity
             meter. For our service, please authorise Enedis to send us your

@@ -34,10 +34,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   render() {
     return html`
       <div>
-        <header>
-          <h1>Connect to Mijn Aansluiting</h1>
-        </header>
-
         <form id="request-form">
           <sl-input
             label="House Number"

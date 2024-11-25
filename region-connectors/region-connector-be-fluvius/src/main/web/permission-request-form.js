@@ -37,20 +37,12 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       flow: formData.get("flow"),
     };
 
-    this.createPermissionRequest(payload)
-      .then((result) => {
-        this._permissionId = result.permissionId;
-      })
-      .catch((error) => this.error(error));
+    this.createPermissionRequest(payload).catch((error) => this.error(error));
   }
 
   render() {
     return html`
       <div>
-        <header>
-          <h2>Fluvius - Belgium Region Connector</h2>
-        </header>
-
         <form id="request-form">
           <sl-radio-group label="Your type: " name="flow" value="B2C">
             <sl-radio-button value="B2B">B2B</sl-radio-button>

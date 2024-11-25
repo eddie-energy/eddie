@@ -212,6 +212,13 @@ class EddieConnectButton extends LitElement {
     this._supportedCountries = undefined;
 
     /**
+     * The permission administrator that has been selected by configuration or user input.
+     * @type {PermissionAdministrator}
+     * @private
+     */
+    this._selectedPermissionAdministrator = undefined;
+
+    /**
      * Permission administrators that match the selected country.
      * @type {PermissionAdministrator[]}
      * @private
@@ -404,7 +411,10 @@ class EddieConnectButton extends LitElement {
     this._selectedCountry = country;
 
     if (country === "sim") {
-      this._selectedPermissionAdministrator = { regionConnector: "sim" };
+      this._selectedPermissionAdministrator = {
+        name: "Simulator",
+        regionConnector: "sim",
+      };
     }
 
     if (!country) {
@@ -478,7 +488,7 @@ class EddieConnectButton extends LitElement {
         );
       }
 
-      this._presetPermissionAdministrator = pa;
+      this.selectPermissionAdministrator(pa);
     }
 
     if (this.isAiida()) {
@@ -488,15 +498,11 @@ class EddieConnectButton extends LitElement {
         );
       }
 
-      this._presetPermissionAdministrator = {
+      this._selectedPermissionAdministrator = {
         name: "AIIDA",
         company: "AIIDA",
         regionConnector: "aiida",
       };
-    }
-
-    if (this._presetPermissionAdministrator) {
-      this.selectPermissionAdministrator(this._presetPermissionAdministrator);
     }
 
     if (
@@ -629,10 +635,12 @@ class EddieConnectButton extends LitElement {
               <data-need-summary
                 data-need-id="${this.dataNeedId}"
               ></data-need-summary>
+
               <br />
               <sl-button
                 @click="${this.handleDataNeedConfirmed}"
                 variant="primary"
+                style="float: right"
               >
                 Continue
               </sl-button>
@@ -650,7 +658,7 @@ class EddieConnectButton extends LitElement {
                 @sl-change="${(event) =>
                   this.selectCountry(event.target.value)}"
                 value="${this._selectedCountry}"
-                ?disabled="${ifDefined(this._presetPermissionAdministrator)}"
+                ?disabled="${this.permissionAdministratorId}"
                 help-text="${this._supportedCountries.size !==
                 this._enabledCountries.length
                   ? "Some countries do not support the given data requirements."
@@ -699,7 +707,7 @@ class EddieConnectButton extends LitElement {
                   this._selectedPermissionAdministrator?.companyId
                 )}"
                 ?disabled="${!this._selectedCountry ||
-                !!this._presetPermissionAdministrator ||
+                this.permissionAdministratorId ||
                 this._filteredPermissionAdministrators.length <= 1}"
               >
                 ${this._filteredPermissionAdministrators.map(
@@ -720,6 +728,7 @@ class EddieConnectButton extends LitElement {
                 @click="${this.handlePermissionAdministratorSelected}"
                 ?disabled="${!this._selectedPermissionAdministrator}"
                 variant="primary"
+                style="float: right"
               >
                 Continue
               </sl-button>
@@ -755,7 +764,11 @@ class EddieConnectButton extends LitElement {
               </sl-alert>
 
               <br />
-              <sl-button variant="danger" @click="${this.closeDialog}">
+              <sl-button
+                variant="danger"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
                 Close
               </sl-button>
             `,
@@ -781,7 +794,11 @@ class EddieConnectButton extends LitElement {
               </sl-alert>
 
               <br />
-              <sl-button variant="success" @click="${this.closeDialog}">
+              <sl-button
+                variant="success"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
                 Close
               </sl-button>
             `,
@@ -793,7 +810,7 @@ class EddieConnectButton extends LitElement {
 
               <sl-alert variant="primary" open>
                 <sl-icon slot="icon" name="info-circle"></sl-icon>
-                
+
                 <p>
                   You rejected the permission request for the service provider
                   to access to your data. No data will be processed.
@@ -806,7 +823,11 @@ class EddieConnectButton extends LitElement {
               </sl-alert>
 
               <br />
-              <sl-button variant="primary" @click="${this.closeDialog}">
+              <sl-button
+                variant="primary"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
                 Close
               </sl-button>
             `,
@@ -815,7 +836,7 @@ class EddieConnectButton extends LitElement {
             "timed-out",
             () => html`
               <h3>Permission request timed out</h3>
-              
+
               <sl-alert variant="danger" open>
                 <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
                 <p>
@@ -831,7 +852,11 @@ class EddieConnectButton extends LitElement {
               </sl-alert>
 
               <br />
-              <sl-button variant="danger" @click="${this.closeDialog}">
+              <sl-button
+                variant="danger"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
                 Close
               </sl-button>
             `,
@@ -855,7 +880,11 @@ class EddieConnectButton extends LitElement {
               </sl-alert>
 
               <br />
-              <sl-button variant="danger" @click="${this.closeDialog}">
+              <sl-button
+                variant="danger"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
                 Close
               </sl-button>
             `,
@@ -879,7 +908,11 @@ class EddieConnectButton extends LitElement {
               </sl-alert>
 
               <br />
-              <sl-button variant="danger" @click="${this.closeDialog}">
+              <sl-button
+                variant="danger"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
                 Close
               </sl-button>
             `,

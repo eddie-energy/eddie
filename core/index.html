@@ -27,7 +27,7 @@
       connection-id="1"
     ></eddie-connect-button>
 
-    <form autocomplete="off">
+    <form>
       <label>
         <span>Data need</span>
         <select name="data-need-id" autocomplete="off"></select>
@@ -77,6 +77,11 @@
           button.setAttribute(name, type === "checkbox" ? checked : value);
           button.replaceWith(button.cloneNode());
         });
+      });
+
+      // Log all status events for debugging purposes
+      document.addEventListener("eddie-request-status", (event) => {
+        console.debug(event.detail.status, event.detail);
       });
     </script>
   </body>
