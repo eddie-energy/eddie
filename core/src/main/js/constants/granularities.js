@@ -3,8 +3,8 @@ export const GRANULARITIES = {
   PT10M: "10 minutes",
   PT15M: "15 minutes",
   PT30M: "30 minutes",
-  PT1H: "Hourly",
-  P1D: "Daily",
-  P1M: "Monthly",
-  P1Y: "Yearly",
+  PT1H: "1 hour",
+  P1D: "1 day",
+  P1M: "1 month",
+  P1Y: "1 year",
 };
