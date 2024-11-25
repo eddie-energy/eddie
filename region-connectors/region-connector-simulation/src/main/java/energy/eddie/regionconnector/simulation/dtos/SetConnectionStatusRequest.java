@@ -9,5 +9,7 @@ public class SetConnectionStatusRequest {
     @Nullable
     public String dataNeedId;
     @Nullable
+    public String permissionId;
+    @Nullable
     public PermissionProcessStatus connectionStatus;
 }

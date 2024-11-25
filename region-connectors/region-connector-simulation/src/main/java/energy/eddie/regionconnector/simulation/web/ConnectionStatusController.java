@@ -42,7 +42,7 @@ public class ConnectionStatusController implements ConnectionStatusMessageProvid
             connectionStatusStreamSink.tryEmitNext(
                     new ConnectionStatusMessage(
                             req.connectionId,
-                            req.connectionId,
+                            req.permissionId,
                             req.dataNeedId,
                             new SimulationDataSourceInformation(),
                             req.connectionStatus,

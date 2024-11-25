@@ -16,7 +16,7 @@ public record SimulationPermissionRequest(@Nullable String connectionId, @Nullab
                                           @Nullable PermissionProcessStatus status) implements PermissionRequest {
 
     public SimulationPermissionRequest(SetConnectionStatusRequest req) {
-        this(req.connectionId, req.connectionId, req.dataNeedId, req.connectionStatus);
+        this(req.connectionId, req.permissionId, req.dataNeedId, req.connectionStatus);
     }
 
     @Override
