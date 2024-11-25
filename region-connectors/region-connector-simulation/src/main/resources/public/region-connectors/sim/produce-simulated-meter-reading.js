@@ -1,5 +1,6 @@
 import { html, LitElement } from "https://esm.sh/lit";
 import { createRef, ref } from "https://esm.sh/lit/directives/ref.js";
+import { commonParameters } from "./common-parameters-form.js";
 
 function range(n) {
   return [...Array(n).keys()];
@@ -9,8 +10,6 @@ const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
 class ProduceSimulatedMeterReadingCe extends LitElement {
   static properties = {
-    connectionId: { attribute: "connection-id" },
-    dataNeedId: { attribute: "data-need-id" },
     _measurementsPerDay: {},
     _date: {},
   };
@@ -28,7 +27,6 @@ class ProduceSimulatedMeterReadingCe extends LitElement {
       ProduceSimulatedMeterReadingCe.meteringIntervalOptions.PT1H;
     this._date = new Date().toISOString().split("T")[0];
     this.meteringPointInputRef = createRef();
-    this.permissionIdInputRef = createRef();
     this.measurementsPerDayRef = createRef();
     this.measurementsDivRef = createRef();
   }
@@ -96,9 +94,9 @@ class ProduceSimulatedMeterReadingCe extends LitElement {
       measurementType: isDataPointMeasured[i] ? "measured" : "extrapolated",
     }));
     const meterReading = {
-      connectionId: this.connectionId,
-      dataNeedId: this.dataNeedId,
-      permissionId: this.permissionIdInputRef?.value?.value,
+      connectionId: commonParameters.connectionId,
+      dataNeedId: commonParameters.dataNeedId,
+      permissionId: commonParameters.permissionId,
       meteringPoint: this.meteringPointInputRef?.value?.value,
       startDateTime: new Date(this._date + "T00:00:00").toISOString(),
       meteringInterval: this.measurementsPerDayRef?.value?.value,
@@ -156,18 +154,6 @@ class ProduceSimulatedMeterReadingCe extends LitElement {
                 type="text"
                 id="meteringPoint"
                 ${ref(this.meteringPointInputRef)}
-                value="MP-4711"
-              />
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-2" for="permissionId">Permission Id</label>
-            <div class="col-2">
-              <input
-                class="form-control"
-                type="text"
-                id="permissionId"
-                ${ref(this.permissionIdInputRef)}
                 value="MP-4711"
               />
             </div>

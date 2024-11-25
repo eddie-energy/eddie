@@ -1,4 +1,5 @@
 import { css, html, LitElement } from "https://esm.sh/lit";
+import { commonParameters } from "./common-parameters-form.js";
 
 class SetConnectionStatusCe extends LitElement {
   static properties = {
@@ -23,8 +24,9 @@ class SetConnectionStatusCe extends LitElement {
       `switching connection status of ${this.connectionId} to ${connectionStatus}`
     );
     const body = JSON.stringify({
-      connectionId: this.connectionId,
-      dataNeedId: this.dataNeedId,
+      connectionId: commonParameters.connectionId,
+      dataNeedId: commonParameters.dataNeedId,
+      permissionId: commonParameters.permissionId,
       connectionStatus,
     });
     fetch("connection-status", {

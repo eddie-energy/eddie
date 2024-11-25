@@ -1,6 +1,24 @@
 import { html, LitElement } from "https://esm.sh/lit";
 import { createRef, ref } from "https://esm.sh/lit/directives/ref.js";
 
+class CommonParameters {
+  _commonParameterForm = null;
+
+  get dataNeedId() {
+    return this._commonParameterForm.dataNeedIdInputRef.value.value;
+  }
+
+  get connectionId() {
+    return this._commonParameterForm.connectionIdInputRef.value.value;
+  }
+
+  get permissionId() {
+    return this._commonParameterForm.permissionIdInputRef.value.value;
+  }
+}
+
+export const commonParameters = new CommonParameters();
+
 class CommonParametersFormCe extends LitElement {
   static properties = {
     dataNeedId: { attribute: "data-need-id" },
@@ -13,6 +31,10 @@ class CommonParametersFormCe extends LitElement {
     this.dataNeedIdInputRef = createRef();
     this.connectionIdInputRef = createRef();
     this.permissionIdInputRef = createRef();
+    if (commonParameters._commonParameterForm) {
+      throw Error("common-parameters-form must be used only once");
+    }
+    commonParameters._commonParameterForm = this;
   }
 
   render() {
