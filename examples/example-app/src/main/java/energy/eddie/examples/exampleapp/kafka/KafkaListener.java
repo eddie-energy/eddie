@@ -173,6 +173,16 @@ public class KafkaListener implements Runnable {
         Properties streamsConfiguration = new Properties();
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "example-app-" + streamName);
         streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, Env.KAFKA_BOOTSTRAP_SERVERS.get());
+
+        for (Map.Entry<String, String> env : System.getenv().entrySet()) {
+            if (env.getKey().toLowerCase().startsWith("example_app_kafka_")) {
+                var kafkaPropertyKey = env.getKey().toLowerCase() // Kafka properties are written in lowercase
+                        .replace("example_app_kafka_", "")
+                        .replace("_", "."); // Kafka properties are separated with "."
+                streamsConfiguration.put(kafkaPropertyKey, env.getValue());
+            }
+        }
+
         return streamsConfiguration;
     }
 
