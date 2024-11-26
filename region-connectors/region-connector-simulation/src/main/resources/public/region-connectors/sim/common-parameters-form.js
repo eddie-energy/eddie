@@ -43,12 +43,12 @@ class CommonParametersFormCe extends LitElement {
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
       />
-      <div class="card">
+      <div class="card mb-3">
         <div class="card-header">Common Parameters</div>
         <div class="card-body">
           <div class="row mb-3">
-            <label class="col-2" for="dataNeedId">Data Need Id</label>
-            <div class="col-2">
+            <label class="col-sm-3" for="dataNeedId">Data Need Id</label>
+            <div class="col-sm">
               <input
                 class="form-control"
                 type="text"
@@ -59,8 +59,8 @@ class CommonParametersFormCe extends LitElement {
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-2" for="meteringPoint">Connection Id</label>
-            <div class="col-2">
+            <label class="col-sm-3" for="meteringPoint">Connection Id</label>
+            <div class="col-sm">
               <input
                 class="form-control"
                 type="text"
@@ -71,8 +71,8 @@ class CommonParametersFormCe extends LitElement {
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-2" for="permissionId">Permission Id</label>
-            <div class="col-2">
+            <label class="col-sm-3" for="permissionId">Permission Id</label>
+            <div class="col-sm">
               <input
                 class="form-control"
                 type="text"

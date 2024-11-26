@@ -135,8 +135,8 @@ class ProduceSimulatedMeterReadingCe extends LitElement {
         <div class="card-header">Meter Readings</div>
         <div class="card-body">
           <div class="row mb-3">
-            <label class="col-2" for="startDate">Date</label>
-            <div class="col-2">
+            <label class="col-sm-3" for="startDate">Date</label>
+            <div class="col-sm">
               <input
                 class="form-control"
                 type="date"
@@ -147,8 +147,8 @@ class ProduceSimulatedMeterReadingCe extends LitElement {
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-2" for="meteringPoint">Metering Point</label>
-            <div class="col-2">
+            <label class="col-sm-3" for="meteringPoint">Metering Point</label>
+            <div class="col-sm">
               <input
                 class="form-control"
                 type="text"
@@ -159,10 +159,10 @@ class ProduceSimulatedMeterReadingCe extends LitElement {
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-2" for="meteringInterval"
+            <label class="col-sm-3" for="meteringInterval"
               >Measurement per day</label
             >
-            <div class="col-2">
+            <div class="col-sm">
               <select
                 class="form-select"
                 id="meteringInterval"
@@ -190,10 +190,10 @@ class ProduceSimulatedMeterReadingCe extends LitElement {
             ${range(this._measurementsPerDay).map(
               (i) => html`
                 <div class="row mb-1">
-                  <div class="col-auto">${this.timeInterval(i)}</div>
-                  <div class="col-auto">
+                  <div class="col-md-auto">${this.timeInterval(i)}</div>
+                  <div class="col-4 col-md-3 col-lg-2">
                     <input
-                      class="form-control form-control-sm text-end"
+                      class="form-control form-control-sm text-end consumption-input"
                       type="number"
                       value="0"
                     />
