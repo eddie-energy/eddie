@@ -14,21 +14,21 @@ The following exchanges and queues are created upon starting this outbound-conne
 - `validated-historical-data`: Provides validated historical data market documents
 - `accounting-point-market-documents`: Provides accounting point market documents
 - `terminations`: Allows the eligible party to send termination documents to terminate a permission request.
-  For an example of termination document, see [termination messages](../OPERATION.md#termination-of-permission-requests)
+  For an example of termination document, see [termination messages](./outbound-connector-kafka.md#termination-of-permission-requests)
 
-## Headers
+## Properties of messages
 
-The following headers are set by EDDIE for outbound messages and can be used for further routing the messages between exchanges and queues.
+The following properties are set by EDDIE for outbound messages and can be used for further routing the messages between exchanges and queues.
 
 - `permission-id`: The permission ID that is related to this message
 - `connection-id`: The connection ID that is related to this and other messages provided by the eligible upon creation of the permission request
-- `data-need-id`: The data need ID that is related to this message
+- `data-need-id`: The data need ID related to this message
 
 ## Configuration
 
 The following configuration values are supported by the AMQP outbound-connector:
 
-| Configuration values              | Possible values                                                                                       | Default | Description                                                 |
+| Configuration values              | Type                                                                                                  | Default | Description                                                 |
 |-----------------------------------|-------------------------------------------------------------------------------------------------------|---------|-------------------------------------------------------------|
 | `outbound-connector.amqp.enabled` | `true` or `false`                                                                                     | `false` | Enables or disables the outbound-connector.                 |
 | `outbound-connector.amqp.format`  | `xml` or `json`                                                                                       | `json`  | Sets the format of the messages that are sent and received. |
