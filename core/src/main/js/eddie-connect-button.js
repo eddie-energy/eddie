@@ -41,8 +41,7 @@ const COUNTRIES = new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country));
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
 const CORE_URL =
-  import.meta.env.VITE_CORE_URL ??
-  import.meta.url.replace("/lib/eddie-components.js", "");
+  import.meta.env.VITE_CORE_URL ?? import.meta.url.split("/lib/")[0];
 
 /**
  * Maps events dispatched by the button to the view they should navigate to.
