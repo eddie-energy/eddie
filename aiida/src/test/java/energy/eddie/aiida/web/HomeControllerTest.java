@@ -1,11 +1,9 @@
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.services.PermissionService;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -24,7 +22,7 @@ class HomeControllerTest {
 
     @Test
     @WithMockUser
-    public void getHome_createsCookieIfNotPresent() throws Exception {
+    void getHome_createsCookieIfNotPresent() throws Exception {
         mockMvc.perform(get("/")
                         .with(csrf())
                 )
@@ -35,7 +33,7 @@ class HomeControllerTest {
 
     @Test
     @WithMockUser
-    public void getHome_storesCookieInModelIfPresent() throws Exception {
+    void getHome_storesCookieInModelIfPresent() throws Exception {
         mockMvc.perform(get("/")
                         .with(csrf())
                         .cookie(new Cookie(HomeController.CONNECTION_ID_COOKIE_NAME, connectionId))
@@ -47,7 +45,7 @@ class HomeControllerTest {
 
     @Test
     @WithMockUser
-    public void getHomeWithAuthentication_authenticatedModelTrue() throws Exception {
+    void getHomeWithAuthentication_authenticatedModelTrue() throws Exception {
         mockMvc.perform(get("/")
                         .with(csrf())
                 )
@@ -56,13 +54,13 @@ class HomeControllerTest {
     }
 
     @Test
-    public void getHomeWithoutAuthentication_isUnauthorized() throws Exception {
+    void getHomeWithoutAuthentication_isUnauthorized() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void getLogin_isOk() throws Exception {
+    void getLogin_isOk() throws Exception {
         mockMvc.perform(get("/login"))
                 .andExpect(status().isOk());
     }

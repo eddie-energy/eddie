@@ -70,7 +70,7 @@ public class StreamerManager implements AutoCloseable {
         var dataNeed = requireNonNull(permission.dataNeed());
         if (!dataNeed.type().equals(GenericAiidaDataNeed.DISCRIMINATOR_VALUE)) {
             // TODO GH-782: this should be guaranteed by the check when the permission is setup, so no checked exception should be necessary
-            throw new RuntimeException(new UnsupportedDataNeedException("AIIDA",
+            throw new UnexpectedUnsupportedDataNeedException(new UnsupportedDataNeedException("AIIDA",
                                                                         dataNeed.dataNeedId(),
                                                                         "Data need not supported"));
         }
@@ -136,5 +136,12 @@ public class StreamerManager implements AutoCloseable {
         }
 
         terminationRequests.tryEmitComplete();
+    }
+
+    // TODO: Can be removed with GH-782
+    static class UnexpectedUnsupportedDataNeedException extends RuntimeException {
+        public UnexpectedUnsupportedDataNeedException(Exception exception) {
+            super(exception);
+        }
     }
 }

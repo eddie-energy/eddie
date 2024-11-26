@@ -1,3 +1,4 @@
+rootProject.name = "eddie"
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {

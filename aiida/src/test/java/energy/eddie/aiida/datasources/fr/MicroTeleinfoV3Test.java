@@ -86,7 +86,7 @@ class MicroTeleinfoV3Test {
 
     @Test
     void verify_errorsDuringClose_areLogged() throws MqttException {
-        try (LogCaptor logCaptor = LogCaptor.forClass(MicroTeleinfoV3.class)) {
+        try (LogCaptor captor = LogCaptor.forClass(MicroTeleinfoV3.class)) {
             try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
                 var mockClient = mock(MqttAsyncClient.class);
                 mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
@@ -97,7 +97,7 @@ class MicroTeleinfoV3Test {
                 adapter.start().subscribe();
                 adapter.close();
 
-                assertThat(logCaptor.getWarnLogs()).contains("Error while disconnecting or closing MQTT client");
+                assertThat(captor.getWarnLogs()).contains("Error while disconnecting or closing MQTT client");
             }
         }
     }

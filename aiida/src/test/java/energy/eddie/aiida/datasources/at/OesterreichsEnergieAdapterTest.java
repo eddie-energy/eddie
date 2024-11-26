@@ -51,6 +51,7 @@ class OesterreichsEnergieAdapterTest {
         logCaptor.clearLogs();
     }
 
+    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Test
     void testHealth() {
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
@@ -108,7 +109,7 @@ class OesterreichsEnergieAdapterTest {
 
     @Test
     void verify_errorsDuringClose_areLogged() throws MqttException {
-        try (LogCaptor logCaptor = LogCaptor.forClass(OesterreichsEnergieAdapter.class)) {
+        try (LogCaptor captor = LogCaptor.forClass(OesterreichsEnergieAdapter.class)) {
             try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
                 var mockClient = mock(MqttAsyncClient.class);
                 mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
@@ -119,7 +120,7 @@ class OesterreichsEnergieAdapterTest {
                 adapter.start().subscribe();
                 adapter.close();
 
-                assertThat(logCaptor.getWarnLogs()).contains("Error while disconnecting or closing MQTT client");
+                assertThat(captor.getWarnLogs()).contains("Error while disconnecting or closing MQTT client");
             }
         }
     }

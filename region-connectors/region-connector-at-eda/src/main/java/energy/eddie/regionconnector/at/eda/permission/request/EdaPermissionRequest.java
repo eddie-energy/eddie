@@ -57,6 +57,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
              consentId);
     }
 
+    @SuppressWarnings("java:S107")
     public EdaPermissionRequest(
             String connectionId, String permissionId, String dataNeedId, CCMORequest ccmoRequest,
             AllowedGranularity granularity, PermissionProcessStatus status, String message,
@@ -68,6 +69,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
              granularity, status, message, consentId, ZonedDateTime.now(AT_ZONE_ID));
     }
 
+    @SuppressWarnings("java:S107")
     public EdaPermissionRequest(
             String connectionId, String permissionId, String dataNeedId, String cmRequestId,
             String conversationId, @Nullable String meteringPointId, String dsoId,

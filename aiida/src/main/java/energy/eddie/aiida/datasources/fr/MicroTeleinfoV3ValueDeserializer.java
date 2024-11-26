@@ -34,10 +34,10 @@ public class MicroTeleinfoV3ValueDeserializer extends StdDeserializer<MicroTelei
 
     private UnitOfMeasurement determineUnit(String fieldName) {
         return switch (fieldName) {
-            case "ISOUSC", "IINST", "IMAX" -> UnitOfMeasurement.ampere;
-            case "BASE" -> UnitOfMeasurement.wh;
-            case "PAPP" -> UnitOfMeasurement.voltAmpera;
-            default -> UnitOfMeasurement.unkown;
+            case "ISOUSC", "IINST", "IMAX" -> UnitOfMeasurement.AMPERE;
+            case "BASE" -> UnitOfMeasurement.WH;
+            case "PAPP" -> UnitOfMeasurement.VOLTAMPERE;
+            default -> UnitOfMeasurement.UNKNOWN;
         };
     }
 

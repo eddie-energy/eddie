@@ -17,7 +17,6 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 // deactivate the default behaviour, instead use testcontainer
@@ -27,9 +26,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 })
 @Testcontainers
 class AiidaRecordRepositoryIntegrationTest {
+    @SuppressWarnings("unused")
     @Container
     @ServiceConnection
-    private static final PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(
+    private static final PostgreSQLContainer<?> TIMESCALE = new PostgreSQLContainer<>(
             DockerImageName.parse("timescale/timescaledb:2.11.2-pg15")
                            .asCompatibleSubstituteFor("postgres")
     );
@@ -52,7 +52,7 @@ class AiidaRecordRepositoryIntegrationTest {
 
         assertEquals(2, all.size());
 
-        AiidaRecord first = all.get(0);
+        AiidaRecord first = all.getFirst();
         assertEquals("1.8.0", first.aiidaRecordValue().getFirst().dataTag());
         assertEquals(now.toEpochMilli(), first.timestamp().toEpochMilli());
         assertEquals("237", first.aiidaRecordValue().getFirst().value());

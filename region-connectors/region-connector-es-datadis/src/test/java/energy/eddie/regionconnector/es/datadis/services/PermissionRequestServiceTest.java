@@ -166,7 +166,7 @@ class PermissionRequestServiceTest {
                 "",
                 "",
                 "",
-                new double[0],
+                List.of(0.0),
                 "",
                 "",
                 LocalDate.now(ZONE_ID_SPAIN),

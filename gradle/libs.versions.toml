@@ -9,6 +9,8 @@ spring-websocket = "6.1.2"
 spring-oxm = "6.1.5"
 spring-security-test = "6.3.3"
 junit = "5.10.0"
+assertj-core = "3.25.2"
+playwright = "1.40.0"
 mockito-junit = "5.4.0"
 errorprone = "3.0.1"
 errorpronecore = "2.23.0"
@@ -21,6 +23,7 @@ jackson-jakarta-xmlbind-annotations = "2.18.1"
 rometools = "2.1.0"
 jakarta-annotation = "2.1.0"
 jakarta-validation = "3.0.2"
+jakarta-persistence-api = "3.2.0"
 sonar = "4.0.0.2929"
 commons-codec = "1.15"
 jackson = "2.15.2"
@@ -189,6 +192,13 @@ bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref 
 
 # dependencies required by region-connector-us-green-button
 rometools-rome = { module = "com.rometools:rome", version.ref = "rometools" }
+
+# dependencies region-connector-simulation
+jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version.ref = "jakarta-persistence-api" }
+
+# dependencies e2e-tests
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj-core" }
+playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
 
 [bundles]
 

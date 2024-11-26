@@ -6,7 +6,6 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -31,10 +30,6 @@ class PermissionExpiredRunnableTest {
     private AiidaLocalDataNeed mockAiidaDataNeed;
     private final Instant fixedInstant = Instant.parse("2024-05-01T23:59:59.00Z");
     private final Clock clock = Clock.fixed(fixedInstant, AiidaConfiguration.AIIDA_ZONE_ID);
-
-    @BeforeEach
-    void setUp() {
-    }
 
     @Test
     void verify_run_changesState_stopsStreamer_andUpdatesDb() {

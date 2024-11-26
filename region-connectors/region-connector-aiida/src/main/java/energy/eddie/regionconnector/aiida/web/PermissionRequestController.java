@@ -61,8 +61,6 @@ public class PermissionRequestController {
             @PathVariable String permissionId,
             @Valid @RequestBody PermissionUpdateDto updateDto
     ) throws PermissionNotFoundException, CredentialsAlreadyExistException, PermissionStateTransitionException {
-        LOGGER.info("Got request to update permission {} with DTO {}", permissionId, updateDto);
-
         switch (updateDto.operation()) {
             case ACCEPT -> {
                 MqttDto body = permissionService.acceptPermission(permissionId);

@@ -74,6 +74,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
         allowedGranularity = null;
     }
 
+    @SuppressWarnings("java:S107")
     public DatadisPermissionRequest(
             String permissionId,
             String connectionId,

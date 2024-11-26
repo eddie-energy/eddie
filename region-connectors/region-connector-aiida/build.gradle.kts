@@ -40,8 +40,8 @@ dependencies {
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.flyway.core)
     testImplementation(libs.flyway.postgresql)
-    testRuntimeOnly(libs.postgresql)
     testImplementation(libs.hakky.logcaptor)
+    testRuntimeOnly(libs.postgresql)
 }
 
 tasks.test {

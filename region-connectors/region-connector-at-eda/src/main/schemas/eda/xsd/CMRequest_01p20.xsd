@@ -122,7 +122,6 @@
                     <xsd:documentation>Energierichtung</xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
-            <!--			<xsd:element name="ReqDatParam" type="cp:ReqDatParamType" minOccurs="0"/> -->
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="ReqDatParamType">

@@ -3,18 +3,15 @@ package energy.eddie.regionconnector.simulation;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.dataneeds.needs.DataNeed;
 
 import javax.annotation.Nullable;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 
 public class SimulationConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "sim";
-    public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = new ArrayList<>();
 
     @Nullable
     private static SimulationConnectorMetadata instance = null;
@@ -66,6 +63,6 @@ public class SimulationConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
-        return List.copyOf(SUPPORTED_DATA_NEEDS);
+        return List.of();
     }
 }

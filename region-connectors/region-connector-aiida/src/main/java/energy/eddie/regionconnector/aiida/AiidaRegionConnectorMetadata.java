@@ -9,11 +9,12 @@ import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import javax.annotation.Nullable;
 import java.time.Period;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 
 public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "aiida";
-    public static final ZoneId REGION_CONNECTOR_ZONE_ID = ZoneId.of("Etc/UTC");
+    public static final ZoneId REGION_CONNECTOR_ZONE_ID = ZoneOffset.UTC;
     public static final String MQTT_CLIENT_ID = "eddie-region-connector-aiida";
     public static final Period EARLIEST_START = Period.ZERO;
     public static final Period LATEST_END = Period.ofYears(9999);

@@ -60,9 +60,9 @@ class MqttStreamerTest {
                                                                                      "10",
                                                                                      "kWh")));
     private MqttStreamingConfig mqttStreamingConfig;
-    private static final String expectedDataTopic = "aiida/v1/permission-id/data";
-    private static final String expectedStatusTopic = "aiida/v1/permission-id/status";
-    private static final String expectedTerminationTopic = "aiida/v1/permission-id/termination";
+    private static final String EXPECTED_DATA_TOPIC = "aiida/v1/permission-id/data";
+    private static final String EXPECTED_STATUS_TOPIC = "aiida/v1/permission-id/status";
+    private static final String EXPECTED_TERMINATION_TOPIC = "aiida/v1/permission-id/termination";
     private MqttStreamer streamer;
 
     @BeforeEach
@@ -71,9 +71,9 @@ class MqttStreamerTest {
                                                       "username",
                                                       "password",
                                                       "tcp://localhost:1883",
-                                                      expectedDataTopic,
-                                                      expectedStatusTopic,
-                                                      expectedTerminationTopic);
+                                                      EXPECTED_DATA_TOPIC,
+                                                      EXPECTED_STATUS_TOPIC,
+                                                      EXPECTED_TERMINATION_TOPIC);
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
 
         streamer = new MqttStreamer(new Permission(), recordPublisher.flux(),
@@ -121,10 +121,11 @@ class MqttStreamerTest {
         streamer.connectComplete(false, "testFoo");
 
         // Then
-        verify(mockClient).subscribe(expectedTerminationTopic, 2);
+        verify(mockClient).subscribe(EXPECTED_TERMINATION_TOPIC, 2);
     }
 
     @Test
+    @SuppressWarnings("java:S2925")
     void givenAiidaRecord_sendsViaMqtt() throws MqttException, InterruptedException {
         // Given
         streamer.connect();
@@ -139,8 +140,8 @@ class MqttStreamerTest {
 
         // Then
         verify(mockClient).setCallback(any());
-        verify(mockClient).subscribe(expectedTerminationTopic, 2);
-        verify(mockClient, times(2)).publish(eq(expectedDataTopic), any(), eq(1), eq(false));
+        verify(mockClient).subscribe(EXPECTED_TERMINATION_TOPIC, 2);
+        verify(mockClient, times(2)).publish(eq(EXPECTED_DATA_TOPIC), any(), eq(1), eq(false));
     }
 
     @Test
@@ -175,7 +176,7 @@ class MqttStreamerTest {
         streamer.connectComplete(false, "fooTest");
 
         // When
-        streamer.messageArrived(expectedTerminationTopic, mockMessage);
+        streamer.messageArrived(EXPECTED_TERMINATION_TOPIC, mockMessage);
 
         // Then
         stepVerifier.verify(Duration.ofSeconds(2));
@@ -194,13 +195,14 @@ class MqttStreamerTest {
         streamer.connectComplete(false, "fooTest");
 
         // When
-        streamer.messageArrived(expectedTerminationTopic, mockMessage);
+        streamer.messageArrived(EXPECTED_TERMINATION_TOPIC, mockMessage);
 
         // Then
         stepVerifier.verify(Duration.ofSeconds(2));
     }
 
     @Test
+    @SuppressWarnings("java:S2925")
     void givenAiidaRecordAfterTerminationRequest_doesNotSendViaMqtt() throws MqttException, InterruptedException {
         // Given
         streamer.connect();
@@ -209,7 +211,7 @@ class MqttStreamerTest {
         when(mockMessage.getPayload()).thenReturn("permission-id".getBytes(StandardCharsets.UTF_8));
 
         // When
-        streamer.messageArrived(expectedTerminationTopic, mockMessage);
+        streamer.messageArrived(EXPECTED_TERMINATION_TOPIC, mockMessage);
         recordPublisher.next(record1, record2);
         Thread.sleep(200);
 
@@ -218,6 +220,7 @@ class MqttStreamerTest {
     }
 
     @Test
+    @SuppressWarnings("java:S2925")
     void givenExceptionWhileSending_savesToRepository() throws MqttException, InterruptedException, JsonProcessingException {
         // Given
         when(mockClient.publish(any(), any(), anyInt(), anyBoolean())).thenThrow(new MqttException(999));
@@ -250,7 +253,7 @@ class MqttStreamerTest {
 
         // Then
         stepVerifier.verify(Duration.ofSeconds(2));
-        verify(mockClient).publish(expectedStatusTopic, json, 1, true);
+        verify(mockClient).publish(EXPECTED_STATUS_TOPIC, json, 1, true);
         verify(mockPublishToken).waitForCompletion(anyLong());
         verify(mockDisconnectToken).waitForCompletion();
         verify(mockClient).disconnect(anyLong());

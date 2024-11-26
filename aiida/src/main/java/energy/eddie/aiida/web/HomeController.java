@@ -15,8 +15,8 @@ import java.util.UUID;
 
 @Controller
 public class HomeController {
-    public static Duration MAX_CONNECTION_ID_LIFETIME = Duration.ofHours(24);
-    public static String CONNECTION_ID_COOKIE_NAME = "connectionId";
+    public static final Duration MAX_CONNECTION_ID_LIFETIME = Duration.ofHours(24);
+    public static final String CONNECTION_ID_COOKIE_NAME = "connectionId";
 
     @GetMapping("/")
     public String home(Model model, HttpServletRequest request, HttpServletResponse response, Authentication auth) {

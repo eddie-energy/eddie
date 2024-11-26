@@ -29,6 +29,7 @@ import reactor.test.StepVerifier;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -93,7 +94,7 @@ class PermissionRequestConsumerTest {
                 "",
                 "",
                 "",
-                new double[0],
+                List.of(0.0),
                 "",
                 "",
                 LocalDate.now(ZONE_ID_SPAIN),

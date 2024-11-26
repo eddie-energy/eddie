@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class AuthorizationCallbackController {
+    public static final String ATTRIBUTE_NAME = "status";
     private final PermissionRequestService permissionRequestService;
 
     public AuthorizationCallbackController(PermissionRequestService permissionRequestService) {
@@ -34,12 +35,12 @@ public class AuthorizationCallbackController {
                 permissionRequestService.findDataNeedIdForPermission(permissionId)
                                         .ifPresent(id -> model.addAttribute("dataNeedId", id));
 
-                model.addAttribute("status", "OK");
+                model.addAttribute(ATTRIBUTE_NAME, "OK");
             } catch (PermissionNotFoundException e) {
-                model.addAttribute("status", "ERROR");
+                model.addAttribute(ATTRIBUTE_NAME, "ERROR");
             }
         } else {
-            model.addAttribute("status", "DENIED");
+            model.addAttribute(ATTRIBUTE_NAME, "DENIED");
         }
 
         return "authorization-callback";

@@ -11,6 +11,7 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 
@@ -65,30 +66,6 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
         this.created = null;
     }
 
-    public AiidaPermissionRequest(
-            String permissionId,
-            String connectionId,
-            String dataNeedId,
-            LocalDate start,
-            LocalDate end,
-            PermissionProcessStatus status,
-            @Nullable String terminationTopic,
-            @Nullable String mqttUsername,
-            @Nullable String message,
-            Instant created
-    ) {
-        this.permissionId = permissionId;
-        this.connectionId = connectionId;
-        this.dataNeedId = dataNeedId;
-        this.start = start;
-        this.end = end;
-        this.status = status;
-        this.terminationTopic = terminationTopic;
-        this.mqttUsername = mqttUsername;
-        this.message = message;
-        this.created = created;
-    }
-
     @Override
     public String permissionId() {
         return permissionId;
@@ -115,10 +92,9 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     }
 
     @Override
-    @SuppressWarnings("NullAway")
-    // TODO use Instant instead of ZonedDateTime because with ZonedDateTime we have again a problem that PostgreSQL doesn't include the TZ information when we read the dates, so just use UTC timestamps
+    @SuppressWarnings({"NullAway", "DataFlowIssue"})
     public ZonedDateTime created() {
-        return created.atZone(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID);
+        return created.atZone(ZoneOffset.UTC);
     }
 
     @Override

@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
@@ -49,8 +50,17 @@ public class ExampleApp {
         var kafkaListener = new KafkaListener(injector.getInstance(Jdbi.class),
                                               injector.getInstance(ObjectMapper.class));
         var executor = Executors.newSingleThreadExecutor();
-        //noinspection unused
-        var unused = executor.submit(kafkaListener);
+        var future = executor.submit(kafkaListener);
+        Thread.startVirtualThread(() -> {
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                LOGGER.warn("Error executing kafka", e);
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException e) {
+                LOGGER.warn("Error executing kafka", e);
+            }
+        });
 
         // Using try-with-resources with the Javalin instance isn't really intuitive, but: Sonar considers using
         // an AutoClosable without ensuring a close to be a major issue. To keep Javalin running the current thread

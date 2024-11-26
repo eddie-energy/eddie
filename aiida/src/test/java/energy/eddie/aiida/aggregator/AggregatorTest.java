@@ -1,10 +1,10 @@
 package energy.eddie.aiida.aggregator;
 
-import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.aiida.datasources.AiidaDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
+import energy.eddie.aiida.utils.TestUtils;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +22,7 @@ import reactor.test.publisher.TestPublisher;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -248,7 +249,7 @@ class AggregatorTest {
     }
 
     @Test
-    void givenAiidaRecordFromDatasource_isSavedInDatabase() throws InterruptedException {
+    void givenAiidaRecordFromDatasource_isSavedInDatabase() {
         TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
         var mockDataSource1 = mock(AiidaDataSource.class);
         when(mockDataSource1.id()).thenReturn("1");
@@ -274,7 +275,8 @@ class AggregatorTest {
         publisher2.next(wanted2);
         publisher2.complete();
 
-        Thread.sleep(200);
+        publisher1.flux().blockLast(Duration.of(200, ChronoUnit.MILLIS));
+        publisher2.flux().blockLast(Duration.of(200, ChronoUnit.MILLIS));
 
         verify(mockRepository, times(4)).save(any(AiidaRecord.class));
     }

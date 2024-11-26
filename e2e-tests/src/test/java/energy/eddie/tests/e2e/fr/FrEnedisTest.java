@@ -2,8 +2,6 @@ package energy.eddie.tests.e2e.fr;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.options.AriaRole;
 import energy.eddie.tests.e2e.E2eTestSetup;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

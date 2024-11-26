@@ -26,6 +26,7 @@ import reactor.test.StepVerifier;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -122,7 +123,7 @@ class AccountingPointDataServiceTest {
                 "",
                 "",
                 "",
-                new double[0],
+                List.of(0.0),
                 "",
                 "",
                 LocalDate.now(ZONE_ID_SPAIN),

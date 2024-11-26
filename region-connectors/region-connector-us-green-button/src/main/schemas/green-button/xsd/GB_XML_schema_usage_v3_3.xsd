@@ -371,13 +371,6 @@ ESPI OAuth Exchange Class Resource Types
                             </xs:documentation>
                         </xs:annotation>
                     </xs:element>
-                    <!--
-					<xs:element name="access_token" type="String512" minOccurs="0">
-						<xs:annotation>
-							<xs:documentation>Contains the access token associated with this authorization. (OAuth contains access_token for RetailCustomer resources obtained through authorization code flow, registration_access_token obtained in the registration process, and an access_token obtained through  client credentials flow) (e.g. "AA886A7A-078D-4307-A3D9-AA036796DBC3")</xs:documentation>
-						</xs:annotation>
-					</xs:element>
- -->
                     <xs:element name="status" type="AuthorizationStatus">
                         <xs:annotation>
                             <xs:documentation>The status of this authorization. (e.g. "1" => active)</xs:documentation>
@@ -396,13 +389,6 @@ ESPI OAuth Exchange Class Resource Types
                             </xs:documentation>
                         </xs:annotation>
                     </xs:element>
-                    <!--
-					<xs:element name="refresh_token" type="String512" minOccurs="0">
-						<xs:annotation>
-							<xs:documentation>Used to obtain a fresh access_token. (e.g. "AA886A7A-078D-4307-A3D9-AA036796DBC4")</xs:documentation>
-						</xs:annotation>
-					</xs:element>
- -->
                     <xs:element name="scope" type="String256">
                         <xs:annotation>
                             <xs:documentation>Negotiated scope of the authorization. (e.g.

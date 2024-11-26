@@ -42,7 +42,7 @@ public class PontonMessengerConnectionTestImpl implements PontonMessengerConnect
 
     @Override
     public void close() {
-
+        // No-Op
     }
 
     @Override
