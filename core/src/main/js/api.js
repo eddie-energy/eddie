@@ -1,6 +1,4 @@
-const CORE_URL =
-  import.meta.env.VITE_CORE_URL ??
-  import.meta.url.replace("/lib/eddie-components.js", "");
+const CORE_URL = import.meta.env.VITE_CORE_URL ?? new URL(import.meta.url).href.split("/lib/eddie-components.js")[0];
 
 function fetchJson(path) {
   return fetch(CORE_URL + path).then((response) => {

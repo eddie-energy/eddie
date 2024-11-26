@@ -5,7 +5,7 @@ import { ENERGY_TYPES } from "./constants/energy-types.js";
 import cronstrue from "cronstrue";
 
 const CORE_URL =
-  import.meta.env.VITE_CORE_URL ?? new URL(import.meta.url).origin;
+  import.meta.env.VITE_CORE_URL ?? new URL(import.meta.url).href.split("/lib/data-need-summary.js")[0];
 
 class DataNeedSummary extends HTMLElement {
   static get observedAttributes() {
