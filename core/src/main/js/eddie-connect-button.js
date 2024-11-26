@@ -298,9 +298,7 @@ class EddieConnectButton extends LitElement {
         // connector, they may define its custom element at the same time.
         // This will cause an error, but it can be safely ignored.
         if (!customElements.get(customElementName)) {
-          console.error(error);
-
-          return this.renderRegionConnectorError();
+          throw new Error(error);
         }
       }
     }
@@ -330,31 +328,7 @@ class EddieConnectButton extends LitElement {
           <div>${element}</div>
         </eddie-request-status-handler>
       </eddie-notification-handler>
-
-      <br />
-      <sl-button
-        @click="${() =>
-          this.isAiida()
-            ? this.dispatchEvent(new Event("eddie-view-data-need"))
-            : this.dispatchEvent(
-                new Event("eddie-view-permission-administrator")
-              )}"
-      >
-        <sl-icon name="arrow-left"></sl-icon>
-      </sl-button>
     `;
-  }
-
-  renderRegionConnectorError() {
-    // TODO: Configure EP contact email: <a href="mailto:support@ep.local">support@ep.local</a>
-    return html`<h3>Error loading region connector</h3>
-      <sl-alert variant="danger" open>
-        <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
-        We were unable to communicate with of our service that handles
-        permission requests for
-        ${this._selectedPermissionAdministrator.company}. Please contact the
-        customer support of the service provider.
-      </sl-alert>`;
   }
 
   /**
@@ -743,14 +717,52 @@ class EddieConnectButton extends LitElement {
             "rc",
             () => html`
               <!-- RCs are always one step since it is not possible to navigate their contents -->
-              ${this._selectedPermissionAdministrator
-                ? html`
-                    ${until(
-                      this.getRegionConnectorElement(),
-                      html`<sl-spinner></sl-spinner>`
-                    )}
-                  `
-                : ""}
+              ${until(
+                this.getRegionConnectorElement().catch((error) => {
+                  console.error(error);
+                  this.stepIndicatorRef.value.error = true;
+                  return html`
+                    <h3>Error loading region connector</h3>
+
+                    <sl-alert variant="danger" open>
+                      <sl-icon
+                        slot="icon"
+                        name="exclamation-triangle"
+                      ></sl-icon>
+                      We were unable to communicate with of our service that
+                      handles permission requests for
+                      ${this._selectedPermissionAdministrator?.company}. Please
+                      contact the customer support of the service provider.
+                    </sl-alert>
+                  `;
+                }),
+                html`
+                  <h3>Loading region connector</h3>
+
+                  <sl-alert open>
+                    <sl-spinner slot="icon"></sl-spinner>
+
+                    <p>
+                      We are loading our service that handles permission
+                      requests for
+                      ${this._selectedPermissionAdministrator?.company}. This
+                      may take a moment.
+                    </p>
+                  </sl-alert>
+                `
+              )}
+
+              <br />
+              <sl-button
+                @click="${() =>
+                  this.isAiida()
+                    ? this.dispatchEvent(new Event("eddie-view-data-need"))
+                    : this.dispatchEvent(
+                        new Event("eddie-view-permission-administrator")
+                      )}"
+              >
+                <sl-icon name="arrow-left"></sl-icon>
+              </sl-button>
             `,
           ],
           [
