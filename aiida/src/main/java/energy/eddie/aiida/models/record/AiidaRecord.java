@@ -1,5 +1,6 @@
 package energy.eddie.aiida.models.record;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -17,6 +18,7 @@ public class AiidaRecord {
     @SuppressWarnings({"unused", "NullAway"})
     private Long id;
     @JsonProperty
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX", timezone = "UTC")
     protected Instant timestamp;
     @JsonProperty
     protected String asset;
