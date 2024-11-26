@@ -4,6 +4,7 @@ import { until } from "lit/directives/until.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { choose } from "lit/directives/choose.js";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
 
 // Shoelace
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/dialog/dialog.js";
@@ -27,6 +28,7 @@ import {
   getSupportedRegionConnectors,
 } from "./api.js";
 import { flagStyles, hasFlag } from "./styles/flags.js";
+import { dataNeedDescription } from "./data-need-util.js";
 
 setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn");
 
@@ -39,8 +41,7 @@ const COUNTRIES = new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country));
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
 const CORE_URL =
-  import.meta.env.VITE_CORE_URL ??
-  import.meta.url.replace("/lib/eddie-components.js", "");
+  import.meta.env.VITE_CORE_URL ?? import.meta.url.split("/lib/")[0];
 
 /**
  * Maps events dispatched by the button to the view they should navigate to.
@@ -581,6 +582,10 @@ class EddieConnectButton extends LitElement {
     }
   }
 
+  dataNeedDescription() {
+    return unsafeHTML(dataNeedDescription(this._dataNeedAttributes));
+  }
+
   render() {
     if (!this._isValidConfiguration) {
       return html`
@@ -783,8 +788,8 @@ class EddieConnectButton extends LitElement {
 
                 <p>
                   You successfully granted permission for the service provider
-                  to access to your data. The permission can be terminated by
-                  either party at any time.
+                  to access to your ${this.dataNeedDescription()}. The
+                  permission can be terminated by either party at any time.
                 </p>
 
                 <p>
@@ -813,7 +818,8 @@ class EddieConnectButton extends LitElement {
 
                 <p>
                   You rejected the permission request for the service provider
-                  to access to your data. No data will be processed.
+                  to access to your ${this.dataNeedDescription()}. No data will
+                  be processed.
                 </p>
 
                 <p>
@@ -898,7 +904,7 @@ class EddieConnectButton extends LitElement {
                 <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
                 <p>
                   Your energy data provider is unable to provide the requested
-                  data. No data will be processed.
+                  ${this.dataNeedDescription()}. No data will be processed.
                 </p>
 
                 <p>
