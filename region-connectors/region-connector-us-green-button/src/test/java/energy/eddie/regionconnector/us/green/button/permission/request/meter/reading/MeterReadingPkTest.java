@@ -71,7 +71,7 @@ class MeterReadingPkTest {
         assertFalse(equals);
     }
 
-    @SuppressWarnings("EqualsBetweenInconvertibleTypes")
+    @SuppressWarnings({"EqualsBetweenInconvertibleTypes", "EqualsIncompatibleType"})
     @Test
     void testEqualsWithDifferentType() {
         // Given

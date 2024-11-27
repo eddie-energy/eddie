@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Wraps the request in a cached request, since it is not able to get the request body twice.
@@ -28,7 +29,7 @@ public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
 
     @Override
     public BufferedReader getReader() {
-        return new BufferedReader(new InputStreamReader(getInputStream()));
+        return new BufferedReader(new InputStreamReader(getInputStream(), StandardCharsets.UTF_8));
     }
 
     private static class CachedBodyServletInputStream extends ServletInputStream {
@@ -56,6 +57,11 @@ public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
         @Override
         public int read() {
             return inputStream.read();
+        }
+
+        @Override
+        public int read(@SuppressWarnings("NullableProblems") byte[] b, int off, int len) {
+            return inputStream.read(b, off, len);
         }
     }
 }

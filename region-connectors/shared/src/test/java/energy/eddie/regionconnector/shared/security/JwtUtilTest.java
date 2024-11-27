@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class JwtUtilTest {
-    private static final String testSecret = "RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=";
+    private static final String TEST_SECRET = "RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=";
     private JwtUtil jwtUtil;
     private DefaultJWTProcessor<SecurityContext> processor;
 
@@ -53,11 +53,11 @@ class JwtUtilTest {
 
     @BeforeEach
     void setUp() {
-        jwtUtil = new JwtUtil(testSecret, 24);
+        jwtUtil = new JwtUtil(TEST_SECRET, 24);
 
         var keySelector = new JWSVerificationKeySelector<>(JWS_ALGORITHM,
                                                            new ImmutableSecret<>(Base64.getDecoder()
-                                                                                       .decode(testSecret)));
+                                                                                       .decode(TEST_SECRET)));
         processor = new DefaultJWTProcessor<>();
         processor.setJWSKeySelector(keySelector);
     }
@@ -72,7 +72,7 @@ class JwtUtilTest {
     @ParameterizedTest
     @ValueSource(ints = {-10, 0})
     void givenInvalidTimeoutDuration_constructor_throws(int timeoutDuration) {
-        assertThrows(IllegalArgumentException.class, () -> new JwtUtil(testSecret, timeoutDuration));
+        assertThrows(IllegalArgumentException.class, () -> new JwtUtil(TEST_SECRET, timeoutDuration));
     }
 
     @Test
@@ -110,6 +110,7 @@ class JwtUtilTest {
         assertThat(permissions.get("someId")).hasSameElementsAs(List.of("bar", "foo"));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void createJwt_returnsJwtWithOnlyNewPermissionId() throws JwtCreationFailedException, BadJOSEException, ParseException, JOSEException {
         // Given
@@ -120,7 +121,6 @@ class JwtUtilTest {
 
         // Then
         JWTClaimsSet claims = processor.process(jwt, null);
-        //noinspection unchecked
         var permissions = (Map<String, List<String>>) claims.getClaim(JWT_PERMISSIONS_CLAIM);
         assertEquals(1, permissions.size());
         assertEquals(newPermissionId, permissions.get("aiida").getFirst());

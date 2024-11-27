@@ -9,7 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -27,8 +28,6 @@ class IsValidAiidaAssetValidatorTest {
         when(genericAiidaDataNeed.asset()).thenReturn(AiidaAsset.CONNECTION_AGREEMENT_POINT);
         when(smartMeterAiidaDataNeed.asset()).thenReturn(AiidaAsset.CONNECTION_AGREEMENT_POINT);
 
-        assertEquals("CONNECTION-AGREEMENT-POINT", genericAiidaDataNeed.asset().toString());
-        assertEquals("CONNECTION-AGREEMENT-POINT", smartMeterAiidaDataNeed.asset().toString());
         assertTrue(validator.isValid(genericAiidaDataNeed, mockContext));
         assertTrue(validator.isValid(smartMeterAiidaDataNeed, mockContext));
     }
@@ -40,9 +39,6 @@ class IsValidAiidaAssetValidatorTest {
         when(genericAiidaDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(smartMeterAiidaDataNeed.asset()).thenReturn(AiidaAsset.CONTROLLABLE_UNIT);
 
-
-        assertEquals("SUBMETER", genericAiidaDataNeed.asset().toString());
-        assertEquals("CONTROLLABLE-UNIT", smartMeterAiidaDataNeed.asset().toString());
         assertFalse(validator.isValid(genericAiidaDataNeed, mockContext));
         assertFalse(validator.isValid(smartMeterAiidaDataNeed, mockContext));
     }
