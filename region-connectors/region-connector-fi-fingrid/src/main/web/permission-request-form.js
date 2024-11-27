@@ -1,30 +1,48 @@
-import { html, nothing } from "lit";
+import { css, html, nothing } from "lit";
+import { ifDefined } from "lit/directives/if-defined.js";
+import { until } from "lit/directives/until.js";
 import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/input/input.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/button/button.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/alert/alert.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/copy-button/copy-button.js";
 
 class PermissionRequestForm extends PermissionRequestFormBase {
+  static styles = css`
+    dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: baseline;
+    }
+
+    dt {
+      font-style: italic;
+    }
+  `;
+
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
+    jumpOffUrl: { attribute: "jump-off-url" },
     customerIdentification: { attribute: "customer-identification" },
-    _isPermissionRequestCreated: { type: Boolean },
+    _isValidated: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
-    _areResponseButtonsDisabled: { type: Boolean },
-    _organisationUser: { type: String },
-    _organisationName: { type: String },
+    _isVerifying: { type: Boolean },
   };
 
   permissionId = null;
 
   constructor() {
     super();
+  }
 
-    this._isPermissionRequestCreated = false;
-    this._isSubmitDisabled = false;
-    this._areResponseButtonsDisabled = false;
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener("eddie-request-validated", () => {
+      this._isValidated = true;
+    });
   }
 
   handleSubmit(event) {
@@ -41,22 +59,16 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     this._isSubmitDisabled = true;
 
     this.createPermissionRequest(payload)
-      .then((result) => {
-        this.organisationData();
+      .then(({ permissionId, accessToken }) => {
+        this.permissionId = permissionId;
+        this.accessToken = accessToken;
 
-        this.permissionId = result["permissionId"];
-        this.accessToken = result["accessToken"];
-
-        this._isPermissionRequestCreated = true;
+        this.fetchOrganisationData();
       })
       .catch((error) => {
         this._isSubmitDisabled = false;
         this.error(error);
       });
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
   }
 
   accepted() {
@@ -67,9 +79,12 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       },
     })
       .then(() => {
-        this._areResponseButtonsDisabled = true;
+        this._isVerifying = true;
       })
-      .catch((error) => this.error(error));
+      .catch((error) => {
+        this._isVerifying = false;
+        this.error(error);
+      });
   }
 
   rejected() {
@@ -78,95 +93,97 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       headers: {
         Authorization: "Bearer " + this.accessToken,
       },
-    })
-      .then(() => {
-        this._areResponseButtonsDisabled = true;
-      })
-      .catch((error) => this.error(error));
+    }).catch((error) => this.error(error));
   }
 
-  organisationData() {
+  fetchOrganisationData() {
     fetch(`${this.BASE_URL}/organisation-information`)
       .then((response) => response.json())
-      .then((body) => {
-        this._organisationUser = body.organisationUser;
-        this._organisationName = body.organisationName;
+      .then(({ organisationName, organisationUser }) => {
+        this._organisationUser = organisationUser;
+        this._organisationName = organisationName;
       });
   }
 
   render() {
     return html`
-      <div>
-        <form id="request-form">
-          <sl-input
-            label="Customer Identification"
-            id="customerIdentification"
-            type="text"
-            name="customerIdentification"
-            .helpText=${
-              this.customerIdentification
-                ? "The service has already provided the customer identification. If this value is incorrect, please contact the service provider."
-                : nothing
-            }
-            .value="${
-              this.customerIdentification
-                ? this.customerIdentification
-                : nothing
-            }"
-            .disabled="${!!this.customerIdentification}"
-            required
-          ></sl-input>
+      <form id="request-form" ?hidden="${this._isValidated}">
+        <sl-input
+          label="Customer Identification"
+          id="customerIdentification"
+          type="text"
+          name="customerIdentification"
+          .helpText=${
+            this.customerIdentification
+              ? "The service has already provided the customer identification. If this value is incorrect, please contact the service provider."
+              : nothing
+          }
+          .value="${ifDefined(this.customerIdentification)}"
+          .disabled="${!!this.customerIdentification}"
+          required
+        ></sl-input>
 
-          <br />
+        <br />
 
-          <sl-button
-            ?disabled="${this._isSubmitDisabled}"
-            type="submit"
-            variant="primary"
-          >
-            Connect
-          </sl-button>
-        </form>
+        <sl-button
+          ?disabled="${this._isSubmitDisabled}"
+          type="submit"
+          variant="primary"
+        >
+          Connect
+        </sl-button>
+      </form>
 
-        <div ?hidden="${!this._isPermissionRequestCreated}">
-          <p>
-            Please create a permission request for this organization
-          <div>
-            <span id="org-user">${this._organisationUser}</span>
-            <sl-copy-button from="org-user"></sl-copy-button>
-          </div>
-          <div>
-            <span id="org-name">${this._organisationName}</span>
-            <sl-copy-button from="org-name"></sl-copy-button>
-          </div>
-          </p>
-          <a
-            href="https://oma.fingrid.fi"
-            target="_blank"
-            style="display: inline-block; border-radius: 2em; padding: 0.5em 1em 0.5em 1em"
-          >
-            Create permission request
-          </a>
-          <p>
-            Please let us know once you have created the authorization request
-          </p>
-          <div>
-            <sl-button
-              variant="success"
-              @click="${this.accepted}"
-              ?disabled="${this._areResponseButtonsDisabled}"
-            >
-              Accepted
-            </sl-button>
-            <sl-button
-              variant="danger"
-              @click="${this.rejected}"
-              ?disabled="${this._areResponseButtonsDisabled}"
-            >
-              Rejected
-            </sl-button>
-          </div>
+      <div ?hidden="${!this._isValidated}">
+        <p>
+          Please create a permission request for this organization
+        <div>
+          <span id="org-user">${this._organisationUser}</span>
+          <sl-copy-button from="org-user"></sl-copy-button>
         </div>
+        <div>
+          <span id="org-name">${this._organisationName}</span>
+          <sl-copy-button from="org-name"></sl-copy-button>
+        </div>
+        </p>
+        <a
+          href="${this.jumpOffUrl}"
+          target="_blank"
+          style="display: inline-block; border-radius: 2em; padding: 0.5em 1em 0.5em 1em"
+        >
+          Create permission request
+        </a>
+        <p>
+          Please let us know once you have created the authorization request
+        </p>
+        <div>
+          <sl-button
+            variant="success"
+            @click="${this.accepted}"
+            ?disabled="${this._isVerifying}"
+          >
+            Accepted
+          </sl-button>
+          <sl-button
+            variant="danger"
+            @click="${this.rejected}"
+            ?disabled="${this._isVerifying}"
+          >
+            Rejected
+          </sl-button>
+        </div>
+
+        ${this._isVerifying
+          ? html`
+              <br />
+              <sl-alert open>
+                <sl-spinner slot="icon"></sl-spinner>
+
+                We are verifying your permission with Fingrid. This might take a
+                few minutes.
+              </sl-alert>
+            `
+          : nothing}
       </div>
     `;
   }
