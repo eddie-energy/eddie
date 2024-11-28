@@ -44,9 +44,8 @@ See the [operation.md](docs/1-running/OPERATION.md) file to get started.
 **Steps:**
 
 1. Clone the repository
-2. Build JS: `pnpm install & npm run build`
-3. Start PostgreSQL and Apache Kafka: `docker compose -f .\env\docker-compose.yml up -d db kafka`
-4. Edit core/src/main/resources/application.properties and add a (random) secret for signing JWTs, e.g.
+2. Start PostgreSQL and Apache Kafka: `docker compose -f .\env\docker-compose.yml up -d db kafka`
+3. Edit core/src/main/resources/application.properties and add a (random) secret for signing JWTs, e.g.
    `eddie.jwt.hmac.secret=Y+nmICKhBcl4QbSItrf/IS9sVpUv4RMpiBtBPz0KYbM=`
 4. Start EDDIE Framework using Gradle: `./gradlew run-core`
 5. Start demo app (separate window): `./gradlew run-example-app`
