@@ -31,16 +31,9 @@ dependencies {
     implementation(project(":outbound-connectors:outbound-shared"))
 
     implementation(libs.spring.boot.starter.web)
-    implementation(libs.jakarta.annotation.api)
     implementation(libs.rabbitmq.amqp.client)
     implementation(libs.reactor.core)
-    implementation(libs.jackson.databind)
-    implementation(libs.jackson.datatype.jsr310)
-    implementation(libs.jackson.datatype.jdk8)
-    implementation(libs.jackson.dataformat.xml)
-    implementation(libs.jackson.jakarta.xmlbind.annotations)
-    implementation(libs.jackson.core)
-    implementation(libs.slf4j.simple)
+    runtimeOnly(libs.slf4j.simple)
 
 
     testImplementation(libs.spring.boot.starter.test)

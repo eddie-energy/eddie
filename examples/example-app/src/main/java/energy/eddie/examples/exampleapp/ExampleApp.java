@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 public class ExampleApp {
@@ -29,6 +31,7 @@ public class ExampleApp {
     public static final String SRC_MAIN_PREFIX = "./src/main/";
     private static final Logger LOGGER = LoggerFactory.getLogger(ExampleApp.class);
 
+    @SuppressWarnings("resource")
     public static void main(String[] args) {
         Flyway flyway = Flyway.configure()
                               .baselineOnMigrate(true)
@@ -38,19 +41,50 @@ public class ExampleApp {
         flyway.migrate();
 
         var injector = Guice.createInjector(new Module());
-
+        JavalinJte jte;
         if (inDevelopmentMode()) {
             LOGGER.info("Executing JteTemplates in development mode");
             var resolver = new DirectoryCodeResolver(Path.of(SRC_MAIN_PREFIX, "jte"));
-            JavalinJte.init(TemplateEngine.create(resolver, ContentType.Html));
+            jte = new JavalinJte(TemplateEngine.create(resolver, ContentType.Html));
         } else {
-            JavalinJte.init(TemplateEngine.createPrecompiled(Path.of("jte-classes"), ContentType.Html));
+            jte = new JavalinJte(TemplateEngine.createPrecompiled(Path.of("jte-classes"), ContentType.Html));
         }
 
         var kafkaListener = new KafkaListener(injector.getInstance(Jdbi.class),
                                               injector.getInstance(ObjectMapper.class));
         var executor = Executors.newSingleThreadExecutor();
-        var future = executor.submit(kafkaListener);
+        awaitResultAsync(executor.submit(kafkaListener));
+        var app = Javalin.create(config -> {
+            config.requestLogger.http((ctx, executionTimeMs) ->
+                                              LOGGER.info("{} {} -> {} {}ms",
+                                                          ctx.method(),
+                                                          ctx.url(),
+                                                          ctx.statusCode(),
+                                                          executionTimeMs));
+            var baseUrl = Env.PUBLIC_CONTEXT_PATH.get();
+            if (null != baseUrl && !baseUrl.isEmpty()) {
+                config.router.contextPath = Env.PUBLIC_CONTEXT_PATH.get();
+            }
+            config.fileRenderer(jte);
+        });
+        app.before(ctx -> {
+            var path = ctx.path().substring(ctx.contextPath().length());
+            if (null == ctx.sessionAttribute("user") && !path.startsWith("/login")) {
+                var dest = ctx.contextPath() + "/login";
+                LOGGER.info("User isn't logged in, redirecting to {}", dest);
+                ctx.redirect(dest);
+            }
+        });
+
+        app.get("/", ctx -> ctx.redirect("login"));
+
+        Stream.of(LoginHandler.class, ShowConnectionListHandler.class, ShowConnectionHandler.class)
+              .map(injector::getInstance)
+              .forEach(handler -> handler.register(app));
+        app.start(8081);
+    }
+
+    private static void awaitResultAsync(Future<?> future) {
         Thread.startVirtualThread(() -> {
             try {
                 future.get();
@@ -61,46 +95,6 @@ public class ExampleApp {
                 LOGGER.warn("Error executing kafka", e);
             }
         });
-
-        // Using try-with-resources with the Javalin instance isn't really intuitive, but: Sonar considers using
-        // an AutoClosable without ensuring a close to be a major issue. To keep Javalin running the current thread
-        // is suspended in a forever-sleep loop below.
-        try (var app = Javalin.create(config -> {
-            config.requestLogger.http((ctx, executionTimeMs) ->
-                                              LOGGER.info("{} {} -> {} {}ms",
-                                                          ctx.method(),
-                                                          ctx.url(),
-                                                          ctx.statusCode(),
-                                                          executionTimeMs));
-            var baseUrl = Env.PUBLIC_CONTEXT_PATH.get();
-            if (null != baseUrl && !baseUrl.isEmpty()) {
-                config.routing.contextPath = Env.PUBLIC_CONTEXT_PATH.get();
-            }
-        })) {
-            app.before(ctx -> {
-                var path = ctx.path().substring(ctx.contextPath().length());
-                if (null == ctx.sessionAttribute("user") && !path.startsWith("/login")) {
-                    var dest = ctx.contextPath() + "/login";
-                    LOGGER.info("User isn't logged in, redirecting to {}", dest);
-                    ctx.redirect(dest);
-                }
-            });
-
-            app.get("/", ctx -> ctx.redirect("login"));
-
-            Stream.of(LoginHandler.class, ShowConnectionListHandler.class, ShowConnectionHandler.class)
-                  .map(injector::getInstance)
-                  .forEach(handler -> handler.register(app));
-            app.start(8081);
-            while (!Thread.interrupted()) {
-                Thread.sleep(Long.MAX_VALUE);
-            }
-        } catch (InterruptedException e) {
-            LOGGER.info("Exiting.");
-            Thread.currentThread().interrupt();
-        }
-        kafkaListener.stop();
-        executor.close();
     }
 
     private static boolean inDevelopmentMode() {
@@ -113,6 +107,7 @@ public class ExampleApp {
             bind(ObjectMapper.class).toInstance(JsonMapper.builder()
                                                           .addModule(new JavaTimeModule())
                                                           .addModule(new Jdk8Module())
+                                                          .addModule(new JakartaXmlBindAnnotationModule())
                                                           .addMixIn(ConnectionStatusMessage.class,
                                                                     ConnectionStatusMessageMixin.class)
                                                           .build());

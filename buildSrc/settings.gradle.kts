@@ -1,4 +1,4 @@
-rootProject.name = "eddie"
+rootProject.name = "buildSrc"
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {

@@ -32,6 +32,7 @@ dependencies {
     implementation(libs.jakarta.annotation.api)
 
     implementation(libs.reactor.core)
+    implementation(libs.reactor.netty.core)
     implementation(libs.reactor.netty.http)
     implementation(libs.netty.codec.http)
 
@@ -43,8 +44,8 @@ dependencies {
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
-    testImplementation(libs.flyway.core)
-    testImplementation(libs.flyway.postgresql)
+    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)
 }
 

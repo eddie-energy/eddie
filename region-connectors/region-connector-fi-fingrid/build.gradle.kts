@@ -26,19 +26,20 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
-    implementation(libs.hibernate.validator)
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.security)
+    implementation(libs.jakarta.validation.api)
 
     implementation(libs.reactor.core)
 
     implementation(libs.nimbus.oidc)
-    implementation(libs.bouncycastle.bcprov)
     implementation(libs.bouncycastle.bcpkix)
 
 
     runtimeOnly(libs.postgresql)
+    runtimeOnly(libs.bouncycastle.bcprov)
+    runtimeOnly(libs.hibernate.validator)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
@@ -48,8 +49,8 @@ dependencies {
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
-    testImplementation(libs.flyway.core)
-    testImplementation(libs.flyway.postgresql)
+    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)
 }
 

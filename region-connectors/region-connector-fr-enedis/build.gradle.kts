@@ -30,19 +30,21 @@ dependencies {
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.actuator)
-    implementation(libs.hibernate.validator)
     implementation(libs.spring.retry)
     implementation(libs.spring.aspects)
 
-    // Required for openapi generator
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
-    implementation(libs.jackson.databind.nullable)
     implementation(libs.jakarta.annotation.api)
     implementation(libs.apache.http.client)
     implementation(libs.apache.http.mime)
 
     implementation(libs.reactor.core)
+    implementation(libs.jakarta.validation.api)
+    implementation(libs.jackson.annotations)
+
+    runtimeOnly(libs.hibernate.validator)
+    runtimeOnly(libs.jackson.databind.nullable)
 
     testImplementation(libs.reactor.test)
     testImplementation(libs.junit.jupiter)
@@ -52,9 +54,9 @@ dependencies {
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
-    testImplementation(libs.flyway.core)
-    testImplementation(libs.flyway.postgresql)
 
+    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)
 }
 

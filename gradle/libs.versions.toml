@@ -4,7 +4,7 @@ spring-boot = "3.2.4"
 spring-dependency-management = "1.1.2"
 spring-retry = "2.0.4"
 spring-aspects = "6.1.1"
-spring-kafka = "3.2.4"
+spring-kafka = "3.3.0"
 spring-websocket = "6.1.2"
 spring-oxm = "6.1.5"
 spring-security-test = "6.3.3"
@@ -27,22 +27,19 @@ jakarta-persistence-api = "3.2.0"
 sonar = "4.0.0.2929"
 commons-codec = "1.15"
 jackson = "2.15.2"
-h2database = "2.1.212"
+h2database = "2.3.232"
 postgresql = "42.7.3"
-javalin = "5.6.2"
+javalin = "6.3.0"
 jdbi3 = "3.37.1"
-reactor = "3.5.5"
-reactor-netty = "1.1.15"
-netty-codec-http = "4.1.106.Final"
+reactor = "3.7.0"
+reactor-netty = "1.2.0"
+netty-codec-http = "4.1.115.Final"
 slf4j = "2.0.7"
-guice = "5.1.0"
-jetty = "11.0.14"
-jte = "2.3.0"
-log4j = "2.20.0"
+guice = "7.0.0"
+jte = "3.1.15"
 kafka-clients = "3.4.0"
-kafka-streams = "3.6.1"
-rabbitmq-amqp-client = "0.2.0"
-reactor-kafka = "1.3.22"
+kafka-streams = "3.9.0"
+rabbitmq-amqp-client = "0.3.0"
 hibernate-validator = "8.0.1.Final"
 mockwebserver = "4.12.0"
 flyway = "10.8.1"
@@ -52,17 +49,15 @@ nimbus = "11.10.1"
 bouncycastle = "1.78"
 keycloak = "25.0.3"
 
-swagger-codegen-version = "3.0.45"
 swagger-annotations = "2.2.22"
 openapi-generator = "7.3.0"
 openapi-webmvc-ui = "2.3.0"
 apache-httpcomponents-version = "4.5.14"
 apache-httpcomponents-client-version = "5.2.1"
 jackson-databind-nullable-version = "0.2.6"
-dotenv-version = "3.0.0"
 google-jib = "3.4.0"
 
-testcontainers = "1.20.3"
+testcontainers = "1.20.4"
 
 [libraries]
 # Static analysis
@@ -107,12 +102,8 @@ reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "react
 reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "reactor" }
 
 reactor-netty-http = { module = "io.projectreactor.netty:reactor-netty-http", version.ref = "reactor-netty" }
+reactor-netty-core = { module = "io.projectreactor.netty:reactor-netty-core", version.ref = "reactor-netty" }
 netty-codec-http = { module = "io.netty:netty-codec-http", version.ref = "netty-codec-http" }
-
-log4j-sl4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
-log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4j" }
-
-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
 
@@ -121,7 +112,6 @@ jackson-jakarta-xmlbind-annotations = { module = "com.fasterxml.jackson.module:j
 
 # dependencies required by outbound-kafka
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
-reactor-kafka = { module = "io.projectreactor.kafka:reactor-kafka", version.ref = "reactor-kafka" }
 testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers" }
 jackson-dataformat-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core" }
@@ -133,21 +123,18 @@ testcontainers-rabbitmq = { module = "org.testcontainers:rabbitmq", version.ref 
 # used by core
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 h2database = { module = "com.h2database:h2", version.ref = "h2database" }
-javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
-jetty-proxy = { module = "org.eclipse.jetty:jetty-proxy", version.ref = "jetty" }
-jdbi3-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi3" }
-guice = { module = "com.google.inject:guice", version.ref = "guice" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 # used by example-app
 jte = { module = "gg.jte:jte", version.ref = "jte" }
 javalin-rendering = { module = "io.javalin:javalin-rendering", version.ref = "javalin" }
+javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
+jdbi3-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi3" }
+guice = { module = "com.google.inject:guice", version.ref = "guice" }
 # dependencies required by region-connector-fr
-swagger-codegen = { module = "io.swagger.codegen.v3:swagger-codegen-cli", version.ref = "swagger-codegen-version" }
 jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable", version.ref = "jackson-databind-nullable-version" }
 apache-http-client = { module = "org.apache.httpcomponents.client5:httpclient5", version.ref = "apache-httpcomponents-client-version" }
 apache-http-mime = { module = "org.apache.httpcomponents:httpmime", version.ref = "apache-httpcomponents-version" }
-dotenv = { module = "io.github.cdimascio:dotenv-java", version.ref = "dotenv-version" }
 
 # Spring Boot
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
@@ -204,7 +191,6 @@ playwright = { module = "com.microsoft.playwright:playwright", version.ref = "pl
 
 [plugins]
 errorprone = { id = "net.ltgt.errorprone", version.ref = "errorprone" }
-sonarqube = { id = "org.sonarqube", version.ref = "sonar" }
 # used by example-app
 jte-gradle = { id = "gg.jte.gradle", version.ref = "jte" }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }

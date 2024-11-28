@@ -32,15 +32,15 @@ dependencies {
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.datatype.jdk8)
+    implementation(libs.jackson.jakarta.xmlbind.annotations)
     implementation(libs.jdbi3.core)
     implementation(libs.reactor.core)
     implementation(libs.jte)
-    implementation(libs.slf4j.simple)
     implementation(libs.kafka.streams)
     implementation(libs.flyway.core)
     runtimeOnly(libs.flyway.postgresql)
+    runtimeOnly(libs.slf4j.simple)
 
-    runtimeOnly(libs.h2database)
     runtimeOnly(libs.postgresql)
 
     testImplementation(libs.junit.jupiter)

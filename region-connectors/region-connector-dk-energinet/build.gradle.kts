@@ -94,8 +94,14 @@ openApiGenerate {
     cleanupOutput.set(true)
 }
 
+val openApiTask = tasks.named("openApiGenerate")
+
 tasks.named("compileJava").configure {
-    dependsOn(tasks.named("openApiGenerate"))
+    dependsOn(openApiTask)
+}
+
+sourceSets.configureEach {
+    java.srcDir(openApiTask.map { files() })
 }
 
 tasks.withType<JavaCompile>().configureEach {

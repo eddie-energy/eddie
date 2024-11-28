@@ -106,8 +106,7 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
             ) // generate the bindings file
             generateBindingsFile(srcFile, xjbFile.absolutePath)
 
-            val packageName =
-                "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
+            val packageName = "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
             exec {
                 executable(Path(System.getProperty("java.home"), "bin", "java"))
                 val classpath = jaxb.resolve().joinToString(File.pathSeparator)
