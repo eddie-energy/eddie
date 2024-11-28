@@ -13,21 +13,17 @@
     <title>EDDIE Connector Simulation</title>
     <script>
       window.addEventListener("load", (_event) => {
-        const entries = window.location.search
-          .substring(1)
-          .split("&")
-          .map((it) => it.split("="));
-        const urlParameters = Object.fromEntries(entries);
+        const urlParameters = new URLSearchParams(window.location.search);
         const commonParametersForm = document.getElementById(
           "commonParametersFromId"
         );
         commonParametersForm.setAttribute(
           "connection-id",
-          decodeURIComponent(urlParameters.connectionId)
+          decodeURIComponent(urlParameters.get("connectionId"))
         );
         commonParametersForm.setAttribute(
           "data-need-id",
-          decodeURIComponent(urlParameters.dataNeedId)
+          decodeURIComponent(urlParameters.get("dataNeedId"))
         );
       });
     </script>

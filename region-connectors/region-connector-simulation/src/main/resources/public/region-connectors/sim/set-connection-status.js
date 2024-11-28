@@ -11,6 +11,7 @@ class SetConnectionStatusCe extends LitElement {
 
   constructor() {
     super();
+    this._statusValues = [];
     fetch("connection-status-values")
       .then((res) => res.json())
       .then((json) => (this._statusValues = json))
