@@ -16,7 +16,7 @@ class PermissionRequestFormBase extends LitElement {
      * URL of the core service inferred from the import URL.
      * @type {string}
      */
-    this.CORE_URL = new URL(import.meta.url).origin;
+    this.CORE_URL = new URL(import.meta.url).href.split("/region-connectors")[0];
 
     /**
      * Base URL of the current script inferred from the import URL.
