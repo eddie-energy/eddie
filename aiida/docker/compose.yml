@@ -11,7 +11,13 @@ services:
 
   aiida:
     image: ghcr.io/eddie-energy/aiida:latest
-    depends_on: [ timescaledb, nanomq ]
+    depends_on:
+      timescaledb:
+        condition: service_started
+      nanomq:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
@@ -49,12 +55,18 @@ services:
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HEALTH_ENABLED: true
     volumes:
       - ./keycloak-realm.json:/opt/keycloak/data/import/keycloak-realm.json
       - ../../keycloak-eddie-theme/theme/eddie-theme:/opt/keycloak/themes/eddie-theme
     command: -v start-dev --import-realm
     env_file:
       - .env
+    healthcheck:
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost:9000\r\nConnection: close\r\n\r\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   default:
