@@ -20,11 +20,6 @@ class EddieRequestStatusHandler extends LitElement {
   constructor() {
     super();
 
-    this.addEventListener(
-      "eddie-request-created",
-      () => (this.status = "CREATED")
-    );
-
     this.addEventListener("eddie-request-status", (event) => {
       this.status = event.detail.status;
       this.detailMessage = event.detail.message;
