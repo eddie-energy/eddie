@@ -31,10 +31,12 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     _isVerifying: { type: Boolean },
   };
 
-  permissionId = null;
-
   constructor() {
     super();
+
+    this._organisationInformation = fetch(
+      `${this.BASE_URL}/organisation-information`
+    ).then((response) => response.json());
   }
 
   connectedCallback() {
@@ -62,8 +64,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       .then(({ permissionId, accessToken }) => {
         this.permissionId = permissionId;
         this.accessToken = accessToken;
-
-        this.fetchOrganisationData();
       })
       .catch((error) => {
         this._isSubmitDisabled = false;
@@ -78,8 +78,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         Authorization: "Bearer " + this.accessToken,
       },
     })
-      .then(() => {
-        this._isVerifying = true;
+      .then((result) => {
+        this._isVerifying = result.ok;
       })
       .catch((error) => {
         this._isVerifying = false;
@@ -96,15 +96,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     }).catch((error) => this.error(error));
   }
 
-  fetchOrganisationData() {
-    fetch(`${this.BASE_URL}/organisation-information`)
-      .then((response) => response.json())
-      .then(({ organisationName, organisationUser }) => {
-        this._organisationUser = organisationUser;
-        this._organisationName = organisationName;
-      });
-  }
-
   render() {
     return html`
       <form id="request-form" ?hidden="${this._isValidated}">
@@ -113,11 +104,9 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           id="customerIdentification"
           type="text"
           name="customerIdentification"
-          .helpText=${
-            this.customerIdentification
-              ? "The service has already provided the customer identification. If this value is incorrect, please contact the service provider."
-              : nothing
-          }
+          .helpText=${this.customerIdentification
+            ? "The service has already provided the customer identification. If this value is incorrect, please contact the service provider."
+            : nothing}
           .value="${ifDefined(this.customerIdentification)}"
           .disabled="${!!this.customerIdentification}"
           required
@@ -136,26 +125,49 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
       <div ?hidden="${!this._isValidated}">
         <p>
-          Please create a permission request for this organization
-        <div>
-          <span id="org-user">${this._organisationUser}</span>
-          <sl-copy-button from="org-user"></sl-copy-button>
-        </div>
-        <div>
-          <span id="org-name">${this._organisationName}</span>
-          <sl-copy-button from="org-name"></sl-copy-button>
-        </div>
+          Please visit the Fingrid portal to create a permission request for the
+          following organization:
         </p>
-        <a
-          href="${this.jumpOffUrl}"
-          target="_blank"
-          style="display: inline-block; border-radius: 2em; padding: 0.5em 1em 0.5em 1em"
-        >
-          Create permission request
-        </a>
+
         <p>
-          Please let us know once you have created the authorization request
+          ${until(
+            this._organisationInformation
+              .then(
+                ({ organisationName, organisationUser }) => html`
+                  <dl>
+                    <dt>User</dt>
+                    <dd>
+                      <span id="org-user">${organisationUser}</span>
+                      <sl-copy-button from="org-user"></sl-copy-button>
+                    </dd>
+
+                    <dt>Name</dt>
+                    <dd>
+                      <span id="org-name">${organisationName}</span>
+                      <sl-copy-button from="org-name"></sl-copy-button>
+                    </dd>
+                  </dl>
+                `
+              )
+              .catch(
+                () => html`
+                  <sl-alert type="danger" open>
+                    We were unable to fetch the organisation information. Please
+                    try again later.
+                  </sl-alert>
+                `
+              ),
+            html`Waiting for organisation data to load.
+              <sl-spinner></sl-spinner>`
+          )}
         </p>
+
+        <sl-button href="${this.jumpOffUrl}" target="_blank">
+          Visit Fingrid
+        </sl-button>
+
+        <p>Please let us know once you have created the permission request.</p>
+
         <div>
           <sl-button
             variant="success"
