@@ -38,13 +38,13 @@ dependencies {
     implementation(libs.spring.boot.starter.oauth2.client)
 
     implementation(libs.reactor.core)
-    implementation(libs.flyway.core)
-    implementation(libs.flyway.postgresql)
     implementation(libs.eclipse.paho.mqttv5.client)
     // enable Jackson support to fetch Hibernate lazy loaded properties when serializing
     implementation(libs.jackson.hibernate6)
 
     runtimeOnly(libs.postgresql)
+    runtimeOnly(libs.flyway.postgresql)
+    runtimeOnly(libs.flyway.core)
 
     testImplementation(libs.spring.security.test)
     testImplementation(libs.junit.jupiter)
@@ -56,6 +56,7 @@ dependencies {
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.boot.testcontainers)
+    testImplementation(libs.flyway.core)
 }
 
 tasks.withType<Test> {

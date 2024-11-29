@@ -14,7 +14,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.net.URI;
 import java.time.ZoneOffset;
@@ -29,8 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class WebhookControllerTest {
     private final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
-    @Autowired
-    private WebApplicationContext context;
     @Autowired
     private MockMvc mockMvc;
     @MockBean

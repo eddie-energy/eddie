@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Set;
 
 public class AiidaRecordValidator {
+    private AiidaRecordValidator() {
+        // Util Class
+    }
 
     private static final Set<String> VALID_DATA_TAGS = Set.of(
             "1.7.0", "2.7.0", "1.8.0", "2.8.0", "C.1.0",
@@ -13,10 +16,10 @@ public class AiidaRecordValidator {
             "0-0:1.0.0", "0-0:2.0.0", "0-0:2.0.1"
     );
 
-    public static List<String> checkInvalidDataTags(AiidaRecord record) {
+    public static List<String> checkInvalidDataTags(AiidaRecord rec) {
         List<String> invalidDataTags = new ArrayList<>();
 
-        for (AiidaRecordValue value : record.aiidaRecordValue()) {
+        for (AiidaRecordValue value : rec.aiidaRecordValue()) {
             if (!VALID_DATA_TAGS.contains(value.dataTag())) {
                 invalidDataTags.add(value.rawTag());
             }

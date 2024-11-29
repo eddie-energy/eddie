@@ -1,14 +1,14 @@
 package energy.eddie.aiida.models.record;
 
 public enum UnitOfMeasurement {
-    kW("kW"),
-    kWh("kWh"),
-    wh("Wh"),
-    kvarh("kvarh"),
-    ampere("A"),
-    voltAmpera("VA"),
-    text("text"),
-    unkown("unknown");
+    KW("kW"),
+    KWH("kWh"),
+    WH("Wh"),
+    KVARH("kvarh"),
+    AMPERE("A"),
+    VOLTAMPERE("VA"),
+    TEXT("text"),
+    UNKNOWN("unknown");
 
     private final String unit;
 

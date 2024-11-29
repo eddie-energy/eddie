@@ -47,11 +47,11 @@ dependencies {
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
-    testImplementation(libs.flyway.core)
-    testImplementation(libs.flyway.postgresql)
     testImplementation(libs.okhttp3.mockwebserver)
 
     testRuntimeOnly(libs.postgresql)
+    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.flyway.postgresql)
 }
 
 // Directory for generated java files
@@ -107,6 +107,10 @@ tasks.register(generateGreenButtonClassesName, JavaExec::class) {
 tasks.named("compileJava") {
     // generate the classes before compiling
     dependsOn(generateGreenButtonClassesName)
+}
+
+sourceSets.configureEach {
+    java.srcDir(tasks.named("generateGreenButtonClasses").map { files() })
 }
 
 tasks.withType<JavaCompile>().configureEach {

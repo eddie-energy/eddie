@@ -12,12 +12,12 @@ repositories {
 
 dependencies {
     implementation(libs.kafka.clients)
-    implementation("com.microsoft.playwright:playwright:1.40.0")
-    testImplementation("org.slf4j:slf4j-simple:2.0.10")
+    implementation(libs.playwright)
+    implementation(libs.jackson.databind)
 
     testImplementation(libs.junit.jupiter)
-    implementation(libs.jackson.databind)
-    testImplementation("org.assertj:assertj-core:3.25.2")
+    testImplementation(libs.assertj.core)
+    testImplementation(libs.slf4j.simple)
 }
 
 tasks.register("record-test", JavaExec::class) {

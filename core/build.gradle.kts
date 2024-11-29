@@ -41,14 +41,10 @@ dependencies {
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.reactor.core)
     implementation(libs.flyway.core)
-    implementation(libs.kafka.clients)
-
 
     runtimeOnly(libs.postgresql)
     runtimeOnly(libs.flyway.postgresql)
 
-
-    testImplementation(libs.h2database)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.testcontainers.postgresql)
@@ -56,6 +52,7 @@ dependencies {
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.reactor.test)
+    testRuntimeOnly(libs.h2database)
 }
 
 configurations.all {

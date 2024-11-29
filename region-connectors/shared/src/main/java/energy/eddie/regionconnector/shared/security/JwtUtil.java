@@ -1,6 +1,9 @@
 package energy.eddie.regionconnector.shared.security;
 
-import com.nimbusds.jose.*;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.mint.DefaultJWSMinter;
 import com.nimbusds.jose.mint.JWSMinter;
@@ -59,11 +62,11 @@ public class JwtUtil {
      *
      * @return Map of the permissions grouped by region connector ID. It is never null, but may be empty.
      */
+    @SuppressWarnings("unchecked")
     public Map<String, List<String>> getPermissions(@Nullable String jwtString) {
         try {
             if (jwtString != null) {
                 JWTClaimsSet existingJwt = jwtProcessor.process(jwtString, null);
-                //noinspection unchecked
                 var claims = (Map<String, List<String>>) existingJwt.getClaim(JWT_PERMISSIONS_CLAIM);
                 return claims != null ? claims : Collections.emptyMap();
             }
@@ -81,7 +84,7 @@ public class JwtUtil {
      * @param regionConnectorId ID of the region connector that created the new permission.
      * @param permissionId      ID of the newly created permission.
      * @return Serialized JWT.
-     * @throws JwtCreationFailedException If for any reason the creation of the JWT failed.
+     * @throws JwtCreationFailedException If for any reason, the creation of the JWT failed.
      */
     public String createJwt(String regionConnectorId, String permissionId) throws JwtCreationFailedException {
         var permissions = Map.of(regionConnectorId, List.of(permissionId));

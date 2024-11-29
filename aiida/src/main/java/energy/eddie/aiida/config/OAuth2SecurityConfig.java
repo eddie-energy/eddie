@@ -21,7 +21,7 @@ public class OAuth2SecurityConfig {
                 .oauth2Login(oauth2 ->
                         oauth2.loginPage("/login")
                 )
-                .logout((logout) -> {
+                .logout(logout -> {
                     var logoutSuccessHandler =
                             new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
                     logoutSuccessHandler.setPostLogoutRedirectUri("{baseUrl}/login");

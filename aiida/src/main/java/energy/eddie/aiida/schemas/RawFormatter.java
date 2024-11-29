@@ -11,7 +11,13 @@ public class RawFormatter extends SchemaFormatter {
         try {
             return objectMapper.writeValueAsBytes(aiidaRecord);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new RawFormatterException(e);
+        }
+    }
+
+    static class RawFormatterException extends RuntimeException {
+        public RawFormatterException(Exception e) {
+            super(e);
         }
     }
 }

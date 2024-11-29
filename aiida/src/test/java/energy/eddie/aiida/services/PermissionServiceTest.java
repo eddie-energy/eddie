@@ -20,7 +20,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.HttpHeaders;
@@ -75,7 +74,7 @@ class PermissionServiceTest {
     private AiidaLocalDataNeed mockAiidaDataNeed;
     @Mock
     private AuthService mockAuthService;
-    @Spy
+    @Mock
     private Permission mockPermission;
     @Mock
     private MqttDto mockMqttDto;
@@ -339,6 +338,7 @@ class PermissionServiceTest {
         when(mockPermission.dataNeed()).thenReturn(mockAiidaDataNeed);
         when(mockAiidaDataNeed.dataNeedId()).thenReturn("dataNeedId");
         when(mockPermission.status()).thenReturn(STREAMING_DATA);
+        when(mockPermission.permissionId()).thenReturn(permissionId);
 
         // When
         service.revokePermission(permissionId);

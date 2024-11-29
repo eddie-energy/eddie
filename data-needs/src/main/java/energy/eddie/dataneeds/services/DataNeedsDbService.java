@@ -79,7 +79,9 @@ public class DataNeedsDbService implements DataNeedsService {
     }
 
     public void deleteById(String id) {
-        LOGGER.debug("Deleting data need with ID {}", id);
+        LOGGER.atDebug()
+              .addArgument(() -> UUID.fromString(id))
+              .log("Deleting data need with ID {}");
         repository.deleteById(id);
     }
 }

@@ -44,11 +44,11 @@ dependencies {
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
-    testImplementation(libs.flyway.core)
-    testImplementation(libs.flyway.postgresql)
     testImplementation(libs.okhttp3.mockwebserver)
 
     testRuntimeOnly(libs.postgresql)
+    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.flyway.postgresql)
 }
 
 // disable bootJar task as it needs a main class and region connectors do not have one
@@ -132,6 +132,12 @@ openApiGenerate {
     cleanupOutput.set(true)
 }
 
+val openApiTask = tasks.named("openApiGenerate")
+
 tasks.named("compileJava").configure {
-    dependsOn(tasks.named("openApiGenerate"))
+    dependsOn(openApiTask)
+}
+
+sourceSets.configureEach {
+    java.srcDir(openApiTask.map { files() })
 }

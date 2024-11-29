@@ -3,7 +3,6 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.UnauthorizedException;
 import energy.eddie.aiida.models.permission.Permission;
-import io.micrometer.common.lang.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;

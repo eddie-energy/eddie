@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriTemplate;
 
 import java.util.List;
+import java.util.UUID;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -34,8 +35,8 @@ import java.util.List;
 @OpenAPIDefinition(info = @Info(title = "Permissions API", version = "1.0", description = "Manage permissions"))
 public class PermissionController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionController.class);
-    private final PermissionService permissionService;
     private static final String REVOKE_PERMISSION_EXAMPLE_RETURN_JSON = "{\"permissionId\":\"a4dc1bad-b9fe-47ae-9336-690cfb4aada9\",\"status\":\"REVOKED\",\"serviceName\":\"My Energy Visualization Service\",\"dataNeedId\":\"DATA_NEED_ID\",\"startTime\":\"2023-10-01T08:00:00Z\",\"expirationTime\":\"2023-10-31T20:00:00Z\",\"grantTime\":\"2023-10-01T08:00:00Z\",\"revokeTime\":\"2023-10-20T08:00:00Z\",\"connectionId\":\"SomeRandomString\",\"requestedCodes\":\"[\\\"1-0:1.8.0\\\",\\\"1-0:1.7.0\\\"]\"}}";
+    private final PermissionService permissionService;
 
     @Autowired
     public PermissionController(PermissionService permissionService) {
@@ -85,14 +86,17 @@ public class PermissionController {
             @Parameter(name = "permissionId", description = "Unique ID of the permission", example = "f38a1953-ae7a-480c-814f-1cca3989981e")
             @PathVariable String permissionId
     ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
-        LOGGER.info("Got request to update permission {} with operation {}", permissionId, patchDto.operation());
+        LOGGER.atInfo()
+              // Validate that it's a real permission ID and not some malicious string
+              .addArgument(() -> UUID.fromString(permissionId))
+              .addArgument(patchDto::operation)
+              .log("Got request to update permission {} with operation {}");
 
         var permission = switch (patchDto.operation()) {
             case ACCEPT -> permissionService.acceptPermission(permissionId);
             case REJECT -> permissionService.rejectPermission(permissionId);
             case REVOKE -> permissionService.revokePermission(permissionId);
         };
-
         return ResponseEntity.ok(permission);
     }
 }

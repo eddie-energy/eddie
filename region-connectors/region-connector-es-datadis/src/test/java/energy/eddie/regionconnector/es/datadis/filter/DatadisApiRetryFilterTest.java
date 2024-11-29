@@ -23,15 +23,6 @@ class DatadisApiRetryFilterTest {
     }
 
     @Test
-    void filter_ifBadRequest_returnsFalse() {
-        var filter = new DatadisApiRetryFilter(
-                DatadisApiRetryFilterTest.class,
-                List.of()
-        );
-        assertFalse(filter.filter(new DatadisApiException("", HttpResponseStatus.UNAUTHORIZED, "")));
-    }
-
-    @Test
     void filter_ifInternalServerError_returnsTrue() {
         var filter = new DatadisApiRetryFilter(
 

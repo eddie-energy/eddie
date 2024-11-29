@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -137,7 +138,7 @@ public class Aggregator implements AutoCloseable {
         // TODO: GH-1307 Currently only the last record is kept. This should be changed to a more sophisticated aggregation.
         var aggregatedRecords = aiidaRecords.stream()
                                             .collect(Collectors.toMap(AiidaRecord::aiidaRecordValue,
-                                                                      record -> record,
+                                                                      Function.identity(),
                                                                       (existingRecord, newRecord) -> newRecord,
                                                                       LinkedHashMap::new));
         return new ArrayList<>(aggregatedRecords.values());

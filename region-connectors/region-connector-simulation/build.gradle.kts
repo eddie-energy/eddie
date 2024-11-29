@@ -18,12 +18,12 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
-    implementation(project(":data-needs"))
     implementation(project(":region-connectors:shared"))
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.reactor.core)
+    implementation(libs.jakarta.persistence.api)
 
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.jupiter)

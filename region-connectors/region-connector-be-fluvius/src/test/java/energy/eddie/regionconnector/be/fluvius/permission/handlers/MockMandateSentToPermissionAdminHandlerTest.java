@@ -27,9 +27,6 @@ import static org.mockito.Mockito.verify;
 class MockMandateSentToPermissionAdminHandlerTest {
     @MockBean
     private Outbox outbox;
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    @Autowired
-    private MockMandateSentToPermissionAdminHandler mockMandateSentToPermissionAdminHandler;
     @Autowired
     private EventBus eventBus;
 

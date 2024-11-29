@@ -81,35 +81,6 @@ public class AiidaPermissionService {
         }
     }
 
-    private AiidaPermissionRequest checkIfPermissionHasValidStatus(
-            String permissionId,
-            PermissionProcessStatus requiredStatus,
-            PermissionProcessStatus desiredNextStatus
-    ) throws PermissionNotFoundException, PermissionStateTransitionException {
-        Optional<AiidaPermissionRequest> optional = viewRepository.findById(permissionId);
-        if (optional.isEmpty()) {
-            LOGGER.warn(
-                    "Got request check if permission {} is in status {} before transitioning it to status {}, but there is no permission with this ID in the database",
-                    permissionId,
-                    requiredStatus,
-                    desiredNextStatus
-            );
-            throw new PermissionNotFoundException(permissionId);
-        }
-        var request = optional.get();
-
-        // check if in valid previous state because we are reacting to an external event
-        if (request.status() != requiredStatus) {
-            throw new PermissionStateTransitionException(
-                    permissionId,
-                    desiredNextStatus,
-                    requiredStatus,
-                    request.status());
-        }
-
-        return request;
-    }
-
     public QrCodeDto createValidateAndSendPermissionRequest(PermissionRequestForCreation forCreation)
             throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         var permissionId = UUID.randomUUID().toString();
@@ -146,10 +117,6 @@ public class AiidaPermissionService {
                 return new QrCodeDto(permissionId, dataNeed.name(), handshakeUrl, jwtString);
             }
         }
-    }
-
-    private String terminationTopicForPermissionId(String permissionId) {
-        return "aiida/v1/" + permissionId + "/termination";
     }
 
     public void unableToFulFillPermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException {
@@ -214,5 +181,36 @@ public class AiidaPermissionService {
                                             .orElseThrow(() -> new DataNeedNotFoundException(request.dataNeedId()));
 
         return new PermissionDetailsDto(request, dataNeed);
+    }
+
+    private AiidaPermissionRequest checkIfPermissionHasValidStatus(
+            String permissionId,
+            PermissionProcessStatus requiredStatus,
+            PermissionProcessStatus desiredNextStatus
+    ) throws PermissionNotFoundException, PermissionStateTransitionException {
+        Optional<AiidaPermissionRequest> optional = viewRepository.findById(permissionId);
+        if (optional.isEmpty()) {
+            throw new PermissionNotFoundException(permissionId);
+        }
+        var request = optional.get();
+        LOGGER.atInfo()
+              .addArgument(request::permissionId)
+              .addArgument(requiredStatus)
+              .addArgument(desiredNextStatus)
+              .log("Got request check if permission {} is in status {} before transitioning it to status {}");
+        // check if in valid previous state because we are reacting to an external event
+        if (request.status() != requiredStatus) {
+            throw new PermissionStateTransitionException(
+                    permissionId,
+                    desiredNextStatus,
+                    requiredStatus,
+                    request.status());
+        }
+
+        return request;
+    }
+
+    private String terminationTopicForPermissionId(String permissionId) {
+        return "aiida/v1/" + permissionId + "/termination";
     }
 }

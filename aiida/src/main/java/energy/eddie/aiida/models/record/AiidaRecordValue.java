@@ -22,10 +22,12 @@ public class AiidaRecordValue {
     private String dataTag;
     @JsonProperty
     private String rawValue;
+    @SuppressWarnings("unused") // Used when serialized to JSON
     @JsonProperty
     private String rawUnitOfMeasurement;
     @JsonProperty
     private String value;
+    @SuppressWarnings("unused") // Used when serialized to JSON
     @JsonProperty
     private String unitOfMeasurement;
 

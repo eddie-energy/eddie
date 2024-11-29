@@ -29,11 +29,10 @@ import reactor.core.publisher.Sinks;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static de.ponton.xp.adapter.api.domainvalues.OutboundStatusEnum.*;
 
 
 public class PontonXPAdapter implements EdaAdapter {
@@ -182,32 +181,29 @@ public class PontonXPAdapter implements EdaAdapter {
               .addArgument(outboundMessageStatusUpdate::getResult)
               .log("Received status update for ConversationId: '{}' with result: '{}'");
         var cpRequest = cpRequestSet.remove(conversationId);
-        switch (outboundMessageStatusUpdate.getResult()) {
-            case CONFIG_ERROR, CONTENT_ERROR, TRANSMISSION_ERROR, FAILED -> {
-                // If the outgoing message was a CPRequest, complete the future with an error
-                if (cpRequest) {
-                    LOGGER.atDebug()
-                          .addArgument(conversationId)
-                          .addArgument(outboundMessageStatusUpdate::getResult)
-                          .addArgument(outboundMessageStatusUpdate::getDetailText)
-                          .log("Ponton could not send CPRequest for ConversationId '{}': '{}'. Detail: '{}'");
-                    cpRequestResultSink.emitNext(
-                            new CPRequestResult(conversationId, CPRequestResult.Result.PONTON_ERROR),
-                            Sinks.EmitFailureHandler.busyLooping(Duration.ofSeconds(1))
-                    );
-                    return;
-                }
-
-                CMRequestStatus status = new CMRequestStatus(
-                        NotificationMessageType.PONTON_ERROR,
-                        conversationId,
-                        outboundMessageStatusUpdate.getDetailText()
-                );
-                requestStatusSink.emitNext(status, Sinks.EmitFailureHandler.busyLooping(Duration.ofSeconds(1)));
-            }
-            default -> {
-                // Ignore the other status updates
-            }
+        var result = outboundMessageStatusUpdate.getResult();
+        if (!List.of(CONFIG_ERROR, CONTENT_ERROR, TRANSMISSION_ERROR, FAILED).contains(result)) {
+            LOGGER.info("Ignoring status update for ConversationId: '{}' with result: '{}'", conversationId, result);
+            return;
+        }
+        if (cpRequest) {
+            // If the outgoing message was a CPRequest, complete the future with an error
+            LOGGER.atDebug()
+                  .addArgument(conversationId)
+                  .addArgument(outboundMessageStatusUpdate::getResult)
+                  .addArgument(outboundMessageStatusUpdate::getDetailText)
+                  .log("Ponton could not send CPRequest for ConversationId '{}': '{}'. Detail: '{}'");
+            cpRequestResultSink.emitNext(
+                    new CPRequestResult(conversationId, CPRequestResult.Result.PONTON_ERROR),
+                    Sinks.EmitFailureHandler.busyLooping(Duration.ofSeconds(1))
+            );
+        } else {
+            var status = new CMRequestStatus(
+                    NotificationMessageType.PONTON_ERROR,
+                    conversationId,
+                    outboundMessageStatusUpdate.getDetailText()
+            );
+            requestStatusSink.emitNext(status, Sinks.EmitFailureHandler.busyLooping(Duration.ofSeconds(1)));
         }
     }
 

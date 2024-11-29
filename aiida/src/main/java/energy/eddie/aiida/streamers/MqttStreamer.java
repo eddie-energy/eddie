@@ -41,7 +41,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
      * Creates a new MqttStreamer and initialized the client callback.
      *
      * @param recordFlux             Flux, where records that should be sent are published.
-     * @param terminationRequestSink Sink, to which the {@code permissionId} will be published, when the EP requests a
+     * @param terminationRequestSink Sink, to which the ID of the permission will be published when the EP requests a
      *                               termination.
      * @param streamingConfig        Necessary MQTT configuration values.
      * @param client                 {@link MqttAsyncClient} used to send to MQTT broker.

@@ -22,5 +22,6 @@ public interface FiPermissionRequestRepository extends
     @Override
     List<FingridPermissionRequest> findStalePermissionRequests(@Param("hours") int duration);
 
+    @Override
     List<FingridPermissionRequest> findByStatus(PermissionProcessStatus status);
 }

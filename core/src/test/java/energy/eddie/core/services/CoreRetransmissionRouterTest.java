@@ -13,6 +13,7 @@ import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 import static org.mockito.Mockito.*;
 
@@ -32,7 +33,8 @@ class CoreRetransmissionRouterTest {
         CoreRetransmissionRouter router = new CoreRetransmissionRouter();
         router.registerRetransmissionService("s1", regionConnectorRetransmissionService);
         router.registerRetransmissionService("s2", regionConnectorRetransmissionService2);
-        RetransmissionRequest request = new RetransmissionRequest("permissionId", LocalDate.now(), LocalDate.now());
+        var now = LocalDate.now(ZoneOffset.UTC);
+        RetransmissionRequest request = new RetransmissionRequest("permissionId", now, now);
         // When
         router.routeRetransmissionRequest("s1", request).subscribe();
         var notFoundVerifier = StepVerifier.create(router.routeRetransmissionRequest("s3", request));
@@ -56,7 +58,8 @@ class CoreRetransmissionRouterTest {
 
         CoreRetransmissionRouter router = new CoreRetransmissionRouter();
         router.registerRetransmissionService("s1", regionConnectorRetransmissionService);
-        RetransmissionRequest request = new RetransmissionRequest("permissionId", LocalDate.now(), LocalDate.now());
+        var now = LocalDate.now(ZoneOffset.UTC);
+        RetransmissionRequest request = new RetransmissionRequest("permissionId", now, now);
 
         // When
         router.routeRetransmissionRequest("s1", request).subscribe();

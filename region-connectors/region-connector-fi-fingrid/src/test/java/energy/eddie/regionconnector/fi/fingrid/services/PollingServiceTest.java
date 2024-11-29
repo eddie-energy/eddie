@@ -213,6 +213,8 @@ class PollingServiceTest {
     }
 
     @Test
+    @SuppressWarnings("DirectInvocationOnMock")
+        // Mock is not directly invoked, but reference to method is provided
     void pollWithEmptyResponse_doesNotPublish() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
@@ -248,6 +250,8 @@ class PollingServiceTest {
     }
 
     @Test
+    @SuppressWarnings("DirectInvocationOnMock")
+        // Mock is not directly invoked, but reference to method is provided
     void pollWithErrorResponse_doesNotPublish() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);

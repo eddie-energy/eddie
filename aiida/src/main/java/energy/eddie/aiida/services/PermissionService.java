@@ -60,33 +60,51 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         streamerManager.terminationRequestsFlux().subscribe(this::terminationRequestReceived);
     }
 
-    private void terminationRequestReceived(String permissionId) {
-        LOGGER.info("Will handle termination request for permission {}", permissionId);
+    /**
+     * Revokes the specified permission by updating its status and records the timestamp and persisting the changes. If
+     * an error during shutdown of the AiidaStreamer or sending of the {@link ConnectionStatusMessage} occurs, they are
+     * logged but not propagated to the caller.
+     *
+     * @param permissionId ID of the permission that should be revoked.
+     * @return Updated permission object that has been persisted.
+     * @throws PermissionNotFoundException        In case no permission with the specified ID can be found.
+     * @throws PermissionStateTransitionException In case the permission has a status that makes it not eligible for
+     *                                            revocation.
+     * @throws UnauthorizedException              If the current user is not the owner of the Permission.
+     */
+    public Permission revokePermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException, UnauthorizedException, InvalidUserException {
+        var permission = findById(permissionId);
+        permissionId = permission.permissionId();
+        LOGGER.info("Got request to revoke permission with id {}", permissionId);
+        authService.checkAuthorizationForPermission(permission);
 
-        Permission permission;
-        try {
-            permission = findById(permissionId);
-        } catch (PermissionNotFoundException e) {
-            LOGGER.error("Was requested to terminate permission {}, but it cannot be found in the database",
-                         permissionId);
-            return;
-        }
+        if (!isEligibleForRevocation(permission))
+            throw new PermissionStateTransitionException(permissionId,
+                                                         REVOKED.name(),
+                                                         List.of(ACCEPTED.name(),
+                                                                 STREAMING_DATA.name(),
+                                                                 WAITING_FOR_START.name()),
+                                                         permission.status().name());
 
-        permissionScheduler.removePermission(permissionId);
+        permissionScheduler.removePermission(permission.permissionId());
 
-        Instant terminateTime = clock.instant();
-        permission.setRevokeTime(terminateTime);
-        permission.setStatus(TERMINATED);
+
+        Instant revocationTime = clock.instant();
+        permission.setStatus(REVOKED);
+        permission.setRevokeTime(revocationTime);
         permission = repository.save(permission);
+
 
         var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
         var connectionId = requireNonNull(permission.connectionId());
-        var terminatedMessage = new ConnectionStatusMessage(connectionId,
-                                                            dataNeedId,
-                                                            clock.instant(),
-                                                            TERMINATED,
-                                                            permission.permissionId());
-        streamerManager.stopStreamer(terminatedMessage);
+        var revokedMessage = new ConnectionStatusMessage(connectionId,
+                                                         dataNeedId,
+                                                         clock.instant(),
+                                                         REVOKED,
+                                                         permission.permissionId());
+        streamerManager.stopStreamer(revokedMessage);
+
+        return permission;
     }
 
     /**
@@ -247,51 +265,33 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         return permissionScheduler.scheduleOrStart(permission);
     }
 
-    /**
-     * Revokes the specified permission by updating its status and records the timestamp and persisting the changes. If
-     * an error during shutdown of the AiidaStreamer or sending of the {@link ConnectionStatusMessage} occurs, they are
-     * logged but not propagated to the caller.
-     *
-     * @param permissionId ID of the permission that should be revoked.
-     * @return Updated permission object that has been persisted.
-     * @throws PermissionNotFoundException        In case no permission with the specified ID can be found.
-     * @throws PermissionStateTransitionException In case the permission has a status that makes it not eligible for
-     *                                            revocation.
-     * @throws UnauthorizedException If the current user is not the owner of the Permission.
-     */
-    public Permission revokePermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException, UnauthorizedException, InvalidUserException {
-        LOGGER.info("Got request to revoke permission with id {}", permissionId);
+    private void terminationRequestReceived(String permissionId) {
+        LOGGER.info("Will handle termination request for permission {}", permissionId);
 
-        var permission = findById(permissionId);
-        authService.checkAuthorizationForPermission(permission);
+        Permission permission;
+        try {
+            permission = findById(permissionId);
+        } catch (PermissionNotFoundException e) {
+            LOGGER.error("Was requested to terminate permission {}, but it cannot be found in the database",
+                         permissionId);
+            return;
+        }
 
-        if (!isEligibleForRevocation(permission))
-            throw new PermissionStateTransitionException(permissionId,
-                                                         REVOKED.name(),
-                                                         List.of(ACCEPTED.name(),
-                                                                 STREAMING_DATA.name(),
-                                                                 WAITING_FOR_START.name()),
-                                                         permission.status().name());
+        permissionScheduler.removePermission(permission.permissionId());
 
-        permissionScheduler.removePermission(permissionId);
-
-
-        Instant revocationTime = clock.instant();
-        permission.setStatus(REVOKED);
-        permission.setRevokeTime(revocationTime);
+        Instant terminateTime = clock.instant();
+        permission.setRevokeTime(terminateTime);
+        permission.setStatus(TERMINATED);
         permission = repository.save(permission);
-
 
         var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
         var connectionId = requireNonNull(permission.connectionId());
-        var revokedMessage = new ConnectionStatusMessage(connectionId,
-                                                         dataNeedId,
-                                                         clock.instant(),
-                                                         REVOKED,
-                                                         permission.permissionId());
-        streamerManager.stopStreamer(revokedMessage);
-
-        return permission;
+        var terminatedMessage = new ConnectionStatusMessage(connectionId,
+                                                            dataNeedId,
+                                                            clock.instant(),
+                                                            TERMINATED,
+                                                            permission.permissionId());
+        streamerManager.stopStreamer(terminatedMessage);
     }
 
     /**

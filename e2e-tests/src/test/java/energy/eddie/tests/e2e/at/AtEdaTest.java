@@ -6,8 +6,6 @@ import com.microsoft.playwright.options.AriaRole;
 import energy.eddie.tests.e2e.E2eTestSetup;
 import org.junit.jupiter.api.Test;
 
-import java.util.regex.Pattern;
-
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 class AtEdaTest extends E2eTestSetup {

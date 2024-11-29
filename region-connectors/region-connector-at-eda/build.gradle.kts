@@ -30,7 +30,6 @@ dependencies {
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.oxm)
-    implementation(libs.hibernate.validator)
     implementation(libs.nimbus.oidc)
 
     // dependency for PontonXP Messenger
@@ -40,9 +39,9 @@ dependencies {
     jaxb(libs.jaxb.runtime)
     jaxb(libs.jaxb.plugins)
 
-    implementation(libs.jaxb.runtime)
     implementation(libs.jakarta.xml.bind.api)
     implementation(libs.jakarta.annotation.api)
+    implementation(libs.jakarta.validation.api)
     implementation(libs.commons.codec)
 
     implementation(libs.jackson.databind)
@@ -50,6 +49,8 @@ dependencies {
 
     implementation(libs.reactor.core)
 
+    runtimeOnly(libs.hibernate.validator)
+    runtimeOnly(libs.jaxb.runtime)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
@@ -58,9 +59,9 @@ dependencies {
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
-    testImplementation(libs.flyway.core)
-    testImplementation(libs.flyway.postgresql)
     testImplementation(libs.okhttp3.mockwebserver)
+    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)
 }
 
@@ -119,6 +120,10 @@ val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasse
 tasks.named("compileJava") {
     // generate the classes before compiling
     dependsOn(generateEDASchemaClasses)
+}
+
+sourceSets.configureEach {
+    java.srcDir(generateEDASchemaClasses.map { files() })
 }
 
 configureJavaCompileWithErrorProne("energy.eddie.regionconnector.at")

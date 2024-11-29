@@ -74,7 +74,7 @@ class SeriesPeriodBuilderTest {
     }
 
     @Test
-    void withEnergy_withValidEnergy_setsTimeIntervalAsExpected() throws InvalidMappingException {
+    void withEnergy_withValidEnergy_setsTimeIntervalAsExpected() {
         // following this document https://www.ebutilities.at/documents/20220309103941_datentypen.pdf
         ZonedDateTime start = ZonedDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.MIN, AT_ZONE_ID);
         ZonedDateTime end = start.plusDays(1);

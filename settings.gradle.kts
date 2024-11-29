@@ -1,4 +1,9 @@
 rootProject.name = "eddie"
+
+plugins {
+    id("com.autonomousapps.build-health") version ("2.5.0")
+}
+
 include("region-connectors")
 
 include("api")

@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,8 +65,5 @@ class AiidaRecordConverterTest {
         assertEquals("connectionId", dto.connectionId());
         assertEquals("permissionId", dto.permissionId());
         assertEquals(timestamp.toEpochMilli(), dto.timestamp().toEpochMilli());
-    }
-
-    private static class DummyRecord extends AiidaRecord {
     }
 }
