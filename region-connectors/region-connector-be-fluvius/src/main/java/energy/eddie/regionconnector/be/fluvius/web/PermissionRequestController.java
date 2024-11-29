@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriTemplate;
 
@@ -19,6 +20,7 @@ import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSI
 
 @RestController
 public class PermissionRequestController {
+    private static final String STATUS = "status";
     private final PermissionRequestService permissionRequestService;
 
     public PermissionRequestController(PermissionRequestService permissionRequestService) {
@@ -46,5 +48,16 @@ public class PermissionRequestController {
         var statusMessage = permissionRequestService.findConnectionStatusMessageById(permissionId)
                                                     .orElseThrow(() -> new PermissionNotFoundException(permissionId));
         return ResponseEntity.ok(statusMessage);
+    }
+
+    @GetMapping(
+            value = "/callback/success",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public String callbackSuccess(
+            Model model
+    ) {
+        model.addAttribute(STATUS, "OK");
+        return "authorization-callback";
     }
 }
