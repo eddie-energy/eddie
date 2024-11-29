@@ -36,30 +36,21 @@ See the [operation.md](docs/1-running/OPERATION.md) file to get started.
 
 ## Running EDDIE locally
 
-Firstly clone the repository.
+**Prerequisites:**
 
-Some modules provide custom web elements that need to be built with pnpm:
+- Java Development Kit (JDK) Version 21 is installed
+- Node.js Version 18 with pnpm
 
-```bash
-pnpm install
-pnpm run build
-```
+**Steps:**
 
-### Gradle tasks
-
-There are two tasks in the **development** group that have to run at the same time, e.g. in different windows:
-
-- `./gradlew run-core`
-- `./gradlew run-example-app`
-
-The processes are:
-
-#### Eligible party demo app
-
-A simple demo app to check and try EDDIE's functionality.
-
-- access the web-interface at <http://localhost:8081/login>
-- login is possible with every email/password (not checked)
+1. Clone the repository
+2. Start PostgreSQL and Apache Kafka: `docker compose -f .\env\docker-compose.yml up -d db kafka`
+3. Edit core/src/main/resources/application.properties and add a (random) secret for signing JWTs, e.g.
+   `eddie.jwt.hmac.secret=Y+nmICKhBcl4QbSItrf/IS9sVpUv4RMpiBtBPz0KYbM=`
+4. Start EDDIE Framework using Gradle: `./gradlew run-core`
+5. Start demo app (separate window): `./gradlew run-example-app`
+6. Open browser on demo app: <http://localhost:8081/login>
+   _login is possible with every email/password (not checked)_
 
 See [example app readme](docs/1-running/example-app.md) for further information.
 

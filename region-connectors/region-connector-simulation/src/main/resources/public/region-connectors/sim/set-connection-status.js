@@ -1,4 +1,5 @@
 import { css, html, LitElement } from "https://esm.sh/lit";
+import { commonParameters } from "./common-parameters-form.js";
 
 class SetConnectionStatusCe extends LitElement {
   static properties = {
@@ -17,15 +18,18 @@ class SetConnectionStatusCe extends LitElement {
       .catch(console.error);
   }
 
-  switchStatus(e) {
-    const connectionStatus = e.target.value;
+  submit() {
+    const connectionStatus = this.renderRoot.querySelector(
+      "input[name='connectionStatus']:checked"
+    ).value;
     console.log(
       `switching connection status of ${this.connectionId} to ${connectionStatus}`
     );
     const body = JSON.stringify({
-      connectionId: this.connectionId,
-      dataNeedId: this.dataNeedId,
-      connectionStatus,
+      connectionId: commonParameters.connectionId,
+      dataNeedId: commonParameters.dataNeedId,
+      permissionId: commonParameters.permissionId,
+      connectionStatus: connectionStatus,
     });
     fetch("connection-status", {
       method: "POST",
@@ -43,12 +47,12 @@ class SetConnectionStatusCe extends LitElement {
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
       />
-      <div class="card">
+      <div class="card mb-3">
         <div class="card-header">Connection Status</div>
         <div class="card-body">
           <div class="row align-items-start">
             ${this._statusValues.map(
-              (val) => html`
+              (val, index) => html`
                 <div class="col form-check">
                   <input
                     class="form-check-input"
@@ -56,7 +60,7 @@ class SetConnectionStatusCe extends LitElement {
                     name="connectionStatus"
                     id="connectionStatus${val}"
                     value="${val}"
-                    @change="${this.switchStatus}"
+                    .checked=${0 == index}
                   />
                   <label class="form-check-label" for="connectionStatus${val}"
                     >${val}</label
@@ -64,6 +68,11 @@ class SetConnectionStatusCe extends LitElement {
                 </div>
               `
             )}
+          </div>
+          <div class="row mt-3 mb-3">
+            <button class="col-3 btn btn-primary" @click="${this.submit}">
+              Submit
+            </button>
           </div>
         </div>
       </div>
