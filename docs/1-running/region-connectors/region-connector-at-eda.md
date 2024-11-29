@@ -14,7 +14,7 @@ This README will guide you through the process of configuring a region connector
   the `<DefaultAdapterId>TestAdapter</DefaultAdapterId>` section in
   the `messenger.xml` file found in the config folder of the PontonXP Messenger. Change this value to something else,
   e.g. `<DefaultAdapterId>Eddie</DefaultAdapterId>`, the value should match the config value that is later passed to
-  the region connector.
+  the region connector. If you have multiple services with their own eligible party id and want to route messages to specific adapters based on the eligible party id, see the section [Configuring PontonXP Messenger with multiple eligible parties and adapters](#configuring-pontonxp-messenger-with-multiple-eligible-parties-and-adapters).
 
 ## Configuration of the Region Connector
 
@@ -77,3 +77,59 @@ REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_PASSWORD=password
 
 If you are using EDDIE, the region connector should appear in the list of available
 region connectors if it has been configured correctly.
+
+## Configuring PontonXP Messenger with multiple eligible parties and adapters
+
+If you are in a situation, where you have multiple local partners (eligible parties) using the same PontonXP Messenger and want to route messages to specific adapters based on the eligible party id,
+some additional setup is needed in the messenger configuration.
+
+The way that the messenger works, is that it requires an agreement between all partners that want to communicate.
+This means there needs to be an agreement between every local partner id (eligible party id) and every DSO that want to exchange data.
+Incoming messages are then routed to the adapter that is specified in the agreement.
+These Agreements can be created either manually or are automatically created when the first message from a local partner is sent to a DSO.
+The Agreements are always created based on a template that configures how communication between the partners is supposed to work.
+
+These templates can be customized using the Apache Velocity template engine.
+
+To customize the agreement template that is used for the austrian market, create a file called  `EDA_private.vm` in
+`config/agreementTemplates/` of the messenger installation.
+
+The following is an example of a template that can be used to set the
+`DefaulAdapterId` based on the local partner id (eligible party id):
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PrivateCollaborationAgreement TemplateId="EDA">
+    #if ($agreement.ownPartner.backendPartnerId == "ELIGIBLE_PARTY_ID_1")
+    <DefaultAdapterId>ELIGIBLE_PARTY_ID_1_Adapter</DefaultAdapterId>
+    #elseif ($agreement.ownPartner.backendPartnerId == "ELIGIBLE_PARTY_ID_2")
+    <DefaultAdapterId>ELIGIBLE_PARTY_ID_2_Adapter</DefaultAdapterId>
+    #else
+    <DefaultAdapterId>${agreement.adapterId}</DefaultAdapterId>
+    #end
+    <Rules SenderRefId="${agreement.ownPartner.id}" ReceiverRefId="${agreement.communicationPartner.id}">
+    </Rules>
+    <Rules SenderRefId="${agreement.communicationPartner.id}" ReceiverRefId="${agreement.ownPartner.id}">
+    </Rules>
+</PrivateCollaborationAgreement>       
+```
+
+This will ensure that messages that are send to the `ELIGIBLE_PARTY_ID_1` will be sent to the
+`ELIGIBLE_PARTY_ID_1_Adapter`,
+messages sent to `ELIGIBLE_PARTY_ID_2` will be sent to the
+`ELIGIBLE_PARTY_ID_2_Adapter` and all other messages will be sent to the default adapter.
+Replace these values accordingly.
+
+After creating the template, restart the messenger to apply the changes.
+
+To test if this works, try to manually create an agreement between 2 Partner through the web interface of the messenger.
+This can be done under `messenger/agreements` =>
+`Add agreement` in the top left. Then select one of the local partner and any remote partner.
+Make sure the Agreement template is set to `EDA` and continue.
+If you scroll down to the `Integration` section, it should show the expected Adapter in the `Default-Adapter` field.
+
+If the Agreement template is showing no content when trying to manually create it, it means that the template
+`EDA_private.vm` is invalid.
+
+This will only affect new agreements that are created, existing agreements will not be changed.
+You can either change the adapter of an existing agreement manually or delete the agreement and let it be recreated.
