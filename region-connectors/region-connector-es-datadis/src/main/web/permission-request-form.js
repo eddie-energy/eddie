@@ -1,20 +1,22 @@
 import { html, nothing } from "lit";
-import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
+import { ifDefined } from "lit/directives/if-defined.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
+import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 import logo from "../resources/datadis-logo.svg?raw";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/input/input.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/button/button.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/alert/alert.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/spinner/spinner.js";
 
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
     accountingPointId: { attribute: "accounting-point-id" },
-    _isPermissionRequestCreated: { type: Boolean },
+    jumpOffUrl: { attribute: "jump-off-url" },
+    _isSentToPermissionAdministrator: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
-    _areResponseButtonsDisabled: { type: Boolean },
     _isVerifying: { type: Boolean },
   };
 
@@ -23,14 +25,17 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
   constructor() {
     super();
-    this.addEventListener("eddie-request-status", () => {
-      // status events following the accepted interaction disable the verifying state
-      this._isVerifying = false;
-    });
-    this._isPermissionRequestCreated = false;
-    this._isSubmitDisabled = false;
-    this._areResponseButtonsDisabled = false;
-    this._isVerifying = false;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener(
+      "eddie-request-sent-to-permission-administrator",
+      () => {
+        this._isSentToPermissionAdministrator = true;
+      }
+    );
   }
 
   handleSubmit(event) {
@@ -48,12 +53,9 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     this._isSubmitDisabled = true;
 
     this.createPermissionRequest(payload)
-      .then((result) => {
-        console.log(result);
-
-        this._isPermissionRequestCreated = true;
-        this.permissionId = result["permissionId"];
-        this.accessToken = result["accessToken"];
+      .then(({ permissionId, accessToken }) => {
+        this.permissionId = permissionId;
+        this.accessToken = accessToken;
       })
       .catch((error) => {
         this._isSubmitDisabled = false;
@@ -62,7 +64,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   accepted() {
-    fetch(this.REQUEST_URL + `/${this.permissionId}/accepted`, {
+    fetch(`${this.REQUEST_URL}/${this.permissionId}/accepted`, {
       method: "PATCH",
       headers: {
         Authorization: "Bearer " + this.accessToken,
@@ -70,103 +72,112 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     })
       .then(() => {
         this._isVerifying = true;
-        this._areResponseButtonsDisabled = true;
       })
-      .catch((error) => this.error(error));
+      .catch((error) => {
+        this._isVerifying = false;
+        this.error(error);
+      });
   }
 
   rejected() {
-    fetch(this.REQUEST_URL + `/${this.permissionId}/rejected`, {
+    fetch(`${this.REQUEST_URL}/${this.permissionId}/rejected`, {
       method: "PATCH",
       headers: {
         Authorization: "Bearer " + this.accessToken,
       },
-    })
-      .then(() => {
-        this._areResponseButtonsDisabled = true;
-      })
-      .catch((error) => this.error(error));
+    }).catch((error) => {
+      this.error(error);
+    });
   }
 
   render() {
     return html`
-      <div>
-        <form id="request-form">
-          <sl-input
-            label="CUPS"
-            id="meteringPointId"
-            type="text"
-            name="meteringPointId"
-            .helpText=${this.accountingPointId
-              ? "The service has already provided a CUPS value. If this value is incorrect, please contact the service provider."
-              : nothing}
-            .value="${this.accountingPointId
-              ? this.accountingPointId
-              : nothing}"
-            .disabled="${!!this.accountingPointId}"
-            required
-          ></sl-input>
+      <form
+        id="request-form"
+        ?hidden="${this._isSentToPermissionAdministrator}"
+      >
+        <sl-input
+          label="CUPS"
+          id="meteringPointId"
+          type="text"
+          name="meteringPointId"
+          .helpText=${this.accountingPointId
+            ? "The service has already provided a CUPS value. If this value is incorrect, please contact the service provider."
+            : nothing}
+          .value="${ifDefined(this.accountingPointId)}"
+          .disabled="${!!this.accountingPointId}"
+          required
+        ></sl-input>
 
-          <br />
+        <br />
 
-          <sl-input
-            label="DNI/NIF"
-            type="text"
-            id="nif"
-            name="nif"
-            placeholder="25744101M"
-            help-text="We require the identification number you use to log into the Datadis web portal to request permission."
-            required
-          ></sl-input>
+        <sl-input
+          label="DNI/NIF"
+          type="text"
+          id="nif"
+          name="nif"
+          placeholder="25744101M"
+          help-text="We require the identification number you use to log into the Datadis web portal to request permission."
+          required
+        ></sl-input>
 
-          <br />
+        <br />
 
+        <sl-button
+          ?disabled="${this._isSubmitDisabled}"
+          type="submit"
+          variant="primary"
+        >
+          Connect
+        </sl-button>
+      </form>
+
+      <div ?hidden="${!this._isSentToPermissionAdministrator}">
+        <p>
+          A request for permission has been sent to Datadis. Please accept the
+          authorization request in your Datadis portal.
+        </p>
+        <a
+          href="${this.jumpOffUrl}"
+          target="_blank"
+          style="display: inline-block; background: #5D208B; border-radius: 2em; padding: 0.5em 1em 0.5em 1em"
+        >
+          ${unsafeSVG(logo)}
+        </a>
+        <p>
+          Please let us know once you have accepted or rejected the
+          authorization request.
+        </p>
+        <div>
           <sl-button
-            ?disabled="${this._isSubmitDisabled}"
-            type="submit"
-            variant="primary"
+            variant="success"
+            @click="${this.accepted}"
+            ?disabled="${this._isVerifying}"
           >
-            Connect
+            Accepted
           </sl-button>
-        </form>
-
-        <div ?hidden="${!this._isPermissionRequestCreated}">
-          <p>Please accept the authorization request in your Datadis portal.</p>
-          <a
-            href="https://datadis.es/authorized-users"
-            target="_blank"
-            style="display: inline-block; background: #5D208B; border-radius: 2em; padding: 0.5em 1em 0.5em 1em"
+          <sl-button
+            variant="danger"
+            @click="${this.rejected}"
+            ?disabled="${this._isVerifying}"
           >
-            ${unsafeSVG(logo)}
-          </a>
-          <p>
-            Please let us know once you have accepted / rejected the
-            authorization request
-          </p>
-          <div>
-            <sl-button
-              variant="success"
-              @click="${this.accepted}"
-              ?disabled="${this._areResponseButtonsDisabled}"
-            >
-              Accepted
-            </sl-button>
-            <sl-button
-              variant="danger"
-              @click="${this.rejected}"
-              ?disabled="${this._areResponseButtonsDisabled}"
-            >
-              Rejected
-            </sl-button>
-          </div>
-
-          ${this._isVerifying
-            ? html`<p>
-                We are verifying your response with Datadis. This might take a
-                few minutes.
-              </p>`
-            : ""}
+            Rejected
+          </sl-button>
         </div>
+
+        ${this._isVerifying
+          ? html`
+              <br />
+              <sl-alert open>
+                <sl-spinner slot="icon"></sl-spinner>
+
+                <p>
+                  We are verifying your response with Datadis. This might take a
+                  few minutes.
+                </p>
+              </sl-alert>
+            `
+          : nothing}
       </div>
     `;
   }
