@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "connectionId": {
+      "description": "ID given by the eligible party to the permission request",
+      "type": "string"
+    },
+    "permissionId": {
+      "description": "Unique ID of the permission request",
+      "$ref": "#/$defs/uuid"
+    },
+    "dataNeedId": {
+      "description": "data need related to the permission request",
+      "$ref": "#/$defs/uuid"
+    },
+    "dataSourceInformation": {
+      "type": "object",
+      "properties": {
+        "countryCode": {
+          "description": "Two letter country code",
+          "type": "string"
+        },
+        "meteredDataAdministratorId": {
+          "description": "ID of the metered data administrator",
+          "type": "string"
+        },
+        "permissionAdministratorId": {
+          "description": "ID of the permission administrator",
+          "type": "string"
+        },
+        "regionConnectorId": {
+          "description": "ID of the region-connector",
+          "type": "string"
+        }
+      },
+      "required": [
+        "countryCode",
+        "meteredDataAdministratorId",
+        "permissionAdministratorId",
+        "regionConnectorId"
+      ]
+    },
+    "timestamp": {
+      "description": "Creation timestamp of this message",
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "description": "The new status of the permission request",
+      "type": "string",
+      "enum": [
+        "CREATED",
+        "VALIDATED",
+        "MALFORMED",
+        "UNABLE_TO_SEND",
+        "SENT_TO_PERMISSION_ADMINISTRATOR",
+        "TIMED_OUT",
+        "ACCEPTED",
+        "REJECTED",
+        "INVALID",
+        "REVOKED",
+        "TERMINATED",
+        "FULFILLED",
+        "UNFULFILLABLE",
+        "REQUIRES_EXTERNAL_TERMINATION",
+        "FAILED_TO_TERMINATE",
+        "EXTERNALLY_TERMINATED"
+      ]
+    },
+    "message": {
+      "description": "Can contain a reason for the status change",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "additionalInformation": {
+      "description": "Any additional information about the permission request, does not follow any schema.",
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "connectionId",
+    "permissionId",
+    "dataNeedId",
+    "dataSourceInformation",
+    "timestamp",
+    "status",
+    "message",
+    "additionalInformation"
+  ],
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    }
+  }
+}
