@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://eddie.energy/agnostic/shared",
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "dataSourceInformation": {
+      "type": "object",
+      "properties": {
+        "countryCode": {
+          "description": "Two letter country code",
+          "type": "string"
+        },
+        "meteredDataAdministratorId": {
+          "description": "ID of the metered data administrator",
+          "type": "string"
+        },
+        "permissionAdministratorId": {
+          "description": "ID of the permission administrator",
+          "type": "string"
+        },
+        "regionConnectorId": {
+          "description": "ID of the region-connector",
+          "type": "string"
+        }
+      },
+      "required": [
+        "countryCode",
+        "meteredDataAdministratorId",
+        "permissionAdministratorId",
+        "regionConnectorId"
+      ]
+    }
+  }
+}

@@ -1,0 +1,75 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:ns1="http://www.eddie.energy/agnostic"
+           targetNamespace="http://www.eddie.energy/agnostic"
+           elementFormDefault="qualified">
+    <xs:element name="RawDataMessage" type="ns1:rawDataMessage"/>
+    <xs:element name="ConnectionStatusMessage" type="ns1:connectionStatusMessage"/>
+
+    <!-- connection status message types -->
+    <xs:complexType name="connectionStatusMessage">
+        <xs:all>
+            <xs:element type="xs:string" name="connectionId"/>
+            <xs:element type="ns1:uuid" name="permissionId"/>
+            <xs:element type="ns1:uuid" name="dataNeedId"/>
+            <xs:element name="dataSourceInformation" type="ns1:dataSourceInformation"/>
+            <xs:element type="xs:dateTime" name="timestamp"/>
+            <xs:element type="ns1:status" name="status"/>
+            <xs:element type="xs:string" name="message" minOccurs="0"/>
+            <xs:element name="additionalInformation" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
+    </xs:complexType>
+    <xs:simpleType name="status" final="restriction">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="CREATED"/>
+            <xs:enumeration value="VALIDATED"/>
+            <xs:enumeration value="MALFORMED"/>
+            <xs:enumeration value="UNABLE_TO_SEND"/>
+            <xs:enumeration value="SENT_TO_PERMISSION_ADMINISTRATOR"/>
+            <xs:enumeration value="TIMED_OUT"/>
+            <xs:enumeration value="ACCEPTED"/>
+            <xs:enumeration value="REJECTED"/>
+            <xs:enumeration value="INVALID"/>
+            <xs:enumeration value="REVOKED"/>
+            <xs:enumeration value="TERMINATED"/>
+            <xs:enumeration value="FULFILLED"/>
+            <xs:enumeration value="UNFULFILLABLE"/>
+            <xs:enumeration value="REQUIRES_EXTERNAL_TERMINATION"/>
+            <xs:enumeration value="FAILED_TO_TERMINATE"/>
+            <xs:enumeration value="EXTERNALLY_TERMINATED"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- raw data message types -->
+    <xs:complexType name="rawDataMessage">
+        <xs:all>
+            <xs:element type="xs:string" name="connectionId"/>
+            <xs:element type="ns1:uuid" name="permissionId"/>
+            <xs:element type="ns1:uuid" name="dataNeedId"/>
+            <xs:element name="dataSourceInformation" type="ns1:dataSourceInformation"/>
+            <xs:element type="xs:dateTime" name="timestamp"/>
+            <xs:element name="rawPayload" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- shared types -->
+    <xs:simpleType name="uuid">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="dataSourceInformation">
+        <xs:sequence>
+            <xs:element type="xs:string" name="countryCode"/>
+            <xs:element type="xs:string" name="meteredDataAdministratorId"/>
+            <xs:element type="xs:string" name="permissionAdministratorId"/>
+            <xs:element type="xs:string" name="regionConnectorId"/>
+            <xs:any minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>
