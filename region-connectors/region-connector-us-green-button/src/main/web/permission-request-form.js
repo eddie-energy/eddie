@@ -34,8 +34,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     };
 
     this.createPermissionRequest(payload)
-      .then((result) => {
-        window.open(result["redirectUri"], "_blank");
+      .then(({ redirectUri }) => {
+        window.open(redirectUri, "_blank");
       })
       .catch((error) => this.error(error));
   }

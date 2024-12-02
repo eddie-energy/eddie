@@ -25,8 +25,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     this.createPermissionRequest(payload, {
       credentials: "include",
     })
-      .then((result) => {
-        window.open(result["redirectUri"], "_blank");
+      .then(({ redirectUri }) => {
+        window.open(redirectUri, "_blank");
       })
       .catch((error) => this.error(error));
   }
