@@ -56,15 +56,6 @@
     --vp-c-default-3: var(--vp-c-gray-3);
     --vp-c-default-soft: var(--vp-c-gray-soft);
 
-    --vp-c-brand-1: var(--eddie-light-blue);
-    --vp-c-brand-2: var(--eddie-main-blue);
-    --vp-c-brand-3: var(--eddie-light-blue);
-    --vp-c-brand-soft: var(--eddie-light-blue);
-
-    --vp-c-tip-1: var(--vp-c-brand-1);
-    --vp-c-tip-2: var(--vp-c-brand-2);
-    --vp-c-tip-3: var(--vp-c-brand-3);
-    --vp-c-tip-soft: var(--vp-c-brand-soft);
 
     --vp-c-warning-1: var(--vp-c-yellow-1);
     --vp-c-warning-2: var(--vp-c-yellow-2);

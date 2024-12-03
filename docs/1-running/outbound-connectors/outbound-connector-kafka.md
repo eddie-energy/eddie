@@ -30,8 +30,9 @@ The following topics are created upon starting this outbound-connector:
 - `permission-market-documents`: Provides permission market documents
 - `validated-historical-data`: Provides validated historical data market documents
 - `accounting-point-market-documents`: Provides accounting point market documents
-- `terminations`: Allows the eligible party to send termination documents to terminate a permission request.
-  For an example of termination document, see [termination messages](#termination-of-permission-requests)
+-
+
+`terminations`: Allows the eligible party to send [termination documents](../../2-integrating/messages/permission-market-documents.md#termination-documents) to terminate a permission request.
 
 ## Headers of messages
 
@@ -43,45 +44,10 @@ The following headers are set by EDDIE for outbound messages and can be used for
 
 ## Termination of Permission Requests
 
-[//]: # (TODO Move to own document in GH-1407)
-
-To terminate permission requests, a consent market document in JSON format has to be sent to the `kafka.termination.topic`.
+To terminate permission requests, a permission market document in the configured format has to be sent to the
+`kafka.termination.topic`.
 The key should be the ID of the region connector, from which the request originated.
-The consent market document for termination can look like the following JSON message.
+The permisison market document for termination is described in [termination documents](../../2-integrating/messages/permission-market-documents.md#termination-documents).
 
-> [!NOTE]  
+> [!Info]  
 > Keep in mind that some kafka clients use newlines as message separator, in that case, minimize the message, or change the message separator!
-
-```json
-{
-  "Permission_MarketDocument": {
-    "mRID": "REPLACE_ME",
-    "type": "Z01",
-    "PermissionList": {
-      "Permission": [
-        {
-          "MktActivityRecordList": {
-            "MktActivityRecord": [
-              {
-                "type": "at-eda"
-              }
-            ]
-          },
-          "ReasonList": {
-            "Reason": [
-              {
-                "code": "Z03"
-              }
-            ]
-          }
-        }
-      ]
-    }
-  }
-}
-```
-
-The mRID should be replaced by the permission ID, the code `Z03` stands for "canceled by eligible party" and the
-type `Z01` identifies this document as a termination document.
-If the kafka message key is unknown, the type of the mktActivityRecord is used, which is identical to the region
-connector id.
