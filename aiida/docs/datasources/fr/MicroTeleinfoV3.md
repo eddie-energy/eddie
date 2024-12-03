@@ -28,17 +28,17 @@ Otherwise, both of the following commands can be useful to troubleshoot the moun
 2. `sudo lsusb -v` prints information about connected USB hardware devices
 
 The USB dongle must now be connected to the Linky smart meter via 2 small cables, like a telephone wire.
-As mentioned in the official [GitHub documentation](https://github.com/hallard/uTeleinfo), the cables must then be connected
-to the smart meter **I1** and **I2
-** interface. Now a blue LED must flash very quickly which indicates a present teleinfo signal.
+As mentioned in the official [GitHub documentation](https://github.com/hallard/uTeleinfo), the cables must then be
+connected to the smart meter **I1** and **I2** interface.
+Now a blue LED must flash very quickly which indicates a present teleinfo signal.
 In order to test this connection refer to the GitHub documentation mentioned above.
 
 ## Publish incoming data to MQTT
 
 A simple way to publish the serial data to MQTT and to retrieve it with AIIDA, is the [teleinfo2mqtt image](https://github.com/fmartinou/teleinfo2mqtt).
-This image connects itself with MicroTeleinfoV3, sanitizes the retrieved data and publishes the data to a specified topic in a raw and sanitized format.
-The topic it publishes to is <mqtt-base-topic>/<electricity-meter-id>, where <mqtt-base-topic> is **teleinfo
-** by default.
+This image connects itself with MicroTeleinfoV3, sanitizes the retrieved data and publishes the data to a specified
+topic in a raw and sanitized format. The topic it publishes to is <mqtt-base-topic>/<electricity-meter-id>, where
+<mqtt-base-topic> is **teleinfo** by default.
 The <electricity-meter-id> must be evaluated beforehand and has to be added to the datasource configuration.
 To see all configuration options of the image please refer to the official [documentation](https://fmartinou.github.io/teleinfo2mqtt/#/configuration/).
 The .env-fr-teleinfo file provides the most important configuration values with mostly prefilled valus which can be used.
@@ -58,14 +58,13 @@ TZ=Europe/Paris
 
 ## How to use with AIIDA
 
-In order to add the MicroTeleinfoV3 as datasource in AIIDA, the properties of the datasource have to be adapted correctly.
-The datasource has to be enabled, an ID has to be assigned to it and the broker uri to where the datasource should connect has to be added.
-The default topic of the teleinfo image is **teleinfo**, if the **$MQTT_BASE_TOPIC
-** of the image's configuration has been changed, the value has to be adapted in this configuration too.
+In order to add the MicroTeleinfoV3 as datasource in AIIDA, the properties of the datasource have to be adapted
+correctly. The datasource has to be enabled, an ID has to be assigned to it and the broker uri to where the datasource
+should connect has to be added. The default topic of the teleinfo image is **teleinfo**, if the `MQTT_BASE_TOPIC` of the
+image's configuration has been changed, the value has to be adapted in this configuration too.
 Provide the username and password in order to authenticate to the MQTT broker you want to connect to if necessary or leave empty.
-Lastly, add the **metering ID
-** of the Linky smart meter to this configuration. The image publishes the data by default to the topic teleinfo/*
-*metering-id**.
+Lastly, add the **metering ID** of the Linky smart meter to this configuration.
+The image publishes the data by default to the topic`teleinfo/<metering-id>`.
 Please do not manually add the metering ID to the mqtt-subscribe-topic property, just provide the metering ID to the dedicated property.
 
 Example of a working configuration:
