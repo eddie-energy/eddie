@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FluviusApiClientTest {
+    private static final String PUBLIC_URL = "https://localhost:8080";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperConfig().objectMapper();
     private static final MockWebServer SERVER = new MockWebServer();
     private static WebClient webClient;
@@ -60,7 +61,7 @@ class FluviusApiClientTest {
                                .setResponseCode(200)
                                .setBody(OBJECT_MAPPER.writeValueAsString(new FluviusSessionCreateResultResponseModelApiDataResponse())));
         when(oAuthTokenService.accessToken()).thenReturn("token");
-        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService);
+        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
@@ -76,7 +77,7 @@ class FluviusApiClientTest {
     void testShortUrlIdentifier_returnsError_onInvalidAccessToken() throws IOException, OAuthException, URISyntaxException, ParseException {
         // Given
         when(oAuthTokenService.accessToken()).thenThrow(OAuthException.class);
-        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService);
+        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
@@ -92,7 +93,7 @@ class FluviusApiClientTest {
     void testMandateFor_returnsError_onInvalidAccessToken() throws IOException, OAuthException, URISyntaxException, ParseException {
         // Given
         when(oAuthTokenService.accessToken()).thenThrow(OAuthException.class);
-        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService);
+        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
 
         // When
         var res = api.mandateFor("pid");
@@ -107,7 +108,7 @@ class FluviusApiClientTest {
     void testMandateFor_returnsMandates_forPermissionId() throws IOException, OAuthException, URISyntaxException, ParseException {
         // Given
         when(oAuthTokenService.accessToken()).thenReturn("token");
-        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService);
+        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
         SERVER.enqueue(new MockResponse()
                                .setResponseCode(200)
                                .setHeader("Content-Type", "application/json")
@@ -132,7 +133,7 @@ class FluviusApiClientTest {
                                .setBody(OBJECT_MAPPER.writeValueAsString(payload))
         );
         when(oAuthTokenService.accessToken()).thenReturn("token");
-        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService);
+        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
