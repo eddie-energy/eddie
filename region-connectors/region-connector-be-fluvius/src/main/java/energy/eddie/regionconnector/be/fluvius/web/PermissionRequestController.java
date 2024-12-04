@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.be.fluvius.web;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.be.fluvius.dtos.CreatedPermissionRequest;
@@ -11,14 +12,14 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriTemplate;
 
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
 
-@RestController
+@Controller
 public class PermissionRequestController {
     private static final String STATUS = "status";
     private final PermissionRequestService permissionRequestService;
@@ -50,14 +51,27 @@ public class PermissionRequestController {
         return ResponseEntity.ok(statusMessage);
     }
 
-    @GetMapping(
-            value = "/callback/success",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public String callbackSuccess(
-            Model model
-    ) {
-        model.addAttribute(STATUS, "OK");
+    @GetMapping(PATH_PERMISSION_ACCEPTED)
+    public String callbackSuccess(@PathVariable String permissionId, Model model) {
+        return handlePermissionCallback(permissionId, model, PermissionProcessStatus.ACCEPTED);
+    }
+
+    @GetMapping(PATH_PERMISSION_REJECTED)
+    public String callbackRejected(@PathVariable String permissionId, Model model) {
+        return handlePermissionCallback(permissionId, model, PermissionProcessStatus.REJECTED);
+    }
+
+    private String handlePermissionCallback(String permissionId, Model model, PermissionProcessStatus status) {
+        try {
+            var wasAccepted = permissionRequestService.acceptOrRejectPermissionRequest(permissionId, status);
+            if (wasAccepted) {
+                model.addAttribute(STATUS, "OK");
+            } else {
+                model.addAttribute(STATUS, "DENIED");
+            }
+        } catch (PermissionNotFoundException e) {
+            model.addAttribute(STATUS, "ERROR");
+        }
         return "authorization-callback";
     }
 }

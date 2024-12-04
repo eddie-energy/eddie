@@ -14,6 +14,7 @@ import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -114,20 +115,7 @@ class PermissionRequestServiceTest {
     void testFindConnectionStatusMessage_mapsCorrectly() {
         // Given
         when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(
-                                    new FluviusPermissionRequest(
-                                            "pid",
-                                            "cid",
-                                            "dnid",
-                                            PermissionProcessStatus.ACCEPTED,
-                                            Granularity.PT15M,
-                                            LocalDate.now(ZoneOffset.UTC),
-                                            LocalDate.now(ZoneOffset.UTC),
-                                            ZonedDateTime.now(ZoneOffset.UTC),
-                                            Flow.B2B
-                                    )
-                            )
-                );
+                .thenReturn(Optional.of(getPermissionRequest(Granularity.PT15M, PermissionProcessStatus.ACCEPTED)));
 
         // When
         var res = permissionRequestService.findConnectionStatusMessageById("pid");
@@ -140,6 +128,106 @@ class PermissionRequestServiceTest {
                 () -> assertEquals("pid", csm.permissionId()),
                 () -> assertEquals("dnid", csm.dataNeedId()),
                 () -> assertEquals(PermissionProcessStatus.ACCEPTED, csm.status())
+        );
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_throwsOnInvalidStatus() {
+        // Given
+        // When & Then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> permissionRequestService.acceptOrRejectPermissionRequest(
+                        "pid",
+                        PermissionProcessStatus.VALIDATED
+                )
+        );
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_throwsOnUnknownPermissionId() {
+        // Given
+        when(repository.findByPermissionId("pid")).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(
+                PermissionNotFoundException.class,
+                () -> permissionRequestService.acceptOrRejectPermissionRequest(
+                        "pid",
+                        PermissionProcessStatus.ACCEPTED
+                )
+        );
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_returnsAcceptOnAlreadyAcceptedPermissionRequest() throws PermissionNotFoundException {
+        // Given
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(getPermissionRequest(Granularity.P1D, PermissionProcessStatus.ACCEPTED)));
+
+        // When
+        var res = permissionRequestService.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.ACCEPTED);
+
+        // Then
+        assertTrue(res);
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_returnsRejectOnAlreadyRejectedPermissionRequest() throws PermissionNotFoundException {
+        // Given
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(getPermissionRequest(Granularity.P1D, PermissionProcessStatus.REJECTED)));
+
+        // When
+        var res = permissionRequestService.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.REJECTED);
+
+        // Then
+        assertFalse(res);
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_returnsAcceptForAcceptedPermissionRequest() throws PermissionNotFoundException {
+        // Given
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(getPermissionRequest(Granularity.P1D,
+                                                             PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
+
+        // When
+        var res = permissionRequestService.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.ACCEPTED);
+
+        // Then
+        assertTrue(res);
+        verify(outbox).commit(assertArg(e -> assertEquals(PermissionProcessStatus.ACCEPTED, e.status())));
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_returnsRejectForRejectedPermissionRequest() throws PermissionNotFoundException {
+        // Given
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(getPermissionRequest(Granularity.P1D,
+                                                             PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
+
+        // When
+        var res = permissionRequestService.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.REJECTED);
+
+        // Then
+        assertFalse(res);
+        verify(outbox).commit(assertArg(e -> assertEquals(PermissionProcessStatus.REJECTED, e.status())));
+    }
+
+    private static FluviusPermissionRequest getPermissionRequest(Granularity granularity, PermissionProcessStatus status
+    ) {
+        var now = LocalDate.now(ZoneOffset.UTC);
+        return new FluviusPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                status,
+                granularity,
+                now,
+                now,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                Flow.B2B
         );
     }
 }

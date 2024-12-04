@@ -6,7 +6,10 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.be.fluvius.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusDataSourceInformation;
 import energy.eddie.regionconnector.be.fluvius.service.PermissionRequestService;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -22,7 +25,9 @@ import java.util.Optional;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = {PermissionRequestController.class})
@@ -78,5 +83,48 @@ class PermissionRequestControllerTest {
                // Then
                .andExpect(status().isOk())
                .andExpect(content().json(objectMapper.writeValueAsString(value)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"accepted", "rejected"})
+    void testCallbackEndpoints_returnError_onUnknownPermissionRequest(String status) throws Exception {
+        // Given
+        doThrow(PermissionNotFoundException.class)
+                .when(service).acceptOrRejectPermissionRequest(any(), any());
+
+        // When
+        mockMvc.perform(get("/permission-request/{pid}/{status}", "pid", status))
+               // Then
+               .andExpect(status().isOk())
+               .andExpect(view().name("authorization-callback"))
+               .andExpect(model().attribute("status", "ERROR"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"accepted", "rejected"})
+    void testCallbackEndpoints_returnAccepted_onAcceptedPermissionRequest(String status) throws Exception {
+        // Given
+        when(service.acceptOrRejectPermissionRequest(any(), any())).thenReturn(true);
+
+        // When
+        mockMvc.perform(get("/permission-request/{pid}/{status}", "pid", status))
+               // Then
+               .andExpect(status().isOk())
+               .andExpect(view().name("authorization-callback"))
+               .andExpect(model().attribute("status", "OK"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"accepted", "rejected"})
+    void testCallbackEndpoints_returnRejected_onRejectedPermissionRequest(String status) throws Exception {
+        // Given
+        when(service.acceptOrRejectPermissionRequest(any(), any())).thenReturn(false);
+
+        // When
+        mockMvc.perform(get("/permission-request/{pid}/{status}", "pid", status))
+               // Then
+               .andExpect(status().isOk())
+               .andExpect(view().name("authorization-callback"))
+               .andExpect(model().attribute("status", "DENIED"));
     }
 }
