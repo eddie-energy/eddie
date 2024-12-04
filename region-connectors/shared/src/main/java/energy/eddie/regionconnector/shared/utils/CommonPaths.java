@@ -2,17 +2,12 @@ package energy.eddie.regionconnector.shared.utils;
 
 public class CommonPaths {
     public static final String ALL_REGION_CONNECTORS_BASE_URL_PATH = "region-connectors";
-    public static final String ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH = "outbound-connectors";
     public static final String CE_FILE_NAME = "ce.js";
 
     private CommonPaths() {}
 
     public static String getServletPathForRegionConnector(String regionConnectorId) {
         return "/%s/%s/*".formatted(ALL_REGION_CONNECTORS_BASE_URL_PATH, regionConnectorId);
-    }
-
-    public static String getServletPathForOutboundConnector(String outboundConnectorId) {
-        return "/%s/%s/*".formatted(ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH, outboundConnectorId);
     }
 
     public static String getClasspathForCeElement(String regionConnectorName) {

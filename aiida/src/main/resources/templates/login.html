@@ -9,11 +9,33 @@
     <div class="main">
       <img alt="EDDIE Logo" th:src="@{/img/eddie.svg}" />
       <h1>AIIDA</h1>
-      <a href="/oauth2/authorization/keycloak">
-        <button type="button" class="btn btn-primary btn-block">
-          Continue to Login
-        </button>
-      </a>
+      <h3>Enter your login credentials</h3>
+      <div id="error" th:if="${param.error}">
+        Invalid username and/or password.
+      </div>
+      <form method="post" th:action="@{/login}">
+        <div>
+          <label for="username"> Username: </label>
+          <input
+            id="username"
+            name="username"
+            placeholder="Enter your Username"
+            required
+            type="text"
+          />
+        </div>
+        <div>
+          <label for="password"> Password: </label>
+          <input
+            id="password"
+            name="password"
+            placeholder="Enter your Password"
+            required
+            type="password"
+          />
+        </div>
+        <input type="submit" value="Log in" />
+      </form>
     </div>
   </body>
 </html>

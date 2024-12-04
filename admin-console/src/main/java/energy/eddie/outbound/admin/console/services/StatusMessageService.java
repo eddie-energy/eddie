@@ -1,7 +1,7 @@
-package energy.eddie.admin.console.services;
+package energy.eddie.outbound.admin.console.services;
 
-import energy.eddie.admin.console.data.StatusMessage;
-import energy.eddie.admin.console.data.StatusMessageRepository;
+import energy.eddie.outbound.admin.console.data.StatusMessage;
+import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionMarketDocumentComplexType;

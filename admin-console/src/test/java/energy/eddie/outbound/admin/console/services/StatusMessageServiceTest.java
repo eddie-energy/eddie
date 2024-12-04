@@ -1,6 +1,6 @@
-package energy.eddie.admin.console.services;
+package energy.eddie.outbound.admin.console.services;
 
-import energy.eddie.admin.console.data.StatusMessageRepository;
+import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import energy.eddie.cim.v0_82.pmd.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

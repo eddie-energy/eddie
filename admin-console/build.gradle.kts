@@ -20,12 +20,16 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":outbound-connectors:outbound-shared"))
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.thymeleaf)
+    implementation(libs.spring.boot.security)
+
     implementation(libs.reactor.core)
 
+    testImplementation(libs.spring.security.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)

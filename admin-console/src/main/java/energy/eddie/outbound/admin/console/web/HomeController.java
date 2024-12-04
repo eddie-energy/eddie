@@ -1,9 +1,9 @@
-package energy.eddie.admin.console.web;
+package energy.eddie.outbound.admin.console.web;
 
-import energy.eddie.admin.console.data.StatusMessage;
-import energy.eddie.admin.console.data.StatusMessageDTO;
-import energy.eddie.admin.console.data.StatusMessageRepository;
-import energy.eddie.admin.console.services.TerminationAdminConsoleConnector;
+import energy.eddie.outbound.admin.console.data.StatusMessage;
+import energy.eddie.outbound.admin.console.data.StatusMessageDTO;
+import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
+import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConnector;
 import energy.eddie.cim.v0_82.pmd.StatusTypeList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -120,5 +120,10 @@ public class HomeController {
         var statusMessage = statusMessages.getFirst();
         terminationConnector.terminate(statusMessage.getPermissionId(), statusMessage.getRegionConnectorId());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/login")
+    public String getLogin() {
+        return "login";
     }
 }

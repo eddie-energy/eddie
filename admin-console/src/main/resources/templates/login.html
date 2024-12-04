@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+  <head>
+    <title>Login</title>
+    <link rel="stylesheet" th:href="@{login.css}" />
+  </head>
+
+  <body>
+    <div class="main">
+      <img class="logo" th:src="EDDIE_logo.png" alt="EDDIE Logo"/>
+
+      <h1>EDDIE Admin Console Login</h1>
+
+      <form th:action="@{login}" method="post">
+        <div th:if="${param.error}" class="alert alert-error">
+          Invalid username and password.
+        </div>
+
+        <div th:if="${param.logout}" class="alert alert-success">
+          You have been logged out.
+        </div>
+
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" autocomplete="username"/>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password"/>
+
+        <div class="form-actions">
+          <button type="submit" class="btn">Log in</button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

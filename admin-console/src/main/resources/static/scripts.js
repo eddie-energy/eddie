@@ -59,12 +59,21 @@ function onTerminationButtonClick() {
 
   modal.addEventListener("close", () => {
     if (modal.returnValue === "confirm") {
-      fetch(
-        `/outbound-connectors/admin-console/terminate/${permissionIdToTerminate}`,
-        {
-          method: "POST",
-        }
-      )
+      let headers = {};
+      if (csrfHeaderAndTokenExist()) {
+        const csrfHeader = document
+          .querySelector('meta[name="csrf-header"]')
+          .getAttribute("content");
+        headers[csrfHeader] = document
+          .querySelector('meta[name="csrf-token"]')
+          .getAttribute("content");
+      }
+
+      let basePath = window.location.origin + window.location.pathname;
+      fetch(basePath + `/terminate/${permissionIdToTerminate}`, {
+        method: "POST",
+        headers: headers,
+      })
         .then((response) => {
           if (response.ok) {
             console.log(
@@ -92,6 +101,10 @@ function onTerminationButtonClick() {
   });
 }
 
+function csrfHeaderAndTokenExist() {
+  return document.querySelector('meta[name="csrf-header"]') !== null && document.querySelector('meta[name="csrf-token"]') !== null;
+}
+
 function controlRowExpansion(table) {
   table.on("click", "td.dt-control", function (e) {
     let tr = e.target.closest("tr");
@@ -107,8 +120,9 @@ function controlRowExpansion(table) {
 
 async function fetchAdditionalData(row) {
   try {
+    let basePath = window.location.origin + window.location.pathname;
     const response = await fetch(
-      `/outbound-connectors/admin-console/statusMessages/${row.data().PermissionId}`,
+      basePath + `/statusMessages/${row.data().PermissionId}`,
       { method: "GET" }
     );
     if (!response.ok) {

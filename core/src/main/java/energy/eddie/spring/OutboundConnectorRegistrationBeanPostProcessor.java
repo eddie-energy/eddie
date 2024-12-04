@@ -3,7 +3,7 @@ package energy.eddie.spring;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import energy.eddie.api.agnostic.outbound.OutboundConnectorExtension;
-import energy.eddie.regionconnector.shared.utils.CommonPaths;
+import energy.eddie.outbound.shared.utils.CommonPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -51,7 +51,7 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
      * </p>
      * <p>
      * The DispatcherServlet has its URL mapping set to
-     * "/{@value CommonPaths#ALL_REGION_CONNECTORS_BASE_URL_PATH}/{RC-NAME}/*" whereas {@code RC-NAME} is specified by
+     * "/{@value CommonPaths#ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH}/{OC-NAME}/*" whereas {@code OC-NAME} is specified by
      * {@link OutboundConnector#name()}.
      * </p>
      *
@@ -99,7 +99,7 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
         return Integer.MAX_VALUE;
     }
 
-    private static Class<?> classForBeanDefinition(BeanDefinition definition) {
+    public static Class<?> classForBeanDefinition(BeanDefinition definition) {
         try {
             return Class.forName(definition.getBeanClassName());
         } catch (ClassNotFoundException e) {

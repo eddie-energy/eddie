@@ -1,9 +1,9 @@
-package energy.eddie.admin.console.web;
+package energy.eddie.outbound.admin.console.web;
 
-import energy.eddie.admin.console.data.StatusMessage;
-import energy.eddie.admin.console.data.StatusMessageDTO;
-import energy.eddie.admin.console.data.StatusMessageRepository;
-import energy.eddie.admin.console.services.TerminationAdminConsoleConnector;
+import energy.eddie.outbound.admin.console.data.StatusMessage;
+import energy.eddie.outbound.admin.console.data.StatusMessageDTO;
+import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
+import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConnector;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

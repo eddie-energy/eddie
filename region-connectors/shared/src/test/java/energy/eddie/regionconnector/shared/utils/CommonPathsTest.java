@@ -19,18 +19,6 @@ class CommonPathsTest {
     }
 
     @Test
-    void testGetServletPathForOutboundConnector_returnsPathForOutboundConnector() {
-        // Given
-        var rc = "admin-console";
-
-        // When
-        var res = CommonPaths.getServletPathForOutboundConnector(rc);
-
-        // Then
-        assertEquals("/outbound-connectors/admin-console/*", res);
-    }
-
-    @Test
     void testGetClassPathForCeElement_returnsPathForCeElement() {
         // Given
         var rc = "at-eda";
