@@ -82,8 +82,11 @@ responsible for storing previous connection IDs and linking them to the users of
 
 The EDDIE button fires events to inform the EP application about the status of the user interaction, and the status of the permission request. These events can be listened to by the EP application to update the UI or to trigger further actions.
 
-Permission request states are described in [PERMISSION_STATES.md](../2-integrating/PERMISSION_STATES.md). To match the naming of event and attribute names common in HTML and JavaScript, the status names are converted to lowercase and hyphens are used as separators. Event handler attributes also have the hyphens removed. For example, the status
-`UNABLE_TO_SEND` is converted to `unable-to-send` for events and `onunabletosend` for the event handler attribute.
+Permission request states are described in [integrating](../2-integrating/integrating.md#permission-process-model).
+To match the naming of event and attribute names common in HTML and JavaScript, the status names are converted to lowercase and hyphens are used as separators.
+Event handler attributes also have the hyphens removed.
+For example, the status `UNABLE_TO_SEND` is converted to `unable-to-send` for events and
+`onunabletosend` for the event handler attribute.
 
 > [!IMPORTANT]
 > Please note that status events on the client side are not a reliable source of information about the status of the permission request!
@@ -213,7 +216,7 @@ There are three outbound connectors, which can be used by the eligible party to 
 If the outbound connector provides a web interface, it will be available via the configured
 `eddie.management.server.port`.
 
-- [Kafka outbound connector](#kafka-connector).
+- [Kafka outbound connector](outbound-connectors/outbound-connector-kafka.md).
 - [Admin Console](admin-console.md)
 - [AMQP outbound connector](outbound-connectors/outbound-connector-amqp.md)
 

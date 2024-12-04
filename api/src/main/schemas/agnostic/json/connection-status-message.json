@@ -1,0 +1,74 @@
+
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://eddie.energy/agnostic/connection-status-message",
+  "type": "object",
+  "properties": {
+    "connectionId": {
+      "description": "ID given by the eligible party to the permission request",
+      "type": "string"
+    },
+    "permissionId": {
+      "description": "Unique ID of the permission request",
+      "$ref": "shared.json#/$defs/uuid"
+    },
+    "dataNeedId": {
+      "description": "Data need related to the permission request",
+      "$ref": "shared.json#/$defs/uuid"
+    },
+    "dataSourceInformation": {
+      "$ref": "shared.json#/$defs/dataSourceInformation"
+    },
+    "timestamp": {
+      "description": "Creation timestamp of this message",
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "description": "The new status of the permission request",
+      "type": "string",
+      "enum": [
+        "CREATED",
+        "VALIDATED",
+        "MALFORMED",
+        "UNABLE_TO_SEND",
+        "SENT_TO_PERMISSION_ADMINISTRATOR",
+        "TIMED_OUT",
+        "ACCEPTED",
+        "REJECTED",
+        "INVALID",
+        "REVOKED",
+        "TERMINATED",
+        "FULFILLED",
+        "UNFULFILLABLE",
+        "REQUIRES_EXTERNAL_TERMINATION",
+        "FAILED_TO_TERMINATE",
+        "EXTERNALLY_TERMINATED"
+      ]
+    },
+    "message": {
+      "description": "Can contain a reason for the status change",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "additionalInformation": {
+      "description": "Any additional information about the permission request, does not follow any schema.",
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "connectionId",
+    "permissionId",
+    "dataNeedId",
+    "dataSourceInformation",
+    "timestamp",
+    "status",
+    "message",
+    "additionalInformation"
+  ]
+}

@@ -1,5 +1,6 @@
 import { defineConfig } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
+import { transformerTwoslash } from "@shikijs/vitepress-twoslash";
 
 // https://vitepress.dev/reference/site-config
 export default withMermaid(defineConfig({
@@ -13,6 +14,11 @@ export default withMermaid(defineConfig({
     optimizeDeps: { include: ["mermaid"] },
   },
   base: "/framework/",
+  markdown: {
+    codeTransformers: [
+      transformerTwoslash(),
+    ],
+  },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: "/images/favicon-32x32.png",
@@ -27,6 +33,7 @@ export default withMermaid(defineConfig({
           { text: "Operation", link: "1-running/OPERATION" },
           {
             text: "Region Connectors",
+            link: "1-running/region-connectors/region-connectors.md",
             items: [
               { text: "AIIDA", link: "1-running/region-connectors/region-connector-aiida.md" },
               { text: "EDA (Austria)", link: "1-running/region-connectors/region-connector-at-eda.md" },
@@ -56,19 +63,32 @@ export default withMermaid(defineConfig({
       },
       {
         text: "Integrating",
+        link: "2-integrating/integrating.md",
         items: [
-          { text: "Permission States", link: "2-integrating//PERMISSION_STATES" },
           {
-            text: "Kafka Topics", link: "2-integrating/KAFKA",
+            text: "Messages and Documents",
+            link: "2-integrating/messages/messages.md",
             items: [
               {
-                text: "accounting point market documents",
-                link: "2-integrating/topics/ACCOUNTING_POINT_MARKET_DOCUMENTS",
+                text: "Connection Status Messages",
+                link: "2-integrating/messages/connection-status-messages.md",
               },
-              { text: "permission market documents", link: "2-integrating/topics/PERMISSION_MARKET_DOCUMENTS" },
-              { text: "raw data in proprietary format", link: "2-integrating/topics/RAW_DATA_IN_PROPRIETARY_FORMAT" },
-              { text: "status messages", link: "2-integrating/topics/STATUS_MESSAGES" },
-              { text: "validated historical data", link: "2-integrating/topics/VALIDATED_HISTORICAL_DATA" },
+              {
+                text: "Raw Data Messages",
+                link: "2-integrating/messages/raw-data-messages.md",
+              },
+              {
+                text: "Permission Market Documents",
+                link: "2-integrating/messages/permission-market-documents.md",
+              },
+              {
+                text: "Validated Historical Data Market Documents",
+                link: "2-integrating/messages/validated-historical-data-market-documents.md",
+              },
+              {
+                text: "Accounting Point Data Market Documents",
+                link: "2-integrating/messages/accounting-point-data-market-documents.md",
+              },
             ],
           },
         ],
