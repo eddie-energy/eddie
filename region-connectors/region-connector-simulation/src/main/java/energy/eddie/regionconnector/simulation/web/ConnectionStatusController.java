@@ -2,10 +2,14 @@ package energy.eddie.regionconnector.simulation.web;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.dataneeds.EnergyType;
+import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.regionconnector.shared.cim.v0_82.pmd.IntermediatePermissionMarketDocument;
 import energy.eddie.regionconnector.simulation.SimulationConnectorMetadata;
 import energy.eddie.regionconnector.simulation.SimulationDataSourceInformation;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.time.Period;
 import java.time.ZoneOffset;
 
 @RestController
@@ -55,7 +60,13 @@ public class ConnectionStatusController implements ConnectionStatusMessageProvid
                             SimulationConnectorMetadata.REGION_CONNECTOR_ID,
                             ignored -> null,
                             "N" + SimulationConnectorMetadata.getInstance().countryCode(),
-                            ZoneOffset.UTC
+                            ZoneOffset.UTC,
+                            new ValidatedHistoricalDataDataNeed(new RelativeDuration(Period.ofYears(-3),
+                                                                                     Period.ofYears(3),
+                                                                                     null),
+                                                                EnergyType.ELECTRICITY,
+                                                                Granularity.PT5M,
+                                                                Granularity.P1Y)
                     ).toPermissionMarketDocument()
             );
             return ResponseEntity.ok(req.connectionId);

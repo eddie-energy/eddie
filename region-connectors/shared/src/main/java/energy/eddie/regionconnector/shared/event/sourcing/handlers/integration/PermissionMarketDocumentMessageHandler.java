@@ -7,6 +7,7 @@ import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepo
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.cim.v0_82.pmd.IntermediatePermissionMarketDocument;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -22,6 +23,7 @@ import java.time.ZoneId;
 public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest> implements EventHandler<PermissionEvent>, PermissionMarketDocumentProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionMarketDocumentMessageHandler.class);
     private final PermissionRequestRepository<T> repository;
+    private final DataNeedsService dataNeedsService;
     private final Sinks.Many<PermissionEnvelope> pmdSink = Sinks.many().multicast().onBackpressureBuffer();
     private final TransmissionScheduleProvider<T> transmissionScheduleProvider;
     private final String customerIdentifier;
@@ -31,12 +33,14 @@ public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest>
     public PermissionMarketDocumentMessageHandler(
             EventBus eventBus,
             PermissionRequestRepository<T> repository,
+            DataNeedsService dataNeedsService,
             String eligiblePartyId,
             CommonInformationModelConfiguration cimConfig,
             TransmissionScheduleProvider<T> transmissionScheduleProvider,
             ZoneId zoneId
     ) {
         this.repository = repository;
+        this.dataNeedsService = dataNeedsService;
         this.customerIdentifier = eligiblePartyId;
         this.countryCode = cimConfig.eligiblePartyNationalCodingScheme().value();
         this.transmissionScheduleProvider = transmissionScheduleProvider;
@@ -58,6 +62,7 @@ public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest>
             return;
         }
         var permissionRequest = optionalRequest.get();
+        var dataNeed = dataNeedsService.getById(permissionRequest.dataNeedId());
         try {
             pmdSink.tryEmitNext(
                     new IntermediatePermissionMarketDocument<>(
@@ -66,7 +71,8 @@ public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest>
                             customerIdentifier,
                             transmissionScheduleProvider,
                             countryCode,
-                            zoneId
+                            zoneId,
+                            dataNeed
                     ).toPermissionMarketDocument()
             );
         } catch (RuntimeException exception) {

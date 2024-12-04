@@ -5,6 +5,8 @@ import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepo
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -20,6 +22,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("resource")
@@ -27,6 +30,8 @@ import static org.mockito.Mockito.when;
 class PermissionMarketDocumentMessageHandlerTest {
     @Mock
     private PermissionRequestRepository<PermissionRequest> repository;
+    @Mock
+    private DataNeedsService dataNeedsService;
 
     @Test
     void testAccept_emitsPermissionMarketDocument() {
@@ -37,11 +42,13 @@ class PermissionMarketDocumentMessageHandlerTest {
                 "pid", "cid", "dnid", start, end, ZonedDateTime.now(ZoneOffset.UTC), PermissionProcessStatus.VALIDATED
         );
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
+        when(dataNeedsService.getById(anyString())).thenReturn(new AccountingPointDataNeed());
         PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "fallbackId");
         EventBus eventBus = new EventBusImpl();
         var handler = new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                                    repository,
+                                                                   dataNeedsService,
                                                                    "EP-ID",
                                                                    cimConfig,
                                                                    pr -> null,
@@ -61,15 +68,16 @@ class PermissionMarketDocumentMessageHandlerTest {
     void testAccept_doesNotEmitStatus_ifNoPermissionIsFound() {
         // Given
         when(repository.findByPermissionId("pid")).thenReturn(Optional.empty());
-        PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
+        var cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "fallbackId");
         EventBus eventBus = new EventBusImpl();
         var handler = new PermissionMarketDocumentMessageHandler<>(eventBus,
-                                                     repository,
-                                                     "EP-ID",
-                                                     cimConfig,
+                                                                   repository,
+                                                                   dataNeedsService,
+                                                                   "EP-ID",
+                                                                   cimConfig,
                                                                    pr -> null,
-                                                     ZoneOffset.UTC);
+                                                                   ZoneOffset.UTC);
 
         // When
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.VALIDATED));
@@ -84,15 +92,16 @@ class PermissionMarketDocumentMessageHandlerTest {
     @Test
     void testAccept_doesNotEmitStatus_onInternalEvent() {
         // Given
-        PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
+        var cimConfig = new PlainCommonInformationModelConfiguration(
                 CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "fallbackId");
         EventBus eventBus = new EventBusImpl();
         var handler = new PermissionMarketDocumentMessageHandler<>(eventBus,
-                                                     repository,
-                                                     "EP-ID",
-                                                     cimConfig,
+                                                                   repository,
+                                                                   dataNeedsService,
+                                                                   "EP-ID",
+                                                                   cimConfig,
                                                                    pr -> null,
-                                                     ZoneOffset.UTC);
+                                                                   ZoneOffset.UTC);
 
         // When
         eventBus.emit(new InternalEvent("pid", PermissionProcessStatus.VALIDATED));

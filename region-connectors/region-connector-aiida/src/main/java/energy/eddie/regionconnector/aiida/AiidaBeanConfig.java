@@ -134,10 +134,12 @@ public class AiidaBeanConfig {
             AiidaPermissionRequestViewRepository repository,
             AiidaConfiguration configuration,
             CommonInformationModelConfiguration cimConfig,
-            TransmissionScheduleProvider<AiidaPermissionRequest> transmissionScheduleProvider
+            TransmissionScheduleProvider<AiidaPermissionRequest> transmissionScheduleProvider,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
     ) {
         return new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                             repository,
+                                                            dataNeedsService,
                                                             configuration.customerId(),
                                                             cimConfig,
                                                             transmissionScheduleProvider,
