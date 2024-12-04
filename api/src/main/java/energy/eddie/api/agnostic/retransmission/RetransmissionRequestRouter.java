@@ -1,12 +1,12 @@
 package energy.eddie.api.agnostic.retransmission;
 
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
-@FunctionalInterface
 public interface RetransmissionRequestRouter {
-    Mono<RetransmissionResult> routeRetransmissionRequest(
-            String regionConnectorId,
-            RetransmissionRequest retransmissionRequest
-    );
+    /**
+     * Returns a stream of retransmission results.
+     * Each {@link RetransmissionRequest} should result in a {@link RetransmissionResult} being emitted.
+     */
+    Flux<RetransmissionResult> retransmissionResults();
 }

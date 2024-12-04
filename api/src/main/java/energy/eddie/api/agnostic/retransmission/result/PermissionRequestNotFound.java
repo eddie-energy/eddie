@@ -1,4 +1,6 @@
 package energy.eddie.api.agnostic.retransmission.result;
 
-public record PermissionRequestNotFound() implements RetransmissionResult {
+import java.time.ZonedDateTime;
+
+public record PermissionRequestNotFound(String permissionId, ZonedDateTime timestamp) implements RetransmissionResult {
 }

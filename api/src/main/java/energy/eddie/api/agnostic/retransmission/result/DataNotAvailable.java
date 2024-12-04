@@ -1,4 +1,6 @@
 package energy.eddie.api.agnostic.retransmission.result;
 
-public record DataNotAvailable() implements RetransmissionResult {
+import java.time.ZonedDateTime;
+
+public record DataNotAvailable(String permissionId, ZonedDateTime timestamp) implements RetransmissionResult {
 }

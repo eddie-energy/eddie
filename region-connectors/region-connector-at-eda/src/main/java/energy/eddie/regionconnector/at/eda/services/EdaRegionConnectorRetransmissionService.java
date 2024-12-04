@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.at.eda.services;
 import energy.eddie.api.agnostic.retransmission.RegionConnectorRetransmissionService;
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
 import energy.eddie.api.agnostic.retransmission.result.*;
+import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
@@ -38,7 +39,7 @@ public class EdaRegionConnectorRetransmissionService implements RegionConnectorR
      * To handle this, when the service is shutting down, we will emit a {@link Failure} response to all currently stored sinks.
      * Since this request can be considered idempotent, the caller can just retry the request if they do not receive the requested data.
      */
-    private final ConcurrentHashMap<String, Sinks.One<RetransmissionResult>> retransmissionResults = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Pair<Sinks.One<RetransmissionResult>, String>> retransmissionResults = new ConcurrentHashMap<>();
 
     public EdaRegionConnectorRetransmissionService(
             AtConfiguration configuration,
@@ -55,10 +56,14 @@ public class EdaRegionConnectorRetransmissionService implements RegionConnectorR
     @Override
     public Mono<RetransmissionResult> requestRetransmission(RetransmissionRequest retransmissionRequest) {
         var permissionRequest = repository.findByPermissionId(retransmissionRequest.permissionId());
+        ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
 
         if (permissionRequest.isEmpty()) {
             LOGGER.warn("No permission with this id found: {}", retransmissionRequest.permissionId());
-            return Mono.just(new PermissionRequestNotFound());
+            return Mono.just(new PermissionRequestNotFound(
+                    retransmissionRequest.permissionId(),
+                    now
+            ));
         }
 
         var request = permissionRequest.get();
@@ -66,19 +71,29 @@ public class EdaRegionConnectorRetransmissionService implements RegionConnectorR
         if (request.status() != PermissionProcessStatus.ACCEPTED && request.status() != PermissionProcessStatus.FULFILLED) {
             LOGGER.warn("Can only request retransmission for accepted or fulfilled permissions, current status: {}",
                         request.status());
-            return Mono.just(new NoActivePermission());
+            return Mono.just(new NoActivePermission(
+                    retransmissionRequest.permissionId(),
+                    now
+            ));
         }
 
         if (request.granularity() == null) {
             LOGGER.warn("Retransmission of MasterData not supported");
-            return Mono.just(new NotSupported("Retransmission of MasterData not supported"));
+            return Mono.just(new NotSupported(
+                    retransmissionRequest.permissionId(),
+                    now,
+                    "Retransmission of MasterData not supported"
+            ));
         }
 
         if (retransmissionRequest.from().isBefore(request.start()) ||
             retransmissionRequest.to().isAfter(request.end())
         ) {
             LOGGER.warn("Retransmission request not within permission time frame");
-            return Mono.just(new NoPermissionForTimeFrame());
+            return Mono.just(new NoPermissionForTimeFrame(
+                    retransmissionRequest.permissionId(),
+                    now
+            ));
         }
 
         ZonedDateTime created = ZonedDateTime.now(AT_ZONE_ID);
@@ -101,7 +116,7 @@ public class EdaRegionConnectorRetransmissionService implements RegionConnectorR
         );
 
         Sinks.One<RetransmissionResult> sink = Sinks.one();
-        retransmissionResults.put(messageId, sink);
+        retransmissionResults.put(messageId, new Pair<>(sink, retransmissionRequest.permissionId()));
 
         try {
             edaAdapter.sendCPRequest(cpRequestCR);
@@ -109,15 +124,23 @@ public class EdaRegionConnectorRetransmissionService implements RegionConnectorR
         } catch (TransmissionException e) {
             retransmissionResults.remove(messageId);
             LOGGER.error("Error sending CPRequest: {}", cpRequestCR, e);
-            return Mono.just(new Failure("Could not send request, investigate logs"));
+            return Mono.just(new Failure(
+                    retransmissionRequest.permissionId(),
+                    now,
+                    "Could not send request, investigate logs"
+            ));
         }
     }
 
     @Override
     public void close() throws Exception {
-        for (Sinks.One<RetransmissionResult> sink : retransmissionResults.values()) {
+        for (var pair : retransmissionResults.values()) {
+            var sink = pair.key();
+            var permissionId = pair.value();
             var result = sink.tryEmitValue(
-                    new Failure("Service is shutting down, unclear if request got through to the MDA")
+                    new Failure(permissionId,
+                                ZonedDateTime.now(AT_ZONE_ID),
+                                "Service is shutting down, unclear if request got through to the MDA")
             );
             if (result.isFailure()) {
                 LOGGER.atTrace().log("Could not emit value to sink while shutting down: result = {}", result);
@@ -127,27 +150,34 @@ public class EdaRegionConnectorRetransmissionService implements RegionConnectorR
     }
 
     private void processCpRequestResults(CPRequestResult cpRequestResult) {
-        var sink = retransmissionResults.remove(cpRequestResult.messageId());
-        if (sink == null) {
+        var pair = retransmissionResults.remove(cpRequestResult.messageId());
+        if (pair == null) {
             LOGGER.warn("No sink found for message id: {}", cpRequestResult.messageId());
             return;
         }
+        var sink = pair.key();
+        var permissionId = pair.value();
+        ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
 
         RetransmissionResult result = switch (cpRequestResult.result()) {
-            case ACCEPTED -> new Success();
-            case NO_DATA_AVAILABLE -> new DataNotAvailable();
-            case PONTON_ERROR -> new Failure("Could not transmit the request to the dso");
+            case ACCEPTED -> new Success(permissionId, now);
+            case NO_DATA_AVAILABLE -> new DataNotAvailable(permissionId, now);
+            case PONTON_ERROR -> new Failure(permissionId, now, "Could not transmit the request to the dso");
             // The cases below should essentially not happen.
             // Unknown response code indicates an update in the CR_REQ_PT process that we are not aware of.
-            case UNKNOWN_RESPONSE_CODE_ERROR -> new Failure("Got an unknown response code from the dso");
+            case UNKNOWN_RESPONSE_CODE_ERROR ->
+                    new Failure(permissionId, now, "Got an unknown response code from the dso");
             // This would indicate an invalid permission request state as we only request retransmissions for accepted or fulfilled permissions
             case METERING_POINT_NOT_FOUND ->
-                    new Failure("Metering point associated with the permission request not found");
+                    new Failure(permissionId, now, "Metering point associated with the permission request not found");
             // This indicates that the metering point is not assigned at the dso, we cant do anything about this
-            case METERING_POINT_NOT_ASSIGNED ->
-                    new Failure("Metering point associated with the permission request not assigned");
+            case METERING_POINT_NOT_ASSIGNED -> new Failure(
+                    permissionId,
+                    now,
+                    "Metering point associated with the permission request not assigned"
+            );
             // This indicates that we sent an invalid process date to the dso, this should not happen
-            case PROCESS_DATE_INVALID -> new Failure("Process date invalid");
+            case PROCESS_DATE_INVALID -> new Failure(permissionId, now, "Process date invalid");
         };
 
         sink.emitValue(result, Sinks.EmitFailureHandler.busyLooping(Duration.ofSeconds(1)));
