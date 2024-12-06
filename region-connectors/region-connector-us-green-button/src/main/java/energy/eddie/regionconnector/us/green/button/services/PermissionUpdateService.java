@@ -68,14 +68,13 @@ public class PermissionUpdateService {
             for (var meterReading : payload.permissionRequest().lastMeterReadings()) {
                 if (meterReading.meterUid().equals(id)) {
                     meterReading.setLastMeterReading(lastReading);
+                    meterReading.setHistoricalCollectionStatus(PollingStatus.DATA_NOT_READY);
                     meterReadingRepository.save(meterReading);
                     lastMeterReadings.add(meterReading);
                     break;
                 }
             }
         }
-        outbox.commit(new UsMeterReadingUpdateEvent(permissionId,
-                                                    lastMeterReadings,
-                                                    PollingStatus.DATA_READY));
+        outbox.commit(new UsMeterReadingUpdateEvent(permissionId, lastMeterReadings));
     }
 }

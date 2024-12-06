@@ -60,7 +60,7 @@ class PermissionUpdateServiceTest {
         var feed = new SyndFeedInput().build(new StringReader(xml));
         var start = LocalDate.of(2024, 9, 3);
         var created = ZonedDateTime.of(start, LocalTime.MIDNIGHT, ZoneOffset.UTC);
-        var pr = createPermissionRequest(created, start);
+        var pr = createPermissionRequest(created, start, "1669851");
         var payload = new IdentifiableSyndFeed(pr, feed);
         when(meterReadingRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
@@ -71,6 +71,25 @@ class PermissionUpdateServiceTest {
         verify(outbox).commit(eventCaptor.capture());
         var res = eventCaptor.getValue();
         assertThat(res.latestMeterReadingEndDateTime()).contains(created.plusDays(1));
+    }
+
+    @Test
+    void updatePermissionRequest_ignoresUnknownMeteringUid() throws FeedException {
+        // Given
+        var xml = XmlLoader.xmlFromResource("/xml/batch/Batch.xml");
+        var feed = new SyndFeedInput().build(new StringReader(xml));
+        var start = LocalDate.of(2024, 9, 3);
+        var created = ZonedDateTime.of(start, LocalTime.MIDNIGHT, ZoneOffset.UTC);
+        var pr = createPermissionRequest(created, start, "unknown");
+        var payload = new IdentifiableSyndFeed(pr, feed);
+
+        // When
+        permissionUpdateService.updatePermissionRequest(payload);
+
+        // Then
+        verify(outbox).commit(eventCaptor.capture());
+        var res = eventCaptor.getValue();
+        assertThat(res.latestMeterReadingEndDateTime()).isEmpty();
     }
 
     @ParameterizedTest
@@ -87,7 +106,7 @@ class PermissionUpdateServiceTest {
         var feed = new SyndFeedInput().build(new StringReader(xml));
         var start = LocalDate.of(2024, 9, 3);
         var created = ZonedDateTime.of(start, LocalTime.MIDNIGHT, ZoneOffset.UTC);
-        var pr = createPermissionRequest(created, start);
+        var pr = createPermissionRequest(created, start, "1669851");
         var payload = new IdentifiableSyndFeed(pr, feed);
 
         // When
@@ -106,7 +125,7 @@ class PermissionUpdateServiceTest {
         var feed = new SyndFeedInput().build(new StringReader(xml));
         var start = LocalDate.of(2024, 9, 3);
         var created = ZonedDateTime.of(start, LocalTime.MIDNIGHT, ZoneOffset.UTC);
-        var pr = createPermissionRequest(created, start);
+        var pr = createPermissionRequest(created, start, "1669851");
         var payload = new IdentifiableSyndFeed(pr, feed);
 
         // When
@@ -116,8 +135,12 @@ class PermissionUpdateServiceTest {
         verify(outbox).commit(assertArg(res -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, res.status())));
     }
 
-    private static GreenButtonPermissionRequest createPermissionRequest(ZonedDateTime created, LocalDate start) {
-        var meterReading = new MeterReading("pid", "1669851", created.minusDays(1), PollingStatus.DATA_NOT_READY);
+    private static GreenButtonPermissionRequest createPermissionRequest(
+            ZonedDateTime created,
+            LocalDate start,
+            String meterUid
+    ) {
+        var meterReading = new MeterReading("pid", meterUid, created.minusDays(1), PollingStatus.DATA_NOT_READY);
         return new GreenButtonPermissionRequest(
                 "pid",
                 "cid",

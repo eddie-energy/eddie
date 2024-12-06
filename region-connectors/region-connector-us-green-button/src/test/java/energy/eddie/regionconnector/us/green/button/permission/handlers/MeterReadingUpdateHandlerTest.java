@@ -57,8 +57,8 @@ class MeterReadingUpdateHandlerTest {
         var readingDate = ZonedDateTime.of(2024, 9, 10, 0, 0, 0, 0, ZoneOffset.UTC);
         var meterReading = new MeterReading("pid", "usagePoint", readingDate, PollingStatus.DATA_NOT_READY);
         var event = new UsMeterReadingUpdateEvent("pid",
-                                                  List.of(meterReading),
-                                                  PollingStatus.DATA_READY);
+                                                  List.of(meterReading)
+        );
         // When
         eventBus.emit(event);
 
@@ -69,7 +69,7 @@ class MeterReadingUpdateHandlerTest {
     @Test
     void permissionRequest_withoutMeterReading_doesNotFulfillPermissionRequest() {
         // Given
-        var event = new UsMeterReadingUpdateEvent("pid", List.of(), PollingStatus.DATA_READY);
+        var event = new UsMeterReadingUpdateEvent("pid", List.of());
 
         // When
         eventBus.emit(event);
@@ -98,7 +98,7 @@ class MeterReadingUpdateHandlerTest {
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         var readingDate = ZonedDateTime.of(2024, 10, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         var meterReading = new MeterReading("pid", "usagePoint", readingDate, PollingStatus.DATA_NOT_READY);
-        var event = new UsMeterReadingUpdateEvent("pid", List.of(meterReading), PollingStatus.DATA_READY);
+        var event = new UsMeterReadingUpdateEvent("pid", List.of(meterReading));
         // When
         eventBus.emit(event);
 
@@ -126,7 +126,7 @@ class MeterReadingUpdateHandlerTest {
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         var readingDate = ZonedDateTime.of(2024, 9, 30, 23, 59, 59, 0, ZoneOffset.UTC);
         var meterReading = new MeterReading("pid", "usagePoint", readingDate, PollingStatus.DATA_NOT_READY);
-        var event = new UsMeterReadingUpdateEvent("pid", List.of(meterReading), PollingStatus.DATA_READY);
+        var event = new UsMeterReadingUpdateEvent("pid", List.of(meterReading));
         // When
         eventBus.emit(event);
 

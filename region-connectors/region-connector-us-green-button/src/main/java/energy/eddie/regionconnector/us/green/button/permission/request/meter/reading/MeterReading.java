@@ -23,7 +23,7 @@ public class MeterReading {
     private final String meterUid;
     @Enumerated(EnumType.STRING)
     @Column(name = "historical_collection_status", columnDefinition = "text")
-    private final PollingStatus historicalCollectionStatus;
+    private PollingStatus historicalCollectionStatus;
     @Column(name = "last_meter_reading")
     @Nullable
     private ZonedDateTime lastMeterReading;
@@ -74,5 +74,9 @@ public class MeterReading {
 
     public boolean isReadyToPoll() {
         return historicalCollectionStatus == PollingStatus.DATA_READY;
+    }
+
+    public void setHistoricalCollectionStatus(PollingStatus historicalCollectionStatus) {
+        this.historicalCollectionStatus = historicalCollectionStatus;
     }
 }

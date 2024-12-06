@@ -7,6 +7,7 @@ import energy.eddie.regionconnector.us.green.button.api.Pages;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
 import energy.eddie.regionconnector.us.green.button.client.dtos.authorization.Authorization;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.HistoricalCollectionResponse;
+import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.MeterList;
 import energy.eddie.regionconnector.us.green.button.xml.helper.Status;
 import jakarta.annotation.Nullable;
@@ -103,6 +104,18 @@ public class GreenButtonClient implements GreenButtonApi {
                                 }
                                 return fetchAdditionalMeters(response.next());
                             });
+        }
+    }
+
+    @Override
+    public Mono<Meter> fetchMeter(String meterId) {
+        synchronized (webClient) {
+            return webClient.get()
+                            .uri(builder -> builder.path("/api/v2/meters/{meterId}")
+                                                   .queryParam("expand_meter_blocks", true)
+                                                   .build(meterId))
+                            .retrieve()
+                            .bodyToMono(Meter.class);
         }
     }
 

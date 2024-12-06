@@ -1,8 +1,7 @@
 package energy.eddie.regionconnector.us.green.button.web;
 
-import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.us.green.button.dtos.WebhookEvents;
-import energy.eddie.regionconnector.us.green.button.services.UtilityEventService;
+import energy.eddie.regionconnector.us.green.button.services.utility.events.UtilityEventService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +17,7 @@ public class WebhookController {
     }
 
     @PostMapping(value = "/webhook", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> receiveWebhook(@RequestBody WebhookEvents events) throws PermissionNotFoundException {
+    public ResponseEntity<Void> receiveWebhook(@RequestBody WebhookEvents events) {
         utilityEventService.receiveEvents(events.events());
         return ResponseEntity.ok().build();
     }
