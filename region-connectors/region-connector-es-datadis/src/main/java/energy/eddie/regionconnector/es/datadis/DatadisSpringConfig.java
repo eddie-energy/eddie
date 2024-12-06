@@ -134,12 +134,14 @@ public class DatadisSpringConfig {
     public PermissionMarketDocumentMessageHandler<EsPermissionRequest> pmdHandler(
             EventBus eventBus,
             EsPermissionRequestRepository esPermissionRequestRepository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             DatadisConfig config,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,
                 esPermissionRequestRepository,
+                dataNeedsService,
                 config.username(),
                 cimConfig,
                 pr -> null,

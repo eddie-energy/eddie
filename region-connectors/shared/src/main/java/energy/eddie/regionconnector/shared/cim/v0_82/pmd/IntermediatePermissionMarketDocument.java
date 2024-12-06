@@ -3,6 +3,10 @@ package energy.eddie.regionconnector.shared.cim.v0_82.pmd;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.pmd.*;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.regionconnector.shared.cim.v0_82.CimUtils;
 import energy.eddie.regionconnector.shared.cim.v0_82.DocumentType;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
@@ -45,15 +49,23 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
     private final String countryCode;
     private final ZoneId zoneId;
     private final PermissionProcessStatus status;
+    private final DataNeed dataNeed;
 
     public IntermediatePermissionMarketDocument(
             T permissionRequest,
             String customerIdentifier,
             TransmissionScheduleProvider<T> transmissionScheduleProvider,
-            String countryCode, ZoneId zoneId
+            String countryCode,
+            ZoneId zoneId,
+            DataNeed dataNeed
     ) {
-        this(permissionRequest, permissionRequest.status(), customerIdentifier, transmissionScheduleProvider,
-             countryCode, zoneId);
+        this(permissionRequest,
+             permissionRequest.status(),
+             customerIdentifier,
+             transmissionScheduleProvider,
+             countryCode,
+             zoneId,
+             dataNeed);
     }
 
     public IntermediatePermissionMarketDocument(
@@ -61,7 +73,9 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
             PermissionProcessStatus status,
             String customerIdentifier,
             TransmissionScheduleProvider<T> transmissionScheduleProvider,
-            String countryCode, ZoneId zoneId
+            String countryCode,
+            ZoneId zoneId,
+            DataNeed dataNeed
     ) {
         this.status = status;
         this.permissionRequest = permissionRequest;
@@ -69,6 +83,7 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
         this.transmissionScheduleProvider = transmissionScheduleProvider;
         this.countryCode = countryCode;
         this.zoneId = zoneId;
+        this.dataNeed = dataNeed;
     }
 
     public PermissionEnvelope toPermissionMarketDocument() {
@@ -89,7 +104,7 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
                 .withDescription(permissionRequest.dataNeedId())
                 .withSenderMarketParticipantMarketRoleType(RoleTypeList.PARTY_CONNECTED_TO_GRID)
                 .withReceiverMarketParticipantMarketRoleType(RoleTypeList.PERMISSION_ADMINISTRATOR)
-                .withProcessProcessType(ProcessTypeList.ACCESS_TO_METERED_DATA)
+                .withProcessProcessType(getProcessTypeList())
                 .withSenderMarketParticipantMRID(
                         new PartyIDStringComplexType()
                                 .withCodingScheme(codingScheme)
@@ -138,6 +153,15 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
                 .withMessageDocumentHeader(new DocumentHeader(permissionRequest,
                                                               DocumentType.PERMISSION_MARKET_DOCUMENT).permissionMarketDocumentHeader())
                 .withPermissionMarketDocument(pmd);
+    }
+
+    private ProcessTypeList getProcessTypeList() {
+        if (dataNeed instanceof ValidatedHistoricalDataDataNeed || dataNeed instanceof AiidaDataNeed) {
+            return ProcessTypeList.ACCESS_TO_METERED_DATA;
+        } else if (dataNeed instanceof AccountingPointDataNeed) {
+            return ProcessTypeList.ACCOUNTINGPOINT_DATA;
+        }
+        throw new IllegalArgumentException("Unsupported data need type: " + dataNeed);
     }
 
     @Nullable

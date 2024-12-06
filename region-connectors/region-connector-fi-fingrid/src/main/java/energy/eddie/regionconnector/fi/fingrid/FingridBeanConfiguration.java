@@ -78,12 +78,14 @@ public class FingridBeanConfiguration {
     public PermissionMarketDocumentMessageHandler<FingridPermissionRequest> cmdMessageHandler(
             EventBus eventBus,
             FiPermissionRequestRepository fiPermissionRequestRepository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             FingridConfiguration fingridConfiguration,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,
                 fiPermissionRequestRepository,
+                dataNeedsService,
                 fingridConfiguration.organisationUser(),
                 cimConfig,
                 pr -> "",
