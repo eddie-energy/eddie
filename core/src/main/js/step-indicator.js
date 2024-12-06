@@ -1,6 +1,8 @@
 import { css, html, LitElement } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.0/cdn/components/tooltip/tooltip.js";
+
 class StepIndicator extends LitElement {
   static properties = {
     step: { attribute: "step", type: Number },
@@ -23,59 +25,38 @@ class StepIndicator extends LitElement {
       );
     }
 
-    li {
-      border: 1px var(--sl-color-neutral-300) solid;
+    span {
+      border: 1px solid;
       border-radius: 100%;
+      font-size: 14px;
       height: 24px;
       width: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
+      user-select: none;
     }
 
-    ol {
-      counter-reset: step;
-    }
-
-    li::before {
-      counter-increment: step;
-      content: counter(step);
-      font-size: 14px;
-    }
-
-    li {
+    span {
       background: var(--sl-color-success-600);
       border-color: var(--sl-color-success-600);
       color: white;
     }
 
-    li.current:not(:last-child) {
+    li.current:not(:last-child) span {
       background: var(--sl-color-primary-600);
       border-color: var(--sl-color-primary-600);
     }
 
-    li.current ~ li {
+    li.current ~ li span {
       background: white;
       border-color: var(--sl-color-neutral-300);
       color: black;
     }
 
-    li.current.error {
+    li.current.error span {
       background: var(--sl-color-danger-600);
       border-color: var(--sl-color-danger-600);
-    }
-
-    span {
-      /* only be visible to screen readers */
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border-width: 0;
     }
   `;
 
@@ -97,7 +78,9 @@ class StepIndicator extends LitElement {
               error: index === this.step - 1 && !!this.error,
             })}"
           >
-            <span>${step}</span>
+            <sl-tooltip content="${step}">
+              <span>${index + 1}</span>
+            </sl-tooltip>
           </li>
         `
       )}
