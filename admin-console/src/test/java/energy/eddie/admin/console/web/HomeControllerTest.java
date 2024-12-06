@@ -40,7 +40,7 @@ class HomeControllerTest {
 
     @Test
     void testHome() {
-        StatusMessage statusMessage = new StatusMessage("testPermissionId", "testRegionConnectorId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
+        StatusMessage statusMessage = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
 
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(statusMessage));
 
@@ -57,7 +57,7 @@ class HomeControllerTest {
     @Test
     void testStatusDisplays() {
         // Given
-        StatusMessage unknownStatusMessage = new StatusMessage("testPermissionId", "testRegionConnectorId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "ABCDEF");
+        StatusMessage unknownStatusMessage = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "ABCDEF");
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(unknownStatusMessage));
 
         // When
@@ -73,8 +73,8 @@ class HomeControllerTest {
     @Test
     void testGetStatusMessages() {
         // Given
-        StatusMessage statusMessage1 = new StatusMessage("testPermissionId", "testRegionConnectorId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A06");
-        StatusMessage statusMessage2 = new StatusMessage("testPermissionId", "testRegionConnectorId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
+        StatusMessage statusMessage1 = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A06");
+        StatusMessage statusMessage2 = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
         List<StatusMessage> statusMessages = Arrays.asList(statusMessage1, statusMessage2);
 
         when(statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc("testPermissionId")).thenReturn(statusMessages);
@@ -93,7 +93,7 @@ class HomeControllerTest {
     @Test
     void testCountryCodePrefixRemoval() {
         // Given
-        StatusMessage statusMessageWithPrefix = new StatusMessage("testPermissionId", "testRegionConnectorId", "NCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
+        StatusMessage statusMessageWithPrefix = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "NCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(statusMessageWithPrefix));
 
         // When
@@ -110,7 +110,7 @@ class HomeControllerTest {
     void testTerminatePermission() {
         // Given
         String permissionId = "testPermissionId";
-        StatusMessage testStatusMessage = new StatusMessage(permissionId, "testCountry", "testRegionConnectorId", "testDso", "2024-05-22T08:20:03+02:00", "A05");
+        StatusMessage testStatusMessage = new StatusMessage(permissionId, "testCountry", "testRegionConnectorId", "testDataNeedId", "testDso", "2024-05-22T08:20:03+02:00", "A05");
         when(statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc(permissionId)).thenReturn(Collections.singletonList(testStatusMessage));
 
         // When

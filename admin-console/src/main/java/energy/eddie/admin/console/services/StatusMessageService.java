@@ -53,6 +53,7 @@ public class StatusMessageService implements PermissionMarketDocumentOutboundCon
                 message.getMRID(),
                 message.getPermissionList().getPermissions().getFirst()
                        .getMktActivityRecordList().getMktActivityRecords().getFirst().getType(),
+                message.getDescription(),
                 country,
                 message.getReceiverMarketParticipantMRID().getValue(),
                 message.getPermissionList().getPermissions().getFirst()
