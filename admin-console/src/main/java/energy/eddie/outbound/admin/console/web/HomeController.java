@@ -59,28 +59,7 @@ public class HomeController {
         List<StatusMessage> statusMessages = statusMessageRepository.findLatestStatusMessageForAllPermissions();
 
         List<StatusMessageDTO> updatedStatusMessages = statusMessages.stream()
-                .map(statusMessage -> {
-                    String country = statusMessage.getCountry();
-                    if (country.startsWith("N")) {
-                        country = country.replaceFirst("N", "");
-                    }
-
-                    String status;
-                    try {
-                        status = StatusTypeList.valueOf(
-                                statusMessage.getStatus()).value();
-                    } catch (IllegalArgumentException e) {
-                        status = "UNKNOWN_STATUS";
-                    }
-
-                    return new StatusMessageDTO(
-                            statusMessage.getPermissionId(),
-                            statusMessage.getRegionConnectorId(),
-                            country,
-                            statusMessage.getDso(),
-                            statusMessage.getStartDate(),
-                            status);
-                })
+                .map(HomeController::dtoFromStatusMessage)
                 .toList();
 
         model.addAttribute("title", "Permissions for Service Comparor");
@@ -98,24 +77,7 @@ public class HomeController {
                 permissionId);
 
         List<StatusMessageDTO> statusMessageDTOs = statusMessages.stream()
-                .map(statusMessage -> {
-                    String status;
-                    try {
-                        status = StatusTypeList.valueOf(statusMessage.getStatus())
-                                .value();
-                    } catch (IllegalArgumentException e) {
-                        status = "UNKNOWN_STATUS";
-                    }
-
-                    return new StatusMessageDTO(
-                            statusMessage.getPermissionId(),
-                            statusMessage.getRegionConnectorId(),
-                            statusMessage.getCountry(),
-                            statusMessage.getDso(),
-                            statusMessage.getStartDate(),
-                            status
-                    );
-                })
+                .map(HomeController::dtoFromStatusMessage)
                 .toList();
 
         return ResponseEntity.ok(statusMessageDTOs);
@@ -127,6 +89,29 @@ public class HomeController {
         var statusMessage = statusMessages.getFirst();
         terminationConnector.terminate(statusMessage.getPermissionId(), statusMessage.getRegionConnectorId());
         return ResponseEntity.ok().build();
+    }
+
+    private static StatusMessageDTO dtoFromStatusMessage(StatusMessage statusMessage) {
+        String country = statusMessage.getCountry();
+        if (country.startsWith("N")) {
+            country = country.replaceFirst("N", "");
+        }
+
+        String status;
+        try {
+            status = StatusTypeList.valueOf(statusMessage.getStatus()).value();
+        } catch (IllegalArgumentException e) {
+            status = "UNKNOWN_STATUS";
+        }
+
+        return new StatusMessageDTO(
+                statusMessage.getPermissionId(),
+                statusMessage.getRegionConnectorId(),
+                statusMessage.getDataNeedId(),
+                country,
+                statusMessage.getDso(),
+                statusMessage.getStartDate(),
+                status);
     }
 
     @GetMapping("/login")
