@@ -1,9 +1,10 @@
 package energy.eddie.regionconnector.us.green.button.permission.handlers;
 
+import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
-import energy.eddie.regionconnector.us.green.button.permission.events.UsAcceptedEvent;
+import energy.eddie.regionconnector.us.green.button.permission.events.UsAuthorizationUpdateFinishedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
@@ -19,14 +20,15 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
+
 @Component
-public class AcceptedHandler implements EventHandler<List<UsAcceptedEvent>> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcceptedHandler.class);
+public class AuthorizationUpdateFinishedHandler implements EventHandler<List<UsAuthorizationUpdateFinishedEvent>> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationUpdateFinishedHandler.class);
     private final HistoricalCollectionService historicalCollectionService;
     private final PermissionRequestService permissionRequestService;
     private final UsPermissionRequestRepository repository;
 
-    public AcceptedHandler(
+    public AuthorizationUpdateFinishedHandler(
             EventBus eventBus,
             GreenButtonConfiguration config,
             HistoricalCollectionService historicalCollectionService,
@@ -36,14 +38,14 @@ public class AcceptedHandler implements EventHandler<List<UsAcceptedEvent>> {
         this.historicalCollectionService = historicalCollectionService;
         this.permissionRequestService = permissionRequestService;
         this.repository = repository;
-        eventBus.filteredFlux(UsAcceptedEvent.class)
+        eventBus.filteredFlux(UsAuthorizationUpdateFinishedEvent.class)
                 .buffer(config.activationBatchSize())
                 .subscribe(this::accept);
     }
 
     @Override
-    public void accept(List<UsAcceptedEvent> events) {
-        var permissionIds = events.stream().map(UsAcceptedEvent::permissionId).toList();
+    public void accept(List<UsAuthorizationUpdateFinishedEvent> events) {
+        var permissionIds = events.stream().map(PermissionEvent::permissionId).toList();
         var prs = repository.findAllById(permissionIds);
         // copyOf doesn't copy the list since toList() returns an unmodifiable list
         List<UsGreenButtonPermissionRequest> permissionRequests = List.copyOf(
@@ -55,6 +57,7 @@ public class AcceptedHandler implements EventHandler<List<UsAcceptedEvent>> {
                                    .filter(meterReading -> filterInactivePermissionRequests(
                                            meterReading, permissionRequests, now
                                    ))
+                                   .filter(meterReading -> !meterReading.isReadyToPoll())
                                    .collectList()
                                    .filter(list -> !list.isEmpty())
                                    .flatMap(historicalCollectionService::triggerHistoricalDataCollection)

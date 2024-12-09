@@ -5,15 +5,16 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
+import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Component
 public class DataNeedMatcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataNeedMatcher.class);
     private final DataNeedsService dataNeedsService;
@@ -34,27 +35,26 @@ public class DataNeedMatcher {
             var meterUid = meter.uid();
             var permissionRequest = repository.findByAuthUid(authUid);
             var dataNeedId = permissionRequest.dataNeedId();
-            var dataNeed = dataNeedsService.getById(dataNeedId);
-            if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed vhdDataNeed)) {
-                infoOnDroppedMeter(meterUid, dataNeedId);
+            if (isRelevantEnergyType(meter, permissionRequest)) {
+                filteredMeters.add(meter);
                 continue;
             }
-            var matchesAny = anyMeterBlockMatchesEnergyTypeOfDataNeed(meter, vhdDataNeed);
-            if (matchesAny) {
-                filteredMeters.add(meter);
-            } else {
-                infoOnDroppedMeter(meterUid, dataNeedId);
-            }
+            LOGGER.info(
+                    "Dropping meter {} from list of meters to collect data from since it does not support data need {}",
+                    meterUid,
+                    dataNeedId
+            );
         }
         return filteredMeters;
     }
 
-    private static void infoOnDroppedMeter(String meterUid, String dataNeedId) {
-        LOGGER.info(
-                "Dropping meter {} from list of meters to collect data from since it does not support data need {}",
-                meterUid,
-                dataNeedId
-        );
+    public boolean isRelevantEnergyType(Meter meter, UsGreenButtonPermissionRequest permissionRequest) {
+        var dataNeedId = permissionRequest.dataNeedId();
+        var dataNeed = dataNeedsService.getById(dataNeedId);
+        if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed vhdDataNeed)) {
+            return false;
+        }
+        return anyMeterBlockMatchesEnergyTypeOfDataNeed(meter, vhdDataNeed);
     }
 
     private static boolean anyMeterBlockMatchesEnergyTypeOfDataNeed(

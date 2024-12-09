@@ -101,14 +101,20 @@ public class HistoricalCollectionService {
 
     @Nullable
     private MeterReading persistMeter(Meter meter, Map<String, String> authIndex) {
+        var meterUid = meter.uid();
         if (!authIndex.containsKey(meter.authorizationUid())) {
-            LOGGER.warn("Got unknown metering point {}", meter.uid());
+            LOGGER.warn("Got unknown metering point {}", meterUid);
             return null;
         }
         var permissionId = authIndex.get(meter.authorizationUid());
-        LOGGER.info("Adding meter {} to permission request {}", meter.uid(), permissionId);
+        LOGGER.info("Adding meter {} to permission request {}", meterUid, permissionId);
+        var meterReading = meterReadingRepository.findById(new MeterReadingPk(permissionId, meterUid));
+        if (meterReading.isPresent()) {
+            LOGGER.info("Meter {} already exists for permission request {}", meterUid, permissionId);
+            return meterReading.get();
+        }
         return meterReadingRepository.save(new MeterReading(permissionId,
-                                                            meter.uid(),
+                                                            meterUid,
                                                             null,
                                                             PollingStatus.DATA_NOT_READY));
     }

@@ -4,7 +4,6 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
-import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsStartPollingEvent;
@@ -38,7 +37,7 @@ class StartPollingEventHandlerTest {
 
     public static Stream<Arguments> testOtherEvents_doNotTriggerPolling() {
         return Stream.of(
-                Arguments.of(new UsMeterReadingUpdateEvent("pid", List.of(), PollingStatus.DATA_READY)),
+                Arguments.of(new UsMeterReadingUpdateEvent("pid", List.of())),
                 Arguments.of(new UsSimpleEvent("pid", PermissionProcessStatus.ACCEPTED))
         );
     }

@@ -5,7 +5,7 @@ import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import energy.eddie.regionconnector.us.green.button.dtos.WebhookEvent;
 import energy.eddie.regionconnector.us.green.button.dtos.WebhookEvents;
 import energy.eddie.regionconnector.us.green.button.services.PermissionRequestAuthorizationService;
-import energy.eddie.regionconnector.us.green.button.services.UtilityEventService;
+import energy.eddie.regionconnector.us.green.button.services.utility.events.UtilityEventService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

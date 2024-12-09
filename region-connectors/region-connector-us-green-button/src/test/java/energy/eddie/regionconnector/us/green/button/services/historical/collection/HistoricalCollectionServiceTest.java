@@ -26,12 +26,12 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class HistoricalCollectionServiceTest {
@@ -47,7 +47,7 @@ class HistoricalCollectionServiceTest {
     @Test
     void testPersistMetersForPermissionRequests_returnsMeterReadings() {
         // Given
-        var pr = getPermissionRequest();
+        var pr = getPermissionRequest(List.of());
         var meterListing = getMeterListing("1111");
         when(api.fetchInactiveMeters(Pages.NO_SLURP, List.of("1111")))
                 .thenReturn(Flux.just(meterListing));
@@ -69,9 +69,36 @@ class HistoricalCollectionServiceTest {
     }
 
     @Test
+    void testPersistMetersForPermissionRequestsWithMeters_doesNotOverwriteMeters() {
+        // Given
+        var reading = new MeterReading("pid", "1111", null, PollingStatus.DATA_NOT_READY);
+        when(repository.findById(any()))
+                .thenReturn(Optional.of(reading));
+        var pr = getPermissionRequest(List.of(reading));
+        var meterListing = getMeterListing("1111");
+        when(api.fetchInactiveMeters(Pages.NO_SLURP, List.of("1111")))
+                .thenReturn(Flux.just(meterListing));
+        when(dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(meterListing)).thenReturn(meterListing.meters());
+
+        // When
+        var res = historicalCollectionService.persistMetersForPermissionRequests(List.of(pr));
+
+        // Then
+        StepVerifier.create(res)
+                    .assertNext(meterReading -> assertAll(
+                            () -> assertEquals("pid", meterReading.permissionId()),
+                            () -> assertEquals("1111", meterReading.meterUid()),
+                            () -> assertFalse(meterReading.isReadyToPoll()),
+                            () -> assertNull(meterReading.lastMeterReading())
+                    ))
+                    .verifyComplete();
+        verify(repository, never()).save(any());
+    }
+
+    @Test
     void testPersistMetersForPermissionRequests_filtersUnknownMeters() {
         // Given
-        var pr = getPermissionRequest();
+        var pr = getPermissionRequest(List.of());
         var meterListing = getMeterListing("2222");
         when(api.fetchInactiveMeters(Pages.NO_SLURP, List.of("1111")))
                 .thenReturn(Flux.just(meterListing));
@@ -131,7 +158,7 @@ class HistoricalCollectionServiceTest {
         )), null);
     }
 
-    private static @NotNull GreenButtonPermissionRequest getPermissionRequest() {
+    private static GreenButtonPermissionRequest getPermissionRequest(List<@NotNull MeterReading> meterReadings) {
         return new GreenButtonPermissionRequest(
                 "pid",
                 "cid",
@@ -145,6 +172,7 @@ class HistoricalCollectionServiceTest {
                 "company",
                 "http://localhost",
                 "scope",
+                meterReadings,
                 "1111"
         );
     }

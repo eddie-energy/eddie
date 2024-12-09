@@ -290,4 +290,24 @@ class GreenButtonClientTest {
                     .expectNextCount(1)
                     .verifyComplete();
     }
+
+    @Test
+    void fetchMeter_returnsMeter() throws JsonProcessingException {
+        // Given
+        var response = new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody(mapper.writeValueAsString(METER));
+        mockBackEnd.enqueue(response);
+        var client = WebClient.create(basePath);
+        var api = new GreenButtonClient(client);
+
+        // When
+        var res = api.fetchMeter("1111");
+
+        // Then
+        StepVerifier.create(res)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
 }
