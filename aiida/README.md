@@ -50,6 +50,31 @@ To overcome this issue, the property `server.servlet.session.cookie.name` can e.
 **Important:**
 This is only relevant during development, because usually AIIDA and EDDIE services are not deployed using the same host (localhost for the case of development).
 
+### Keycloak Integration in Docker Network
+
+To enable Keycloak usage within a Docker network, several configurations must be made in the `application.yml` file of the Spring application. 
+When setting the property `issuer-uri` in the `application.yml`, the application retrieves the URIs from `http://localhost:8888/realms/EDDIE/.well-known/openid-configuration`.
+Since this URI is not accessible from the Docker network, the required URIs must be defined explicitly.
+
+The following properties must be set in the `application.yml` file:
+
+| Property            | Description                                                    |
+|---------------------|----------------------------------------------------------------|
+| authorization-uri   | URI for redirecting users for authorization.                   |
+| token-uri           | URI to exchange the access code for an access token.           |
+| user-info-uri       | URI to fetch user information.                                 |
+| jwk-set-uri         | URI to obtain the public key for verifying JWTs.               |
+| user-name-attribute | JWT claim that contains the username.                          |
+| redirect-uri        | URI for redirecting users back to the application post-login.  |
+
+Additionally, Keycloak requires a configured frontend URL to validate the issuer URI. This is specified using the `KC_HOSTNAME` variable in the `compose.yml` file.
+
+These settings can be adjusted using the following variables in the `.env` file:
+
+- `AIIDA_EXTERNAL_HOST`
+- `KEYCLOAK_INTERNAL_HOST`
+- `KEYCLOAK_EXTERNAL_HOST`
+
 ### EDDIE Keycloak Theme
 
 The current version of the EDDIE keycloak theme includes some very simple modifications only for the login page.
@@ -60,14 +85,16 @@ The source code and instructions can be found within the [keycloak eddie theme f
 Several configurations can be applied through environment variables or the _application.properties_ file.
 When using Docker, most of these properties should be configured in the [.env](docker/.env) file.
 
-| Property                   | Description                                 |
-|----------------------------|---------------------------------------------|
-| SPRING_DATASOURCE_USERNAME | Username to authenticate to the TimescaleDB |
-| SPRING_DATASOURCE_PASSWORD | Password to authenticate to the TimescaleDB |
-| KEYCLOAK_HOST              | Host of the Keycloak instance               |
-| KEYCLOAK_REALM             | Name of the Keycloak realm                  |
-| KEYCLOAK_CLIENT            | Name of the Keycloak client                 |
-| KEYCLOAK_CLIENT_SECRET     | The client secret for the Keycloak client   |
+| Property                   | Description                                                                 |
+|----------------------------|-----------------------------------------------------------------------------|
+| AIIDA_EXTERNAL_HOST        | Network-accessible host of the AIIDA instance                               |
+| SPRING_DATASOURCE_USERNAME | Username to authenticate to the TimescaleDB                                 |
+| SPRING_DATASOURCE_PASSWORD | Password to authenticate to the TimescaleDB                                 |
+| KEYCLOAK_INTERNAL_HOST     | Internal network host of the Keycloak instance (e.g. inside Docker network) |
+| KEYCLOAK_EXTERNAL_HOST     | Network-accessible host of the Keycloak instance                            |
+| KEYCLOAK_REALM             | Name of the Keycloak realm                                                  |
+| KEYCLOAK_CLIENT            | Name of the Keycloak client                                                 |
+| KEYCLOAK_CLIENT_SECRET     | The client secret for the Keycloak client                                   |
 
 ## API Documentation
 

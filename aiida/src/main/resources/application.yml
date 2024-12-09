@@ -19,12 +19,17 @@ spring:
       client:
         provider:
           keycloak:
-            issuer-uri: ${KEYCLOAK_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}
+            authorization-uri: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/auth
+            token-uri: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/token
+            user-info-uri: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/userinfo
+            jwk-set-uri: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/certs
+            user-name-attribute: preferred_username
         registration:
           keycloak:
             client-id: ${KEYCLOAK_CLIENT:AIIDA}
             client-secret: ${KEYCLOAK_CLIENT_SECRET:REPLACE_ME}
             authorization-grant-type: authorization_code
+            redirect-uri: ${AIIDA_EXTERNAL_HOST:http://localhost:8080}/login/oauth2/code/keycloak
             scope: openid
             provider: keycloak
 
