@@ -24,37 +24,20 @@ public class AdminConsoleSecurityConfig {
     public static String ADMIN_CONSOLE_BASE_URL = "/" + ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH + "/" + "admin-console";
 
     @Bean
-    @ConditionalOnProperty(value = LOGIN_ENABLED, havingValue = "true")
     public MvcRequestMatcher.Builder adminConsoleRequestMatcher(HandlerMappingIntrospector introspector) {
         return new MvcRequestMatcher.Builder(introspector).servletPath(ADMIN_CONSOLE_BASE_URL);
     }
 
     @Bean
-    @ConditionalOnProperty(value = LOGIN_ENABLED, havingValue = "false")
-    // This is currently primarily required for the tests, still it will be essential if eddie-core will require authentication one day
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   MvcRequestMatcher.Builder adminConsoleRequestMatcher
-    ) throws Exception {
-        return http
-                .csrf((csrf) -> csrf.ignoringRequestMatchers(adminConsoleRequestMatcher.pattern("**")))
-                .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers(adminConsoleRequestMatcher.pattern("**")).permitAll()
-                )
-                .build();
-    }
-
-    @Bean
     @ConditionalOnProperty(value = LOGIN_ENABLED, havingValue = "true")
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+    public SecurityFilterChain loginEnabledSecurityFilterChain(HttpSecurity http,
                                                    MvcRequestMatcher.Builder adminConsoleRequestMatcher,
                                                    @Value("${" + LOGIN_USERNAME + "}") String adminUsername,
                                                    @Value("${" + LOGIN_ENCODED_PASSWORD + "}") String adminEncodedPassword
 
     ) throws Exception {
         return http
-                .csrf((csrf) -> {
-                    csrf.requireCsrfProtectionMatcher(adminConsoleRequestMatcher.pattern("**"));
-                })
+                .csrf((csrf) -> csrf.requireCsrfProtectionMatcher(adminConsoleRequestMatcher.pattern("*")))
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers(adminConsoleRequestMatcher.pattern("**")).authenticated()
                         .anyRequest().permitAll()

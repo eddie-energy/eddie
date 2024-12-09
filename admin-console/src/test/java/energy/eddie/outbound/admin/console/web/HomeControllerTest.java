@@ -44,7 +44,7 @@ class HomeControllerTest {
 
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(statusMessage));
 
-        String viewName = homeController.home(model);
+        String viewName = homeController.home(model, "false");
 
         verify(statusMessageRepository, times(1)).findLatestStatusMessageForAllPermissions();
         verify(model, times(1)).addAttribute(eq("title"), anyString());
@@ -61,7 +61,7 @@ class HomeControllerTest {
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(unknownStatusMessage));
 
         // When
-        homeController.home(model);
+        homeController.home(model, "false");
         verify(model, times(1)).addAttribute(eq("statusMessages"), captor.capture());
         List<StatusMessageDTO> statusMessages = captor.getValue();
 
@@ -97,7 +97,7 @@ class HomeControllerTest {
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(statusMessageWithPrefix));
 
         // When
-        homeController.home(model);
+        homeController.home(model, "false");
         verify(model, times(1)).addAttribute(eq("statusMessages"), captor.capture());
         List<StatusMessageDTO> statusMessages = captor.getValue();
 

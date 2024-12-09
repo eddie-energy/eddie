@@ -59,18 +59,13 @@ function onTerminationButtonClick() {
 
   modal.addEventListener("close", () => {
     if (modal.returnValue === "confirm") {
-      let headers = {};
-      if (csrfHeaderAndTokenExist()) {
-        const csrfHeader = document
-          .querySelector('meta[name="csrf-header"]')
-          .getAttribute("content");
-        headers[csrfHeader] = document
-          .querySelector('meta[name="csrf-token"]')
-          .getAttribute("content");
-      }
+      const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content;
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
-      let basePath = window.location.origin + window.location.pathname;
-      fetch(basePath + `/terminate/${permissionIdToTerminate}`, {
+      const headers = csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {}
+
+      const basePath = window.location.origin + window.location.pathname;
+      fetch(`${basePath}/terminate/${permissionIdToTerminate}`, {
         method: "POST",
         headers: headers,
       })
@@ -120,9 +115,9 @@ function controlRowExpansion(table) {
 
 async function fetchAdditionalData(row) {
   try {
-    let basePath = window.location.origin + window.location.pathname;
+    const basePath = window.location.origin + window.location.pathname;
     const response = await fetch(
-      basePath + `/statusMessages/${row.data().PermissionId}`,
+      `${basePath}/statusMessages/${row.data().PermissionId}`,
       { method: "GET" }
     );
     if (!response.ok) {

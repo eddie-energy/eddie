@@ -1,11 +1,12 @@
 package energy.eddie.outbound.admin.console.web;
 
+import energy.eddie.cim.v0_82.pmd.StatusTypeList;
 import energy.eddie.outbound.admin.console.data.StatusMessage;
 import energy.eddie.outbound.admin.console.data.StatusMessageDTO;
 import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConnector;
-import energy.eddie.cim.v0_82.pmd.StatusTypeList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static energy.eddie.outbound.admin.console.config.AdminConsoleConfig.LOGIN_ENABLED;
 
 @Controller
 public class HomeController {
@@ -50,37 +53,41 @@ public class HomeController {
     }
 
     @GetMapping
-    public String home(Model model) {
+    public String home(Model model,
+                       @Value("${" + LOGIN_ENABLED + "}") String loginEnabled
+    ) {
         List<StatusMessage> statusMessages = statusMessageRepository.findLatestStatusMessageForAllPermissions();
 
         List<StatusMessageDTO> updatedStatusMessages = statusMessages.stream()
-                                                                     .map(statusMessage -> {
-                                                                         String country = statusMessage.getCountry();
-                                                                         if (country.startsWith("N")) {
-                                                                             country = country.replaceFirst("N", "");
-                                                                         }
+                .map(statusMessage -> {
+                    String country = statusMessage.getCountry();
+                    if (country.startsWith("N")) {
+                        country = country.replaceFirst("N", "");
+                    }
 
-                                                                         String status;
-                                                                         try {
-                                                                             status = StatusTypeList.valueOf(
-                                                                                     statusMessage.getStatus()).value();
-                                                                         } catch (IllegalArgumentException e) {
-                                                                             status = "UNKNOWN_STATUS";
-                                                                         }
+                    String status;
+                    try {
+                        status = StatusTypeList.valueOf(
+                                statusMessage.getStatus()).value();
+                    } catch (IllegalArgumentException e) {
+                        status = "UNKNOWN_STATUS";
+                    }
 
-                                                                         return new StatusMessageDTO(
-                                                                                 statusMessage.getPermissionId(),
-                                                                                 statusMessage.getRegionConnectorId(),
-                                                                                 country,
-                                                                                 statusMessage.getDso(),
-                                                                                 statusMessage.getStartDate(),
-                                                                                 status);
-                                                                     })
-                                                                     .toList();
+                    return new StatusMessageDTO(
+                            statusMessage.getPermissionId(),
+                            statusMessage.getRegionConnectorId(),
+                            country,
+                            statusMessage.getDso(),
+                            statusMessage.getStartDate(),
+                            status);
+                })
+                .toList();
 
         model.addAttribute("title", "Permissions for Service Comparor");
         model.addAttribute("statusMessages", updatedStatusMessages);
         model.addAttribute("nonTerminatableStatuses", NON_TERMINATABLE_STATUSES);
+
+        model.addAttribute("loginEnabled", loginEnabled.equals("true"));
 
         return "index";
     }
@@ -91,25 +98,25 @@ public class HomeController {
                 permissionId);
 
         List<StatusMessageDTO> statusMessageDTOs = statusMessages.stream()
-                                                                 .map(statusMessage -> {
-                                                                     String status;
-                                                                     try {
-                                                                         status = StatusTypeList.valueOf(statusMessage.getStatus())
-                                                                                                .value();
-                                                                     } catch (IllegalArgumentException e) {
-                                                                         status = "UNKNOWN_STATUS";
-                                                                     }
+                .map(statusMessage -> {
+                    String status;
+                    try {
+                        status = StatusTypeList.valueOf(statusMessage.getStatus())
+                                .value();
+                    } catch (IllegalArgumentException e) {
+                        status = "UNKNOWN_STATUS";
+                    }
 
-                                                                     return new StatusMessageDTO(
-                                                                             statusMessage.getPermissionId(),
-                                                                             statusMessage.getRegionConnectorId(),
-                                                                             statusMessage.getCountry(),
-                                                                             statusMessage.getDso(),
-                                                                             statusMessage.getStartDate(),
-                                                                             status
-                                                                     );
-                                                                 })
-                                                                 .toList();
+                    return new StatusMessageDTO(
+                            statusMessage.getPermissionId(),
+                            statusMessage.getRegionConnectorId(),
+                            statusMessage.getCountry(),
+                            statusMessage.getDso(),
+                            statusMessage.getStartDate(),
+                            status
+                    );
+                })
+                .toList();
 
         return ResponseEntity.ok(statusMessageDTOs);
     }

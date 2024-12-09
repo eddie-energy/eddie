@@ -84,7 +84,7 @@
             />
           </svg>
         </label>
-        <form th:if="${_csrf != null}" method="post" th:action="@{/logout}">
+        <form th:if="${loginEnabled}" method="post" th:action="@{/logout}">
           <input
             type="hidden"
             th:name="${_csrf.parameterName}"

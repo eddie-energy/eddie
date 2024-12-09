@@ -109,6 +109,32 @@ For common formats, there are already serializers and deserializers in place, wh
 
 To implement a custom SerDe for other formats, such as `CSV` or `protobuf`, implement the [MessageSerde](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/MessageSerde.html) interface and either extend the [DefaultSerdeFactory](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/DefaultSerdeFactory.html) or implement a custom [SerdeFactory](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/SerdeFactory.html).
 
+## Security Configuration
+
+Outbound Connectors that should be secured using spring security (like the Admin Console), can define a `SecurityFilterChain` using the [OutboundConnectorSecurityConfig](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/OutboundConnectorSecurityConfig.html) Annotation.
+The endpoints can then be secured as follows, but please note that the security config should only define rules for the paths of the certain outbound connectors.
+```java
+@OutboundConnectorSecurityConfig
+public class OCSecurityConfig {
+    @Bean
+    public MvcRequestMatcher.Builder requestMatcher(HandlerMappingIntrospector introspector) {
+      return new MvcRequestMatcher.Builder(introspector).servletPath("/" + ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH + "/" + "oc-name");
+    }
+    
+    @Bean
+    public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
+        return http
+                .csrf((csrf) -> csrf.requireCsrfProtectionMatcher(requestMatcher.pattern("*")))
+                .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers(requestMatcher.pattern("**")).authenticated()
+                        .anyRequest().permitAll()
+                )
+                // ... formLogin, oauth2Login, etc.
+                .build();
+    }
+}
+```
+
 ## Configuration
 
 Since the outbound-connector is a Spring Boot application, it is possible to load configurations from all sources as usual in Spring Boot.
