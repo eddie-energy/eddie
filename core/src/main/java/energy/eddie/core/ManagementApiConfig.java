@@ -18,7 +18,8 @@ import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 
-import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH;
+import static energy.eddie.outbound.shared.utils.CommonPaths.ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH;
+
 
 /**
  * This Spring Configuration modifies the embedded webserver by opening a second port for the management api. Because

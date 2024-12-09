@@ -48,6 +48,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * Base package under which all region connectors are located.
      */
     public static final String REGION_CONNECTORS_SCAN_BASE_PACKAGE = "energy.eddie.regionconnector";
+    public static final String OUTBOUND_CONNECTORS_SCAN_BASE_PACKAGE = "energy.eddie.outbound";
     private static final Logger LOGGER = LoggerFactory.getLogger(RegionConnectorRegistrationBeanPostProcessor.class);
     private final Environment environment;
 

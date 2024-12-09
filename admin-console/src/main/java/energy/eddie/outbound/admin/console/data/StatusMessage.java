@@ -1,4 +1,4 @@
-package energy.eddie.admin.console.data;
+package energy.eddie.outbound.admin.console.data;
 
 import jakarta.persistence.*;
 

@@ -1,4 +1,4 @@
-package energy.eddie.admin.console.services;
+package energy.eddie.outbound.admin.console.services;
 
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;

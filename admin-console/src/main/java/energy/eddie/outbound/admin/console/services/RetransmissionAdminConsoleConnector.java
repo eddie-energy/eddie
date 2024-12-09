@@ -1,4 +1,4 @@
-package energy.eddie.admin.console.services;
+package energy.eddie.outbound.admin.console.services;
 
 import energy.eddie.api.agnostic.outbound.RetransmissionConnector;
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;

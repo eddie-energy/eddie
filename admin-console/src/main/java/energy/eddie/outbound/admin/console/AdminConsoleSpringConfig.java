@@ -1,4 +1,4 @@
-package energy.eddie.admin.console;
+package energy.eddie.outbound.admin.console;
 
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,4 +1,4 @@
-package energy.eddie.admin.console.services;
+package energy.eddie.outbound.admin.console.services;
 
 import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;

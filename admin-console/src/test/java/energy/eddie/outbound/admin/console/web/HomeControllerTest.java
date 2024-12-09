@@ -1,9 +1,9 @@
-package energy.eddie.admin.console.web;
+package energy.eddie.outbound.admin.console.web;
 
-import energy.eddie.admin.console.data.StatusMessage;
-import energy.eddie.admin.console.data.StatusMessageDTO;
-import energy.eddie.admin.console.data.StatusMessageRepository;
-import energy.eddie.admin.console.services.TerminationAdminConsoleConnector;
+import energy.eddie.outbound.admin.console.data.StatusMessage;
+import energy.eddie.outbound.admin.console.data.StatusMessageDTO;
+import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
+import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConnector;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -44,7 +44,7 @@ class HomeControllerTest {
 
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(statusMessage));
 
-        String viewName = homeController.home(model);
+        String viewName = homeController.home(model, "false");
 
         verify(statusMessageRepository, times(1)).findLatestStatusMessageForAllPermissions();
         verify(model, times(1)).addAttribute(eq("title"), anyString());
@@ -61,7 +61,7 @@ class HomeControllerTest {
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(unknownStatusMessage));
 
         // When
-        homeController.home(model);
+        homeController.home(model, "false");
         verify(model, times(1)).addAttribute(eq("statusMessages"), captor.capture());
         List<StatusMessageDTO> statusMessages = captor.getValue();
 
@@ -97,7 +97,7 @@ class HomeControllerTest {
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(statusMessageWithPrefix));
 
         // When
-        homeController.home(model);
+        homeController.home(model, "false");
         verify(model, times(1)).addAttribute(eq("statusMessages"), captor.capture());
         List<StatusMessageDTO> statusMessages = captor.getValue();
 
