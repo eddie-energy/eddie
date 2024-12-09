@@ -112,8 +112,8 @@ To implement a custom SerDe for other formats, such as `CSV` or `protobuf`, impl
 
 ## Security Configuration
 
-Outbound Connectors that should be secured using spring security (like the Admin Console), can define a `SecurityFilterChain` using the [OutboundConnectorSecurityConfig](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/OutboundConnectorSecurityConfig.html) Annotation.
-The endpoints can then be secured as follows, but please note that the security config should only define rules for the paths of the certain outbound connectors.
+Outbound Connectors that should be secured using spring security (like the Admin Console), can define a `SecurityFilterChain` using the [OutboundConnectorSecurityConfig](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/OutboundConnectorSecurityConfig.html) Annotation.
+The endpoints can then be secured as follows, but please note that the security config should only define rules for the paths of the certain outbound-connector.
 ```java
 @OutboundConnectorSecurityConfig
 public class OCSecurityConfig {
@@ -135,6 +135,9 @@ public class OCSecurityConfig {
     }
 }
 ```
+***Important:*** The filter chains are loaded by eddie core before the context of the outbound-connector is built.
+Consequently, `Beans` that are part of the outbound-connector are ***not*** available in the security config.
+Nevertheless, you can access e.g. `@Values` that are instantiated by eddie core.
 
 ## Configuration
 

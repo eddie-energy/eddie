@@ -1,6 +1,6 @@
 package energy.eddie;
 
-import energy.eddie.api.agnostic.OutboundConnectorSecurityConfig;
+import energy.eddie.api.agnostic.outbound.OutboundConnectorSecurityConfig;
 import energy.eddie.api.agnostic.RegionConnectorSecurityConfig;
 import energy.eddie.core.CoreSpringConfig;
 import energy.eddie.spring.OutboundConnectorRegistrationBeanPostProcessor;

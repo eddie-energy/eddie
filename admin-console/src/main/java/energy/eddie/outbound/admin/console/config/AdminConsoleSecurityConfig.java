@@ -1,6 +1,6 @@
 package energy.eddie.outbound.admin.console.config;
 
-import energy.eddie.api.agnostic.OutboundConnectorSecurityConfig;
+import energy.eddie.api.agnostic.outbound.OutboundConnectorSecurityConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
