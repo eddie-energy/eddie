@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
 import jakarta.annotation.Priority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,15 +26,18 @@ public class FluviusApiClient implements FluviusApi {
     private final WebClient webClient;
     private final FluviusConfiguration fluviusConfiguration;
     private final OAuthTokenService oAuthTokenService;
+    private final RedirectUriHelper uriHelper;
 
     public FluviusApiClient(
             WebClient webClient,
             FluviusConfiguration fluviusConfiguration,
-            OAuthTokenService oAuthTokenService
+            OAuthTokenService oAuthTokenService,
+            @Value("${eddie.public.url}") String publicUrl
     ) {
         this.webClient = webClient;
         this.fluviusConfiguration = fluviusConfiguration;
         this.oAuthTokenService = oAuthTokenService;
+        this.uriHelper = new RedirectUriHelper(publicUrl);
     }
 
     @Override
@@ -84,8 +88,8 @@ public class FluviusApiClient implements FluviusApi {
                                 .dataPeriodTo(end)
                 )
                 .numberOfEans(1)
-                .returnUrlSuccess(null)
-                .returnUrlFailed(null)
+                .returnUrlSuccess(uriHelper.successUri(permissionId))
+                .returnUrlFailed(uriHelper.rejectUri(permissionId))
                 .sso(true)
                 .enterpriseNumber(null);
         return webClient.post()

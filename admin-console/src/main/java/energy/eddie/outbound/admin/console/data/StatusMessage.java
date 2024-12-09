@@ -16,6 +16,9 @@ public class StatusMessage {
     @Column(name = "region_connector_id")
     private final String regionConnectorId;
 
+    @Column(name = "data_need_id")
+    private final String dataNeedId;
+
     @Column(name = "country")
     private final String country;
 
@@ -29,10 +32,11 @@ public class StatusMessage {
     private String status;
 
     // Constructors
-    public StatusMessage(String permissionId, String regionConnectorId, String country, String dso, String startDate, String status) {
+    public StatusMessage(String permissionId, String regionConnectorId, String dataNeedId, String country, String dso, String startDate, String status) {
         this.id = 0L;
         this.permissionId = permissionId;
         this.regionConnectorId = regionConnectorId;
+        this.dataNeedId = dataNeedId;
         this.country = country;
         this.dso = dso;
         this.startDate = startDate;
@@ -44,6 +48,7 @@ public class StatusMessage {
         this.id = null;
         this.permissionId = null;
         this.regionConnectorId = null;
+        this.dataNeedId = null;
         this.country = null;
         this.status = null;
         this.dso = null;
@@ -61,6 +66,10 @@ public class StatusMessage {
 
     public String getRegionConnectorId() {
         return regionConnectorId;
+    }
+
+    public String getDataNeedId() {
+        return dataNeedId;
     }
 
     public String getCountry() {

@@ -94,25 +94,6 @@ broker.
 
 ## EMQX MQTT broker
 
-EMQX MQTT broker supports authentication and authorization using PostgreSQL as backend. Visit the dashboard of the
-broker (by default running on port 18083), to add the database as source for authentication and authorization.
-The following two SQL queries can be used in combination with the above tables for authentication and authorization
-respectively.
-
-```SQL
-SELECT password_hash
-FROM aiida.aiida_mqtt_user
-WHERE username = ${username}
-LIMIT 1;
-
-SELECT LOWER(action) AS action, LOWER(acl_type) AS permission, topic
-FROM aiida.aiida_mqtt_acl
-WHERE username = ${username};
-```
-
-Note that while enums are often used in uppercase, EMQX requires the `action` and `acl_type` to be in lowercase and
-named `action` and `permission` respectively.
-
 Please ensure, that you use a dedicated database user for the EMQX broker, and that you grant this user read permissions
 to the `aiida.aiida_mqtt_user` and `aiida.aiida_mqtt_acl` tables.
 
@@ -123,3 +104,49 @@ GRANT SELECT ON aiida.aiida_mqtt_acl TO emqx;
 GRANT SELECT ON aiida.aiida_mqtt_user TO emqx;
 GRANT CONNECT ON DATABASE eddie TO emqx;
 ```
+
+EMQX MQTT broker supports authentication and authorization using PostgreSQL as backend, which should use a dedicated
+user as seen above.
+In order to add the EDDIE database for authentication and authorization, visit the dashboard of the broker
+(by default running on port 18083).
+Add the EDDIE database as source for authentication and authorization.
+
+### Authentication
+
+Select the **Authentication** tab, select **password-based** and then **PostgresDB**.
+It is necessary to fill out the server address of the database, the database name and the credentials of the dedicated
+user with which EMQX should connect.
+For authentication, it is necessary to choose the **password hash** to be **bcrypt**.
+Lastly, add the following SQL query to fetch the password hash for the given username.
+
+```SQL
+SELECT password_hash
+FROM aiida.aiida_mqtt_user
+WHERE username = ${username}
+LIMIT 1;
+```
+
+### Authorization
+
+Select the **Authorization** tab and select **PostgresDB**.
+It is necessary to fill out the server address of the database, the database name and the credentials of the dedicated
+user with which EMQX should connect.
+Lastly, add the following SQL query to fetch the permissions for the given username.
+
+```SQL
+SELECT LOWER(action) AS action, LOWER(acl_type) AS permission, topic
+FROM aiida.aiida_mqtt_acl
+WHERE username = ${username};
+```
+
+Note that while enums are often used in uppercase, EMQX requires the `action` and `acl_type` to be in lowercase and
+named `action` and `permission` respectively.
+
+### Troubleshooting
+
+When the EDDIE framework tries to connect to the MQTT broker anonymously, it is possible that the connection is refused.
+To prevent this, it is possible to create a dedicated EMQX user for the EDDIE framework, which is used for the connection.
+You can create the user by visiting the EMQX dashboard. Select the **Authentication** tab, select **password-based** and
+then **Built-in Database
+**. Here it is now possible to create user which can then be used by the AIIDA Region Connector by
+adding it to the `region-connector.aiida.mqtt.username` and `region-connector.aiida.mqtt.password` configuration values.

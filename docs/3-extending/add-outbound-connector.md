@@ -46,35 +46,36 @@ Furthermore, it is used to set the name of the outbound-connector.
 
 ### `ConnectionStatusMessageOutboundConnector`
 
-The [`ConnectionStatusMessageOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/ConnectionStatusMessageOutboundConnector.html) interface provides means to get a stream of connection status messages, which are emitted to the eligible party.
+The [
+`ConnectionStatusMessageOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/ConnectionStatusMessageOutboundConnector.html) interface provides means to get a stream of [connection status messages](../2-integrating/messages/connection-status-messages.md), which are emitted to the eligible party.
 
 ### `RawDataOutboundConnector`
 
 The [`RawDataOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/RawDataOutboundConnector.html) interface provides a stream of raw data messages.
-Raw data messages are messages that are received from region-connectors and their region as is, without any changes, which can be useful for debugging purposes or operating on the data provided by metered data adminsitrators itself.
+[Raw data messages](../2-integrating/messages/raw-data-messages.md) are messages that are received from region-connectors and their region as is, without any changes, which can be useful for debugging purposes or operating on the data provided by metered data administrators itself.
 
 ### `PermissionMarketDocumentOutboundConnector`
 
 The [`PermissionMarketDocumentOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/PermissionMarketDocumentOutboundConnector.html) interface provides a stream of permission market documents.
 Their purpose is similar to the connection status messages described in subsubsection [`ConnectionStatusMessageOutboundConnector`](#connectionstatusmessageoutboundconnector).
 They provide information about status changes of a certain permission request in a CIM compliant format.
-For more information see section [permission market documents](../2-integrating/topics/PERMISSION_MARKET_DOCUMENTS.md).
+For more information see section [permission market documents](../2-integrating/messages/permission-market-documents.md).
 
 ### `ValidatedHistoricalDataMarketDocumentOutboundConnector`
 
 The [`ValidatedHistoricalDataMarketDocumentOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/ValidatedHistoricalDataEnvelopeOutboundConnector.html) interface provides a stream of validated historical data market documents.
-These are CIM compliant documents containing metered data, for more information see section [validated historical data](../2-integrating/topics/VALIDATED_HISTORICAL_DATA.md).
+These are CIM compliant documents containing metered data, for more information see section [validated historical data market documents](../2-integrating/messages/validated-historical-data-market-documents.md).
 
 ### `AccountingPointEnvelopeOutboundConnector`
 
 The [`AccountingPointEnvelopeOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/AccountingPointEnvelopeOutboundConnector.html) interface provides a stream of accounting point market documents.
-The accounting point market documents are CIM compliant documents, for more information see section [accounting point market documents](../2-integrating/topics/ACCOUNTING_POINT_MARKET_DOCUMENTS.md).
+The accounting point market documents are CIM compliant documents, for more information see section [accounting point market documents](../2-integrating/messages/accounting-point-data-market-documents.md).
 
 ### `TerminationConnector`
 
 The [`TerminationConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/TerminationConnector.html) interface provides the eligible party with means to change the status of a permission request.
 If a permission request has the status accepted, the eligible party can terminate a permission request by sending a termination document, which is a permission market document.
-See subsection [termination of permission requests](../1-running/outbound-connectors/outbound-connector-kafka.md#termination-of-permission-requests) and section [permission process model](../2-integrating/PERMISSION_STATES.md) for more information.
+See subsection [termination documents](../2-integrating/messages/permission-market-documents.md#termination-documents) and the [permission process model](../2-integrating/integrating.md#permission-process-model) documentation for more information.
 This interface does not produce any documents, but receives them.
 
 ### `RetransmissionConnector`

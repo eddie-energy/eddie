@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "connectionId": {
+      "description": "ID given by the eligible party to the permission request",
+      "type": "string"
+    },
+    "permissionId": {
+      "description": "Unique ID of the permission request",
+      "$ref": "shared.json#/$defs/uuid"
+    },
+    "dataNeedId": {
+      "description": "Data need related to the permission request",
+      "$ref": "shared.json#/$defs/uuid"
+    },
+    "dataSourceInformation": {
+      "$ref": "shared.json#/$defs/dataSourceInformation"
+    },
+    "timestamp": {
+      "description": "Creation timestamp of this message",
+      "type": "string",
+      "format": "date-time"
+    },
+    "rawPayload": {
+      "description": "The original message from the MDA",
+      "type": "string"
+    }
+  },
+  "required": [
+    "permissionId",
+    "connectionId",
+    "dataNeedId",
+    "dataSourceInformation",
+    "timestamp",
+    "rawPayload"
+  ]
+}
+

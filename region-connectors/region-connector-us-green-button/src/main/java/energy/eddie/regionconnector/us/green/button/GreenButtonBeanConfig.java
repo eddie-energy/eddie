@@ -116,11 +116,13 @@ public class GreenButtonBeanConfig {
     public PermissionMarketDocumentMessageHandler<UsGreenButtonPermissionRequest> pmdHandler(
             EventBus eventBus,
             UsPermissionRequestRepository repository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,
                 repository,
+                dataNeedsService,
                 cimConfig.eligiblePartyFallbackId(),
                 cimConfig,
                 pr -> null,

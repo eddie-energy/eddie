@@ -125,7 +125,8 @@
               <th></th>
               <th>Country</th>
               <th>Region Connector</th>
-              <th>PermissionId</th>
+              <th>Data Need ID</th>
+              <th>Permission ID</th>
               <th>Start Date</th>
               <th>Status</th>
               <th>Action</th>
@@ -136,6 +137,7 @@
               <td></td>
               <td th:text="${statusMessage.country}"></td>
               <td th:text="${statusMessage.regionConnectorId}"></td>
+              <td th:text="${statusMessage.dataNeedId}"></td>
               <td th:text="${statusMessage.permissionId}"></td>
               <td
                 th:text="${#temporals.format(statusMessage.getParsedStartDate(), 'dd-MM-yyyy HH:mm:ss')}"

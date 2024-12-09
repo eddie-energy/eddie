@@ -137,10 +137,12 @@ public class DkEnerginetSpringConfig {
     public PermissionMarketDocumentMessageHandler<DkEnerginetPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
             DkPermissionRequestRepository repository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                             repository,
+                                                            dataNeedsService,
                                                             cimConfig.eligiblePartyFallbackId(),
                                                             cimConfig,
                                                             pr -> Granularity.P1D.toString(),

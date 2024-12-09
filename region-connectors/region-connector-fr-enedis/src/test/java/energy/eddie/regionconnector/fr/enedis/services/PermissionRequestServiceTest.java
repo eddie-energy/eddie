@@ -7,6 +7,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrAcceptedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrCreatedEvent;
@@ -60,6 +61,9 @@ class PermissionRequestServiceTest {
     private Outbox outbox;
     @MockBean
     private DataNeedCalculationService<DataNeed> calculationService;
+    @MockBean
+    @SuppressWarnings("unused")
+    private DataNeedsService dataNeedsService;
 
     @Test
     void testCreatePermissionRequest_createsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException {

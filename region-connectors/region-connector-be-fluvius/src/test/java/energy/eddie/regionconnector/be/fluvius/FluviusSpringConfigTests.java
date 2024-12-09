@@ -11,7 +11,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {"eddie.public.url=http://localhost:8080"})
 @Testcontainers
 class FluviusSpringConfigTests {
     @SuppressWarnings("unused")

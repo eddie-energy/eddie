@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 
 public record StatusMessageDTO(@JsonProperty String permissionId,
                                @JsonProperty String regionConnectorId,
+                               @JsonProperty String dataNeedId,
                                @JsonProperty String country,
                                @JsonProperty String dso,
                                @JsonProperty String startDate,

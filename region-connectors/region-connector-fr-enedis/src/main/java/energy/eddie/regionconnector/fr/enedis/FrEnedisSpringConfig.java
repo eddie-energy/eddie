@@ -124,12 +124,14 @@ public class FrEnedisSpringConfig {
     public PermissionMarketDocumentMessageHandler<FrEnedisPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
             FrPermissionRequestRepository repository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             EnedisConfiguration config,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,
                 repository,
+                dataNeedsService,
                 config.clientId(),
                 cimConfig,
                 pr -> null,

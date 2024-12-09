@@ -94,12 +94,14 @@ public class FluviusBeanConfig {
     public PermissionMarketDocumentMessageHandler<FluviusPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
             BePermissionRequestRepository bePermissionRequestRepository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             FluviusOAuthConfiguration fluviusOAuthConfiguration,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,
                 bePermissionRequestRepository,
+                dataNeedsService,
                 fluviusOAuthConfiguration.clientId(),
                 cimConfig,
                 pr -> null,

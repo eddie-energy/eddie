@@ -20,7 +20,6 @@ import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
@@ -37,7 +36,6 @@ import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
@@ -55,7 +53,6 @@ import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
@@ -140,24 +137,6 @@ public class MijnAansluitingBeanConfig {
     }
 
     @Bean
-    public Set<EventHandler<PermissionEvent>> integrationEventHandlers(
-            EventBus eventBus,
-            NlPermissionRequestRepository repository,
-            MijnAansluitingConfiguration config,
-            CommonInformationModelConfiguration cimConfig
-    ) {
-        return Set.of(
-                new ConnectionStatusMessageHandler<>(eventBus, repository, pr -> ""),
-                new PermissionMarketDocumentMessageHandler<>(eventBus,
-                                                             repository,
-                                                             config.continuousClientId().getValue(),
-                                                             cimConfig,
-                                                             pr -> null,
-                                                             NL_ZONE_ID)
-        );
-    }
-
-    @Bean
     public ObjectMapper objectMapper() {
         return new ObjectMapper()
                 .registerModule(new JavaTimeModule())
@@ -203,12 +182,14 @@ public class MijnAansluitingBeanConfig {
     public PermissionMarketDocumentMessageHandler<NlPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
             NlPermissionRequestRepository repository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             MijnAansluitingConfiguration config,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,
                 repository,
+                dataNeedsService,
                 config.continuousClientId().getValue(),
                 cimConfig,
                 pr -> null,

@@ -31,6 +31,10 @@ public class GenericAiidaDataNeed extends AiidaDataNeed {
     protected GenericAiidaDataNeed() {
     }
 
+    public GenericAiidaDataNeed(Set<String> dataTags) {
+        this.dataTags = dataTags;
+    }
+
     /**
      * Returns the set of identifiers for the data that should be shared by the AIIDA instance.
      */

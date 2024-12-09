@@ -24,7 +24,7 @@ Any status messages (see
 the [permission process](https://github.com/eddie-energy/eddie/wiki/EDDIE-Permission-Process-Model)) and data messages
 (in various formats as described [here](docs/1-running/OPERATION.md)) are published by the core to a Kafka cluster. Your
 website or application can then get these messages directly from the Kafka cluster (see used
-topics [here](docs/2-integrating/KAFKA.md))
+topics [here](docs/1-running/outbound-connectors/outbound-connector-kafka.md#topology).
 
 You can configure the data that is requested by creating a *Data Need* and passing its ID to the connect button.
 For possible settings, see the *Data Needs* section, and the section *"Using the EDDIE Button in an application*

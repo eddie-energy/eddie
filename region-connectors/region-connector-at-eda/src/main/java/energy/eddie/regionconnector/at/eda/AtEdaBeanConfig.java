@@ -222,11 +222,13 @@ public class AtEdaBeanConfig {
     public PermissionMarketDocumentMessageHandler<AtPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
             AtPermissionRequestRepository repository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             AtConfiguration atConfig,
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                             repository,
+                                                            dataNeedsService,
                                                             atConfig.eligiblePartyId(),
                                                             cimConfig,
                                                             pr -> TRANSMISSION_CYCLE.name(),
