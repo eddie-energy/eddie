@@ -135,9 +135,10 @@ public class OCSecurityConfig {
     }
 }
 ```
-***Important:*** The filter chains are loaded by eddie core before the context of the outbound-connector is built.
-Consequently, `Beans` that are part of the outbound-connector are ***not*** available in the security config.
-Nevertheless, you can access e.g. `@Values` that are instantiated by eddie core.
+> [!IMPORTANT]  
+> The filter chains are loaded by eddie core before the context of the outbound-connector is built.
+> Consequently, `Beans` that are part of the outbound-connector are ***not*** available in the security config.
+> Nevertheless, you can access e.g. `@Values` that are instantiated by eddie core.
 
 ## Configuration
 
