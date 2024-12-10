@@ -1,5 +1,4 @@
 packages:
   - 'core'
   - 'region-connectors/*'
-  - 'administrative-console'
   - 'docs'
