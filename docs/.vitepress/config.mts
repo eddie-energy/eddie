@@ -25,7 +25,9 @@ export default withMermaid(defineConfig({
     nav: [
       { text: "Home", link: "/" },
     ],
-
+    search: {
+      provider: "local",
+    },
     sidebar: [
       {
         text: "Running",
