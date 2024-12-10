@@ -11,6 +11,9 @@ services:
 
   aiida:
     image: ghcr.io/eddie-energy/aiida:latest
+    build:
+      dockerfile: docker/Dockerfile
+      context: ../
     depends_on:
       timescaledb:
         condition: service_started
@@ -53,6 +56,7 @@ services:
     ports:
       - "8888:8080"
     environment:
+      KC_HOSTNAME: ${KEYCLOAK_EXTERNAL_HOST}
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_HEALTH_ENABLED: true
