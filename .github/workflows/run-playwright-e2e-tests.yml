@@ -32,6 +32,7 @@ jobs:
   e2e-tests:
     name: Build and run E2E tests
     runs-on: [ self-hosted, fh-server-e2e ]
+    timeout-minutes: 15 # Shorten job timeout to account for missing timeouts in playwright tests
     steps:
       - uses: actions/checkout@v4
         with:

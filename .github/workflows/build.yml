@@ -13,6 +13,7 @@ jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-22.04
+    timeout-minutes: 25 # Builds running longer than 25 minutes should be investigated
     steps:
       - uses: actions/checkout@v4
         with:
