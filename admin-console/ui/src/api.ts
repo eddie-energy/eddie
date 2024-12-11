@@ -44,9 +44,12 @@ export async function getStatusMessages(permissionId: string): Promise<StatusMes
   return await fetch(`${PERMISSIONS_API_URL}/${permissionId}`).then((res) => res.json())
 }
 
-export async function terminatePermission(permissionId: string): Promise<Response> {
-  // TODO: Attach CSRF tokens
-  return await fetch(`${TERMINATION_API_URL}/${permissionId}`, { method: 'POST' })
+export async function terminatePermission(permissionId: string) {
+  const response = await fetch(`${TERMINATION_API_URL}/${permissionId}`, { method: 'POST' })
+
+  if (!response.ok) {
+    throw new Error('Failed to terminate permission')
+  }
 }
 
 export async function getDataNeeds(): Promise<DataNeed[]> {

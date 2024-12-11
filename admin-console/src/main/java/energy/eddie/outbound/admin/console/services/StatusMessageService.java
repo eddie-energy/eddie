@@ -1,10 +1,10 @@
 package energy.eddie.outbound.admin.console.services;
 
-import energy.eddie.outbound.admin.console.data.StatusMessage;
-import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionMarketDocumentComplexType;
+import energy.eddie.outbound.admin.console.data.StatusMessage;
+import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,6 +43,7 @@ public class StatusMessageService implements PermissionMarketDocumentOutboundCon
     }
 
     private StatusMessage createStatusMessage(PermissionMarketDocumentComplexType message) {
+        // TODO: GH-638 Unknown is actually AIIDA, which does not have a schema
         String country;
         if (message.getReceiverMarketParticipantMRID().getCodingScheme() == null) {
             country = "Unknown";

@@ -1,8 +1,19 @@
 <script lang="ts" setup>
-import { getPermissions, getStatusMessages, terminatePermission } from '@/api'
-import DataTable from 'datatables.net-vue3'
-import DataTablesCore, { type Api, type ConfigColumns } from 'datatables.net-dt'
-import { onMounted, ref } from 'vue'
+import { getPermissions, getStatusMessages, type StatusMessage, terminatePermission } from '@/api'
+import {
+  Button,
+  Column,
+  DataTable,
+  type DataTableFilterMeta,
+  type DataTableRowExpandEvent,
+  IconField,
+  InputIcon,
+  InputText,
+  Tag,
+  useConfirm,
+  useToast
+} from 'primevue'
+import { ref } from 'vue'
 
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 // TODO: Pass ability to terminate in DTO
@@ -27,114 +38,182 @@ const NON_TERMINABLE_STATUSES = [
 
 const permissions = await getPermissions()
 
-DataTable.use(DataTablesCore)
+const filters = ref<DataTableFilterMeta>({ global: { value: null, matchMode: 'contains' } })
+const expandedRows = ref({})
+const rowExpansions = ref<{ [key: string]: StatusMessage[] }>({})
 
-const columns: ConfigColumns[] = [
-  {
-    render: '#toggle',
-    orderable: false
-  },
-  {
-    data: 'country',
-    title: 'Country',
-    render: (data) => {
-      try {
-        return COUNTRY_NAMES.of(data)
-      } catch (error) {
-        return data
-      }
-    }
-  },
-  { data: 'regionConnectorId', title: 'Region Connector' },
-  { data: 'dataNeedId', title: 'Data Need' },
-  { data: 'permissionId', title: 'Permission' },
-  {
-    data: 'startDate',
-    title: 'Created',
-    render: (data) =>
-      new Intl.DateTimeFormat('en-GB', {
-        dateStyle: 'short',
-        timeStyle: 'medium'
-      }).format(new Date(data))
-  },
-  { data: 'status', title: 'Status' },
-  {
-    title: 'Actions',
-    render: '#terminate',
-    orderable: false
-  }
-]
+function formatDate(date: string) {
+  return new Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'short',
+    timeStyle: 'medium'
+  }).format(new Date(date))
+}
 
-let dt: Api
-const table = ref()
-
-onMounted(() => {
-  dt = table.value.dt
-})
-
-async function handleRowExpand(event: Event) {
-  const tr = (event.target as HTMLElement).closest('tr') as Node
-  const row = dt.row(tr)
-
-  if (row.child.isShown()) {
-    row.child.hide()
-  } else {
-    const child = await renderRowChild(row.data().permissionId)
-    row.child(child).show()
+function formatCountry(country: string) {
+  try {
+    return COUNTRY_NAMES.of(country)
+  } catch {
+    return country
   }
 }
 
-async function renderRowChild(permissionId: string) {
-  const statusMessages = await getStatusMessages(permissionId)
-
-  let html = `<ul>`
-  statusMessages.forEach(({ startDate, status }) => {
-    html += `
-      <li>
-        <span>${status}</span>
-        <span>${startDate}</span>
-      </li>
-    `
-  })
-  html += `</ul>`
-
-  return html
+function countryFlag(countryCode: string) {
+  // check if result is in right range
+  if (countryCode.length !== 2) {
+    return ''
+  }
+  return [...countryCode]
+    .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
+    .reduce((a, b) => `${a}${b}`)
 }
+
+function getStatusSeverity(status: string) {
+  switch (status) {
+    case 'ACCEPTED':
+      return 'success'
+    case 'MALFORMED':
+    case 'UNABLE_TO_SEND':
+    case 'INVALID':
+    case 'UNFULFILLABLE':
+      return 'danger'
+    default:
+      return 'secondary'
+  }
+}
+
+async function onRowExpand(event: DataTableRowExpandEvent) {
+  const id = event.data.permissionId
+  rowExpansions.value[id] ||= await getStatusMessages(id)
+}
+
+const confirm = useConfirm()
+const toast = useToast()
 
 function confirmTermination(permissionId: string) {
-  if (window.confirm(`Are you sure you want to terminate the permission ${permissionId}?`)) {
-    terminatePermission(permissionId).catch((error) => {
-      console.error(error)
-      alert('Failed to terminate permission.')
-    })
-  }
+  confirm.require({
+    message: 'Are you sure you want to terminate this permission?',
+    header: 'Danger Zone',
+    icon: 'pi pi-exclamation-triangle',
+    rejectProps: {
+      label: 'Cancel',
+      severity: 'secondary',
+      outlined: true
+    },
+    acceptProps: {
+      label: 'Delete',
+      severity: 'danger'
+    },
+    accept: () => {
+      terminatePermission(permissionId)
+        .then(() => {
+          toast.add({
+            severity: 'success',
+            summary: 'Permission terminated',
+            detail: `Permission with ID ${permissionId} has been terminated.`,
+            life: 3000
+          })
+        })
+        .catch(() => {
+          toast.add({
+            severity: 'error',
+            summary: 'Failed to terminate permission',
+            detail: `Failed to terminate permission with ID ${permissionId}.`,
+            life: 3000
+          })
+        })
+    }
+  })
 }
 </script>
 
 <template>
-  <DataTable ref="table" :columns="columns" :data="permissions" class="display dark">
-    <template #toggle>
-      <button class="dt-control" @click="handleRowExpand">
-        <svg
-          class="w-4 h-4 stroke-current"
-          fill="currentColor"
-          height="16"
-          viewBox="0 0 24 24"
-          width="16"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path>
-        </svg>
-      </button>
+  <DataTable
+    :value="permissions"
+    data-key="permissionId"
+    v-model:expanded-rows="expandedRows"
+    @row-expand="onRowExpand"
+    paginator
+    :rows="10"
+    :rows-per-page-options="[10, 20, 50, 100]"
+    v-model:filters="filters"
+    :global-filter-fields="[
+      'country',
+      'regionConnectorId',
+      'dataNeedId',
+      'permissionId',
+      'startDate',
+      'status'
+    ]"
+    removable-sort
+    scrollable
+  >
+    <template #header>
+      <IconField>
+        <InputIcon>
+          <i class="pi pi-search" />
+        </InputIcon>
+        <InputText v-model="filters.global.value" placeholder="Keyword Search" />
+      </IconField>
     </template>
 
-    <template #terminate="{ rowData }">
-      <button
-        v-if="!NON_TERMINABLE_STATUSES.includes(rowData.status)"
-        @click="confirmTermination(rowData.permissionId)"
-      >
-        Terminate
-      </button>
+    <Column expander />
+    <Column field="country" header="Country" sortable>
+      <template #body="slotProps">
+        <div>
+          {{ countryFlag(slotProps.data.country) }}
+          {{ formatCountry(slotProps.data.country) }}
+        </div>
+      </template>
+    </Column>
+    <Column field="regionConnectorId" header="Region Connector" sortable />
+    <Column field="dataNeedId" header="Data Need" sortable />
+    <Column field="permissionId" header="Permission" sortable />
+    <Column field="startDate" header="Last updated" sortable>
+      <template #body="slotProps">
+        {{ formatDate(slotProps.data.startDate) }}
+      </template>
+    </Column>
+    <Column field="status" header="Status" sortable>
+      <template #body="slotProps">
+        <Tag :value="slotProps.data.status" :severity="getStatusSeverity(slotProps.data.status)" />
+      </template>
+    </Column>
+    <Column header="Actions">
+      <template #body="slotProps">
+        <Button
+          v-if="!NON_TERMINABLE_STATUSES.includes(slotProps.data.status)"
+          label="Terminate"
+          severity="danger"
+          size="small"
+          outlined
+          @click="confirmTermination(slotProps.data.permissionId)"
+        />
+      </template>
+    </Column>
+
+    <template #expansion="slotProps">
+      <ul>
+        <template v-for="row in rowExpansions[slotProps.data.permissionId]">
+          <li>
+            <Tag :value="row.status" :severity="getStatusSeverity(row.status)" />
+            <span>{{ formatDate(row.startDate) }}</span>
+          </li>
+        </template>
+      </ul>
     </template>
   </DataTable>
 </template>
+
+<style>
+ul {
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+</style>
