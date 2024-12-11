@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import SidebarNavigation from '@/components/SidebarNavigation.vue'
+import { ConfirmDialog, Toast } from 'primevue'
 </script>
 
 <template>
+  <Toast></Toast>
+  <ConfirmDialog></ConfirmDialog>
+
   <div class="wrapper">
     <SidebarNavigation />
 
