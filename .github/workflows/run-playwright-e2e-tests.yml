@@ -5,6 +5,12 @@ on:
       - opened
       - reopened
       - synchronize
+    paths-ignore:
+      - "admin-console/**"
+      - "aiida/**"
+      - "docs/**"
+      - "env/**"
+      - "outbound-connectors/**"
   push:
     branches:
       - main
