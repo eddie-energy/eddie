@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.dk.energinet.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -18,15 +17,14 @@ import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalGra
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkUnfulfillableEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.ApiCredentials;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.services.CommonPollingService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.validation.GranularityChoice;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
@@ -43,9 +41,9 @@ import java.util.UUID;
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 
 @Service
-public class PollingService implements AutoCloseable {
+public class PollingService implements AutoCloseable, CommonPollingService<DkEnerginetPermissionRequest> {
     public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
-                                                                   .filter(error -> error instanceof WebClientResponseException.TooManyRequests || error instanceof WebClientResponseException.ServiceUnavailable);
+            .filter(error -> error instanceof WebClientResponseException.TooManyRequests || error instanceof WebClientResponseException.ServiceUnavailable);
     public static final int REQUESTED_AGGREGATION_UNAVAILABLE = 30008; // from Eloverblik API documentation
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     public final IdentifiableApiResponseFilter identifiableApiResponseFilter = new IdentifiableApiResponseFilter();
@@ -53,7 +51,6 @@ public class PollingService implements AutoCloseable {
     private final EnerginetCustomerApi energinetCustomerApi;
     private final Flux<IdentifiableApiResponse> apiResponseFlux;
     private final Sinks.Many<IdentifiableApiResponse> sink = Sinks.many().multicast().onBackpressureBuffer();
-    private final DkPermissionRequestRepository repository;
     private final MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService;
     private final Outbox outbox;
     private final ObjectMapper objectMapper;
@@ -63,7 +60,6 @@ public class PollingService implements AutoCloseable {
 
     public PollingService(
             EnerginetCustomerApi energinetCustomerApi,
-            DkPermissionRequestRepository repository,
             MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService,
             Outbox outbox,
             ObjectMapper objectMapper,
@@ -72,35 +68,15 @@ public class PollingService implements AutoCloseable {
             ApiExceptionService apiExceptionService
     ) {
         this.energinetCustomerApi = energinetCustomerApi;
-        this.repository = repository;
         this.meterReadingPermissionUpdateAndFulfillmentService = meterReadingPermissionUpdateAndFulfillmentService;
         this.objectMapper = objectMapper;
         this.dataNeedsService = dataNeedsService;
         this.apiExceptionService = apiExceptionService;
         apiResponseFlux = sink.asFlux()
-                              .share();
+                .share();
         this.outbox = outbox;
     }
-
-    /**
-     * Fetches future meter readings for all accepted active permission requests.
-     */
-    @SuppressWarnings("java:S6857") // Sonar thinks this is malformed, but it's not
-    @Scheduled(cron = "${region-connector.dk.energinet.polling:0 0 17 * * *}", zone = "Europe/Copenhagen")
-    public void fetchFutureMeterReadings() {
-        var acceptedPermissionRequests = repository.findAllByStatus(PermissionProcessStatus.ACCEPTED);
-        LOGGER.info("Trying to fetch meter readings for {} permission requests", acceptedPermissionRequests.size());
-        var today = LocalDate.now(DK_ZONE_ID);
-
-        for (var acceptedPermissionRequest : acceptedPermissionRequests) {
-            if (isActiveAndNeedsToBePolled(acceptedPermissionRequest, today)) {
-                fetch(acceptedPermissionRequest, today);
-            } else {
-                var permissionId = acceptedPermissionRequest.permissionId();
-                LOGGER.info("Permission request {} is not active or data is already up to date", permissionId);
-            }
-        }
-    }
+    
 
     private boolean isActiveAndNeedsToBePolled(
             DkEnerginetPermissionRequest permissionRequest,
@@ -112,9 +88,9 @@ public class PollingService implements AutoCloseable {
         }
         var permissionStart = permissionRequest.start();
         return permissionStart.isBefore(today)
-               && permissionRequest.latestMeterReadingEndDate()
-                                   .map(lastPolled -> lastPolled.isBefore(today) || lastPolled.isEqual(today))
-                                   .orElse(true);
+                && permissionRequest.latestMeterReadingEndDate()
+                .map(lastPolled -> lastPolled.isBefore(today) || lastPolled.isEqual(today))
+                .orElse(true);
     }
 
     private void fetch(DkEnerginetPermissionRequest permissionRequest, LocalDate today) {
@@ -126,48 +102,48 @@ public class PollingService implements AutoCloseable {
 
         var dateFrom = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
         var dateTo = Optional.of(permissionRequest.end())
-                             .filter(d -> d.isBefore(today))
-                             // The Energinet API is inclusive on the start date and exclusive on the end date,
-                             // so we need to add one day if the end date is before today
-                             .map(d -> d.plusDays(1))
-                             .orElse(today);
+                .filter(d -> d.isBefore(today))
+                // The Energinet API is inclusive on the start date and exclusive on the end date,
+                // so we need to add one day if the end date is before today
+                .map(d -> d.plusDays(1))
+                .orElse(today);
         var permissionId = permissionRequest.permissionId();
 
         LOGGER.info("Fetching metering data from Energinet for permission request {} from {} to {}",
-                    permissionId,
-                    dateFrom,
-                    dateTo);
+                permissionId,
+                dateFrom,
+                dateTo);
         new ApiCredentials(
                 energinetCustomerApi,
                 permissionRequest.refreshToken(),
                 permissionRequest.accessToken(),
                 objectMapper
         ).accessToken()
-         .flatMap(token -> tokenAndGranularity(permissionRequest, token, meteringPointsRequest))
-         .flatMap(pair -> energinetCustomerApi.getTimeSeries(
-                 dateFrom,
-                 dateTo,
-                 pair.granularity,
-                 meteringPointsRequest,
-                 pair.token,
-                 UUID.fromString(permissionId)
-         ))
-         .retryWhen(RETRY_BACKOFF_SPEC)
-         .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)
-         .flatMap(myEnergyDataMarketDocumentResponses -> identifiableApiResponseFilter.filter(
-                 permissionRequest,
-                 dateFrom,
-                 dateTo,
-                 myEnergyDataMarketDocumentResponses))
-         .doOnError(error -> apiExceptionService.handleError(permissionRequest.permissionId(), error))
-         .onErrorComplete()
-         .subscribe(identifiableApiResponse -> handleIdentifiableApiResponse(
-                 permissionRequest,
-                 identifiableApiResponse,
-                 permissionId,
-                 dateFrom,
-                 dateTo
-         ));
+                .flatMap(token -> tokenAndGranularity(permissionRequest, token, meteringPointsRequest))
+                .flatMap(pair -> energinetCustomerApi.getTimeSeries(
+                        dateFrom,
+                        dateTo,
+                        pair.granularity,
+                        meteringPointsRequest,
+                        pair.token,
+                        UUID.fromString(permissionId)
+                ))
+                .retryWhen(RETRY_BACKOFF_SPEC)
+                .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)
+                .flatMap(myEnergyDataMarketDocumentResponses -> identifiableApiResponseFilter.filter(
+                        permissionRequest,
+                        dateFrom,
+                        dateTo,
+                        myEnergyDataMarketDocumentResponses))
+                .doOnError(error -> apiExceptionService.handleError(permissionRequest.permissionId(), error))
+                .onErrorComplete()
+                .subscribe(identifiableApiResponse -> handleIdentifiableApiResponse(
+                        permissionRequest,
+                        identifiableApiResponse,
+                        permissionId,
+                        dateFrom,
+                        dateTo
+                ));
     }
 
     /**
@@ -193,15 +169,15 @@ public class PollingService implements AutoCloseable {
             LocalDate dateTo
     ) {
         LOGGER.info("Fetched metering data from Energinet for permission request {} from {} to {}",
-                    permissionId,
-                    dateFrom,
-                    dateTo);
+                permissionId,
+                dateFrom,
+                dateTo);
         meterReadingPermissionUpdateAndFulfillmentService.tryUpdateAndFulfillPermissionRequest(
                 permissionRequest,
                 identifiableApiResponse
         );
         sink.emitNext(identifiableApiResponse,
-                      Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
+                Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
     }
 
     private Mono<TokenGranularityPair> fetchMeteringPointGranularity(
@@ -214,8 +190,8 @@ public class PollingService implements AutoCloseable {
                 .flatMap(response -> meteringDetailsApiResponseFilter
                         .filter(permissionRequest.meteringPoint(), response))
                 .flatMap(meteringPointDetailsCustomerDto -> handleMeteringPointDetails(permissionRequest,
-                                                                                       token,
-                                                                                       meteringPointDetailsCustomerDto));
+                        token,
+                        meteringPointDetailsCustomerDto));
     }
 
     private Mono<TokenGranularityPair> handleMeteringPointDetails(
@@ -231,8 +207,8 @@ public class PollingService implements AutoCloseable {
 
         if (granularity.isEmpty()) {
             LOGGER.atWarn()
-                  .addArgument(permissionRequest::permissionId)
-                  .log("The metering point for permission request {} can not provide the data with the requested granularity.");
+                    .addArgument(permissionRequest::permissionId)
+                    .log("The metering point for permission request {} can not provide the data with the requested granularity.");
             String reason = "Metering point provides data with " + resolution + " granularity which is not between the min and max granularity of the data need";
             outbox.commit(new DkUnfulfillableEvent(permissionRequest.permissionId(), reason));
             return Mono.empty();
@@ -266,8 +242,8 @@ public class PollingService implements AutoCloseable {
                 // regardless of the resolution, these granularities are always available
                 case P1D, P1Y, P1M -> vhdDataNeed.minGranularity();
                 default -> GranularityChoice.isBetween(granularity,
-                                                       vhdDataNeed.minGranularity(),
-                                                       vhdDataNeed.maxGranularity())
+                        vhdDataNeed.minGranularity(),
+                        vhdDataNeed.maxGranularity())
                         ? granularity : null;
             };
         }
@@ -295,6 +271,18 @@ public class PollingService implements AutoCloseable {
     @Override
     public void close() {
         sink.tryEmitComplete();
+    }
+
+    @Override
+    public void pollTimeSeriesData(DkEnerginetPermissionRequest activePermission) {
+        var today = LocalDate.now(DK_ZONE_ID);
+        fetch(activePermission, today);
+    }
+
+    @Override
+    public boolean isActiveAndNeedsToBeFetched(DkEnerginetPermissionRequest permissionRequest) {
+        var today = LocalDate.now(DK_ZONE_ID);
+        return isActiveAndNeedsToBePolled(permissionRequest, today);
     }
 
     private record TokenGranularityPair(String token, Granularity granularity) {

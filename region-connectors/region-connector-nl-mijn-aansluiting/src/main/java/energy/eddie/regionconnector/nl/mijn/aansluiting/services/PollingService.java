@@ -92,6 +92,13 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
                 .subscribe(this::consume);
     }
 
+    @Override
+    public boolean isActiveAndNeedsToBeFetched(NlPermissionRequest permissionRequest) {
+        var dataNeedId = permissionRequest.dataNeedId();
+        var dataNeed = dataNeedsService.getById(dataNeedId);
+        return dataNeed instanceof ValidatedHistoricalDataDataNeed;
+    }
+
     public Flux<IdentifiableMeteredData> identifiableMeteredDataFlux() {
         return identifiableMeteredDataSink.asFlux();
     }

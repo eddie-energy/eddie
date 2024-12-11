@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnector;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
+import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -30,20 +32,23 @@ class FutureDataServiceTest {
 
     private final LocalDate today = LocalDate.now(ZONE_ID_SPAIN);
     private final LocalDate yesterday = today.minusDays(1);
-    private final String timeZone= "Europe/Madrid";
+    @Mock
+    private DataApi dataApi;
     @Mock
     private EsPermissionRequestRepository repository;
-    @Mock
-    private DataApiService<EsPermissionRequest> dataApiService;
+    @InjectMocks
+    private DataApiService dataApiService;
     @Mock
     DatadisRegionConnectorMetadata metadata; //this is needed to mock the region connector correctly
     @InjectMocks
     DatadisRegionConnector regionConnector;
     CommonFutureDataService<EsPermissionRequest> futureDataService;
+    private DataApiService dataApiServiceSpy;
 
     @BeforeEach
     void setUp() {
-        futureDataService = new CommonFutureDataService<>(null, repository, null, dataApiService, timeZone, "0 0 17 * * *", regionConnector);
+        dataApiServiceSpy = spy(dataApiService);
+        futureDataService = new CommonFutureDataService<>(dataApiServiceSpy, repository, "0 0 17 * * *", regionConnector);
 
     }
 
@@ -57,14 +62,14 @@ class FutureDataServiceTest {
         when(repository.findByStatus(PermissionProcessStatus.ACCEPTED)).thenReturn(List.of(activePermissionRequest1,
                 activePermissionRequest2,
                 inactivePermissionRequest));
-
+        when(dataApi.getConsumptionKwh(any())).thenReturn(Mono.empty());
 
         // When
         futureDataService.fetchMeterData();
 
         // Then
-        verify(dataApiService).pollTimeSeriesData(activePermissionRequest1, timeZone);
-        verify(dataApiService).pollTimeSeriesData(activePermissionRequest2, timeZone);
+        verify(dataApiServiceSpy).pollTimeSeriesData(activePermissionRequest1);
+        verify(dataApiServiceSpy).pollTimeSeriesData(activePermissionRequest2);
     }
 
     private static EsPermissionRequest acceptedPermissionRequest(
@@ -99,15 +104,16 @@ class FutureDataServiceTest {
 
         when(repository.findByStatus(PermissionProcessStatus.ACCEPTED))
                 .thenReturn(List.of(activePermissionRequest));
-
+        when(dataApi.getConsumptionKwh(any())).thenReturn(Mono.empty());
 
         // When
         futureDataService.fetchMeterData();
 
         // Then
-        verify(dataApiService).pollTimeSeriesData(activePermissionRequest,
-                timeZone);
-        verifyNoMoreInteractions(dataApiService);
+        verify(dataApiServiceSpy).isActiveAndNeedsToBeFetched(activePermissionRequest);
+        verify(dataApiServiceSpy).pollTimeSeriesData(activePermissionRequest);
+        verify(dataApiServiceSpy).fetchDataForPermissionRequest(activePermissionRequest, lastPulledMeterReading, yesterday);
+        verifyNoMoreInteractions(dataApiServiceSpy);
     }
 
     @Test
@@ -118,12 +124,15 @@ class FutureDataServiceTest {
                 yesterday);
 
         when(repository.findByStatus(PermissionProcessStatus.ACCEPTED)).thenReturn(List.of(activePermissionRequest));
+        when(dataApi.getConsumptionKwh(any())).thenReturn(Mono.empty());
 
         // When
         futureDataService.fetchMeterData();
 
         // Then
-        verify(dataApiService).pollTimeSeriesData(activePermissionRequest, timeZone);
-        verifyNoMoreInteractions(dataApiService);
+        verify(dataApiServiceSpy).isActiveAndNeedsToBeFetched(activePermissionRequest);
+        verify(dataApiServiceSpy).pollTimeSeriesData(activePermissionRequest);
+        verify(dataApiServiceSpy).fetchDataForPermissionRequest(activePermissionRequest, yesterday, yesterday);
+        verifyNoMoreInteractions(dataApiServiceSpy);
     }
 }

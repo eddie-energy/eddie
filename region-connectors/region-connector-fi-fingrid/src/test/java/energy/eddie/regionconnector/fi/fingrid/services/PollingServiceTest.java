@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.fi.fingrid.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.client.FingridApiClient;
 import energy.eddie.regionconnector.fi.fingrid.client.TimeSeriesResponse;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
@@ -31,6 +32,8 @@ class PollingServiceTest {
     private FingridApiClient api;
     @Mock
     private UpdateGranularityService updateGranularityService;
+    @Mock
+    private DataNeedsService dataNeedsService; //this is needed to mock the PollingService
     @InjectMocks
     private PollingService pollingService;
 

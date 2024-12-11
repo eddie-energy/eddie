@@ -60,7 +60,6 @@ class DataApiServiceTest {
     @Captor
     private ArgumentCaptor<PermissionEvent> eventCaptor;
     private MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService;
-    private final String timeZone = "Europe/Madrid";
 
     @BeforeEach
     @SuppressWarnings("DirectInvocationOnMock")
@@ -86,13 +85,13 @@ class DataApiServiceTest {
 
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
 
-        var dataApiService = new DataApiService<>(dataApi,
+        var dataApiService = new DataApiService(dataApi,
                 meteringDataSink,
                 meterReadingPermissionUpdateAndFulfillmentService,
                 outbox);
 
         // When
-        dataApiService.pollTimeSeriesData(permissionRequest, timeZone);
+        dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
 
         // Then
         verify(dataApi).getConsumptionKwh(expectedMeteringDataRequest);
@@ -118,13 +117,13 @@ class DataApiServiceTest {
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
         when(dataApi.getConsumptionKwh(expectedMeteringDataRequest)).thenReturn(Mono.just(meteringData));
 
-        var dataApiService = new DataApiService<>(dataApi,
+        var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
                                                 meterReadingPermissionUpdateAndFulfillmentService,
                                                 outbox);
 
         // When
-        dataApiService.pollTimeSeriesData(permissionRequest, timeZone);
+        dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
 
         // Then
         StepVerifier.create(meteringDataSink.asFlux())
@@ -151,13 +150,13 @@ class DataApiServiceTest {
                                                                                     end);
         when(dataApi.getConsumptionKwh(expectedMeteringDataRequest)).thenReturn(Mono.just(meteringData));
 
-        var dataApiService = new DataApiService<>(dataApi,
+        var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
                                                 meterReadingPermissionUpdateAndFulfillmentService,
                                                 outbox);
 
         // When
-        dataApiService.pollTimeSeriesData(permissionRequest, timeZone);
+        dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
 
         // Then
         StepVerifier.create(meteringDataSink.asFlux())
@@ -187,13 +186,13 @@ class DataApiServiceTest {
         when(dataApi.getConsumptionKwh(expectedMeteringDataRequest)).thenReturn(Mono.just(meteringData));
 
         Sinks.Many<IdentifiableMeteringData> sink = Sinks.many().multicast().onBackpressureBuffer();
-        var dataApiService = new DataApiService<>(dataApi,
+        var dataApiService = new DataApiService(dataApi,
                                                 sink,
                                                 meterReadingPermissionUpdateAndFulfillmentService,
                                                 outbox);
 
         // When
-        dataApiService.pollTimeSeriesData(permissionRequest, timeZone);
+        dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
 
         // Then
         StepVerifier.create(sink.asFlux())
@@ -216,13 +215,13 @@ class DataApiServiceTest {
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
 
-        var dataApiService = new DataApiService<>(dataApi,
+        var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
                                                 meterReadingPermissionUpdateAndFulfillmentService,
                                                 outbox);
 
         // When
-        dataApiService.pollTimeSeriesData(permissionRequest, timeZone);
+        dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
 
         // Then
         verify(dataApi).getConsumptionKwh(expectedMeteringDataRequest);
@@ -246,13 +245,13 @@ class DataApiServiceTest {
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
 
-        var dataApiService = new DataApiService<>(dataApi,
+        var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
                                                 meterReadingPermissionUpdateAndFulfillmentService,
                                                 outbox);
 
         // When
-        dataApiService.pollTimeSeriesData(permissionRequest, timeZone);
+        dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
 
         // Then
         verify(dataApi).getConsumptionKwh(expectedMeteringDataRequest);
@@ -281,14 +280,14 @@ class DataApiServiceTest {
         ArgumentCaptor<MeteringDataRequest> captor = ArgumentCaptor.forClass(MeteringDataRequest.class);
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
 
-        var dataApiService = new DataApiService<>(dataApi,
+        var dataApiService = new DataApiService(dataApi,
                                                 meteringDataSink,
                                                 meterReadingPermissionUpdateAndFulfillmentService,
                                                 outbox);
         var now = LocalDate.now(ZONE_ID_SPAIN);
         var expectedNrOfRetries = ChronoUnit.MONTHS.between(now.minusMonths(MAXIMUM_MONTHS_IN_THE_PAST), start);
         // When
-        dataApiService.pollTimeSeriesData(permissionRequest, timeZone);
+        dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
 
         // Then
         verify(dataApi,

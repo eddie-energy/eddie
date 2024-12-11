@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.persistence;
 
-import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.agnostic.process.model.persistence.FullPermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
@@ -12,12 +11,12 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface NlPermissionRequestRepository<T extends MeterReadingPermissionRequest> extends
+public interface NlPermissionRequestRepository extends
         JpaRepository<MijnAansluitingPermissionRequest, String>,
-        FullPermissionRequestRepository<T> {
+        FullPermissionRequestRepository<NlPermissionRequest> {
     Optional<NlPermissionRequest> findByStateAndPermissionId(String state, String permissionId);
 
-    List<T> findByStatus(PermissionProcessStatus status);
+    List<NlPermissionRequest> findByStatus(PermissionProcessStatus status);
 
     boolean existsByPermissionIdAndStatus(String permissionId, PermissionProcessStatus status);
 
@@ -27,5 +26,5 @@ public interface NlPermissionRequestRepository<T extends MeterReadingPermissionR
             nativeQuery = true
     )
     @Override
-    List<T> findStalePermissionRequests(@Param("hours") int timeoutDuration);
+    List<NlPermissionRequest> findStalePermissionRequests(@Param("hours") int timeoutDuration);
 }

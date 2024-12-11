@@ -31,7 +31,7 @@ import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetada
 public class PollingService implements AutoCloseable, CommonPollingService<FrEnedisPermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
-                                                                   .filter(PollingService::isRetryable);
+            .filter(PollingService::isRetryable);
     private final EnedisMeterReadingApi enedisApi;
     private final Sinks.Many<IdentifiableMeterReading> meterReadings;
     private final MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService;
@@ -64,7 +64,7 @@ public class PollingService implements AutoCloseable, CommonPollingService<FrEne
     ) {
         String permissionId = permissionRequest.permissionId();
         LOGGER.info("Preparing to fetch data from ENEDIS for permission request '{}' from '{}' to '{}' (inclusive)",
-                    permissionId, permissionRequest.start(), end);
+                permissionId, permissionRequest.start(), end);
 
         // If the granularity is PT30M, we need to fetch the data in batches
         switch (permissionRequest.granularity()) {
@@ -73,17 +73,17 @@ public class PollingService implements AutoCloseable, CommonPollingService<FrEne
                             "Finished fetching half hourly data from ENEDIS for permission request '{}'",
                             permissionId))
                     .subscribe(identifiableMeterReading -> handleIdentifiableMeterReading(
-                                       PT30M,
-                            permissionRequest,
-                                       identifiableMeterReading
-                               )
+                                    PT30M,
+                                    permissionRequest,
+                                    identifiableMeterReading
+                            )
                     );
             case P1D -> fetchData(permissionRequest, start, end)
                     .subscribe(identifiableMeterReading -> handleIdentifiableMeterReading(
-                                       P1D,
-                            permissionRequest,
-                                       identifiableMeterReading
-                               )
+                                    P1D,
+                                    permissionRequest,
+                                    identifiableMeterReading
+                            )
                     );
             default -> throw new IllegalStateException("Unsupported granularity: " + permissionRequest.granularity());
         }
@@ -95,16 +95,16 @@ public class PollingService implements AutoCloseable, CommonPollingService<FrEne
             IdentifiableMeterReading identifiableMeterReading
     ) {
         LOGGER.atInfo()
-              .addArgument(granularity)
-              .addArgument(permissionRequest::permissionId)
-              .log("Fetched data with {} granularity from ENEDIS for permission request '{}'");
+                .addArgument(granularity)
+                .addArgument(permissionRequest::permissionId)
+                .log("Fetched data with {} granularity from ENEDIS for permission request '{}'");
 
         meterReadingPermissionUpdateAndFulfillmentService.tryUpdateAndFulfillPermissionRequest(
                 permissionRequest,
                 identifiableMeterReading
         );
         meterReadings.emitNext(identifiableMeterReading,
-                               Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
+                Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
     }
 
     private Flux<IdentifiableMeterReading> fetchData(
@@ -154,7 +154,7 @@ public class PollingService implements AutoCloseable, CommonPollingService<FrEne
 
     private void handleError(String permissionId, LocalDate start, LocalDate end, Throwable e) {
         LOGGER.error("Error while fetching data from ENEDIS for permissionId '{}' from '{}' to '{}'",
-                     permissionId, start, end, e);
+                permissionId, start, end, e);
         if (e instanceof WebClientResponseException.Forbidden) {
             LOGGER.warn("Revoking permission request for permissionId '{}'", permissionId);
             outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.REVOKED));
@@ -181,8 +181,8 @@ public class PollingService implements AutoCloseable, CommonPollingService<FrEne
         // the api allows for a maximum of 7 days per request, so we need to split the request into multiple batches
         long daysBetween = ChronoUnit.DAYS.between(start, end);
         return Flux.range(0, (int) Math.ceil(daysBetween / 7.0))
-                   .map(start::plusWeeks)
-                   .takeWhile(batchStart -> !batchStart.isAfter(end)); // Ensure not to exceed the end date
+                .map(start::plusWeeks)
+                .takeWhile(batchStart -> !batchStart.isAfter(end)); // Ensure not to exceed the end date
     }
 
     @Override
@@ -196,13 +196,12 @@ public class PollingService implements AutoCloseable, CommonPollingService<FrEne
         LocalDate permissionEnd = permissionRequest.end();
         LocalDate now = LocalDate.now(ZONE_ID_FR);
         var end = now.isAfter(permissionEnd) ? permissionEnd.plusDays(1) : now;
-        if(isActiveAndNeedsToBeFetched(permissionRequest, now)) {
-            fetchMeterReadings(permissionRequest, permissionStart, end);
-        }
+        fetchMeterReadings(permissionRequest, permissionStart, end);
     }
 
-    private boolean isActiveAndNeedsToBeFetched(FrEnedisPermissionRequest permissionRequest, LocalDate today) {
-        return permissionRequest.start().isBefore(today)
-                && permissionRequest.latestMeterReadingEndDate().map(latest -> latest.isBefore(today)).orElse(true);
+    @Override
+    public boolean isActiveAndNeedsToBeFetched(FrEnedisPermissionRequest permissionRequest) {
+        LocalDate now = LocalDate.now(ZONE_ID_FR);
+        return permissionRequest.start().isBefore(now) && permissionRequest.latestMeterReadingEndDate().map(latest -> latest.isBefore(now)).orElse(true);
     }
 }

@@ -13,7 +13,6 @@ import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalGra
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalPollingEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
@@ -58,8 +57,6 @@ class PollingServiceTest {
     @Mock
     private EnerginetCustomerApi customerApi;
     @Mock
-    private DkPermissionRequestRepository repository;
-    @Mock
     private Outbox outbox;
     @Mock
     private DataNeedsService dataNeedsService;
@@ -87,7 +84,6 @@ class PollingServiceTest {
     void setUp() {
         pollingService = new PollingService(
                 customerApi,
-                repository,
                 new MeterReadingPermissionUpdateAndFulfillmentService(
                         new FulfillmentService(outbox, DkSimpleEvent::new),
                         (reading, end) -> outbox.commit(new DkInternalPollingEvent(reading.permissionId(), end))
@@ -499,14 +495,20 @@ class PollingServiceTest {
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
 
-        when(repository.findAllByStatus(PermissionProcessStatus.ACCEPTED))
-                .thenReturn(List.of(permissionRequest1, permissionRequest2));
         when(dataNeedsService.findById(dataNeedId))
                 .thenReturn(Optional.of(dataNeed));
+        var activePermissions = List.of(permissionRequest1, permissionRequest2);
 
-        // Then
+                // Then
         StepVerifier.create(pollingService.identifiableMeterReadings())
-                    .then(() -> pollingService.fetchFutureMeterReadings())
+                    .then(() ->
+                            {
+                                for (var activePermission : activePermissions) {
+                                    if (pollingService.isActiveAndNeedsToBeFetched(activePermission)) {
+                                        pollingService.pollTimeSeriesData(activePermission);
+                                    }
+                                }
+                            })
                     .then(pollingService::close)
                     .assertNext(mr -> assertAll(
                             () -> assertEquals(permissionRequest1.permissionId(),
@@ -547,13 +549,16 @@ class PollingServiceTest {
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
 
-        when(repository.findAllByStatus(PermissionProcessStatus.ACCEPTED))
-                .thenReturn(List.of(pr));
         when(dataNeedsService.findById("dataNeedId"))
                 .thenReturn(Optional.of(dataNeed));
+        var activePermissions = List.of(pr);
 
         // When
-        pollingService.fetchFutureMeterReadings();
+        for (var activePermission : activePermissions) {
+            if(pollingService.isActiveAndNeedsToBeFetched(activePermission)) {
+                pollingService.pollTimeSeriesData(activePermission);
+            }
+        }
 
         // Then
         verify(customerApi).getTimeSeries(eq(start), eq(end.plusDays(1)), any(), any(), eq("token"), any());
@@ -578,14 +583,18 @@ class PollingServiceTest {
                 PermissionProcessStatus.ACCEPTED,
                 ZonedDateTime.now(ZoneOffset.UTC)
         );
-        when(repository.findAllByStatus(PermissionProcessStatus.ACCEPTED))
-                .thenReturn(List.of(permissionRequest));
         when(dataNeedsService.findById(dataNeedId))
                 .thenReturn(Optional.of(accountingPointDataNeed));
-
+        var activePermissions = List.of(permissionRequest);
         // Then
         StepVerifier.create(pollingService.identifiableMeterReadings())
-                    .then(() -> pollingService.fetchFutureMeterReadings())
+                    .then(() -> {
+                        for (var activePermission : activePermissions) {
+                            if (pollingService.isActiveAndNeedsToBeFetched(activePermission)) {
+                                pollingService.pollTimeSeriesData(activePermission);
+                            }
+                        }
+                    })
                     .then(pollingService::close)
                     .verifyComplete();
         verify(outbox, never()).commit(any());

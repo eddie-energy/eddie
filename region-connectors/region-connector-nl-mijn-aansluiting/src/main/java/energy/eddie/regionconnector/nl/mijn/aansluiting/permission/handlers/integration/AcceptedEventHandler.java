@@ -23,13 +23,13 @@ import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRe
 public class AcceptedEventHandler implements EventHandler<PermissionEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AcceptedEventHandler.class);
     private final PollingService pollingService;
-    private final NlPermissionRequestRepository<NlPermissionRequest> repository;
+    private final NlPermissionRequestRepository repository;
     private final DataNeedsService dataNeedsService;
 
     public AcceptedEventHandler(
             EventBus eventBus,
             PollingService pollingService,
-            NlPermissionRequestRepository<NlPermissionRequest> repository,
+            NlPermissionRequestRepository repository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
     ) {
         this.pollingService = pollingService;

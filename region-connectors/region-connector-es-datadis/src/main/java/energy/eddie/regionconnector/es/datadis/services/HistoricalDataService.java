@@ -4,7 +4,6 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
@@ -12,9 +11,9 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 @Service
 public class HistoricalDataService {
 
-    private final DataApiService<EsPermissionRequest> dataApiService;
+    private final DataApiService dataApiService;
 
-    public HistoricalDataService(DataApiService<EsPermissionRequest> dataApiService) {
+    public HistoricalDataService(DataApiService dataApiService) {
         this.dataApiService = dataApiService;
     }
 
@@ -27,6 +26,6 @@ public class HistoricalDataService {
             return;
         }
 
-        dataApiService.pollTimeSeriesData(permissionRequest, "Europe/Madrid");
+        dataApiService.pollTimeSeriesData(permissionRequest);
     }
 }

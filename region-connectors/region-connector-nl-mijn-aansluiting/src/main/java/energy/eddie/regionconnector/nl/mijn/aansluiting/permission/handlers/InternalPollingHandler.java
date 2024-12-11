@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.permission.handlers;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlInternalPollingEvent;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlSimpleEvent;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
@@ -19,10 +18,10 @@ import java.time.ZonedDateTime;
 @Component
 public class InternalPollingHandler implements EventHandler<NlInternalPollingEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InternalPollingHandler.class);
-    private final NlPermissionRequestRepository<NlPermissionRequest> repository;
+    private final NlPermissionRequestRepository repository;
     private final Outbox outbox;
 
-    public InternalPollingHandler(EventBus eventBus, NlPermissionRequestRepository<NlPermissionRequest> repository, Outbox outbox) {
+    public InternalPollingHandler(EventBus eventBus, NlPermissionRequestRepository repository, Outbox outbox) {
         this.repository = repository;
         this.outbox = outbox;
 

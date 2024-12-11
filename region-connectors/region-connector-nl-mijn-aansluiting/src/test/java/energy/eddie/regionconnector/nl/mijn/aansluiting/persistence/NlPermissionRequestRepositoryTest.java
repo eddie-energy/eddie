@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.persistence;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlCreatedEvent;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlSimpleEvent;
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,7 @@ class NlPermissionRequestRepositoryTest {
     private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:15-alpine");
 
     @Autowired
-    private NlPermissionRequestRepository<NlPermissionRequest> permissionRequestRepository;
+    private NlPermissionRequestRepository permissionRequestRepository;
     @Autowired
     private MijnAansluitingPermissionEventRepository permissionEventRepository;
 

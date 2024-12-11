@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector;
 import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisMeterReadingApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
@@ -32,6 +33,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class FutureDataServiceTest {
     @Mock
+    private EnedisMeterReadingApi enedisApi; //this is needed to mock the PollingService
+    @InjectMocks
     private PollingService pollingService;
     @Mock
     private FrPermissionRequestRepository repository;
@@ -40,10 +43,12 @@ class FutureDataServiceTest {
     @InjectMocks
     EnedisRegionConnector regionConnector;
     private CommonFutureDataService<FrEnedisPermissionRequest> futureDataService;
+    private PollingService pollingServiceSpy;
 
     @BeforeEach
     public void setup() {
-        futureDataService = new CommonFutureDataService<>(pollingService, repository, null, null, "Europe/Paris", "0 0 17 * * *", regionConnector);
+        pollingServiceSpy = spy(pollingService);
+        futureDataService = new CommonFutureDataService<>(pollingServiceSpy, repository, "0 0 17 * * *", regionConnector);
     }
 
     static Stream<Arguments> activePermission_that_needsToBeFetched() {
@@ -107,7 +112,7 @@ class FutureDataServiceTest {
 
         // Then
         verify(repository).findByStatus(PermissionProcessStatus.ACCEPTED);
-        verifyNoMoreInteractions(pollingService); // No interaction with pollingService should occur
+        verifyNoMoreInteractions(pollingServiceSpy); // No interaction with pollingService should occur
     }
 
     @ParameterizedTest(name = "{1}")
@@ -125,7 +130,7 @@ class FutureDataServiceTest {
 
         // Then
         verify(repository).findByStatus(PermissionProcessStatus.ACCEPTED);
-        verify(pollingService).pollTimeSeriesData(permissionRequest);
+        verify(pollingServiceSpy).pollTimeSeriesData(permissionRequest);
     }
 
     @ParameterizedTest(name = "{1}")

@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.services;
 
 import com.nimbusds.oauth2.sdk.ParseException;
-import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -10,7 +10,6 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
@@ -42,7 +41,7 @@ public class PermissionRequestService {
     private final OAuthManager oAuthManager;
     private final Outbox outbox;
     private final DataNeedsService dataNeedService;
-    private final NlPermissionRequestRepository<NlPermissionRequest> permissionRequestRepository;
+    private final NlPermissionRequestRepository permissionRequestRepository;
     private final DataNeedCalculationService<DataNeed> calculationService;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -51,7 +50,7 @@ public class PermissionRequestService {
             OAuthManager oAuthManager,
             Outbox outbox,
             DataNeedsService dataNeedService,
-            NlPermissionRequestRepository<NlPermissionRequest> permissionRequestRepository,
+            NlPermissionRequestRepository permissionRequestRepository,
             DataNeedCalculationService<DataNeed> calculationService
     ) {
         this.oAuthManager = oAuthManager;

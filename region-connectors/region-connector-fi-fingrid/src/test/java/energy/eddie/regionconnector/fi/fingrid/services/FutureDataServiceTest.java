@@ -4,7 +4,6 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.duration.RelativeDuration;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnector;
@@ -30,20 +29,22 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class FutureDataServiceTest {
     @Mock
+    private DataNeedsService dataNeedsService;
+    @InjectMocks
     private PollingService pollingService;
     @Mock
     private FiPermissionRequestRepository repository;
-    @Mock
-    private DataNeedsService dataNeedsService;
     @Mock
     FingridRegionConnectorMetadata metadata; // without this metadata, the region connector cannot be mocked correctly
     @InjectMocks
     FingridRegionConnector regionConnector;
     private CommonFutureDataService<FingridPermissionRequest> futureDataService;
+    PollingService pollingServiceSpy;
 
     @BeforeEach
     public void setup() {
-        futureDataService = new CommonFutureDataService<>(pollingService, repository, dataNeedsService, null, "Europe/Oslo", "0 0 17 * * *", regionConnector);
+        pollingServiceSpy = spy(pollingService);
+        futureDataService = new CommonFutureDataService<>(pollingServiceSpy, repository, "0 0 17 * * *", regionConnector);
     }
 
 
@@ -65,7 +66,7 @@ class FutureDataServiceTest {
         futureDataService.fetchMeterData();
 
         // Then
-        verify(pollingService).pollTimeSeriesData(permissionRequest);
+        verify(pollingServiceSpy).pollTimeSeriesData(permissionRequest);
     }
 
     @Test
@@ -73,14 +74,12 @@ class FutureDataServiceTest {
         // Given
         when(repository.findByStatus(PermissionProcessStatus.ACCEPTED))
                 .thenReturn(List.of(getPermissionRequest()));
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(new AccountingPointDataNeed());
 
         // When
         futureDataService.fetchMeterData();
 
         // Then
-        verify(pollingService, never()).pollTimeSeriesData(any());
+        verify(pollingServiceSpy, never()).pollTimeSeriesData(any());
     }
 
     private static FingridPermissionRequest getPermissionRequest() {

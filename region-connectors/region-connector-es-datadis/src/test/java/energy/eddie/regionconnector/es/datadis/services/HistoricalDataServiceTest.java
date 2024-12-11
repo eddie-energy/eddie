@@ -6,7 +6,6 @@ import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.PointType;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -24,8 +23,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 @ExtendWith(MockitoExtension.class)
 class HistoricalDataServiceTest {
     @Mock
-    private DataApiService<EsPermissionRequest> dataApiService;
-    private final String timeZone = "Europe/Madrid";
+    private DataApiService dataApiService;
 
     @ParameterizedTest(name = "{2}")
     @MethodSource("pastTimeRanges")
@@ -42,7 +40,7 @@ class HistoricalDataServiceTest {
         historicalDataService.fetchAvailableHistoricalData(permissionRequest);
 
         // Then
-        verify(dataApiService).pollTimeSeriesData(permissionRequest, timeZone);
+        verify(dataApiService).pollTimeSeriesData(permissionRequest);
     }
 
     @ParameterizedTest(name = "{2}")
@@ -78,8 +76,7 @@ class HistoricalDataServiceTest {
         historicalDataService.fetchAvailableHistoricalData(permissionRequest);
 
         // Then
-        verify(dataApiService).pollTimeSeriesData(permissionRequest,
-                timeZone);
+        verify(dataApiService).pollTimeSeriesData(permissionRequest);
     }
 
     private static Stream<Arguments> pastTimeRanges() {

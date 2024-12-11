@@ -7,6 +7,8 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnector;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.ApiClient;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.ConsumptionData;
@@ -60,6 +62,10 @@ class PollingServiceTest {
     private DataNeedsService dataNeedsService;
     @Mock
     private ValidatedHistoricalDataDataNeed dataNeed;
+    @Mock
+    private MijnAansluitingRegionConnectorMetadata metadata;
+    @Mock
+    MijnAansluitingRegionConnector regionConnector;
     @InjectMocks
     private PollingService pollingService;
     @Captor

@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.fi.fingrid.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.client.FingridApiClient;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
 import energy.eddie.regionconnector.shared.services.CommonPollingService;
@@ -18,18 +20,30 @@ public class PollingService implements CommonPollingService<FingridPermissionReq
     private final EnergyDataService energyDataService;
     private final FingridApiClient api;
     private final UpdateGranularityService updateGranularityService;
+    private final DataNeedsService dataNeedsService;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    // DataNeedsService is injected from parent context
     public PollingService(
             EnergyDataService energyDataService, FingridApiClient api,
-            UpdateGranularityService updateGranularityService
+            UpdateGranularityService updateGranularityService,
+            DataNeedsService dataNeedsService
     ) {
         this.energyDataService = energyDataService;
         this.api = api;
         this.updateGranularityService = updateGranularityService;
+        this.dataNeedsService = dataNeedsService;
     }
 
     public void pollTimeSeriesData(FingridPermissionRequest permissionRequest) {
         pollTimeSeriesData(permissionRequest, permissionRequest.granularity());
+    }
+
+    @Override
+    public boolean isActiveAndNeedsToBeFetched(FingridPermissionRequest permissionRequest) {
+        var dataNeedId = permissionRequest.dataNeedId();
+        var dataNeed = dataNeedsService.getById(dataNeedId);
+        return dataNeed instanceof ValidatedHistoricalDataDataNeed;
     }
 
     public void pollTimeSeriesData(FingridPermissionRequest permissionRequest, Granularity granularity) {

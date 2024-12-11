@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
-import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
@@ -11,7 +10,7 @@ import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.services.CommonDataApiService;
+import energy.eddie.regionconnector.shared.services.CommonPollingService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,13 +20,12 @@ import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.ZoneId;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.MAXIMUM_MONTHS_IN_THE_PAST;
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
 @Service
-public class DataApiService<T extends EsPermissionRequest> implements AutoCloseable, CommonDataApiService<T> {
+public class DataApiService implements AutoCloseable, CommonPollingService<EsPermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataApiService.class);
     private final DataApi dataApi;
     private final Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink;
@@ -48,7 +46,7 @@ public class DataApiService<T extends EsPermissionRequest> implements AutoClosea
     }
 
 
-    private void fetchDataForPermissionRequest(EsPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
+    public void fetchDataForPermissionRequest(EsPermissionRequest permissionRequest, LocalDate start, LocalDate end) {
         LOGGER.atInfo()
                 .addArgument(permissionRequest::permissionId)
                 .addArgument(start)
@@ -115,18 +113,18 @@ public class DataApiService<T extends EsPermissionRequest> implements AutoClosea
     }
 
     @Override
-    public void pollTimeSeriesData(T permissionRequest, String timeZone) {
-        LocalDate today = LocalDate.now(ZoneId.of(timeZone));
+    public void pollTimeSeriesData(EsPermissionRequest permissionRequest) {
+        LocalDate today = LocalDate.now(ZONE_ID_SPAIN);
         LocalDate yesterday = today.minusDays(1);
         LocalDate lastPulledOrStart = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
         LocalDate startDate = lastPulledOrStart.isBefore(yesterday) ? lastPulledOrStart : yesterday;
 
-        if (isActive(permissionRequest, today)) {
-            fetchDataForPermissionRequest(permissionRequest, startDate, yesterday);
-        }
+        fetchDataForPermissionRequest(permissionRequest, startDate, yesterday);
     }
 
-    private boolean isActive(MeterReadingPermissionRequest permissionRequest, LocalDate today) {
+    @Override
+    public boolean isActiveAndNeedsToBeFetched(EsPermissionRequest permissionRequest) {
+        LocalDate today = LocalDate.now(ZONE_ID_SPAIN);
         return permissionRequest.start().isBefore(today);
     }
 }
