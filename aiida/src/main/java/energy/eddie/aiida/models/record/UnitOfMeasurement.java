@@ -6,6 +6,7 @@ public enum UnitOfMeasurement {
     WH("Wh"),
     KVARH("kvarh"),
     AMPERE("A"),
+    VOLT("V"),
     VOLTAMPERE("VA"),
     TEXT("text"),
     UNKNOWN("unknown");
