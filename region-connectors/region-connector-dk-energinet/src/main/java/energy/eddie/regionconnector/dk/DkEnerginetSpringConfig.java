@@ -155,7 +155,6 @@ public class DkEnerginetSpringConfig {
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
-                SUPPORTED_DATA_NEEDS,
                 EnerginetRegionConnectorMetadata.getInstance()
         );
     }

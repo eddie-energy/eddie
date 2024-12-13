@@ -16,22 +16,29 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of the {@link DataNeedCalculationService} that can be customized to fit the requirements of the region connector.
+ */
 public class DataNeedCalculationServiceImpl implements DataNeedCalculationService<DataNeed> {
     private final DataNeedsService dataNeedsService;
-    private final List<Class<? extends DataNeed>> supportedDataNeeds;
     private final RegionConnectorMetadata regionConnectorMetadata;
     private final GranularityChoice granularityChoice;
     private final PermissionTimeframeStrategy strategy;
     private final List<Predicate<DataNeed>> additionalChecks;
     private final EnergyDataTimeframeStrategy energyDataTimeframeStrategy;
 
+    /**
+     * Uses {@link PermissionEndIsEnergyDataEndStrategy} for the {@link PermissionTimeframeStrategy} and {@link DefaultEnergyDataTimeframeStrategy} for the {@link EnergyDataTimeframeStrategy}.
+     * These are used to calculate the start and end of a permission request and the start and end of the metered data, if needed.
+     *
+     * @param dataNeedsService        service to get the data need
+     * @param regionConnectorMetadata metadata of the region connector
+     */
     public DataNeedCalculationServiceImpl(
             DataNeedsService dataNeedsService,
-            List<Class<? extends DataNeed>> supportedDataNeeds,
             RegionConnectorMetadata regionConnectorMetadata
     ) {
         this(dataNeedsService,
-             supportedDataNeeds,
              regionConnectorMetadata,
              new PermissionEndIsEnergyDataEndStrategy(regionConnectorMetadata.timeZone()),
              new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
@@ -39,16 +46,23 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         );
     }
 
+    /**
+     * Constructs an instance with custom {@link PermissionTimeframeStrategy} and {@link EnergyDataTimeframeStrategy}.
+     * Furthermore, allows to add additional checks for the data need.
+     * @param dataNeedsService service to get
+     * @param regionConnectorMetadata
+     * @param strategy
+     * @param energyDataTimeframeStrategy
+     * @param additionalChecks
+     */
     public DataNeedCalculationServiceImpl(
             DataNeedsService dataNeedsService,
-            List<Class<? extends DataNeed>> supportedDataNeeds,
             RegionConnectorMetadata regionConnectorMetadata,
             PermissionTimeframeStrategy strategy,
             EnergyDataTimeframeStrategy energyDataTimeframeStrategy,
             List<Predicate<DataNeed>> additionalChecks
     ) {
         this.dataNeedsService = dataNeedsService;
-        this.supportedDataNeeds = supportedDataNeeds;
         this.regionConnectorMetadata = regionConnectorMetadata;
         this.granularityChoice = new GranularityChoice(regionConnectorMetadata.supportedGranularities());
         this.strategy = strategy;
@@ -136,7 +150,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
      * @return if the data need is supported
      */
     private boolean supportsDataNeedType(DataNeed dataNeed) {
-        for (Class<? extends DataNeed> supportedDataNeed : supportedDataNeeds) {
+        for (Class<? extends DataNeedInterface> supportedDataNeed : regionConnectorMetadata.supportedDataNeeds()) {
             if (supportedDataNeed.isInstance(dataNeed)) {
                 return true;
             }

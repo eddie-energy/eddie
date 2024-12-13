@@ -14,7 +14,7 @@ hero:
       link: 1-running/OPERATION
       theme: alt
     - text: Integrate into your application
-      link: 2-integrating/PERMISSION_STATES
+      link: 2-integrating/integrating
     - text: Extend and Contribute
       link: 3-extending/tech-stack
       theme: alt

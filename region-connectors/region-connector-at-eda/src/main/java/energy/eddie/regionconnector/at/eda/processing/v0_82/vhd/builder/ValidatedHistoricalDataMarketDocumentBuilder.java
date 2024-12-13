@@ -6,8 +6,8 @@ import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.Energy;
 import energy.eddie.regionconnector.at.eda.dto.EnergyData;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
-import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static java.util.Objects.requireNonNull;

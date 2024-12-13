@@ -10,8 +10,8 @@ import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
-import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

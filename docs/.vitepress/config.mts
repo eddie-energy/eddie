@@ -93,13 +93,58 @@ export default withMermaid(defineConfig({
               },
             ],
           },
+          {
+            text: "Data Needs",
+            link: "2-integrating/data-needs.md",
+          },
         ],
       },
       {
         text: "Extending",
         items: [
           { text: "Tech Stack", link: "3-extending/tech-stack" },
-          { text: "Add a region connector", link: "3-extending/add-region-connector" },
+          {
+            text: "Add a region connector",
+            link: "3-extending/region-connector/add-region-connector",
+            items: [
+              {
+                text: "Quickstart",
+                link: "3-extending/region-connector/quickstart",
+              },
+              {
+                text: "Build and Setup",
+                link: "3-extending/region-connector/build-and-setup",
+              },
+              {
+                text: "API",
+                link: "3-extending/region-connector/api",
+              },
+              {
+                text: "Internal Architecture",
+                link: "3-extending/region-connector/internal-architecture",
+              },
+              {
+                text: "Configuration",
+                link: "3-extending/region-connector/configuration",
+              },
+              {
+                text: "Frontend",
+                link: "3-extending/region-connector/frontend",
+              },
+              {
+                text: "Beans of Interest",
+                link: "3-extending/region-connector/beans-of-interest",
+              },
+              {
+                text: "Shared Functionality",
+                link: "3-extending/region-connector/shared-functionality",
+              },
+              {
+                text: "Dispatcher Servlet",
+                link: "3-extending/region-connector/dispatcher-servlet",
+              },
+            ],
+          },
           {
             text: "Add an outbound-connector",
             link: "3-extending/add-outbound-connector",

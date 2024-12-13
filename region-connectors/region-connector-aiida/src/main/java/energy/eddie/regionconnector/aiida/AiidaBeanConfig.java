@@ -202,7 +202,6 @@ public class AiidaBeanConfig {
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
-                SUPPORTED_DATA_NEEDS,
                 AiidaRegionConnectorMetadata.getInstance(),
                 new PermissionEndIsEnergyDataEndStrategy(REGION_CONNECTOR_ZONE_ID),
                 new AiidaEnergyDataTimeframeStrategy(clock),

@@ -163,7 +163,6 @@ public class DatadisSpringConfig {
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
-                SUPPORTED_DATA_NEEDS,
                 DatadisRegionConnectorMetadata.getInstance(),
                 new DatadisStrategy(),
                 new DefaultEnergyDataTimeframeStrategy(DatadisRegionConnectorMetadata.getInstance()),

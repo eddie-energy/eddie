@@ -6,8 +6,8 @@ import energy.eddie.regionconnector.fi.fingrid.client.Observation;
 import energy.eddie.regionconnector.fi.fingrid.client.TimeSeries;
 import energy.eddie.regionconnector.fi.fingrid.client.TimeSeriesData;
 import energy.eddie.regionconnector.fi.fingrid.client.TimeSeriesResponse;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
-import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;

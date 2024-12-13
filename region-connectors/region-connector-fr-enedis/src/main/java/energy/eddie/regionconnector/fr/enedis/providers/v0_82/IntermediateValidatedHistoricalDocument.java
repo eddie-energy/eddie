@@ -11,8 +11,8 @@ import energy.eddie.regionconnector.fr.enedis.dto.readings.IntervalReading;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
-import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import jakarta.annotation.Nullable;
 
 import java.math.BigDecimal;

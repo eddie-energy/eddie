@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.shared.utils;
+package energy.eddie.regionconnector.shared.cim.v0_82;
 
 import org.junit.jupiter.api.Test;
 

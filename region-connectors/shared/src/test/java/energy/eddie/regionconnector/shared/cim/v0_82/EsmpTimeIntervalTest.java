@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.shared.utils;
+package energy.eddie.regionconnector.shared.cim.v0_82;
 
 import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.Test;
@@ -7,7 +7,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static energy.eddie.regionconnector.shared.utils.EsmpDateTime.ESMP_DATE_TIME_MINUTE_FORMATTER;
+import static energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime.ESMP_DATE_TIME_MINUTE_FORMATTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EsmpTimeIntervalTest {

@@ -9,10 +9,15 @@ public interface DataNeedCalculationService<T extends DataNeedInterface> {
     /**
      * Calculates relevant information for a data need
      * @param dataNeed the data need
-     * @return the calculation outcomes of the data need
+     * @return the calculation results for the data need
      */
     DataNeedCalculationResult calculate(T dataNeed);
 
+    /**
+     * Calculate relevant information for a given data need ID
+     * @param dataNeedId the ID of the data need
+     * @return the calculation results for the data need
+     */
     DataNeedCalculationResult calculate(String dataNeedId);
 
     /**

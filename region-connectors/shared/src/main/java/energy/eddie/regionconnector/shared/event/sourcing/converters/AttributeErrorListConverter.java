@@ -11,6 +11,9 @@ import jakarta.persistence.Converter;
 
 import java.util.List;
 
+/**
+ * Serializes and deserializes the {@link AttributeError} to a JSON list in order to persist it to a database column.
+ */
 @Converter
 public class AttributeErrorListConverter implements AttributeConverter<List<AttributeError>, String> {
     private static final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();

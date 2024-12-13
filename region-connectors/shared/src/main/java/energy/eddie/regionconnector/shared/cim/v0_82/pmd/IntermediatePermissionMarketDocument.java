@@ -10,8 +10,8 @@ import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.regionconnector.shared.cim.v0_82.CimUtils;
 import energy.eddie.regionconnector.shared.cim.v0_82.DocumentType;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
-import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import jakarta.annotation.Nullable;
 
 import java.time.Clock;

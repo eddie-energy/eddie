@@ -8,7 +8,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.ContactAddressDt
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointDetailsCustomerDto;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
 import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import org.apache.logging.log4j.util.Strings;
 
 import java.time.ZonedDateTime;

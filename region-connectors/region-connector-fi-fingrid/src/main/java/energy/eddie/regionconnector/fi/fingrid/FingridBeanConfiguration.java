@@ -69,7 +69,6 @@ public class FingridBeanConfiguration {
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
-                FingridRegionConnectorMetadata.SUPPORTED_DATA_NEEDS,
                 FingridRegionConnectorMetadata.INSTANCE
         );
     }

@@ -16,6 +16,9 @@ import reactor.core.publisher.Sinks;
 
 import java.util.function.Function;
 
+/**
+ * Subscribes to all events of an {@code EventBus} and creates connection status messages based on an event.
+ */
 public class ConnectionStatusMessageHandler<T extends PermissionRequest> implements EventHandler<PermissionEvent>, ConnectionStatusMessageProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusMessageHandler.class);
     private final Sinks.Many<ConnectionStatusMessage> messages = Sinks.many().multicast().onBackpressureBuffer();

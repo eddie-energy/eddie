@@ -51,7 +51,6 @@ public class FluviusBeanConfig {
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService) {
         return new DataNeedCalculationServiceImpl(dataNeedsService,
-                                                  FluviusRegionConnectorMetadata.SUPPORTED_DATA_NEEDS,
                                                   FluviusRegionConnectorMetadata.getInstance(),
                                                   new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
                                                   new FluviusEnergyTimeframeStrategy(FluviusRegionConnectorMetadata.getInstance()),

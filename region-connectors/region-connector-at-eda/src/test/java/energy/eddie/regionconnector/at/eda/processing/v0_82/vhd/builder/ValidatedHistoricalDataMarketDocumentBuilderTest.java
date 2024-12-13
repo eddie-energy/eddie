@@ -12,8 +12,8 @@ import java.time.*;
 import java.util.List;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
-import static energy.eddie.regionconnector.shared.utils.EsmpDateTime.ESMP_DATE_TIME_MINUTE_FORMATTER;
-import static energy.eddie.regionconnector.shared.utils.EsmpDateTime.ESMP_DATE_TIME_SECOND_FORMATTER;
+import static energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime.ESMP_DATE_TIME_MINUTE_FORMATTER;
+import static energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime.ESMP_DATE_TIME_SECOND_FORMATTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
