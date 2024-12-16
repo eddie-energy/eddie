@@ -138,7 +138,7 @@ aiidaCodeInput.addEventListener("sl-input", () => {
 });
 
 function toLocalDateString(time) {
-  return new Date(time * 1000).toLocaleDateString();
+  return new Date(time).toLocaleString();
 }
 
 function permissionElement(permission) {
