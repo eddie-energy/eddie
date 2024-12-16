@@ -23,6 +23,6 @@ Editing and adding markdown files shouldn't be different from anywhere else.
 For local development running the following commands in the `/docs` folder can become handy:
 
 - `pnpm install`: to install needed JS dependencies
-- `pnpm docs:dev`: will start a live-preview mode of the documentation site
-- `pnpm docs:build`: will build the documentation website into `/docs/.vitepress/dist`
-- `pnpm docs:preview`: will serve the previously generated website as it will be served by a webserver
+- `pnpm dev`: will start a live-preview mode of the documentation site
+- `pnpm build`: will build the documentation website into `/docs/.vitepress/dist`
+- `pnpm preview`: will serve the previously generated website as it will be served by a webserver
