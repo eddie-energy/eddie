@@ -20,6 +20,7 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -38,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         // manually trigger migration
         "spring.flyway.enabled=false"
 })
-@MockBean(classes = {ClientRegistrationRepository.class, OAuth2SecurityConfig.class})
+@MockBean(classes = {ClientRegistrationRepository.class, OAuth2SecurityConfig.class, CorsConfigurationSource.class})
 @Testcontainers
 public class PermissionServiceIntegrationTest {
     @Container
