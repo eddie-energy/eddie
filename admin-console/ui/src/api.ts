@@ -5,6 +5,8 @@ import {
   PERMISSIONS_API_URL,
   REGION_CONNECTOR_API_URL,
   REGION_CONNECTOR_HEALTH_API_URL,
+  REGION_CONNECTORS_SUPPORTED_DATA_NEEDS_API_URL,
+  REGION_CONNECTORS_SUPPORTED_FEATURES_API_URL,
   TERMINATION_API_URL
 } from '@/config'
 
@@ -50,6 +52,22 @@ export type RegionConnectorHealth = {
   }
 }
 
+export type RegionConnectorSupportedFeatures = {
+  regionConnectorId: string
+  dataNeeds: string[]
+}
+
+export type RegionConnectorSupportedDataNeeds = {
+  supportsRawDataMessages: boolean
+  supportsTermination: boolean
+  supportsConnectionsStatusMessages: boolean
+  supportsPermissionMarketDocuments: boolean
+  supportsRetransmissionRequests: boolean
+  regionConnectorId: string
+  supportsAccountingPointMarketDocuments: boolean
+  supportsValidatedHistoricalDataMarketDocuments: boolean
+}
+
 export async function getPermissions(): Promise<StatusMessage[]> {
   return await fetch(PERMISSIONS_API_URL).then((res) => res.json())
 }
@@ -86,4 +104,16 @@ export async function getRegionConnectorHealth(
   return await fetch(
     `${REGION_CONNECTOR_HEALTH_API_URL}/region-connector-${regionConnectorId}`
   ).then((res) => (res.status === 404 ? undefined : res.json()))
+}
+
+export async function getRegionConnectorsSupportedFeatures(): Promise<
+  RegionConnectorSupportedFeatures[]
+> {
+  return await fetch(REGION_CONNECTORS_SUPPORTED_FEATURES_API_URL).then((res) => res.json())
+}
+
+export async function getRegionConnectorsSupportedDataNeeds(): Promise<
+  RegionConnectorSupportedDataNeeds[]
+> {
+  return await fetch(REGION_CONNECTORS_SUPPORTED_DATA_NEEDS_API_URL).then((res) => res.json())
 }
