@@ -47,7 +47,8 @@ class DataNeedCalculationServiceImplTest {
             Period.ofDays(-10),
             Period.ofDays(10),
             List.of(Granularity.PT15M, Granularity.P1D),
-            ZoneOffset.UTC
+            ZoneOffset.UTC,
+            List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class)
     );
     @Mock
     private DataNeedsService dataNeedsService;
@@ -55,19 +56,6 @@ class DataNeedCalculationServiceImplTest {
     private AccountingPointDataNeed accountingPointDataNeed;
     @Mock
     private GenericAiidaDataNeed genericAiidaDataNeed;
-
-    private static Stream<Arguments> regionConnectorFilterConfigurations() {
-        return Stream.of(
-                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.ALLOWLIST, List.of("id")),
-                             AccountingPointDataNeedResult.class),
-                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.ALLOWLIST, List.of("notInList")),
-                             DataNeedNotSupportedResult.class),
-                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.BLOCKLIST, List.of("id")),
-                             DataNeedNotSupportedResult.class),
-                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.BLOCKLIST, List.of("notInList")),
-                             AccountingPointDataNeedResult.class)
-        );
-    }
 
     @Test
     void givenUnknownDataNeedId_returnsDataNeedNotFoundResult() {
@@ -122,12 +110,17 @@ class DataNeedCalculationServiceImplTest {
         // Given
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.of(genericAiidaDataNeed));
+        when(genericAiidaDataNeed.isEnabled()).thenReturn(true);
         var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
         // When
         var res = calculationService.calculate("dnid");
 
         // Then
         assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
+        assertEquals(
+                "Data need type \"GenericAiidaDataNeed\" not supported, region connector supports data needs of types ValidatedHistoricalDataDataNeed, AccountingPointDataNeed",
+                ((DataNeedNotSupportedResult) res).message()
+        );
     }
 
     @Test
@@ -222,16 +215,26 @@ class DataNeedCalculationServiceImplTest {
         assertEquals("id", res);
     }
 
+    private static Stream<Arguments> regionConnectorFilterConfigurations() {
+        return Stream.of(
+                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.ALLOWLIST, List.of("id")),
+                             AccountingPointDataNeedResult.class),
+                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.ALLOWLIST, List.of("notInList")),
+                             DataNeedNotSupportedResult.class),
+                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.BLOCKLIST, List.of("id")),
+                             DataNeedNotSupportedResult.class),
+                Arguments.of(new RegionConnectorFilter(RegionConnectorFilter.Type.BLOCKLIST, List.of("notInList")),
+                             AccountingPointDataNeedResult.class)
+        );
+    }
+
     private record RegionConnectorMetadataImpl(String id,
                                                String countryCode,
                                                long coveredMeteringPoints,
                                                Period earliestStart,
                                                Period latestEnd,
                                                List<Granularity> supportedGranularities,
-                                               ZoneId timeZone) implements RegionConnectorMetadata {
-        @Override
-        public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
-            return List.of();
-        }
+                                               ZoneId timeZone,
+                                               List<Class<? extends DataNeedInterface>> supportedDataNeeds) implements RegionConnectorMetadata {
     }
 }
