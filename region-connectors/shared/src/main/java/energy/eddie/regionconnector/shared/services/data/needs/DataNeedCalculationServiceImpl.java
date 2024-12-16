@@ -14,6 +14,7 @@ import energy.eddie.regionconnector.shared.validation.GranularityChoice;
 
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class DataNeedCalculationServiceImpl implements DataNeedCalculationService<DataNeed> {
     private final DataNeedsService dataNeedsService;
@@ -55,12 +56,11 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         this.energyDataTimeframeStrategy = energyDataTimeframeStrategy;
     }
 
-    private static boolean areGranularitiesSupported(DataNeed dataNeed, List<Granularity> supportedGranularities) {
-        return !(dataNeed instanceof ValidatedHistoricalDataDataNeed) || !supportedGranularities.isEmpty();
-    }
-
     @Override
     public DataNeedCalculationResult calculate(DataNeed dataNeed) {
+        if (!dataNeed.isEnabled()) {
+            return new DataNeedNotSupportedResult("Data need is disabled");
+        }
         var filter = dataNeed.regionConnectorFilter();
         if (filter.isPresent()) {
             var regionConnectorId = regionConnectorMetadata.id();
@@ -77,12 +77,18 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
                 return new DataNeedNotSupportedResult("Region connector " + regionConnectorMetadata.id() + " is in the blocklist");
             }
         }
-
-        if (!dataNeed.isEnabled()) {
-            return new DataNeedNotSupportedResult("Data need is disabled");
+        if (!supportsDataNeedType(dataNeed)) {
+            var classes = regionConnectorMetadata.supportedDataNeeds()
+                                                 .stream()
+                                                 .map(Class::getSimpleName)
+                                                 .collect(Collectors.joining(", "));
+            return new DataNeedNotSupportedResult(
+                    "Data need type \"%s\" not supported, region connector supports data needs of types %s"
+                            .formatted(dataNeed.getClass().getSimpleName(), classes)
+            );
         }
-        if (!supportsDataNeedType(dataNeed) || !additionalChecks.stream().allMatch(check -> check.test(dataNeed))) {
-            return new DataNeedNotSupportedResult("Data need not supported");
+        if (!additionalChecks.stream().allMatch(check -> check.test(dataNeed))) {
+            return new DataNeedNotSupportedResult("Data need not supported, additional checks have failed");
         }
         var supportedGranularities = supportedGranularities(dataNeed);
         if (!areGranularitiesSupported(dataNeed, supportedGranularities)) {
@@ -114,6 +120,15 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         return calculate(option.get());
     }
 
+    @Override
+    public String regionConnectorId() {
+        return regionConnectorMetadata.id();
+    }
+
+    private static boolean areGranularitiesSupported(DataNeed dataNeed, List<Granularity> supportedGranularities) {
+        return !(dataNeed instanceof ValidatedHistoricalDataDataNeed) || !supportedGranularities.isEmpty();
+    }
+
     /**
      * Determines if the region-connector supports this data need type.
      *
@@ -141,10 +156,5 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
             return List.of();
         }
         return granularityChoice.findAll(vhdDN.minGranularity(), vhdDN.maxGranularity());
-    }
-
-    @Override
-    public String regionConnectorId() {
-        return regionConnectorMetadata.id();
     }
 }
