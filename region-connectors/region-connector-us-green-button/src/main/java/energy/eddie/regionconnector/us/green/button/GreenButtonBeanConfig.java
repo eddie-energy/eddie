@@ -37,6 +37,7 @@ import java.util.List;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
+import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata.SUPPORTED_DATA_NEEDS;
 import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata.US_ZONE_ID;
 
 @Configuration
@@ -84,7 +85,7 @@ public class GreenButtonBeanConfig {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
                 GreenButtonRegionConnectorMetadata.getInstance(),
-                new PermissionEndIsEnergyDataEndStrategy(US_ZONE_ID),
+                new PermissionEndIsEnergyDataEndStrategy(),
                 new DefaultEnergyDataTimeframeStrategy(GreenButtonRegionConnectorMetadata.getInstance()),
                 List.of()
         );

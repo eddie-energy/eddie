@@ -17,6 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
@@ -81,7 +83,9 @@ class EdaStrategyTest {
         EdaStrategy edaStrategy = new EdaStrategy();
 
         // When & Then
-        assertThrows(UnsupportedDataNeedException.class, () -> edaStrategy.energyDataTimeframe(timeframedDataNeed));
+        assertThrows(UnsupportedDataNeedException.class, () -> edaStrategy.energyDataTimeframe(timeframedDataNeed,
+                                                                                               ZonedDateTime.now(
+                                                                                                       ZoneOffset.UTC)));
     }
 
     @SuppressWarnings("DataFlowIssue")
@@ -98,7 +102,7 @@ class EdaStrategyTest {
         EdaStrategy edaStrategy = new EdaStrategy();
 
         // When
-        var timeFrame = edaStrategy.energyDataTimeframe(timeframedDataNeed);
+        var timeFrame = edaStrategy.energyDataTimeframe(timeframedDataNeed, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertAll(
@@ -114,7 +118,7 @@ class EdaStrategyTest {
         EdaStrategy edaStrategy = new EdaStrategy();
 
         // When
-        var timeFrame = edaStrategy.energyDataTimeframe(accountingPointDataNeed);
+        var timeFrame = edaStrategy.energyDataTimeframe(accountingPointDataNeed, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertNull(timeFrame);

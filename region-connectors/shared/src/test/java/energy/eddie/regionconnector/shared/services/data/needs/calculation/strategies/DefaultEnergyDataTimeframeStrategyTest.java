@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,12 +36,13 @@ class DefaultEnergyDataTimeframeStrategyTest {
         var strategy = new DefaultEnergyDataTimeframeStrategy(metadata);
 
         // When
-        var res = strategy.energyDataTimeframe(invalidDataNeed);
+        var res = strategy.energyDataTimeframe(invalidDataNeed, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertNull(res);
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void testEnergyData_returnsCorrectTimeframe() throws UnsupportedDataNeedException {
         // Given
@@ -60,7 +62,7 @@ class DefaultEnergyDataTimeframeStrategyTest {
         var now = LocalDate.now(ZoneOffset.UTC);
 
         // When
-        var res = strategy.energyDataTimeframe(validDataNeed);
+        var res = strategy.energyDataTimeframe(validDataNeed, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertAll(

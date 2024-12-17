@@ -242,7 +242,7 @@ public class AtEdaBeanConfig {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
                 EdaRegionConnectorMetadata.getInstance(),
-                new PermissionEndIsEnergyDataEndStrategy(AT_ZONE_ID),
+                new PermissionEndIsEnergyDataEndStrategy(),
                 new EdaStrategy(),
                 List.of()
         );

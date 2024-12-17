@@ -4,14 +4,12 @@ import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionTimeframeStrategy;
 import jakarta.annotation.Nullable;
 
-import java.time.LocalDate;
-
-import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
+import java.time.ZonedDateTime;
 
 public class DatadisStrategy implements PermissionTimeframeStrategy {
     @Override
-    public Timeframe permissionTimeframe(@Nullable Timeframe energyDataTimeframe) {
-        var now = LocalDate.now(ZONE_ID_SPAIN);
+    public Timeframe permissionTimeframe(@Nullable Timeframe energyDataTimeframe, ZonedDateTime referenceDateTime) {
+        var now = referenceDateTime.toLocalDate();
         if (energyDataTimeframe == null || !now.isBefore(energyDataTimeframe.end())) {
             // if all the data is in the past, or it's accounting point data, we only need access for 1 day
             return new Timeframe(now, now.plusDays(1));

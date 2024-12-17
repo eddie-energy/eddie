@@ -11,23 +11,28 @@ import energy.eddie.regionconnector.shared.services.data.needs.calculation.strat
 import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 public class EdaStrategy implements EnergyDataTimeframeStrategy {
     /**
-     * Calculates the start and end date of the energy data, if the data need requires energy data. Otherwise, it
-     * returns null.
+     * Calculates the start and end date of the energy data, if the data need requires energy data.
+     * Otherwise, it returns null.
      *
-     * @param dataNeed the data need
+     * @param dataNeed          the data need
+     * @param referenceDateTime the reference datetime that is used to calculate the timeframe.
      * @return start and end date of the energy data.
      * @throws UnsupportedDataNeedException if the data need is not meant for energy data
      */
     @Override
     @Nullable
-    public Timeframe energyDataTimeframe(DataNeed dataNeed) throws UnsupportedDataNeedException {
+    public Timeframe energyDataTimeframe(
+            DataNeed dataNeed,
+            ZonedDateTime referenceDateTime
+    ) throws UnsupportedDataNeedException {
         if (!(dataNeed instanceof TimeframedDataNeed timeframedDataNeed)) {
             return null;
         }
-        var now = LocalDate.now(EdaRegionConnectorMetadata.AT_ZONE_ID);
+        var now = referenceDateTime.toLocalDate();
         DataNeedWrapper wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(
                 timeframedDataNeed,
                 now,

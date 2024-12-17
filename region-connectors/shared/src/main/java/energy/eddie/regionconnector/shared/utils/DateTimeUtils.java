@@ -18,6 +18,13 @@ public class DateTimeUtils {
     }
 
 
+    /**
+     * Finds the oldest date time in a collection of data times.
+     * If the collection is empty or only contains null values, returns an empty optional.
+     *
+     * @param dateTimes the collection of date times
+     * @return the oldest datetime or empty optional if the collection is empty, or filled with null values.
+     */
     public static Optional<ZonedDateTime> oldestDateTime(Collection<ZonedDateTime> dateTimes) {
         ZonedDateTime oldest = null;
         for (var value : dateTimes) {

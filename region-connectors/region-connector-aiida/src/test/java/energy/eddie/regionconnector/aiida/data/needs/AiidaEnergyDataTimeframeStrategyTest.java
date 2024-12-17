@@ -9,10 +9,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID;
@@ -21,8 +21,14 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AiidaEnergyDataTimeframeStrategyTest {
-    private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2023-10-15T15:00:00Z"),
-                                                         REGION_CONNECTOR_ZONE_ID);
+    private static final ZonedDateTime REFERENCE_DATE_TIME = ZonedDateTime.of(2023,
+                                                                              10,
+                                                                              15,
+                                                                              15,
+                                                                              0,
+                                                                              0,
+                                                                              0,
+                                                                              REGION_CONNECTOR_ZONE_ID);
     @Mock
     private AccountingPointDataNeed accountingPointDataNeed;
     @Mock
@@ -33,17 +39,19 @@ class AiidaEnergyDataTimeframeStrategyTest {
     @Test
     void testEnergyDataTimeFrame_throwsOnInvalidDataNeed() {
         // Given
-        var strategy = new AiidaEnergyDataTimeframeStrategy(FIXED_CLOCK);
+        var strategy = new AiidaEnergyDataTimeframeStrategy();
 
         // When
         // Then
-        assertThrows(UnsupportedDataNeedException.class, () -> strategy.energyDataTimeframe(accountingPointDataNeed));
+        assertThrows(UnsupportedDataNeedException.class, () -> strategy.energyDataTimeframe(accountingPointDataNeed,
+                                                                                            ZonedDateTime.now(ZoneOffset.UTC)));
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void testEnergyDataTimeframe_calculatesCorrectStartAndEndDate() throws UnsupportedDataNeedException {
         // Given
-        var strategy = new AiidaEnergyDataTimeframeStrategy(FIXED_CLOCK);
+        var strategy = new AiidaEnergyDataTimeframeStrategy();
         when(aiidaDataNeed.duration())
                 .thenReturn(duration);
         when(duration.start())
@@ -51,7 +59,7 @@ class AiidaEnergyDataTimeframeStrategyTest {
         when(duration.end())
                 .thenReturn(Optional.of(Period.ofDays(10)));
         // When
-        var res = strategy.energyDataTimeframe(aiidaDataNeed);
+        var res = strategy.energyDataTimeframe(aiidaDataNeed, REFERENCE_DATE_TIME);
 
         // Then
         assertAll(
@@ -61,10 +69,11 @@ class AiidaEnergyDataTimeframeStrategyTest {
         );
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void testEnergyDataTimeframe_calculatesCorrectStartAndEndDate_withNullStartAndEnd() throws UnsupportedDataNeedException {
         // Given
-        var strategy = new AiidaEnergyDataTimeframeStrategy(FIXED_CLOCK);
+        var strategy = new AiidaEnergyDataTimeframeStrategy();
         when(aiidaDataNeed.duration())
                 .thenReturn(duration);
         when(duration.start())
@@ -72,7 +81,7 @@ class AiidaEnergyDataTimeframeStrategyTest {
         when(duration.end())
                 .thenReturn(Optional.empty());
         // When
-        var res = strategy.energyDataTimeframe(aiidaDataNeed);
+        var res = strategy.energyDataTimeframe(aiidaDataNeed, REFERENCE_DATE_TIME);
 
         // Then
         assertAll(

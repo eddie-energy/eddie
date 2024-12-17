@@ -40,7 +40,6 @@ import reactor.core.publisher.Sinks;
 
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
-import java.time.Clock;
 import java.util.List;
 
 import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
@@ -83,11 +82,6 @@ public class AiidaBeanConfig {
         return new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .registerModule(new Jdk8Module());
-    }
-
-    @Bean
-    public Clock clock() {
-        return Clock.systemUTC();
     }
 
     @Bean
@@ -197,14 +191,13 @@ public class AiidaBeanConfig {
 
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
-            Clock clock
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
                 AiidaRegionConnectorMetadata.getInstance(),
-                new PermissionEndIsEnergyDataEndStrategy(REGION_CONNECTOR_ZONE_ID),
-                new AiidaEnergyDataTimeframeStrategy(clock),
+                new PermissionEndIsEnergyDataEndStrategy(),
+                new AiidaEnergyDataTimeframeStrategy(),
                 List.of()
         );
     }
