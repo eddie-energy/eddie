@@ -5,7 +5,8 @@ found [here](https://github.com/eddie-energy/eddie/wiki/EDDIE-Development-&-Depl
 
 ## Prerequisites
 
-In order for AIIDA to run, it is necessary to start a [TimescaleDB](https://www.timescale.com/) and a [Keycloak](https://www.keycloak.org/) instance. The predefined docker-compose.yml for starting those services can be found in the [docker](docker) folder.
+In order for AIIDA to run, it is necessary to start a [TimescaleDB](https://www.timescale.com/) and a [Keycloak](https://www.keycloak.org/) instance. The predefined docker-compose.yml for starting
+those services can be found in the [docker](docker) folder.
 In order to use Datasources that use MQTT a NanoMQ instances is required additionally, which is also included in the docker-compose.yml.
 Before starting the services, the environment variables in the [.env](docker/.env) file should be configured, especially the
 `SPRING_DATASOURCE_USERNAME` and
@@ -52,28 +53,36 @@ This is only relevant during development, because usually AIIDA and EDDIE servic
 
 ### Keycloak Integration in Docker Network
 
-To enable Keycloak usage within a Docker network, several configurations must be made in the `application.yml` file of the Spring application. 
+To enable Keycloak usage within a Docker network, several configurations must be made in the `application.yml` file of the Spring application.
 When setting the property `issuer-uri` in the `application.yml`, the application retrieves the URIs from `http://localhost:8888/realms/EDDIE/.well-known/openid-configuration`.
 Since this URI is not accessible from the Docker network, the required URIs must be defined explicitly.
 
 The following properties must be set in the `application.yml` file:
 
-| Property            | Description                                                    |
-|---------------------|----------------------------------------------------------------|
-| authorization-uri   | URI for redirecting users for authorization.                   |
-| token-uri           | URI to exchange the access code for an access token.           |
-| user-info-uri       | URI to fetch user information.                                 |
-| jwk-set-uri         | URI to obtain the public key for verifying JWTs.               |
-| user-name-attribute | JWT claim that contains the username.                          |
-| redirect-uri        | URI for redirecting users back to the application post-login.  |
+| Property            | Description                                                   |
+|---------------------|---------------------------------------------------------------|
+| authorization-uri   | URI for redirecting users for authorization.                  |
+| token-uri           | URI to exchange the access code for an access token.          |
+| user-info-uri       | URI to fetch user information.                                |
+| jwk-set-uri         | URI to obtain the public key for verifying JWTs.              |
+| user-name-attribute | JWT claim that contains the username.                         |
+| redirect-uri        | URI for redirecting users back to the application post-login. |
 
 Additionally, Keycloak requires a configured frontend URL to validate the issuer URI. This is specified using the `KC_HOSTNAME` variable in the `compose.yml` file.
-
-These settings can be adjusted using the following variables in the `.env` file:
-
+The provided `compose.yml` file provides a preconfiguration of these values for keycloak, you can configure it using the environments:
 - `AIIDA_EXTERNAL_HOST`
 - `KEYCLOAK_INTERNAL_HOST`
 - `KEYCLOAK_EXTERNAL_HOST`
+
+For a local development setup these values can be configured as follows (defaults of `.env` file):
+- `AIIDA_EXTERNAL_HOST=http://localhost:8080`
+- `KEYCLOAK_INTERNAL_HOST=http://keycloak:8080`
+- `KEYCLOAK_EXTERNAL_HOST=http://localhost:8888`
+ 
+For a production deployment setup these values can be configured as follows assuming keycloak is running on `keycloak.eddie.energy` and aiida is running on `aiida.eddie.energy`:
+- `AIIDA_EXTERNAL_HOST=https://aiida.eddie.energy`
+- `KEYCLOAK_INTERNAL_HOST=https://keycloak.eddie.energy`
+- `KEYCLOAK_EXTERNAL_HOST=https://keycloak.eddie.energy`
 
 ### EDDIE Keycloak Theme
 
@@ -85,16 +94,23 @@ The source code and instructions can be found within the [keycloak eddie theme f
 Several configurations can be applied through environment variables or the _application.properties_ file.
 When using Docker, most of these properties should be configured in the [.env](docker/.env) file.
 
-| Property                   | Description                                                                 |
-|----------------------------|-----------------------------------------------------------------------------|
-| AIIDA_EXTERNAL_HOST        | Network-accessible host of the AIIDA instance                               |
-| SPRING_DATASOURCE_USERNAME | Username to authenticate to the TimescaleDB                                 |
-| SPRING_DATASOURCE_PASSWORD | Password to authenticate to the TimescaleDB                                 |
-| KEYCLOAK_INTERNAL_HOST     | Internal network host of the Keycloak instance (e.g. inside Docker network) |
-| KEYCLOAK_EXTERNAL_HOST     | Network-accessible host of the Keycloak instance                            |
-| KEYCLOAK_REALM             | Name of the Keycloak realm                                                  |
-| KEYCLOAK_CLIENT            | Name of the Keycloak client                                                 |
-| KEYCLOAK_CLIENT_SECRET     | The client secret for the Keycloak client                                   |
+| Property                   | Description                                                                                             |
+|----------------------------|---------------------------------------------------------------------------------------------------------|
+| AIIDA_EXTERNAL_HOST        | Network-accessible host of the AIIDA instance                                                           |
+| AIIDA_CORS_ALLOWED_ORIGINS | The origins that are allowed to communicate with AIIDA (necessary for deployments with reverse proxies) |
+| SPRING_DATASOURCE_USERNAME | Username to authenticate to the TimescaleDB                                                             |
+| SPRING_DATASOURCE_PASSWORD | Password to authenticate to the TimescaleDB                                                             |
+| KEYCLOAK_INTERNAL_HOST     | Internal network host of the Keycloak instance (e.g. inside Docker network)                             |
+| KEYCLOAK_EXTERNAL_HOST     | Network-accessible host of the Keycloak instance                                                        |
+| KEYCLOAK_REALM             | Name of the Keycloak realm                                                                              |
+| KEYCLOAK_CLIENT            | Name of the Keycloak client                                                                             |
+| KEYCLOAK_CLIENT_SECRET     | The client secret for the Keycloak client                                                               |
+
+### Reverse Proxy Deployment
+If you are running an AIIDA instance behind a reverse proxy (e.g. nginx) to make it accessible everywhere, it is necessary to add the origin of the AIIDA instance to the allowed origins.
+This can be done by setting the config `aiida.cors.allowed-origins` or using the `AIIDA_CORS_ALLOWED_ORIGINS` environment variable.
+For example if your AIIDA instance is reachable at the url `https://aiida.eddie.energy` you have to set the value of `AIIDA_CORS_ALLOWED_ORIGINS` to `https://aiida.eddie.energy`.
+To the best of our knowledge this is only necessary for reverse proxy deployments and not e.g. using Kubernetes.
 
 ## API Documentation
 
