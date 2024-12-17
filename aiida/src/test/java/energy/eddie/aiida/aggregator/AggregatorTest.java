@@ -24,7 +24,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import static org.mockito.Mockito.*;
@@ -37,8 +36,8 @@ class AggregatorTest {
     private Set<String> wantedCodes;
     private AiidaRecord unwanted1;
     private AiidaRecord unwanted2;
+    private AiidaRecord unwanted3;
     private AiidaRecord wanted1;
-    private AiidaRecord wanted2;
     private Instant expiration;
     private CronExpression transmissionSchedule;
     @Mock
@@ -59,10 +58,10 @@ class AggregatorTest {
                 new AiidaRecordValue("1.7.0", "1.7.0", "10", "kWh", "10", "kWh")));
         unwanted2 = new AiidaRecord(instant, "Test", List.of(
                 new AiidaRecordValue("1.8.0", "1.8.0", "15", "kWh", "10", "kWh")));
+        unwanted3 = new AiidaRecord(instant, "Test", List.of(
+                new AiidaRecordValue("2.8.0", "2.8.0", "60", "kWh", "10", "kWh")));
         wanted1 = new AiidaRecord(instant, "Test", List.of(
                 new AiidaRecordValue("1.8.0", "1.8.0", "50", "kWh", "10", "kWh")));
-        wanted2 = new AiidaRecord(instant, "Test", List.of(
-                new AiidaRecordValue("2.8.0", "2.8.0", "60", "kWh", "10", "kWh")));
         expiration = Instant.now().plusSeconds(300_000);
         transmissionSchedule = CronExpression.parse("* * * * * *");
 
@@ -125,37 +124,18 @@ class AggregatorTest {
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
                                                                                    expiration,
                                                                                    transmissionSchedule))
-                                                .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValue()
-                                                                                             .stream()
-                                                                                             .anyMatch(aiidaRecordValue ->
-                                                                                                               aiidaRecordValue.dataTag()
-                                                                                                                               .equals("2.8.0")
-                                                                                                               && Objects.equals(
-                                                                                                                       aiidaRecordValue.rawValue(),
-                                                                                                                       "60")
-                                                                                                               && aiidaRecord.timestamp()
-                                                                                                                             .isBefore(
-                                                                                                                                     expiration)))
-                                                .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValue()
-                                                                                             .stream()
-                                                                                             .anyMatch(aiidaRecordValue ->
-                                                                                                               aiidaRecordValue.dataTag()
-                                                                                                                               .equals("1.8.0")
-                                                                                                               && Objects.equals(
-                                                                                                                       aiidaRecordValue.rawValue(),
-                                                                                                                       "50")
-                                                                                                               && aiidaRecord.timestamp()
-                                                                                                                             .isBefore(
-                                                                                                                                     expiration)))
+                                                .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
+                                                        aiidaRecord,
+                                                        wanted1.aiidaRecordValue().getFirst()))
                                                 .thenCancel()   // Flux of datasource doesn't terminate except if .close() is called
                                                 .verifyLater();
 
 
         // must not matter which datasource publishes the data
-        publisher1.next(unwanted1);
-        publisher1.next(wanted2);
+        publisher1.next(unwanted3);
+        publisher1.next(unwanted2);
         publisher2.next(wanted1);
-        publisher2.next(unwanted2);
+        publisher2.next(unwanted1);
 
         stepVerifier.verify(Duration.ofSeconds(2));
     }
@@ -173,40 +153,21 @@ class AggregatorTest {
         when(mockDataSource.start()).thenReturn(publisher.flux());
 
         aggregator.addNewAiidaDataSource(mockDataSource);
-        publisher.next(unwanted1);
+        publisher.next(unwanted3);
         publisher.next(unwanted2);
 
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
                                                                                    expiration,
                                                                                    transmissionSchedule))
-                                                .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValue()
-                                                                                             .stream()
-                                                                                             .anyMatch(aiidaRecordValue ->
-                                                                                                               aiidaRecordValue.dataTag()
-                                                                                                                               .equals("2.8.0")
-                                                                                                               && Objects.equals(
-                                                                                                                       aiidaRecordValue.rawValue(),
-                                                                                                                       "60")
-                                                                                                               && aiidaRecord.timestamp()
-                                                                                                                             .isBefore(
-                                                                                                                                     expiration)))
-                                                .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValue()
-                                                                                             .stream()
-                                                                                             .anyMatch(aiidaRecordValue ->
-                                                                                                               aiidaRecordValue.dataTag()
-                                                                                                                               .equals("1.8.0")
-                                                                                                               && Objects.equals(
-                                                                                                                       aiidaRecordValue.rawValue(),
-                                                                                                                       "50")
-                                                                                                               && aiidaRecord.timestamp()
-                                                                                                                             .isBefore(
-                                                                                                                                     expiration)))
+                                                .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
+                                                        aiidaRecord,
+                                                        wanted1.aiidaRecordValue().getFirst()))
                                                 .thenCancel()   // Flux of datasource doesn't terminate except if .close() is called
                                                 .verifyLater();
 
 
-        publisher.next(wanted2);
         publisher.next(wanted1);
+        publisher.next(unwanted1);
 
         stepVerifier.verify(Duration.ofSeconds(2));
     }
@@ -230,14 +191,9 @@ class AggregatorTest {
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
                                                                                    expiration,
                                                                                    transmissionSchedule))
-                                                .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValue()
-                                                                                             .stream()
-                                                                                             .anyMatch(aiidaRecordValue ->
-                                                                                                               aiidaRecordValue.dataTag()
-                                                                                                                               .equals("1.8.0")
-                                                                                                               && Objects.equals(
-                                                                                                                       aiidaRecordValue.rawValue(),
-                                                                                                                       "50")))
+                                                .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
+                                                        aiidaRecord,
+                                                        wanted1.aiidaRecordValue().getFirst()))
                                                 .thenCancel()
                                                 .log()
                                                 .verifyLater();
@@ -268,17 +224,15 @@ class AggregatorTest {
         aggregator.addNewAiidaDataSource(mockDataSource2);
 
         publisher1.next(wanted1);
-        publisher1.next(wanted2);
         publisher1.complete();
 
         publisher2.next(wanted1);
-        publisher2.next(wanted2);
         publisher2.complete();
 
         publisher1.flux().blockLast(Duration.of(200, ChronoUnit.MILLIS));
         publisher2.flux().blockLast(Duration.of(200, ChronoUnit.MILLIS));
 
-        verify(mockRepository, times(4)).save(any(AiidaRecord.class));
+        verify(mockRepository, times(2)).save(any(AiidaRecord.class));
     }
 
     /**
@@ -315,22 +269,13 @@ class AggregatorTest {
         StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration, transmissionSchedule))
                     .then(() -> {
                         publisher.next(wanted1);
+                        publisher.next(unwanted1);
                         publisher.next(atExpirationTime);
-                        publisher.next(wanted2);
                         publisher.next(afterExpirationTime);
                     })
-                    .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValue().stream()
-                                                                 .anyMatch(aiidaRecordValue ->
-                                                                                   aiidaRecordValue.dataTag()
-                                                                                                   .equals("1.8.0")
-                                                                                   && Objects.equals(aiidaRecordValue.rawValue(),
-                                                                                                     "50")))
-                    .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValue().stream()
-                                                                 .anyMatch(aiidaRecordValue ->
-                                                                                   aiidaRecordValue.dataTag()
-                                                                                                   .equals("2.8.0")
-                                                                                   && Objects.equals(aiidaRecordValue.rawValue(),
-                                                                                                     "60")))
+                    .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
+                                                        aiidaRecord,
+                                                        wanted1.aiidaRecordValue().getFirst()))
                     .then(aggregator::close)
                     .expectComplete()
                     .verify();
@@ -388,5 +333,16 @@ class AggregatorTest {
         TestUtils.verifyErrorLogStartsWith("Error from datasource %s".formatted(DATASOURCE_NAME),
                                            logCaptor,
                                            IOException.class);
+    }
+
+    private boolean containsExpectedAiidaRecordValue(AiidaRecord actual, AiidaRecordValue expectedValue) {
+        System.out.println("actual: " + actual.aiidaRecordValue().getFirst().rawValue());
+        System.out.println("expected: " + expectedValue.rawValue());
+        return actual.aiidaRecordValue()
+                     .stream()
+                     .anyMatch(aiidaRecordValue ->
+                                       aiidaRecordValue.dataTag().equals(expectedValue.dataTag())
+                                       && aiidaRecordValue.rawValue().equals(expectedValue.rawValue())
+                                       && actual.timestamp().isBefore(expiration));
     }
 }

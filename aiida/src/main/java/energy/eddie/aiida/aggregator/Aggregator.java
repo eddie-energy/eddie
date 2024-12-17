@@ -7,24 +7,18 @@ import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.health.HealthContributorRegistry;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronExpression;
+import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.util.Objects.requireNonNull;
 
 @Component
 public class Aggregator implements AutoCloseable {
@@ -101,11 +95,22 @@ public class Aggregator implements AutoCloseable {
     public Flux<AiidaRecord> getFilteredFlux(
             Set<String> allowedDataTags, Instant permissionExpirationTime, CronExpression transmissionSchedule
     ) {
+        var cronSink = Sinks.many().multicast().directAllOrNothing();
+        var cronTrigger = new CronTrigger(transmissionSchedule.toString());
+        var cronScheduler = new ThreadPoolTaskScheduler();
+
+        cronScheduler.initialize();
+        cronScheduler.schedule(() -> cronSink.tryEmitNext(true), cronTrigger);
+
         return combinedSink.asFlux()
-                   .filter(aiidaRecord -> isAllowedDataTag(aiidaRecord, allowedDataTags)
-                                          && isBeforeExpiration(aiidaRecord, permissionExpirationTime))
-                   .transform(flux -> bufferRecordsByCron(flux, transmissionSchedule))
-                   .flatMapIterable(this::aggregateRecords);
+                           .doOnComplete(() -> {
+                               cronScheduler.stop();
+                               cronSink.tryEmitComplete();
+                           })
+                           .filter(aiidaRecord -> isAllowedDataTag(aiidaRecord, allowedDataTags)
+                                                  && isBeforeExpiration(aiidaRecord, permissionExpirationTime))
+                           .buffer(cronSink.asFlux())
+                           .flatMapIterable(this::aggregateRecords);
     }
 
     private boolean isAllowedDataTag(AiidaRecord aiidaRecord, Set<String> allowedDataTags) {
@@ -118,26 +123,10 @@ public class Aggregator implements AutoCloseable {
         return aiidaRecord.timestamp().isBefore(permissionExpirationTime);
     }
 
-    private Flux<List<AiidaRecord>> bufferRecordsByCron(Flux<AiidaRecord> flux, CronExpression transmissionSchedule) {
-        var nextCronTimestamp = new AtomicReference<>(getNextCronTimestamp(transmissionSchedule));
-
-        return flux.bufferUntil(aiidaRecord -> {
-            if (!aiidaRecord.timestamp().isBefore(nextCronTimestamp.get())) {
-                nextCronTimestamp.set(getNextCronTimestamp(transmissionSchedule)); // Update the next cron timestamp
-                return true;
-            }
-            return false;
-        });
-    }
-
-    private Instant getNextCronTimestamp(CronExpression transmissionSchedule) {
-        return requireNonNull(transmissionSchedule.next(ZonedDateTime.now(ZoneOffset.UTC))).toInstant();
-    }
-
     private List<AiidaRecord> aggregateRecords(List<AiidaRecord> aiidaRecords) {
-        // TODO: GH-1307 Currently only the last record is kept. This should be changed to a more sophisticated aggregation.
+        // TODO: GH-1307 Currently only the last record of an asset is kept. This should be changed to a more sophisticated aggregation.
         var aggregatedRecords = aiidaRecords.stream()
-                                            .collect(Collectors.toMap(AiidaRecord::aiidaRecordValue,
+                                            .collect(Collectors.toMap(AiidaRecord::asset,
                                                                       Function.identity(),
                                                                       (existingRecord, newRecord) -> newRecord,
                                                                       LinkedHashMap::new));
