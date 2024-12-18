@@ -4,7 +4,7 @@ import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.core.dtos.SupportedDataNeeds;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -45,7 +45,8 @@ class MetadataServiceTest {
             public RegionConnectorMetadata getMetadata() {
                 var mock = mock(RegionConnectorMetadata.class);
                 when(mock.id()).thenReturn(Integer.toString(counter));
-                when(mock.supportedDataNeeds()).thenReturn(List.of(ValidatedHistoricalDataDataNeed.class, GenericAiidaDataNeed.class));
+                when(mock.supportedDataNeeds()).thenReturn(List.of(ValidatedHistoricalDataDataNeed.class,
+                                                                   AiidaDataNeed.class));
                 return mock;
             }
 
@@ -64,7 +65,7 @@ class MetadataServiceTest {
 
         var actual = service.getSupportedDataNeeds();
 
-        var expected = new SupportedDataNeeds("1", List.of("ValidatedHistoricalDataDataNeed", "GenericAiidaDataNeed"));
+        var expected = new SupportedDataNeeds("1", List.of("ValidatedHistoricalDataDataNeed", "AiidaDataNeed"));
 
         assertIterableEquals(expected.dataNeeds(), actual.getFirst().dataNeeds());
 

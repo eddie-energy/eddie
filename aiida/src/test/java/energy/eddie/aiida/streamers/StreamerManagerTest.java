@@ -6,7 +6,6 @@ import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +33,10 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class StreamerManagerTest {
+    private final String permissionId = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
+    private final Instant grant = Instant.parse("2023-08-01T10:00:00.00Z");
+    private final Instant start = grant.plusSeconds(100_000);
+    private final Instant expirationTime = start.plusSeconds(800_000);
     @Mock
     private Aggregator aggregatorMock;
     @Mock
@@ -49,10 +52,6 @@ class StreamerManagerTest {
     private AiidaStreamer mockAiidaStreamer;
     @Mock
     private Map<String, AiidaStreamer> mockMap;
-    private final String permissionId = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
-    private final Instant grant = Instant.parse("2023-08-01T10:00:00.00Z");
-    private final Instant start = grant.plusSeconds(100_000);
-    private final Instant expirationTime = start.plusSeconds(800_000);
 
     @BeforeEach
     void setUp() {
@@ -67,7 +66,6 @@ class StreamerManagerTest {
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
-        when(mockDataNeed.type()).thenReturn(GenericAiidaDataNeed.DISCRIMINATOR_VALUE);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
@@ -78,8 +76,7 @@ class StreamerManagerTest {
             assertDoesNotThrow(() -> manager.createNewStreamer(mockPermission));
 
             // When, Then
-            var thrown = assertThrows(IllegalStateException.class,
-                                      () -> manager.createNewStreamer(mockPermission));
+            var thrown = assertThrows(IllegalStateException.class, () -> manager.createNewStreamer(mockPermission));
             assertThat(thrown.getMessage(), startsWith("An AiidaStreamer for permission "));
         }
     }
@@ -91,7 +88,6 @@ class StreamerManagerTest {
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
-        when(mockDataNeed.type()).thenReturn(GenericAiidaDataNeed.DISCRIMINATOR_VALUE);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
@@ -135,7 +131,6 @@ class StreamerManagerTest {
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
-        when(mockDataNeed.type()).thenReturn(GenericAiidaDataNeed.DISCRIMINATOR_VALUE);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         when(aggregatorMock.getFilteredFlux(any(), any(), any())).thenReturn(Flux.empty());

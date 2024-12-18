@@ -32,7 +32,7 @@
     "maxGranularity": "P1D"
   },
   {
-    "type": "genericAiida",
+    "type": "aiida",
     "id": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
     "name": "FUTURE_NEAR_REALTIME_DATA",
     "description": "Near realtime consumption data from the smart meter",

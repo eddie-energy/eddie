@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.aiida.data.needs;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -26,7 +26,7 @@ class AiidaEnergyDataTimeframeStrategyTest {
     @Mock
     private AccountingPointDataNeed accountingPointDataNeed;
     @Mock
-    private GenericAiidaDataNeed genericAiidaDataNeed;
+    private AiidaDataNeed aiidaDataNeed;
     @Mock
     private RelativeDuration duration;
 
@@ -44,14 +44,14 @@ class AiidaEnergyDataTimeframeStrategyTest {
     void testEnergyDataTimeframe_calculatesCorrectStartAndEndDate() throws UnsupportedDataNeedException {
         // Given
         var strategy = new AiidaEnergyDataTimeframeStrategy(FIXED_CLOCK);
-        when(genericAiidaDataNeed.duration())
+        when(aiidaDataNeed.duration())
                 .thenReturn(duration);
         when(duration.start())
                 .thenReturn(Optional.of(Period.ofDays(1)));
         when(duration.end())
                 .thenReturn(Optional.of(Period.ofDays(10)));
         // When
-        var res = strategy.energyDataTimeframe(genericAiidaDataNeed);
+        var res = strategy.energyDataTimeframe(aiidaDataNeed);
 
         // Then
         assertAll(
@@ -65,14 +65,14 @@ class AiidaEnergyDataTimeframeStrategyTest {
     void testEnergyDataTimeframe_calculatesCorrectStartAndEndDate_withNullStartAndEnd() throws UnsupportedDataNeedException {
         // Given
         var strategy = new AiidaEnergyDataTimeframeStrategy(FIXED_CLOCK);
-        when(genericAiidaDataNeed.duration())
+        when(aiidaDataNeed.duration())
                 .thenReturn(duration);
         when(duration.start())
                 .thenReturn(Optional.empty());
         when(duration.end())
                 .thenReturn(Optional.empty());
         // When
-        var res = strategy.energyDataTimeframe(genericAiidaDataNeed);
+        var res = strategy.energyDataTimeframe(aiidaDataNeed);
 
         // Then
         assertAll(

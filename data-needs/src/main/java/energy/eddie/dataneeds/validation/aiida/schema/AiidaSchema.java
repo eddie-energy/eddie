@@ -1,4 +1,4 @@
-package energy.eddie.dataneeds.validation.schema;
+package energy.eddie.dataneeds.validation.aiida.schema;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

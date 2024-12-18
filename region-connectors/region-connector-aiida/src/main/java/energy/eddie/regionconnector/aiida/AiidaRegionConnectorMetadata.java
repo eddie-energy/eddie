@@ -4,7 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 
 import javax.annotation.Nullable;
 import java.time.Period;
@@ -19,7 +19,7 @@ public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final Period EARLIEST_START = Period.ZERO;
     public static final Period LATEST_END = Period.ofYears(9999);
     public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(
-            GenericAiidaDataNeed.class
+            AiidaDataNeed.class
     );
 
     @Nullable
@@ -72,6 +72,6 @@ public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
-       return List.copyOf(SUPPORTED_DATA_NEEDS);
+        return List.copyOf(SUPPORTED_DATA_NEEDS);
     }
 }

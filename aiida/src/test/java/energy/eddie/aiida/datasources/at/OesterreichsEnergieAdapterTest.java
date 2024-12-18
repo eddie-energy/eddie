@@ -7,7 +7,7 @@ import energy.eddie.aiida.datasources.AiidaDataSource;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.TestUtils;
-import energy.eddie.dataneeds.validation.asset.AiidaAsset;
+import energy.eddie.dataneeds.validation.aiida.asset.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;

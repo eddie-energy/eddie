@@ -4,12 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
 import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
-import energy.eddie.dataneeds.validation.asset.AiidaAsset;
-import energy.eddie.dataneeds.validation.schema.AiidaSchema;
+import energy.eddie.dataneeds.validation.aiida.asset.AiidaAsset;
+import energy.eddie.dataneeds.validation.aiida.schema.AiidaSchema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.springframework.scheduling.support.CronExpression;
@@ -88,12 +87,7 @@ public class AiidaLocalDataNeed {
         this.transmissionSchedule = details.dataNeed().transmissionSchedule();
         this.schemas = details.dataNeed().schemas();
         this.asset = details.dataNeed().asset();
-
-        if (details.dataNeed() instanceof GenericAiidaDataNeed genericAiida) {
-            this.dataTags = Set.copyOf(genericAiida.dataTags());
-        } else {
-            this.dataTags = null;
-        }
+        this.dataTags = Set.copyOf(details.dataNeed().dataTags());
     }
 
     public String permissionId() {

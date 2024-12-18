@@ -10,7 +10,7 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.RegionConnectorFilter;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
@@ -55,7 +55,7 @@ class DataNeedCalculationServiceImplTest {
     @Mock
     private AccountingPointDataNeed accountingPointDataNeed;
     @Mock
-    private GenericAiidaDataNeed genericAiidaDataNeed;
+    private AiidaDataNeed aiidaDataNeed;
 
     @Test
     void givenUnknownDataNeedId_returnsDataNeedNotFoundResult() {
@@ -109,8 +109,8 @@ class DataNeedCalculationServiceImplTest {
     void givenUnsupportedDataNeed_returnsDataNeedNotSupportedResult() {
         // Given
         when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(genericAiidaDataNeed));
-        when(genericAiidaDataNeed.isEnabled()).thenReturn(true);
+                .thenReturn(Optional.of(aiidaDataNeed));
+        when(aiidaDataNeed.isEnabled()).thenReturn(true);
         var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
         // When
         var res = calculationService.calculate("dnid");
@@ -118,7 +118,7 @@ class DataNeedCalculationServiceImplTest {
         // Then
         assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
         assertEquals(
-                "Data need type \"GenericAiidaDataNeed\" not supported, region connector supports data needs of types ValidatedHistoricalDataDataNeed, AccountingPointDataNeed",
+                "Data need type \"AiidaDataNeed\" not supported, region connector supports data needs of types ValidatedHistoricalDataDataNeed, AccountingPointDataNeed",
                 ((DataNeedNotSupportedResult) res).message()
         );
     }

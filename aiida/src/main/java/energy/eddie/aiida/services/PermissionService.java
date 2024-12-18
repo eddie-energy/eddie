@@ -11,7 +11,7 @@ import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,8 +139,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                                        .onErrorComplete()
                                                        .block();
 
-        if (details == null)
+        if (details == null) {
             throw new DetailFetchingFailedException(permission.permissionId());
+        }
 
         return updatePermissionWithDetails(permission, details);
     }
@@ -186,7 +187,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      */
     private boolean isPermissionFulfillable(Permission permission) {
         var dataNeed = permission.dataNeed();
-        return dataNeed != null && dataNeed.type().equals(GenericAiidaDataNeed.DISCRIMINATOR_VALUE);
+        return dataNeed != null && dataNeed.type().equals(AiidaDataNeed.DISCRIMINATOR_VALUE);
     }
 
     /**

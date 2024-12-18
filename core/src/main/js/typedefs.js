@@ -9,7 +9,7 @@
  */
 
 /**
- * @typedef {"account" | "validated" | "genericAiida" | "smartMeterAiida"} DataNeedType
+ * @typedef {"account" | "validated" | "aiida"} DataNeedType
  */
 
 /**
@@ -70,27 +70,23 @@
  */
 
 /**
- * @typedef {"CONNECTION_AGREEMENT_POINT", "CONTROLLABLE_UNIT", "DEDICATED_MEASUREMENT_DEVICE", "SUBMETER"} Asset
+ * @typedef {"SMART_METER_P1_RAW", "SMART_METER_P1_CIM"} AiidaSchema
+ */
+
+/**
+ * @typedef {"CONNECTION_AGREEMENT_POINT", "CONTROLLABLE_UNIT", "DEDICATED_MEASUREMENT_DEVICE", "SUBMETER"} AiidaAsset
  */
 
 /**
  * @typedef {DataNeed} AiidaDataNeed
- * @property {string} transmissionSchedule - The schedule at which data is transmitted.
- * @property {Asset} asset - The asset type.
- */
-
-/**
- * @typedef {AiidaDataNeed} SmartMeterAiidaDataNeed
- */
-
-/**
- * @typedef {AiidaDataNeed} GenericAiidaDataNeed
- * @property {string} transmissionSchedule - The schedule at which data is transmitted.
  * @property {Array<string>} dataTags - The tags associated with the data.
+ * @property {string} transmissionSchedule - The schedule at which data is transmitted.
+ * @property {Array<AiidaSchema>} schemas - The schemas in which the data will be provided.
+ * @property {AiidaAsset} asset - The asset type.
  */
 
 /**
- * @typedef {ValidatedHistoricalDataDataNeed | SmartMeterAiidaDataNeed | GenericAiidaDataNeed | AccountingPointDataNeed} DataNeedAttributes
+ * @typedef {ValidatedHistoricalDataDataNeed | AiidaDataNeed | AccountingPointDataNeed} DataNeedAttributes
  */
 
 /**

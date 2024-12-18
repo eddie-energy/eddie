@@ -41,36 +41,34 @@ CREATE TABLE IF NOT EXISTS data_needs.accounting_point_data_need
 );
 
 
-CREATE TABLE IF NOT EXISTS data_needs.generic_aiida_data_need
+CREATE TABLE IF NOT EXISTS data_needs.aiida_data_need
 (
-    data_need_id          varchar(255) NOT NULL
-        PRIMARY KEY,
-    created_at            timestamp(6) WITH TIME ZONE,
-    description           varchar(255) NOT NULL,
-    name                  varchar(255) NOT NULL,
-    policy_link           varchar(255) NOT NULL,
-    purpose               varchar(255) NOT NULL,
-    transmission_schedule varchar(36) NOT NULL,
-    asset text NOT NULL,
-    enabled               boolean DEFAULT TRUE
+    data_need_id          uuid                        NOT NULL PRIMARY KEY,
+    created_at            timestamp(6) WITH TIME ZONE NOT NULL,
+    enabled               boolean                     NOT NULL,
+    description           text                        NOT NULL,
+    name                  text                        NOT NULL,
+    policy_link           text                        NOT NULL,
+    purpose               text                        NOT NULL,
+    transmission_schedule VARCHAR(36)                 NOT NULL,
+    asset                 text                        NOT NULL
 );
 
-
-CREATE TABLE IF NOT EXISTS data_needs.generic_aiida_data_need_data_tags
+CREATE TABLE IF NOT EXISTS data_needs.aiida_data_need_data_tags
 (
-    data_need_id varchar(255) NOT NULL
-        CONSTRAINT fk5acf4ekqf0qurcdrx8ayq4xpk
-            REFERENCES data_needs.generic_aiida_data_need,
-    data_tags    varchar(255)
+    data_need_id uuid NOT NULL,
+    data_tag     text,
+    PRIMARY KEY (data_need_id, data_tag),
+    FOREIGN KEY (data_need_id) REFERENCES aiida_data_need (data_need_id)
 );
 
 CREATE TABLE IF NOT EXISTS data_needs.aiida_data_need_schemas
 (
-    data_need_id varchar(255) NOT NULL
-        REFERENCES data_needs.generic_aiida_data_need,
-    schemas      varchar(255)
+    data_need_id uuid NOT NULL,
+    schema       text NOT NULL,
+    PRIMARY KEY (data_need_id, schema),
+    FOREIGN KEY (data_need_id) REFERENCES aiida_data_need (data_need_id)
 );
-
 
 CREATE TABLE IF NOT EXISTS data_needs.relative_duration
 (
@@ -80,22 +78,6 @@ CREATE TABLE IF NOT EXISTS data_needs.relative_duration
     relative_end   bytea,
     relative_start bytea
 );
-
-
-CREATE TABLE IF NOT EXISTS data_needs.smart_meter_aiida_data_need
-(
-    data_need_id          varchar(255) NOT NULL
-        PRIMARY KEY,
-    created_at            timestamp(6) WITH TIME ZONE,
-    description           varchar(255) NOT NULL,
-    name                  varchar(255) NOT NULL,
-    policy_link           varchar(255) NOT NULL,
-    purpose               varchar(255) NOT NULL,
-    transmission_schedule varchar(36) NOT NULL,
-    asset text NOT NULL,
-    enabled               boolean DEFAULT TRUE
-);
-
 
 CREATE TABLE IF NOT EXISTS data_needs.validated_consumption_data_need
 (

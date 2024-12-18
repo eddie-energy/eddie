@@ -10,8 +10,8 @@ import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.MqttDto;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
-import energy.eddie.dataneeds.validation.schema.AiidaSchema;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.validation.aiida.schema.AiidaSchema;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -69,7 +69,7 @@ class PermissionServiceTest {
     @Mock
     private HandshakeService mockHandshakeService;
     @Mock
-    private GenericAiidaDataNeed mockDataNeed;
+    private AiidaDataNeed mockDataNeed;
     @Mock
     private AiidaLocalDataNeed mockAiidaDataNeed;
     @Mock
@@ -163,7 +163,7 @@ class PermissionServiceTest {
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/23 * * * * *"));
         when(mockDataNeed.id()).thenReturn("myId");
-        when(mockDataNeed.type()).thenReturn(GenericAiidaDataNeed.DISCRIMINATOR_VALUE);
+        when(mockDataNeed.type()).thenReturn(AiidaDataNeed.DISCRIMINATOR_VALUE);
         when(mockDataNeed.name()).thenReturn("My Name");
         when(mockDataNeed.purpose()).thenReturn("Some purpose");
         when(mockDataNeed.policyLink()).thenReturn("https://example.org");
@@ -193,7 +193,7 @@ class PermissionServiceTest {
         assertEquals(permissionId, dataNeed.permissionId());
         assertEquals("myId", dataNeed.dataNeedId());
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
-        assertEquals(GenericAiidaDataNeed.DISCRIMINATOR_VALUE, dataNeed.type());
+        assertEquals(AiidaDataNeed.DISCRIMINATOR_VALUE, dataNeed.type());
         assertEquals("My Name", dataNeed.name());
         assertEquals("Some purpose", dataNeed.purpose());
         assertEquals("https://example.org", dataNeed.policyLink());

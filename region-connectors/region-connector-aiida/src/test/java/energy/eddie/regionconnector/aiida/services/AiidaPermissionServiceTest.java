@@ -8,7 +8,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
@@ -67,7 +67,7 @@ class AiidaPermissionServiceTest {
     @Mock
     private Outbox mockOutbox;
     @Mock
-    private GenericAiidaDataNeed mockDataNeed;
+    private AiidaDataNeed mockDataNeed;
     @Mock
     private AiidaPermissionRequestViewRepository mockViewRepository;
     @Mock

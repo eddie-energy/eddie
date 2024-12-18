@@ -5,7 +5,7 @@ import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
@@ -27,14 +27,14 @@ public class AiidaEnergyDataTimeframeStrategy implements EnergyDataTimeframeStra
     @Nullable
     @Override
     public Timeframe energyDataTimeframe(DataNeed dataNeed) throws UnsupportedDataNeedException {
-        if (!(dataNeed instanceof GenericAiidaDataNeed genericAiidaDataNeed)) {
+        if (!(dataNeed instanceof AiidaDataNeed aiidaDataNeed)) {
             throw new UnsupportedDataNeedException(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                    dataNeed.id(),
                                                    "Unsupported data need");
         }
         var today = LocalDate.now(clock);
         var wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(
-                genericAiidaDataNeed,
+                aiidaDataNeed,
                 today,
                 // in case of open end/start, fixed values are used
                 EARLIEST_START,

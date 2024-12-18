@@ -2,7 +2,7 @@ package energy.eddie.aiida.schemas;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.dataneeds.validation.schema.AiidaSchema;
+import energy.eddie.dataneeds.validation.aiida.schema.AiidaSchema;
 
 public abstract class SchemaFormatter {
 

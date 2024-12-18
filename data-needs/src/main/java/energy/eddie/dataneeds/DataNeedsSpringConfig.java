@@ -6,8 +6,7 @@ import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
-import energy.eddie.dataneeds.needs.aiida.SmartMeterAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsDbService;
 import energy.eddie.dataneeds.web.management.DataNeedsManagementController;
 import io.swagger.v3.oas.models.media.Schema;
@@ -110,7 +109,7 @@ public class DataNeedsSpringConfig {
 
     /**
      * Adds the {@code type} field to {@link AccountingPointDataNeed}, {@link ValidatedHistoricalDataDataNeed},
-     * {@link SmartMeterAiidaDataNeed}, {@link GenericAiidaDataNeed}, {@link AbsoluteDuration}, {@link RelativeDuration}
+     * {@link AiidaDataNeed}, {@link AbsoluteDuration}, {@link RelativeDuration}
      * so that it properly shows up in the OpenAPI documentation. Sets the default value of the {@code type} field to
      * the discriminator value of the class, e.g. {@link AccountingPointDataNeed#DISCRIMINATOR_VALUE}, so that the user
      * knows what to use as discriminator values.
@@ -131,11 +130,8 @@ public class DataNeedsSpringConfig {
                                         ValidatedHistoricalDataDataNeed.class,
                                         ValidatedHistoricalDataDataNeed.DISCRIMINATOR_VALUE);
         addTypeWithDefaultValueToSchema(schemas,
-                                        SmartMeterAiidaDataNeed.class,
-                                        SmartMeterAiidaDataNeed.DISCRIMINATOR_VALUE);
-        addTypeWithDefaultValueToSchema(schemas,
-                                        GenericAiidaDataNeed.class,
-                                        GenericAiidaDataNeed.DISCRIMINATOR_VALUE);
+                                        AiidaDataNeed.class,
+                                        AiidaDataNeed.DISCRIMINATOR_VALUE);
         addTypeWithDefaultValueToSchema(schemas,
                                         AbsoluteDuration.class,
                                         AbsoluteDuration.DISCRIMINATOR_VALUE);
