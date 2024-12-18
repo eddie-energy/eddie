@@ -122,13 +122,14 @@ SwaggerUI is also included and can be found here: http://localhost:8080/swagger-
 
 Smart meters are the primary datasources and are gradually integrated in AIIDA. Data from all datasources is
 automatically persisted in the TimescaleDB.
-
+ 
 Currently, the following countries are supported:
 
-| Country | Name of datasource                                                              |
-|---------|---------------------------------------------------------------------------------|
-| Austria | [OesterreichsEnergieAdapter](docs/datasources/at/OesterreichsEnergieAdapter.md) |
-| France  | [MicroTeleinfoV3](docs/datasources/fr/MicroTeleinfoV3.md)                       |
+| Country                        | Name of datasource                                                              |
+|--------------------------------|---------------------------------------------------------------------------------|
+| AT                             | [OesterreichsEnergieAdapter](docs/datasources/at/OesterreichsEnergieAdapter.md) |
+| FR                             | [MicroTeleinfoV3](docs/datasources/fr/MicroTeleinfoV3.md)                       |
+| NL, BE, SE, DK, FI, HU, LT, CH | [SmartGatewaysAdapter](docs/datasources/sga/SmartGatewaysAdapter.md)            |
 
 ![SupportedMeters](docs/Smart_Meter_supported_by_AIIDA.png)
 *Map created with https://www.mapchart.net*

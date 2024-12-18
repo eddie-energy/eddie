@@ -65,6 +65,13 @@ spring:
 #        mqtt-username: REPLACE_ME_OR_EMPTY
 #        mqtt-password: REPLACE_ME_OR_EMPTY
 #        metering-id: REPLACE_ME
+#     sga:
+#       - enabled: true
+#         id: REPLACE_ME_1
+#         mqtt-server-uri: REPLACE_ME
+#         mqtt-subscribe-topic: REPLACE_ME
+#         mqtt-username: REPLACE_ME_OR_EMPTY
+#         mqtt-password: REPLACE_ME_OR_EMPTY
 #    sim:
 #      simulations:
 #        - enabled: true
