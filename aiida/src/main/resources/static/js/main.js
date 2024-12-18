@@ -76,6 +76,8 @@ const permissionDialogContent = document.getElementById(
   "permission-dialog-content",
 );
 
+const userDrawer = document.getElementById("user-drawer");
+
 const acceptButton = document.getElementById("permission-dialog-accept");
 const rejectButton = document.getElementById("permission-dialog-reject");
 const closeButton = document.getElementById("permission-dialog-close");
@@ -92,6 +94,14 @@ const expiredPermissionsList = document.getElementById("expired-permissions");
 permissionDialog.addEventListener("sl-request-close", (event) => {
   event.preventDefault();
 });
+
+function getCsrfHeader() {
+  return document.querySelector('meta[name="csrf-header"]').getAttribute('content');
+}
+
+function getCsrfToken() {
+  return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
 
 function permissions() {
   return fetch(BASE_URL).then((response) => response.json());
@@ -241,14 +251,11 @@ function renderPermissions() {
 function addPermission() {
   const body = JSON.parse(atob(aiidaCodeInput.value));
 
-  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-  const csrfHeader = document.querySelector('meta[name="csrf-header"]').getAttribute('content');
-
   fetch(BASE_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      [csrfHeader]: csrfToken,
+      [getCsrfHeader()]: getCsrfToken(),
     },
     body: JSON.stringify(body),
   })
@@ -290,14 +297,11 @@ function updatePermission(operation) {
 
   const { permissionId } = JSON.parse(atob(aiidaCodeInput.value));
 
-  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-  const csrfHeader = document.querySelector('meta[name="csrf-header"]').getAttribute('content');
-
   fetch(`${BASE_URL}/${permissionId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      [csrfHeader]: csrfToken,
+      [getCsrfHeader()]: getCsrfToken(),
     },
     body: JSON.stringify({
       operation: operation,
@@ -373,19 +377,32 @@ function openRevokePermissionDialog(permissionId) {
 }
 
 function revokePermission(permissionId) {
-  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-  const csrfHeader = document.querySelector('meta[name="csrf-header"]').getAttribute('content');
-
   fetch(`${BASE_URL}/${permissionId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      [csrfHeader]: csrfToken,
+      [getCsrfHeader()]: getCsrfToken(),
     },
     body: JSON.stringify({
       operation: "REVOKE",
     }),
   }).then(() => renderPermissions());
+}
+
+function logout() {
+  fetch("/logout", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      [getCsrfHeader()]: getCsrfToken(),
+    }
+  }).then(() => {
+    window.location.href = "/";
+  });
+}
+
+function openAccountSettings() {
+  window.location.href = "/account";
 }
 
 // wait for Shoelace elements to ensure validation before submit
@@ -405,3 +422,7 @@ window.addPermission = addPermission;
 window.updatePermission = updatePermission;
 window.hidePermissionDialog = () => permissionDialog.hide();
 window.hideRevokeDialog = () => revokeDialog.hide();
+window.showUserDrawer = () => userDrawer.show();
+window.hideUserDrawer = () => userDrawer.hide();
+window.openAccountSettings = openAccountSettings;
+window.logout = logout;

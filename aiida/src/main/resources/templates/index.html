@@ -20,16 +20,37 @@
     ></script>
   </head>
   <body>
-    <div class="logout-position">
-      <form method="post" th:action="@{/logout}">
-        <input
-          type="hidden"
-          th:name="${_csrf.parameterName}"
-          th:value="${_csrf.token}"
-        />
-        <input class="logout-button" type="submit" value="Logout" />
-      </form>
-    </div>
+    <sl-avatar class="user-button"
+               label="User"
+               th:initials="${userInitials}"
+               onclick="window.showUserDrawer()">
+    </sl-avatar>
+
+    <sl-drawer id="user-drawer" no-header=true>
+      <sl-icon-button class="user-drawer-close"
+                      name="x-lg"
+                      label="Close"
+                      onclick="window.hideUserDrawer()">
+      </sl-icon-button>
+      <div class="user-drawer-header">
+        <sl-avatar label="User picture" th:initials="${userInitials}"></sl-avatar>
+        <div>
+          <strong th:text="${oidcUser.getFullName()}"></strong>
+          <br />
+          <span th:text="${oidcUser.getPreferredUsername()}"></span>
+        </div>
+      </div>
+      <sl-menu>
+        <sl-menu-item onclick="window.openAccountSettings()">
+          <sl-icon slot="prefix" name="person-fill"></sl-icon>
+          Account settings
+        </sl-menu-item>
+        <sl-menu-item onclick="window.logout()">
+          <sl-icon slot="prefix" name="box-arrow-in-right"></sl-icon>
+          Logout
+        </sl-menu-item>
+      </sl-menu>
+    </sl-drawer>
 
     <h1>AIIDA</h1>
 

@@ -4,7 +4,9 @@ import jakarta.annotation.Nullable;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +24,14 @@ public class HomeController {
     public String home(Model model, HttpServletRequest request, HttpServletResponse response, Authentication auth) {
         model.addAttribute("isAuthenticated", auth != null && auth.isAuthenticated());
 
+        if (auth != null) {
+            OidcUser oidcUser = (OidcUser) auth.getPrincipal();
+            model.addAttribute("oidcUser", oidcUser);
+
+            var initials = String.valueOf(oidcUser.getGivenName().charAt(0)) + oidcUser.getFamilyName().charAt(0);
+            model.addAttribute("userInitials", initials);
+        }
+
         String connectionId = getConnectionIdFromCookiesIfPresent(request);
         connectionId = createCookie(response, connectionId);
 
@@ -33,7 +43,9 @@ public class HomeController {
         if (request.getCookies() == null) {
             return null;
         }
-        var connectionIdCookie = Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equals(CONNECTION_ID_COOKIE_NAME)).findFirst();
+        var connectionIdCookie = Arrays.stream(request.getCookies())
+                                       .filter(cookie -> cookie.getName().equals(CONNECTION_ID_COOKIE_NAME))
+                                       .findFirst();
         return connectionIdCookie.map(Cookie::getValue).orElse(null);
     }
 
@@ -52,5 +64,10 @@ public class HomeController {
     @GetMapping("/login")
     public String login() {
         return "login";
+    }
+
+    @GetMapping("/account")
+    public String account(@Value("${aiida.keycloak.account-uri:}") String accountUri) {
+        return "redirect:" + accountUri;
     }
 }

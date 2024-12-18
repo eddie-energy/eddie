@@ -23,12 +23,14 @@ public class OAuth2SecurityConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2SecurityConfig.class);
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository, CorsConfigurationSource corsConfigurationSource) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http,
+            ClientRegistrationRepository clientRegistrationRepository,
+            CorsConfigurationSource corsConfigurationSource
+    ) throws Exception {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                .oauth2Login(oauth2 ->
-                        oauth2.loginPage("/login")
-                )
+                .oauth2Login(oauth2 -> oauth2.loginPage("/login"))
                 .logout(logout -> {
                     var logoutSuccessHandler =
                             new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
