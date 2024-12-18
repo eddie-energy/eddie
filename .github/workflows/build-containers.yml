@@ -71,7 +71,7 @@ jobs:
         run: rm $HOME/.docker/config.json
 
   build-aiida:
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted
     permissions:
       contents: read
       packages: write
