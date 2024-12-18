@@ -16,6 +16,7 @@ import org.hibernate.validator.constraints.URL;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 @Entity
 @Table(schema = "data_needs")
@@ -77,6 +78,24 @@ public abstract class DataNeed implements DataNeedInterface {
 
     @SuppressWarnings("NullAway.Init")
     protected DataNeed() {
+    }
+
+    @SuppressWarnings({"java:S107", "NullAway"})
+    protected DataNeed(
+            String name,
+            String description,
+            String purpose,
+            String policyLink,
+            boolean enabled,
+            @Nullable RegionConnectorFilter regionConnectorFilter
+    ) {
+        this.id = UUID.randomUUID().toString();
+        this.name = name;
+        this.description = description;
+        this.purpose = purpose;
+        this.policyLink = policyLink;
+        this.enabled = enabled;
+        this.regionConnectorFilter = regionConnectorFilter;
     }
 
     public String id() {

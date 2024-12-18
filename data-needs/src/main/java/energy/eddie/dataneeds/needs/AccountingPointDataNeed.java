@@ -1,6 +1,7 @@
 package energy.eddie.dataneeds.needs;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
@@ -12,4 +13,18 @@ import jakarta.persistence.Table;
 @Schema(description = "Data need for accounting point information request, i.e. information about the customer and their metering point.")
 public class AccountingPointDataNeed extends DataNeed {
     public static final String DISCRIMINATOR_VALUE = "account";
+
+    public AccountingPointDataNeed() {}
+
+    @SuppressWarnings("java:S107")
+    public AccountingPointDataNeed(
+            String name,
+            String description,
+            String purpose,
+            String policyLink,
+            boolean enabled,
+            @Nullable RegionConnectorFilter regionConnectorFilter
+    ) {
+        super(name, description, purpose, policyLink, enabled, regionConnectorFilter);
+    }
 }
