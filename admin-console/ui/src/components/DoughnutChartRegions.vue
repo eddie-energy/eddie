@@ -1,55 +1,49 @@
 <script setup lang="ts">
-import Chart from 'chart.js/auto'
-import { getPermissions } from "@/api";
+import Chart from 'primevue/chart'
+import { ref, watch } from 'vue'
 
-async function getPermissionData() {
-  const permissions = await getPermissions();
+const props = defineProps<{ permissionCountPerRegionConnector: { id: string; count: number }[] }>()
 
-  const regionConnectors = permissions.map((x) => x.dso);
+const chartData = ref()
+const chartOptions = ref()
+watch(props, () => {
+  const labels = props.permissionCountPerRegionConnector.map(({ id }) => id)
+  const data = props.permissionCountPerRegionConnector.map(({ count }) => count)
 
-  const count = regionConnectors.reduce((acc, value) => {
-    acc[value] = (acc[value] || 0) + 1;
-    return acc;
-  }, {});
-
-  regionConnectorLabel = Object.keys(count);
-  regionConnectorCount = Object.values(count);
-}
-
-var regionConnectorLabel = [];
-var regionConnectorCount = [];
-
-(async function() {
-  await getPermissionData();
-
-  new Chart(
-    document.getElementById('doughnutChartPermissions'),
-    {
-      type: 'doughnut',
-      data: {
-        labels: regionConnectorLabel,
-        datasets: [
-          {
-            data: regionConnectorCount,
-          }
-        ]
-      },
-      options: {
-        maintainAspectRatio: false,
+  chartData.value = {
+    labels: labels,
+    datasets: [
+      {
+        data: data
       }
-    }
-  )
-})();
-
+    ]
+  }
+  chartOptions.value = {
+    maintainAspectRatio: false
+  }
+})
 </script>
 
 <template>
-  <canvas id="doughnutChartPermissions"></canvas>
+  <div class="regionConnectorCount-chart-container">
+    <Chart
+      class="regionConnectorCount-chart"
+      type="doughnut"
+      :data="chartData"
+      :options="chartOptions"
+    />
+  </div>
 </template>
 
 <style scoped>
-canvas {
-  width: 100% !important;
-  height: 100% !important;
+.regionConnectorCount-chart {
+  width: 100%;
+  height: 100%;
+}
+
+.regionConnectorCount-chart-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 </style>

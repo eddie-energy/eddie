@@ -1,65 +1,73 @@
 <script setup lang="ts">
-import Chart from 'chart.js/auto'
-import { getPermissions } from "@/api";
+import Chart from 'primevue/chart'
+import { ref, watch } from 'vue'
 
-async function getPermissionData() {
-  const permissions = await getPermissions();
+const props = defineProps<{
+  permissions: {
+    permissionId: string
+    regionConnectorId: string
+    dataNeedId: string
+    country: string
+    dso: string
+    startDate: string
+    status: string
+    parsedStartDate: string
+  }[]
+}>()
 
-  const regionConnectorsDatesAndTime = permissions.map((x) => x.startDate);
+const chartData = ref()
+const chartOptions = ref()
 
-  const dateArray = regionConnectorsDatesAndTime.map(dateTime => {
-    const [year, month, day] = dateTime.split('T')[0].split('-');
-    return `${day}.${month}.${year}`;
-  });
+watch(props, () => {
+  const permissionsStartDates = props.permissions.map(({ startDate }) => startDate)
 
-  const count = dateArray.reduce((acc, value) => {
-    acc[value] = (acc[value] || 0) + 1;
-    return acc;
-  }, {});
+  const dateArray = permissionsStartDates.map((dateTime) => {
+    const [year, month, day] = dateTime.split('T')[0].split('-')
+    return `${day}.${month}.${year}`
+  })
 
-  dateLabel = Object.keys(count);
-  permissionsPerDate = Object.values(count);
+  let permissionsCountPerDate: { [key: string]: number } = {}
+  for (const date of dateArray) {
+    permissionsCountPerDate[date] = (permissionsCountPerDate[date] || 0) + 1
+  }
 
-}
+  chartData.value = {
+    labels: Object.keys(permissionsCountPerDate),
+    datasets: [
+      {
+        label: 'Permissions per day',
+        data: Object.values(permissionsCountPerDate),
+        tension: 0.25
+      }
+    ]
+  }
 
-var dateLabel = [];
-var permissionsPerDate = [];
-
-(async function() {
-  await getPermissionData();
-
-  new Chart(
-    document.getElementById('lineChartPermissions'),
-    {
-      type: 'line',
-      data: {
-        labels: dateLabel,
-        datasets: [
-          {
-            label: 'Permissions per day',
-            data: permissionsPerDate,
-            tension: 0.25,
-          }
-        ]
-      },
-      options: {
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
+  chartOptions.value = {
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true
       }
     }
-  )
-})();
-
+  }
+})
 </script>
 
 <template>
-  <canvas id="lineChartPermissions"></canvas>
+  <div class="permissions-chart-container">
+    <Chart class="permissions-chart" type="line" :data="chartData" :options="chartOptions" />
+  </div>
 </template>
 
 <style scoped>
+.permissions-chart {
+  width: 100%;
+  height: 100%;
+}
 
+.permissions-chart-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
 </style>

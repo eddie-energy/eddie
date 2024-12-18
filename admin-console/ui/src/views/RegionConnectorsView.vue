@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { getRegionConnectors } from '@/api.ts'
+import { getRegionConnectors, type RegionConnectorMetadata } from '@/api'
 import { onMounted, ref } from 'vue'
 
-const regionConnectors = ref([])
+const regionConnectors = ref<RegionConnectorMetadata[]>([])
 
 onMounted(async () => {
   regionConnectors.value = await getRegionConnectors()

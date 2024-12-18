@@ -1,44 +1,47 @@
-<script setup>
-import { getDataNeeds, getPermissions, getRegionConnectors } from '@/api'
+<script lang="ts" setup>
+import {
+  type DataNeed,
+  getDataNeeds,
+  getPermissions,
+  getRegionConnectors,
+  type RegionConnectorMetadata,
+  type StatusMessage
+} from '@/api'
 import LineChartPermissions from '@/components/LineChartPermissions.vue'
 import DoughnutChartRegions from '@/components/DoughnutChartRegions.vue'
 import LineChartPackages from '@/components/LineChartPackages.vue'
 import { onMounted, ref } from 'vue'
 
-const permissions = ref([])
-const dataNeeds = ref([])
-const regionConnectors = ref([])
-const regionConnectorsFromPermissions = ref([])
+type PermissionsPerRegionConnector = { id: string; count: number }
+
+const permissions = ref<StatusMessage[]>([])
+const dataNeeds = ref<DataNeed[]>([])
+const regionConnectors = ref<RegionConnectorMetadata[]>([])
+const permissionCountPerRegionConnector = ref<PermissionsPerRegionConnector[]>([])
 
 onMounted(async () => {
   permissions.value = await getPermissions()
-  regionConnectorsFromPermissions.value = await getRegionConnectorsFromPermissions()
+  permissionCountPerRegionConnector.value = await getPermissionCountPerRegionConnector()
   dataNeeds.value = await getDataNeeds()
   regionConnectors.value = await getRegionConnectors()
 })
 
-async function getRegionConnectorsFromPermissions() {
+async function getPermissionCountPerRegionConnector() {
   const permissions = await getPermissions()
 
-  const regionConnectors = permissions.map((x) => x.regionConnectorId)
+  let permissionsPerRegionConnector: { [key: string]: number } = {}
+  for (const { regionConnectorId } of permissions) {
+    permissionsPerRegionConnector[regionConnectorId] =
+      (permissionsPerRegionConnector[regionConnectorId] || 0) + 1
+  }
 
-  const count = regionConnectors.reduce((acc, value) => {
-    acc[value] = (acc[value] || 0) + 1
-    return acc
-  }, {})
-  return Object.entries(count).map(([name, count]) => ({ name, count }))
-}
-
-getRegionConnector()
-
-async function getRegionConnector() {
-  await getRegionConnectorsFromPermissions()
+  return Object.entries(permissionsPerRegionConnector).map(([id, count]) => ({ id, count }))
 }
 </script>
 
 <template>
-  <main>
-    <div class="row row--top">
+  <main class="outer">
+    <div class="row--top">
       <div class="card card--top">
         <header class="card__item card__item--header">
           <span class="card__item-highlighted">{{ permissions.length }}</span>
@@ -57,7 +60,7 @@ async function getRegionConnector() {
           <span><b>0</b> failed recently</span>
         </div>
         <div>
-          <LineChartPermissions></LineChartPermissions>
+          <LineChartPermissions :permissions="permissions"></LineChartPermissions>
         </div>
       </div>
 
@@ -101,10 +104,10 @@ async function getRegionConnector() {
       </div>
     </div>
 
-    <div class="row row--bottom">
+    <div class="bottom">
       <div class="card card--bottom">
         <header class="card__item card__item--header">
-          <span class="card__item-highlighted">{{ regionConnectorsFromPermissions.length }}</span>
+          <span class="card__item-highlighted">{{ permissionCountPerRegionConnector.length }}</span>
           <h2>Region Connectors <span>enabled</span></h2>
         </header>
         <div class="card__item card__item--addition">
@@ -113,8 +116,8 @@ async function getRegionConnector() {
         </div>
         <div class="card__item card__item--list">
           <div
-            v-for="regionConnector in regionConnectorsFromPermissions"
-            :key="regionConnector.name"
+            v-for="regionConnector in permissionCountPerRegionConnector"
+            :key="regionConnector.id"
             class="item"
           >
             <h3>
@@ -141,38 +144,31 @@ async function getRegionConnector() {
         />
       </div>
       <div class="card card--bottom">
-        <DoughnutChartRegions></DoughnutChartRegions>
+        <DoughnutChartRegions
+          :permission-count-per-region-connector="permissionCountPerRegionConnector"
+        ></DoughnutChartRegions>
       </div>
     </div>
   </main>
 </template>
 
 <style scoped>
-.main {
+.outer {
+  display: grid;
   height: 100%;
-}
-
-.row {
-  display: flex;
   gap: 1rem;
 }
 
-.row > * {
-  width: calc(100% / 3);
-  overflow: auto;
-}
-
 .row--top {
-  margin-bottom: 1rem;
-  max-height: calc(100vh / 2);
+  display: grid;
+  gap: 1rem;
 }
 
-.row--bottom {
-  height: 44vh;
-  max-height: 42vh;
-  justify-content: space-between;
+.bottom {
+  display: grid;
   border: 1px solid var(--color-border);
   border-radius: 0.25rem;
+  gap: 1rem;
 }
 
 .card--top {
@@ -184,6 +180,7 @@ async function getRegionConnector() {
 
 .card--bottom {
   padding: 1rem;
+  overflow: auto;
 }
 
 .card__item--header {
@@ -231,5 +228,19 @@ h2 span {
   display: block;
   max-width: 100%;
   height: auto;
+}
+
+@media only screen and (min-width: 1280px) {
+  .outer {
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .row--top {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .bottom {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
 }
 </style>
