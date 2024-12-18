@@ -1,4 +1,9 @@
-import { DATA_NEEDS_API_URL, PERMISSIONS_API_URL, REGION_CONNECTOR_API_URL } from '@/config'
+import {
+  DATA_NEEDS_API_URL,
+  PERMISSIONS_API_URL,
+  REGION_CONNECTOR_API_URL,
+  TERMINATION_API_URL
+} from '@/config'
 
 export type StatusMessage = {
   permissionId: string
@@ -33,6 +38,15 @@ export type DataNeed = {
 
 export async function getPermissions(): Promise<StatusMessage[]> {
   return await fetch(PERMISSIONS_API_URL).then((res) => res.json())
+}
+
+export async function getStatusMessages(permissionId: string): Promise<StatusMessage[]> {
+  return await fetch(`${PERMISSIONS_API_URL}/${permissionId}`).then((res) => res.json())
+}
+
+export async function terminatePermission(permissionId: string): Promise<Response> {
+  // TODO: Attach CSRF tokens
+  return await fetch(`${TERMINATION_API_URL}/${permissionId}`, { method: 'POST' })
 }
 
 export async function getDataNeeds(): Promise<DataNeed[]> {
