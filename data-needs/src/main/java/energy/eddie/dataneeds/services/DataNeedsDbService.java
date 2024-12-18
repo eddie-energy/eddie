@@ -4,6 +4,8 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjection;
 import energy.eddie.dataneeds.persistence.DataNeedsRepository;
+import org.hibernate.Hibernate;
+import org.hibernate.proxy.HibernateProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,19 +26,40 @@ public class DataNeedsDbService implements DataNeedsService {
         LOGGER.info("Initialized database data needs service.");
     }
 
+    /**
+     * Hibernate always responds with a proxy object instead of the actual implementation.
+     * That way it is possible to lazily load parts of the object, but a proxy is not part of the inheritance tree, making it impossible to use the {@code instanceof} operator.
+     * This method unpacks the hibernate proxy to its actual implementation.
+     *
+     * @param <T>    The type of the object to unproxy
+     * @param entity The object to unproxy
+     * @return the actual object and not the proxy
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T initializeAndUnproxy(T entity) {
+        Hibernate.initialize(entity);
+        if (entity instanceof HibernateProxy) {
+            entity = (T) ((HibernateProxy) entity).getHibernateLazyInitializer().getImplementation();
+        }
+        return entity;
+    }
+
     @Override
     public List<DataNeedsNameAndIdProjection> getDataNeedIdsAndNames() {
-        return repository.findAllBy();
+        return repository.findAllBy()
+                         .stream()
+                         .map(DataNeedsDbService::initializeAndUnproxy)
+                         .toList();
     }
 
     @Override
     public Optional<DataNeed> findById(String id) {
-        return repository.findById(id);
+        return repository.findById(id).map(DataNeedsDbService::initializeAndUnproxy);
     }
 
     @Override
     public DataNeed getById(String id) {
-        return repository.getReferenceById(id);
+        return initializeAndUnproxy(repository.getReferenceById(id));
     }
 
     /**
@@ -64,14 +87,16 @@ public class DataNeedsDbService implements DataNeedsService {
 
         LOGGER.info("Saving new data need with ID '{}'", newDataNeed.id());
 
-        return repository.save(newDataNeed);
+        return initializeAndUnproxy(repository.save(newDataNeed));
     }
 
     /**
      * Returns a list of all data needs saved in the database.
      */
     public List<DataNeed> findAll() {
-        return repository.findAll();
+        return repository.findAll().stream()
+                         .map(DataNeedsDbService::initializeAndUnproxy)
+                         .toList();
     }
 
     public boolean existsById(String id) {

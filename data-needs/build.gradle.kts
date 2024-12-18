@@ -28,10 +28,16 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.boot.security)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.junit)
+    testImplementation(libs.spring.boot.testcontainers)
     // needed to have access to RegionConnectorsCommonControllerAdvice that formats error responses correctly
     testImplementation(project(":region-connectors:shared"))
 
     testRuntimeOnly(libs.h2database)
+    testRuntimeOnly(libs.postgresql)
+    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.flyway.postgresql)
 }
 
 tasks.test {
