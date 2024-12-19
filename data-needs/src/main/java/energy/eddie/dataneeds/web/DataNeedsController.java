@@ -5,8 +5,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
-import energy.eddie.dataneeds.needs.aiida.SmartMeterAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjection;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,7 +58,7 @@ public class DataNeedsController {
     @ApiResponse(responseCode = "200",
             content = {
                     @Content(mediaType = "application/json",
-                            schema = @Schema(oneOf = {AccountingPointDataNeed.class, ValidatedHistoricalDataDataNeed.class, GenericAiidaDataNeed.class, SmartMeterAiidaDataNeed.class}),
+                            schema = @Schema(oneOf = {AccountingPointDataNeed.class, ValidatedHistoricalDataDataNeed.class, AiidaDataNeed.class}),
                             examples = {
                                     @ExampleObject(
                                             description = "Full data need object",

@@ -7,12 +7,8 @@ export const DATA_NEED_TOOLTIPS = {
     "Validated Historical Data",
     "Data need for validated historical energy data. For most MDAs, data for the previous day is made available sometime during the current day (e.g. at noon).",
   ],
-  genericAiida: [
+  aiida: [
     "AIIDA Near Real-Time Data",
-    "Data need for an AIIDA instance to share all values that are identified by one of the specified data tags, e.g. an OBIS-code.",
-  ],
-  smartMeterAiida: [
-    "AIIDA Smart Meter Data",
-    "Data need for an AIIDA instance to share all values it can read from the smart meter.",
+    "Data need for an AIIDA instance to share all values or the values that are identified by one of the specified data tags, e.g. an OBIS-code.",
   ],
 };

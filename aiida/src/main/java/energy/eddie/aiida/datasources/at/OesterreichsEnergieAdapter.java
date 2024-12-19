@@ -7,7 +7,7 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.aiida.utils.ObisCode;
-import energy.eddie.dataneeds.validation.asset.AiidaAsset;
+import energy.eddie.dataneeds.validation.aiida.asset.AiidaAsset;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;

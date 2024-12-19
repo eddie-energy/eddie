@@ -27,6 +27,18 @@ enum EnergyType {
     HEAT
 }
 
+enum AiidaSchema {
+    SMART_METER_P1_RAW
+    SMART_METER_P1_CIM
+}
+
+enum AiidaAsset {
+    CONNECTION_AGREEMENT_POINT
+    CONTROLLABLE_UNIT
+    DEDICATED_MEASUREMENT_DEVICE
+    SUBMETER
+}
+
 abstract DataNeedDuration
 
 abstract RelativeDuration {
@@ -41,11 +53,10 @@ abstract AbsoluteDuration {
     end Date
 }
 
-abstract AiidaDataNeed {
+class AiidaDataNeed {
     transmissionSchedule String<CronExpression>
-}
-
-class GenericAiidaDataNeed {
+    schemas Set<AiidaSchema>
+    asset AiidaAsset
     dataTags Set<String>
 }
 
@@ -61,7 +72,8 @@ ValidatedHistoricalDataDataNeed -- EnergyType
 DataNeedDuration <|-- AbsoluteDuration
 DataNeedDuration <|-- RelativeDuration
 
+AiidaDataNeed -- AiidaAsset
+AiidaDataNeed -- AiidaSchema
+
 TimeframedDataNeed <|-- AiidaDataNeed
-AiidaDataNeed <|-- GenericAiidaDataNeed
-AiidaDataNeed <|-- SmartMeterAiidaDataNeed
 @enduml

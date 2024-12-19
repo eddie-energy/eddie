@@ -3,14 +3,14 @@ package energy.eddie.dataneeds.needs.aiida;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
 import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
-import energy.eddie.dataneeds.validation.asset.AiidaAsset;
-import energy.eddie.dataneeds.validation.asset.IsValidAiidaAsset;
-import energy.eddie.dataneeds.validation.schema.AiidaSchema;
-import energy.eddie.dataneeds.validation.schema.IsValidAiidaSchema;
+import energy.eddie.dataneeds.validation.aiida.asset.AiidaAsset;
+import energy.eddie.dataneeds.validation.aiida.schema.AiidaSchema;
+import energy.eddie.dataneeds.validation.aiida.schema.IsValidAiidaSchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -19,11 +19,12 @@ import org.springframework.scheduling.support.CronExpression;
 import java.util.Set;
 
 @Entity
-@Table(schema = "data_needs")
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@IsValidAiidaAsset
+@Table(name = "aiida_data_need", schema = "data_needs")
 @IsValidAiidaSchema
-public abstract class AiidaDataNeed extends TimeframedDataNeed {
+@SuppressWarnings("NullAway")
+public class AiidaDataNeed extends TimeframedDataNeed {
+    public static final String DISCRIMINATOR_VALUE = "aiida";
+
     @Column(name = "transmission_schedule", nullable = false)
     @Convert(converter = CronExpressionConverter.class)
     @JsonProperty(required = true)
@@ -37,7 +38,7 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed {
     @CollectionTable(name = "aiida_data_need_schemas",
             joinColumns = @JoinColumn(name = "data_need_id"),
             schema = "data_needs")
-    @Column(name = "schemas")
+    @Column(name = "schema")
     @JsonProperty(required = true)
     @Enumerated(EnumType.STRING)
     @NotEmpty(message = "must contain at least one schema")
@@ -49,8 +50,29 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed {
     @Enumerated(EnumType.STRING)
     private AiidaAsset asset;
 
+    @ElementCollection
+    @CollectionTable(name = "aiida_data_need_data_tags",
+            joinColumns = @JoinColumn(name = "data_need_id"),
+            schema = "data_needs")
+    @Column(name = "data_tag")
+    @JsonProperty(required = true)
+    @NotEmpty(message = "must contain at least one data tag")
+    private Set<String> dataTags;
+
+    public AiidaDataNeed(Set<String> dataTags) {
+        this.dataTags = dataTags;
+    }
+
     @SuppressWarnings("NullAway.Init")
     protected AiidaDataNeed() {
+    }
+
+    /**
+     * @param dataNeed the data need to check
+     * @return true if the data need is an AiidaDataNeed
+     */
+    public static boolean isAiidaDataNeed(DataNeed dataNeed) {
+        return dataNeed instanceof AiidaDataNeed;
     }
 
     /**
@@ -76,5 +98,12 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed {
      */
     public AiidaAsset asset() {
         return asset;
+    }
+
+    /**
+     * Returns the set of identifiers for the data that should be shared by the AIIDA instance.
+     */
+    public Set<String> dataTags() {
+        return dataTags;
     }
 }

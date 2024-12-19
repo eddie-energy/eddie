@@ -9,7 +9,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.SchemaFormatter;
-import energy.eddie.dataneeds.validation.schema.AiidaSchema;
+import energy.eddie.dataneeds.validation.aiida.schema.AiidaSchema;
 import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.common.MqttException;

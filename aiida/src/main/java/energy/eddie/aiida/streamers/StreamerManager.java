@@ -7,8 +7,6 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
-import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,19 +59,13 @@ public class StreamerManager implements AutoCloseable {
     public void createNewStreamer(Permission permission) throws IllegalArgumentException, MqttException {
         LOGGER.info("Will create a new AiidaStreamer for permission {}", permission.permissionId());
 
-        if (streamers.get(permission.permissionId()) != null)
+        if (streamers.get(permission.permissionId()) != null) {
             throw new IllegalStateException("An AiidaStreamer for permission %s has already been created.".formatted(
                     permission.permissionId()));
+        }
 
-        // TODO support other data needs --> GH-782
         var expirationTime = requireNonNull(permission.expirationTime());
         var dataNeed = requireNonNull(permission.dataNeed());
-        if (!dataNeed.type().equals(GenericAiidaDataNeed.DISCRIMINATOR_VALUE)) {
-            // TODO GH-782: this should be guaranteed by the check when the permission is setup, so no checked exception should be necessary
-            throw new UnexpectedUnsupportedDataNeedException(new UnsupportedDataNeedException("AIIDA",
-                                                                        dataNeed.dataNeedId(),
-                                                                        "Data need not supported"));
-        }
         Set<String> codes = requireNonNull(dataNeed.dataTags());
         CronExpression transmissionSchedule = requireNonNull(dataNeed.transmissionSchedule());
 
@@ -130,18 +122,11 @@ public class StreamerManager implements AutoCloseable {
      */
     @Override
     public void close() {
-        LOGGER.info("Closing all {} streamers", streamers.keySet().size());
+        LOGGER.info("Closing all {} streamers", streamers.size());
         for (var entry : streamers.entrySet()) {
             entry.getValue().close();
         }
 
         terminationRequests.tryEmitComplete();
-    }
-
-    // TODO: Can be removed with GH-782
-    static class UnexpectedUnsupportedDataNeedException extends RuntimeException {
-        public UnexpectedUnsupportedDataNeedException(Exception exception) {
-            super(exception);
-        }
     }
 }

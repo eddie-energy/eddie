@@ -5,8 +5,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.GenericAiidaDataNeed;
-import energy.eddie.dataneeds.needs.aiida.SmartMeterAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsDbService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -54,7 +53,7 @@ public class DataNeedsManagementController {
                             ),
                             @ExampleObject(name = "Generic AIIDA data need for the next 10 days",
                                     description = "Create a new data need to get the generic AIIDA data tags '1.7.0' and '1.8.0' in a two second interval for the next ten days including today",
-                                    value = "{\"type\":\"genericAiida\",\"name\":\"Generic AIIDA data need\",\"description\":\"Please describe the data need.\",\"purpose\":\"And also its purpose.\",\"policyLink\":\"https://example.com/toc\",\"transmissionSchedule\":\"*/2 * * * * *\",\"asset\":\"CONNECTION-AGREEMENT-POINT\",\"duration\":{\"type\":\"relativeDuration\",\"start\":\"P0D\",\"end\":\"P10D\"},\"dataTags\":[\"1.8.0\",\"1.7.0\"],\"regionConnectorFilter\":{\"type\":\"allowlist\",\"regionConnectorIds\":[\"aiida\"]}}"
+                                    value = "{\"type\":\"aiida\",\"name\":\"Generic AIIDA data need\",\"description\":\"Please describe the data need.\",\"purpose\":\"And also its purpose.\",\"policyLink\":\"https://example.com/toc\",\"transmissionSchedule\":\"*/2 * * * * *\",\"asset\":\"CONNECTION-AGREEMENT-POINT\",\"duration\":{\"type\":\"relativeDuration\",\"start\":\"P0D\",\"end\":\"P10D\"},\"dataTags\":[\"1.8.0\",\"1.7.0\"],\"regionConnectorFilter\":{\"type\":\"allowlist\",\"regionConnectorIds\":[\"aiida\"]}}"
                             )
                     }
             )
@@ -63,7 +62,7 @@ public class DataNeedsManagementController {
             @ApiResponse(responseCode = "201", description = "Created the data need",
                     content = {
                             @Content(mediaType = "application/json",
-                                    schema = @Schema(oneOf = {AccountingPointDataNeed.class, ValidatedHistoricalDataDataNeed.class, SmartMeterAiidaDataNeed.class, GenericAiidaDataNeed.class}), examples = {
+                                    schema = @Schema(oneOf = {AccountingPointDataNeed.class, ValidatedHistoricalDataDataNeed.class, AiidaDataNeed.class}), examples = {
                                     @ExampleObject(
                                             description = "Full data need object",
                                             value = "{\"type\":\"VALIDATED_HISTORICAL_CONSUMPTION_DATA\",\"id\":\"7f57cf16-5121-42a6-919e-7f7335826e64\",\"name\":\"My awesome data need\",\"description\":\"Some description.\",\"purpose\":\"My purpose.\",\"policyLink\":\"https://example.com/toc\",\"duration\":{\"type\":\"relative\",\"durationStart\":-12,\"durationEnd\":12,\"durationType\":\"MONTH\"},\"createdAt\":\"2024-03-04T12:55:13.014024Z\",\"energyType\":\"ELECTRICITY\",\"granularity\":\"PT15M\",\"regionConnectorFilter\":{\"type\":\"blocklist\",\"regionConnectorIds\":[\"aiida\"]}}"
@@ -100,7 +99,7 @@ public class DataNeedsManagementController {
     @ApiResponse(responseCode = "200",
             description = "OK",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(oneOf = {AccountingPointDataNeed.class, ValidatedHistoricalDataDataNeed.class, SmartMeterAiidaDataNeed.class, GenericAiidaDataNeed.class}),
+                    schema = @Schema(oneOf = {AccountingPointDataNeed.class, ValidatedHistoricalDataDataNeed.class, AiidaDataNeed.class}),
                     examples = {
                             @ExampleObject(
                                     value = "{\"type\":\"validated\",\"id\":\"5dc53107-144b-406f-a689-74fb50729271\",\"name\":\"My awesome data need\",\"description\":\"Some description.\",\"purpose\":\"My purpose.\",\"policyLink\":\"https://example.com/toc\",\"createdAt\":\"2024-03-18T06:33:45.205489Z\",\"duration\":{\"type\":\"relativeDuration\"},\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"PT15M\",\"maxGranularity\":\"PT15M\",\"regionConnectorFilter\":{\"type\":\"blocklist\",\"regionConnectorIds\":[\"aiida\"]}}"

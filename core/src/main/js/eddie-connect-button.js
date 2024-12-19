@@ -489,10 +489,7 @@ class EddieConnectButton extends LitElement {
   }
 
   isAiida() {
-    return (
-      this._dataNeedAttributes?.type === "genericAiida" ||
-      this._dataNeedAttributes?.type === "smartMeterAiida"
-    );
+    return this._dataNeedAttributes?.type === "aiida";
   }
 
   handleDialogShow(event) {
