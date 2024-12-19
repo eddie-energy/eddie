@@ -35,9 +35,9 @@
       <div class="user-drawer-header">
         <sl-avatar label="User picture" th:initials="${userInitials}"></sl-avatar>
         <div>
-          <strong th:text="${oidcUser.getFullName()}"></strong>
+          <strong th:text="${oidcUser?.getFullName()}"></strong>
           <br />
-          <span th:text="${oidcUser.getPreferredUsername()}"></span>
+          <span th:text="${oidcUser?.getPreferredUsername()}"></span>
         </div>
       </div>
       <sl-menu>

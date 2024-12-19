@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.UUID;
@@ -24,8 +25,7 @@ public class HomeController {
     public String home(Model model, HttpServletRequest request, HttpServletResponse response, Authentication auth) {
         model.addAttribute("isAuthenticated", auth != null && auth.isAuthenticated());
 
-        if (auth != null) {
-            OidcUser oidcUser = (OidcUser) auth.getPrincipal();
+        if (auth != null && auth.getPrincipal() instanceof OidcUser oidcUser) {
             model.addAttribute("oidcUser", oidcUser);
 
             var initials = String.valueOf(oidcUser.getGivenName().charAt(0)) + oidcUser.getFamilyName().charAt(0);
@@ -67,7 +67,7 @@ public class HomeController {
     }
 
     @GetMapping("/account")
-    public String account(@Value("${aiida.keycloak.account-uri:}") String accountUri) {
-        return "redirect:" + accountUri;
+    public void account(HttpServletResponse resp, @Value("${aiida.keycloak.account-uri:}") String accountUri) throws IOException {
+        resp.sendRedirect(accountUri);
     }
 }

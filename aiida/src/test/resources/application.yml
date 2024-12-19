@@ -10,3 +10,7 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+
+aiida:
+  keycloak:
+    account-uri: http://localhost:8888/realms/EDDIE/account
