@@ -5,7 +5,8 @@
   "homepage": "https://eddie.energy",
   "scripts": {
     "build": "pnpm -r --filter=./region-connectors/* --filter=./core run build",
-    "docs:build": "pnpm -C ./docs run build"
+    "docs:build": "pnpm -C ./docs run build",
+    "admin:build": "pnpm -C ./admin-console/ui run build --base=/outbound-connectors/admin-console"
   },
   "engines": {
     "node": ">=18.14.0",

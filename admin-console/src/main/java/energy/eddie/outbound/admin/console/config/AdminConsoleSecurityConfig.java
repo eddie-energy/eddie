@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,33 +31,34 @@ public class AdminConsoleSecurityConfig {
 
     @Bean
     @ConditionalOnProperty(value = LOGIN_ENABLED, havingValue = "true")
-    public SecurityFilterChain loginEnabledSecurityFilterChain(HttpSecurity http,
-                                                   MvcRequestMatcher.Builder adminConsoleRequestMatcher,
-                                                   @Value("${" + LOGIN_USERNAME + "}") String adminUsername,
-                                                   @Value("${" + LOGIN_ENCODED_PASSWORD + "}") String adminEncodedPassword
-
+    public SecurityFilterChain loginEnabledSecurityFilterChain(
+            HttpSecurity http,
+            MvcRequestMatcher.Builder adminConsoleRequestMatcher,
+            @Value("${" + LOGIN_USERNAME + "}") String adminUsername,
+            @Value("${" + LOGIN_ENCODED_PASSWORD + "}") String adminEncodedPassword
     ) throws Exception {
         return http
-                .csrf((csrf) -> csrf.requireCsrfProtectionMatcher(adminConsoleRequestMatcher.pattern("*")))
-                .authorizeHttpRequests((authorize) -> authorize
+                // TODO: GH-1535 Configure CSRF for POST requests
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authorize -> authorize
+                        // Allow access to static resources used by the login page
+                        .requestMatchers(adminConsoleRequestMatcher.pattern("/static/**")).permitAll()
                         .requestMatchers(adminConsoleRequestMatcher.pattern("**")).authenticated()
                         .anyRequest().permitAll()
                 )
                 .httpBasic(Customizer.withDefaults())
-                .formLogin((formLogin) -> formLogin
+                .formLogin(formLogin -> formLogin
                         .loginPage(ADMIN_CONSOLE_BASE_URL + "/login")
-                        .defaultSuccessUrl(ADMIN_CONSOLE_BASE_URL)
+                        .defaultSuccessUrl(ADMIN_CONSOLE_BASE_URL + "/")
                         .permitAll()
                 )
                 .logout(LogoutConfigurer::permitAll)
-
                 .userDetailsService(new InMemoryUserDetailsManager(
                         User.builder()
-                                .username(adminUsername)
-                                .password(adminEncodedPassword)
-                                .build())
+                            .username(adminUsername)
+                            .password(adminEncodedPassword)
+                            .build())
                 )
-
                 .build();
     }
 

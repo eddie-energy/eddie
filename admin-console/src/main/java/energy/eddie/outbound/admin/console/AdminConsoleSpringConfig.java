@@ -15,7 +15,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class AdminConsoleSpringConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/**")
+        // Vue assets
+        registry.addResourceHandler("/assets/**")
+                .addResourceLocations("classpath:/public/assets/");
+        // Vue app entry point
+        registry.addResourceHandler("/index.html")
+                .addResourceLocations("classpath:/public/index.html");
+        // Vue favicon
+        registry.addResourceHandler("/favicon.ico")
+                .addResourceLocations("classpath:/public/favicon.ico");
+        // Static resources separate from the Vue app
+        registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/");
+        // Register resource handlers before view controllers
+        registry.setOrder(-1);
     }
 }

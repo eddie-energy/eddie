@@ -2,16 +2,23 @@
 <html lang="en" xmlns:th="https://www.thymeleaf.org">
   <head>
     <title>Login</title>
-    <link rel="stylesheet" th:href="@{login.css}" />
+    <link rel="icon" th:href="@{favicon.svg}" />
+    <link rel="stylesheet" th:href="@{static/login.css}" />
   </head>
 
   <body>
     <div class="main">
-      <img class="logo" th:src="EDDIE_logo.png" alt="EDDIE Logo"/>
+      <img class="logo" th:src="@{static/EDDIE_logo.png}" alt="EDDIE Logo" />
 
       <h1>EDDIE Admin Console Login</h1>
 
       <form th:action="@{login}" method="post">
+        <input
+          type="hidden"
+          th:name="${_csrf.parameterName}"
+          th:value="${_csrf.token}"
+        />
+
         <div th:if="${param.error}" class="alert alert-error">
           Invalid username and password.
         </div>
@@ -21,10 +28,20 @@
         </div>
 
         <label for="username">Username</label>
-        <input type="text" id="username" name="username" autocomplete="username"/>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          autocomplete="username"
+        />
 
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" autocomplete="current-password"/>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          autocomplete="current-password"
+        />
 
         <div class="form-actions">
           <button type="submit" class="btn">Log in</button>

@@ -7,13 +7,11 @@ import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConne
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,44 +29,8 @@ class HomeControllerTest {
     private StatusMessageRepository statusMessageRepository;
     @Mock
     private TerminationAdminConsoleConnector terminationConnector;
-    @Mock
-    private Model model;
-    @Captor
-    private ArgumentCaptor<List<StatusMessageDTO>> captor;
     @InjectMocks
     private HomeController homeController;
-
-    @Test
-    void testHome() {
-        StatusMessage statusMessage = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05", "ACCEPTED");
-
-        when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(statusMessage));
-
-        String viewName = homeController.home(model, "false");
-
-        verify(statusMessageRepository, times(1)).findLatestStatusMessageForAllPermissions();
-        verify(model, times(1)).addAttribute(eq("title"), anyString());
-        verify(model, times(1)).addAttribute(eq("statusMessages"), anyList());
-        verify(model, times(1)).addAttribute(eq("nonTerminatableStatuses"), anyList());
-
-        assertEquals("index", viewName);
-    }
-
-    @Test
-    void testStatusDisplays() {
-        // Given
-        StatusMessage unknownStatusMessage = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "ABCDEF", "ACCEPTED");
-        when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(unknownStatusMessage));
-
-        // When
-        homeController.home(model, "false");
-        verify(model, times(1)).addAttribute(eq("statusMessages"), captor.capture());
-        List<StatusMessageDTO> statusMessages = captor.getValue();
-
-        // Then
-        assertEquals(1, statusMessages.size());
-        assertEquals("UNKNOWN_STATUS", statusMessages.getFirst().cimStatus());
-    }
 
     @Test
     void testGetStatusMessages() {
@@ -88,22 +50,6 @@ class HomeControllerTest {
         assertEquals(2, Objects.requireNonNull(response.getBody()).size());
         assertEquals("Available", response.getBody().get(0).cimStatus());
         assertEquals("Active", response.getBody().get(1).cimStatus());
-    }
-
-    @Test
-    void testCountryCodePrefixRemoval() {
-        // Given
-        StatusMessage statusMessageWithPrefix = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "NCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05", "ACCEPTED");
-        when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(statusMessageWithPrefix));
-
-        // When
-        homeController.home(model, "false");
-        verify(model, times(1)).addAttribute(eq("statusMessages"), captor.capture());
-        List<StatusMessageDTO> statusMessages = captor.getValue();
-
-        // Then
-        assertEquals(1, statusMessages.size());
-        assertEquals("Country", statusMessages.getFirst().country());
     }
 
     @Test

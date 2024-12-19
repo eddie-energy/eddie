@@ -6,40 +6,17 @@ import energy.eddie.outbound.admin.console.data.StatusMessageDTO;
 import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConnector;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.Arrays;
 import java.util.List;
-
-import static energy.eddie.outbound.admin.console.config.AdminConsoleConfig.LOGIN_ENABLED;
 
 @Controller
 public class HomeController {
 
-    private static final List<String> NON_TERMINATABLE_STATUSES = Arrays.asList(
-            "Cancelled",
-            "Deactivated",
-            "No longer available",
-            "Withdrawn",
-            "Deactivation",
-            "Close",
-            "Stop",
-            "Not satisfied",
-            "Rejected",
-            "MALFORMED",
-            "UNABLE_TO_SEND",
-            "TIMED_OUT",
-            "REVOKED",
-            "TERMINATED",
-            "UNFULFILLABLE",
-            "PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT"
-    );
     private final StatusMessageRepository statusMessageRepository;
     private final TerminationAdminConsoleConnector terminationConnector;
 
@@ -50,25 +27,6 @@ public class HomeController {
     ) {
         this.statusMessageRepository = statusMessageRepository;
         this.terminationConnector = terminationConnector;
-    }
-
-    @GetMapping
-    public String home(Model model,
-                       @Value("${" + LOGIN_ENABLED + "}") String loginEnabled
-    ) {
-        List<StatusMessage> statusMessages = statusMessageRepository.findLatestStatusMessageForAllPermissions();
-
-        List<StatusMessageDTO> updatedStatusMessages = statusMessages.stream()
-                .map(HomeController::dtoFromStatusMessage)
-                .toList();
-
-        model.addAttribute("title", "Permissions for Service Comparor");
-        model.addAttribute("statusMessages", updatedStatusMessages);
-        model.addAttribute("nonTerminatableStatuses", NON_TERMINATABLE_STATUSES);
-
-        model.addAttribute("loginEnabled", loginEnabled.equals("true"));
-
-        return "index";
     }
 
     @GetMapping("/statusMessages")
@@ -126,5 +84,10 @@ public class HomeController {
     @GetMapping("/login")
     public String getLogin() {
         return "login";
+    }
+
+    @GetMapping("/**")
+    public String index() {
+        return "forward:/outbound-connectors/admin-console/index.html";
     }
 }

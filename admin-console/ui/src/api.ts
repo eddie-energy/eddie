@@ -57,7 +57,10 @@ export async function getStatusMessages(permissionId: string): Promise<StatusMes
 }
 
 export async function terminatePermission(permissionId: string) {
-  const response = await fetch(`${TERMINATION_API_URL}/${permissionId}`, { method: 'POST' })
+  const response = await fetch(`${TERMINATION_API_URL}/${permissionId}`, {
+    method: 'POST',
+    credentials: 'include'
+  })
 
   if (!response.ok) {
     throw new Error('Failed to terminate permission')
