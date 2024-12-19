@@ -2,6 +2,7 @@
   "realm": "EDDIE",
   "enabled": true,
   "loginTheme": "eddie-theme",
+  "defaultRoles": ["manage-account"],
   "clients": [
     {
       "clientId": "AIIDA",
@@ -11,6 +12,20 @@
       "secret": "REPLACE_ME",
       "directAccessGrantsEnabled": true
     }
+  ],
+  "groups": [
+    {
+      "name": "aiida-user-group",
+      "path": "/aiida-user-group",
+      "clientRoles": {
+        "account": [
+          "manage-account"
+        ]
+      }
+    }
+  ],
+  "defaultGroups": [
+    "/aiida-user-group"
   ],
   "users": [
     {
@@ -26,9 +41,10 @@
     {
       "username": "aiida",
       "email": "aiida@eddie.eu",
-      "firstName": "aiida",
-      "lastName": "aiida",
+      "firstName": "John",
+      "lastName": "Doe",
       "enabled": true,
+      "groups": ["/aiida-user-group"],
       "credentials": [
         {
           "type": "password",

@@ -34,17 +34,21 @@ body {
   gap: var(--sl-spacing-small);
 }
 
-.logout-button {
-  background-color: #007aa2;
-  border: 1rem;
-  color: white;
-  padding: 1rem;
-  border-radius: 1rem;
-  cursor: pointer;
-}
-
-.logout-position {
+.user-button {
   position: absolute;
   top: 2rem;
   right: 2rem;
+}
+
+.user-drawer-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+.user-drawer-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sl-spacing-small);
+  margin-bottom: var(--sl-spacing-large);
 }

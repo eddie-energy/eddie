@@ -1,10 +1,13 @@
 package energy.eddie.aiida.web;
 
+import energy.eddie.aiida.config.KeycloakConfiguration;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,9 +21,23 @@ public class HomeController {
     public static final Duration MAX_CONNECTION_ID_LIFETIME = Duration.ofHours(24);
     public static final String CONNECTION_ID_COOKIE_NAME = "connectionId";
 
+    private final KeycloakConfiguration keycloakConfiguration;
+
+    @Autowired
+    public HomeController(KeycloakConfiguration keycloakConfiguration) {
+        this.keycloakConfiguration = keycloakConfiguration;
+    }
+
     @GetMapping("/")
     public String home(Model model, HttpServletRequest request, HttpServletResponse response, Authentication auth) {
         model.addAttribute("isAuthenticated", auth != null && auth.isAuthenticated());
+
+        if (auth != null && auth.getPrincipal() instanceof OidcUser oidcUser) {
+            model.addAttribute("oidcUser", oidcUser);
+
+            var initials = String.valueOf(oidcUser.getGivenName().charAt(0)) + oidcUser.getFamilyName().charAt(0);
+            model.addAttribute("userInitials", initials);
+        }
 
         String connectionId = getConnectionIdFromCookiesIfPresent(request);
         connectionId = createCookie(response, connectionId);
@@ -33,7 +50,9 @@ public class HomeController {
         if (request.getCookies() == null) {
             return null;
         }
-        var connectionIdCookie = Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equals(CONNECTION_ID_COOKIE_NAME)).findFirst();
+        var connectionIdCookie = Arrays.stream(request.getCookies())
+                                       .filter(cookie -> cookie.getName().equals(CONNECTION_ID_COOKIE_NAME))
+                                       .findFirst();
         return connectionIdCookie.map(Cookie::getValue).orElse(null);
     }
 
@@ -52,5 +71,10 @@ public class HomeController {
     @GetMapping("/login")
     public String login() {
         return "login";
+    }
+
+    @GetMapping("/account")
+    public String account() {
+        return "redirect:" + keycloakConfiguration.accountUri();
     }
 }
