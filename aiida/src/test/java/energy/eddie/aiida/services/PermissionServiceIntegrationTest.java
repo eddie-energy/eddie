@@ -1,6 +1,6 @@
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.config.OAuth2SecurityConfig;
+import energy.eddie.aiida.config.OAuth2SecurityConfiguration;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         // manually trigger migration
         "spring.flyway.enabled=false"
 })
-@MockBean(classes = {ClientRegistrationRepository.class, OAuth2SecurityConfig.class, CorsConfigurationSource.class})
+@MockBean(classes = {ClientRegistrationRepository.class, OAuth2SecurityConfiguration.class, CorsConfigurationSource.class})
 @Testcontainers
 public class PermissionServiceIntegrationTest {
     @Container

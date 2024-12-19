@@ -19,8 +19,8 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-public class OAuth2SecurityConfig {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2SecurityConfig.class);
+public class OAuth2SecurityConfiguration {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2SecurityConfiguration.class);
 
     @Bean
     public SecurityFilterChain filterChain(

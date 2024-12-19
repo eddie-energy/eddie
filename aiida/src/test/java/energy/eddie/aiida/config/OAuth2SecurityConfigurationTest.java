@@ -18,11 +18,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SuppressWarnings("unused")
-class OAuth2SecurityConfigTest {
+class OAuth2SecurityConfigurationTest {
     @Nested
     @WebMvcTest(controllers = HomeController.class)
     @AutoConfigureMockMvc
-    @Import(OAuth2SecurityConfig.class)
+    @Import(OAuth2SecurityConfiguration.class)
     class NoCorsPropertyTest {
         @Autowired
         private MockMvc mockMvc;
@@ -47,7 +47,7 @@ class OAuth2SecurityConfigTest {
             },
             controllers = HomeController.class
     )
-    @Import(OAuth2SecurityConfig.class)
+    @Import(OAuth2SecurityConfiguration.class)
     class GivenCorsPropertyTest {
         @Autowired
         private MockMvc mockMvc;
