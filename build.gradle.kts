@@ -31,7 +31,6 @@ licenseReport {
     filters = arrayOf<DependencyFilter>(LicenseBundleNormalizer())
 }
 
-
 tasks.register<PnpmTask>("pnpmBuild") {
     group = "build"
     description = "builds the eddie button and custom elements"
@@ -43,7 +42,7 @@ tasks.register<PnpmTask>("pnpmBuildDocs") {
     group = "documentation"
     description = "builds the eddie framework documentation"
     dependsOn("pnpmInstall")
-    pnpmCommand.set(listOf("-C", "docs", "run", "docs:build"))
+    pnpmCommand.set(listOf("run", "docs:build"))
 }
 
 sonar {
