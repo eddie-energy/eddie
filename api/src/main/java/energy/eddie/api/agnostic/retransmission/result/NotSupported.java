@@ -1,4 +1,10 @@
 package energy.eddie.api.agnostic.retransmission.result;
 
-public record NotSupported(String reason) implements RetransmissionResult {
+import java.time.ZonedDateTime;
+
+public record NotSupported(
+        String permissionId,
+        ZonedDateTime timestamp,
+        String reason
+) implements RetransmissionResult {
 }

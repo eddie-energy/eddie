@@ -46,8 +46,7 @@ Furthermore, it is used to set the name of the outbound-connector.
 
 ### `ConnectionStatusMessageOutboundConnector`
 
-The [
-`ConnectionStatusMessageOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/ConnectionStatusMessageOutboundConnector.html) interface provides means to get a stream of [connection status messages](../2-integrating/messages/connection-status-messages.md), which are emitted to the eligible party.
+The [`ConnectionStatusMessageOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/ConnectionStatusMessageOutboundConnector.html) interface provides means to get a stream of [connection status messages](../2-integrating/messages/connection-status-messages.md), which are emitted to the eligible party.
 
 ### `RawDataOutboundConnector`
 
@@ -78,13 +77,20 @@ If a permission request has the status accepted, the eligible party can terminat
 See subsection [termination documents](../2-integrating/messages/permission-market-documents.md#termination-documents) and the [permission process model](../2-integrating/integrating.md#permission-process-model) documentation for more information.
 This interface does not produce any documents, but receives them.
 
-### `RetransmissionConnector`
+### `RetransmissionOutboundConnector`
 
 > [!WARNING]
 > This interface is still work in progress.
 
-The [`RetransmissionConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/RetransmissionConnector.html) interface provides the eligible party with means to re-request data of a permission request.
-This interface receives retransmission requests.
+The [`RetransmissionOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/RetransmissionOutboundConnector.html) interface provides the eligible party with means to request retransmission of data from a permission request.
+This interface receives retransmission requests and passes them on to the region-connectors.
+The interface also informs about the result of the retransmission request in the form of a retransmission results.
+These results are only specific to permission requests and no order is guaranteed.
+Aka when sending multiple retransmission request for the same permission request there is no way to associate a retransmission result with a specific retransmission request, only with the permission request.
+
+Currently, there are no cim documents defined for retransmission requests.
+So the internal `RetransmissionRequest` and
+`RetransmissionResult` can be used to send and receive retransmission requests.
 
 ## Shared Functionality
 

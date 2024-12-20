@@ -1,20 +1,14 @@
 package energy.eddie.outbound.admin.console.services;
 
-import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequestRouter;
-import energy.eddie.api.agnostic.retransmission.result.Success;
+import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+import reactor.test.publisher.TestPublisher;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -23,22 +17,20 @@ class RetransmissionAdminConsoleConnectorTest {
     private RetransmissionRequestRouter retransmissionRequestRouter;
 
     @Test
-    void retransmit_callsRouteRetransmissionRequest() {
+    void setRetransmissionResultStream_subscribesToRetransmissionRequestRouterAndClosingCleansUp() {
         // Given
-        when(retransmissionRequestRouter.routeRetransmissionRequest(any(), any())).thenReturn(Mono.just(new Success()));
-        var connector = new RetransmissionAdminConsoleConnector(retransmissionRequestRouter);
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var request = new RetransmissionRequest("permissionId", now, now);
-        var regionConnectorId = "regionConnectorId";
+        TestPublisher<RetransmissionResult> testPublisher = TestPublisher.create();
+        when(retransmissionRequestRouter.retransmissionResults()).thenReturn(testPublisher.flux());
+
         // When
-        connector.retransmit(regionConnectorId, request);
+        var connector = new RetransmissionAdminConsoleOutboundConnector();
+        connector.setRetransmissionResultStream(retransmissionRequestRouter.retransmissionResults());
 
         // Then
-        verify(retransmissionRequestRouter).routeRetransmissionRequest(regionConnectorId, request);
-    }
-
-    @Test
-    void retransmitThrows_whenRetransmissionRequestRouter() {
-        assertThrows(NullPointerException.class, () -> new RetransmissionAdminConsoleConnector(null));
+        testPublisher.assertSubscribers(1);
+        connector.close();
+        testPublisher.assertSubscribers(0);
+        StepVerifier.create(connector.retransmissionRequests())
+                    .verifyComplete();
     }
 }

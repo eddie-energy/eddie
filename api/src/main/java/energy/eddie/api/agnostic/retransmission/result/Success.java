@@ -1,4 +1,6 @@
 package energy.eddie.api.agnostic.retransmission.result;
 
-public record Success() implements RetransmissionResult {
+import java.time.ZonedDateTime;
+
+public record Success(String permissionId, ZonedDateTime timestamp) implements RetransmissionResult {
 }

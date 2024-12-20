@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.retransmission.result.*;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
+import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
@@ -28,10 +29,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +43,7 @@ import static org.mockito.Mockito.*;
 class EdaRegionConnectorRetransmissionServiceTest {
 
     public static final LocalDate TODAY = LocalDate.now(ZoneOffset.UTC);
+    public static final String PERMISSION_ID = "id";
     private final AtConfiguration atConfiguration = new PlainAtConfiguration("ep");
     @Mock
     private AtPermissionRequestRepository atPermissionRequestRepository;
@@ -90,7 +89,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
             // When
             var stepVerifier = StepVerifier.create(
                     service.requestRetransmission(
-                            new RetransmissionRequest("id", from, to)
+                            getRetransmissionRequest(from, to)
                     )
             );
 
@@ -100,9 +99,17 @@ class EdaRegionConnectorRetransmissionServiceTest {
             );
 
             // Then
-            stepVerifier.expectNextMatches(result -> result instanceof Success)
-                        .expectComplete()
-                        .verify(Duration.ofSeconds(2));
+            stepVerifier
+                    .expectNextMatches(result -> result instanceof Success(
+                                               String permissionId,
+                                               ZonedDateTime timestamp
+                                       ) &&
+                                                 permissionId.equals(PERMISSION_ID) &&
+                                                 // like this because ZonedDateTime.now() is mocked
+                                                 timestamp.toOffsetDateTime().isBefore(OffsetDateTime.now(AT_ZONE_ID))
+                    )
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
         }
     }
 
@@ -131,7 +138,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
             // When
             var stepVerifier = StepVerifier.create(
                     service.requestRetransmission(
-                            new RetransmissionRequest("id", TODAY.minusDays(2), TODAY.minusDays(1))
+                            getRetransmissionRequest(TODAY.minusDays(2), TODAY.minusDays(1))
                     )
             );
 
@@ -141,9 +148,13 @@ class EdaRegionConnectorRetransmissionServiceTest {
             );
 
             // Then
-            stepVerifier.expectNextMatches(result -> result.getClass().equals(expectedClass))
-                        .expectComplete()
-                        .verify(Duration.ofSeconds(2));
+            stepVerifier
+                    .expectNextMatches(result ->
+                                               result.getClass().equals(expectedClass) &&
+                                               result.permissionId().equals(PERMISSION_ID)
+                    )
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
         }
     }
 
@@ -163,14 +174,23 @@ class EdaRegionConnectorRetransmissionServiceTest {
         // When
         var stepVerifier = StepVerifier.create(
                 service.requestRetransmission(
-                        new RetransmissionRequest("id", today.minusDays(2), today.minusDays(1))
+                        getRetransmissionRequest(today.minusDays(2), today.minusDays(1))
                 )
         );
 
         // Then
-        stepVerifier.expectNextMatches(result -> result instanceof Failure)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
+        stepVerifier
+                .expectNextMatches(result -> result instanceof Failure(
+                                           String permissionId,
+                                           ZonedDateTime timestamp,
+                                           String message
+                                   ) &&
+                                             permissionId.equals(PERMISSION_ID) && message.equals(
+                                           "Could not send request, investigate logs") &&
+                                             timestamp.isBefore(ZonedDateTime.now(AT_ZONE_ID))
+                )
+                .expectComplete()
+                .verify(Duration.ofSeconds(2));
     }
 
     @Test
@@ -186,14 +206,23 @@ class EdaRegionConnectorRetransmissionServiceTest {
         // When
         var stepVerifier = StepVerifier.create(
                 service.requestRetransmission(
-                        new RetransmissionRequest("id", today.minusDays(2), today.minusDays(1))
+                        getRetransmissionRequest(today.minusDays(2), today.minusDays(1))
                 )
         );
 
         // Then
-        stepVerifier.expectNextMatches(result -> result instanceof NotSupported)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
+        stepVerifier
+                .expectNextMatches(result -> result instanceof NotSupported(
+                                           String permissionId,
+                                           ZonedDateTime timestamp,
+                                           String message
+                                   ) &&
+                                             permissionId.equals(PERMISSION_ID) && message.equals(
+                                           "Retransmission of MasterData not supported") &&
+                                             timestamp.isBefore(ZonedDateTime.now(AT_ZONE_ID))
+                )
+                .expectComplete()
+                .verify(Duration.ofSeconds(2));
     }
 
     @Test
@@ -201,7 +230,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
         // Given
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
         when(edaAdapter.getCPRequestResultStream()).thenReturn(Flux.empty());
-        when(atPermissionRequestRepository.findByPermissionId("id")).thenReturn(Optional.empty());
+        when(atPermissionRequestRepository.findByPermissionId(PERMISSION_ID)).thenReturn(Optional.empty());
         var service = new EdaRegionConnectorRetransmissionService(atConfiguration,
                                                                   edaAdapter,
                                                                   atPermissionRequestRepository);
@@ -209,14 +238,21 @@ class EdaRegionConnectorRetransmissionServiceTest {
         // When
         var stepVerifier = StepVerifier.create(
                 service.requestRetransmission(
-                        new RetransmissionRequest("id", today.minusDays(2), today.minusDays(1))
+                        getRetransmissionRequest(today.minusDays(2), today.minusDays(1))
                 )
         );
 
         // Then
-        stepVerifier.expectNextMatches(result -> result instanceof PermissionRequestNotFound)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
+        stepVerifier
+                .expectNextMatches(result -> result instanceof PermissionRequestNotFound(
+                                           String permissionId,
+                                           ZonedDateTime timestamp
+                                   ) &&
+                                             permissionId.equals(PERMISSION_ID) &&
+                                             timestamp.isBefore(ZonedDateTime.now(AT_ZONE_ID))
+                )
+                .expectComplete()
+                .verify(Duration.ofSeconds(2));
     }
 
     @ParameterizedTest
@@ -233,14 +269,21 @@ class EdaRegionConnectorRetransmissionServiceTest {
         // When
         var stepVerifier = StepVerifier.create(
                 service.requestRetransmission(
-                        new RetransmissionRequest("id", today.minusDays(2), today.minusDays(1))
+                        getRetransmissionRequest(today.minusDays(2), today.minusDays(1))
                 )
         );
 
         // Then
-        stepVerifier.expectNextMatches(result -> result instanceof NoActivePermission)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
+        stepVerifier
+                .expectNextMatches(result -> result instanceof NoActivePermission(
+                                           String permissionId,
+                                           ZonedDateTime timestamp
+                                   ) &&
+                                             permissionId.equals(PERMISSION_ID) &&
+                                             timestamp.isBefore(ZonedDateTime.now(AT_ZONE_ID))
+                )
+                .expectComplete()
+                .verify(Duration.ofSeconds(2));
     }
 
     @ParameterizedTest()
@@ -260,14 +303,21 @@ class EdaRegionConnectorRetransmissionServiceTest {
         // When
         var stepVerifier = StepVerifier.create(
                 service.requestRetransmission(
-                        new RetransmissionRequest("id", from, to)
+                        getRetransmissionRequest(from, to)
                 )
         );
 
         // Then
-        stepVerifier.expectNextMatches(result -> result instanceof NoPermissionForTimeFrame)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
+        stepVerifier
+                .expectNextMatches(result -> result instanceof NoPermissionForTimeFrame(
+                                           String permissionId,
+                                           ZonedDateTime timestamp
+                                   ) &&
+                                             permissionId.equals(PERMISSION_ID) &&
+                                             timestamp.isBefore(ZonedDateTime.now(AT_ZONE_ID))
+                )
+                .expectComplete()
+                .verify(Duration.ofSeconds(2));
     }
 
     @ParameterizedTest
@@ -283,7 +333,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
         List<Mono<RetransmissionResult>> monos = new ArrayList<>();
         for (int i = 0; i < nrOfRequests; i++) {
             monos.add(service.requestRetransmission(
-                    new RetransmissionRequest("id", today.minusDays(2), today.minusDays(1))
+                    getRetransmissionRequest(today.minusDays(2), today.minusDays(1))
             ));
         }
         StepVerifier.Step<RetransmissionResult> stepVerifier = StepVerifier.create(
@@ -295,10 +345,22 @@ class EdaRegionConnectorRetransmissionServiceTest {
 
         // Then
         for (int i = 0; i < nrOfRequests; i++) {
-            stepVerifier = stepVerifier.expectNextMatches(result -> result instanceof Failure);
+            stepVerifier = stepVerifier
+                    .expectNextMatches(result -> result instanceof Failure(
+                                               String permissionId,
+                                               ZonedDateTime timestamp,
+                                               String message
+                                       ) && permissionId.equals(PERMISSION_ID) && message.equals(
+                                               "Service is shutting down, unclear if request got through to the MDA"
+                                       ) && timestamp.isBefore(ZonedDateTime.now(AT_ZONE_ID))
+                    );
         }
         stepVerifier.expectComplete()
                     .verify(Duration.ofSeconds(2));
+    }
+
+    private static RetransmissionRequest getRetransmissionRequest(LocalDate from, LocalDate to) {
+        return new RetransmissionRequest(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID, PERMISSION_ID, from, to);
     }
 
     private static Stream<Arguments> inScopeTimeFrames() {
@@ -340,9 +402,9 @@ class EdaRegionConnectorRetransmissionServiceTest {
             @Nullable AllowedGranularity granularity,
             PermissionProcessStatus permissionProcessStatus
     ) {
-        when(atPermissionRequestRepository.findByPermissionId("id")).thenReturn(Optional.of(
+        when(atPermissionRequestRepository.findByPermissionId(PERMISSION_ID)).thenReturn(Optional.of(
                 new SimplePermissionRequest(
-                        "id", "connectionId", "dataNeedId",
+                        PERMISSION_ID, "connectionId", "dataNeedId",
                         "cmRequestId", "conversationId", "dsoId",
                         Optional.of("meteringPointId"), today.minusWeeks(1), today,
                         permissionProcessStatus, Optional.empty(), granularity
