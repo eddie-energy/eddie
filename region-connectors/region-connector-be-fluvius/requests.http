@@ -1,4 +1,11 @@
+## Variable for requests
+@granularity = VH_kwartier_uur
+@ean = 541441010000000001
+@start = 2024-12-01T00:00:00Z
+@end = 2024-12-19T23:59:59Z
+
 #### Request to create a permission request
+# In our case the referenceNumber is the permisisonId, so for test requests, just use a random uuid
 < {%
     const shortendUUid = $uuid.replace(/-/g, "");
 
@@ -16,9 +23,9 @@ Ocp-Apim-Subscription-Key: {{subscriptionKey}}
   "flow": "B2C",
   "dataServices": [
     {
-      "dataServiceType": "VH_dag",
-      "dataPeriodFrom": "2024-01-01T00:00:00Z",
-      "dataPeriodTo": "2024-09-30T23:59:59Z"
+      "dataServiceType": "{{granularity}}",
+      "dataPeriodFrom": "{{start}}",
+      "dataPeriodTo": "{{end}}"
     }
   ],
   "numberOfEans": "1",
@@ -29,7 +36,6 @@ Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 }
 
 #### Request to create a mock mandate
-# In our case the referenceNumber is the connectionId, so for test requests, just use a random uuid
 # The eanNumber is assembled, based on the required services, for more information checkout the docs
 # EanNumber Assembly:
 # 54144 (0 -> electricity, 1 -> gas) (0 -> decrease only, 1 -> sampling & injection) (0 -> VH_day, 1 -> VH_quarter_hour) 0000000 (xxx -> 1000 meters per group)
@@ -40,10 +46,10 @@ Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 
 {
   "referenceNumber": "{{referenceNumber}}",
-  "eanNumber": "541440100000000001",
-  "dataServiceType": "VH_dag",
-  "dataPeriodFrom": "2024-01-01T00:00:00Z",
-  "dataPeriodTo": "2024-09-30T23:59:59Z",
+  "eanNumber": "{{ean}}",
+  "dataServiceType": "{{granularity}}",
+  "dataPeriodFrom": "{{start}}",
+  "dataPeriodTo": "{{end}}",
   "status": "Approved",
   "mandateExpirationDate": "2024-12-29T23:00:00Z",
   "renewalStatus": "ToBeRenewed"
@@ -60,18 +66,18 @@ Authorization: Bearer {{$auth.token("fluvius")}}
 Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 
 #### Request Installation
-GET {{baseUrl}}/api/v2.0/Mandate/installation?referenceNumber={{referenceNumber}}&eanNumber=541440100000000001
+GET {{baseUrl}}/api/v2.0/Mandate/installation?referenceNumber={{referenceNumber}}&eanNumber={{ean}}
 Authorization: Bearer {{$auth.token("fluvius")}}
 Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 
 ### Request energy consumption data from mandate
 GET {{baseUrl}}/api/v2.0/Mandate/energy?
                                 referenceNumber={{referenceNumber}}&
-                                eanNumber=541440100000000001&
-                                DataServiceType=VH_dag&
+    eanNumber={{ean}}&
+    DataServiceType={{granularity}}&
                                 PeriodType=readTime&
-                                from=2024-01-02T00:00:00Z&
-                                to=2024-05-03T00:00:00Z
+    from={{start}}&
+    to={{end}}
 Authorization: Bearer {{$auth.token("fluvius")}}
 Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 
