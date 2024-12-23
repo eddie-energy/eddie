@@ -11,8 +11,6 @@ next:
 
 The following beans are of special interest, because they are either:
 
-[//]: # "TODO: 1. active and 2. passive beans, and 3. beans that can be implemented"
-
 - made available to region connectors automatically via the parent context and can be used by the region connectors, for example the [DataNeedsService](#dataneedsservice)
 - same as above, but the beans are meant to add functionality, without actually being used by the region connector code itself, for example the [RegionConnectorsCommonControllerAdvice](#regionconnectorscommoncontrolleradvice)
 - Spring beans that can enhance EDDIE as a whole.
@@ -57,12 +55,13 @@ or add a bean of type `RegionConnectorsCommonControllerAdvice` to your region co
 
 ## Health Indicators
 
-Since EDDIE is a normal Spring application it is possible to create [health indicator](https://docs.spring.io/spring-boot/api/rest/actuator/health.html) if Spring Actuator is part of the region connector `build.gradle.kts`.
-These are automatically picked up by the core.
+EDDIE requires each region connector to implement a health indicator.
+[Health indicators](https://docs.spring.io/spring-boot/api/rest/actuator/health.html) are part of Spring Actuator.
+They are automatically picked up by the core.
 
-If a new health indicator is added to a region connector it has to be added to the health indicator group of the region connector.
+If a new health indicator is added to a region connector, it has to be added to the health indicator group of the region connector.
 This is done by adding the following configuration to the [`application.properties`](https://github.com/eddie-energy/eddie/blob/main/core/src/main/resources/application.properties).
-Here an example:
+Here is an example:
 
 ```properties
 management.endpoint.health.group.region-connector-<region-connector-name>.include=<health-indicator-name>

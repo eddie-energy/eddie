@@ -28,12 +28,6 @@ plugins {
 group = "energy.eddie.regionconnector.foo.bar"
 version = "0.0.1-SNAPSHOT"
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
 repositories {
     mavenCentral()
 }
@@ -69,9 +63,9 @@ tasks.jacocoTestReport {
 }
 ```
 
-## Convention Plugins
+## Convention Plugins and Helper Scripts
 
-There are two plugins and some custom functions available that add needed build tasks and common dependencies to the region connectors.
+There are two plugins and some custom functions available that add required build tasks and common dependencies to the region connectors.
 
 ### Java Conventions
 
@@ -88,11 +82,19 @@ The `pnpm-build` plugin adds dependencies on pnpm builds, to automatically rebui
 Everytime the `javaCompile` task is executed,
 `pnpm build` is also executed to ensure that the custom elements and EDDIE button are up to date.
 
+> [!INFO]
+> It is only required if the region connector uses pnpm to build the custom element.
+
 ### EddieExtensions
 
-The EddieExtensions contains a function to configure errorprone, which can be called like this:
+The EddieExtensions script contains a function to configure errorprone, which can be called like this:
 
 ```kotlin
 import energy.eddie.configureJavaCompileWithErrorProne
 configureJavaCompileWithErrorProne("energy.eddie.regionconnector.foo.bar")
 ```
+
+## Dependencies and Plugins
+
+Dependencies and plugins are defined using the [
+`libs.versions.toml`](https://github.com/eddie-energy/eddie/blob/main/gradle/libs.versions.toml) syntax provided by [Gradle version catalogues](https://docs.gradle.org/current/userguide/version_catalogs.html).

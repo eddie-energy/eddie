@@ -9,12 +9,12 @@ next:
 
 # Add a region connector
 
-The region connector is an essential part of EDDIE.
-Its purpose is to create and manage [permission request](../../2-integrating/integrating.md#permission-requests) for the eligible party.
-It connects to an MDA and PA, and in some cases, multiple regions at the same time can be supported if they implement the same processes and protocols.
+region connectors are an essential part of EDDIE.
+Their purpose is to create and manage [permission request](../../2-integrating/integrating.md#permission-requests) for the eligible party.
+They connect to an MDA and PA, and in some cases, multiple regions at the same time can be supported by a single implementation if they implement the same processes and protocols.
 For example, the [Green Button region-connector](../../1-running/region-connectors/region-connector-us-green-button.md) supports both the US and Canada, since they both have MDAs and PAs that implement the Green Button.
-The region connector has to process permission requests in a specific way, according to [the permission process model](../../2-integrating/integrating.md#permission-process-model).
-It has to emit specific [messages](../../2-integrating/messages/connection-status-messages.md) and [documents](../../2-integrating/messages/permission-market-documents.md), when processing them.
+Region connectors have to process permission requests in a specific way, according to [the permission process model](../../2-integrating/integrating.md#permission-process-model).
+They have to emit specific [messages](../../2-integrating/messages/connection-status-messages.md) and [documents](../../2-integrating/messages/permission-market-documents.md), when processing them.
 
 How a permission request has to be processed is described in [implementing the permission process model](./internal-architecture.md#implementing-the-events).
 A region connector has to follow a few conventions, but its internal architecture is up to the implementing party.

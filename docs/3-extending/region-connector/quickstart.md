@@ -56,17 +56,12 @@ plugins {
 group = "energy.eddie.regionconnector.foo.bar"
 version = "0.0.1-SNAPSHOT"
 
-java {
-  toolchain {
-    languageVersion = JavaLanguageVersion.of(21)
-  }
-}
-
 repositories {
   mavenCentral()
 }
 
 dependencies {
+  //  defined in gradle/libs.versions.toml
   implementation(project(":api"))
   implementation(project(":data-needs"))
   implementation(project(":region-connectors:shared"))
@@ -259,6 +254,8 @@ Now all the essential parts are implemented, so let's start with implementing th
 Region connectors use an event sourcing approach internally, where a permission request is an aggregate of multiple related permission events.
 The events are stored in one single table, and each event class inherits from one base event called the
 `PersistablePermissionEvent`.
+The
+`FooBar` prefix is dropped here for readability, but required in the entity name, since other region connectors define similarly named base classes, which leads to name clashes.
 More information can be found in [the internal architecture section](./internal-architecture.md).
 
 ```java
@@ -407,7 +404,7 @@ package energy.eddie.regionconnector.foo.bar.permission.request;
 import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.regionconnector.foo.bar.FooBarRegionConnectorMetadata;
 
-public class FluviusDataSourceInformation implements DataSourceInformation {
+public class FooBarDataSourceInformation implements DataSourceInformation {
 
   @Override
   public String countryCode() {

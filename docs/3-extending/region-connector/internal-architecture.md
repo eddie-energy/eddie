@@ -112,7 +112,7 @@ public class FluviusPermissionRequest implements PermissionRequest {
 ### Schema Migration
 
 Since the integration of the permission event table and permission request view are solely done via SQL, it is necessary to provide schema migration.
-This is done via Flyway.
+This is done via [Flyway](https://github.com/flyway/flyway).
 The core runs schema migrations for all region connectors.
 The schemas have to be provided in the resource directory under `db/migration/<region-connector-name>/V<major-version>_<minor-version>__<name>.sql`
 The migrations are automatically executed on startup.
