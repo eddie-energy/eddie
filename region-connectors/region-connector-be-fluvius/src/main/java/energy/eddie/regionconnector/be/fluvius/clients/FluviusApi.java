@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.be.fluvius.clients;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.be.fluvius.client.model.CreateMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
@@ -16,7 +17,8 @@ public interface FluviusApi {
             String permissionId,
             Flow flow,
             ZonedDateTime from,
-            ZonedDateTime to
+            ZonedDateTime to,
+            Granularity granularity
     );
 
     Mono<GetMandateResponseModelApiDataResponse> mandateFor(String permissionId);
@@ -24,7 +26,8 @@ public interface FluviusApi {
     Mono<CreateMandateResponseModelApiDataResponse> mockMandate(
             String permissionId,
             ZonedDateTime from,
-            ZonedDateTime to
+            ZonedDateTime to,
+            String ean
     );
 
     Mono<GetEnergyResponseModelApiDataResponse> energy(
@@ -34,16 +37,4 @@ public interface FluviusApi {
             ZonedDateTime from,
             ZonedDateTime to
     );
-
-
-    enum DataServiceType {
-        QUARTER_HOURLY("VH_kwartier_uur"),
-        DAILY("VH_dag");
-
-        public final String value;
-
-        DataServiceType(String value) {
-            this.value = value;
-        }
-    }
 }

@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.be.fluvius.clients;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.oauth2.sdk.ParseException;
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.be.fluvius.client.model.CreateMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
@@ -22,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
@@ -66,7 +68,7 @@ class FluviusApiClientTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.shortUrlIdentifier("pid", Flow.B2B, now, now);
+        var res = api.shortUrlIdentifier("pid", Flow.B2B, now, now, Granularity.PT15M);
 
         // Then
         StepVerifier.create(res)
@@ -82,7 +84,7 @@ class FluviusApiClientTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.shortUrlIdentifier("pid", Flow.B2B, now, now);
+        var res = api.shortUrlIdentifier("pid", Flow.B2B, now, now, Granularity.PT15M);
 
         // Then
         StepVerifier.create(res)
@@ -138,7 +140,7 @@ class FluviusApiClientTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.mockMandate("pid", now, now);
+        var res = api.mockMandate("pid", now, now, "541440110000000011");
 
         // Then
         StepVerifier.create(res)
@@ -147,39 +149,59 @@ class FluviusApiClientTest {
     }
 
     @Test
-    void testEnergy_returnsSuccessMessage() throws IOException, OAuthException, URISyntaxException, ParseException {
+    void testMockMandates_returnsError() throws IOException, OAuthException, URISyntaxException, ParseException {
         // Given
         SERVER.enqueue(new MockResponse()
-                .addHeader("Content-Type", "application/json")
-                .setResponseCode(200)
-                .setBody(OBJECT_MAPPER.writeValueAsString(new GetEnergyResponseModelApiDataResponse())));
+                               .addHeader("Content-Type", "application/json")
+                               .setResponseCode(400)
+        );
         when(oAuthTokenService.accessToken()).thenReturn("token");
-        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService);
+        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.energy("pid", "eanNumber", FluviusApi.DataServiceType.DAILY, now, now);
+        var res = api.mockMandate("pid", now, now, "541440110000000011");
 
         // Then
         StepVerifier.create(res)
-                .expectNextCount(1)
-                .verifyComplete();
+                    .expectError(WebClientResponseException.class)
+                    .verify();
+    }
+
+    @Test
+    void testEnergy_returnsSuccessMessage() throws IOException, OAuthException, URISyntaxException, ParseException {
+        // Given
+        SERVER.enqueue(new MockResponse()
+                               .addHeader("Content-Type", "application/json")
+                               .setResponseCode(200)
+                               .setBody(OBJECT_MAPPER.writeValueAsString(new GetEnergyResponseModelApiDataResponse())));
+        when(oAuthTokenService.accessToken()).thenReturn("token");
+        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+
+        // When
+        var res = api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now);
+
+        // Then
+        StepVerifier.create(res)
+                    .expectNextCount(1)
+                    .verifyComplete();
     }
 
     @Test
     void testEnergy_returnsError_onInvalidAccessToken() throws IOException, OAuthException, URISyntaxException, ParseException {
         // Given
         when(oAuthTokenService.accessToken()).thenThrow(OAuthException.class);
-        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService);
+        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.energy("pid", "eanNumber", FluviusApi.DataServiceType.DAILY, now, now);
+        var res = api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now);
 
         // Then
         StepVerifier.create(res)
-                .expectError(OAuthRequestException.class)
-                .verify();
+                    .expectError(OAuthRequestException.class)
+                    .verify();
     }
 
     private static FluviusConfiguration getConfiguration() {
