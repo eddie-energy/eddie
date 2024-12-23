@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.be.fluvius.timeout;
 
-import energy.eddie.regionconnector.be.fluvius.FluviusRegionConnectorMetadata;
+import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.be.fluvius.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -16,14 +16,15 @@ public class FluviusTimeoutConfig {
             BePermissionRequestRepository bePermissionRequestRepository,
             Outbox outbox,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-            TimeoutConfiguration timeoutConfiguration
+            TimeoutConfiguration timeoutConfiguration,
+            RegionConnectorMetadata metadata
     ) {
         return new CommonTimeoutService(
                 bePermissionRequestRepository,
                 SimpleEvent::new,
                 outbox,
                 timeoutConfiguration,
-                FluviusRegionConnectorMetadata.getInstance()
+                metadata
         );
     }
 }

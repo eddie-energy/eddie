@@ -3,12 +3,15 @@ package energy.eddie.regionconnector.be.fluvius;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusConfiguration;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
+import energy.eddie.regionconnector.be.fluvius.data.needs.EnergyTypePredicate;
 import energy.eddie.regionconnector.be.fluvius.data.needs.FluviusEnergyTimeframeStrategy;
+import energy.eddie.regionconnector.be.fluvius.data.needs.FluviusPermissionTimeframeStrategy;
 import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionEventRepository;
@@ -22,8 +25,6 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
-import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientSsl;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
@@ -53,12 +54,15 @@ public class FluviusBeanConfig {
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService) {
+    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
+            RegionConnectorMetadata metadata
+    ) {
         return new DataNeedCalculationServiceImpl(dataNeedsService,
-                FluviusRegionConnectorMetadata.getInstance(),
-                new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
-                new FluviusEnergyTimeframeStrategy(FluviusRegionConnectorMetadata.getInstance()),
-                List.of());
+                metadata,
+                new FluviusPermissionTimeframeStrategy(),
+                new FluviusEnergyTimeframeStrategy(metadata),
+                List.of(new EnergyTypePredicate()));
     }
 
     @Bean

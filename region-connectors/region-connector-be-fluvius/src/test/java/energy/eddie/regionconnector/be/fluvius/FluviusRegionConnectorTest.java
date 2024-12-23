@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.verify;
@@ -13,6 +14,9 @@ import static org.mockito.Mockito.verify;
 class FluviusRegionConnectorTest {
     @Mock
     private TerminationService terminationService;
+    @Spy
+    @SuppressWarnings("unused")
+    private final FluviusRegionConnectorMetadata metadata = new FluviusRegionConnectorMetadata();
     @InjectMocks
     private FluviusRegionConnector fluviusRegionConnector;
 

@@ -6,6 +6,9 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.time.Period;
 import java.time.ZoneId;
@@ -13,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("java:S6548") // False positive
+@Component
 public class FluviusRegionConnectorMetadata implements RegionConnectorMetadata {
 
     public static final String REGION_CONNECTOR_ID = "be-fluvius";
@@ -21,18 +25,31 @@ public class FluviusRegionConnectorMetadata implements RegionConnectorMetadata {
     );
     private static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(
             Granularity.PT15M, // Electricity
-            Granularity.PT30M // Gas
+            Granularity.PT30M, // Gas
+            Granularity.P1D // Both
+    );
+    private static final List<Granularity> SANDBOX_SUPPORTED_GRANULARITIES = List.of(
+            Granularity.PT15M,
+            Granularity.P1D
     );
     private static final Map<EnergyType, List<Granularity>> GRANULARITIES_FOR_ENERGY_TYPE = Map.of(
-            EnergyType.ELECTRICITY, List.of(Granularity.PT15M),
-            EnergyType.NATURAL_GAS, List.of(Granularity.PT30M)
+            EnergyType.ELECTRICITY, List.of(Granularity.PT15M, Granularity.P1D),
+            EnergyType.NATURAL_GAS, List.of(Granularity.PT30M, Granularity.P1D)
+    );
+    private static final Map<EnergyType, List<Granularity>> SANDBOX_GRANULARITIES_FOR_ENERGY_TYPE = Map.of(
+            EnergyType.ELECTRICITY, List.of(Granularity.PT15M, Granularity.P1D),
+            EnergyType.NATURAL_GAS, List.of(Granularity.PT15M, Granularity.P1D)
     );
     private static final FluviusRegionConnectorMetadata INSTANCE = new FluviusRegionConnectorMetadata();
+    private final boolean fluviusSandboxEnabled;
 
-    private FluviusRegionConnectorMetadata() {}
+    public FluviusRegionConnectorMetadata() {
+        this(false);
+    }
 
-    public static RegionConnectorMetadata getInstance() {
-        return INSTANCE;
+    @Autowired
+    public FluviusRegionConnectorMetadata(@Value("${region-connector.be.fluvius.mock-mandates:false}") boolean fluviusSandboxEnabled) {
+        this.fluviusSandboxEnabled = fluviusSandboxEnabled;
     }
 
     @Override
@@ -67,12 +84,17 @@ public class FluviusRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<Granularity> supportedGranularities() {
-        return SUPPORTED_GRANULARITIES;
+        return fluviusSandboxEnabled ? SANDBOX_SUPPORTED_GRANULARITIES : SUPPORTED_GRANULARITIES;
     }
 
     @Override
     public ZoneId timeZone() {
         return ZoneId.of("Europe/Brussels");
+    }
+
+    @Override
+    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
+        return List.copyOf(SUPPORTED_DATA_NEEDS);
     }
 
     @Override
@@ -82,11 +104,9 @@ public class FluviusRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<Granularity> granularitiesFor(EnergyType energyType) {
-        return GRANULARITIES_FOR_ENERGY_TYPE.getOrDefault(energyType, List.of());
-    }
-
-    @Override
-    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
-        return List.copyOf(SUPPORTED_DATA_NEEDS);
+        var supportedGranularities = fluviusSandboxEnabled
+                ? SANDBOX_GRANULARITIES_FOR_ENERGY_TYPE
+                : GRANULARITIES_FOR_ENERGY_TYPE;
+        return supportedGranularities.getOrDefault(energyType, List.of());
     }
 }
