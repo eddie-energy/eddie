@@ -4,12 +4,16 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
+import energy.eddie.regionconnector.be.fluvius.permission.request.MeterReading;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+@SuppressWarnings("unused")
 public class DefaultFluviusPermissionRequestBuilder {
     String permissionId = "pid";
     String connectionId = "cid";
@@ -22,8 +26,7 @@ public class DefaultFluviusPermissionRequestBuilder {
     Flow flow = Flow.B2C;
     @Nullable
     String shortUrlIdentifier = null;
-    @Nullable
-    String eanNumber = null;
+    private final List<MeterReading> meterReadings = new ArrayList<>();
 
     public static DefaultFluviusPermissionRequestBuilder create() {
         return new DefaultFluviusPermissionRequestBuilder();
@@ -79,8 +82,8 @@ public class DefaultFluviusPermissionRequestBuilder {
         return this;
     }
 
-    public DefaultFluviusPermissionRequestBuilder eanNumber(@Nullable String eanNumber) {
-        this.eanNumber = eanNumber;
+    public DefaultFluviusPermissionRequestBuilder addMeterReadings(MeterReading meterReading) {
+        meterReadings.add(meterReading);
         return this;
     }
 
@@ -96,7 +99,7 @@ public class DefaultFluviusPermissionRequestBuilder {
                 created,
                 flow,
                 shortUrlIdentifier,
-                eanNumber
+                meterReadings
         );
     }
 }

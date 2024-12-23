@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.be.fluvius.permission.handlers;
 
 import energy.eddie.regionconnector.be.fluvius.permission.events.AcceptedEvent;
-import energy.eddie.regionconnector.be.fluvius.service.PollingService;
+import energy.eddie.regionconnector.be.fluvius.service.polling.PollingService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import org.slf4j.Logger;

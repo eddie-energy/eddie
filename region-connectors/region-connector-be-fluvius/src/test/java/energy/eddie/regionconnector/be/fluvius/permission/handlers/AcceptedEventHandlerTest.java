@@ -1,7 +1,8 @@
 package energy.eddie.regionconnector.be.fluvius.permission.handlers;
 
 import energy.eddie.regionconnector.be.fluvius.permission.events.AcceptedEvent;
-import energy.eddie.regionconnector.be.fluvius.service.PollingService;
+import energy.eddie.regionconnector.be.fluvius.permission.request.MeterReading;
+import energy.eddie.regionconnector.be.fluvius.service.polling.PollingService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
 
 import static org.mockito.Mockito.verify;
 
@@ -24,9 +27,10 @@ class AcceptedEventHandlerTest {
     private PollingService pollingService;
 
     @Test
-    public void testAccept_acceptedEventTriggersPoll() {
+    void testAccept_acceptedEventTriggersPoll() {
         // When
-        eventBus.emit(new AcceptedEvent("pid", "eanNumber"));
+        var meterReading = new MeterReading("pid", "ean", null);
+        eventBus.emit(new AcceptedEvent("pid", List.of(meterReading)));
 
         // Then
         verify(pollingService).poll("pid");
