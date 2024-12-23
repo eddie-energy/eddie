@@ -13,9 +13,9 @@ import java.time.LocalDate;
 @Entity(name = "BeValidatedEvent")
 @SuppressWarnings({"NullAway", "unused"})
 public class ValidatedEvent extends PersistablePermissionEvent {
-    @Column(name = "permission_start")
+    @Column(name = "data_start")
     private final LocalDate start;
-    @Column(name = "permission_end")
+    @Column(name = "data_end")
     private final LocalDate end;
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")

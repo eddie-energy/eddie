@@ -5,19 +5,24 @@ import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseMo
 import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.MandateResponseModel;
 import energy.eddie.regionconnector.be.fluvius.clients.FluviusApi;
+import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+import reactor.test.publisher.TestPublisher;
 
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,8 +56,8 @@ class AcceptanceOrRejectionServiceTest {
         // Given
         when(repository.findByStatus(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)).thenReturn(List.of(
                 DefaultFluviusPermissionRequestBuilder.create()
-                        .status(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
-                        .build()
+                                                      .status(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
+                                                      .build()
         ));
         when(fluviusApi.mandateFor("pid")).thenReturn(
                 Mono.just(createMandateResponse("Approved"))
@@ -74,8 +79,8 @@ class AcceptanceOrRejectionServiceTest {
         // Given
         when(repository.findByStatus(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)).thenReturn(List.of(
                 DefaultFluviusPermissionRequestBuilder.create()
-                        .status(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
-                        .build()
+                                                      .status(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
+                                                      .build()
         ));
         when(fluviusApi.mandateFor("pid")).thenReturn(
                 Mono.just(createMandateResponse("Requested"))
@@ -87,6 +92,139 @@ class AcceptanceOrRejectionServiceTest {
         // Then
         verify(fluviusApi).mandateFor(any());
         verify(outbox, never()).commit(any());
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_throwsOnInvalidStatus() {
+        // Given
+        // When & Then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.acceptOrRejectPermissionRequest(
+                        "pid",
+                        PermissionProcessStatus.VALIDATED
+                )
+        );
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_throwsOnUnknownPermissionId() {
+        // Given
+        when(repository.findByPermissionId("pid")).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(
+                PermissionNotFoundException.class,
+                () -> service.acceptOrRejectPermissionRequest(
+                        "pid",
+                        PermissionProcessStatus.ACCEPTED
+                )
+        );
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_returnsAcceptOnAlreadyAcceptedPermissionRequest() throws PermissionNotFoundException {
+        // Given
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(getPermissionRequest(PermissionProcessStatus.ACCEPTED)));
+
+        // When
+        var res = service.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.ACCEPTED);
+
+        // Then
+        assertTrue(res);
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_returnsRejectOnAlreadyRejectedPermissionRequest() throws PermissionNotFoundException {
+        // Given
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(getPermissionRequest(PermissionProcessStatus.REJECTED)));
+
+        // When
+        var res = service.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.REJECTED);
+
+        // Then
+        assertFalse(res);
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_returnsAcceptForAcceptedPermissionRequest() throws PermissionNotFoundException {
+        // Given
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(getPermissionRequest(
+                        PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
+        var publisher = TestPublisher.<GetMandateResponseModelApiDataResponse>create();
+        when(fluviusApi.mandateFor("pid"))
+                .thenReturn(publisher.mono());
+
+        // When
+        var res = service.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.ACCEPTED);
+
+        // Then
+        assertTrue(res);
+        StepVerifier.create(publisher)
+                    .then(() -> {
+                        publisher.emit(createMandateResponse("Approved"));
+                        publisher.complete();
+                    })
+                    .expectNextCount(1)
+                    .then(() -> {
+                        verify(outbox).commit(assertArg(e -> assertEquals(PermissionProcessStatus.ACCEPTED,
+                                                                          e.status())));
+                    })
+                    .verifyComplete();
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_returnsRejectForRejectedPermissionRequest() throws PermissionNotFoundException {
+        // Given
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(getPermissionRequest(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
+
+        // When
+        var res = service.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.REJECTED);
+
+        // Then
+        assertFalse(res);
+        verify(outbox).commit(assertArg(e -> assertEquals(PermissionProcessStatus.REJECTED, e.status())));
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_rejectsPermissionRequest_ifAllMetersHaveBeenRejected() throws PermissionNotFoundException {
+        // Given
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(getPermissionRequest(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
+        when(fluviusApi.mandateFor("pid"))
+                .thenReturn(Mono.just(createMandateResponse("Rejected")));
+
+        // When
+        service.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.ACCEPTED);
+
+        // Then
+        verify(outbox).commit(assertArg(e -> assertEquals(PermissionProcessStatus.REJECTED, e.status())));
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_withoutData_doesNothing() throws PermissionNotFoundException {
+        // Given
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(getPermissionRequest(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
+        when(fluviusApi.mandateFor("pid"))
+                .thenReturn(Mono.just(new GetMandateResponseModelApiDataResponse()));
+
+        // When
+        service.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.ACCEPTED);
+
+        // Then
+        verify(outbox, never()).commit(any());
+    }
+
+    private static FluviusPermissionRequest getPermissionRequest(PermissionProcessStatus status) {
+        return new DefaultFluviusPermissionRequestBuilder()
+                .permissionId("pid")
+                .status(status)
+                .build();
     }
 
     private GetMandateResponseModelApiDataResponse createMandateResponse(String status) {

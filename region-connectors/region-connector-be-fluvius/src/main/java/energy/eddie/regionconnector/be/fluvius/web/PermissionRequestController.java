@@ -6,6 +6,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.be.fluvius.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.be.fluvius.service.AcceptanceOrRejectionService;
 import energy.eddie.regionconnector.be.fluvius.service.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.validation.Valid;
@@ -23,9 +24,14 @@ import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
 public class PermissionRequestController {
     private static final String STATUS = "status";
     private final PermissionRequestService permissionRequestService;
+    private final AcceptanceOrRejectionService acceptanceOrRejectionService;
 
-    public PermissionRequestController(PermissionRequestService permissionRequestService) {
+    public PermissionRequestController(
+            PermissionRequestService permissionRequestService,
+            AcceptanceOrRejectionService acceptanceOrRejectionService
+    ) {
         this.permissionRequestService = permissionRequestService;
+        this.acceptanceOrRejectionService = acceptanceOrRejectionService;
     }
 
     @PostMapping(
@@ -63,7 +69,7 @@ public class PermissionRequestController {
 
     private String handlePermissionCallback(String permissionId, Model model, PermissionProcessStatus status) {
         try {
-            var wasAccepted = permissionRequestService.acceptOrRejectPermissionRequest(permissionId, status);
+            var wasAccepted = acceptanceOrRejectionService.acceptOrRejectPermissionRequest(permissionId, status);
             if (wasAccepted) {
                 model.addAttribute(STATUS, "OK");
             } else {

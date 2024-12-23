@@ -79,7 +79,8 @@ class ValidatedEventHandlerTest {
     @Test
     void testAccept_UnsupportedDataNeed_doesNothing() {
         // Given
-        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(DefaultFluviusPermissionRequestBuilder.create().build());
+        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(DefaultFluviusPermissionRequestBuilder.create()
+                                                                                                                      .build());
         when(dataNeedCalculationService.calculate("did")).thenReturn(new DataNeedNotSupportedResult("Not Found!"));
 
         // When
@@ -95,14 +96,14 @@ class ValidatedEventHandlerTest {
         // Given
         var customEnergyTimeframe = new Timeframe(start, LocalDate.now(ZoneOffset.UTC));
 
-        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(DefaultFluviusPermissionRequestBuilder.create().build());
-        when(dataNeedCalculationService.calculate("did")).thenReturn(new
-                                                                             ValidatedHistoricalDataDataNeedResult(List.of(
-                Granularity.PT15M), permissionTimeFrame, customEnergyTimeframe)
-        );
-        when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any())).thenReturn(
-                Mono.just(createPermissionResponse())
-        );
+        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(DefaultFluviusPermissionRequestBuilder.create()
+                                                                                                                      .build());
+        when(dataNeedCalculationService.calculate(eq("did"), any()))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(
+                        List.of(Granularity.PT15M), permissionTimeFrame, customEnergyTimeframe)
+                );
+        when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any(), eq(Granularity.PT15M)))
+                .thenReturn(Mono.just(createPermissionResponse()));
 
         // When
         eventBus.emit(createValidatedEvent());
@@ -114,13 +115,17 @@ class ValidatedEventHandlerTest {
     @Test
     void testAccept_invalidRequest_sentToPa_and_invalidEvent() {
         // Given
-        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(DefaultFluviusPermissionRequestBuilder.create().build());
-        when(dataNeedCalculationService.calculate("did")).thenReturn(
-                new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
-                                                          permissionTimeFrame,
-                                                          energyTimeFrame)
-        );
-        when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any())).thenReturn(
+        when(bePermissionRequestRepository.getByPermissionId("pid"))
+                .thenReturn(DefaultFluviusPermissionRequestBuilder.create()
+                                                                  .dataNeedId("did")
+                                                                  .build());
+        when(dataNeedCalculationService.calculate(eq("did"), any()))
+                .thenReturn(
+                        new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
+                                                                  permissionTimeFrame,
+                                                                  energyTimeFrame)
+                );
+        when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any(), eq(Granularity.PT15M))).thenReturn(
                 Mono.error(WebClientResponseException.create(400, "400 Error", null, null, null))
         );
 
@@ -137,15 +142,21 @@ class ValidatedEventHandlerTest {
     @Test
     void testAccept_invalidResponse_sentToPa_and_invalidEvent() {
         // Given
-        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(DefaultFluviusPermissionRequestBuilder.create().build());
-        when(dataNeedCalculationService.calculate("did")).thenReturn(new
-                                                                             ValidatedHistoricalDataDataNeedResult(List.of(
-                Granularity.PT15M), permissionTimeFrame, energyTimeFrame)
-        );
-        when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any())).thenReturn(
-                // Result without data means that the response is invalid
-                Mono.just(new FluviusSessionCreateResultResponseModelApiDataResponse())
-        );
+        when(bePermissionRequestRepository.getByPermissionId("pid"))
+                .thenReturn(DefaultFluviusPermissionRequestBuilder.create()
+                                                                  .dataNeedId("did")
+                                                                  .build());
+        when(dataNeedCalculationService.calculate(eq("did"), any()))
+                .thenReturn(
+                        new ValidatedHistoricalDataDataNeedResult(
+                                List.of(Granularity.PT15M), permissionTimeFrame, energyTimeFrame
+                        )
+                );
+        when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any(), eq(Granularity.PT15M)))
+                .thenReturn(
+                        // Result without data means that the response is invalid
+                        Mono.just(new FluviusSessionCreateResultResponseModelApiDataResponse())
+                );
 
         // When
         eventBus.emit(createValidatedEvent());
@@ -161,15 +172,18 @@ class ValidatedEventHandlerTest {
     @MethodSource
     void testAccept_unexpectedRequestException_unableToSend(Exception ex) {
         // Given
-        when(bePermissionRequestRepository.getByPermissionId("pid")).thenReturn(DefaultFluviusPermissionRequestBuilder.create().build());
-        when(dataNeedCalculationService.calculate("did")).thenReturn(
-                new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
-                                                          permissionTimeFrame,
-                                                          energyTimeFrame)
-        );
-        when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any())).thenReturn(
-                Mono.error(ex)
-        );
+        when(bePermissionRequestRepository.getByPermissionId("pid"))
+                .thenReturn(DefaultFluviusPermissionRequestBuilder.create()
+                                                                  .dataNeedId("did")
+                                                                  .build());
+        when(dataNeedCalculationService.calculate(eq("did"), any()))
+                .thenReturn(
+                        new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
+                                                                  permissionTimeFrame,
+                                                                  energyTimeFrame)
+                );
+        when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any(), eq(Granularity.PT15M)))
+                .thenReturn(Mono.error(ex));
 
         // When
         eventBus.emit(createValidatedEvent());
