@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.web;
 
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.fr.enedis.CimTestConfiguration;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepository;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -22,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AuthorizationCallbackController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(CimTestConfiguration.class)
 class AuthorizationCallbackControllerTest {
     @Autowired
     private MockMvc mockMvc;

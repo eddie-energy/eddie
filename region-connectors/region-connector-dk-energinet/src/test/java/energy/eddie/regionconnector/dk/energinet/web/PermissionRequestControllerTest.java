@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.web.DataNeedsAdvice;
@@ -47,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = {PermissionRequestController.class})
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
-@Import(PermissionRequestControllerAdvice.class)
+@Import({PermissionRequestControllerAdvice.class})
 class PermissionRequestControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -286,6 +289,12 @@ class PermissionRequestControllerTest {
         @Bean
         public DataNeedsAdvice dataNeedsAdvice() {
             return new DataNeedsAdvice();
+        }
+
+        @Bean
+        public CommonInformationModelConfiguration commonInformationModelConfiguration() {
+            return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME,
+                                                                "EP-ID");
         }
     }
 }

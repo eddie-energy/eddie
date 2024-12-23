@@ -7,8 +7,6 @@ import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
@@ -43,8 +41,6 @@ import reactor.netty.http.client.HttpClient;
 
 import java.util.List;
 
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.*;
 
 
@@ -97,14 +93,6 @@ public class DatadisSpringConfig {
     }
 
     @Bean
-    public CommonInformationModelConfiguration cimConfig(
-            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
-            @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
-    ) {
-        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
-    }
-
-    @Bean
     public FulfillmentService fulfillmentService(Outbox outbox) {
         return new FulfillmentService(outbox, EsSimpleEvent::new);
     }
@@ -136,7 +124,7 @@ public class DatadisSpringConfig {
             EsPermissionRequestRepository esPermissionRequestRepository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             DatadisConfig config,
-            CommonInformationModelConfiguration cimConfig
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,

@@ -5,8 +5,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
@@ -42,8 +40,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.List;
 
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.*;
 import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
 import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_HANDSHAKE_PERMISSION_REQUEST;
@@ -89,14 +85,6 @@ public class AiidaBeanConfig {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 
-    @Bean
-    public CommonInformationModelConfiguration cimConfig(
-            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
-            @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
-    ) {
-        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
-    }
-
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // Injected via parent app context
     @Bean
     public TransmissionScheduleProvider<AiidaPermissionRequest> transmissionScheduleProvider(DataNeedsService dataNeedsService) {
@@ -127,7 +115,7 @@ public class AiidaBeanConfig {
             EventBus eventBus,
             AiidaPermissionRequestViewRepository repository,
             AiidaConfiguration configuration,
-            CommonInformationModelConfiguration cimConfig,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig,
             TransmissionScheduleProvider<AiidaPermissionRequest> transmissionScheduleProvider,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
     ) {

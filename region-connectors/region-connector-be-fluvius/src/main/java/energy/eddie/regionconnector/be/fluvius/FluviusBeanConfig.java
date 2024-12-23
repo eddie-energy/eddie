@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusConfiguration;
@@ -15,6 +13,7 @@ import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionEventRepository;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
+import energy.eddie.regionconnector.be.fluvius.streams.IdentifiableDataStreams;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
 import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -35,9 +34,6 @@ import reactor.core.publisher.Sinks;
 
 import java.time.ZoneOffset;
 import java.util.List;
-
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 
 import static energy.eddie.regionconnector.be.fluvius.FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
@@ -90,13 +86,14 @@ public class FluviusBeanConfig {
     }
 
 
+    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
     @OnRawDataMessagesEnabled
-    public RawDataProvider rawDataProvider(ObjectMapper objectMapper, Flux<IdentifiableMeteringData> identifiableMeteringDataFlux) {
+    public RawDataProvider rawDataProvider(ObjectMapper objectMapper, IdentifiableDataStreams streams) {
         return new JsonRawDataProvider(
                 REGION_CONNECTOR_ID,
                 objectMapper,
-                identifiableMeteringDataFlux
+                streams.getMeteringData()
         );
     }
 
@@ -111,20 +108,12 @@ public class FluviusBeanConfig {
     }
 
     @Bean
-    public CommonInformationModelConfiguration cimConfig(
-            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
-            @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
-    ) {
-        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
-    }
-
-    @Bean
     public PermissionMarketDocumentMessageHandler<FluviusPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
             BePermissionRequestRepository bePermissionRequestRepository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             FluviusOAuthConfiguration fluviusOAuthConfiguration,
-            CommonInformationModelConfiguration cimConfig
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,

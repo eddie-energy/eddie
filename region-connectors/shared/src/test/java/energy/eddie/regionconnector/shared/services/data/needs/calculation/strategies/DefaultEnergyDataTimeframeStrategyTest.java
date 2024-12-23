@@ -57,8 +57,6 @@ class DefaultEnergyDataTimeframeStrategyTest {
                 .thenReturn(Period.ofDays(1));
         when(metadata.latestEnd())
                 .thenReturn(Period.ofDays(10));
-        when(metadata.timeZone())
-                .thenReturn(ZoneOffset.UTC);
         var now = LocalDate.now(ZoneOffset.UTC);
 
         // When
