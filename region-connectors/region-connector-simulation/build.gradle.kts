@@ -26,7 +26,9 @@ dependencies {
     implementation(libs.reactor.core)
     implementation(libs.jakarta.persistence.api)
 
+    testImplementation(libs.junit.mockito)
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.reactor.test)
     testRuntimeOnly(libs.junit.jupiter)
 }
 
