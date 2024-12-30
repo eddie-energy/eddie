@@ -1,0 +1,48 @@
+{
+  "type": "Scenario",
+  "name": "External Termination Scenario",
+  "steps": [
+    {
+      "type": "StatusChangeStep",
+      "status": "CREATED",
+      "delay": 0,
+      "delayUnit": "SECONDS"
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "VALIDATED",
+      "delay": 0,
+      "delayUnit": "SECONDS"
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "SENT_TO_PERMISSION_ADMINISTRATOR",
+      "delay": 0,
+      "delayUnit": "SECONDS"
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "ACCEPTED",
+      "delay": 0,
+      "delayUnit": "SECONDS"
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "FULFILLED",
+      "delay": 0,
+      "delayUnit": "SECONDS"
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "REQUIRES_EXTERNAL_TERMINATION",
+      "delay": 10,
+      "delayUnit": "SECONDS"
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "EXTERNALLY_TERMINATED",
+      "delay": 0,
+      "delayUnit": "SECONDS"
+    }
+  ]
+}

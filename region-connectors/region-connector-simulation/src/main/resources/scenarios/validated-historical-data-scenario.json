@@ -1,0 +1,50 @@
+{
+  "type": "Scenario",
+  "name": "Validated Historical Data Scenario",
+  "steps": [
+    {
+      "type": "StatusChangeStep",
+      "status": "CREATED",
+      "delay": 0,
+      "delayUnit": "SECONDS"
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "VALIDATED",
+      "delay": 0,
+      "delayUnit": "SECONDS"
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "SENT_TO_PERMISSION_ADMINISTRATOR",
+      "delay": 0,
+      "delayUnit": "SECONDS"
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "ACCEPTED",
+      "delay": 0,
+      "delayUnit": "SECONDS"
+    },
+    {
+      "type": "ValidatedHistoricalDataStep",
+      "meterReading": {
+        "startDateTime": "2024-12-30T09:49:05.458Z",
+        "meteringPoint": "mid",
+        "meteringInterval": "PT15M",
+        "measurements": [
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          }
+        ]
+      }
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "FULFILLED",
+      "delay": 0,
+      "delayUnit": "SECONDS"
+    }
+  ]
+}

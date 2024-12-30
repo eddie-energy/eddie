@@ -3,6 +3,8 @@ package energy.eddie.regionconnector.simulation.dtos;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Locale;
+
 public record Measurement(
         @JsonProperty("value")
         Double value,
@@ -16,7 +18,7 @@ public record Measurement(
 
         @JsonCreator
         public static MeasurementType fromValue(String value) {
-            return switch (value) {
+            return switch (value.toLowerCase(Locale.ROOT)) {
                 case "measured" -> MEASURED;
                 case "extrapolated" -> EXTRAPOLATED;
                 default -> throw new IllegalArgumentException(value);

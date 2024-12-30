@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.simulation.engine.steps;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.simulation.engine.SimulationContext;
 import energy.eddie.regionconnector.simulation.engine.steps.runtime.DelayStep;
@@ -10,10 +11,22 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 import java.util.SequencedCollection;
 
-public record StatusChangeStep(PermissionProcessStatus status, long delay, ChronoUnit delayUnit) implements Model {
+public final class StatusChangeStep extends Model {
+    public static final String DISCRIMINATOR_VALUE = "StatusChangeStep";
     private static final Logger LOGGER = LoggerFactory.getLogger(StatusChangeStep.class);
+    private final PermissionProcessStatus status;
+    private final long delay;
+    private final ChronoUnit delayUnit;
+
+    public StatusChangeStep(PermissionProcessStatus status, long delay, ChronoUnit delayUnit) {
+        super(DISCRIMINATOR_VALUE);
+        this.status = status;
+        this.delay = delay;
+        this.delayUnit = delayUnit;
+    }
 
     public StatusChangeStep(PermissionProcessStatus status) {
         this(status, 0, ChronoUnit.SECONDS);
@@ -29,5 +42,37 @@ public record StatusChangeStep(PermissionProcessStatus status, long delay, Chron
                 new StatusEmissionStep(status),
                 new DelayStep(delay, delayUnit)
         );
+    }
+
+    @JsonProperty
+    public PermissionProcessStatus status() {return status;}
+
+    @JsonProperty
+    public long delay() {return delay;}
+
+    @JsonProperty
+    public ChronoUnit delayUnit() {return delayUnit;}
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(status, delay, delayUnit);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (StatusChangeStep) obj;
+        return Objects.equals(this.status, that.status) &&
+               this.delay == that.delay &&
+               Objects.equals(this.delayUnit, that.delayUnit);
+    }
+
+    @Override
+    public String toString() {
+        return "StatusChangeStep[" +
+               "status=" + status + ", " +
+               "delay=" + delay + ", " +
+               "delayUnit=" + delayUnit + ']';
     }
 }

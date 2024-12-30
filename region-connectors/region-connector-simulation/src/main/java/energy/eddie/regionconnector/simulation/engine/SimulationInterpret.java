@@ -42,6 +42,6 @@ class SimulationInterpret {
         LOGGER.atInfo()
               .addArgument(stepCounter)
               .addArgument(() -> Duration.of(end - start, ChronoUnit.NANOS).toString())
-              .log("Simulation included {} steps, and has been running for {}");
+              .log("Simulation included {} steps and has been running for {}");
     }
 }
