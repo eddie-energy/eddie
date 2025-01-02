@@ -48,3 +48,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./gradlew build integrationTest codeCoverageReport sonar --info
+
+  release:
+    name: Build docker containers
+    needs: build
+    runs-on: self-hosted
+    if: github.ref_name == 'main'
+    steps:
+      - name: Build and Tag docker images
+        uses: ./.github/workflows/docker/build-containers.yml
+        with:
+          VERSION: 'latest'

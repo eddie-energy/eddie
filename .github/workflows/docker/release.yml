@@ -1,0 +1,22 @@
+name: Build release docker images
+
+on:
+  push:
+    tags: [ release-* ]
+
+jobs:
+  build:
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: write
+    env:
+      registry: ghcr.io/eddie-energy
+    steps:
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Build docker containers
+        uses: ./.github/workflows/docker/build-containers.yml
+        with:
+          VERSION: ${{ steps.get_version.outputs.VERSION }}

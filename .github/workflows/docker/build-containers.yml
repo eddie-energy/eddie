@@ -1,10 +1,12 @@
 name: Build Containers
 
 on:
-  push:
-    branches: [ "main" ]
-
   workflow_dispatch:
+    inputs:
+      VERSION:
+        description: 'The version of the image to push'
+        required: true
+        default: 'latest'
 
 permissions:
   contents: read
@@ -51,22 +53,26 @@ jobs:
         run: |
           IMAGE_NAME=eddie-example-app
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
-          VERSION=latest
+          VERSION=${{ github.event.inputs.VERSION }} # Use the input version
           echo IMAGE_NAME: $IMAGE_NAME
           echo IMAGE_ID: $IMAGE_ID
           echo VERSION: $VERSION
           docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
+          docker tag ${IMAGE_NAME} $IMAGE_ID:latest
           docker push $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:latest
       - name: "Docker push image: EDDIE"
         run: |
           IMAGE_NAME=eddie
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
-          VERSION=latest
+          VERSION=${{ github.event.inputs.VERSION }} # Use the input version
           echo IMAGE_NAME: $IMAGE_NAME
           echo IMAGE_ID: $IMAGE_ID
           echo VERSION: $VERSION
           docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
+          docker tag ${IMAGE_NAME} $IMAGE_ID:latest
           docker push $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:latest
       - name: Post ghcr.io login
         run: rm $HOME/.docker/config.json
 
@@ -92,4 +98,6 @@ jobs:
         run: |
           IMAGE_ID=${REGISTRY}/${{ github.repository_owner }}/${IMAGE_NAME}
           echo $IMAGE_ID
-          ./gradlew --no-daemon jib --image $IMAGE_ID -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
+          VERSION=${{ github.event.inputs.VERSION }} # Use the input version
+          ./gradlew --no-daemon jib --image $IMAGE_ID:$VERSION -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
+          ./gradlew --no-daemon jib --image $IMAGE_ID:latest -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}

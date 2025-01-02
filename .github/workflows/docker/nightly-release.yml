@@ -1,0 +1,22 @@
+name: Build nightly docker images
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  build:
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: write
+    env:
+      registry: ghcr.io/eddie-energy
+    steps:
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::nightly-$(date +'%Y%m%d')
+      - name: Build docker containers
+        uses: ./.github/workflows/docker/build-containers.yml
+        with:
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
