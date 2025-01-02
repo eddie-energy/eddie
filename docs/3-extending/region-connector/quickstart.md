@@ -21,11 +21,9 @@ Events are emitted once data is pushed to the region connector, instead of react
 
 ## Setup
 
-First a new Gradle subproject has to be created in the [
-`region-connectors`](https://github.com/eddie-energy/eddie/tree/main/region-connectors) directory with the name
+First a new Gradle subproject has to be created in the [`region-connectors`](https://github.com/eddie-energy/eddie/tree/main/region-connectors) directory with the name
 `region-connector-foo-bar`.
-The new subproject has to be included in the [
-`settings.gradle.kts`](https://github.com/eddie-energy/eddie/blob/main/settings.gradle.kts) and [the core
+The new subproject has to be included in the [`settings.gradle.kts`](https://github.com/eddie-energy/eddie/blob/main/settings.gradle.kts) and [the core
 `build.gradle.kts`](https://github.com/eddie-energy/eddie/blob/main/core/build.gradle.kts).
 
 ```kotlin
@@ -587,8 +585,7 @@ public class MalformedEvent extends PersistablePermissionEvent {
 }
 ```
 
-To validate the data need ID an instance of the [
-`DataNeedCalculationService`](./api.md#dataneedcalculationservice) is needed.
+To validate the data need ID an instance of the [`DataNeedCalculationService`](./api.md#dataneedcalculationservice) is needed.
 Create a bean of this type in your `FooBarSpringConfig` class.
 
 ```java
@@ -1018,8 +1015,7 @@ public class AcceptedHandler implements EventHandler<PermissionEvent> {
 ```
 
 Since we already have the information if a permission request was fulfilled or what the latest meter reading was for a permission request, let's implement fulfillment.
-If you implement the [`MeterReadingPermissionRequest`](./api.md#meterreadingpermissionrequest) you can use the [
-`MeterReadingUpdateAndFulfillmentService`](./shared-functionality.md#meterreadingpermissionupdateandfulfillmentservice).
+If you implement the [`MeterReadingPermissionRequest`](./api.md#meterreadingpermissionrequest) you can use the [`MeterReadingUpdateAndFulfillmentService`](./shared-functionality.md#meterreadingpermissionupdateandfulfillmentservice).
 It provides a default implementation that updates a permission request with the latest meter reading and fulfills it too if all data was requested.
 
 ```java
@@ -1041,8 +1037,7 @@ public class MeterReadingUpdateService {
 }
 ```
 
-A special type of event is used to update the latest meter reading, the [
-`InternalPermissionEvent`](./internal-architecture.md#internal-events).
+A special type of event is used to update the latest meter reading, the [`InternalPermissionEvent`](./internal-architecture.md#internal-events).
 These are used to change the state of a permission request, by inserting new data into the event table and notifying any domain event handlers, but have to be ignored by integration event handlers.
 Internal events should not change the `PermissionProcessStatus` of a permission request.
 Since we are polling data, we can be sure that the permission request has the `ACCEPTED` status.
@@ -1168,8 +1163,7 @@ Once the data is emitted to the `ValidatedHistoricalDataStream` it can be emitte
 To that an implementation of the [`RawDataProvider`](./api.md#rawdataprovider) is required.
 The implementation subscribes to the `ValidatedHistoricalDataStream` and converts the
 `IdentifiableValidatedHistoricalData` to a [`RawDataMessage`](../../2-integrating/messages/raw-data-messages.md).
-If the API responses are in JSON the default implementation [
-`JsonRawDataProvider`](./shared-functionality.md#jsonrawdataprovider) for JSON values can be used instead.
+If the API responses are in JSON the default implementation [`JsonRawDataProvider`](./shared-functionality.md#jsonrawdataprovider) for JSON values can be used instead.
 
 ```java
 
@@ -1219,8 +1213,7 @@ public class FooBarRawDataProvider implements RawDataProvider {
 The region connector can request validated historical data and emit it as raw data messages.
 It can react to revocation of permissions by the final customer, by checking the error messages when requesting data from the MDA's API.
 The next step is to map the validated historical data to the [validated historical data market document](../../2-integrating/messages/validated-historical-data-market-documents.md).
-Similar to the `RawDataProvider`, we implement an [
-`ValidatedHistoricalDataEnvelopeProvider`](./api.md#validatedhistoricaldataenvelopeprovider).
+Similar to the `RawDataProvider`, we implement an [`ValidatedHistoricalDataEnvelopeProvider`](./api.md#validatedhistoricaldataenvelopeprovider).
 Since the mapping of the data to a CIM document depends on the data given, that part is left out as TODO.
 There are some [helpers](./shared-functionality.md#cim-utilities-and-helper-classes) for the mapping available.
 
@@ -1377,8 +1370,7 @@ Therefore, this section does not contain any code examples.
 To request accounting point data include the
 `AcountingPointDataNeed` in the list of supported data needs in your metadata implementation.
 When you get a permission request for accounting point data, don't request validated historical data from the MDA, but accounting point data.
-Emit the data via the `RawDataProvider` and the [
-`AccountingPointEnvelopeProvider`](./api.md#accountingpointenvelopeprovider).
+Emit the data via the `RawDataProvider` and the [`AccountingPointEnvelopeProvider`](./api.md#accountingpointenvelopeprovider).
 
 ## Ensure Data Needs are Enforced when Request Data
 
@@ -1620,8 +1612,7 @@ public class PermissionRequestFinishedHandler implements EventHandler<Permission
 
 Sometimes final customers ignore permission requests; since those can't be used to retrieve any data, they should be time outed.
 Luckily, there is a [shared implementation](./shared-functionality.md#commontimeoutservice) for that.
-It can be quickly spun up, and handles all the time-outs, but it requires the [
-`StalePermissionRequestRepository`](./api.md#database-access-to-permission-requests).
+It can be quickly spun up, and handles all the time-outs, but it requires the [`StalePermissionRequestRepository`](./api.md#database-access-to-permission-requests).
 
 ```java
 

@@ -289,8 +289,7 @@ Therefore, the [sent to PA event](#sent-to-pa-event) is emitted after the PA red
 If the validations fail, a malformed event has to be emitted.
 The validation errors should be included as an [`AttributeError`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/process/model/validation/AttributeError.html).
 This contains the erroneous field and the error message.
-To be able to persist a list of `AttributeErrors`, the [
-`AttributeErrorListConverter`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/event/sourcing/converters/AttributeErrorListConverter.html) can be used.
+To be able to persist a list of `AttributeErrors`, the [`AttributeErrorListConverter`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/event/sourcing/converters/AttributeErrorListConverter.html) can be used.
 This converter converts the list into a JSON structure.
 Of course, other converters can be used, or even a dedicated table referenced by the malformed event.
 

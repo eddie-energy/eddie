@@ -55,8 +55,7 @@ Furthermore, it is used to set the name of the outbound-connector.
 
 ### `ConnectionStatusMessageOutboundConnector`
 
-The [
-`ConnectionStatusMessageOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/ConnectionStatusMessageOutboundConnector.html) interface provides means to get a stream of [connection status messages](../2-integrating/messages/connection-status-messages.md), which are emitted to the eligible party.
+The [`ConnectionStatusMessageOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/ConnectionStatusMessageOutboundConnector.html) interface provides means to get a stream of [connection status messages](../2-integrating/messages/connection-status-messages.md), which are emitted to the eligible party.
 
 ### `RawDataOutboundConnector`
 

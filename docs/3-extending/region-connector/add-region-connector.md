@@ -42,8 +42,7 @@ public class FluviusSpringConfig {
 ```
 
 In total, only two annotations are needed to declare a region connector.
-While the [
-`@RegionConnector`](./api.md#regionconnector-annotation) annotation is needed by EDDIE Core to find the region connector during classpath scanning, the `@SpringBootApplication` to initialize the Spring context.
+While the [`@RegionConnector`](./api.md#regionconnector-annotation) annotation is needed by EDDIE Core to find the region connector during classpath scanning, the `@SpringBootApplication` to initialize the Spring context.
 Other Spring annotations can also be added to the base class, such as `@EnableScheduling` or `@EnableWebMvc`.
 Each region connector has its own [dispatcher servlet](./dispatcher-servlet.md), for web requests.
 

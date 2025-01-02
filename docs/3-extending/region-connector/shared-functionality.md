@@ -20,8 +20,7 @@ There are examples to create an instance for each of them.
 
 Sometimes the PA does not provide a unique ID for the eligible party.
 This ID is usually needed to create the CIM documents.
-In cases, where it is not available the [
-`CommonInformationModelConfiguration`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/cim/config/CommonInformationModelConfiguration.html) can be used.
+In cases, where it is not available the [`CommonInformationModelConfiguration`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/cim/config/CommonInformationModelConfiguration.html) can be used.
 
 ```java
 @Configuration
@@ -106,12 +105,9 @@ public class Config {
 
 ## `JsonRawDataProvider`
 
-The [
-`JsonRawDataProvider`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/agnostic/JsonRawDataProvider.html) provides a shared implementation for raw data.
-It requires an implementation of the [
-`IdentifiablePayload`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/IdentifiablePayload.html), which is a pair of the permission request and the data that was requested from the MDA or PA.
-Should only be used in combination with [
-`OnRawDataMessagesEnabled`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/agnostic/OnRawDataMessagesEnabled.html).
+The [`JsonRawDataProvider`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/agnostic/JsonRawDataProvider.html) provides a shared implementation for raw data.
+It requires an implementation of the [`IdentifiablePayload`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/IdentifiablePayload.html), which is a pair of the permission request and the data that was requested from the MDA or PA.
+Should only be used in combination with [`OnRawDataMessagesEnabled`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/agnostic/OnRawDataMessagesEnabled.html).
 
 ```java
 
@@ -175,8 +171,7 @@ public class Config {
 
 ## `MeterReadingPermissionUpdateAndFulfillmentService`
 
-The [
-`MeterReadingPermissionUpdateAndFulfillmentService`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/services/MeterReadingPermissionUpdateAndFulfillmentService.html) updates a permission request with the latest meter reading and checks if it is fulfilled.
+The [`MeterReadingPermissionUpdateAndFulfillmentService`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/services/MeterReadingPermissionUpdateAndFulfillmentService.html) updates a permission request with the latest meter reading and checks if it is fulfilled.
 Only works for permission requests that implement [the
 `MeterReadingPermissionRequest` interface](./api.md#meterreadingpermissionrequest).
 It requires [the fulfillment service](#fulfillmentservice).

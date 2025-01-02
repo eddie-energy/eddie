@@ -44,16 +44,13 @@ Permission requests have to be loaded from a database, for which there are sever
 For the recommended way to persist permission requests see [internal architecture](./internal-architecture.md).
 Some [shared functionality](./shared-functionality.md) might need a specific interface to work.
 
-- [
-  `PermissionRequestRepository`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/process/model/persistence/PermissionRequestRepository.html): request permission requests by ID.
-- [
-  `StatusPermissionRequestRepository`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/process/model/persistence/StatusPermissionRequestRepository.html): finds permission requests by status.
+- [`PermissionRequestRepository`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/process/model/persistence/PermissionRequestRepository.html): request permission requests by ID.
+- [`StatusPermissionRequestRepository`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/process/model/persistence/StatusPermissionRequestRepository.html): finds permission requests by status.
 - [`StalePermissionRequestRepository`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/process/model/persistence/StalePermissionRequestRepository.html): finds all stale permission requests.
   A stale permission request is one that was sent to the PA, but has never been accepted or rejected by the final customer.
   The EP usually defines an upper time limit, within a permission request can be accepted or rejected.
   If that time limit is exceeded, the permission request is considered stale, and can be marked as timed out.
-- [
-  `FullPermissionRequestRepository`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/process/model/persistence/FullPermissionRequestRepository.html): a collection of all interfaces from above.
+- [`FullPermissionRequestRepository`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/process/model/persistence/FullPermissionRequestRepository.html): a collection of all interfaces from above.
 
 ### `DataNeedCalculationService`
 
@@ -67,8 +64,7 @@ An implementation that can be customized is described [here](./shared-functional
 ### `IdentifiablePayload`
 
 Often the same payload has to be converted into different representations of the same data.
-To aid in this the [
-`IdentifiablePayload`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/IdentifiablePayload.html) can be implemented.
+To aid in this the [`IdentifiablePayload`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/IdentifiablePayload.html) can be implemented.
 It identifies a PA or MDA response with a specific permission request, so it can be converted to, for example, raw data messages or validated historical data market documents.
 
 ## External API

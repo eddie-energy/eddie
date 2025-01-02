@@ -96,5 +96,4 @@ configureJavaCompileWithErrorProne("energy.eddie.regionconnector.foo.bar")
 
 ## Dependencies and Plugins
 
-Dependencies and plugins are defined using the [
-`libs.versions.toml`](https://github.com/eddie-energy/eddie/blob/main/gradle/libs.versions.toml) syntax provided by [Gradle version catalogues](https://docs.gradle.org/current/userguide/version_catalogs.html).
+Dependencies and plugins are defined using the [`libs.versions.toml`](https://github.com/eddie-energy/eddie/blob/main/gradle/libs.versions.toml) syntax provided by [Gradle version catalogues](https://docs.gradle.org/current/userguide/version_catalogs.html).
