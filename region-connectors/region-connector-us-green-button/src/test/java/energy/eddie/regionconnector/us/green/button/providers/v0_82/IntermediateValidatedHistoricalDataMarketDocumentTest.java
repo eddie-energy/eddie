@@ -39,7 +39,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
 
     @Test
     @SuppressWarnings("java:S5961")
-    void testToVhd_returnsValidatedHistoricalDataMarketDocument() throws FeedException {
+    void testToVhd_returnsValidatedHistoricalDataMarketDocument() throws FeedException, UnsupportedUnitException {
         // Given
         var marshaller = new Jaxb2Marshaller();
         marshaller.setPackagesToScan("org.naesb.espi");
@@ -100,7 +100,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                                                timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
                             () -> assertEquals(CommodityKind.ELECTRICITYSECONDARYMETERED,
                                                timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
-                            () -> assertNull(timeSeries.getEnergyMeasurementUnitName()),
+                            () -> assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR, timeSeries.getEnergyMeasurementUnitName()),
                             () -> assertEquals(CodingSchemeTypeList.CGM,
                                                timeSeries.getMarketEvaluationPointMRID().getCodingScheme()),
                             () -> assertEquals("1669851", timeSeries.getMarketEvaluationPointMRID().getValue()),
@@ -119,7 +119,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                                                                        .getPoints()
                                                                        .getFirst()
                                                                        .getPosition()),
-                                        () -> assertEquals(BigDecimal.valueOf(10000),
+                                        () -> assertEquals(BigDecimal.valueOf(10000).scaleByPowerOfTen(-8),
                                                            seriesPeriod.getPointList()
                                                                        .getPoints()
                                                                        .getFirst()

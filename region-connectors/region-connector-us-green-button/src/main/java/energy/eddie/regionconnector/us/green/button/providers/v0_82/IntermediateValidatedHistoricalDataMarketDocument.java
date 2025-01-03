@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -49,7 +48,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
     }
 
     @SuppressWarnings("java:S135")
-    public List<ValidatedHistoricalDataEnvelope> toVhd() {
+    public List<ValidatedHistoricalDataEnvelope> toVhd() throws UnsupportedUnitException {
         var permissionId = permissionRequest.permissionId();
         LOGGER.info("Mapping validated historical data of permission request {} to CIM", permissionId);
         var query = new Query(syndFeed, unmarshaller);
@@ -57,7 +56,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         var permissionAdmin = permissionRequest.dataSourceInformation().permissionAdministratorId();
         var clientId = greenButtonConfiguration.clientIds().getOrDefault(permissionAdmin, "");
         var readings = query.findAllByTitle("ReadingType");
-        List<ValidatedHistoricalDataEnvelope> vhds = new ArrayList<>(readings.size());
+        var vhds = new ArrayList<ValidatedHistoricalDataEnvelope>(readings.size());
         for (var reading : readings) {
             var related = reading.findRelatedLink("related").getHref();
             var optionalIntervalBlock = query.findFirstBySelfLinkAndTitle(related, "IntervalBlock");
@@ -79,7 +78,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             var end = Instant.ofEpochSecond(interval.getStart() + interval.getDuration()).atZone(ZoneOffset.UTC);
             var esmpInterval = new EsmpTimeInterval(start, end);
             var flowDirection = getDirection(readingType.getFlowDirection());
-            var seriesPeriods = getSeriesPeriods(readingType, intervalBlock);
+            var scale = new ReadingTypeValueConverter(readingType).scale();
+            var seriesPeriods = getSeriesPeriods(readingType, intervalBlock, scale);
             var vhd = new ValidatedHistoricalDataMarketDocumentComplexType()
                     .withMRID(UUID.randomUUID().toString())
                     .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
@@ -117,7 +117,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                                                     .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(
                                                             getCommodity(readingType)
                                                     )
-                                                    .withEnergyMeasurementUnitName(getUnitOfMeasure(readingType))
+                                                    .withEnergyMeasurementUnitName(scale.unit())
                                                     .withMarketEvaluationPointMRID(
                                                             new MeasurementPointIDStringComplexType()
                                                                     .withCodingScheme(CodingSchemeTypeList.CGM)
@@ -143,7 +143,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         return vhds;
     }
 
-    private List<SeriesPeriodComplexType> getSeriesPeriods(ReadingType readingType, IntervalBlock intervalBlock) {
+    private List<SeriesPeriodComplexType> getSeriesPeriods(ReadingType readingType, IntervalBlock intervalBlock, MeasurementScale scale) {
         var granularity = Granularity.fromMinutes(Math.toIntExact(readingType.getIntervalLength() / 60));
         List<SeriesPeriodComplexType> seriesPeriods = new ArrayList<>();
         for (var intervalReading : intervalBlock.getIntervalReading()) {
@@ -152,6 +152,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                     Instant.ofEpochSecond(timePeriod.getStart()).atZone(ZoneOffset.UTC),
                     Instant.ofEpochSecond(timePeriod.getStart() + timePeriod.getDuration()).atZone(ZoneOffset.UTC)
             );
+
+            var value = scale.scaled(intervalReading.getValue());
             var seriesPeriod = new SeriesPeriodComplexType()
                     .withResolution(granularity.toString())
                     .withTimeInterval(
@@ -164,19 +166,13 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                                     .withPoints(
                                             new PointComplexType()
                                                     .withPosition(String.valueOf(timePeriod.getStart()))
-                                                    .withEnergyQuantityQuantity(BigDecimal.valueOf(intervalReading.getValue()))
+                                                    .withEnergyQuantityQuantity(value)
                                                     .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED)
                                     )
                     );
             seriesPeriods.add(seriesPeriod);
         }
         return seriesPeriods;
-    }
-
-    @Nullable
-    private static UnitOfMeasureTypeList getUnitOfMeasure(ReadingType readingType) {
-        return readingType.getUom().equals("72") && readingType.getPowerOfTenMultiplier()
-                                                               .equals("3") ? UnitOfMeasureTypeList.KILOWATT_HOUR : null;
     }
 
     @Nullable

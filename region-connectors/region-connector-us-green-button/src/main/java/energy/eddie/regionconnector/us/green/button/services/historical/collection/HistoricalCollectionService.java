@@ -10,6 +10,7 @@ import energy.eddie.regionconnector.us.green.button.permission.request.meter.rea
 import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReadingPk;
 import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
 import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,7 @@ public class HistoricalCollectionService {
      * @param permissionRequests the permission requests that are used to request meters
      * @return Empty mono
      */
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
     public Flux<MeterReading> persistMetersForPermissionRequests(List<UsGreenButtonPermissionRequest> permissionRequests) {
         var authIndex = buildAuthIndex(permissionRequests);
         var slurp = permissionRequests.size() > GreenButtonApi.MAX_METER_RESULTS ? Pages.SLURP : Pages.NO_SLURP;
