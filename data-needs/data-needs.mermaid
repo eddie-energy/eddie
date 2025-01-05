@@ -1,0 +1,89 @@
+classDiagram
+    class DataNeed {
+        <<abstract>>
+        +String type
+        +String id
+        +String name
+        +String description
+        +String purpose
+        +URL policyLink
+    }
+
+    class AccountingPointDataNeed
+
+    class TimeframedDataNeed {
+        <<abstract>>
+        +DataNeedDuration duration
+    }
+
+    class ValidatedHistoricalDataDataNeed {
+        +Granularity minGranularity
+        +Granularity maxGranularity
+        +EnergyType energyType
+    }
+
+    class AiidaDataNeed {
+        +String transmissionSchedule
+        +Set~AiidaSchema~ schemas
+        +AiidaAsset asset
+        +Set~String~ dataTags
+    }
+
+    class EnergyType {
+        <<enumeration>>
+        ELECTRICITY
+        NATURAL_GAS
+        HYDROGEN
+        HEAT
+    }
+
+    class AiidaSchema {
+        <<enumeration>>
+        SMART-METER-P1-RAW
+        SMART-METER-P1-CIM
+    }
+
+    class AiidaAsset {
+        <<enumeration>>
+        CONNECTION-AGREEMENT-POINT
+        CONTROLLABLE-UNIT
+        DEDICATED-MEASUREMENT-DEVICE
+        SUBMETER
+    }
+
+    class DataNeedDuration
+
+    class RelativeDuration {
+        +Duration~ISO8601~ start
+        +Duration~ISO8601~ end
+        +boolean stickToStartOfCalendarUnit
+        +CalendarUnit stickyStartCalendarUnit
+    }
+
+    class AbsoluteDuration {
+        +Date start
+        +Date end
+    }
+    class RegionConnectorFilter {
+        + Type type
+        + List~String~ regionConnectorIds
+        + String dataNeedId
+    }
+    class Type {
+        <<enumeration>>
+        BLOCKLIST
+        ALLOWLIST
+    }
+
+    DataNeed <|-- AccountingPointDataNeed
+    DataNeed <|-- TimeframedDataNeed
+    TimeframedDataNeed *-- DataNeedDuration
+    TimeframedDataNeed <|-- ValidatedHistoricalDataDataNeed
+    ValidatedHistoricalDataDataNeed *-- EnergyType
+    DataNeedDuration <|-- AbsoluteDuration
+    DataNeedDuration <|-- RelativeDuration
+    AiidaDataNeed *-- AiidaAsset
+    AiidaDataNeed *-- AiidaSchema
+    TimeframedDataNeed <|-- AiidaDataNeed
+    DataNeed *-- RegionConnectorFilter
+    RegionConnectorFilter *-- Type

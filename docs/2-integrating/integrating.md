@@ -3,14 +3,17 @@ prev:
   text: "Example App"
   link: "../1-running/example-app.md"
 next:
-  text: "Messages and Documents"
-  link: "./messages/messages.md"
+  text: "Data Needs"
+  link: "./data-needs.md"
 ---
 
 # Integrating
 
 EDDIE can integrate with other systems using [several protocols](../1-running/outbound-connectors/outbound-connectors.md).
 Permission request status changes, the requested data, and terminations are described in [messages](messages/messages.md).
+
+EDDIE creates permission requests based on data needs.
+[Data needs](./data-needs.md) are a data definition language that defines the format of permission requests and the data that is requested.
 
 ## Permission Requests
 

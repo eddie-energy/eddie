@@ -3,13 +3,10 @@ package energy.eddie.dataneeds.needs.aiida;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
 import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
-import energy.eddie.dataneeds.validation.aiida.asset.AiidaAsset;
-import energy.eddie.dataneeds.validation.aiida.schema.AiidaSchema;
 import energy.eddie.dataneeds.validation.aiida.schema.IsValidAiidaSchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -65,14 +62,6 @@ public class AiidaDataNeed extends TimeframedDataNeed {
 
     @SuppressWarnings("NullAway.Init")
     protected AiidaDataNeed() {
-    }
-
-    /**
-     * @param dataNeed the data need to check
-     * @return true if the data need is an AiidaDataNeed
-     */
-    public static boolean isAiidaDataNeed(DataNeed dataNeed) {
-        return dataNeed instanceof AiidaDataNeed;
     }
 
     /**

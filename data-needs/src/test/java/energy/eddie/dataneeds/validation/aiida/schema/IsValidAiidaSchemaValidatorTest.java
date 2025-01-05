@@ -1,6 +1,7 @@
 package energy.eddie.dataneeds.validation.aiida.schema;
 
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import jakarta.validation.ConstraintValidatorContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

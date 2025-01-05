@@ -1,7 +1,7 @@
 ---
 prev:
-  text: "Integrating"
-  link: "../integrating.md"
+  text: "Data Needs"
+  link: "../data-needs.md"
 next:
   text: "Connection Status Messages"
   link: "./connection-status-messages.md"

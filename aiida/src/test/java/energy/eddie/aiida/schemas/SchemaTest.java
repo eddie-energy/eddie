@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.dataneeds.validation.aiida.schema.AiidaSchema;
+import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import org.apache.commons.lang3.NotImplementedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

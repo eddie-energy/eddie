@@ -11,7 +11,7 @@ import energy.eddie.api.agnostic.aiida.MqttDto;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
-import energy.eddie.dataneeds.validation.aiida.schema.AiidaSchema;
+import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
