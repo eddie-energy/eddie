@@ -2,7 +2,12 @@ package energy.eddie.regionconnector.simulation.engine.constraints;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Set;
+
+import static energy.eddie.api.v0.PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR;
 
 class PermissionProcessState {
     private static final PermissionProcessState CREATED = new PermissionProcessState(
@@ -14,14 +19,14 @@ class PermissionProcessState {
     );
     private static final PermissionProcessState VALIDATED = new PermissionProcessState(
             PermissionProcessStatus.VALIDATED,
-            Set.of(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, PermissionProcessStatus.UNABLE_TO_SEND)
+            Set.of(SENT_TO_PERMISSION_ADMINISTRATOR, PermissionProcessStatus.UNABLE_TO_SEND)
     );
     private static final PermissionProcessState UNABLE_TO_SEND = new PermissionProcessState(
             PermissionProcessStatus.UNABLE_TO_SEND,
             Set.of(PermissionProcessStatus.VALIDATED)
     );
     private static final PermissionProcessState SENT_TO_PA = new PermissionProcessState(
-            PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
+            SENT_TO_PERMISSION_ADMINISTRATOR,
             Set.of(PermissionProcessStatus.TIMED_OUT,
                    PermissionProcessStatus.INVALID,
                    PermissionProcessStatus.REJECTED,
@@ -72,6 +77,28 @@ class PermissionProcessState {
     private static final PermissionProcessState EXTERNALLY_TERMINATED = new PermissionProcessState(
             PermissionProcessStatus.EXTERNALLY_TERMINATED
     );
+    private static final Map<PermissionProcessStatus, PermissionProcessState> STATE_MAP;
+
+    static {
+        var tmp = new EnumMap<PermissionProcessStatus, PermissionProcessState>(PermissionProcessStatus.class);
+        tmp.put(PermissionProcessStatus.CREATED, CREATED);
+        tmp.put(PermissionProcessStatus.VALIDATED, VALIDATED);
+        tmp.put(PermissionProcessStatus.MALFORMED, MALFORMED);
+        tmp.put(PermissionProcessStatus.UNABLE_TO_SEND, UNABLE_TO_SEND);
+        tmp.put(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR, SENT_TO_PA);
+        tmp.put(PermissionProcessStatus.TIMED_OUT, TIMED_OUT);
+        tmp.put(PermissionProcessStatus.ACCEPTED, ACCEPTED);
+        tmp.put(PermissionProcessStatus.REJECTED, REJECTED);
+        tmp.put(PermissionProcessStatus.INVALID, INVALID);
+        tmp.put(PermissionProcessStatus.REVOKED, REVOKED);
+        tmp.put(PermissionProcessStatus.TERMINATED, TERMINATED);
+        tmp.put(PermissionProcessStatus.FULFILLED, FULFILLED);
+        tmp.put(PermissionProcessStatus.UNFULFILLABLE, UNFULFILLABLE);
+        tmp.put(PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION, REQUIRES_EXTERNAL_TERMINATION);
+        tmp.put(PermissionProcessStatus.FAILED_TO_TERMINATE, FAILED_TO_TERMINATE);
+        tmp.put(PermissionProcessStatus.EXTERNALLY_TERMINATED, EXTERNALLY_TERMINATED);
+        STATE_MAP = Collections.unmodifiableMap(tmp);
+    }
 
     private final PermissionProcessStatus current;
     private final boolean finalState;
@@ -101,26 +128,10 @@ class PermissionProcessState {
         this.nextStates = nextStates;
     }
 
-    @SuppressWarnings("DuplicatedCode") // False positive
+    // All permission statuses are present in the map, so there will be no way to get a null value.
+    @SuppressWarnings("NullAway")
     public static PermissionProcessState create(PermissionProcessStatus status) {
-        return switch (status) {
-            case CREATED -> CREATED;
-            case VALIDATED -> VALIDATED;
-            case MALFORMED -> MALFORMED;
-            case UNABLE_TO_SEND -> UNABLE_TO_SEND;
-            case SENT_TO_PERMISSION_ADMINISTRATOR -> SENT_TO_PA;
-            case TIMED_OUT -> TIMED_OUT;
-            case ACCEPTED -> ACCEPTED;
-            case REJECTED -> REJECTED;
-            case INVALID -> INVALID;
-            case REVOKED -> REVOKED;
-            case TERMINATED -> TERMINATED;
-            case FULFILLED -> FULFILLED;
-            case UNFULFILLABLE -> UNFULFILLABLE;
-            case REQUIRES_EXTERNAL_TERMINATION -> REQUIRES_EXTERNAL_TERMINATION;
-            case FAILED_TO_TERMINATE -> FAILED_TO_TERMINATE;
-            case EXTERNALLY_TERMINATED -> EXTERNALLY_TERMINATED;
-        };
+        return STATE_MAP.get(status);
     }
 
 
