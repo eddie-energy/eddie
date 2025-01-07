@@ -1,0 +1,62 @@
+### GET swagger docs
+GET http://localhost:8080/region-connectors/sim/v3/api-docs
+
+### GET predefined scenarios
+GET http://localhost:8080/region-connectors/sim/scenarios
+
+### POST run predefined scenario
+@name = Validated Historical Data Scenario
+@connectionId = id
+@permissionId = 341ddb3c-1847-4b2d-be19-e6c379cfbd53
+@dataNeedId = 9bd0668f-cc19-40a8-99db-dc2cb2802b17
+POST http://localhost:8080/region-connectors/sim/scenarios/{{name}}/run
+Content-Type: application/json
+
+{
+  "connectionId": "{{connectionId}}",
+  "permissionId": "{{permissionId}}",
+  "dataNeedId": "{{dataNeedId}}"
+}
+
+### POST run scenario
+POST http://localhost:8080/region-connectors/sim/scenarios/run
+Content-Type: application/json
+
+{
+  "metadata": {
+    "connectionId": "{{connectionId}}",
+    "permissionId": "{{permissionId}}",
+    "dataNeedId": "{{dataNeedId}}"
+  },
+  "scenario": {
+    "type": "Scenario",
+    "name": "Validated Historical Data Scenario",
+    "steps": [
+      {
+        "type": "StatusChangeStep",
+        "status": "CREATED",
+        "delayInSeconds": 0
+      },
+      {
+        "type": "StatusChangeStep",
+        "status": "VALIDATED",
+        "delayInSeconds": 0
+      },
+      {
+        "type": "StatusChangeStep",
+        "status": "SENT_TO_PERMISSION_ADMINISTRATOR",
+        "delayInSeconds": 0
+      },
+      {
+        "type": "StatusChangeStep",
+        "status": "ACCEPTED",
+        "delayInSeconds": 0
+      },
+      {
+        "type": "StatusChangeStep",
+        "status": "FULFILLED",
+        "delayInSeconds": 0
+      }
+    ]
+  }
+}
