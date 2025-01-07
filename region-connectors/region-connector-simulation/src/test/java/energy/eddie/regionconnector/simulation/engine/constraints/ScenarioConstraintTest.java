@@ -15,7 +15,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -36,17 +35,17 @@ class ScenarioConstraintTest {
                 )
         );
         return Stream.of(
-                Arguments.of(new StatusChangeStep(PermissionProcessStatus.CREATED, 0, ChronoUnit.SECONDS),
+                Arguments.of(new StatusChangeStep(PermissionProcessStatus.CREATED, 0),
                              validatedHistoricalDataStep),
                 Arguments.of(validatedHistoricalDataStep,
-                             new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0, ChronoUnit.SECONDS))
+                             new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0))
         );
     }
 
     @Test
     void testConstraint_forNonScenarioSteps_returnsOk() {
         // Given
-        var step = new StatusChangeStep(PermissionProcessStatus.ACCEPTED, 0, ChronoUnit.SECONDS);
+        var step = new StatusChangeStep(PermissionProcessStatus.ACCEPTED, 0);
 
         // When
         var res = constraint.violatesConstraint(step);
@@ -58,8 +57,8 @@ class ScenarioConstraintTest {
     @Test
     void testConstraint_firstIsNotCreatedStep_returnsViolation() {
         // Given
-        var first = new StatusChangeStep(PermissionProcessStatus.ACCEPTED, 0, ChronoUnit.SECONDS);
-        var last = new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0, ChronoUnit.SECONDS);
+        var first = new StatusChangeStep(PermissionProcessStatus.ACCEPTED, 0);
+        var last = new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0);
         var scenario = new Scenario("test", List.of(first, last));
 
         // When
@@ -73,8 +72,8 @@ class ScenarioConstraintTest {
     @Test
     void testConstraint_lastIsNotFinalStatus_returnsViolation() {
         // Given
-        var first = new StatusChangeStep(PermissionProcessStatus.CREATED, 0, ChronoUnit.SECONDS);
-        var last = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0, ChronoUnit.SECONDS);
+        var first = new StatusChangeStep(PermissionProcessStatus.CREATED, 0);
+        var last = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0);
         var scenario = new Scenario("test", List.of(first, last));
 
         // When
@@ -88,8 +87,8 @@ class ScenarioConstraintTest {
     @Test
     void testConstraint_onValidFirstAndLastStep_returnsOk() {
         // Given
-        var first = new StatusChangeStep(PermissionProcessStatus.CREATED, 0, ChronoUnit.SECONDS);
-        var last = new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0, ChronoUnit.SECONDS);
+        var first = new StatusChangeStep(PermissionProcessStatus.CREATED, 0);
+        var last = new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0);
         var scenario = new Scenario("test", List.of(first, last));
 
         // When

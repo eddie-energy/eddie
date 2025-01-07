@@ -5,56 +5,47 @@
     {
       "type": "StatusChangeStep",
       "status": "CREATED",
-      "delay": 0,
-      "delayUnit": "SECONDS"
+      "delayInSeconds": 0
     },
     {
       "type": "StatusChangeStep",
       "status": "VALIDATED",
-      "delay": 0,
-      "delayUnit": "SECONDS"
+      "delayInSeconds": 0
     },
     {
       "type": "StatusChangeStep",
       "status": "SENT_TO_PERMISSION_ADMINISTRATOR",
-      "delay": 0,
-      "delayUnit": "SECONDS"
+      "delayInSeconds": 0
     },
     {
       "type": "StatusChangeStep",
       "status": "ACCEPTED",
-      "delay": 0,
-      "delayUnit": "SECONDS"
+      "delayInSeconds": 0
     },
     {
       "type": "StatusChangeStep",
       "status": "FULFILLED",
-      "delay": 0,
-      "delayUnit": "SECONDS"
+      "delayInSeconds": 0
     },
     {
       "type": "StatusChangeStep",
       "status": "REQUIRES_EXTERNAL_TERMINATION",
-      "delay": 10,
-      "delayUnit": "SECONDS"
+      "delayInSeconds": 10
     },
     {
       "type": "StatusChangeStep",
       "status": "FAILED_TO_TERMINATE",
-      "delay": 10,
-      "delayUnit": "SECONDS"
+      "delayInSeconds": 10
     },
     {
       "type": "StatusChangeStep",
       "status": "REQUIRES_EXTERNAL_TERMINATION",
-      "delay": 10,
-      "delayUnit": "SECONDS"
+      "delayInSeconds": 10
     },
     {
       "type": "StatusChangeStep",
       "status": "EXTERNALLY_TERMINATED",
-      "delay": 0,
-      "delayUnit": "SECONDS"
+      "delayInSeconds": 0
     }
   ]
 }

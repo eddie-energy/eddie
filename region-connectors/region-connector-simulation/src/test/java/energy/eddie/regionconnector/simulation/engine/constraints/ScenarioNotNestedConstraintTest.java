@@ -7,7 +7,6 @@ import energy.eddie.regionconnector.simulation.engine.steps.Scenario;
 import energy.eddie.regionconnector.simulation.engine.steps.StatusChangeStep;
 import org.junit.jupiter.api.Test;
 
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +34,7 @@ class ScenarioNotNestedConstraintTest {
     void testConstraint_onNonScenarioStep_returnsOk() {
         // Given
         var constraint = new ScenarioNotNestedConstraint();
-        var step = new StatusChangeStep(PermissionProcessStatus.CREATED, 0, ChronoUnit.SECONDS);
+        var step = new StatusChangeStep(PermissionProcessStatus.CREATED, 0);
 
         // When
         var res = constraint.violatesConstraint(step);
@@ -48,7 +47,7 @@ class ScenarioNotNestedConstraintTest {
     void testConstraint_onNotNestedScenario_returnsOk() {
         // Given
         var constraint = new ScenarioNotNestedConstraint();
-        var step = new StatusChangeStep(PermissionProcessStatus.CREATED, 0, ChronoUnit.SECONDS);
+        var step = new StatusChangeStep(PermissionProcessStatus.CREATED, 0);
         var scenario = new Scenario("test", List.of(step));
 
         // When

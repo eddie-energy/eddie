@@ -15,7 +15,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -60,7 +59,7 @@ class PermissionProcessModelConstraintTest {
 
     public Stream<Arguments> testConstraint_onValidatedHistoricalDataStep_returnsOk() {
         var vhdStep = getValidatedHistoricalDataStep();
-        var statusChangeStep = new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0, ChronoUnit.SECONDS);
+        var statusChangeStep = new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0);
         return Stream.of(
                 Arguments.of(vhdStep, statusChangeStep),
                 Arguments.of(statusChangeStep, vhdStep),
@@ -75,8 +74,8 @@ class PermissionProcessModelConstraintTest {
             PermissionProcessStatus nextStatus
     ) {
         // Given
-        var current = new StatusChangeStep(currentStatus, 0, ChronoUnit.SECONDS);
-        var next = new StatusChangeStep(nextStatus, 0, ChronoUnit.SECONDS);
+        var current = new StatusChangeStep(currentStatus, 0);
+        var next = new StatusChangeStep(nextStatus, 0);
         var constraint = new PermissionProcessModelConstraint();
 
         // When
@@ -89,8 +88,8 @@ class PermissionProcessModelConstraintTest {
     @Test
     void testConstraint_onInvalidOrder_returnsViolation() {
         // Given
-        var current = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0, ChronoUnit.SECONDS);
-        var next = new StatusChangeStep(PermissionProcessStatus.CREATED, 0, ChronoUnit.SECONDS);
+        var current = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0);
+        var next = new StatusChangeStep(PermissionProcessStatus.CREATED, 0);
         var constraint = new PermissionProcessModelConstraint();
 
         // When

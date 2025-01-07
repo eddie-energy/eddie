@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,8 +21,8 @@ class DataFollowsAcceptedStepOrDataConstraintTest {
     @Test
     void testConstraint_whereCurrentIsNotAcceptedStep_returnsOk() {
         // Given
-        var current = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0, ChronoUnit.SECONDS);
-        var next = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0, ChronoUnit.SECONDS);
+        var current = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0);
+        var next = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0);
 
         // When
         var res = dataFollowsAcceptedStepOrDataConstraint.violatesConstraint(current, next);
@@ -35,7 +34,7 @@ class DataFollowsAcceptedStepOrDataConstraintTest {
     @Test
     void testConstraint_whereCurrentIsNotAcceptedAndNextIsDataStep_returnsViolation() {
         // Given
-        var current = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0, ChronoUnit.SECONDS);
+        var current = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0);
         var next = getValidatedHistoricalDataStep();
 
         // When
@@ -52,7 +51,7 @@ class DataFollowsAcceptedStepOrDataConstraintTest {
     @Test
     void testConstraint_whereCurrentIsAccepted_andNextDataStep_returnsOk() {
         // Given
-        var current = new StatusChangeStep(PermissionProcessStatus.ACCEPTED, 0, ChronoUnit.SECONDS);
+        var current = new StatusChangeStep(PermissionProcessStatus.ACCEPTED, 0);
         var next = getValidatedHistoricalDataStep();
 
         // When

@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,8 +36,8 @@ class SimulationConstraintsTest {
                 "Test Scenario",
                 List.of(
                         new StatusChangeStep(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
-                                             0,
-                                             ChronoUnit.SECONDS),
+                                             0
+                        ),
                         new ValidatedHistoricalDataStep(
                                 new SimulatedValidatedHistoricalData("mid",
                                                                      ZonedDateTime.now(ZoneOffset.UTC),

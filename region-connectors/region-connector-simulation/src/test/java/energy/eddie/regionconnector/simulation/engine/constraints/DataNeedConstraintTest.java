@@ -21,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Period;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -38,7 +37,7 @@ class DataNeedConstraintTest {
     @Test
     void testConstraint_withStatusChangeStep_returnsOk() {
         // Given
-        var step = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0, ChronoUnit.SECONDS);
+        var step = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0);
         var ctx = TestSimulationContext.create();
         var constraint = new DataNeedConstraint(dataNeedsService, ctx);
 

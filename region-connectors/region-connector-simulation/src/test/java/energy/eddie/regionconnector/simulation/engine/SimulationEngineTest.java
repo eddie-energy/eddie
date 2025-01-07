@@ -27,7 +27,6 @@ import reactor.test.StepVerifier;
 import java.time.Period;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,12 +55,12 @@ class SimulationEngineTest {
         var scenario = new Scenario(
                 "Test Scenario",
                 List.of(
-                        new StatusChangeStep(PermissionProcessStatus.CREATED, 0, ChronoUnit.SECONDS),
-                        new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0, ChronoUnit.SECONDS),
+                        new StatusChangeStep(PermissionProcessStatus.CREATED, 0),
+                        new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0),
                         new StatusChangeStep(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
-                                             0,
-                                             ChronoUnit.SECONDS),
-                        new StatusChangeStep(PermissionProcessStatus.ACCEPTED, 0, ChronoUnit.SECONDS),
+                                             0
+                        ),
+                        new StatusChangeStep(PermissionProcessStatus.ACCEPTED, 0),
                         new ValidatedHistoricalDataStep(
                                 new SimulatedValidatedHistoricalData("mid",
                                                                      ZonedDateTime.now(ZoneOffset.UTC),
@@ -71,7 +70,7 @@ class SimulationEngineTest {
                                                                                              Measurement.MeasurementType.MEASURED)
                                                                      ))
                         ),
-                        new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0, ChronoUnit.SECONDS)
+                        new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0)
                 )
         );
         var metadata = new ScenarioMetadata("cid", "pid", "dnid");
@@ -108,10 +107,10 @@ class SimulationEngineTest {
         var scenario = new Scenario(
                 "Test Scenario",
                 List.of(
-                        new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0, ChronoUnit.SECONDS),
+                        new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0),
                         new StatusChangeStep(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
-                                             0,
-                                             ChronoUnit.SECONDS),
+                                             0
+                        ),
                         new ValidatedHistoricalDataStep(
                                 new SimulatedValidatedHistoricalData("mid",
                                                                      ZonedDateTime.now(ZoneOffset.UTC),

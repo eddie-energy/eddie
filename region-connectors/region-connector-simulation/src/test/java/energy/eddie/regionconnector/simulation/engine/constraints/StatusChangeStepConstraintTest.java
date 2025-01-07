@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,7 +21,7 @@ class StatusChangeStepConstraintTest {
     @Test
     void testConstraint_invalidDelay_returnsViolation() {
         // Given
-        var step = new StatusChangeStep(PermissionProcessStatus.CREATED, -10, ChronoUnit.SECONDS);
+        var step = new StatusChangeStep(PermissionProcessStatus.CREATED, -10);
 
         // When
         var res = constraint.violatesConstraint(step);
@@ -35,7 +34,7 @@ class StatusChangeStepConstraintTest {
     @Test
     void testConstraint_validDelay_returnsOk() {
         // Given
-        var step = new StatusChangeStep(PermissionProcessStatus.CREATED, 10, ChronoUnit.SECONDS);
+        var step = new StatusChangeStep(PermissionProcessStatus.CREATED, 10);
 
         // When
         var res = constraint.violatesConstraint(step);
