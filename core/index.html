@@ -22,10 +22,7 @@
     </style>
   </head>
   <body>
-    <eddie-connect-button
-      data-need-id="9bd0668f-cc19-40a8-99db-dc2cb2802b17"
-      connection-id="1"
-    ></eddie-connect-button>
+    <eddie-connect-button connection-id="1"></eddie-connect-button>
 
     <form>
       <label>
@@ -78,6 +75,13 @@
           button.replaceWith(button.cloneNode());
         });
       });
+
+      // Use a known data need
+      const {
+        0: { id },
+      } = dataNeeds;
+      button.setAttribute("data-need-id", id);
+      button.replaceWith(button.cloneNode());
 
       // Log all status events for debugging purposes
       document.addEventListener("eddie-request-status", (event) => {
