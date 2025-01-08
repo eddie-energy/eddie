@@ -4,6 +4,7 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjection;
 import energy.eddie.dataneeds.persistence.DataNeedsRepository;
+import jakarta.transaction.Transactional;
 import org.hibernate.Hibernate;
 import org.hibernate.proxy.HibernateProxy;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 @Component
 @ConditionalOnProperty(value = "eddie.data-needs-config.data-need-source", havingValue = "DATABASE")
+@Transactional(value = Transactional.TxType.REQUIRED)
 public class DataNeedsDbService implements DataNeedsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataNeedsDbService.class);
     private final DataNeedsRepository repository;
@@ -38,8 +40,8 @@ public class DataNeedsDbService implements DataNeedsService {
     @SuppressWarnings("unchecked")
     public static <T> T initializeAndUnproxy(T entity) {
         Hibernate.initialize(entity);
-        if (entity instanceof HibernateProxy) {
-            entity = (T) ((HibernateProxy) entity).getHibernateLazyInitializer().getImplementation();
+        if (entity instanceof HibernateProxy proxy) {
+            entity = (T) proxy.getHibernateLazyInitializer().getImplementation();
         }
         return entity;
     }
