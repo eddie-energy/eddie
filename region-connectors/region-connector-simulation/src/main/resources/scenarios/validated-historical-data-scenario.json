@@ -10,17 +10,17 @@
     {
       "type": "StatusChangeStep",
       "status": "VALIDATED",
-      "delayInSeconds": 0
+      "delayInSeconds": 5
     },
     {
       "type": "StatusChangeStep",
       "status": "SENT_TO_PERMISSION_ADMINISTRATOR",
-      "delayInSeconds": 0
+      "delayInSeconds": 4
     },
     {
       "type": "StatusChangeStep",
       "status": "ACCEPTED",
-      "delayInSeconds": 0
+      "delayInSeconds": 10
     },
     {
       "type": "ValidatedHistoricalDataStep",

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class ScenarioController {
@@ -32,12 +33,12 @@ public class ScenarioController {
     }
 
     @PostMapping(value = "/scenarios/run", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<EddieApiError>> runScenario(@RequestBody ScenarioRunConfiguration configuration) {
+    public ResponseEntity<Map<String, Object>> runScenario(@RequestBody ScenarioRunConfiguration configuration) {
         return executeScenario(configuration.metadata(), configuration.scenario());
     }
 
     @PostMapping(value = "/scenarios/{name}/run", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<EddieApiError>> runScenario(
+    public ResponseEntity<Map<String, Object>> runScenario(
             @PathVariable String name,
             @RequestBody ScenarioMetadata metadata
     ) {
@@ -49,13 +50,13 @@ public class ScenarioController {
         }
     }
 
-    private ResponseEntity<List<EddieApiError>> executeScenario(ScenarioMetadata metadata, Scenario scenario) {
+    private ResponseEntity<Map<String, Object>> executeScenario(ScenarioMetadata metadata, Scenario scenario) {
         var res = simulationEngine.run(scenario, metadata);
         return switch (res) {
             case SimulationConstraintViolations(List<ConstraintViolation> violations) ->
-                    ResponseEntity.badRequest().body(toEddieApiError(violations));
+                    ResponseEntity.badRequest().body(Map.of("errors", toEddieApiError(violations)));
 
-            case SimulationStarted ignored -> ResponseEntity.ok().build();
+            case SimulationStarted ignored -> ResponseEntity.ok(Map.of("permissionId", metadata.permissionId()));
         };
     }
 

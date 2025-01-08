@@ -110,7 +110,8 @@ class ScenarioControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(content))
                // Then
-               .andExpect(status().isOk());
+               .andExpect(status().isOk())
+               .andExpect(content().json("{permissionId: \"pid\"}"));
     }
 
     @Test
@@ -136,7 +137,7 @@ class ScenarioControllerTest {
                                 .content(content))
                // Then
                .andExpect(status().isBadRequest())
-               .andExpect(content().json("[{message: \"Invalid scenario\"}]"));
+               .andExpect(content().json("{errors:[{message: \"Invalid scenario\"}]}"));
     }
 
     @Test
@@ -152,7 +153,8 @@ class ScenarioControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(content))
                // Then
-               .andExpect(status().isOk());
+               .andExpect(status().isOk())
+               .andExpect(content().json("{permissionId: \"pid\"}"));
     }
 
     @Test

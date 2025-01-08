@@ -1,15 +1,18 @@
-import { css, html, LitElement } from "https://esm.sh/lit";
+import { css, html } from "https://esm.sh/lit";
+import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/button/button.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/select/select.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/input/input.js";
 
 const baseUrl = import.meta.url.substring(0, import.meta.url.lastIndexOf("/"));
 
-class SimulationConnectorButtonCe extends LitElement {
+class SimulationConnectorButtonCe extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
     _scenarios: { type: Array },
+    _permissionId: { type: String },
   };
 
   static styles = css`
@@ -27,6 +30,7 @@ class SimulationConnectorButtonCe extends LitElement {
   constructor() {
     super();
     this._scenarios = [];
+    this._permissionId = crypto.randomUUID().toString();
   }
 
   connectedCallback() {
@@ -45,30 +49,33 @@ class SimulationConnectorButtonCe extends LitElement {
   async handleSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
-    try {
-      const response = await fetch(
-        `${baseUrl}/scenarios/${formData.get("scenario").replaceAll("-", " ")}/run`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            connectionId: this.connectionId,
-            permissionId: formData.get("permission-id"),
-            dataNeedId: this.dataNeedId,
-          }),
+    const resp = await fetch(
+      `${baseUrl}/scenarios/${formData.get("scenario").replaceAll("-", " ")}/run`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to send message");
+        body: JSON.stringify({
+          connectionId: this.connectionId,
+          permissionId: formData.get("permission-id"),
+          dataNeedId: this.dataNeedId,
+        }),
       }
-
-      const responseData = await response.json();
-      console.log("Response:", responseData); // Log the response for debugging
-    } catch (error) {
-      console.error("Error:", error); // Log any error that occurs during the fetch
+    );
+    const data = await resp.json();
+    if (resp.ok) {
+      this.notify({
+        title: "Executing Scenario!",
+        message: "Your scenario is currently executed.",
+        variant: "success",
+        duration: 10000,
+      });
+      const { permissionId } = data;
+      this.pollRequestStatus(`${this.REQUEST_STATUS_URL}/${permissionId}`);
+    } else {
+      const { errors } = data;
+      errors.forEach((err) => this.error(err.message));
     }
   }
 
@@ -93,25 +100,36 @@ class SimulationConnectorButtonCe extends LitElement {
         <sl-button href="${targetUrl}" target="_blank" variant="primary">
           Launch Simulation
         </sl-button>
-        <form id="run-scenario-form" @submit="${this.handleSubmit}">
+        <form id="request-form">
           <h3>Run Scenario</h3>
           <div>
-            <label for="permissionId">PermissionID:</label>
-            <input id="permission-id" name="permission-id" type="text" />
+            <label for="permissionId">Permission ID:</label>
+            <br />
+            <sl-input
+              id="permission-id"
+              name="permission-id"
+              type="text"
+              value="${this._permissionId}"
+              filled
+              required
+            />
           </div>
+          <br />
           <div>
             <label for="scenario">Scenario</label>
-            <sl-select id="scenario" name="scenario">
+            <br />
+            <sl-select id="scenario" name="scenario" required>
               ${this._scenarios.map(
                 (scenario) => html`
-                  <sl-option value="${scenario.replaceAll(" ", "-")}"
-                    >${scenario}
+                  <sl-option value="${scenario.replaceAll(" ", "-")}">
+                    ${scenario}
                   </sl-option>
                 `
               )}
             </sl-select>
           </div>
-          <sl-button type="submit" variant="primary"> Run Scenario</sl-button>
+          <br />
+          <sl-button type="submit" variant="primary">Run Scenario</sl-button>
         </form>
       </div>
     `;
