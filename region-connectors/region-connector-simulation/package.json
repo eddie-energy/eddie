@@ -1,0 +1,16 @@
+{
+  "name": "eddie-sim-simulation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "lit": "^2.7.5"
+  },
+  "devDependencies": {
+    "vite": "^4.5.2"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "type": "Scenario",
+  "name": "Unable To Send Scenario",
+  "steps": [
+    {
+      "type": "StatusChangeStep",
+      "status": "CREATED",
+      "delayInSeconds": 0
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "VALIDATED",
+      "delayInSeconds": 0
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "UNABLE_TO_SEND",
+      "delayInSeconds": 10
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "VALIDATED",
+      "delayInSeconds": 0
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "SENT_TO_PERMISSION_ADMINISTRATOR",
+      "delayInSeconds": 0
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "ACCEPTED",
+      "delayInSeconds": 0
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "FULFILLED",
+      "delayInSeconds": 0
+    }
+  ]
+}
