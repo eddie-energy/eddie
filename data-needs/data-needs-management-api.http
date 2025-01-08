@@ -14,7 +14,9 @@ Content-Type: application/json
   "description": "# This is a description",
   "purpose": "A text explaining the purpose of this data need.",
   "duration": {
-    "type": "relativeDuration"
+    "type": "relativeDuration",
+    "start": "-P3M",
+    "end": "P-1D"
   },
   "energyType": "ELECTRICITY",
   "minGranularity": "PT15M",
@@ -73,4 +75,4 @@ Accept: application/json
 
 
 ### DELETE a data need
-DELETE http://localhost:9090/data-needs/management/{id}
+DELETE http://localhost:9090/data-needs/management/c62374b7-06aa-4662-bb43-c76992b9afb9
