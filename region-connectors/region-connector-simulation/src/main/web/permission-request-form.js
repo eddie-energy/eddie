@@ -49,7 +49,7 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
   async handleSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
-    const resp = await fetch(
+    const response = await fetch(
       `${baseUrl}/scenarios/${formData.get("scenario").replaceAll("-", " ")}/run`,
       {
         method: "POST",
@@ -63,16 +63,15 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
         }),
       }
     );
-    const data = await resp.json();
-    if (resp.ok) {
+    const data = await response.json();
+    if (response.ok) {
       this.notify({
         title: "Executing Scenario!",
-        message: "Your scenario is currently executed.",
+        message: "Your scenario is currently being executed.",
         variant: "success",
         duration: 10000,
       });
-      const { permissionId } = data;
-      this.pollRequestStatus(`${this.REQUEST_STATUS_URL}/${permissionId}`);
+      this.pollRequestStatus(`${this.REQUEST_STATUS_URL}/${data.permissionId}`);
     } else {
       const { errors } = data;
       errors.forEach((err) => this.error(err.message));
@@ -103,12 +102,11 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
         <form id="request-form">
           <h3>Run Scenario</h3>
           <div>
-            <label for="permissionId">Permission ID:</label>
-            <br />
             <sl-input
               id="permission-id"
               name="permission-id"
               type="text"
+              label="Permission ID"
               value="${this._permissionId}"
               filled
               required
@@ -116,9 +114,7 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
           </div>
           <br />
           <div>
-            <label for="scenario">Scenario</label>
-            <br />
-            <sl-select id="scenario" name="scenario" required>
+            <sl-select id="scenario" name="scenario" label="Scenario" required>
               ${this._scenarios.map(
                 (scenario) => html`
                   <sl-option value="${scenario.replaceAll(" ", "-")}">
