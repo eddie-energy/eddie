@@ -258,4 +258,29 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
                 () -> assertEquals(edaMasterData.invoiceRecipient().get().address().door(), invoiceADD.getDoorNumber())
         );
     }
+
+    @Test
+    void testAccountingPointMarketDocument_withoutMeteringPointData_returns() throws IOException {
+        // Given
+        var factory = new IntermediateAccountingPointMarketDocumentFactory(
+                new PlainCommonInformationModelConfiguration(
+                        CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                        "fallbackId")
+        );
+
+        var edaMasterData = EdaResourceLoader.loadEdaMasterDataWithoutMeteringPointData();
+
+        var permissionRequest = new SimplePermissionRequest( "pid", "cid", "did" );
+        var identifiableMasterData = new IdentifiableMasterData( edaMasterData, permissionRequest );
+
+        // When
+        var res = factory.create(identifiableMasterData).accountingPointEnvelope();
+
+        // Then
+        var ap = res.getAccountingPointMarketDocument()
+                    .getAccountingPointList()
+                    .getAccountingPoints()
+                    .getFirst();
+        assertNull(ap.getDirection());
+    }
 }

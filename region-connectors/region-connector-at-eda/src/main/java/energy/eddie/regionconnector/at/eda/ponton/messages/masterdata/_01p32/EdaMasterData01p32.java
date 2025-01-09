@@ -9,8 +9,7 @@ import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-public record EdaMasterData01p32(
-        MasterData masterData) implements EdaMasterData {
+public record EdaMasterData01p32(MasterData masterData) implements EdaMasterData {
     @Override
     public String conversationId() {
         return masterData.getProcessDirectory().getConversationId();
@@ -50,7 +49,10 @@ public record EdaMasterData01p32(
 
     @Override
     public MeteringPointData meteringPointData() {
-        return new MeteringPointData01p32(masterData.getProcessDirectory().getMeteringPointData());
+        var meteringPointData = masterData.getProcessDirectory().getMeteringPointData();
+        return meteringPointData == null
+                ? new NullMeteringPointData()
+                : new MeteringPointData01p32(meteringPointData);
     }
 
     @Override

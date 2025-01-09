@@ -10,19 +10,20 @@ public class EdaResourceLoader {
     private static final Jaxb2Marshaller marshaller = new AtEdaBeanConfig().jaxb2Marshaller();
 
     public static EdaMasterData loadEdaMasterData() throws IOException {
-        ClassLoader classLoader = EdaResourceLoader.class.getClassLoader();
-        try (var inputStream = classLoader.getResourceAsStream("xsd/masterdata/_01p32/masterdata.xml")) {
-            var factory = new EdaMasterData01p32InboundMessageFactory(marshaller);
-            return factory.parseInputStream(inputStream);
-        }
+        return load("xsd/masterdata/_01p32/masterdata.xml");
     }
 
     public static EdaMasterData loadEdaMasterDataForCompany() throws IOException {
-        // Given
-        ClassLoader classLoader = EdaResourceLoader.class.getClassLoader();
-        try (var inputStream = classLoader.getResourceAsStream("xsd/masterdata/_01p32/masterdata-forCompany.xml")) {
+        return load("xsd/masterdata/_01p32/masterdata-forCompany.xml");
+    }
+
+    public static EdaMasterData loadEdaMasterDataWithoutMeteringPointData() throws IOException {
+        return load("xsd/masterdata/_01p32/masterdata-without-metering-point-data.xml");
+    }
+    private static EdaMasterData load(String name) throws IOException {
+        var classLoader = EdaResourceLoader.class.getClassLoader();
+        try (var inputStream = classLoader.getResourceAsStream(name)) {
             var factory = new EdaMasterData01p32InboundMessageFactory(marshaller);
-            // When
             return factory.parseInputStream(inputStream);
         }
     }
