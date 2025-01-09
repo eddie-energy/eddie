@@ -13,10 +13,16 @@ import { definePreset, palette } from '@primevue/themes'
 
 const app = createApp(App)
 
+const EddiePreset = definePreset(Aura, {
+  semantic: {
+    primary: palette('#017aa0')
+  }
+})
+
 app.use(router)
 app.use(PrimeVue, {
   theme: {
-    preset: Aura
+    preset: EddiePreset
   }
 })
 app.use(ConfirmationService)

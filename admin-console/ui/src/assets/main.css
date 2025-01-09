@@ -1,17 +1,21 @@
-@import './base.css';
 @import 'primeicons/primeicons.css';
 
-:root {
-  --font-size-base: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-
-  --color-accent: rgb(29, 167, 224);
-  --color-accent-bg: rgba(29, 167, 224, 0.2);
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
 }
 
 html,
 body,
 #app {
   height: 100%;
+}
+
+body {
+  font-family: 'Poppins', Helvetica, sans-serif;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
 }
