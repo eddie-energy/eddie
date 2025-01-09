@@ -14,9 +14,6 @@ importers:
 
   admin-console/ui:
     dependencies:
-      '@heroicons/vue':
-        specifier: ^2.1.5
-        version: 2.1.5(vue@3.5.12)
       '@primevue/themes':
         specifier: ^4.2.4
         version: 4.2.4
@@ -921,14 +918,6 @@ packages:
   /@floating-ui/utils@0.2.8:
     resolution: {integrity: sha512-kym7SodPp8/wloecOpcmSnWJsK7M0E5Wg8UcFA+uO4B9s5d0ywXOEro/8HM9x0rW+TljRzul/14UYz3TleT3ig==}
     dev: true
-
-  /@heroicons/vue@2.1.5(vue@3.5.12):
-    resolution: {integrity: sha512-IpqR72sFqFs55kyKfFS7tN+Ww6odFNeH/7UxycIOrlVYfj4WUGAdzQtLBnJspucSeqWFQsKM0g0YrgU655BEfA==}
-    peerDependencies:
-      vue: '>= 3'
-    dependencies:
-      vue: 3.5.12(typescript@5.4.2)
-    dev: false
 
   /@humanwhocodes/config-array@0.11.14:
     resolution: {integrity: sha512-3T8LkOmg45BV5FICb15QQMsyUSWrQ8AygVfC7ZG32zOalnqrilm018ZVCw0eapXux8FtA33q8PSRSstjee3jSg==}

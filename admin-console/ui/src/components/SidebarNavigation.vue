@@ -1,11 +1,5 @@
 <script setup lang="ts">
 import EddieIcon from '@/components/EddieIcon.vue'
-import {
-  BriefcaseIcon,
-  CheckBadgeIcon,
-  GlobeEuropeAfricaIcon,
-  HomeIcon
-} from '@heroicons/vue/24/solid'
 </script>
 
 <template>
@@ -16,19 +10,19 @@ import {
 
     <nav>
       <RouterLink to="/">
-        <HomeIcon />
+        <span class="pi pi-home"></span>
         Dashboard
       </RouterLink>
       <RouterLink to="/permissions">
-        <CheckBadgeIcon />
+        <span class="pi pi-check-circle"></span>
         Permissions
       </RouterLink>
       <RouterLink to="/region-connectors">
-        <GlobeEuropeAfricaIcon />
+        <span class="pi pi-globe"></span>
         Region Connectors
       </RouterLink>
       <RouterLink to="/data-needs">
-        <BriefcaseIcon />
+        <span class="pi pi-briefcase"></span>
         Data Needs
       </RouterLink>
     </nav>
@@ -64,9 +58,5 @@ nav a:hover,
 nav a.router-link-exact-active {
   background-color: var(--color-accent-bg);
   color: var(--color-accent);
-}
-
-nav a svg {
-  height: 1.5em;
 }
 </style>
