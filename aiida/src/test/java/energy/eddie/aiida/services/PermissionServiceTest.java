@@ -53,8 +53,8 @@ class PermissionServiceTest {
     private final String accessToken = "fooBar";
     private final String serviceName = "Hello Service";
     private final String connectionId = "NewAiidaRandomConnectionId";
-    private final LocalDate start = LocalDate.of(2020, 1, 1);
-    private final LocalDate end = LocalDate.of(2020, 5, 31);
+    private final LocalDate start = LocalDate.now(ZoneId.systemDefault());
+    private final LocalDate end = LocalDate.now(ZoneId.systemDefault()).plusDays(90);
     private final TestPublisher<String> testPublisher = TestPublisher.create();
     private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
     private final Clock clock = Clock.fixed(fixedInstant, AIIDA_ZONE_ID);
@@ -199,6 +199,27 @@ class PermissionServiceTest {
         assertEquals("https://example.org", dataNeed.policyLink());
         assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of("1.8.0", "2.7.0"));
         assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of(AiidaSchema.SMART_METER_P1_RAW));
+    }
+
+    @Test
+    void givenStartDateInThePast_setsStatusToUnfulfillable_andCallsHandshakeService() {
+        // Given
+        var permissionDetails = new PermissionDetailsDto(permissionId, connectionId, start.minusDays(1), end, mockDataNeed);
+        when(mockRepository.existsById(permissionId)).thenReturn(false);
+        when(mockRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
+        when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
+
+        // When
+        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermission(qrCodeDto));
+
+        // Then
+        verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.permissionId().equals(permissionId)));
+        verify(mockHandshakeService).sendUnfulfillableOrRejected(any(), eq(UNFULFILLABLE));
+        verify(mockRepository, times(2)).save(permissionCaptor.capture());
+        assertEquals(permissionId, permissionCaptor.getAllValues().getFirst().permissionId());
+        assertEquals(UNFULFILLABLE, permissionCaptor.getAllValues().getFirst().status());
+        assertEquals(permissionId, permissionCaptor.getAllValues().get(1).permissionId());
+        assertEquals(UNFULFILLABLE, permissionCaptor.getAllValues().get(1).status());
     }
 
     @Disabled("// TODO GH-1040")  // TODO GH-1040
