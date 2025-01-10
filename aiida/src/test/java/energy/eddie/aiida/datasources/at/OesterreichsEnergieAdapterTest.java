@@ -44,6 +44,8 @@ class OesterreichsEnergieAdapterTest {
         config = new MqttConfigBuilder("tcp://localhost:1883", "MyTestTopic").build();
         mapper = new AiidaConfiguration().objectMapper();
         adapter = new OesterreichsEnergieAdapter("1", config, mapper);
+
+        logCaptorAiidaDataSource.setLogLevelToDebug();
     }
 
     @AfterEach
