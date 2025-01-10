@@ -63,3 +63,4 @@ jobs:
         uses: ./.github/actions/build-containers
         with:
           version: 'latest'
+          secrets: ${{ secrets.GITHUB_TOKEN }}

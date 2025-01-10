@@ -4,6 +4,9 @@ inputs:
   version:
     description: 'version tag'
     required: true
+  secrets:
+    description: 'The github registry token'
+    required: true
 
 runs:
   using: composite
@@ -15,12 +18,16 @@ runs:
         java-version: '21'
         distribution: 'temurin'
     - name: Gradle build
+      shell: bash
       run: ./gradlew installDist
     - name: "Docker build image: EDDIE"
+      shell: bash
       run: docker build -f ./core/src/main/docker/Dockerfile -t eddie ./core
     - name: "Docker build image: EDDIE example-app"
+      shell: bash
       run: docker build -f ./examples/example-app/src/main/docker/Dockerfile -t eddie-example-app ./examples/example-app
     - name: Print some debugging information
+      shell: bash
       run: |
         echo github.repository_owner: ${{ github.repository_owner }}
         echo github.ref: ${{ github.ref }}
@@ -33,8 +40,10 @@ runs:
     #   library that is used by that action explicitly or implicitly. Especially in the Node.js/npm ecosystem that
     #   must be used by all GitHub actions, supply chain attacks became common in recent times.
     - name: ghcr.io login
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+      shell: bash
+      run: echo "${{ inputs.secrets }}" | docker login ghcr.io -u $ --password-stdin
     - name: "Docker push image: EDDIE example-app"
+      shell: bash
       run: |
         IMAGE_NAME=eddie-example-app
         IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
@@ -45,6 +54,7 @@ runs:
         docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
         docker push $IMAGE_ID:$VERSION
     - name: "Docker push image: EDDIE"
+      shell: bash
       run: |
         IMAGE_NAME=eddie
         IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
@@ -55,6 +65,7 @@ runs:
         docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
         docker push $IMAGE_ID:$VERSION
     - name: Post ghcr.io login
+      shell: bash
       run: rm $HOME/.docker/config.json
 
     - name: Set up JDK 21
@@ -64,8 +75,9 @@ runs:
         distribution: 'temurin'
 
     - name: Build and publish image
+      shell: bash
       run: |
         IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
         echo $IMAGE_ID
         VERSION=${{ inputs.version }} # Use the input version
-        ./gradlew --no-daemon jib --image $IMAGE_ID:$VERSION -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
+        ./gradlew --no-daemon jib --image $IMAGE_ID:$VERSION -Djib.to.auth.password=${{ inputs.secrets }}

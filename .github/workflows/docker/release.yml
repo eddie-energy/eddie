@@ -21,3 +21,4 @@ jobs:
         uses: ./.github/actions/build-containers
         with:
           version: ${{ steps.get_version.outputs.VERSION }}
+          secrets: ${{ secrets.GITHUB_TOKEN }}
