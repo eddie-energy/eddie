@@ -297,7 +297,7 @@ class OesterreichsEnergieAdapterTest {
                     .expectComplete()
                     .verify();
 
-        assertThat(logCaptorAiidaDataSource.getWarnLogs()).contains(
+        assertThat(logCaptorAiidaDataSource.getDebugLogs()).contains(
                 "Found unknown OBIS-CODES from " + AiidaAsset.CONNECTION_AGREEMENT_POINT + ": [UNKNOWN-OBIS-CODE]");
     }
 
