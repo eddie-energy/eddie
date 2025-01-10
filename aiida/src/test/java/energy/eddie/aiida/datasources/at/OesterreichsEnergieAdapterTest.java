@@ -44,6 +44,8 @@ class OesterreichsEnergieAdapterTest {
         config = new MqttConfigBuilder("tcp://localhost:1883", "MyTestTopic").build();
         mapper = new AiidaConfiguration().objectMapper();
         adapter = new OesterreichsEnergieAdapter("1", config, mapper);
+
+        logCaptorAiidaDataSource.setLogLevelToDebug();
     }
 
     @AfterEach
@@ -297,7 +299,7 @@ class OesterreichsEnergieAdapterTest {
                     .expectComplete()
                     .verify();
 
-        assertThat(logCaptorAiidaDataSource.getWarnLogs()).contains(
+        assertThat(logCaptorAiidaDataSource.getDebugLogs()).contains(
                 "Found unknown OBIS-CODES from " + AiidaAsset.CONNECTION_AGREEMENT_POINT + ": [UNKNOWN-OBIS-CODE]");
     }
 

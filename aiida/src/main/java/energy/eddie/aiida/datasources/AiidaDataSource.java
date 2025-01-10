@@ -51,7 +51,7 @@ public abstract class AiidaDataSource implements AutoCloseable, HealthIndicator 
         var invalidTags = AiidaRecordValidator.checkInvalidDataTags(aiidaRecord);
 
         if (!invalidTags.isEmpty()) {
-            LOGGER.warn("Found unknown OBIS-CODES from {}: {}", asset, invalidTags);
+            LOGGER.debug("Found unknown OBIS-CODES from {}: {}", asset, invalidTags);
         }
 
         var result = recordSink.tryEmitNext(aiidaRecord);
