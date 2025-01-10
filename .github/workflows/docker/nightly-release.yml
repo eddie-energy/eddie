@@ -10,13 +10,12 @@ jobs:
     permissions:
       contents: read
       packages: write
-    env:
-      registry: ghcr.io/eddie-energy
     steps:
+      - uses: actions/checkout@v4
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::nightly-$(date +'%Y%m%d')
       - name: Build docker containers
-        uses: ./.github/workflows/docker/build-containers.yml
+        uses: ./.github/actions/build-containers
         with:
-          VERSION: ${{ steps.get_version.outputs.VERSION }}
+          version: '${{ steps.get_version.outputs.VERSION }}'
