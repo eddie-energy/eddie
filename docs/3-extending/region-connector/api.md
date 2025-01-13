@@ -86,15 +86,14 @@ Furthermore, the region connector has to verify that a permission request with t
 
 The [`RegionConnectorMetadata` object](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0/RegionConnectorMetadata.html) provides essential information about a region connector, such as:
 
-- countries supported by the region connector.
-- covered metering points.
-- earliest start for historical metered data.
-- latest end for historical metered data.
-- ID of the region connector.
-- supported data need types, since some region connector might only support validated historical data.
-  This is especially true during development.
-- supported granularities for historical metered data.
-- time zone of the region connector.
+- countries supported by the region connector
+- covered metering points
+- earliest start for historical metered data
+- latest end for historical metered data
+- ID of the region connector
+- supported data need types, since some region connector might only support validated historical data, which is needed during development
+- supported granularities for historical metered data
+- time zone of the region connector
 
 Each region connector has to have one implementation, which can be a singleton, since the information it provides are usually static.
 
