@@ -3,8 +3,8 @@ prev:
   text: "Validated Historical Data Market Documents"
   link: "./validated-historical-data-market-documents.md"
 next:
-  text: "Tech Stack"
-  link: "/3-extending/tech-stack.md"
+  text: "Data Needs"
+  link: "../data-needs.md"
 ---
 
 # Accounting Point Data Market Documents
@@ -106,3 +106,4 @@ The following is an example of an accounting point market document.
     </ns2:AccountingPoint_MarketDocument>
 </ns2:AccountingPoint_Envelope>
 ```
+

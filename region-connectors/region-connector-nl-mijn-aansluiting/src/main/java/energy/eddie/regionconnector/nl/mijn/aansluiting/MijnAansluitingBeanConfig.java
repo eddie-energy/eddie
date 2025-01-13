@@ -150,7 +150,6 @@ public class MijnAansluitingBeanConfig {
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
-                SUPPORTED_DATA_NEEDS,
                 MijnAansluitingRegionConnectorMetadata.getInstance(),
                 new PermissionEndIsEnergyDataEndStrategy(NL_ZONE_ID),
                 new DefaultEnergyDataTimeframeStrategy(MijnAansluitingRegionConnectorMetadata.getInstance()),

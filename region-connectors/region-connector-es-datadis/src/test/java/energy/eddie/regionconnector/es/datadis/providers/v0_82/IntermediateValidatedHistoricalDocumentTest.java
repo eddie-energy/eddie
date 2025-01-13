@@ -13,7 +13,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermiss
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
-import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

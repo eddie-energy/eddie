@@ -11,7 +11,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCod
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import org.apache.logging.log4j.util.Strings;
 
 import java.time.ZonedDateTime;

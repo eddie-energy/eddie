@@ -20,6 +20,10 @@ import reactor.core.publisher.Sinks;
 
 import java.time.ZoneId;
 
+/**
+ * An implementation for the {@link PermissionMarketDocumentProvider} that converts a {@link PermissionEvent} to a CIM compliant document.
+ * It subscribes to all events present in an {@link EventBus} and based on thos creates PermissionMarketDocuments.
+ */
 public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest> implements EventHandler<PermissionEvent>, PermissionMarketDocumentProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionMarketDocumentMessageHandler.class);
     private final PermissionRequestRepository<T> repository;

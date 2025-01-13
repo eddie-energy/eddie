@@ -7,7 +7,6 @@ import energy.eddie.dataneeds.EnergyType;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.RegionConnectorFilter;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
@@ -38,8 +37,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DataNeedCalculationServiceImplTest {
-    private final List<Class<? extends DataNeed>> supportedDataNeeds = List.of(ValidatedHistoricalDataDataNeed.class,
-                                                                               AccountingPointDataNeed.class);
     private final RegionConnectorMetadata metadata = new RegionConnectorMetadataImpl(
             "id",
             "AT",
@@ -47,8 +44,8 @@ class DataNeedCalculationServiceImplTest {
             Period.ofDays(-10),
             Period.ofDays(10),
             List.of(Granularity.PT15M, Granularity.P1D),
-            ZoneOffset.UTC,
-            List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class)
+            List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
+            ZoneOffset.UTC
     );
     @Mock
     private DataNeedsService dataNeedsService;
@@ -62,7 +59,7 @@ class DataNeedCalculationServiceImplTest {
         // Given
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.empty());
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
         // When
         var res = calculationService.calculate("dnid");
 
@@ -82,7 +79,7 @@ class DataNeedCalculationServiceImplTest {
         when(accountingPointDataNeed.isEnabled()).thenReturn(true);
         when(accountingPointDataNeed.regionConnectorFilter()).thenReturn(Optional.of(regionConnectorFilter));
         when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(accountingPointDataNeed));
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
 
         // When
         var res = calculationService.calculate("dnid");
@@ -97,7 +94,7 @@ class DataNeedCalculationServiceImplTest {
         when(accountingPointDataNeed.isEnabled()).thenReturn(false);
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.of(accountingPointDataNeed));
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
         // When
         var res = calculationService.calculate("dnid");
 
@@ -111,7 +108,7 @@ class DataNeedCalculationServiceImplTest {
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.of(aiidaDataNeed));
         when(aiidaDataNeed.isEnabled()).thenReturn(true);
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
         // When
         var res = calculationService.calculate("dnid");
 
@@ -129,7 +126,6 @@ class DataNeedCalculationServiceImplTest {
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.of(new AccountingPointDataNeed()));
         var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService,
-                                                                    supportedDataNeeds,
                                                                     metadata,
                                                                     new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
                                                                     new DefaultEnergyDataTimeframeStrategy(metadata),
@@ -154,7 +150,7 @@ class DataNeedCalculationServiceImplTest {
                         Granularity.PT15M,
                         Granularity.P1D
                 )));
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
         // When
         var res = calculationService.calculate("dnid");
 
@@ -173,7 +169,7 @@ class DataNeedCalculationServiceImplTest {
                         Granularity.PT5M,
                         Granularity.PT10M
                 )));
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
         // When
         var res = calculationService.calculate("dnid");
 
@@ -187,7 +183,6 @@ class DataNeedCalculationServiceImplTest {
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.of(new AccountingPointDataNeed()));
         var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService,
-                                                                    supportedDataNeeds,
                                                                     metadata,
                                                                     new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
                                                                     dn -> {
@@ -206,7 +201,7 @@ class DataNeedCalculationServiceImplTest {
     @Test
     void regionConnectorId_returnsId() {
         // Given
-        var service = new DataNeedCalculationServiceImpl(dataNeedsService, supportedDataNeeds, metadata);
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
 
         // When
         var res = service.regionConnectorId();
@@ -234,7 +229,7 @@ class DataNeedCalculationServiceImplTest {
                                                Period earliestStart,
                                                Period latestEnd,
                                                List<Granularity> supportedGranularities,
-                                               ZoneId timeZone,
-                                               List<Class<? extends DataNeedInterface>> supportedDataNeeds) implements RegionConnectorMetadata {
+                                               List<Class<? extends DataNeedInterface>> supportedDataNeeds,
+                                               ZoneId timeZone) implements RegionConnectorMetadata {
     }
 }

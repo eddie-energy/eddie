@@ -1,3 +1,12 @@
+---
+prev:
+  text: "Data Needs"
+  link: "../2-integrating/data-needs.md"
+next:
+  text: "Add a region connector"
+  link: "./region-connector/add-region-connector.md"
+---
+
 # Tech Stack
 
 ## Links and references
@@ -14,7 +23,6 @@
     - [Gradle Java ApplicationPlugin](https://docs.gradle.org/current/userguide/application_plugin.html)
 - [Project Reactor Documentation site](https://projectreactor.io/docs) - reactive library for Java
 - [SL4J user manual](https://www.slf4j.org/manual.html) - logging API
-
 
 - [MDN: Using custom elements](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements)
 - [Lit Documentation](https://lit.dev/docs/) and [Lit Tutorials](https://lit.dev/tutorials/) - Simple. Fast. Web

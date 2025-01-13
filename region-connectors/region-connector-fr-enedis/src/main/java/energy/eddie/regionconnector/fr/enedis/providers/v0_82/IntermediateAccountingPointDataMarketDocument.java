@@ -10,7 +10,7 @@ import energy.eddie.regionconnector.fr.enedis.dto.identity.LegalEntity;
 import energy.eddie.regionconnector.fr.enedis.dto.identity.NaturalPerson;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import jakarta.annotation.Nullable;
 
 import java.util.UUID;

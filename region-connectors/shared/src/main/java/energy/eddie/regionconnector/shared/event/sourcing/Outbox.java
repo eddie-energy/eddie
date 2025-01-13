@@ -5,6 +5,12 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Implementation of the outbox pattern.
+ * First persists the permission event to the event store and then emits it to the {@link EventBus}.
+ *
+ * @see <a href="https://microservices.io/patterns/data/transactional-outbox.html">Outbox Pattern</a>
+ */
 public class Outbox {
     private static final Logger LOGGER = LoggerFactory.getLogger(Outbox.class);
 
@@ -16,6 +22,11 @@ public class Outbox {
         this.repository = repository;
     }
 
+    /**
+     * Persist and send a permission event to the event store and event bus.
+     *
+     * @param permissionEvent the event to be persisted and sent
+     */
     public void commit(PermissionEvent permissionEvent) {
         if (repository.saveAndFlush(permissionEvent) != null) {
             eventBus.emit(permissionEvent);

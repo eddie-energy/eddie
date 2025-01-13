@@ -8,7 +8,7 @@ import energy.eddie.regionconnector.at.eda.EdaResourceLoader;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

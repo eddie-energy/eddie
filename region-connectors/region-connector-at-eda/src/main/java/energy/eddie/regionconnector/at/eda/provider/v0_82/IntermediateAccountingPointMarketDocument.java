@@ -7,7 +7,7 @@ import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.dto.masterdata.*;
 import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 
 import java.util.Optional;
 

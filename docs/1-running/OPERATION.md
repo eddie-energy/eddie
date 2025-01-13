@@ -2,8 +2,8 @@
 
 ## Quickstart
 
-A quickstart configuration to run the EDDIE Framework is provided in the `env` folder of the development project. The
-steps to make it run are:
+A quickstart configuration to run the EDDIE Framework is provided in the `env` folder of the development project. 
+The steps to make it run are:
 
 1. Download the quickstart configuration folder from [EDDIE /env](https://github.com/eddie-energy/eddie/tree/main/env)
 2. Run `docker compose up -d` in that folder.
@@ -38,8 +38,7 @@ services:
 | `EDDIE_DATA_NEEDS_CONFIG_FILE` | File containing data needs definitions. |
 
 As the configuration of region connectors is quite complex and there are many properties, the environment is
-configured in the accompanying `.env` file (see [EDDIE /env](https://github.com/eddie-energy/eddie/tree/main/env)
-directory for a reference).
+configured in the accompanying `.env` file (see [EDDIE /env](https://github.com/eddie-energy/eddie/tree/main/env) directory for a reference).
 The example `.env` file contains all configuration options.
 
 ## Update
@@ -54,7 +53,9 @@ web application as it's implemented using standard HTML custom elements.
 
 ```html
 
-<script type="module" src="${eddieUrl}/lib/eddie-components.js"></script>
+<script
+  type="module"
+  src="${eddieUrl}/lib/eddie-components.js"></script>
 <!-- ... -->
 <eddie-connect-button
   connection-id="1"
@@ -85,8 +86,7 @@ The EDDIE button fires events to inform the EP application about the status of t
 Permission request states are described in [integrating](../2-integrating/integrating.md#permission-process-model).
 To match the naming of event and attribute names common in HTML and JavaScript, the status names are converted to lowercase and hyphens are used as separators.
 Event handler attributes also have the hyphens removed.
-For example, the status `UNABLE_TO_SEND` is converted to `unable-to-send` for events and
-`onunabletosend` for the event handler attribute.
+For example, the status `UNABLE_TO_SEND` is converted to `unable-to-send` for events and `onunabletosend` for the event handler attribute.
 
 > [!IMPORTANT]
 > Please note that status events on the client side are not a reliable source of information about the status of the permission request!
@@ -157,15 +157,12 @@ Please use with care! Closing or resetting the button programmatically can lead 
 
 ## Configuration
 
-It is recommended to configure EDDIE core and the region connectors via the `.env` file in combination with
-the `docker-compose.yml` file.
+It is recommended to configure EDDIE core and the region connectors via the `.env` file in combination with the `docker-compose.yml` file.
 
 ### Configuring EDDIE Core
 
 EDDIE Core can be configured by the following environment variables.
-You can also modify the [application.properties](https://github.com/eddie-energy/eddie/blob/main/core/src/main/resources/application.properties)
-file directly, but the recommendation is to use the `.env` which accompanies the
-[docker-compose.yml](https://github.com/eddie-energy/eddie/blob/main/env/docker-compose.yml) file.
+You can also modify the [application.properties](https://github.com/eddie-energy/eddie/blob/main/core/src/main/resources/application.properties) file directly, but the recommendation is to use the `.env` which accompanies the [docker-compose.yml](https://github.com/eddie-energy/eddie/blob/main/env/docker-compose.yml) file.
 
 | Parameter                                                              | Description                                                                                                                                                                                                                                                                                                    |
 |------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -215,8 +212,7 @@ Or you can use the following links:
 ### Configuring outbound connectors
 
 There are three outbound connectors, which can be used by the eligible party to interact with eddie.
-If the outbound connector provides a web interface, it will be available via the configured
-`eddie.management.server.port`.
+If the outbound connector provides a web interface, it will be available via the configured `eddie.management.server.port`.
 
 - [Kafka outbound connector](outbound-connectors/outbound-connector-kafka.md).
 - [Admin Console](admin-console.md)
@@ -243,11 +239,10 @@ cim.eligible-party.fallback.id=EDDIE-Online
 
 #### Data need configuration
 
-A data need describes a configuration for the _Connect Button_. By using that button, the type of data and time frame is
-predefined so that the EP application receives data that it actually needs to perform its job.
+A data need describes a configuration for the _Connect Button_.
+By using that button, the type of data and time frame is predefined so that the EP application receives data that it actually needs to perform its job.
 
-Data needs can be configured in two ways: via a JSON file that is read on startup, they can be created via a REST-ful
-API which stores the data needs in the core's database.
+Data needs can be configured in two ways: via a JSON file that is read on startup, they can be created via a REST-ful API which stores the data needs in the core's database.
 
 | Parameter                                | Type              | Description                                            |
 |------------------------------------------|-------------------|--------------------------------------------------------|
@@ -320,8 +315,7 @@ the data needs useless.
 
 ### Configuring the example app
 
-If you are using the example app and you change configuration parameters for the _core_, you might need to update its
-configuration as well.
+If you are using the example app and you change configuration parameters for the _core_, you might need to update its configuration as well.
 Please refer to the [readme.md](example-app.md) of the example app.
 
 ## Internal APIs
@@ -332,7 +326,7 @@ For usages for the endpoints see [internal.http](https://github.com/eddie-energy
 ### Actuator API
 
 EDDIE uses Spring actuator to expose health information for each region-connector.
-The actuator API is available at `<host>:<port>/actuator` and the health endpoint at `<host>:<port>/actuator/health`
+The actuator API is available at `<host>:<port>/actuator` and the health endpoint at `<host>:<port>/actuator/health`.
 
 ### Information about region-connectors
 
@@ -340,10 +334,8 @@ There are multiple APIs to gather information about region-connectors.
 
 #### Supported features
 
-The endpoint for supported features is available under
-`<host>:<port>/<eddie.management.server.urlprefix>/region-connectors/supported-features`.
+The endpoint for supported features is available under `<host>:<port>/<eddie.management.server.urlprefix>/region-connectors/supported-features`.
 
 #### Supported Data Needs
 
-The endpoint to query the supported data needs per region connector is available under
-`<host>:<port>/<eddie.management.server.urlprefix>/region-connectors/supported-data-needs`.
+The endpoint to query the supported data needs per region connector is available under `<host>:<port>/<eddie.management.server.urlprefix>/region-connectors/supported-data-needs`.

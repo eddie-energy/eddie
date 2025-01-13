@@ -8,7 +8,7 @@ import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.dto.Energy;
 import energy.eddie.regionconnector.at.eda.dto.EnergyData;
 import energy.eddie.regionconnector.at.eda.dto.EnergyPosition;
-import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 
 import java.util.ArrayList;
 import java.util.List;

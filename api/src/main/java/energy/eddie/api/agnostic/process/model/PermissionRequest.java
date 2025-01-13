@@ -9,10 +9,7 @@ import java.time.ZonedDateTime;
 
 /**
  * A PermissionRequest represents the starting point of requesting the permission for data from an MDA. It can have
- * different states depending on where in the process of a specific Permission Administrator the request currently is.
- * This is the context class of the state pattern.
- *
- * @see <a href="https://refactoring.guru/design-patterns/state">State Pattern</a>
+ * a different status depending on where in the process of a specific Permission Administrator the request currently is.
  */
 public interface PermissionRequest {
 

@@ -145,7 +145,6 @@ public class FrEnedisSpringConfig {
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
-                SUPPORTED_DATA_NEEDS,
                 EnedisRegionConnectorMetadata.getInstance()
         );
     }

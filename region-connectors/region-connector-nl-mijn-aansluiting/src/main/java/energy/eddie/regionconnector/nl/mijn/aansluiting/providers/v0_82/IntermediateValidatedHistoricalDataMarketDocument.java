@@ -11,8 +11,8 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.Register;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.IdentifiableMeteredData;
 import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
-import energy.eddie.regionconnector.shared.utils.EsmpDateTime;
-import energy.eddie.regionconnector.shared.utils.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import jakarta.annotation.Nullable;
 
 import java.util.ArrayList;
