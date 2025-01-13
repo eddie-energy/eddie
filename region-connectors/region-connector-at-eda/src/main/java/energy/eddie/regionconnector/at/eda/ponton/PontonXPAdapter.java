@@ -4,6 +4,7 @@ import de.ponton.xp.adapter.api.ConnectionException;
 import de.ponton.xp.adapter.api.domainvalues.InboundStatusEnum;
 import de.ponton.xp.adapter.api.messages.OutboundMessageStatusUpdate;
 import energy.eddie.api.v0.HealthState;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.dto.*;
@@ -282,8 +283,19 @@ public class PontonXPAdapter implements EdaAdapter {
                     "Received master data before ZUSTIMMUNG_CCMO, trying again later."
             );
         }
+        var idm = identifiableMasterData.get();
+        var pr = idm.permissionRequest();
+        var status = pr.status();
+        if (status != PermissionProcessStatus.ACCEPTED) {
+            var permissionId = pr.permissionId();
+            LOGGER.info("Got duplicate master data for {} permission request {}, will be ignored", status, permissionId);
+            return new InboundMessageResult(
+                    InboundStatusEnum.SUCCESS,
+                    "Data was already received for this permission request %s".formatted(permissionId)
+            );
+        }
 
-        var result = masterDataSink.tryEmitNext(identifiableMasterData.get());
+        var result = masterDataSink.tryEmitNext(idm);
         return handleEmitResult(result);
     }
 

@@ -67,6 +67,7 @@ public class IntermediateAccountingPointMarketDocument {
                 .withDirection(switch (edaMasterData.meteringPointData().energyDirection()) {
                     case CONSUMPTION -> DirectionTypeList.DOWN;
                     case GENERATION -> DirectionTypeList.UP;
+                    case null -> null;
                 })
                 .withGenerationType(edaMasterData.meteringPointData().typeOfGeneration())
                 .withLoadProfileType(edaMasterData.meteringPointData().loadProfileType())

@@ -6,6 +6,7 @@ import de.ponton.xp.adapter.api.domainvalues.internal.StatusMetaDataImpl;
 import de.ponton.xp.adapter.api.messages.OutboundMessageStatusUpdate;
 import de.ponton.xp.adapter.api.messages.internal.OutboundMessageStatusUpdateImpl;
 import energy.eddie.api.v0.HealthState;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.dto.*;
@@ -293,7 +294,15 @@ class PontonXPAdapterTest {
     void handleMasterDataMessage_whenPontonMessengerConnectionCallsMasterDataHandler_emitsMasterData() {
         // Given
         EdaMasterData masterData = masterData();
-        var identifiedMasterData = new IdentifiableMasterData(masterData, null);
+        var identifiedMasterData = new IdentifiableMasterData(
+                masterData,
+                new SimplePermissionRequest("pid",
+                                            "cid",
+                                            "dnid",
+                                            "cmRequestId",
+                                            "convId",
+                                            PermissionProcessStatus.ACCEPTED)
+        );
         when(identifiableMasterDataService.mapToIdentifiableMasterData(masterData))
                 .thenReturn(Optional.of(identifiedMasterData));
 
@@ -316,11 +325,51 @@ class PontonXPAdapterTest {
     }
 
     @Test
+    void handleMasterDataMessage_whenPontonMessengerConnectionCallsMasterDataHandler_forFulfilledPermissionRequest_emitsNothing() {
+        // Given
+        EdaMasterData masterData = masterData();
+        var identifiedMasterData = new IdentifiableMasterData(
+                masterData,
+                new SimplePermissionRequest("pid",
+                                            "cid",
+                                            "dnid",
+                                            "cmRequestId",
+                                            "convId",
+                                            PermissionProcessStatus.FULFILLED)
+        );
+        when(identifiableMasterDataService.mapToIdentifiableMasterData(masterData))
+                .thenReturn(Optional.of(identifiedMasterData));
+
+        // When
+        var messageResult = pontonMessengerConnection.masterDataHandler
+                .handle(masterData);
+
+        // Then
+        var stepVerifier = StepVerifier.create(pontonXPAdapter.getMasterDataStream())
+                                       .expectComplete();
+
+        assertAll(
+                () -> assertEquals(InboundStatusEnum.SUCCESS, messageResult.status()),
+                () -> assertEquals("Data was already received for this permission request pid", messageResult.statusMessage())
+        );
+        pontonXPAdapter.close();
+        stepVerifier.verify();
+    }
+
+    @Test
     void handleMasterDataMessage_whenPontonMessengerConnectionCallsMasterDataHandler_whenAdapterClosed_returnsREJECTED() {
         // Given
         EdaMasterData masterData = masterData();
         when(identifiableMasterDataService.mapToIdentifiableMasterData(masterData))
-                .thenReturn(Optional.of(new IdentifiableMasterData(masterData, null)));
+                .thenReturn(Optional.of(new IdentifiableMasterData(
+                        masterData,
+                        new SimplePermissionRequest("pid",
+                                                    "cid",
+                                                    "dnid",
+                                                    "cmdRequestId",
+                                                    "convId",
+                                                    PermissionProcessStatus.ACCEPTED)
+                )));
 
         // When
         pontonXPAdapter.close();
@@ -352,7 +401,15 @@ class PontonXPAdapterTest {
         // Given
         EdaMasterData masterData = masterData();
         when(identifiableMasterDataService.mapToIdentifiableMasterData(masterData))
-                .thenReturn(Optional.of(new IdentifiableMasterData(masterData, null)));
+                .thenReturn(Optional.of(new IdentifiableMasterData(
+                        masterData,
+                        new SimplePermissionRequest("pid",
+                                                    "cid",
+                                                    "dnid",
+                                                    "cmReqId",
+                                                    "convId",
+                                                    PermissionProcessStatus.ACCEPTED)
+                )));
 
         // When
         var messageResult = pontonMessengerConnection.masterDataHandler.handle(masterData);
