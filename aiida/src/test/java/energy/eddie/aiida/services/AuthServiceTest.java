@@ -27,12 +27,13 @@ import static org.mockito.Mockito.when;
 class AuthServiceTest {
     private final String uuid = "dc9ff3d3-1f1f-445d-a4ee-85c1faffb715";
     private final UUID userId = UUID.fromString(uuid);
-    private AuthService service;
     private final QrCodeDto qrCodeDto = new QrCodeDto(
-            UUID.randomUUID().toString(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
             "Test Service Name",
             "https://example.org",
             "fooBarToken");
+    private AuthService service;
 
     @BeforeEach
     void setUp() {

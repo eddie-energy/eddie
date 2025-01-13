@@ -19,9 +19,13 @@ import static java.util.Objects.requireNonNull;
 public class Permission {
     @Schema(description = "Unique ID of this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "a4dc1bad-b9fe-47ae-9336-690cfb4aada9")
     @Id
-    @Column(nullable = false, name = "permission_id", columnDefinition = "bpchar", length = 36)
+    @Column(nullable = false, updatable = false, name = "permission_id")
     @JsonProperty
-    private String permissionId;
+    private UUID permissionId;
+    @Schema(description = "Unique ID of the EDDIE application that created this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "a4dc1bad-b9fe-47ae-9336-690cfb4aada9")
+    @Column(updatable = false, name = "eddie_id")
+    @JsonProperty
+    private UUID eddieId;
     @Schema(description = "Status of this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "ACCEPTED")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -66,10 +70,10 @@ public class Permission {
     @Column(nullable = false)
     @JsonIgnore
     private String accessToken;
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @PrimaryKeyJoinColumn
-    @Nullable
+    @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id", insertable = false)
     @JsonProperty
+    @Nullable
     private AiidaLocalDataNeed dataNeed;
     @Schema(description = "UUID of the user that owns the permission.")
     @Column
@@ -82,6 +86,7 @@ public class Permission {
      * {@link PermissionStatus#CREATED}.
      */
     public Permission(QrCodeDto qrCodeDto, UUID userId) {
+        this.eddieId = qrCodeDto.eddieId();
         this.permissionId = qrCodeDto.permissionId();
         this.serviceName = qrCodeDto.serviceName();
         this.handshakeUrl = qrCodeDto.handshakeUrl();
@@ -98,9 +103,16 @@ public class Permission {
     }
 
     /**
+     * Returns the UUID of the EDDIE application that created this permission.
+     */
+    public UUID eddieId() {
+        return eddieId;
+    }
+
+    /**
      * Returns the UUID of this permission.
      */
-    public String permissionId() {
+    public UUID permissionId() {
         return permissionId;
     }
 

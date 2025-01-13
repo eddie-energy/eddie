@@ -20,20 +20,28 @@ import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonCont
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.orm.jpa.JpaVendorAdapter;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.Database;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriTemplate;
 
+import javax.sql.DataSource;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
 import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_HANDSHAKE_PERMISSION_REQUEST;
@@ -51,8 +59,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = PermissionRequestController.class, properties = "eddie.jwt.hmac.secret=" + HMAC_SECRET)
 @TestPropertySource(locations = "classpath:application-test.properties")
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
+@Import({PermissionRequestControllerTest.ControllerTestConfiguration.class, PermissionRequestControllerTest.TestJpaConfiguration.class})
 class PermissionRequestControllerTest {
     static final String HMAC_SECRET = "RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=";
+    private final UUID eddieId = UUID.fromString("a69f9bc2-e16c-4de4-8c3e-00d219dcd819");
+    private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
     @Autowired
     private MockMvc mockMvc;
     @MockBean
@@ -69,27 +80,6 @@ class PermissionRequestControllerTest {
     @SuppressWarnings("unused")
     @MockBean
     private MqttService unusedMqttService;
-
-    @TestConfiguration
-    static class ControllerTestConfiguration {
-        @Bean
-        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
-            return new RegionConnectorsCommonControllerAdvice();
-        }
-
-        @Bean
-        public DataNeedsAdvice dataNeedsAdvice() {
-            return new DataNeedsAdvice();
-        }
-
-        @Bean
-        public JwtUtil jwtUtil(
-                @Value("${eddie.jwt.hmac.secret}") String jwtHmacSecret,
-                @Value("${eddie.permission.request.timeout.duration}") int timeoutDuration
-        ) {
-            return new JwtUtil(jwtHmacSecret, timeoutDuration);
-        }
-    }
 
     @Test
     void givenNoRequestBody_createPermissionRequest_returnsBadRequest() throws Exception {
@@ -115,7 +105,6 @@ class PermissionRequestControllerTest {
     @Test
     void givenAdditionalNotNeededInformation_createPermissionRequest_isIgnored() throws Exception {
         // Given
-        var permissionId = "SomeId";
         var mockDto = mock(QrCodeDto.class);
         when(mockService.createValidateAndSendPermissionRequest(any())).thenReturn(mockDto);
         when(mockDto.permissionId()).thenReturn(permissionId);
@@ -130,18 +119,19 @@ class PermissionRequestControllerTest {
                // Then
                .andExpect(status().isCreated())
                .andExpect(header().string("Location", is(expectedLocationHeader)))
-               .andExpect(jsonPath("$.permissionId", is(permissionId)));
+               .andExpect(jsonPath("$.permissionId", is(permissionId.toString())));
         verify(mockService).createValidateAndSendPermissionRequest(any());
     }
 
     @Test
     void givenValidInput_createPermissionRequest_asExpected() throws Exception {
         // Given
-        var permissionId = "SecondSomeId";
-        when(mockService.createValidateAndSendPermissionRequest(any())).thenReturn(new QrCodeDto(permissionId,
-                                                                                                 "serviceName",
-                                                                                                 "http://localhost:8080/example",
-                                                                                                 "token"));
+        when(mockService.createValidateAndSendPermissionRequest(any())).thenReturn(new QrCodeDto(
+                eddieId,
+                permissionId,
+                "serviceName",
+                "http://localhost:8080/example",
+                "token"));
         var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
         var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
                                                                                             .toString();
@@ -153,7 +143,7 @@ class PermissionRequestControllerTest {
                // Then
                .andExpect(status().isCreated())
                .andExpect(header().string("Location", is(expectedLocationHeader)))
-               .andExpect(jsonPath("$.permissionId", is(permissionId)))
+               .andExpect(jsonPath("$.permissionId", is(permissionId.toString())))
                .andExpect(jsonPath("$.serviceName", is("serviceName")))
                .andExpect(jsonPath("$.handshakeUrl", is("http://localhost:8080/example")))
                .andExpect(jsonPath("$.accessToken", is("token")));
@@ -183,7 +173,6 @@ class PermissionRequestControllerTest {
     @Test
     void givenInvalidOperation_updatePermissionRequest_returnsBadRequest() throws Exception {
         // Given
-        var permissionId = "someTestId";
         var json = "{\"operation\":\"INVALID_VALUE_BLA\"}";
 
         // When
@@ -200,7 +189,6 @@ class PermissionRequestControllerTest {
     @Test
     void givenRejected_updatePermissionRequest_returnsNoContent() throws Exception {
         // Given
-        var permissionId = "someTestId";
         var json = "{\"operation\":\"REJECT\"}";
 
         // When
@@ -214,7 +202,6 @@ class PermissionRequestControllerTest {
     @Test
     void givenUnfulfillable_updatePermissionRequest_returnsNoContent() throws Exception {
         // Given
-        var permissionId = "someTestId";
         var json = "{\"operation\":\"UNFULFILLABLE\"}";
 
         // When
@@ -228,14 +215,13 @@ class PermissionRequestControllerTest {
     @Test
     void givenAccepted_updatePermissionRequest_callsServiceAndReturnsCredentials() throws Exception {
         // Given
-        var permissionId = "someTestId";
         var json = "{\"operation\":\"ACCEPT\"}";
-        when(mockService.acceptPermission(permissionId)).thenReturn(new MqttDto("tcp://localhost:1883",
-                                                                                permissionId,
-                                                                                "MySuperSafePassword",
-                                                                                "data",
-                                                                                "status",
-                                                                                "termination"));
+        when(mockService.acceptPermission(permissionId.toString())).thenReturn(new MqttDto("tcp://localhost:1883",
+                                                                                           permissionId.toString(),
+                                                                                           "MySuperSafePassword",
+                                                                                           "data",
+                                                                                           "status",
+                                                                                           "termination"));
 
         // When
         mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId)
@@ -243,7 +229,7 @@ class PermissionRequestControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isOk())
-               .andExpect(jsonPath("$.username", is(permissionId)))
+               .andExpect(jsonPath("$.username", is(permissionId.toString())))
                .andExpect(jsonPath("$.password", is("MySuperSafePassword")))
                .andExpect(jsonPath("$.dataTopic", is("data")))
                .andExpect(jsonPath("$.statusTopic", is("status")))
@@ -253,16 +239,15 @@ class PermissionRequestControllerTest {
     @Test
     void getPermissionDetails_returnsAsExpected() throws Exception {
         // Given
-        var permissionId = "someTestId";
-        when(mockService.detailsForPermission(permissionId)).thenReturn(
-                new PermissionDetailsDto(createDummyRequest(), new DummyAiidaDataNeed()));
+        when(mockService.detailsForPermission(permissionId.toString())).thenReturn(
+                new PermissionDetailsDto(eddieId, createDummyRequest(), new DummyAiidaDataNeed()));
 
         // When
         mockMvc.perform(get(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId))
                // Then
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.permission_request").exists())
-               .andExpect(jsonPath("$.permission_request.permission_id", is("somePermissionId")))
+               .andExpect(jsonPath("$.permission_request.permission_id", is(permissionId.toString())))
                .andExpect(jsonPath("$.permission_request.data_need_id", is("someDataNeedId")))
                .andExpect(jsonPath("$.permission_request.start", is("2000-01-01")))
                .andExpect(jsonPath("$.permission_request.end", is("9999-12-31")))
@@ -278,7 +263,7 @@ class PermissionRequestControllerTest {
 
         AiidaPermissionRequest request = (AiidaPermissionRequest) constructor.newInstance();
 
-        setField(request, "permissionId", "somePermissionId");
+        setField(request, "permissionId", permissionId.toString());
         setField(request, "connectionId", "someConnectionId");
         setField(request, "dataNeedId", "someDataNeedId");
         setField(request, "start", LocalDate.of(2000, 1, 1));
@@ -290,6 +275,65 @@ class PermissionRequestControllerTest {
         setField(request, "created", Instant.now());
 
         return request;
+    }
+
+    @TestConfiguration
+    static class ControllerTestConfiguration {
+        @Bean
+        public RegionConnectorsCommonControllerAdvice regionConnectorsCommonControllerAdvice() {
+            return new RegionConnectorsCommonControllerAdvice();
+        }
+
+        @Bean
+        public DataNeedsAdvice dataNeedsAdvice() {
+            return new DataNeedsAdvice();
+        }
+
+        @Bean
+        public JwtUtil jwtUtil(
+                @Value("${eddie.jwt.hmac.secret}") String jwtHmacSecret,
+                @Value("${eddie.permission.request.timeout.duration}") int timeoutDuration
+        ) {
+            return new JwtUtil(jwtHmacSecret, timeoutDuration);
+        }
+    }
+
+    /**
+     * Needed a fake JPA configuration to let spring create an entity manager for the tests to run.
+     */
+    @TestConfiguration
+    public static class TestJpaConfiguration {
+        @Bean
+        public DataSource dataSource() {
+            return DataSourceBuilder.create()
+                                    .driverClassName("org.h2.Driver")
+                                    .url("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE")
+                                    .username("sa")
+                                    .password("")
+                                    .build();
+        }
+
+        @Bean
+        public JpaVendorAdapter jpaVendorAdapter() {
+            HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
+            adapter.setDatabase(Database.H2);
+            adapter.setGenerateDdl(true);
+            adapter.setShowSql(false);
+            return adapter;
+        }
+
+        @Bean
+        public LocalContainerEntityManagerFactoryBean entityManagerFactory(
+                DataSource dataSource,
+                JpaVendorAdapter jpaVendorAdapter
+        ) {
+            LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
+            emf.setDataSource(dataSource);
+            // Set packages to scan if needed:
+            emf.setPackagesToScan("energy.eddie"); // adjust this package to where your entities are
+            emf.setJpaVendorAdapter(jpaVendorAdapter);
+            return emf;
+        }
     }
 
     private static class DummyAiidaDataNeed extends AiidaDataNeed {}

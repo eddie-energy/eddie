@@ -2,9 +2,11 @@ package energy.eddie.aiida.datasources.sga;
 
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SmartGatewaysAdapterMessageTest {
+class SmartGatewaysAdapterMessageTest {
     @Test
     void verify_isProperlyDeserialized() {
         var message = """
@@ -37,7 +39,7 @@ public class SmartGatewaysAdapterMessageTest {
                 -0.061
                 0.002""";
 
-        var actual = SmartGatewaysAdapterValueDeserializer.deserialize(message.getBytes());
+        var actual = SmartGatewaysAdapterValueDeserializer.deserialize(message.getBytes(StandardCharsets.UTF_8));
 
         assertEquals("0002", actual.electricityTariff().value());
         assertEquals("3845.467", actual.electricityDeliveredTariff1().value());

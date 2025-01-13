@@ -6,12 +6,13 @@ import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.UUID;
 
 
 @SuppressWarnings("NullAway")
 public class PermissionDetailsDto {
     @JsonProperty(value = "permission_id")
-    private String permissionId;
+    private UUID permissionId;
     @JsonProperty(value = "connection_id")
     private String connectionId;
     @JsonProperty(value = "start")
@@ -24,7 +25,7 @@ public class PermissionDetailsDto {
     private AiidaDataNeed dataNeed;
 
     public PermissionDetailsDto(
-            String permissionId,
+            UUID permissionId,
             String connectionId,
             LocalDate start,
             LocalDate end,
@@ -37,15 +38,7 @@ public class PermissionDetailsDto {
         this.dataNeed = dataNeed;
     }
 
-    @JsonProperty("permission_request")
-    private void unpackPermissionRequest(Map<String, String> permissionRequest) {
-        permissionId = permissionRequest.get("permission_id");
-        connectionId = permissionRequest.get("connection_id");
-        start = LocalDate.parse(permissionRequest.get("start"));
-        end = LocalDate.parse(permissionRequest.get("end"));
-    }
-
-    public String permissionId() {
+    public UUID permissionId() {
         return permissionId;
     }
 
@@ -63,5 +56,13 @@ public class PermissionDetailsDto {
 
     public AiidaDataNeed dataNeed() {
         return dataNeed;
+    }
+
+    @JsonProperty("permission_request")
+    private void unpackPermissionRequest(Map<String, String> permissionRequest) {
+        permissionId = UUID.fromString(permissionRequest.get("permission_id"));
+        connectionId = permissionRequest.get("connection_id");
+        start = LocalDate.parse(permissionRequest.get("start"));
+        end = LocalDate.parse(permissionRequest.get("end"));
     }
 }

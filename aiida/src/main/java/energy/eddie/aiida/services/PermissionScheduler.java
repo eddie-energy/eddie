@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
 
@@ -29,14 +30,14 @@ public class PermissionScheduler {
      * The same map can be used to keep track of futures from scheduled permission starts and expirations because there
      * must never be a runnable for start and expiration scheduled for the same permissionId at the same time.
      */
-    private final ConcurrentMap<String, ScheduledFuture<?>> permissionFutures;
+    private final ConcurrentMap<UUID, ScheduledFuture<?>> permissionFutures;
     private final StreamerManager streamerManager;
 
     public PermissionScheduler(
             Clock clock,
             TaskScheduler scheduler,
             PermissionRepository repository,
-            ConcurrentMap<String, ScheduledFuture<?>> permissionFutures,
+            ConcurrentMap<UUID, ScheduledFuture<?>> permissionFutures,
             StreamerManager streamerManager
     ) {
         this.clock = clock;
@@ -63,20 +64,35 @@ public class PermissionScheduler {
         }
     }
 
+    /**
+     * Removes any scheduled start or expiration runnable for the specified ID. E.g. when the permission is revoked or
+     * terminated.
+     */
+    public void removePermission(UUID permissionId) {
+        var future = permissionFutures.remove(permissionId);
+        if (future != null) {
+            LOGGER.info("Cancelling permissionExpiration/permissionStart future for permission '{}'", permissionId);
+            future.cancel(true);
+        }
+    }
+
     private Permission schedulePermissionStart(Permission permission) {
         var startTime = requireNonNull(permission.startTime());
+        var permissionId = permission.permissionId();
 
-        LOGGER.info("Scheduling permission start for permission {}", permission.permissionId());
+        LOGGER.info("Scheduling permission start for permission '{}'.", permissionId);
         permission.setStatus(WAITING_FOR_START);
 
         var future = scheduler.schedule(() -> startPermission(permission), startTime);
-        permissionFutures.put(permission.permissionId(), future);
+        permissionFutures.put(permissionId, future);
 
         return repository.save(permission);
     }
 
     private Permission startPermission(Permission permission) {
-        LOGGER.info("Starting permission {}", permission.permissionId());
+        LOGGER.info("Starting permission '{}' owned by EDDIE framework '{}'",
+                    permission.permissionId(),
+                    permission.eddieId());
 
         try {
             streamerManager.createNewStreamer(permission);
@@ -85,8 +101,9 @@ public class PermissionScheduler {
         } catch (MqttException exception) {
             LOGGER.atError()
                   .addArgument(permission.permissionId())
+                  .addArgument(permission.eddieId())
                   .setCause(exception)
-                  .log("Failed to start streaming for permission {} because the MqttClient could not be created");
+                  .log("Failed to start streaming for permission '{}' owned by EDDIE framework '{}' because the MqttClient could not be created");
 
             permission.setStatus(PermissionStatus.FAILED_TO_START);
         }
@@ -95,25 +112,14 @@ public class PermissionScheduler {
 
     private void schedulePermissionExpirationRunnable(Permission permission) {
         var expirationTime = requireNonNull(permission.expirationTime());
-        LOGGER.info("Will schedule a PermissionExpirationRunnable for permission {} to run at  {}",
-                    permission.permissionId(),
+        var permissionId = permission.permissionId();
+        LOGGER.info("Will schedule a PermissionExpirationRunnable for permission '{}' to run at  {}",
+                    permissionId,
                     expirationTime);
 
         var expirationRunnable = new PermissionExpiredRunnable(permission, streamerManager, repository, clock);
         ScheduledFuture<?> future = scheduler.schedule(expirationRunnable, expirationTime);
 
-        permissionFutures.put(permission.permissionId(), future);
-    }
-
-    /**
-     * Removes any scheduled start or expiration runnable for the specified ID. E.g. when the permission is revoked or
-     * terminated.
-     */
-    public void removePermission(String permissionId) {
-        var future = permissionFutures.remove(permissionId);
-        if (future != null) {
-            LOGGER.info("Cancelling permissionExpiration/permissionStart future for permission {}", permissionId);
-            future.cancel(true);
-        }
+        permissionFutures.put(permissionId, future);
     }
 }

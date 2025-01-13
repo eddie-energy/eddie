@@ -10,14 +10,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PermissionTest {
-    private final String permissionId = "f69f9bc2-e16c-4de4-8c3e-00d219dcd819";
+    private final UUID eddieId = UUID.fromString("e69f9bc2-e16c-4de4-8c3e-00d219dcd819");
+    private final UUID permissionId = UUID.fromString("f69f9bc2-e16c-4de4-8c3e-00d219dcd819");
     private final String serviceName = "My Test Service";
     private final String handshakeUrl = "https://example.org";
     private final String accessToken = "fooBar";
-    private final Permission permission = new Permission(new QrCodeDto(permissionId,
-                                                                       serviceName,
-                                                                       handshakeUrl,
-                                                                       accessToken), UUID.randomUUID());
+    private final Permission permission = new Permission(new QrCodeDto(
+            eddieId,
+            permissionId,
+            serviceName,
+            handshakeUrl,
+            accessToken), UUID.randomUUID());
 
     @Test
     void constructor_setsStatusToCreated() {

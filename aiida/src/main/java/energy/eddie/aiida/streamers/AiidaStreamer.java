@@ -5,9 +5,11 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.util.UUID;
+
 public abstract class AiidaStreamer implements AutoCloseable {
     protected final Flux<AiidaRecord> recordFlux;
-    protected final Sinks.One<String> terminationRequestSink;
+    protected final Sinks.One<UUID> terminationRequestSink;
 
     /**
      * Create a new AiidaStreamer and sets the Flux for records and status messages that should be sent. The constructor
@@ -18,7 +20,7 @@ public abstract class AiidaStreamer implements AutoCloseable {
      * @param terminationRequestSink Sink, to which the permissionId will be published, when the EP requests a
      *                               termination.
      */
-    protected AiidaStreamer(Flux<AiidaRecord> recordFlux, Sinks.One<String> terminationRequestSink) {
+    protected AiidaStreamer(Flux<AiidaRecord> recordFlux, Sinks.One<UUID> terminationRequestSink) {
         this.recordFlux = recordFlux;
         this.terminationRequestSink = terminationRequestSink;
     }

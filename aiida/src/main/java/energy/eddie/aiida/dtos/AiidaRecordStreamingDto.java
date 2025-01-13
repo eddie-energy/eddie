@@ -5,6 +5,7 @@ import energy.eddie.aiida.models.record.AiidaRecordValue;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Contains the data of an {@link energy.eddie.aiida.models.record.AiidaRecord} and additional metadata that should
@@ -14,8 +15,8 @@ public record AiidaRecordStreamingDto(
         @JsonProperty Instant timestamp,
         @JsonProperty String asset,
         @JsonProperty String connectionId,
-        @JsonProperty String dataNeedId,
-        @JsonProperty String permissionId,
+        @JsonProperty UUID dataNeedId,
+        @JsonProperty UUID permissionId,
         @JsonProperty("values")
         List<AiidaRecordValue> aiidaRecordValues
 ) {

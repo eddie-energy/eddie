@@ -43,54 +43,45 @@ public class PermissionController {
         this.permissionService = permissionService;
     }
 
-    @Operation(summary = "Get all permissions sorted by grant time desc", description = "Get all permissions sorted by their grant time descending.",
-            operationId = "getPermissionsSorted", tags = {"permission"})
+    @Operation(summary = "Get all permissions sorted by grant time desc", description = "Get all permissions sorted by their grant time descending.", operationId = "getPermissionsSorted", tags = {"permission"})
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Permission.class))))})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Permission>> getAllPermissions() throws InvalidUserException {
         return ResponseEntity.ok(permissionService.getAllPermissionsSortedByGrantTime());
     }
 
-    @Operation(summary = "Set up new permission", description = "Set up a new permission with data from e.g. a QR code.",
-            operationId = "setupNewPermission", tags = {"permission"})
+    @Operation(summary = "Set up new permission", description = "Set up a new permission with data from e.g. a QR code.", operationId = "setupNewPermission", tags = {"permission"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Permission.class))}),
             @ApiResponse(responseCode = "400", description = "Request body cannot be read or is missing fields.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
             @ApiResponse(responseCode = "409", description = "Permission cannot be fulfilled, e.g. because the requested data is not available.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class)))})
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Permission> setupNewPermission(@Valid @RequestBody QrCodeDto qrCodeDto)
-            throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
+    public ResponseEntity<Permission> setupNewPermission(@Valid @RequestBody QrCodeDto qrCodeDto) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
         LOGGER.debug("Got new permission request {}", qrCodeDto);
 
         var permission = permissionService.setupNewPermission(qrCodeDto);
 
-        var location = new UriTemplate("/permissions/{permissionId}")
-                .expand(permission.permissionId());
+        var location = new UriTemplate("/permissions/{permissionId}").expand(permission.permissionId());
 
         return ResponseEntity.created(location).body(permission);
     }
 
-    @Operation(summary = "Update a permission", description = "Accept, reject or revoke a permission.",
-            operationId = "updatePermission", tags = {"permission"})
+    @Operation(summary = "Update a permission", description = "Accept, reject or revoke a permission.", operationId = "updatePermission", tags = {"permission"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Permission.class), examples = @ExampleObject(value = REVOKE_PERMISSION_EXAMPLE_RETURN_JSON))}),
             @ApiResponse(responseCode = "400", description = "Invalid operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
             @ApiResponse(responseCode = "404", description = "Permission not found", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
-            @ApiResponse(responseCode = "409", description = "Permission cannot be updated as it's not in an eligible state.", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))})
-    })
-    @PatchMapping(value = "/{permissionId}",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+            @ApiResponse(responseCode = "409", description = "Permission cannot be updated as it's not in an eligible state.", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))})})
+    @PatchMapping(value = "/{permissionId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Permission> updatePermission(
             @Valid @RequestBody PatchPermissionDto patchDto,
-            @Parameter(name = "permissionId", description = "Unique ID of the permission", example = "f38a1953-ae7a-480c-814f-1cca3989981e")
-            @PathVariable String permissionId
+            @Parameter(name = "permissionId", description = "Unique ID of the permission", example = "f38a1953-ae7a-480c-814f-1cca3989981e") @PathVariable UUID permissionId
     ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
         LOGGER.atInfo()
               // Validate that it's a real permission ID and not some malicious string
-              .addArgument(() -> UUID.fromString(permissionId))
+              .addArgument(() -> permissionId)
               .addArgument(patchDto::operation)
-              .log("Got request to update permission {} with operation {}");
+              .log("Got request to update permission '{}' with operation {}");
 
         var permission = switch (patchDto.operation()) {
             case ACCEPT -> permissionService.acceptPermission(permissionId);

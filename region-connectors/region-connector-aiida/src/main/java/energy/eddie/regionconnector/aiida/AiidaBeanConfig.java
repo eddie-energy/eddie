@@ -194,5 +194,4 @@ public class AiidaBeanConfig {
     public MqttMessageCallback mqttMessageCallback(Sinks.Many<String> revocationSink, ObjectMapper objectMapper) {
         return new MqttMessageCallback(revocationSink, objectMapper);
     }
-
 }

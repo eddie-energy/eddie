@@ -1,5 +1,7 @@
 package energy.eddie.aiida.errors;
 
+import java.util.UUID;
+
 /**
  * Thrown to indicate that no permission with the specified ID is saved in this AIIDA instance.
  */
@@ -9,7 +11,7 @@ public class PermissionNotFoundException extends Exception {
      *
      * @param permissionId ID of the permission that could not be found.
      */
-    public PermissionNotFoundException(String permissionId) {
+    public PermissionNotFoundException(UUID permissionId) {
         super("No permission with ID '%s' found.".formatted(permissionId));
     }
 }

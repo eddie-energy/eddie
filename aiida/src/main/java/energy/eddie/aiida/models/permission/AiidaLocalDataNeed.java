@@ -4,82 +4,88 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeedInterface;
+import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
+import energy.eddie.dataneeds.utils.cron.CronExpressionDefaults;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
 import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
-import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.springframework.scheduling.support.CronExpression;
 
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Stores the locally required information about a data need of a permission.
  */
 @Entity
-public class AiidaLocalDataNeed {
+@SuppressWarnings("NullAway")
+public class AiidaLocalDataNeed implements AiidaDataNeedInterface {
+    @Id
     @Column(nullable = false, name = "data_need_id")
     @JsonProperty
-    private final String dataNeedId;
+    private final UUID dataNeedId;
+
     @Column(nullable = false)
     private final String type;
+
     @Column(nullable = false)
     @JsonProperty
     private final String name;
+
     @Column(nullable = false)
     @JsonProperty
     private final String purpose;
+
     @Column(nullable = false, name = "policy_link")
     @JsonProperty
     private final String policyLink;
+
     @Column(nullable = false, name = "transmission_schedule")
     @Convert(converter = CronExpressionConverter.class)
     @JsonProperty
     @JsonSerialize(using = CronExpressionSerializer.class)
     @JsonDeserialize(using = CronExpressionDeserializer.class)
     private final CronExpression transmissionSchedule;
+
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "aiida_local_data_need_schemas",
-            joinColumns = @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id"))
-    @Column(name = "schemas")
+    @CollectionTable(name = "aiida_local_data_need_schemas", joinColumns = {@JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id")})
+    @Column(name = "schema")
     @JsonProperty
     @Enumerated(EnumType.STRING)
     private final Set<AiidaSchema> schemas;
+
     @Column(nullable = false, name = "asset")
     @JsonProperty
     @Enumerated(EnumType.STRING)
     private final AiidaAsset asset;
+
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "aiida_local_data_need_data_tags", joinColumns = @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id"))
-    @Column(name = "data_tags")
-    @Nullable
+    @CollectionTable(name = "aiida_local_data_need_data_tags", joinColumns = {@JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id")})
+    @Column(name = "data_tag")
     @JsonProperty
     private final Set<String> dataTags;
-    @Id
-    @Column(nullable = false, name = "permission_id")
-    private String permissionId;
 
     /**
      * Constructor only for JPA.
      */
     @SuppressWarnings("NullAway")
     protected AiidaLocalDataNeed() {
-        this.dataNeedId = null;
-        this.type = null;
-        this.name = null;
-        this.purpose = null;
-        this.policyLink = null;
-        this.transmissionSchedule = null;
-        this.schemas = null;
-        this.asset = null;
-        this.dataTags = null;
+        this.dataNeedId = UUID.randomUUID();
+        this.type = "";
+        this.name = "";
+        this.purpose = "";
+        this.policyLink = "";
+        this.transmissionSchedule = CronExpression.parse(CronExpressionDefaults.MINUTELY.expression());
+        this.schemas = Set.of();
+        this.asset = AiidaAsset.CONNECTION_AGREEMENT_POINT;
+        this.dataTags = Set.of();
     }
 
     public AiidaLocalDataNeed(PermissionDetailsDto details) {
-        this.permissionId = details.permissionId();
-        this.dataNeedId = details.dataNeed().id();
+        this.dataNeedId = details.dataNeed().dataNeedId();
         this.type = details.dataNeed().type();
         this.name = details.dataNeed().name();
         this.purpose = details.dataNeed().purpose();
@@ -90,43 +96,45 @@ public class AiidaLocalDataNeed {
         this.dataTags = Set.copyOf(details.dataNeed().dataTags());
     }
 
-    public String permissionId() {
-        return permissionId;
-    }
-
-    public String dataNeedId() {
-        return dataNeedId;
-    }
-
-    public String type() {
-        return type;
-    }
-
     public String name() {
         return name;
-    }
-
-    public String purpose() {
-        return purpose;
     }
 
     public String policyLink() {
         return policyLink;
     }
 
-    public CronExpression transmissionSchedule() {
-        return transmissionSchedule;
+    public String purpose() {
+        return purpose;
     }
 
-    public Set<AiidaSchema> schemas() {
-        return schemas;
-    }
-
+    @Override
     public AiidaAsset asset() {
         return asset;
     }
 
-    public @Nullable Set<String> dataTags() {
+    @Override
+    public UUID dataNeedId() {
+        return dataNeedId;
+    }
+
+    @Override
+    public Set<String> dataTags() {
         return dataTags;
+    }
+
+    @Override
+    public Set<AiidaSchema> schemas() {
+        return schemas;
+    }
+
+    @Override
+    public CronExpression transmissionSchedule() {
+        return transmissionSchedule;
+    }
+
+    @Override
+    public String type() {
+        return type;
     }
 }

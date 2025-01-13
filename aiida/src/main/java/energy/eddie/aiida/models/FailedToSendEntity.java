@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity(name = "failed_to_send_entity")
 public class FailedToSendEntity {
@@ -12,7 +13,7 @@ public class FailedToSendEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "failed_to_send_entity_seq")
     private Integer id;
     @Column(name = "permission_id", nullable = false)
-    private String permissionId;
+    private UUID permissionId;
     @Column(name = "topic", nullable = false)
     private String topic;
     @Column(name = "json_value", nullable = false)
@@ -26,7 +27,7 @@ public class FailedToSendEntity {
     }
 
     @SuppressWarnings("NullAway.Init")
-    public FailedToSendEntity(String permissionId, String topic, byte[] json) {
+    public FailedToSendEntity(UUID permissionId, String topic, byte[] json) {
         this.permissionId = permissionId;
         this.topic = topic;
         this.json = json;
@@ -36,7 +37,7 @@ public class FailedToSendEntity {
         return id;
     }
 
-    public String permissionId() {
+    public UUID permissionId() {
         return permissionId;
     }
 
