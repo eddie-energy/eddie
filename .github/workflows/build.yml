@@ -54,8 +54,13 @@ jobs:
     needs: build
     runs-on: self-hosted
     if: github.ref_name == 'main'
+    permissions:
+      contents: read
+      packages: write
     steps:
+      - uses: actions/checkout@v4
       - name: Build and Tag docker images
-        uses: ./.github/workflows/docker/build-containers.yml
+        uses: ./.github/actions/build-containers
         with:
-          VERSION: 'latest'
+          version: 'latest'
+          secrets: ${{ secrets.GITHUB_TOKEN }}

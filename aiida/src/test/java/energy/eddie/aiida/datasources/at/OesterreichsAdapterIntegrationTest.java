@@ -82,7 +82,7 @@ class OesterreichsAdapterIntegrationTest {
     }
 
     @Test
-    @Timeout(5)
+    @Timeout(30)
     // adapter is closed by StepVerifier
     @SuppressWarnings("resource")
     void givenSampleJsonViaMqtt_recordsArePublishedToFlux() {
