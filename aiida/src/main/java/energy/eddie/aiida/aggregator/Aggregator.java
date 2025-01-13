@@ -16,7 +16,10 @@ import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -107,16 +110,22 @@ public class Aggregator implements AutoCloseable {
                                cronScheduler.stop();
                                cronSink.tryEmitComplete();
                            })
-                           .filter(aiidaRecord -> isAllowedDataTag(aiidaRecord, allowedDataTags)
-                                                  && isBeforeExpiration(aiidaRecord, permissionExpirationTime))
+                           .map(aiidaRecord -> filterAllowedDataTags(aiidaRecord, allowedDataTags))
+                           .filter(aiidaRecord -> isRecordValid(aiidaRecord, permissionExpirationTime))
                            .buffer(cronSink.asFlux())
                            .flatMapIterable(this::aggregateRecords);
     }
 
-    private boolean isAllowedDataTag(AiidaRecord aiidaRecord, Set<String> allowedDataTags) {
-        return aiidaRecord.aiidaRecordValue().stream()
-                          .map(AiidaRecordValue::dataTag)
-                          .anyMatch(allowedDataTags::contains);
+    private AiidaRecord filterAllowedDataTags(AiidaRecord aiidaRecord, Set<String> allowedDataTags) {
+        var filteredValues = aiidaRecord.aiidaRecordValue().stream()
+                                   .filter(value -> allowedDataTags.contains(value.dataTag()))
+                                   .toList();
+        aiidaRecord.setAiidaRecordValues(filteredValues);
+        return aiidaRecord;
+    }
+
+    private boolean isRecordValid(AiidaRecord record, Instant expirationTime) {
+        return !record.aiidaRecordValue().isEmpty() && isBeforeExpiration(record, expirationTime);
     }
 
     private boolean isBeforeExpiration(AiidaRecord aiidaRecord, Instant permissionExpirationTime) {
