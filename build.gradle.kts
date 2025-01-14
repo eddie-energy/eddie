@@ -43,6 +43,7 @@ tasks.register<PnpmTask>("pnpmBuildAdminConsole") {
     description = "builds and bundles the admin console ui"
     dependsOn("pnpmInstall")
     pnpmCommand.set(listOf("run", "admin:build"))
+    environment = System.getenv()
 
     doLast {
         copy {

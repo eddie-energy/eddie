@@ -4,6 +4,13 @@ The admin console allows the eligible party to manage permission via a web inter
 It will be served via `<hostname>:<eddie.management.server.port>/outbound-connectors/admin-console`.
 The default for `eddie.management.server.port` is `9090`.
 
+Non-default core and management locations have to be configured as environment variables to be picked up by the admin console frontend.
+
+```dotenv
+EDDIE_PUBLIC_URL=http://localhost:8080
+EDDIE_MANAGEMENT_URL=http://localhost:9090
+```
+
 The admin console can be configured to require authentication.
 Currently, only basic auth and a single admin user is supported.
 The username for the admin user and a ***BCrypt encrypted*** password can be configured using properties or environment variables, as described below.
