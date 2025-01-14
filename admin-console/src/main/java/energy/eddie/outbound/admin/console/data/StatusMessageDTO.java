@@ -18,13 +18,4 @@ public record StatusMessageDTO(@JsonProperty String permissionId,
         assert this.startDate != null;
         return ZonedDateTime.parse(this.startDate, formatter);
     }
-
-    public String getStatus() {
-        return this.status;
-    }
-
-    public String getCountry() {
-        return this.country;
-    }
-
 }

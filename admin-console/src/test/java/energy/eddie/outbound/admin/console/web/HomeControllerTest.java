@@ -67,7 +67,7 @@ class HomeControllerTest {
 
         // Then
         assertEquals(1, statusMessages.size());
-        assertEquals("UNKNOWN_STATUS", statusMessages.getFirst().getStatus());
+        assertEquals("UNKNOWN_STATUS", statusMessages.getFirst().status());
     }
 
     @Test
@@ -86,8 +86,8 @@ class HomeControllerTest {
         verify(statusMessageRepository, times(1)).findByPermissionIdOrderByStartDateDescIdDesc("testPermissionId");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2, Objects.requireNonNull(response.getBody()).size());
-        assertEquals("Available", response.getBody().get(0).getStatus());
-        assertEquals("Active", response.getBody().get(1).getStatus());
+        assertEquals("Available", response.getBody().get(0).status());
+        assertEquals("Active", response.getBody().get(1).status());
     }
 
     @Test
@@ -103,7 +103,7 @@ class HomeControllerTest {
 
         // Then
         assertEquals(1, statusMessages.size());
-        assertEquals("Country", statusMessages.getFirst().getCountry());
+        assertEquals("Country", statusMessages.getFirst().country());
     }
 
     @Test
