@@ -52,3 +52,8 @@ body {
   gap: var(--sl-spacing-small);
   margin-bottom: var(--sl-spacing-large);
 }
+
+.user-drawer-content {
+  display: flex;
+  gap: var(--sl-spacing-small);
+}

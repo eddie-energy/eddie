@@ -389,22 +389,6 @@ function revokePermission(permissionId) {
   }).then(() => renderPermissions());
 }
 
-function logout() {
-  fetch("/logout", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      [getCsrfHeader()]: getCsrfToken(),
-    }
-  }).then(() => {
-    window.location.href = "/";
-  });
-}
-
-function openAccountSettings() {
-  window.location.href = "/account";
-}
-
 // wait for Shoelace elements to ensure validation before submit
 Promise.all([
   customElements.whenDefined("sl-button"),
@@ -424,5 +408,3 @@ window.hidePermissionDialog = () => permissionDialog.hide();
 window.hideRevokeDialog = () => revokeDialog.hide();
 window.showUserDrawer = () => userDrawer.show();
 window.hideUserDrawer = () => userDrawer.hide();
-window.openAccountSettings = openAccountSettings;
-window.logout = logout;
