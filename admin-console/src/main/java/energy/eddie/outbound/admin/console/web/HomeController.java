@@ -105,11 +105,11 @@ public class HomeController {
             country = country.replaceFirst("N", "");
         }
 
-        String status;
+        String cimStatus;
         try {
-            status = StatusTypeList.valueOf(statusMessage.getStatus()).value();
+            cimStatus = StatusTypeList.valueOf(statusMessage.getStatus()).value();
         } catch (IllegalArgumentException e) {
-            status = "UNKNOWN_STATUS";
+            cimStatus = "UNKNOWN_STATUS";
         }
 
         return new StatusMessageDTO(
@@ -119,7 +119,8 @@ public class HomeController {
                 country,
                 statusMessage.getDso(),
                 statusMessage.getStartDate(),
-                status);
+                statusMessage.getDescription(),
+                cimStatus);
     }
 
     @GetMapping("/login")

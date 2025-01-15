@@ -1,10 +1,10 @@
 package energy.eddie.outbound.admin.console.services;
 
-import energy.eddie.outbound.admin.console.data.StatusMessage;
-import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionMarketDocumentComplexType;
+import energy.eddie.outbound.admin.console.data.StatusMessage;
+import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,25 +43,26 @@ public class StatusMessageService implements PermissionMarketDocumentOutboundCon
     }
 
     private StatusMessage createStatusMessage(PermissionMarketDocumentComplexType message) {
+        // TODO: GH-638 Unknown is actually AIIDA, which does not have a schema
         String country;
         if (message.getReceiverMarketParticipantMRID().getCodingScheme() == null) {
             country = "Unknown";
         } else {
             country = message.getReceiverMarketParticipantMRID().getCodingScheme().value();
         }
+
+        var permission = message.getPermissionList().getPermissions().getFirst()
+                                .getMktActivityRecordList().getMktActivityRecords().getFirst();
+
         return new StatusMessage(
                 message.getMRID(),
-                message.getPermissionList().getPermissions().getFirst()
-                       .getMktActivityRecordList().getMktActivityRecords().getFirst().getType(),
+                permission.getType(),
                 message.getDescription(),
                 country,
                 message.getReceiverMarketParticipantMRID().getValue(),
-                message.getPermissionList().getPermissions().getFirst()
-                       .getMktActivityRecordList().getMktActivityRecords().getFirst()
-                       .getCreatedDateTime(),
-                message.getPermissionList().getPermissions().getFirst()
-                       .getMktActivityRecordList().getMktActivityRecords().getFirst()
-                       .getStatus().toString()
+                permission.getCreatedDateTime(),
+                permission.getStatus().toString(),
+                permission.getDescription()
         );
     }
 }

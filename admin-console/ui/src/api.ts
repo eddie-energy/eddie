@@ -1,4 +1,9 @@
-import { DATA_NEEDS_API_URL, PERMISSIONS_API_URL, REGION_CONNECTOR_API_URL } from '@/config'
+import {
+  DATA_NEEDS_API_URL,
+  PERMISSIONS_API_URL,
+  REGION_CONNECTOR_API_URL,
+  TERMINATION_API_URL
+} from '@/config'
 
 export type StatusMessage = {
   permissionId: string
@@ -8,6 +13,7 @@ export type StatusMessage = {
   dso: string
   startDate: string
   status: string
+  cimStatus: string
   parsedStartDate: string
 }
 
@@ -33,6 +39,18 @@ export type DataNeed = {
 
 export async function getPermissions(): Promise<StatusMessage[]> {
   return await fetch(PERMISSIONS_API_URL).then((res) => res.json())
+}
+
+export async function getStatusMessages(permissionId: string): Promise<StatusMessage[]> {
+  return await fetch(`${PERMISSIONS_API_URL}/${permissionId}`).then((res) => res.json())
+}
+
+export async function terminatePermission(permissionId: string) {
+  const response = await fetch(`${TERMINATION_API_URL}/${permissionId}`, { method: 'POST' })
+
+  if (!response.ok) {
+    throw new Error('Failed to terminate permission')
+  }
 }
 
 export async function getDataNeeds(): Promise<DataNeed[]> {
