@@ -13,6 +13,7 @@ export type StatusMessage = {
   dso: string
   startDate: string
   status: string
+  cimStatus: string
   parsedStartDate: string
 }
 

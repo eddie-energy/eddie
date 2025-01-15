@@ -40,7 +40,7 @@ class HomeControllerTest {
 
     @Test
     void testHome() {
-        StatusMessage statusMessage = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
+        StatusMessage statusMessage = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05", "ACCEPTED");
 
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(statusMessage));
 
@@ -57,7 +57,7 @@ class HomeControllerTest {
     @Test
     void testStatusDisplays() {
         // Given
-        StatusMessage unknownStatusMessage = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "ABCDEF");
+        StatusMessage unknownStatusMessage = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "ABCDEF", "ACCEPTED");
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(unknownStatusMessage));
 
         // When
@@ -67,7 +67,7 @@ class HomeControllerTest {
 
         // Then
         assertEquals(1, statusMessages.size());
-        assertEquals("UNKNOWN_STATUS", statusMessages.getFirst().status());
+        assertEquals("UNKNOWN_STATUS", statusMessages.getFirst().cimStatus());
     }
 
     @Test
@@ -86,14 +86,14 @@ class HomeControllerTest {
         verify(statusMessageRepository, times(1)).findByPermissionIdOrderByStartDateDescIdDesc("testPermissionId");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2, Objects.requireNonNull(response.getBody()).size());
-        assertEquals("Available", response.getBody().get(0).status());
-        assertEquals("Active", response.getBody().get(1).status());
+        assertEquals("Available", response.getBody().get(0).cimStatus());
+        assertEquals("Active", response.getBody().get(1).cimStatus());
     }
 
     @Test
     void testCountryCodePrefixRemoval() {
         // Given
-        StatusMessage statusMessageWithPrefix = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "NCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05");
+        StatusMessage statusMessageWithPrefix = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "NCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05", "ACCEPTED");
         when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(Collections.singletonList(statusMessageWithPrefix));
 
         // When

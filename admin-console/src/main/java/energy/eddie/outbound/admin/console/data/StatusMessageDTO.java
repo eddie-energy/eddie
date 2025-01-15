@@ -11,7 +11,8 @@ public record StatusMessageDTO(@JsonProperty String permissionId,
                                @JsonProperty String country,
                                @JsonProperty String dso,
                                @JsonProperty String startDate,
-                               @JsonProperty String status) {
+                               @JsonProperty String status,
+                               @JsonProperty String cimStatus) {
 
     public ZonedDateTime getParsedStartDate() {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;

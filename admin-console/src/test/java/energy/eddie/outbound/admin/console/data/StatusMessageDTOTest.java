@@ -12,7 +12,7 @@ class StatusMessageDTOTest {
     void testGetParsedStartDate() {
         // Given
         String startDate = "2024-05-22T08:20:03+02:00";
-        StatusMessageDTO statusMessageDTO = new StatusMessageDTO("testCountry", "testRegionConnectorId", "testDataNeedId", "testDso", "testPermissionId", startDate, "A05");
+        StatusMessageDTO statusMessageDTO = new StatusMessageDTO("testCountry", "testRegionConnectorId", "testDataNeedId", "testDso", "testPermissionId", startDate, "CREATED", "A05");
 
         // When
         ZonedDateTime parsedStartDate = statusMessageDTO.getParsedStartDate();

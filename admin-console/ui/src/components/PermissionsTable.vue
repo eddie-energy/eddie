@@ -123,7 +123,8 @@ function confirmTermination(permissionId: string) {
       'dataNeedId',
       'permissionId',
       'startDate',
-      'status'
+      'status',
+      'cimStatus'
     ]"
     removable-sort
     scrollable
@@ -159,6 +160,7 @@ function confirmTermination(permissionId: string) {
         <Tag :value="slotProps.data.status" :severity="getStatusSeverity(slotProps.data.status)" />
       </template>
     </Column>
+    <Column field="cimStatus" header="CIM Status" sortable />
     <Column header="Actions">
       <template #body="slotProps">
         <Button
