@@ -68,6 +68,10 @@ export default withMermaid(defineConfig({
         link: "2-integrating/integrating.md",
         items: [
           {
+            text: "Data Needs",
+            link: "2-integrating/data-needs.md",
+          },
+          {
             text: "Messages and Documents",
             link: "2-integrating/messages/messages.md",
             items: [

@@ -1,6 +1,7 @@
 package energy.eddie.dataneeds.validation.aiida.schema;
 
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
