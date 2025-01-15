@@ -57,8 +57,9 @@ class GreenButtonClientTest {
             List.of(),
             new Exports(null, null, null, null, null),
             List.of(),
-            List.of()
-    );
+            List.of(),
+            List.of(),
+            List.of(), List.of());
     private static MockWebServer mockBackEnd;
 
     private static String basePath;

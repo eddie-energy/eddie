@@ -76,8 +76,9 @@ class DataNeedMatcherTest {
             List.of(),
             new Exports(null, null, null, null, null),
             List.of(),
-            List.of()
-    );
+            List.of(),
+            List.of(),
+            List.of(), List.of());
     @Mock
     private DataNeedsService dataNeedsService;
     @Mock
@@ -173,8 +174,9 @@ class DataNeedMatcherTest {
                 List.of(),
                 new Exports(null, null, null, null, null),
                 List.of(),
-                List.of()
-        );
+                List.of(),
+                List.of(),
+                List.of(), List.of());
         meter.setMeterBlock("electric", new MeterBlock("id", "tariff", "electric", "", List.of(), "", "", ""));
         waterMeter.setMeterBlock("water", new MeterBlock("id", "tariff", "water", "", List.of(), "", "", ""));
         var data = new MeterListing(List.of(meter, waterMeter), null);

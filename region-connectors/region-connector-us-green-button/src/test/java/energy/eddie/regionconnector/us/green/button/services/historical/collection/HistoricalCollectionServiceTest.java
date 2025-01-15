@@ -154,8 +154,9 @@ class HistoricalCollectionServiceTest {
                 null,
                 null,
                 null,
-                null
-        )), null);
+                null,
+                null,
+                List.of(), List.of())), null);
     }
 
     private static GreenButtonPermissionRequest getPermissionRequest(List<@NotNull MeterReading> meterReadings) {

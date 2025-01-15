@@ -1,0 +1,4 @@
+### GET meter by id
+@meter_id = variable value
+GET https://utilityapi.com/api/v2/meters/{{meter_id}}}}?expand_meter_blocks=true
+Authorization: Bearer {{token}}

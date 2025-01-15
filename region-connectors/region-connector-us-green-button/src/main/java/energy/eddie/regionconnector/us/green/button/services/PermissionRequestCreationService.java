@@ -127,6 +127,20 @@ public class PermissionRequestCreationService {
         return new CreatedPermissionRequest(permissionId, redirectUri);
     }
 
+    public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
+        return repository.findByPermissionId(permissionId)
+                         .map(request -> new ConnectionStatusMessage(request.connectionId(),
+                                                                     request.permissionId(),
+                                                                     request.dataNeedId(),
+                                                                     request.dataSourceInformation(),
+                                                                     request.status()));
+    }
+
+    public Optional<String> findDataNeedIdByPermissionId(String permissionId) {
+        return repository.findByPermissionId(permissionId)
+                         .map(PermissionRequest::dataNeedId);
+    }
+
     private void validateUsConfiguration(String companyId) throws MissingClientIdException, MissingClientSecretException {
         if (!configuration.clientIds().containsKey(companyId)) {
             throw new MissingClientIdException();
@@ -148,19 +162,5 @@ public class PermissionRequestCreationService {
                                    .queryParam("scope", UriUtils.encode(scope, StandardCharsets.UTF_8))
                                    .build(true)
                                    .toUri();
-    }
-
-    public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
-        return repository.findByPermissionId(permissionId)
-                         .map(request -> new ConnectionStatusMessage(request.connectionId(),
-                                                                     request.permissionId(),
-                                                                     request.dataNeedId(),
-                                                                     request.dataSourceInformation(),
-                                                                     request.status()));
-    }
-
-    public Optional<String> findDataNeedIdByPermissionId(String permissionId) {
-        return repository.findByPermissionId(permissionId)
-                         .map(PermissionRequest::dataNeedId);
     }
 }

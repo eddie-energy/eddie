@@ -14,6 +14,7 @@ import energy.eddie.regionconnector.us.green.button.services.historical.collecti
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -43,18 +44,41 @@ public class MeterEventCallbacks {
         var permissionId = permissionRequest.permissionId();
         onMeter(event, permissionRequest)
                 .subscribe(meter -> {
-                    upsertMeter(permissionRequest, meter, PollingStatus.DATA_READY);
-                    var meters = readingRepository.findAllByPermissionId(permissionId);
-                    if (!meters.isEmpty() && meters.stream().allMatch(MeterReading::isReadyToPoll)) {
-                        LOGGER.info("Historical collection for permission request {} finished", permissionId);
-                        outbox.commit(new UsStartPollingEvent(permissionId));
-                    }
-                });
+                               upsertMeter(permissionRequest, meter, PollingStatus.DATA_READY);
+                               var meters = readingRepository.findAllByPermissionId(permissionId);
+                               if (!meters.isEmpty() && meters.stream().allMatch(MeterReading::isReadyToPoll)) {
+                                   LOGGER.info("Historical collection for permission request {} finished", permissionId);
+                                   outbox.commit(new UsStartPollingEvent(permissionId));
+                               }
+                           },
+                           throwable -> onError(event, throwable, permissionId));
     }
 
     public void onMeterCreatedEvent(WebhookEvent event, UsGreenButtonPermissionRequest permissionRequest) {
         onMeter(event, permissionRequest)
-                .subscribe(meter -> upsertMeter(permissionRequest, meter, PollingStatus.DATA_NOT_READY));
+                .subscribe(
+                        meter -> upsertMeter(permissionRequest, meter, PollingStatus.DATA_NOT_READY),
+                        throwable -> onError(event, throwable, permissionRequest.permissionId())
+                );
+    }
+
+    private static void onError(WebhookEvent event, Throwable throwable, String permissionId) {
+        if (throwable instanceof WebClientResponseException webClientResponseException) {
+            LOGGER.info(
+                    "Meter {} of historical collection finished event for permission request {} results in exception, with http status {}",
+                    event.meterUid(),
+                    permissionId,
+                    webClientResponseException.getStatusCode(),
+                    throwable
+            );
+        } else {
+            LOGGER.info(
+                    "Meter {} of historical collection finished event for permission request {} results in exception",
+                    event.meterUid(),
+                    permissionId,
+                    throwable
+            );
+        }
     }
 
     private void upsertMeter(
