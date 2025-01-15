@@ -31,8 +31,11 @@ public class StatusMessage {
     @Column(name = "status")
     private String status;
 
+    @Column(name = "description")
+    private String description;
+
     // Constructors
-    public StatusMessage(String permissionId, String regionConnectorId, String dataNeedId, String country, String dso, String startDate, String status) {
+    public StatusMessage(String permissionId, String regionConnectorId, String dataNeedId, String country, String dso, String startDate, String status, String description) {
         this.id = 0L;
         this.permissionId = permissionId;
         this.regionConnectorId = regionConnectorId;
@@ -41,6 +44,7 @@ public class StatusMessage {
         this.dso = dso;
         this.startDate = startDate;
         this.status = status;
+        this.description = description;
     }
 
     @SuppressWarnings("NullAway") // Hibernate requires a no-arg constructor
@@ -50,11 +54,11 @@ public class StatusMessage {
         this.regionConnectorId = null;
         this.dataNeedId = null;
         this.country = null;
-        this.status = null;
         this.dso = null;
         this.startDate = null;
+        this.status = null;
+        this.description = null;
     }
-
 
     public Long getId() {
         return id;
@@ -88,4 +92,5 @@ public class StatusMessage {
         return status;
     }
 
+    public String getDescription() { return description; }
 }

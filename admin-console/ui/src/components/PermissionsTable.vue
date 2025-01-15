@@ -16,25 +16,6 @@ import {
 import { ref } from 'vue'
 
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
-// TODO: Pass ability to terminate in DTO
-const NON_TERMINABLE_STATUSES = [
-  'Cancelled',
-  'Deactivated',
-  'No longer available',
-  'Withdrawn',
-  'Deactivation',
-  'Close',
-  'Stop',
-  'Not satisfied',
-  'Rejected',
-  'MALFORMED',
-  'UNABLE_TO_SEND',
-  'TIMED_OUT',
-  'REVOKED',
-  'TERMINATED',
-  'UNFULFILLABLE',
-  'PENDING_PERMISSION_ADMINISTRATOR_ACKNOWLEDGEMENT'
-]
 
 const permissions = await getPermissions()
 
@@ -181,7 +162,7 @@ function confirmTermination(permissionId: string) {
     <Column header="Actions">
       <template #body="slotProps">
         <Button
-          v-if="!NON_TERMINABLE_STATUSES.includes(slotProps.data.status)"
+          v-if="slotProps.data.status === 'ACCEPTED'"
           label="Terminate"
           severity="danger"
           size="small"

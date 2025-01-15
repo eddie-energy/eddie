@@ -50,19 +50,19 @@ public class StatusMessageService implements PermissionMarketDocumentOutboundCon
         } else {
             country = message.getReceiverMarketParticipantMRID().getCodingScheme().value();
         }
+
+        var permission = message.getPermissionList().getPermissions().getFirst()
+                                .getMktActivityRecordList().getMktActivityRecords().getFirst();
+
         return new StatusMessage(
                 message.getMRID(),
-                message.getPermissionList().getPermissions().getFirst()
-                       .getMktActivityRecordList().getMktActivityRecords().getFirst().getType(),
+                permission.getType(),
                 message.getDescription(),
                 country,
                 message.getReceiverMarketParticipantMRID().getValue(),
-                message.getPermissionList().getPermissions().getFirst()
-                       .getMktActivityRecordList().getMktActivityRecords().getFirst()
-                       .getCreatedDateTime(),
-                message.getPermissionList().getPermissions().getFirst()
-                       .getMktActivityRecordList().getMktActivityRecords().getFirst()
-                       .getStatus().toString()
+                permission.getCreatedDateTime(),
+                permission.getStatus().toString(),
+                permission.getDescription()
         );
     }
 }

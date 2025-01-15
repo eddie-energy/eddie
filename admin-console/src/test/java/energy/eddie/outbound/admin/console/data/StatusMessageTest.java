@@ -13,10 +13,12 @@ class StatusMessageTest {
         // Then
         assertNull(statusMessage.getId());
         assertNull(statusMessage.getPermissionId());
+        assertNull(statusMessage.getRegionConnectorId());
         assertNull(statusMessage.getCountry());
         assertNull(statusMessage.getDso());
         assertNull(statusMessage.getStartDate());
         assertNull(statusMessage.getStatus());
-        assertNull(statusMessage.getRegionConnectorId());
+        assertNull(statusMessage.getDataNeedId());
+        assertNull(statusMessage.getDescription());
     }
 }
