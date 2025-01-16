@@ -1,13 +1,12 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
-import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.api.TokenApi;
 import energy.eddie.regionconnector.us.green.button.client.OAuthTokenClientFactory;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
+import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingApiTokenException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
 import energy.eddie.regionconnector.us.green.button.exceptions.InvalidScopesException;
@@ -29,8 +28,6 @@ import reactor.test.StepVerifier;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
@@ -46,12 +43,11 @@ class CredentialServiceTest {
     @SuppressWarnings("unused")
     @Spy
     private GreenButtonConfiguration config = new GreenButtonConfiguration(
-            "token",
             "http://localhost",
             Map.of("company", "client-id"),
-            Map.of("compand", "client-secret"),
+            Map.of("company", "client-secret"),
+            Map.of("company", "token"),
             "http://localhost",
-            GreenButtonApi.MAX_METER_RESULTS,
             "secret");
     @SuppressWarnings("unused")
     @Mock
@@ -88,26 +84,8 @@ class CredentialServiceTest {
                     .verifyComplete();
     }
 
-    private static @NotNull GreenButtonPermissionRequest createPermissionRequest(String companyId) {
-        var today = LocalDate.now(ZoneOffset.UTC);
-        return new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                today,
-                today,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                today.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                companyId,
-                "http://localhost",
-                "other",
-                "1111");
-    }
-
     @Test
-    void retrieveExistingInvalidAccessToken_fetchesNewToken() throws MissingClientIdException, MissingClientSecretException {
+    void retrieveExistingInvalidAccessToken_fetchesNewToken() throws MissingClientIdException, MissingClientSecretException, MissingApiTokenException {
         // Given
         var now = Instant.now(Clock.systemUTC());
         var credentials = new OAuthTokenDetails(
@@ -168,7 +146,7 @@ class CredentialServiceTest {
     }
 
     @Test
-    void retrieveAccessToken_withMissingCompanyCredentials_emitsError() throws MissingClientIdException, MissingClientSecretException {
+    void retrieveAccessToken_withMissingCompanyCredentials_emitsError() throws MissingClientIdException, MissingClientSecretException, MissingApiTokenException {
         // Given
         var now = Instant.now(Clock.systemUTC());
         var credentials = new OAuthTokenDetails(
@@ -195,7 +173,7 @@ class CredentialServiceTest {
     }
 
     @Test
-    void retrieveAccessToken_withCodeAndMatchingScope_emitsCredentials() throws MissingClientIdException, MissingClientSecretException {
+    void retrieveAccessToken_withCodeAndMatchingScope_emitsCredentials() throws MissingClientIdException, MissingClientSecretException, MissingApiTokenException {
         // Given
         when(factory.create("company", "http://localhost"))
                 .thenReturn(tokenApi);
@@ -221,7 +199,7 @@ class CredentialServiceTest {
     }
 
     @Test
-    void retrieveAccessToken_withInvalidScope_emitsError() throws MissingClientIdException, MissingClientSecretException {
+    void retrieveAccessToken_withInvalidScope_emitsError() throws MissingClientIdException, MissingClientSecretException, MissingApiTokenException {
         // Given
         when(factory.create("company", "http://localhost"))
                 .thenReturn(tokenApi);
@@ -243,5 +221,13 @@ class CredentialServiceTest {
         StepVerifier.create(res)
                     .expectError(InvalidScopesException.class)
                     .verify();
+    }
+
+    private static @NotNull GreenButtonPermissionRequest createPermissionRequest(String companyId) {
+        return new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                        .setCompanyId(companyId)
+                                                        .setJumpOffUrl("http://localhost")
+                                                        .setScope("other")
+                                                        .build();
     }
 }

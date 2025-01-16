@@ -2,12 +2,10 @@ package energy.eddie.regionconnector.us.green.button.services;
 
 import com.rometools.rome.feed.synd.SyndFeed;
 import energy.eddie.api.agnostic.IdentifiablePayload;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.us.green.button.atom.feed.Query;
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
-import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
 import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
@@ -50,8 +48,7 @@ public class PermissionUpdateService {
         var query = new Query(feed, unmarshaller);
         var intervalBlocks = query.findAllByTitle("IntervalBlock");
         if (intervalBlocks.isEmpty()) {
-            LOGGER.warn("No data found for permission request {}", permissionId);
-            outbox.commit(new UsSimpleEvent(permissionId, PermissionProcessStatus.UNFULFILLABLE));
+            LOGGER.info("No data found for one of the meters of permission request {}", permissionId );
             return;
         }
         List<MeterReading> lastMeterReadings = new ArrayList<>();

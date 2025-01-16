@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.dtos.WebhookEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsAuthorizationUpdateFinishedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsUnfulfillableEvent;
@@ -19,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -167,6 +166,7 @@ class UtilityEventServiceTest {
         // Then
         verify(callbacks).onMeterCreatedEvent(event, permissionRequest);
     }
+
     @Test
     void testReceiveEvents_withAuthorizationUpdateFinishedSuccessful_emitsAuthorizationFinishedEvent() {
         // Given
@@ -207,22 +207,8 @@ class UtilityEventServiceTest {
     }
 
     private static GreenButtonPermissionRequest getPermissionRequest(PermissionProcessStatus status) {
-        var now = ZonedDateTime.now(ZoneOffset.UTC);
-        var today = LocalDate.now(ZoneOffset.UTC);
-        return new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                today,
-                today,
-                Granularity.PT15M,
-                status,
-                now,
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "0000"
-        );
+        return new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                        .setStatus(status)
+                                                        .build();
     }
 }

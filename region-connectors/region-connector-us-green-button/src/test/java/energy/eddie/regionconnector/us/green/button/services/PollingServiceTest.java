@@ -1,15 +1,14 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
 import com.rometools.rome.feed.synd.SyndFeedImpl;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
 import energy.eddie.regionconnector.us.green.button.oauth.persistence.OAuthTokenDetails;
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
-import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
@@ -64,21 +63,11 @@ class PollingServiceTest {
         var now = LocalDate.now(ZoneOffset.UTC);
         var start = now.minusDays(10);
         var end = now.minusDays(1);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                start,
-                end,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                METERS,
-                "1111");
+        var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                          .setStart(start)
+                                                          .setEnd(end)
+                                                          .setLastMeterReadings(METERS)
+                                                          .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var credentials = new OAuthTokenDetails("pid",
@@ -108,21 +97,11 @@ class PollingServiceTest {
         var now = LocalDate.now(ZoneOffset.UTC);
         var start = now.minusDays(10);
         var end = now.plusDays(1);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                start,
-                end,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                METERS,
-                "1111");
+        var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                          .setStart(start)
+                                                          .setEnd(end)
+                                                          .setLastMeterReadings(METERS)
+                                                          .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var credentials = new OAuthTokenDetails("pid",
@@ -158,21 +137,11 @@ class PollingServiceTest {
                 new MeterReading("pid", "2", ZonedDateTime.now(ZoneOffset.UTC).minusDays(1),
                                  PollingStatus.DATA_NOT_READY)
         );
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                start,
-                end,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                meters,
-                "1111");
+        var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                          .setStart(start)
+                                                          .setEnd(end)
+                                                          .setLastMeterReadings(meters)
+                                                          .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var credentials = new OAuthTokenDetails("pid",
@@ -200,20 +169,10 @@ class PollingServiceTest {
     void pollOfInactivePermission_doesNothing() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now.plusDays(1),
-                now.plusDays(2),
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
+        var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                          .setStart(now.plusDays(1))
+                                                          .setEnd(now.plusDays(2))
+                                                          .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
 
@@ -229,20 +188,10 @@ class PollingServiceTest {
     void pollWithCredentialsWithoutRefreshToken_emitsUnfulfillableEvent() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
+        var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                          .setStart(now)
+                                                          .setEnd(now)
+                                                          .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.error(new NoRefreshTokenException()));
@@ -260,20 +209,10 @@ class PollingServiceTest {
     void pollWithUnknownExceptionDoesNothing() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
+        var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                          .setStart(now)
+                                                          .setEnd(now)
+                                                          .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.error(new Exception()));
@@ -291,20 +230,10 @@ class PollingServiceTest {
     void poll_withForbidden_revokesPermissionRequest() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
+        var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                          .setStart(now)
+                                                          .setEnd(now)
+                                                          .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.error(
@@ -321,20 +250,10 @@ class PollingServiceTest {
     void pollWithForbidden_revokesPermissionRequest() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
+        var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                          .setStart(now)
+                                                          .setEnd(now)
+                                                          .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var credentials = new OAuthTokenDetails("pid",
@@ -364,20 +283,10 @@ class PollingServiceTest {
     void pollWithException_doesNothing(Exception e) {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
+        var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                          .setStart(now)
+                                                          .setEnd(now)
+                                                          .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var credentials = new OAuthTokenDetails("pid",

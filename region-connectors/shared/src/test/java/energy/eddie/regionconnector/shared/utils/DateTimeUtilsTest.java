@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
@@ -30,14 +31,30 @@ class DateTimeUtilsTest {
         // Given
         var date1 = ZonedDateTime.of(2024, 4, 19, 0, 0, 0, 0, ZoneOffset.UTC);
         var date2 = ZonedDateTime.of(2024, 4, 29, 0, 0, 0, 0, ZoneOffset.UTC);
-        var dates = List.of(date1, date2);
+        var date3 = ZonedDateTime.of(2024, 4, 10, 0, 0, 0, 0, ZoneOffset.UTC);
+        var dates = List.of(date1, date2, date3);
 
         // When
         var res = oldestDateTime(dates);
 
         // Then
         assertTrue(res.isPresent());
-        assertEquals(date1, res.get());
+        assertEquals(date3, res.get());
+    }
+
+    @Test
+    void testLatestDateTime_withOneNull_returnsEmpty() {
+        // Given
+        var date1 = ZonedDateTime.of(2024, 4, 19, 0, 0, 0, 0, ZoneOffset.UTC);
+        var dates = new ArrayList<ZonedDateTime>();
+        dates.add(date1);
+        dates.add(null);
+
+        // When
+        var res = oldestDateTime(dates);
+
+        // Then
+        assertTrue(res.isEmpty());
     }
 
     @Test

@@ -1,9 +1,10 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
+import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingApiTokenException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
 import energy.eddie.regionconnector.us.green.button.exceptions.InvalidScopesException;
@@ -29,7 +30,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
-import java.time.*;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -56,8 +58,8 @@ class PermissionRequestAuthorizationServiceTest {
 
     public static Stream<Arguments> testAuthorizePermissionRequest_withInternalException_doesNotEmit() {
         return Stream.of(
-                Arguments.of(new MissingClientIdException()),
-                Arguments.of(new MissingClientSecretException()),
+                Arguments.of(new MissingClientIdException("company")),
+                Arguments.of(new MissingClientSecretException("company")),
                 Arguments.of(new Exception())
         );
     }
@@ -99,7 +101,7 @@ class PermissionRequestAuthorizationServiceTest {
     }
 
     @Test
-    void testAuthorizePermissionRequest_forAlreadyAcceptedPermissionRequest() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException {
+    void testAuthorizePermissionRequest_forAlreadyAcceptedPermissionRequest() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException, MissingApiTokenException {
         // Given
         var permissionId = "permissionId";
         when(callback.state()).thenReturn(permissionId);
@@ -129,7 +131,7 @@ class PermissionRequestAuthorizationServiceTest {
     }
 
     @Test
-    void testAuthorizePermissionRequest_successful() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException {
+    void testAuthorizePermissionRequest_successful() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException, MissingApiTokenException {
         // Given
         var permissionId = "permissionId";
         when(callback.state()).thenReturn(permissionId);
@@ -184,7 +186,7 @@ class PermissionRequestAuthorizationServiceTest {
     }
 
     @Test
-    void testAuthorizePermissionRequest_withMismatchingScopes_emitsInvalid() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException {
+    void testAuthorizePermissionRequest_withMismatchingScopes_emitsInvalid() throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException, MissingApiTokenException {
         // Given
         var permissionId = "permissionId";
         when(callback.state()).thenReturn(permissionId);
@@ -209,7 +211,7 @@ class PermissionRequestAuthorizationServiceTest {
 
     @ParameterizedTest
     @MethodSource
-    void testAuthorizePermissionRequest_withInternalException_doesNotEmit(Exception e) throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException {
+    void testAuthorizePermissionRequest_withInternalException_doesNotEmit(Exception e) throws MissingClientIdException, MissingClientSecretException, PermissionNotFoundException, UnauthorizedException, MissingApiTokenException {
         // Given
         var permissionId = "permissionId";
         when(callback.state()).thenReturn(permissionId);
@@ -232,21 +234,8 @@ class PermissionRequestAuthorizationServiceTest {
     }
 
     private static GreenButtonPermissionRequest createPermissionRequest(PermissionProcessStatus status) {
-        var now = LocalDate.now(ZoneOffset.UTC);
-        return new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                status,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                "US",
-                "blbl",
-                "http://localhost",
-                "other",
-                "authId"
-        );
+        return new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                        .setStatus(status)
+                                                        .build();
     }
 }

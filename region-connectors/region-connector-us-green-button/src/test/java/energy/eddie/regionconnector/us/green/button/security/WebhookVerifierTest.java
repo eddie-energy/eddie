@@ -26,12 +26,11 @@ class WebhookVerifierTest {
     public static final byte[] PAYLOAD = "{\"json\": \"object\"}".getBytes(StandardCharsets.UTF_8);
     public static final String VALID_SIGNATURE = "6cd59ee8461872a3e0deea0d6428b5cdad5049452b4914ad66ed1cc1081b5e7d";
     private final GreenButtonConfiguration config = new GreenButtonConfiguration(
-            "token",
             "localhost",
             Map.of(),
             Map.of(),
+            Map.of(),
             "localhost",
-            1,
             "secret"
     );
     @Mock

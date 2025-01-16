@@ -7,10 +7,9 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
-import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
-import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
+import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingCredentialsException;
 import energy.eddie.regionconnector.us.green.button.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsCreatedEvent;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMalformedEvent;
@@ -35,6 +34,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
@@ -45,12 +45,11 @@ class PermissionRequestCreationServiceTest {
     @SuppressWarnings("unused")
     @Spy
     private final GreenButtonConfiguration config = new GreenButtonConfiguration(
-            "token",
             "http://localhost",
-            Map.of("company", "client-id", "only-id", "client-id"),
-            Map.of("company", "client-secret", "only-secret", "client-secret"),
+            Map.of("company", "client-id", "only-id", "client-id", "missing-token", "client-id"),
+            Map.of("company", "client-secret", "only-secret", "client-secret", "missing-token", "client-secret"),
+            Map.of("company", "token", "only-id", "token", "only-secret", "token"),
             "http://localhost",
-            GreenButtonApi.MAX_METER_RESULTS,
             "secret");
     @Mock
     private UsPermissionRequestRepository repository;
@@ -72,21 +71,7 @@ class PermissionRequestCreationServiceTest {
     @Test
     void findConnectionStatusMessageById_returnsConnectionStatusMessage() {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now.atStartOfDay(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
+        var pr = getPermissionRequest();
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(pr));
         // When
@@ -117,7 +102,7 @@ class PermissionRequestCreationServiceTest {
     }
 
     @Test
-    void createPermissionRequest_returnsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException, MissingClientIdException, MissingClientSecretException {
+    void createPermissionRequest_returnsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException, MissingCredentialsException {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate("dnid"))
@@ -191,7 +176,7 @@ class PermissionRequestCreationServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"only-id", "only-secret"})
+    @ValueSource(strings = {"only-id", "only-secret", "missing-token"})
     void createPermissionRequest_throwsOnInvalidConfiguration(String company) {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
@@ -216,5 +201,28 @@ class PermissionRequestCreationServiceTest {
         assertThrows(Exception.class, () -> creationService.createPermissionRequest(permissionRequestForCreation));
         verify(outbox).commit(isA(UsCreatedEvent.class));
         verify(outbox).commit(isA(UsMalformedEvent.class));
+    }
+
+    @Test
+    void testFindDataNeedIdByPermissionId_returnsDataNeedId() {
+        // Given
+        var pr = getPermissionRequest();
+        when(repository.findByPermissionId("pid")).thenReturn(Optional.of(pr));
+
+        // When
+        var res = creationService.findDataNeedIdByPermissionId("pid");
+
+        // Then
+        assertThat(res)
+                .isPresent()
+                .contains("dnid");
+    }
+
+    private static GreenButtonPermissionRequest getPermissionRequest() {
+        return new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                        .setConnectionId("cid")
+                                                        .setDataNeedId("dnid")
+                                                        .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                        .build();
     }
 }

@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.us.green.button.permission.events.PollingSta
 import energy.eddie.regionconnector.us.green.button.permission.events.UsStartPollingEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
+import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReadingPk;
 import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
 import energy.eddie.regionconnector.us.green.button.services.historical.collection.DataNeedMatcher;
 import org.slf4j.Logger;
@@ -62,7 +63,48 @@ public class MeterEventCallbacks {
                 );
     }
 
-    private static void onError(WebhookEvent event, Throwable throwable, String permissionId) {
+    private Mono<Meter> onMeter(WebhookEvent event, UsGreenButtonPermissionRequest permissionRequest) {
+        var permissionId = permissionRequest.permissionId();
+        var meterUid = event.meterUid();
+        if (meterUid == null) {
+            LOGGER.warn("Got event {} for permission request {} without meter_uid",
+                        event.type(),
+                        permissionId);
+            return Mono.empty();
+        }
+        if (permissionRequest.status() != PermissionProcessStatus.ACCEPTED) {
+            LOGGER.info("Got event {} for {} permission request {}",
+                        event.type(),
+                        permissionRequest.status(),
+                        permissionId);
+            return Mono.empty();
+        }
+        return api.fetchMeter(meterUid, permissionRequest.dataSourceInformation().meteredDataAdministratorId())
+                  .filter(meter -> dataNeedMatcher.isRelevantEnergyType(meter, permissionRequest))
+                  .doOnSuccess(meter -> {
+                      if (LOGGER.isInfoEnabled() && !permissionRequest.allowedMeters().contains(meterUid)) {
+                          LOGGER.info("Found meter {}, adding to permission request {}", meterUid, permissionId);
+                      }
+                  });
+    }
+
+    private void upsertMeter(
+            UsGreenButtonPermissionRequest permissionRequest,
+            Meter meter,
+            PollingStatus pollingStatus
+    ) {
+        var permissionId = permissionRequest.permissionId();
+        var meterUid = meter.uid();
+        if (readingRepository.existsById(new MeterReadingPk(permissionId, meterUid))) {
+            LOGGER.info("Updating meter {} of permission request {} to be {}", meterUid, permissionId, pollingStatus);
+            readingRepository.updateHistoricalCollectionStatusForMeter(pollingStatus, permissionId, meterUid);
+        } else {
+            LOGGER.info("Adding meter {} of permission request {} to be {}", meterUid, permissionId, pollingStatus);
+            readingRepository.save(new MeterReading(permissionId, meterUid, null, pollingStatus));
+        }
+    }
+
+    private void onError(WebhookEvent event, Throwable throwable, String permissionId) {
         if (throwable instanceof WebClientResponseException webClientResponseException) {
             LOGGER.info(
                     "Meter {} of historical collection finished event for permission request {} results in exception, with http status {}",
@@ -79,43 +121,5 @@ public class MeterEventCallbacks {
                     throwable
             );
         }
-    }
-
-    private void upsertMeter(
-            UsGreenButtonPermissionRequest permissionRequest,
-            Meter meter,
-            PollingStatus pollingStatus
-    ) {
-        var permissionId = permissionRequest.permissionId();
-        var meterUid = meter.uid();
-        if (permissionRequest.allowedMeters().contains(meterUid)) {
-            LOGGER.info("Updating meter {} of permission request {} to be {}", meterUid, permissionId, pollingStatus);
-            readingRepository.updateHistoricalCollectionStatusForMeter(pollingStatus, permissionId, meterUid);
-        } else {
-            LOGGER.info("Adding meter {} of permission request {} to be {}", meterUid, permissionId, pollingStatus);
-            readingRepository.save(new MeterReading(permissionId, meterUid, null, pollingStatus));
-        }
-    }
-
-    private Mono<Meter> onMeter(WebhookEvent event, UsGreenButtonPermissionRequest permissionRequest) {
-        var permissionId = permissionRequest.permissionId();
-        var meterUid = event.meterUid();
-        if (meterUid == null) {
-            LOGGER.warn("Got event {} for permission request {} without meter_uid",
-                        event.type(),
-                        permissionId);
-            return Mono.empty();
-        }
-        if (permissionRequest.status() != PermissionProcessStatus.ACCEPTED) {
-            LOGGER.info("Got event {} for not accepted permission request {}", event.type(), permissionId);
-            return Mono.empty();
-        }
-        return api.fetchMeter(meterUid)
-                  .filter(meter -> dataNeedMatcher.isRelevantEnergyType(meter, permissionRequest))
-                  .doOnSuccess(meter -> {
-                      if (LOGGER.isInfoEnabled() && !permissionRequest.allowedMeters().contains(meterUid)) {
-                          LOGGER.info("Found meter {}, adding to permission request {}", meterUid, permissionId);
-                      }
-                  });
     }
 }

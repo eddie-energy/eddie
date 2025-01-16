@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.us.green.button.services;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static energy.eddie.regionconnector.us.green.button.PermissionRequestCreator.createPermissionRequest;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.assertArg;
@@ -30,7 +30,8 @@ class RetryTerminationServiceTest {
     @Test
     void testRetryTermination_emitsRequiresExternalTerminationEvent() {
         // Given
-        var pr = createPermissionRequest();
+        var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                          .build();
         when(repository.findAllByStatus(PermissionProcessStatus.FAILED_TO_TERMINATE))
                 .thenReturn(List.of(pr));
 

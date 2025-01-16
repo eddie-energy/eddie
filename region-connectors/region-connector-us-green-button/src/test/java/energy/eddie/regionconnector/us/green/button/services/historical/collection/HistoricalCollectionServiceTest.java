@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.us.green.button.services.historical.collection;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
 import energy.eddie.regionconnector.us.green.button.api.Pages;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
@@ -22,9 +21,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,13 +45,13 @@ class HistoricalCollectionServiceTest {
         // Given
         var pr = getPermissionRequest(List.of());
         var meterListing = getMeterListing("1111");
-        when(api.fetchInactiveMeters(Pages.NO_SLURP, List.of("1111")))
+        when(api.fetchMeters(Pages.NO_SLURP, List.of("1111"), "company"))
                 .thenReturn(Flux.just(meterListing));
         when(dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(meterListing)).thenReturn(meterListing.meters());
         when(repository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
         // When
-        var res = historicalCollectionService.persistMetersForPermissionRequests(List.of(pr));
+        var res = historicalCollectionService.persistMetersForPermissionRequest(pr);
 
         // Then
         StepVerifier.create(res)
@@ -76,12 +72,12 @@ class HistoricalCollectionServiceTest {
                 .thenReturn(Optional.of(reading));
         var pr = getPermissionRequest(List.of(reading));
         var meterListing = getMeterListing("1111");
-        when(api.fetchInactiveMeters(Pages.NO_SLURP, List.of("1111")))
+        when(api.fetchMeters(Pages.NO_SLURP, List.of("1111"), "company"))
                 .thenReturn(Flux.just(meterListing));
         when(dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(meterListing)).thenReturn(meterListing.meters());
 
         // When
-        var res = historicalCollectionService.persistMetersForPermissionRequests(List.of(pr));
+        var res = historicalCollectionService.persistMetersForPermissionRequest(pr);
 
         // Then
         StepVerifier.create(res)
@@ -100,12 +96,12 @@ class HistoricalCollectionServiceTest {
         // Given
         var pr = getPermissionRequest(List.of());
         var meterListing = getMeterListing("2222");
-        when(api.fetchInactiveMeters(Pages.NO_SLURP, List.of("1111")))
+        when(api.fetchMeters(Pages.NO_SLURP, List.of("1111"), "company"))
                 .thenReturn(Flux.just(meterListing));
         when(dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(meterListing)).thenReturn(meterListing.meters());
 
         // When
-        var res = historicalCollectionService.persistMetersForPermissionRequests(List.of(pr));
+        var res = historicalCollectionService.persistMetersForPermissionRequest(pr);
 
         // Then
         StepVerifier.create(res)
@@ -117,11 +113,12 @@ class HistoricalCollectionServiceTest {
         // Given
         var meter1 = new MeterReading("pid", "uid1", null, PollingStatus.DATA_NOT_READY);
         var meter2 = new MeterReading("pid", "uid2", null, PollingStatus.DATA_NOT_READY);
-        when(api.collectHistoricalData(anyList()))
+        var permissionRequest = getPermissionRequest(List.of(meter1, meter2));
+        when(api.collectHistoricalData(anyList(), anyString()))
                 .thenReturn(Mono.just(new HistoricalCollectionResponse(true, List.of("uid1"))));
 
         // When
-        var res = historicalCollectionService.triggerHistoricalDataCollection(List.of(meter1, meter2));
+        var res = historicalCollectionService.triggerHistoricalDataCollection(permissionRequest);
 
         // Then
         StepVerifier.create(res)
@@ -160,21 +157,10 @@ class HistoricalCollectionServiceTest {
     }
 
     private static GreenButtonPermissionRequest getPermissionRequest(List<@NotNull MeterReading> meterReadings) {
-        return new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                meterReadings,
-                "1111"
-        );
+        return new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                        .setCompanyId("company")
+                                                        .setLastMeterReadings(meterReadings)
+                                                        .setAuthUid("1111")
+                                                        .build();
     }
 }

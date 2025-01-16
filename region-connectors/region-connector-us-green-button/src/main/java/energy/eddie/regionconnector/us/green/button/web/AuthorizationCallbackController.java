@@ -47,6 +47,7 @@ public class AuthorizationCallbackController {
         } catch (UnauthorizedException e) {
             model.addAttribute(STATUS, "DENIED");
         } catch (Exception e) {
+            LOGGER.info("Got an error while trying to authorize permission request", e);
             model.addAttribute(STATUS, "ERROR");
         }
         return "authorization-callback";

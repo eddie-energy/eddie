@@ -3,9 +3,7 @@ package energy.eddie.regionconnector.us.green.button.providers.agnostic;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.providers.IdentifiableSyndFeed;
 import energy.eddie.regionconnector.us.green.button.services.PublishService;
 import org.junit.jupiter.api.Test;
@@ -21,9 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -50,19 +45,11 @@ class UsRawDataProviderTest {
                 .lines()
                 .collect(Collectors.joining("\n"));
         var xml = input.build(new XmlReader(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8))));
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new GreenButtonPermissionRequest("pid",
-                                                  "cid",
-                                                  "dnid",
-                                                  now,
-                                                  now,
-                                                  Granularity.PT15M,
-                                                  PermissionProcessStatus.ACCEPTED,
-                                                  ZonedDateTime.now(ZoneOffset.UTC),
-                                                  "US",
-                                                  "cid",
-                                                  "http://localhost",
-                                                  "other", "1111");
+        var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                          .setConnectionId("cid")
+                                                          .setDataNeedId("dnid")
+                                                          .setCompanyId("cid")
+                                                          .build();
         var identifiableSyndFeed = new IdentifiableSyndFeed(pr, xml);
         when(publishService.flux())
                 .thenReturn(Flux.just(identifiableSyndFeed));
