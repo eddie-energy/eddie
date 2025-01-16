@@ -50,9 +50,3 @@ OUTBOUND_CONNECTOR_ADMIN_CONSOLE_LOGIN_ENABLED=true
 OUTBOUND_CONNECTOR_ADMIN_CONSOLE_LOGIN_USERNAME=admin
 OUTBOUND_CONNECTOR_ADMIN_CONSOLE_LOGIN_ENCODEDPASSWORD=$2a$10$qYTmwhGa3dd7Sl1CdXKKHOfmf0lNXL3L2k4CVhhm3CfY131hrcEyS # encrypted value of 'password'
 ```
-
-## Current Appearances
-
-![Admin Console Dark Theme](Admin-console-dark.png)
-
-![Admin Console Light Theme](Admin-console-light.png)
