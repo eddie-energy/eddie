@@ -3,6 +3,7 @@ import {
   type DataNeed,
   getDataNeeds,
   getPermissions,
+  getRegionConnectorHealth,
   getRegionConnectors,
   type RegionConnectorMetadata,
   type StatusMessage
@@ -18,12 +19,16 @@ const permissions = ref<StatusMessage[]>([])
 const dataNeeds = ref<DataNeed[]>([])
 const regionConnectors = ref<RegionConnectorMetadata[]>([])
 const permissionCountPerRegionConnector = ref<PermissionsPerRegionConnector[]>([])
+const regionConnectorHealth = ref<Map<string, string>>(new Map())
 
 onMounted(async () => {
   permissions.value = await getPermissions()
   permissionCountPerRegionConnector.value = await getPermissionCountPerRegionConnector()
   dataNeeds.value = await getDataNeeds()
   regionConnectors.value = await getRegionConnectors()
+  for (const { id } of regionConnectors.value) {
+    regionConnectorHealth.value.set(id, (await getRegionConnectorHealth(id))?.status || 'DISABLED')
+  }
 })
 
 async function getPermissionCountPerRegionConnector() {
@@ -120,9 +125,14 @@ async function getPermissionCountPerRegionConnector() {
             :key="regionConnector.id"
             class="item"
           >
-            <h3>
-              <b>{{ regionConnector.name }}</b>
-            </h3>
+            <div class="card__item card__item--addition">
+              <h3>
+                <b>{{ regionConnector.id }}</b>
+              </h3>
+              <span>
+                <b>{{ regionConnectorHealth.get(regionConnector.id) || 'DISABLED' }}</b>
+              </span>
+            </div>
             <div class="card__item card__item--addition">
               <span>
                 <b>{{ regionConnector.count }}</b> total permissions

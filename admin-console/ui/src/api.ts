@@ -2,6 +2,7 @@ import {
   DATA_NEEDS_API_URL,
   PERMISSIONS_API_URL,
   REGION_CONNECTOR_API_URL,
+  REGION_CONNECTOR_HEALTH_API_URL,
   TERMINATION_API_URL
 } from '@/config'
 
@@ -37,6 +38,16 @@ export type DataNeed = {
   enabled: boolean
 }
 
+export type RegionConnectorHealth = {
+  status: string
+  components?: {
+    [key: string]: {
+      status: string
+      details?: string
+    }
+  }
+}
+
 export async function getPermissions(): Promise<StatusMessage[]> {
   return await fetch(PERMISSIONS_API_URL).then((res) => res.json())
 }
@@ -59,4 +70,12 @@ export async function getDataNeeds(): Promise<DataNeed[]> {
 
 export async function getRegionConnectors(): Promise<RegionConnectorMetadata[]> {
   return await fetch(REGION_CONNECTOR_API_URL).then((res) => res.json())
+}
+
+export async function getRegionConnectorHealth(
+  regionConnectorId: string
+): Promise<RegionConnectorHealth | undefined> {
+  return await fetch(
+    `${REGION_CONNECTOR_HEALTH_API_URL}/region-connector-${regionConnectorId}`
+  ).then((res) => (res.status === 404 ? undefined : res.json()))
 }
