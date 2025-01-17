@@ -5,11 +5,11 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
+import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
+import energy.eddie.regionconnector.es.datadis.PointType;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
-import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
-import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
@@ -37,23 +37,22 @@ class IntermediateValidatedHistoricalDocumentTest {
         var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(
                 production ? MeteringDataProvider.loadSurplusMeteringData() : MeteringDataProvider.loadMeteringData()
         ).block(Duration.ofMinutes(10));
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest(
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
-                Granularity.PT1H,
-                "nif",
-                "meteringPointId",
-                intermediateMeteringData.start(),
-                intermediateMeteringData.end(),
-                DistributorCode.ASEME,
-                1,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                null,
-                production,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                AllowedGranularity.PT15M_OR_PT1H);
+        assert intermediateMeteringData != null;
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequestBuilder()
+                .setPermissionId("permissionId")
+                .setConnectionId("connectionId")
+                .setDataNeedId("dataNeedId")
+                .setGranularity(Granularity.PT1H)
+                .setNif("nif")
+                .setMeteringPointId("meteringPointId")
+                .setStart(intermediateMeteringData.start())
+                .setEnd(intermediateMeteringData.end())
+                .setDistributorCode(DistributorCode.ASEME)
+                .setPointType(PointType.TYPE_1)
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                .setProductionSupport(production)
+                .build();
         return new IdentifiableMeteringData(permissionRequest, intermediateMeteringData);
     }
 

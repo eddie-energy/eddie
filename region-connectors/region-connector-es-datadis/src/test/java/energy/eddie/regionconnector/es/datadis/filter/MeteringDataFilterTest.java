@@ -1,13 +1,11 @@
 package energy.eddie.regionconnector.es.datadis.filter;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
-import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
-import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,7 +15,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -174,23 +171,11 @@ class MeteringDataFilterTest {
             case HOURLY -> Granularity.PT1H;
             case QUARTER_HOURLY -> Granularity.PT15M;
         };
-        return new DatadisPermissionRequest(
-                "1",
-                "1",
-                "1",
-                granularity,
-                "1",
-                "1",
-                requestedStartDate,
-                requestedEndDate,
-                null,
-                null,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                null,
-                false,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                AllowedGranularity.PT15M_OR_PT1H);
+        return new DatadisPermissionRequestBuilder()
+                .setGranularity(granularity)
+                .setStart(requestedStartDate)
+                .setEnd(requestedEndDate)
+                .build();
     }
 
     private static ZonedDateTime expectedStart(MeasurementType measurementType, LocalDate requestedStartDate) {

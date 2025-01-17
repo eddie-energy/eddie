@@ -3,16 +3,16 @@ package energy.eddie.regionconnector.es.datadis.services;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
+import energy.eddie.regionconnector.es.datadis.PointType;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
-import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsInternalPollingEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
-import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
@@ -37,8 +37,6 @@ import reactor.test.StepVerifier;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
@@ -320,22 +318,13 @@ class DataApiServiceTest {
     }
 
     private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
-        return new DatadisPermissionRequest(
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
-                Granularity.PT1H,
-                "nif",
-                "meteringPointId",
-                start,
-                end,
-                DistributorCode.ASEME,
-                1,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                null,
-                false,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                AllowedGranularity.PT15M_OR_PT1H);
+        return new DatadisPermissionRequestBuilder()
+                .setGranularity(Granularity.PT1H)
+                .setStart(start)
+                .setEnd(end)
+                .setDistributorCode(DistributorCode.ASEME)
+                .setPointType(PointType.TYPE_1)
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .build();
     }
 }

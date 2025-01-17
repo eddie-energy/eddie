@@ -5,6 +5,7 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.ContractDetailsProvider;
+import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
 import energy.eddie.regionconnector.es.datadis.SupplyProvider;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
@@ -14,7 +15,6 @@ import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEventForAPD;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEventForVHD;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
-import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
@@ -38,9 +38,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestConsumerTest {
-    private final EsPermissionRequest permissionRequest = new DatadisPermissionRequest(
-            "pid", null, "did", null, null, null, null, null, null, null, null, null, null, false, null, null
-    );
+    private final EsPermissionRequest permissionRequest = new DatadisPermissionRequestBuilder()
+            .setPermissionId("pid")
+            .setDataNeedId("did")
+            .build();
     @Mock
     private Outbox outbox;
     @Captor
@@ -81,32 +82,6 @@ class PermissionRequestConsumerTest {
                 () -> assertEquals(DistributorCode.fromCode("1"), res.distributorCode()),
                 () -> assertEquals(1, res.supplyPointType()),
                 () -> assertFalse(res.isProductionSupport())
-        );
-    }
-
-    private ContractDetails createContractDetails() {
-        return new ContractDetails(
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                List.of(0.0),
-                "",
-                "",
-                LocalDate.now(ZONE_ID_SPAIN),
-                Optional.empty(),
-                "",
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty()
         );
     }
 
@@ -176,6 +151,32 @@ class PermissionRequestConsumerTest {
                                    acceptedAccountingPointDataCaptor.getValue().status()),
                 () -> assertEquals("pid", simpleCaptor.getValue().permissionId()),
                 () -> assertEquals(PermissionProcessStatus.FULFILLED, simpleCaptor.getValue().status())
+        );
+    }
+
+    private ContractDetails createContractDetails() {
+        return new ContractDetails(
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                List.of(0.0),
+                "",
+                "",
+                LocalDate.now(ZONE_ID_SPAIN),
+                Optional.empty(),
+                "",
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
         );
     }
 }

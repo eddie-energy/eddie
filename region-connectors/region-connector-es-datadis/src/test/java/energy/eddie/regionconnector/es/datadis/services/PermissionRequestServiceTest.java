@@ -8,9 +8,13 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
-import energy.eddie.regionconnector.es.datadis.dtos.*;
+import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
+import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
+import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsCreatedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsMalformedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsValidatedEvent;
@@ -35,7 +39,6 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -96,22 +99,17 @@ class PermissionRequestServiceTest {
         var now = LocalDate.now(ZONE_ID_SPAIN);
         var requestDataFrom = now.minusDays(10);
         var requestDataTo = now.minusDays(5);
-        var permissionRequest = new DatadisPermissionRequest(permissionId,
-                                                             connectionId,
-                                                             dataNeedId,
-                                                             Granularity.PT15M,
-                                                             nif,
-                                                             meteringPointId,
-                                                             requestDataFrom,
-                                                             requestDataTo,
-                                                             null,
-                                                             null,
-                                                             null,
-                                                             PermissionProcessStatus.CREATED,
-                                                             null,
-                                                             false,
-                                                             ZonedDateTime.now(ZoneOffset.UTC),
-                                                             AllowedGranularity.PT15M_OR_PT1H);
+        var permissionRequest = new DatadisPermissionRequestBuilder()
+                .setPermissionId(permissionId)
+                .setConnectionId(connectionId)
+                .setDataNeedId(dataNeedId)
+                .setNif(nif)
+                .setMeteringPointId(meteringPointId)
+                .setGranularity(Granularity.PT1H)
+                .setStart(requestDataFrom)
+                .setEnd(requestDataTo)
+                .setStatus(PermissionProcessStatus.CREATED)
+                .build();
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
 
         // When
@@ -154,32 +152,6 @@ class PermissionRequestServiceTest {
 
         // Then
         verify(permissionRequestConsumer).acceptPermission(permissionRequest, accountingPointData);
-    }
-
-    private ContractDetails createContractDetails() {
-        return new ContractDetails(
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                List.of(0.0),
-                "",
-                "",
-                LocalDate.now(ZONE_ID_SPAIN),
-                Optional.empty(),
-                "",
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty()
-        );
     }
 
     @Test
@@ -322,5 +294,31 @@ class PermissionRequestServiceTest {
 
         // Then
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.TERMINATED, event.status())));
+    }
+
+    private ContractDetails createContractDetails() {
+        return new ContractDetails(
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                List.of(0.0),
+                "",
+                "",
+                LocalDate.now(ZONE_ID_SPAIN),
+                Optional.empty(),
+                "",
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
+        );
     }
 }
