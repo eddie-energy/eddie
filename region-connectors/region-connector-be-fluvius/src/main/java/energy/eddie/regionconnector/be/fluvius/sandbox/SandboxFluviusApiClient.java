@@ -51,8 +51,11 @@ public class SandboxFluviusApiClient implements FluviusApi {
         var dataNeed = dataNeedsService.getById(pr.dataNeedId());
         var ean = new MockEan(dataNeed, pr, granularity);
         LOGGER.info("Using ean {} for sandbox environment for permission request {}", ean, permissionId);
-        return mockMandate(permissionId, from, to, ean.toString())
-                .flatMap(res -> api.shortUrlIdentifier(permissionId, flow, from, to, granularity));
+        return api.shortUrlIdentifier(permissionId, flow, from, to, granularity)
+                  .flatMap(resp ->
+                                   mockMandate(permissionId, from, to, ean.toString())
+                                           .map(ignored -> resp)
+                  );
     }
 
     @Override
