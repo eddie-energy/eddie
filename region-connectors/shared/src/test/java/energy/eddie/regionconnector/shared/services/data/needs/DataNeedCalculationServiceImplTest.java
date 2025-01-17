@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.shared.services.data.needs;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.dataneeds.EnergyType;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
@@ -45,8 +44,8 @@ class DataNeedCalculationServiceImplTest {
             Period.ofDays(10),
             List.of(Granularity.PT15M, Granularity.P1D),
             List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class),
-            ZoneOffset.UTC
-    );
+            ZoneOffset.UTC,
+            List.of(EnergyType.ELECTRICITY));
     @Mock
     private DataNeedsService dataNeedsService;
     @Mock
@@ -178,6 +177,24 @@ class DataNeedCalculationServiceImplTest {
     }
 
     @Test
+    void givenValidatedHistoricalDataDataNeed_withUnsupportedEnergyType_returnsUnsupportedDataNeedResult() {
+        // Given
+        when(dataNeedsService.findById("dnid"))
+                .thenReturn(Optional.of(new ValidatedHistoricalDataDataNeed(
+                        new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
+                        EnergyType.NATURAL_GAS,
+                        Granularity.PT5M,
+                        Granularity.P1D
+                )));
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+        // When
+        var res = calculationService.calculate("dnid");
+
+        // Then
+        assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
+    }
+
+    @Test
     void givenDataNeed_whereEnergyDataTimeframeStrategyThrows_returnsDataNeedNotSupportedResult() {
         // Given
         when(dataNeedsService.findById("dnid"))
@@ -230,6 +247,7 @@ class DataNeedCalculationServiceImplTest {
                                                Period latestEnd,
                                                List<Granularity> supportedGranularities,
                                                List<Class<? extends DataNeedInterface>> supportedDataNeeds,
-                                               ZoneId timeZone) implements RegionConnectorMetadata {
+                                               ZoneId timeZone,
+                                               List<EnergyType> supportedEnergyTypes) implements RegionConnectorMetadata {
     }
 }

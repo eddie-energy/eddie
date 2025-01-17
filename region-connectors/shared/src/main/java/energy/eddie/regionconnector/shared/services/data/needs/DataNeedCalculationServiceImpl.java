@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class DataNeedCalculationServiceImpl implements DataNeedCalculationService<DataNeed> {
     private final DataNeedsService dataNeedsService;
     private final RegionConnectorMetadata regionConnectorMetadata;
-    private final GranularityChoice granularityChoice;
     private final PermissionTimeframeStrategy strategy;
     private final List<Predicate<DataNeed>> additionalChecks;
     private final EnergyDataTimeframeStrategy energyDataTimeframeStrategy;
@@ -64,7 +63,6 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     ) {
         this.dataNeedsService = dataNeedsService;
         this.regionConnectorMetadata = regionConnectorMetadata;
-        this.granularityChoice = new GranularityChoice(regionConnectorMetadata.supportedGranularities());
         this.strategy = strategy;
         this.additionalChecks = additionalChecks;
         this.energyDataTimeframeStrategy = energyDataTimeframeStrategy;
@@ -108,6 +106,9 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         if (!areGranularitiesSupported(dataNeed, supportedGranularities)) {
             return new DataNeedNotSupportedResult("Granularities are not supported");
         }
+        if(!isEnergyTypeSupported(dataNeed)) {
+            return new DataNeedNotSupportedResult("Energy type is not supported");
+        }
         Timeframe energyStartAndEndDate;
         try {
             energyStartAndEndDate = energyDataTimeframeStrategy.energyDataTimeframe(dataNeed);
@@ -143,6 +144,10 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         return !(dataNeed instanceof ValidatedHistoricalDataDataNeed) || !supportedGranularities.isEmpty();
     }
 
+    private boolean isEnergyTypeSupported(DataNeed dataNeed) {
+        return !(dataNeed instanceof ValidatedHistoricalDataDataNeed vhd)
+               || regionConnectorMetadata.supportedEnergyTypes().contains(vhd.energyType());
+    }
     /**
      * Determines if the region-connector supports this data need type.
      *
@@ -169,6 +174,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed vhdDN)) {
             return List.of();
         }
-        return granularityChoice.findAll(vhdDN.minGranularity(), vhdDN.maxGranularity());
+        var choice = new GranularityChoice(regionConnectorMetadata.granularitiesFor(vhdDN.energyType()));
+        return choice.findAll(vhdDN.minGranularity(), vhdDN.maxGranularity());
     }
 }

@@ -2,10 +2,11 @@ package energy.eddie.regionconnector.fi.fingrid;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
-
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
@@ -55,6 +56,11 @@ public class FingridRegionConnectorMetadata implements RegionConnectorMetadata {
     @Override
     public ZoneId timeZone() {
         return ZONE_ID_FINLAND;
+    }
+
+    @Override
+    public List<EnergyType> supportedEnergyTypes() {
+        return List.of(EnergyType.ELECTRICITY);
     }
 
     @Override

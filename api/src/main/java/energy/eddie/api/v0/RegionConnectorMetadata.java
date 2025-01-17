@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 
 import java.time.Period;
 import java.time.ZoneId;
@@ -63,6 +64,22 @@ public interface RegionConnectorMetadata {
 
     @JsonProperty
     ZoneId timeZone();
+
+    /**
+     * The energy types for which the region connector can request validated historical data.
+     * @return the supported energy types
+     */
+    @JsonProperty
+    List<EnergyType> supportedEnergyTypes();
+
+    /**
+     * Returns the supported granularities for one energy type.
+     * @param energyType the energy type
+     * @return the granularities in which the validated historical data is available for that energy type
+     */
+    default List<Granularity> granularitiesFor(EnergyType energyType) {
+        return supportedGranularities();
+    }
 
     /**
      * List of supported Data Needs

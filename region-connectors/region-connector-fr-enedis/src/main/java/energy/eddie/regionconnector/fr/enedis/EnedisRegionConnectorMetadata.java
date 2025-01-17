@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.fr.enedis;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
@@ -67,6 +68,11 @@ public class EnedisRegionConnectorMetadata implements RegionConnectorMetadata {
     @Override
     public ZoneId timeZone() {
         return ZONE_ID_FR;
+    }
+
+    @Override
+    public List<EnergyType> supportedEnergyTypes() {
+        return List.of(EnergyType.ELECTRICITY);
     }
 
     @Override

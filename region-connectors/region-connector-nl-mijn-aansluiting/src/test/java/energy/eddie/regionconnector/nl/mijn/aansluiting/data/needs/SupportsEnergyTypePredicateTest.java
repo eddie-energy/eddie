@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.data.needs;
 
-import energy.eddie.dataneeds.EnergyType;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import org.junit.jupiter.api.Test;

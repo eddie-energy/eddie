@@ -2,7 +2,7 @@ package energy.eddie.dataneeds.needs;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.dataneeds.EnergyType;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.duration.DataNeedDuration;
 import energy.eddie.dataneeds.validation.BasicValidationsGroup;
 import energy.eddie.dataneeds.validation.CustomValidationsGroup;
