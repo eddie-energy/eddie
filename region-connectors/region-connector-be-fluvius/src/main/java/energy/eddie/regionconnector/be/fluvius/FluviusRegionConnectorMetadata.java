@@ -10,6 +10,7 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("java:S6548") // False positive
 public class FluviusRegionConnectorMetadata implements RegionConnectorMetadata {
@@ -21,6 +22,10 @@ public class FluviusRegionConnectorMetadata implements RegionConnectorMetadata {
     private static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(
             Granularity.PT15M, // Electricity
             Granularity.PT30M // Gas
+    );
+    private static final Map<EnergyType, List<Granularity>> GRANULARITIES_FOR_ENERGY_TYPE = Map.of(
+            EnergyType.ELECTRICITY, List.of(Granularity.PT15M),
+            EnergyType.NATURAL_GAS, List.of(Granularity.PT30M)
     );
     private static final FluviusRegionConnectorMetadata INSTANCE = new FluviusRegionConnectorMetadata();
 
@@ -75,6 +80,10 @@ public class FluviusRegionConnectorMetadata implements RegionConnectorMetadata {
         return List.of(EnergyType.ELECTRICITY, EnergyType.NATURAL_GAS);
     }
 
+    @Override
+    public List<Granularity> granularitiesFor(EnergyType energyType) {
+        return GRANULARITIES_FOR_ENERGY_TYPE.getOrDefault(energyType, List.of());
+    }
 
     @Override
     public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {

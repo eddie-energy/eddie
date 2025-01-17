@@ -73,6 +73,15 @@ public interface RegionConnectorMetadata {
     List<EnergyType> supportedEnergyTypes();
 
     /**
+     * Returns the supported granularities for one energy type.
+     * @param energyType the energy type
+     * @return the granularities in which the validated historical data is available for that energy type
+     */
+    default List<Granularity> granularitiesFor(EnergyType energyType) {
+        return supportedGranularities();
+    }
+
+    /**
      * List of supported Data Needs
      */
     @JsonIgnore
