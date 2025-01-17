@@ -2,12 +2,14 @@ package energy.eddie.regionconnector.simulation;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 
 import javax.annotation.Nullable;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.List;
 
 public class SimulationConnectorMetadata implements RegionConnectorMetadata {
@@ -59,6 +61,10 @@ public class SimulationConnectorMetadata implements RegionConnectorMetadata {
     @Override
     public ZoneId timeZone() {
         return ZoneOffset.UTC;
+    }
+    @Override
+    public List<EnergyType> supportedEnergyTypes() {
+        return Arrays.asList(EnergyType.values());
     }
 
     @Override

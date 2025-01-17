@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.aiida;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
@@ -10,6 +11,7 @@ import javax.annotation.Nullable;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.List;
 
 public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
@@ -68,6 +70,11 @@ public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
     @Override
     public ZoneId timeZone() {
         return REGION_CONNECTOR_ZONE_ID;
+    }
+
+    @Override
+    public List<EnergyType> supportedEnergyTypes() {
+        return Arrays.asList(EnergyType.values());
     }
 
     @Override

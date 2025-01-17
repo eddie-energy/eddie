@@ -108,6 +108,9 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         if (!areGranularitiesSupported(dataNeed, supportedGranularities)) {
             return new DataNeedNotSupportedResult("Granularities are not supported");
         }
+        if(!isEnergyTypeSupported(dataNeed)) {
+            return new DataNeedNotSupportedResult("Energy type is not supported");
+        }
         Timeframe energyStartAndEndDate;
         try {
             energyStartAndEndDate = energyDataTimeframeStrategy.energyDataTimeframe(dataNeed);
@@ -143,6 +146,10 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         return !(dataNeed instanceof ValidatedHistoricalDataDataNeed) || !supportedGranularities.isEmpty();
     }
 
+    private boolean isEnergyTypeSupported(DataNeed dataNeed) {
+        return !(dataNeed instanceof ValidatedHistoricalDataDataNeed vhd)
+               || regionConnectorMetadata.supportedEnergyTypes().contains(vhd.energyType());
+    }
     /**
      * Determines if the region-connector supports this data need type.
      *

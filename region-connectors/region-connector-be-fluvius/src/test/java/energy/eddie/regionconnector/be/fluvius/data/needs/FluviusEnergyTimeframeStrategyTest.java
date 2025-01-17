@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.be.fluvius.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.dataneeds.EnergyType;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;

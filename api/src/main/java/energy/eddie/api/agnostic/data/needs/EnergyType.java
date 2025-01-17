@@ -1,4 +1,4 @@
-package energy.eddie.dataneeds;
+package energy.eddie.api.agnostic.data.needs;
 
 public enum EnergyType {
     ELECTRICITY,

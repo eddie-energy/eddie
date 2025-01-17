@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.us.green.button;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -9,6 +10,7 @@ import jakarta.annotation.Nullable;
 
 import java.time.Period;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.List;
 
 public class GreenButtonRegionConnectorMetadata implements RegionConnectorMetadata {
@@ -69,6 +71,10 @@ public class GreenButtonRegionConnectorMetadata implements RegionConnectorMetada
     @Override
     public ZoneId timeZone() {
         return US_ZONE_ID;
+    }
+    @Override
+    public List<EnergyType> supportedEnergyTypes() {
+        return Arrays.asList(EnergyType.values());
     }
 
     @Override

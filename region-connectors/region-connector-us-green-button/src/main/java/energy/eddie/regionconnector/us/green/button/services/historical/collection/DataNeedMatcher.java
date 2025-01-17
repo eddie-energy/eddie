@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.us.green.button.services.historical.collection;
 
-import energy.eddie.dataneeds.EnergyType;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
