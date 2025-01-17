@@ -45,6 +45,6 @@ public record MeteringDataFilter(
             return Mono.empty();
         }
 
-        return Mono.just(IntermediateMeteringData.fromMeteringData(filteredMeteringData));
+        return IntermediateMeteringData.fromMeteringData(filteredMeteringData);
     }
 }

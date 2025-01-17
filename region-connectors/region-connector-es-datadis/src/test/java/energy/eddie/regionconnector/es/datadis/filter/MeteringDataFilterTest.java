@@ -36,33 +36,12 @@ class MeteringDataFilterTest {
         List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
         List<MeteringData> meteringDataWithDaylightSavings = MeteringDataProvider.loadMeteringDataWithDaylightSavings();
         List<MeteringData> quarterHourlyMeteringData = fromHourlyMeteringData(meteringData);
-        quarterHourlyIntermediateMeteringData = IntermediateMeteringData.fromMeteringData(quarterHourlyMeteringData);
-        hourlyIntermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData);
+        quarterHourlyIntermediateMeteringData = IntermediateMeteringData.fromMeteringData(quarterHourlyMeteringData)
+                                                                        .block(Duration.ofMillis(10));
+        hourlyIntermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData)
+                                                                 .block(Duration.ofMillis(10));
         hourlyIntermediateMeteringDataWithDaylightSavings = IntermediateMeteringData.fromMeteringData(
-                meteringDataWithDaylightSavings);
-    }
-
-    private static List<MeteringData> fromHourlyMeteringData(List<MeteringData> meteringData) {
-        List<String> minutes = List.of("15", "30", "45");
-        List<MeteringData> quarterHourlyMeteringData = new ArrayList<>();
-        int currentHour = 0;
-        for (MeteringData data : meteringData) {
-            for (String minute : minutes) {
-                String time = String.format("%02d:%s", currentHour, minute);
-                quarterHourlyMeteringData.add(new MeteringData(data.cups(),
-                                                               data.date(),
-                                                               time,
-                                                               data.consumptionKWh(),
-                                                               data.obtainMethod(),
-                                                               data.surplusEnergyKWh()));
-            }
-            currentHour++;
-            quarterHourlyMeteringData.add(data);
-            if (currentHour == 24) {
-                currentHour = 0;
-            }
-        }
-        return quarterHourlyMeteringData;
+                meteringDataWithDaylightSavings).block(Duration.ofMillis(10));
     }
 
     @ParameterizedTest
@@ -95,48 +74,6 @@ class MeteringDataFilterTest {
                                    result.meteringData().getLast().date()),
                 () -> assertEquals("24:00", result.meteringData().getLast().time())
         );
-    }
-
-    private IntermediateMeteringData setupIntermediateMeteringData(MeasurementType measurementType) {
-        return switch (measurementType) {
-            case HOURLY -> hourlyIntermediateMeteringData;
-            case QUARTER_HOURLY -> quarterHourlyIntermediateMeteringData;
-        };
-    }
-
-    private static EsPermissionRequest setupPermissionRequest(
-            LocalDate requestedStartDate,
-            LocalDate requestedEndDate,
-            MeasurementType measurementType
-    ) {
-        var granularity = switch (measurementType) {
-            case HOURLY -> Granularity.PT1H;
-            case QUARTER_HOURLY -> Granularity.PT15M;
-        };
-        return new DatadisPermissionRequest(
-                "1",
-                "1",
-                "1",
-                granularity,
-                "1",
-                "1",
-                requestedStartDate,
-                requestedEndDate,
-                null,
-                null,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                null,
-                false,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                AllowedGranularity.PT15M_OR_PT1H);
-    }
-
-    private static ZonedDateTime expectedStart(MeasurementType measurementType, LocalDate requestedStartDate) {
-        return switch (measurementType) {
-            case HOURLY -> requestedStartDate.atStartOfDay(ZONE_ID_SPAIN).plusHours(1);
-            case QUARTER_HOURLY -> requestedStartDate.atStartOfDay(ZONE_ID_SPAIN).plusMinutes(15);
-        };
     }
 
     @Test
@@ -196,5 +133,70 @@ class MeteringDataFilterTest {
         var result = filter.filter().blockOptional(Duration.ofSeconds(2));
 
         assertTrue(result.isEmpty());
+    }
+
+    private static List<MeteringData> fromHourlyMeteringData(List<MeteringData> meteringData) {
+        List<String> minutes = List.of("15", "30", "45");
+        List<MeteringData> quarterHourlyMeteringData = new ArrayList<>();
+        int currentHour = 0;
+        for (MeteringData data : meteringData) {
+            for (String minute : minutes) {
+                String time = String.format("%02d:%s", currentHour, minute);
+                quarterHourlyMeteringData.add(new MeteringData(data.cups(),
+                                                               data.date(),
+                                                               time,
+                                                               data.consumptionKWh(),
+                                                               data.obtainMethod(),
+                                                               data.surplusEnergyKWh()));
+            }
+            currentHour++;
+            quarterHourlyMeteringData.add(data);
+            if (currentHour == 24) {
+                currentHour = 0;
+            }
+        }
+        return quarterHourlyMeteringData;
+    }
+
+    private IntermediateMeteringData setupIntermediateMeteringData(MeasurementType measurementType) {
+        return switch (measurementType) {
+            case HOURLY -> hourlyIntermediateMeteringData;
+            case QUARTER_HOURLY -> quarterHourlyIntermediateMeteringData;
+        };
+    }
+
+    private static EsPermissionRequest setupPermissionRequest(
+            LocalDate requestedStartDate,
+            LocalDate requestedEndDate,
+            MeasurementType measurementType
+    ) {
+        var granularity = switch (measurementType) {
+            case HOURLY -> Granularity.PT1H;
+            case QUARTER_HOURLY -> Granularity.PT15M;
+        };
+        return new DatadisPermissionRequest(
+                "1",
+                "1",
+                "1",
+                granularity,
+                "1",
+                "1",
+                requestedStartDate,
+                requestedEndDate,
+                null,
+                null,
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                null,
+                false,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                AllowedGranularity.PT15M_OR_PT1H);
+    }
+
+    private static ZonedDateTime expectedStart(MeasurementType measurementType, LocalDate requestedStartDate) {
+        return switch (measurementType) {
+            case HOURLY -> requestedStartDate.atStartOfDay(ZONE_ID_SPAIN).plusHours(1);
+            case QUARTER_HOURLY -> requestedStartDate.atStartOfDay(ZONE_ID_SPAIN).plusMinutes(15);
+        };
     }
 }

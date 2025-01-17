@@ -63,17 +63,6 @@ class DataApiServiceTest {
     private ArgumentCaptor<PermissionEvent> eventCaptor;
     private MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService;
 
-    private static Stream<Arguments> variousTimeRanges() {
-        LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
-        return Stream.of(
-                Arguments.of(now, now.plusDays(1), "1 day"),
-                Arguments.of(now.minusMonths(1), now, "Last month"),
-                Arguments.of(now.minusMonths(2), now.minusMonths(1), "1 month: 2 months ago"),
-                Arguments.of(now.minusYears(1), now, "1 year: 12 months ago"),
-                Arguments.of(now.minusMonths(20), now.minusMonths(19), "1 month: 20 months ago")
-        );
-    }
-
     @BeforeEach
     @SuppressWarnings("DirectInvocationOnMock")
         // The outbox is a mock, but it is not directly called here, but it needs to be called by the UpdateAndFulfillmentService
@@ -116,31 +105,13 @@ class DataApiServiceTest {
                     .verify(Duration.ofSeconds(2));
     }
 
-    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
-        return new DatadisPermissionRequest(
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
-                Granularity.PT1H,
-                "nif",
-                "meteringPointId",
-                start,
-                end,
-                DistributorCode.ASEME,
-                1,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                null,
-                false,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                AllowedGranularity.PT15M_OR_PT1H);
-    }
-
     @Test
     void fetchDataForPermissionRequest_dataEndDateEqualPermissionEndDate_doesNotFulfillPermissionRequest() throws IOException {
         // Given
         List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
-        var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData);
+        var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData)
+                                                               .block(Duration.ofMillis(10));
+        assert intermediateMeteringData != null;
         LocalDate start = intermediateMeteringData.start();
         LocalDate end = intermediateMeteringData.end();
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
@@ -169,7 +140,9 @@ class DataApiServiceTest {
     void fetchDataForPermissionRequest_dataEndDateAfterPermissionEndDate_fulfillsPermissionRequest() throws IOException {
         // Given
         List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
-        var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData);
+        var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData)
+                                                               .block(Duration.ofMillis(10));
+        assert intermediateMeteringData != null;
         LocalDate start = intermediateMeteringData.start();
         LocalDate end = intermediateMeteringData.end();
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end.minusDays(1));
@@ -204,7 +177,9 @@ class DataApiServiceTest {
     void fetchDataForPermissionRequest_dataEndDateBeforePermissionEndDate_doesNotFulfillPermissionRequest() throws IOException {
         // Given
         List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
-        var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData);
+        var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData)
+                                                               .block(Duration.ofMillis(10));
+        assert intermediateMeteringData != null;
         LocalDate start = intermediateMeteringData.start();
         LocalDate end = intermediateMeteringData.end();
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end.plusDays(1));
@@ -229,7 +204,6 @@ class DataApiServiceTest {
                     .verify(Duration.ofSeconds(2));
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.ACCEPTED, event.status())));
     }
-
 
     @Test
     void fetchDataForPermissionRequest_dataApiReturnsForbidden_revokesPermission() {
@@ -291,7 +265,6 @@ class DataApiServiceTest {
                     .verify(Duration.ofSeconds(2));
     }
 
-
     @ParameterizedTest(name = "{2}")
     @MethodSource("variousTimeRanges")
     void fetchDataForPermissionRequest_retries_withUpdatedMeteringDataRequest(
@@ -333,5 +306,36 @@ class DataApiServiceTest {
                     .then(dataApiService::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
+    }
+
+    private static Stream<Arguments> variousTimeRanges() {
+        LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
+        return Stream.of(
+                Arguments.of(now, now.plusDays(1), "1 day"),
+                Arguments.of(now.minusMonths(1), now, "Last month"),
+                Arguments.of(now.minusMonths(2), now.minusMonths(1), "1 month: 2 months ago"),
+                Arguments.of(now.minusYears(1), now, "1 year: 12 months ago"),
+                Arguments.of(now.minusMonths(20), now.minusMonths(19), "1 month: 20 months ago")
+        );
+    }
+
+    private static EsPermissionRequest acceptedPermissionRequest(LocalDate start, LocalDate end) {
+        return new DatadisPermissionRequest(
+                "permissionId",
+                "connectionId",
+                "dataNeedId",
+                Granularity.PT1H,
+                "nif",
+                "meteringPointId",
+                start,
+                end,
+                DistributorCode.ASEME,
+                1,
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                null,
+                false,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                AllowedGranularity.PT15M_OR_PT1H);
     }
 }

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -31,6 +32,30 @@ class IntermediateValidatedHistoricalDocumentTest {
             CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
             "fallbackId"
     );
+
+    public static IdentifiableMeteringData identifiableMeterReading(boolean production) throws IOException {
+        var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(
+                production ? MeteringDataProvider.loadSurplusMeteringData() : MeteringDataProvider.loadMeteringData()
+        ).block(Duration.ofMinutes(10));
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequest(
+                "permissionId",
+                "connectionId",
+                "dataNeedId",
+                Granularity.PT1H,
+                "nif",
+                "meteringPointId",
+                intermediateMeteringData.start(),
+                intermediateMeteringData.end(),
+                DistributorCode.ASEME,
+                1,
+                null,
+                PermissionProcessStatus.ACCEPTED,
+                null,
+                production,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                AllowedGranularity.PT15M_OR_PT1H);
+        return new IdentifiableMeteringData(permissionRequest, intermediateMeteringData);
+    }
 
     @SuppressWarnings("java:S5961") // Sonar complains about the nr of assertions
     @Test
@@ -129,30 +154,6 @@ class IntermediateValidatedHistoricalDocumentTest {
                 }
 
         );
-    }
-
-    public static IdentifiableMeteringData identifiableMeterReading(boolean production) throws IOException {
-        var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(
-                production ? MeteringDataProvider.loadSurplusMeteringData() : MeteringDataProvider.loadMeteringData()
-        );
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest(
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
-                Granularity.PT1H,
-                "nif",
-                "meteringPointId",
-                intermediateMeteringData.start(),
-                intermediateMeteringData.end(),
-                DistributorCode.ASEME,
-                1,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                null,
-                production,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                AllowedGranularity.PT15M_OR_PT1H);
-        return new IdentifiableMeteringData(permissionRequest, intermediateMeteringData);
     }
 
     @SuppressWarnings("java:S5961") // Sonar complains about the nr of assertions
