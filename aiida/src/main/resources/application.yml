@@ -24,7 +24,6 @@ spring:
             user-info-uri: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/userinfo
             jwk-set-uri: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/certs
             user-name-attribute: preferred_username
-            issuer-uri: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}
         registration:
           keycloak:
             client-id: ${KEYCLOAK_CLIENT:AIIDA}
@@ -37,6 +36,7 @@ spring:
 aiida:
   keycloak:
     account-uri: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/account
+    end-session-uri: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/logout
 #  datasources:
 #    at:
 #      oeas:

@@ -67,6 +67,7 @@ The following properties must be set in the `application.yml` file:
 | jwk-set-uri         | URI to obtain the public key for verifying JWTs.              |
 | user-name-attribute | JWT claim that contains the username.                         |
 | redirect-uri        | URI for redirecting users back to the application post-login. |
+| end-session-uri     | URI for logging out of Keycloak sessions.                     |
 
 Additionally, Keycloak requires a configured frontend URL to validate the issuer URI. This is specified using the `KC_HOSTNAME` variable in the `compose.yml` file.
 The provided `compose.yml` file provides a preconfiguration of these values for keycloak, you can configure it using the environments:
