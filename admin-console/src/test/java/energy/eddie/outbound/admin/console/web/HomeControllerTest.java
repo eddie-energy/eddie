@@ -1,71 +1,142 @@
 package energy.eddie.outbound.admin.console.web;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.outbound.admin.console.data.StatusMessage;
 import energy.eddie.outbound.admin.console.data.StatusMessageDTO;
 import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConnector;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
+import static energy.eddie.outbound.admin.console.config.AdminConsoleSecurityConfig.ADMIN_CONSOLE_BASE_URL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(controllers = {HomeController.class}, properties = {
+        "eddie.public.url=http://localhost:8080",
+        "outbound-connector.admin-console.login.enabled=true",
+        "outbound-connector.admin-console.login.username=user",
+        "outbound-connector.admin-console.login.encodedPassword=$2a$10$qYTmwhGa3dd7Sl1CdXKKHOfmf0lNXL3L2k4CVhhm3CfY131hrcEyS"
+})
+@AutoConfigureMockMvc
+@WithMockUser
 class HomeControllerTest {
 
-    @Mock
+    private final List<StatusMessage> statusMessages = List.of(
+            new StatusMessage("testPermissionId",
+                              "testRegionConnectorId",
+                              "testDataNeedId",
+                              "testCountry",
+                              "testDso",
+                              "2024-05-22T08:20:03+02:00",
+                              "A06",
+                              "ACCEPTED"),
+            new StatusMessage("testPermissionId",
+                              "testRegionConnectorId",
+                              "testDataNeedId",
+                              "testCountry",
+                              "testDso",
+                              "2024-05-22T08:20:03+02:00",
+                              "A05",
+                              "ACCEPTED")
+    );
+
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @MockBean
     private StatusMessageRepository statusMessageRepository;
-    @Mock
+    @MockBean
     private TerminationAdminConsoleConnector terminationConnector;
-    @InjectMocks
-    private HomeController homeController;
+    @Value("${eddie.public.url}")
+    private String publicUrl;
 
     @Test
-    void testGetStatusMessages() {
+    void testGetStatusMessages() throws Exception {
         // Given
-        StatusMessage statusMessage1 = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A06", "ACCEPTED");
-        StatusMessage statusMessage2 = new StatusMessage("testPermissionId", "testRegionConnectorId", "testDataNeedId", "testCountry", "testDso", "2024-05-22T08:20:03+02:00", "A05", "ACCEPTED");
-        List<StatusMessage> statusMessages = Arrays.asList(statusMessage1, statusMessage2);
-
-        when(statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc("testPermissionId")).thenReturn(statusMessages);
+        when(statusMessageRepository.findLatestStatusMessageForAllPermissions()).thenReturn(statusMessages);
 
         // When
-        ResponseEntity<List<StatusMessageDTO>> response = homeController.getStatusMessages("testPermissionId");
+        var json = mockMvc.perform(get("/statusMessages").accept(MediaType.APPLICATION_JSON))
+                          .andReturn()
+                          .getResponse()
+                          .getContentAsString();
+
+        List<StatusMessageDTO> result = objectMapper.readValue(json, new TypeReference<>() {});
 
         // Then
-        verify(statusMessageRepository, times(1)).findByPermissionIdOrderByStartDateDescIdDesc("testPermissionId");
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(2, Objects.requireNonNull(response.getBody()).size());
-        assertEquals("Available", response.getBody().get(0).cimStatus());
-        assertEquals("Active", response.getBody().get(1).cimStatus());
+        assertEquals(statusMessages.size(), result.size());
     }
 
     @Test
-    void testTerminatePermission() {
+    void testGetStatusMessagesByPermissionId() throws Exception {
         // Given
-        String permissionId = "testPermissionId";
-        StatusMessage testStatusMessage = new StatusMessage(permissionId, "testCountry", "testRegionConnectorId", "testDataNeedId", "testDso", "2024-05-22T08:20:03+02:00", "A05", "ACCEPTED");
-        when(statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc(permissionId)).thenReturn(Collections.singletonList(testStatusMessage));
+        when(statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc("testPermissionId"))
+                .thenReturn(statusMessages);
 
         // When
-        ResponseEntity<Void> response = homeController.terminatePermission(permissionId);
+        var json = mockMvc.perform(get("/statusMessages/testPermissionId").accept(MediaType.APPLICATION_JSON))
+                          .andExpect(status().isOk())
+                          .andReturn()
+                          .getResponse()
+                          .getContentAsString();
+
+        List<StatusMessageDTO> result = objectMapper.readValue(json, new TypeReference<>() {});
+
+        // Then
+        verify(statusMessageRepository, times(1)).findByPermissionIdOrderByStartDateDescIdDesc("testPermissionId");
+        assertEquals(2, result.size());
+        assertEquals("Available", result.get(0).cimStatus());
+        assertEquals("Active", result.get(1).cimStatus());
+    }
+
+    @Test
+    void testTerminatePermission() throws Exception {
+        // Given
+        StatusMessage testStatusMessage = new StatusMessage("testPermissionId",
+                                                            "testCountry",
+                                                            "testRegionConnectorId",
+                                                            "testDataNeedId",
+                                                            "testDso",
+                                                            "2024-05-22T08:20:03+02:00",
+                                                            "A05",
+                                                            "ACCEPTED");
+        when(statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc("testPermissionId"))
+                .thenReturn(List.of(testStatusMessage));
+
+        // When
+        mockMvc.perform(post("/terminate/testPermissionId").with(csrf()))
+               .andExpect(status().isOk());
 
         // Then
         ArgumentCaptor<String> permissionIdCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> regionConnectorIdCaptor = ArgumentCaptor.forClass(String.class);
-        verify(terminationConnector, times(1)).terminate(permissionIdCaptor.capture(), regionConnectorIdCaptor.capture());
-        assertEquals(ResponseEntity.ok().build(), response);
+        verify(terminationConnector, times(1)).terminate(permissionIdCaptor.capture(),
+                                                         regionConnectorIdCaptor.capture());
+    }
+
+    @Test
+    void testIndexIncludesModelAttributes() throws Exception {
+        mockMvc.perform(get("/"))
+               .andExpect(status().isOk())
+               .andExpect(view().name("index"))
+               .andExpect(model().attribute("eddiePublicUrl", publicUrl))
+               .andExpect(model().attribute("eddieAdminConsoleUrl", ADMIN_CONSOLE_BASE_URL));
     }
 }
