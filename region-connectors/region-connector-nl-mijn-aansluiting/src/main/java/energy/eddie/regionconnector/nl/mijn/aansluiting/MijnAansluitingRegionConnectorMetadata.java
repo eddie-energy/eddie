@@ -12,15 +12,12 @@ import javax.annotation.Nullable;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.SequencedCollection;
 
 public class MijnAansluitingRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "nl-mijn-aansluiting";
     public static final Period MAX_PERIOD_IN_PAST = Period.ofYears(-2);
     public static final Period MAX_PERIOD_IN_FUTURE = Period.ofYears(9999);
     public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.P1D);
-    public static final SequencedCollection<EnergyType> SUPPORTED_ENERGY_TYPES = List.of(EnergyType.NATURAL_GAS,
-                                                                                         EnergyType.ELECTRICITY);
     public static final ZoneId NL_ZONE_ID = ZoneId.of("Europe/Amsterdam");
     public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(ValidatedHistoricalDataDataNeed.class,
                                                                                        AccountingPointDataNeed.class);
@@ -78,7 +75,7 @@ public class MijnAansluitingRegionConnectorMetadata implements RegionConnectorMe
 
     @Override
     public List<EnergyType> supportedEnergyTypes() {
-        return List.of(EnergyType.ELECTRICITY, EnergyType.NATURAL_GAS);
+        return List.of(EnergyType.NATURAL_GAS, EnergyType.ELECTRICITY);
     }
 
     @Override
