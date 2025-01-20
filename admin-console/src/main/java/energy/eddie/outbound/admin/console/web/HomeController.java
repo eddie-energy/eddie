@@ -6,13 +6,17 @@ import energy.eddie.outbound.admin.console.data.StatusMessageDTO;
 import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConnector;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
+
+import static energy.eddie.outbound.admin.console.config.AdminConsoleSecurityConfig.ADMIN_CONSOLE_BASE_URL;
 
 @Controller
 public class HomeController {
@@ -43,8 +47,8 @@ public class HomeController {
                 permissionId);
 
         List<StatusMessageDTO> statusMessageDTOs = statusMessages.stream()
-                .map(HomeController::dtoFromStatusMessage)
-                .toList();
+                                                                 .map(HomeController::dtoFromStatusMessage)
+                                                                 .toList();
 
         return ResponseEntity.ok(statusMessageDTOs);
     }
@@ -55,6 +59,22 @@ public class HomeController {
         var statusMessage = statusMessages.getFirst();
         terminationConnector.terminate(statusMessage.getPermissionId(), statusMessage.getRegionConnectorId());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/login")
+    public String getLogin() {
+        return "login";
+    }
+
+    @GetMapping("/**")
+    public String index(
+            Model model,
+            @Value("${eddie.public.url}") String publicUrl
+    ) {
+        model.addAttribute("eddiePublicUrl", publicUrl);
+        model.addAttribute("eddieAdminConsoleUrl", ADMIN_CONSOLE_BASE_URL);
+
+        return "index";
     }
 
     private static StatusMessageDTO dtoFromStatusMessage(StatusMessage statusMessage) {
@@ -79,15 +99,5 @@ public class HomeController {
                 statusMessage.getStartDate(),
                 statusMessage.getDescription(),
                 cimStatus);
-    }
-
-    @GetMapping("/login")
-    public String getLogin() {
-        return "login";
-    }
-
-    @GetMapping("/**")
-    public String index() {
-        return "forward:/outbound-connectors/admin-console/index.html";
     }
 }

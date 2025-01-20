@@ -50,6 +50,7 @@ tasks.register<PnpmTask>("pnpmBuildAdminConsole") {
             from("admin-console/ui/dist")
             into("admin-console/src/main/resources/public")
         }
+        file("admin-console/src/main/resources/public/index.html").renameTo(file("admin-console/src/main/resources/templates/index.html"))
     }
 }
 

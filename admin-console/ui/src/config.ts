@@ -1,4 +1,11 @@
-const EDDIE_ADMIN_CONSOLE_URL = `${EDDIE_MANAGEMENT_URL}/outbound-connectors/admin-console`
+const { VITE_EDDIE_PUBLIC_URL, VITE_EDDIE_ADMIN_CONSOLE_URL } = import.meta.env
+
+const EDDIE_PUBLIC_URL =
+  THYMELEAF_EDDIE_PUBLIC_URL ?? VITE_EDDIE_PUBLIC_URL ?? 'http://localhost:8080'
+const EDDIE_ADMIN_CONSOLE_URL =
+  THYMELEAF_EDDIE_ADMIN_CONSOLE_URL ??
+  VITE_EDDIE_ADMIN_CONSOLE_URL ??
+  'http://localhost:9090/outbound-connectors/admin-console'
 
 export const PERMISSIONS_API_URL = `${EDDIE_ADMIN_CONSOLE_URL}/statusMessages`
 export const TERMINATION_API_URL = `${EDDIE_ADMIN_CONSOLE_URL}/terminate`
