@@ -1,4 +1,6 @@
 import {
+  CSRF_HEADER,
+  CSRF_TOKEN,
   DATA_NEEDS_API_URL,
   PERMISSIONS_API_URL,
   REGION_CONNECTOR_API_URL,
@@ -59,7 +61,10 @@ export async function getStatusMessages(permissionId: string): Promise<StatusMes
 export async function terminatePermission(permissionId: string) {
   const response = await fetch(`${TERMINATION_API_URL}/${permissionId}`, {
     method: 'POST',
-    credentials: 'include'
+    credentials: 'include',
+    headers: {
+      [CSRF_HEADER]: CSRF_TOKEN
+    }
   })
 
   if (!response.ok) {

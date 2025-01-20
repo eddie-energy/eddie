@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -38,8 +37,9 @@ public class AdminConsoleSecurityConfig {
             @Value("${" + LOGIN_ENCODED_PASSWORD + "}") String adminEncodedPassword
     ) throws Exception {
         return http
-                // TODO: GH-1535 Configure CSRF for POST requests
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.requireCsrfProtectionMatcher(
+                        adminConsoleRequestMatcher.pattern("*")
+                ))
                 .authorizeHttpRequests(authorize -> authorize
                         // Allow access to static resources used by the login page
                         .requestMatchers(adminConsoleRequestMatcher.pattern("/static/**")).permitAll()
@@ -49,7 +49,8 @@ public class AdminConsoleSecurityConfig {
                 .httpBasic(Customizer.withDefaults())
                 .formLogin(formLogin -> formLogin
                         .loginPage(ADMIN_CONSOLE_BASE_URL + "/login")
-                        .defaultSuccessUrl(ADMIN_CONSOLE_BASE_URL + "/")
+                        .defaultSuccessUrl(ADMIN_CONSOLE_BASE_URL)
+                        .failureUrl(ADMIN_CONSOLE_BASE_URL + "/login?error")
                         .permitAll()
                 )
                 .logout(LogoutConfigurer::permitAll)

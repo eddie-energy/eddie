@@ -7,6 +7,9 @@ const EDDIE_ADMIN_CONSOLE_URL =
   VITE_EDDIE_ADMIN_CONSOLE_URL ??
   'http://localhost:9090/outbound-connectors/admin-console'
 
+export const CSRF_HEADER = THYMELEAF_CSRF_HEADER
+export const CSRF_TOKEN = THYMELEAF_CSRF_TOKEN
+
 export const PERMISSIONS_API_URL = `${EDDIE_ADMIN_CONSOLE_URL}/statusMessages`
 export const TERMINATION_API_URL = `${EDDIE_ADMIN_CONSOLE_URL}/terminate`
 export const DATA_NEEDS_API_URL = `${EDDIE_PUBLIC_URL}/data-needs/api`
