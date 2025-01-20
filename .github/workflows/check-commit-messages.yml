@@ -22,12 +22,11 @@ jobs:
       - name: Check for referenced issue
         run: |
           url="https://api.github.com/repos/$REPOSITORY/pulls/$PR_NUMBER/commits"
-          commits=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "$url" | jq -r '.[].commit.message')
+          commits=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "$url" | jq -r '.[].commit.message | split("\n")[0]')
           regex="^((#|GH-|gh-)[0-9]+|NOISSUE|Merge|Revert).+"
-          
+
           echo "Checking commit messages against \"$regex\"..."
           
-          commits=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "$url" | jq -r '.[].commit.message')
           invalid=$(echo "$commits" | grep -vE $regex || true)
           
           if [[ -n "$invalid" ]]; then
