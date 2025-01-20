@@ -10,7 +10,26 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            authorization-uri: https://auth.aiida.energy//auth
+            token-uri: https://auth.aiida.energy/token
+            user-info-uri: https://auth.aiida.energy/userinfo
+            jwk-set-uri: https://auth.aiida.energy/certs
+            user-name-attribute: preferred_username
+        registration:
+          keycloak:
+            client-id: AIIDA
+            client-secret: Test123!
+            authorization-grant-type: authorization_code
+            redirect-uri: https://aiida.energy/login/oauth2/code/keycloak
+            scope: openid
+            provider: keycloak
 
 aiida:
   keycloak:
-    account-uri: http://localhost:8888/realms/EDDIE/account
+    account-uri: https://auth.aiida.energy/account
+    end-session-uri: https://auth.aiida.energy/logout

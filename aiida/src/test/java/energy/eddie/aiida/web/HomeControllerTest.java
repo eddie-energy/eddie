@@ -75,7 +75,8 @@ class HomeControllerTest {
     @Test
     void getHomeWithoutAuthentication_isUnauthorized() throws Exception {
         mockMvc.perform(get("/"))
-               .andExpect(status().isUnauthorized());
+               .andExpect(status().is3xxRedirection())
+               .andExpect(redirectedUrlPattern("**/oauth2/authorization/keycloak"));
     }
 
     @Test
@@ -87,7 +88,8 @@ class HomeControllerTest {
     @Test
     void getAccountWithoutAuthentication_isUnauthorized() throws Exception {
         mockMvc.perform(get("/account"))
-               .andExpect(status().isUnauthorized());
+               .andExpect(status().is3xxRedirection())
+               .andExpect(redirectedUrlPattern("**/oauth2/authorization/keycloak"));
     }
 
     @Test
@@ -95,6 +97,6 @@ class HomeControllerTest {
     void getAccountAuthentication_isFoundAndHasRedirectUri() throws Exception {
         mockMvc.perform(get("/account").with(csrf()))
                .andExpect(status().isFound())
-               .andExpect(redirectedUrl("http://localhost:8888/realms/EDDIE/account"));
+               .andExpect(redirectedUrl("https://auth.aiida.energy/account"));
     }
 }
