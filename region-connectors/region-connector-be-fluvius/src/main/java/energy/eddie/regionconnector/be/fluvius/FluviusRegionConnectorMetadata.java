@@ -40,7 +40,6 @@ public class FluviusRegionConnectorMetadata implements RegionConnectorMetadata {
             EnergyType.ELECTRICITY, List.of(Granularity.PT15M, Granularity.P1D),
             EnergyType.NATURAL_GAS, List.of(Granularity.PT15M, Granularity.P1D)
     );
-    private static final FluviusRegionConnectorMetadata INSTANCE = new FluviusRegionConnectorMetadata();
     private final boolean fluviusSandboxEnabled;
 
     public FluviusRegionConnectorMetadata() {

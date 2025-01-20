@@ -9,7 +9,6 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusConfiguration;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
-import energy.eddie.regionconnector.be.fluvius.data.needs.EnergyTypePredicate;
 import energy.eddie.regionconnector.be.fluvius.data.needs.FluviusEnergyTimeframeStrategy;
 import energy.eddie.regionconnector.be.fluvius.data.needs.FluviusPermissionTimeframeStrategy;
 import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
@@ -62,7 +61,7 @@ public class FluviusBeanConfig {
                 metadata,
                 new FluviusPermissionTimeframeStrategy(),
                 new FluviusEnergyTimeframeStrategy(metadata),
-                List.of(new EnergyTypePredicate()));
+                List.of());
     }
 
     @Bean
