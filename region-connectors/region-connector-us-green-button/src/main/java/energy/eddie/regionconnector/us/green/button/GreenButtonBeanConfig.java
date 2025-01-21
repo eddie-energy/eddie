@@ -2,8 +2,6 @@ package energy.eddie.regionconnector.us.green.button;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -21,7 +19,6 @@ import energy.eddie.regionconnector.us.green.button.permission.events.UsSimpleEv
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionEventRepository;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -35,8 +32,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
+import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata.SUPPORTED_DATA_NEEDS;
 import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata.US_ZONE_ID;
 
 @Configuration
@@ -84,7 +80,7 @@ public class GreenButtonBeanConfig {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
                 GreenButtonRegionConnectorMetadata.getInstance(),
-                new PermissionEndIsEnergyDataEndStrategy(US_ZONE_ID),
+                new PermissionEndIsEnergyDataEndStrategy(),
                 new DefaultEnergyDataTimeframeStrategy(GreenButtonRegionConnectorMetadata.getInstance()),
                 List.of()
         );
@@ -103,19 +99,11 @@ public class GreenButtonBeanConfig {
     }
 
     @Bean
-    public CommonInformationModelConfiguration cimConfig(
-            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
-            @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
-    ) {
-        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
-    }
-
-    @Bean
     public PermissionMarketDocumentMessageHandler<UsGreenButtonPermissionRequest> pmdHandler(
             EventBus eventBus,
             UsPermissionRequestRepository repository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
-            CommonInformationModelConfiguration cimConfig
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,

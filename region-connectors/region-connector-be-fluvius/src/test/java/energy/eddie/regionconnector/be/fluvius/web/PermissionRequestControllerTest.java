@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.be.fluvius.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusDataSourceInformation;
+import energy.eddie.regionconnector.be.fluvius.service.AcceptanceOrRejectionService;
 import energy.eddie.regionconnector.be.fluvius.service.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,8 @@ class PermissionRequestControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private PermissionRequestService service;
+    @MockBean
+    private AcceptanceOrRejectionService acceptanceOrRejectionService;
 
     @Test
     void testCreatePermissionRequest_createsPermissionRequest() throws Exception {
@@ -90,7 +93,7 @@ class PermissionRequestControllerTest {
     void testCallbackEndpoints_returnError_onUnknownPermissionRequest(String status) throws Exception {
         // Given
         doThrow(PermissionNotFoundException.class)
-                .when(service).acceptOrRejectPermissionRequest(any(), any());
+                .when(acceptanceOrRejectionService).acceptOrRejectPermissionRequest(any(), any());
 
         // When
         mockMvc.perform(get("/permission-request/{pid}/{status}", "pid", status))
@@ -104,7 +107,7 @@ class PermissionRequestControllerTest {
     @ValueSource(strings = {"accepted", "rejected"})
     void testCallbackEndpoints_returnAccepted_onAcceptedPermissionRequest(String status) throws Exception {
         // Given
-        when(service.acceptOrRejectPermissionRequest(any(), any())).thenReturn(true);
+        when(acceptanceOrRejectionService.acceptOrRejectPermissionRequest(any(), any())).thenReturn(true);
 
         // When
         mockMvc.perform(get("/permission-request/{pid}/{status}", "pid", status))
@@ -118,7 +121,7 @@ class PermissionRequestControllerTest {
     @ValueSource(strings = {"accepted", "rejected"})
     void testCallbackEndpoints_returnRejected_onRejectedPermissionRequest(String status) throws Exception {
         // Given
-        when(service.acceptOrRejectPermissionRequest(any(), any())).thenReturn(false);
+        when(acceptanceOrRejectionService.acceptOrRejectPermissionRequest(any(), any())).thenReturn(false);
 
         // When
         mockMvc.perform(get("/permission-request/{pid}/{status}", "pid", status))

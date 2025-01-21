@@ -12,27 +12,27 @@ import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.EnergyDataTimeframeStrategy;
 import jakarta.annotation.Nullable;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.EARLIEST_START;
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.LATEST_END;
 
 public class AiidaEnergyDataTimeframeStrategy implements EnergyDataTimeframeStrategy {
-    private final Clock clock;
-
-    public AiidaEnergyDataTimeframeStrategy(Clock clock) {this.clock = clock;}
 
     @Nullable
     @Override
-    public Timeframe energyDataTimeframe(DataNeed dataNeed) throws UnsupportedDataNeedException {
+    public Timeframe energyDataTimeframe(
+            DataNeed dataNeed,
+            ZonedDateTime referenceDateTime
+    ) throws UnsupportedDataNeedException {
         if (!(dataNeed instanceof AiidaDataNeed aiidaDataNeed)) {
             throw new UnsupportedDataNeedException(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                    dataNeed.id(),
                                                    "Unsupported data need");
         }
-        var today = LocalDate.now(clock);
+        var today = referenceDateTime.toLocalDate();
         var wrapper = TimeframedDataNeedUtils.calculateRelativeStartAndEnd(
                 aiidaDataNeed,
                 today,

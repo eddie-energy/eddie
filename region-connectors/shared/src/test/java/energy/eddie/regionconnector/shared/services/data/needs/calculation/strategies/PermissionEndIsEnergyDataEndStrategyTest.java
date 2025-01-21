@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,10 +15,10 @@ class PermissionEndIsEnergyDataEndStrategyTest {
     void testPermissionTimeframe_withEmptyTimeframe() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var strategy = new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC);
+        var strategy = new PermissionEndIsEnergyDataEndStrategy();
 
         // When
-        var res = strategy.permissionTimeframe(null);
+        var res = strategy.permissionTimeframe(null, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertAll(
@@ -31,10 +32,10 @@ class PermissionEndIsEnergyDataEndStrategyTest {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(now.minusDays(10), now.minusDays(1));
-        var strategy = new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC);
+        var strategy = new PermissionEndIsEnergyDataEndStrategy();
 
         // When
-        var res = strategy.permissionTimeframe(timeframe);
+        var res = strategy.permissionTimeframe(timeframe, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertAll(
@@ -48,10 +49,10 @@ class PermissionEndIsEnergyDataEndStrategyTest {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(now.plusDays(10), now.plusDays(100));
-        var strategy = new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC);
+        var strategy = new PermissionEndIsEnergyDataEndStrategy();
 
         // When
-        var res = strategy.permissionTimeframe(timeframe);
+        var res = strategy.permissionTimeframe(timeframe, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertAll(

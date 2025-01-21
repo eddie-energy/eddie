@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.fr.enedis.persistence;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.fr.enedis.CimTestConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrCreatedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -25,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
+@Import(CimTestConfiguration.class)
 class FrPermissionRequestRepositoryTest {
     @SuppressWarnings("unused")
     @Container

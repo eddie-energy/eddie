@@ -1,5 +1,8 @@
 package energy.eddie.regionconnector.fi.fingrid;
 
+import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
 import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
@@ -48,6 +51,12 @@ class FingridSpringConfigurationTests {
         @Bean
         public JwtUtil jwtUtil() {
             return new JwtUtil("MjVjNmIxNDM1N2I0MWEzNWI0MWMzZmYwMWRmNjA2Yjc", 1);
+        }
+
+        @Bean
+        public CommonInformationModelConfiguration commonInformationModelConfiguration() {
+            return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.FINLAND_NATIONAL_CODING_SCHEME,
+                                                                "EP-ID");
         }
     }
 }

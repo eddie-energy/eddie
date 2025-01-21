@@ -8,8 +8,6 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
@@ -57,8 +55,6 @@ import reactor.core.publisher.Flux;
 import java.io.IOException;
 import java.util.List;
 
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.*;
 import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.ELIGIBLE_PARTY_ID_KEY;
 import static energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration.*;
@@ -145,16 +141,8 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    public CommonInformationModelConfiguration cimConfig(
-            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
-            @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
-    ) {
-        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
-    }
-
-    @Bean
     public EdaValidatedHistoricalDataEnvelopeProvider consumptionRecordProcessor(
-            CommonInformationModelConfiguration commonInformationModelConfiguration,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration commonInformationModelConfiguration,
             Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux
     ) {
         return new EdaValidatedHistoricalDataEnvelopeProvider(
@@ -224,7 +212,7 @@ public class AtEdaBeanConfig {
             AtPermissionRequestRepository repository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             AtConfiguration atConfig,
-            CommonInformationModelConfiguration cimConfig
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                             repository,
@@ -242,7 +230,7 @@ public class AtEdaBeanConfig {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
                 EdaRegionConnectorMetadata.getInstance(),
-                new PermissionEndIsEnergyDataEndStrategy(AT_ZONE_ID),
+                new PermissionEndIsEnergyDataEndStrategy(),
                 new EdaStrategy(),
                 List.of()
         );

@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.be.fluvius.permission.handlers;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
@@ -22,9 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 @Component
 public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
@@ -51,17 +50,14 @@ public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
     public void accept(ValidatedEvent event) {
         var permissionId = event.permissionId();
         var pr = bePermissionRequestRepository.getByPermissionId(permissionId);
-        var dataNeed = dataNeedCalculationService.calculate(pr.dataNeedId());
+        var dataNeed = dataNeedCalculationService.calculate(pr.dataNeedId(), pr.created());
         if (!(dataNeed instanceof ValidatedHistoricalDataDataNeedResult vhdDataNeed)) {
             return;
         }
-        var from = vhdDataNeed.energyTimeframe().start().atStartOfDay(ZoneOffset.UTC);
-        if (from.isAfter(ZonedDateTime.now(ZoneOffset.UTC))) {
-            from = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
-        }
-        var end = DateTimeUtils.endOfDay(vhdDataNeed.energyTimeframe().end(), ZoneOffset.UTC);
+        var from = vhdDataNeed.permissionTimeframe().start().atStartOfDay(ZoneOffset.UTC);
+        var end = DateTimeUtils.endOfDay(vhdDataNeed.permissionTimeframe().end(), ZoneOffset.UTC);
         LOGGER.info("Sending permission request {} to fluvius from {} to {}", permissionId, from, end);
-        fluviusApi.shortUrlIdentifier(permissionId, event.flow(), from, end)
+        fluviusApi.shortUrlIdentifier(permissionId, event.flow(), from, end, Granularity.PT15M)
                   .subscribe(res -> handleSuccess(permissionId, res),
                              throwable -> handleError(throwable, event));
     }

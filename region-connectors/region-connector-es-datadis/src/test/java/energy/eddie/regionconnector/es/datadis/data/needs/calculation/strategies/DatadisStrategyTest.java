@@ -4,6 +4,8 @@ import energy.eddie.api.agnostic.data.needs.Timeframe;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -18,7 +20,7 @@ class DatadisStrategyTest {
         var strategy = new DatadisStrategy();
 
         // When
-        var res = strategy.permissionTimeframe(null);
+        var res = strategy.permissionTimeframe(null, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertAll(
@@ -35,7 +37,7 @@ class DatadisStrategyTest {
         var strategy = new DatadisStrategy();
 
         // When
-        var res = strategy.permissionTimeframe(timeframe);
+        var res = strategy.permissionTimeframe(timeframe, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertAll(
@@ -52,7 +54,7 @@ class DatadisStrategyTest {
         var strategy = new DatadisStrategy();
 
         // When
-        var res = strategy.permissionTimeframe(timeframe);
+        var res = strategy.permissionTimeframe(timeframe, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertAll(

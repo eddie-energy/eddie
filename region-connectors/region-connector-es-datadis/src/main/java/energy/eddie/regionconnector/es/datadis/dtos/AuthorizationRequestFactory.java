@@ -7,6 +7,8 @@ import energy.eddie.regionconnector.shared.services.data.needs.calculation.strat
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -21,7 +23,8 @@ public class AuthorizationRequestFactory {
 
     public AuthorizationRequest from(String nif, String meteringPointId, LocalDate end) {
         LocalDate permissionStart = LocalDate.now(ZONE_ID_SPAIN);
-        LocalDate permissionEnd = strategy.permissionTimeframe(new Timeframe(permissionStart, end)).end();
+        LocalDate permissionEnd = strategy.permissionTimeframe(new Timeframe(permissionStart, end),
+                                                               ZonedDateTime.now(ZoneOffset.UTC)).end();
 
         return new AuthorizationRequest(
                 permissionStart,

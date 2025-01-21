@@ -12,6 +12,8 @@ import energy.eddie.regionconnector.shared.services.data.needs.calculation.strat
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionTimeframeStrategy;
 import energy.eddie.regionconnector.shared.validation.GranularityChoice;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -39,7 +41,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     ) {
         this(dataNeedsService,
              regionConnectorMetadata,
-             new PermissionEndIsEnergyDataEndStrategy(regionConnectorMetadata.timeZone()),
+             new PermissionEndIsEnergyDataEndStrategy(),
              new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
              List.of()
         );
@@ -70,6 +72,11 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
 
     @Override
     public DataNeedCalculationResult calculate(DataNeed dataNeed) {
+        return calculate(dataNeed, ZonedDateTime.now(ZoneOffset.UTC));
+    }
+
+    @Override
+    public DataNeedCalculationResult calculate(DataNeed dataNeed, ZonedDateTime referenceDateTime) {
         if (!dataNeed.isEnabled()) {
             return new DataNeedNotSupportedResult("Data need is disabled");
         }
@@ -111,12 +118,13 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         }
         Timeframe energyStartAndEndDate;
         try {
-            energyStartAndEndDate = energyDataTimeframeStrategy.energyDataTimeframe(dataNeed);
+            energyStartAndEndDate = energyDataTimeframeStrategy.energyDataTimeframe(dataNeed, referenceDateTime);
         } catch (UnsupportedDataNeedException e) {
             return new DataNeedNotSupportedResult(e.errorReason());
         }
 
-        var permissionStartAndEndDate = strategy.permissionTimeframe(energyStartAndEndDate);
+        var permissionStartAndEndDate = strategy.permissionTimeframe(energyStartAndEndDate,
+                                                                     ZonedDateTime.now(ZoneOffset.UTC));
         return switch (dataNeed) {
             case TimeframedDataNeed ignored -> new ValidatedHistoricalDataDataNeedResult(supportedGranularities,
                                                                                          permissionStartAndEndDate,
@@ -128,11 +136,16 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
 
     @Override
     public DataNeedCalculationResult calculate(String dataNeedId) {
+        return calculate(dataNeedId, ZonedDateTime.now(ZoneOffset.UTC));
+    }
+
+    @Override
+    public DataNeedCalculationResult calculate(String dataNeedId, ZonedDateTime referenceDateTime) {
         var option = dataNeedsService.findById(dataNeedId);
         if (option.isEmpty()) {
             return new DataNeedNotFoundResult();
         }
-        return calculate(option.get());
+        return calculate(option.get(), referenceDateTime);
     }
 
     @Override

@@ -8,12 +8,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class FluviusRegionConnector implements RegionConnector {
     private final TerminationService terminationService;
+    private final FluviusRegionConnectorMetadata metadata;
 
-    public FluviusRegionConnector(TerminationService terminationService) {this.terminationService = terminationService;}
+    public FluviusRegionConnector(TerminationService terminationService, FluviusRegionConnectorMetadata metadata) {
+        this.terminationService = terminationService;
+        this.metadata = metadata;
+    }
 
     @Override
     public RegionConnectorMetadata getMetadata() {
-        return FluviusRegionConnectorMetadata.getInstance();
+        return metadata;
     }
 
     @Override

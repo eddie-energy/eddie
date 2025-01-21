@@ -19,7 +19,7 @@ public interface BePermissionRequestRepository extends
 
     @Override
     @Query(
-            value = "SELECT permission_id, connection_id, data_need_id, status, permission_start, permission_end, granularity, flow, created, short_url_identifier " +
+            value = "SELECT permission_id, connection_id, data_need_id, status, data_start, data_end, granularity, flow, created, short_url_identifier " +
                     "FROM be_fluvius.permission_request WHERE status = 'SENT_TO_PERMISSION_ADMINISTRATOR' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )

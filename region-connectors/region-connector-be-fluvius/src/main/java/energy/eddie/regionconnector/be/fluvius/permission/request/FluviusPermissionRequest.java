@@ -2,18 +2,22 @@ package energy.eddie.regionconnector.be.fluvius.permission.request;
 
 import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Entity
 @Table(name = "permission_request", schema = "be_fluvius")
 @SuppressWarnings({"NullAway", "unused"})
-public class FluviusPermissionRequest implements PermissionRequest {
+public class FluviusPermissionRequest implements MeterReadingPermissionRequest {
     @Id
     @Column(name = "permission_id")
     private final String permissionId;
@@ -28,9 +32,9 @@ public class FluviusPermissionRequest implements PermissionRequest {
     @Enumerated(EnumType.STRING)
     @SuppressWarnings("unused")
     private final Granularity granularity;
-    @Column(name = "permission_start")
+    @Column(name = "data_start")
     private final LocalDate start;
-    @Column(name = "permission_end")
+    @Column(name = "data_end")
     private final LocalDate end;
     @Column(name = "created")
     private final ZonedDateTime created;
@@ -39,6 +43,9 @@ public class FluviusPermissionRequest implements PermissionRequest {
     private final Flow flow;
     @Column(name = "short_url_identifier")
     private final String shortUrlIdentifier;
+    @OneToMany(fetch = FetchType.EAGER, targetEntity = MeterReading.class)
+    @JoinColumn(insertable = false, updatable = false, name = "permission_id", referencedColumnName = "permission_id")
+    private final List<MeterReading> meterReadings;
 
     @SuppressWarnings("java:S107")
     public FluviusPermissionRequest(
@@ -80,6 +87,36 @@ public class FluviusPermissionRequest implements PermissionRequest {
             @Nullable
             String shortUrlIdentifier
     ) {
+        this(
+                permissionId,
+                connectionId,
+                dataNeedId,
+                status,
+                granularity,
+                start,
+                end,
+                created,
+                flow,
+                shortUrlIdentifier,
+                List.of()
+        );
+    }
+
+    @SuppressWarnings("java:S107")
+    public FluviusPermissionRequest(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            PermissionProcessStatus status,
+            Granularity granularity,
+            LocalDate start,
+            LocalDate end,
+            ZonedDateTime created,
+            Flow flow,
+            @Nullable
+            String shortUrlIdentifier,
+            List<MeterReading> meterReadings
+    ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
@@ -90,6 +127,7 @@ public class FluviusPermissionRequest implements PermissionRequest {
         this.created = created;
         this.flow = flow;
         this.shortUrlIdentifier = shortUrlIdentifier;
+        this.meterReadings = meterReadings;
     }
 
     protected FluviusPermissionRequest() {
@@ -103,6 +141,7 @@ public class FluviusPermissionRequest implements PermissionRequest {
         created = null;
         flow = null;
         shortUrlIdentifier = null;
+        meterReadings = List.of();
     }
 
     @Override
@@ -155,5 +194,19 @@ public class FluviusPermissionRequest implements PermissionRequest {
 
     public String shortUrlIdentifier() {
         return shortUrlIdentifier;
+    }
+
+    public List<MeterReading> lastMeterReadings() {
+        return meterReadings;
+    }
+
+    @Override
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return DateTimeUtils.oldestDateTime(MeterReading.lastMeterReadingDates(meterReadings))
+                            .map(ZonedDateTime::toLocalDate);
+    }
+
+    public Set<String> meters() {
+        return MeterReading.meters(meterReadings);
     }
 }

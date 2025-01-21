@@ -126,7 +126,7 @@ class DataNeedCalculationServiceImplTest {
                 .thenReturn(Optional.of(new AccountingPointDataNeed()));
         var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService,
                                                                     metadata,
-                                                                    new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
+                                                                    new PermissionEndIsEnergyDataEndStrategy(),
                                                                     new DefaultEnergyDataTimeframeStrategy(metadata),
                                                                     List.of(
                                                                             in -> true,
@@ -158,6 +158,24 @@ class DataNeedCalculationServiceImplTest {
         assertEquals(List.of(Granularity.PT15M, Granularity.P1D), result.granularities());
     }
 
+    @Test
+    void testCalculateWithoutReferenceDateTime_givenValidatedHistoricalDataDataNeed_withSupportedGranularities_returnsValidatedHistoricalDataNeedResult() {
+        // Given
+        var value = new ValidatedHistoricalDataDataNeed(
+                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
+                EnergyType.ELECTRICITY,
+                Granularity.PT15M,
+                Granularity.P1D
+        );
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+
+        // When
+        var res = calculationService.calculate(value);
+
+        // Then
+        var result = assertInstanceOf(ValidatedHistoricalDataDataNeedResult.class, res);
+        assertEquals(List.of(Granularity.PT15M, Granularity.P1D), result.granularities());
+    }
     @Test
     void givenValidatedHistoricalDataDataNeed_withUnsupportedGranularities_returnsUnsupportedDataNeedResult() {
         // Given
@@ -201,11 +219,9 @@ class DataNeedCalculationServiceImplTest {
                 .thenReturn(Optional.of(new AccountingPointDataNeed()));
         var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService,
                                                                     metadata,
-                                                                    new PermissionEndIsEnergyDataEndStrategy(ZoneOffset.UTC),
-                                                                    dn -> {
-                                                                        throw new UnsupportedDataNeedException("",
-                                                                                                               "",
-                                                                                                               "");
+                                                                    new PermissionEndIsEnergyDataEndStrategy(),
+                                                                    (dn, referenceDateTime) -> {
+                                                                        throw new UnsupportedDataNeedException("", "");
                                                                     },
                                                                     List.of());
         // When

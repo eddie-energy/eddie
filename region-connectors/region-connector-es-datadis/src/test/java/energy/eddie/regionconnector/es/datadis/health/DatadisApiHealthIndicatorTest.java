@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.health;
 
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.es.datadis.CimTestConfiguration;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
 import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
@@ -17,6 +18,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -36,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
+@Import(CimTestConfiguration.class)
 class DatadisApiHealthIndicatorTest {
     @SuppressWarnings("unused")
     @Container

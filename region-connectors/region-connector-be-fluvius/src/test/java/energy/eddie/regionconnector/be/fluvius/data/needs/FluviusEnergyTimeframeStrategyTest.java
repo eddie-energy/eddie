@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -19,16 +20,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class FluviusEnergyTimeframeStrategyTest {
 
     private final FluviusEnergyTimeframeStrategy strategy = new FluviusEnergyTimeframeStrategy(
-            FluviusRegionConnectorMetadata.getInstance()
+            new FluviusRegionConnectorMetadata()
     );
 
     @Test
     void testEnergyDataTimeframe_forAccountingPointData_returnsEndPlusOne() throws UnsupportedDataNeedException {
         // Given
         var dataNeed = new AccountingPointDataNeed();
+        var reference = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = strategy.energyDataTimeframe(dataNeed);
+        var res = strategy.energyDataTimeframe(dataNeed, reference);
 
         // Then
         assertNotNull(res);
@@ -45,9 +47,10 @@ class FluviusEnergyTimeframeStrategyTest {
                 Granularity.PT15M,
                 Granularity.P1D
         );
+        var reference = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = strategy.energyDataTimeframe(dataNeed);
+        var res = strategy.energyDataTimeframe(dataNeed, reference);
 
         // Then
         assertNotNull(res);
