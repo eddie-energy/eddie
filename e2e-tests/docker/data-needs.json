@@ -40,7 +40,7 @@
     "policyLink": "https://example.com/toc",
     "duration": {
       "type": "relativeDuration",
-      "start": "P1D",
+      "start": "P0D",
       "end": "P10D"
     },
     "transmissionSchedule": "*/5 * * * * *",
