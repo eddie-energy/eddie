@@ -44,6 +44,7 @@ public class OAuth2SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/login",
+                                "/actuator/health/**",
                                 "/img/eddie.svg",
                                 "/img/icon.svg",
                                 "/css/style.css",
