@@ -178,21 +178,21 @@ class EddieConnectButton extends LitElement {
     this._isValidConfiguration = undefined;
 
     /**
-     * Region connectors that support the given data need.
+     * Metadata of all enabled region connectors.
      * @type {RegionConnectorMetadata[]}
      * @private
      */
     this._enabledConnectors = [];
 
     /**
-     * Region connectors that support the selected data need.
+     * Region connectors that support the data need.
      * @type {string[]}
      * @private
      */
     this._supportedConnectors = [];
 
     /**
-     * Permission administrators which region connector supports the selected data need.
+     * Permission administrators which region connector supports the data need.
      * @type {PermissionAdministrator[]}
      * @private
      */
@@ -206,7 +206,7 @@ class EddieConnectButton extends LitElement {
     this._enabledCountries = [];
 
     /**
-     * Country codes which region connectors support the selected data need.
+     * Country codes which region connectors support the data need.
      * @type {Set<string>}
      * @private
      */
@@ -444,6 +444,10 @@ class EddieConnectButton extends LitElement {
       this.dataNeedId
     );
 
+    if (this._supportedConnectors.length === 0) {
+      throw new Error("No region connector supports the data need.");
+    }
+
     this._supportedPermissionAdministrators = PERMISSION_ADMINISTRATORS.filter(
       (pa) => this._supportedConnectors.includes(pa.regionConnector)
     );
@@ -467,6 +471,12 @@ class EddieConnectButton extends LitElement {
     }
 
     if (this.isAiida()) {
+      if (!this._enabledConnectors.some(rc => rc.id === "aiida")) {
+        throw new Error(
+          `Data need with id ${this.dataNeedId} is an AIIDA data need, but AIIDA is not enabled.`
+        );
+      }
+
       if (!this._supportedConnectors.includes("aiida")) {
         throw new Error(
           `AIIDA does not support the data need with id ${this.dataNeedId}.`
