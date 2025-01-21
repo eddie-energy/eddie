@@ -50,7 +50,7 @@ class CCMOAcceptHandlerTest {
         );
         when(repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
                                                           cmRequestStatus.cmRequestId()))
-                .thenReturn(List.of(permissionRequest()));
+                .thenReturn(List.of(permissionRequest(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
 
         // When
         handler.handleCCMOAccept(cmRequestStatus);
@@ -60,6 +60,22 @@ class CCMOAcceptHandlerTest {
         assertEquals(PermissionProcessStatus.ACCEPTED, acceptedEventArgumentCaptor.getValue().status());
     }
 
+    @Test
+    void handleCCMOAccept_oneConsent_oneAlreadyAcceptedRequest_doesNothing() {
+        // Given
+        CMRequestStatus cmRequestStatus = cmRequestStatus(
+                List.of(responseData("consentId", "meteringPoint"))
+        );
+        when(repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
+                                                          cmRequestStatus.cmRequestId()))
+                .thenReturn(List.of(permissionRequest(PermissionProcessStatus.ACCEPTED)));
+
+        // When
+        handler.handleCCMOAccept(cmRequestStatus);
+
+        // Then
+        verify(outbox, never()).commit(any());
+    }
     private static CMRequestStatus cmRequestStatus(
             List<ResponseData> responseData
     ) {
@@ -75,14 +91,6 @@ class CCMOAcceptHandlerTest {
         return new SimpleResponseData(consentId, meteringPoint, List.of(ResponseCode.CmReqOnl.ACCEPTED));
     }
 
-    private static EdaPermissionRequest permissionRequest() {
-        return new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
-                                        "conversationId", null, "dsoId", null, null,
-                                        AllowedGranularity.PT15M,
-                                        PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
-                                        "", null, ZonedDateTime.now(ZoneOffset.UTC));
-    }
-
     @Test
     void handleCCMOAccept_oneConsent_multipleRequests_acceptsOnlyFirstRequest() {
         CMRequestStatus cmRequestStatus = cmRequestStatus(
@@ -91,8 +99,8 @@ class CCMOAcceptHandlerTest {
         when(repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
                                                           cmRequestStatus.cmRequestId()))
                 .thenReturn(List.of(
-                        permissionRequest(),
-                        permissionRequest()
+                        permissionRequest(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR),
+                        permissionRequest(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
                 ));
 
         // When
@@ -102,23 +110,6 @@ class CCMOAcceptHandlerTest {
         verify(outbox).commit(acceptedEventArgumentCaptor.capture());
         assertEquals(PermissionProcessStatus.ACCEPTED, acceptedEventArgumentCaptor.getValue().status());
     }
-
-    @Test
-    void handleCCMOAccept_oneConsent_noRequests_doesNothing() {
-        CMRequestStatus cmRequestStatus = cmRequestStatus(
-                List.of(responseData("consentId", "meteringPoint"))
-        );
-        when(repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
-                                                          cmRequestStatus.cmRequestId()))
-                .thenReturn(List.of());
-
-        // When
-        handler.handleCCMOAccept(cmRequestStatus);
-
-        // Then
-        verifyNoInteractions(outbox);
-    }
-
 
     @Test
     void handleCCMOAccept_multipleConsent_oneRequests_acceptsFirstRequestCreatesNewForEveryConsent() {
@@ -135,7 +126,7 @@ class CCMOAcceptHandlerTest {
                         responseData("consentId3", meteringPoint3)
                 )
         );
-        EdaPermissionRequest permissionRequest = permissionRequest();
+        EdaPermissionRequest permissionRequest = permissionRequest(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
         when(repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
                                                           cmRequestStatus.cmRequestId()))
                 .thenReturn(List.of(permissionRequest));
@@ -179,6 +170,30 @@ class CCMOAcceptHandlerTest {
                                         "consentId3");
                 }
         );
+    }
+
+    @Test
+    void handleCCMOAccept_oneConsent_noRequests_doesNothing() {
+        CMRequestStatus cmRequestStatus = cmRequestStatus(
+                List.of(responseData("consentId", "meteringPoint"))
+        );
+        when(repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
+                                                          cmRequestStatus.cmRequestId()))
+                .thenReturn(List.of());
+
+        // When
+        handler.handleCCMOAccept(cmRequestStatus);
+
+        // Then
+        verifyNoInteractions(outbox);
+    }
+
+    private static EdaPermissionRequest permissionRequest(PermissionProcessStatus status) {
+        return new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
+                                        "conversationId", null, "dsoId", null, null,
+                                        AllowedGranularity.PT15M,
+                                        status,
+                                        "", null, ZonedDateTime.now(ZoneOffset.UTC));
     }
 
     private static void assertAcceptedEvent(AcceptedEvent event, String meteringPoint, String consentId) {

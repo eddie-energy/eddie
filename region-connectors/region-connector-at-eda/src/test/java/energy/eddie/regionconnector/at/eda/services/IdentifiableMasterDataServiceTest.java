@@ -85,4 +85,32 @@ class IdentifiableMasterDataServiceTest {
         assertTrue(result.isEmpty());
         verifyNoInteractions(outbox);
     }
+
+    @Test
+    void emitsAccepted_forNotYetPermissionRequests() throws IOException {
+        // Given
+        ArgumentCaptor<SimpleEvent> eventCaptor = ArgumentCaptor.forClass(SimpleEvent.class);
+        EdaMasterData masterData = masterData();
+        when(repository.findByConversationIdAndMeteringPointId(masterData.conversationId(), masterData.meteringPoint()))
+                .thenReturn(Optional.of(new SimplePermissionRequest("pmId", "connId", "dataNeedId", "test", "any",
+                                                                    PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
+
+        var service = new IdentifiableMasterDataService(repository, outbox);
+
+        // When
+        service.mapToIdentifiableMasterData(masterData);
+
+        // Then
+        verify(outbox, times(2)).commit(eventCaptor.capture());
+        SimpleEvent event1 = eventCaptor.getAllValues().getFirst();
+        assertAll(
+                () -> assertEquals("pmId", event1.permissionId()),
+                () -> assertEquals(PermissionProcessStatus.ACCEPTED, event1.status())
+        );
+        SimpleEvent event2 = eventCaptor.getValue();
+        assertAll(
+                () -> assertEquals("pmId", event2.permissionId()),
+                () -> assertEquals(PermissionProcessStatus.FULFILLED, event2.status())
+        );
+    }
 }
