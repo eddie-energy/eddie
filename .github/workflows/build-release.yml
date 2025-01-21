@@ -2,7 +2,10 @@ name: Build release docker images
 
 on:
   push:
-    tags: [ release-* ]
+    branches:
+      - 'release-*'
+    tags:
+      - 'release-*'
 
 jobs:
   build:
@@ -14,11 +17,8 @@ jobs:
       registry: ghcr.io/eddie-energy
     steps:
       - uses: actions/checkout@v4
-      - name: Get the version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Build docker containers
         uses: ./.github/actions/build-containers
         with:
-          version: ${{ steps.get_version.outputs.VERSION }}
+          version: $GITHUB_REF_NAME
           secrets: ${{ secrets.GITHUB_TOKEN }}
