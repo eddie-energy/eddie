@@ -3,11 +3,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "**.java"
   workflow_dispatch:
 
 jobs:
   docs-deploy:
-    runs-on: self-hosted
+    runs-on: linux
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
@@ -18,10 +20,10 @@ jobs:
       - name: Gradle build javadocs
         run: ./gradlew allJavadoc
       - name: Deploy javadoc to webserver
-        uses: SamKirkland/web-deploy@v1
+        uses: ./.github/actions/sftp-deploy
         with:
-          target-server: ${{ secrets.WEBSERVER_SSH_HOST }}
-          remote-user: ${{ secrets.WEBSERVER_SSH_USERNAME }}
-          private-ssh-key: ${{ secrets.WEBSERVER_SSH_KEY }}
-          source-path: ./build/docs/javadoc-all/
-          destination-path: /web/javadoc/
+          host: ${{ secrets.WEBSERVER_SFTP_HOST }}
+          login_name: ${{ secrets.WEBSERVER_SFTP_USERNAME }}
+          private_key: ${{ secrets.WEBSERVER_SFTP_KEY }}
+          source: ./build/docs/javadoc-all/**
+          destination: javadoc/

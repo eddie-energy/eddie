@@ -1,0 +1,42 @@
+name: SFTP d
+description: Build and push EDDIE and AIIDA docker containers
+inputs:
+  source:
+    required: true
+    description: "The source directory of the files that should be deployed to the SFTP server"
+  destination:
+    required: true
+    description: "The destination directory on the SFTP server"
+  host:
+    required: true
+    description: "Host of the SFTP server"
+  login_name:
+    required: true
+    description: "Login name of the SFTP server user"
+  private_key:
+    required: true
+    description: "Private key for the SFTP server"
+  key_file:
+    required: false
+    description: "Filepath for private key"
+    default: "/tmp/sftp_key"
+runs:
+  using: composite
+  steps:
+    - name: Get keys
+      shell: bash
+      run: |
+        echo ${{ inputs.private_key }} > ${{ inputs.sftp_key }}
+    - name: Deploy files to SFTP server
+      shell: bash
+      run: |
+        sftp ${{ inputs.login_name}}@${{ inputs.host }} <<END
+        mkdir ${{ inputs.destionation }}
+        put -r ${{ inputs.source }} ${{ inputs.destionation }}
+        END
+
+    - name: Clean up
+      if: always()
+      shell: bash
+      run: |
+        rm  ${{ inputs.sftp_key }}
