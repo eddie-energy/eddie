@@ -286,9 +286,11 @@ public class PontonXPAdapter implements EdaAdapter {
         var idm = identifiableMasterData.get();
         var pr = idm.permissionRequest();
         var status = pr.status();
-        if (status != PermissionProcessStatus.ACCEPTED) {
+        if (status == PermissionProcessStatus.FULFILLED || status == PermissionProcessStatus.REJECTED || status == PermissionProcessStatus.EXTERNALLY_TERMINATED) {
             var permissionId = pr.permissionId();
-            LOGGER.info("Got duplicate master data for {} permission request {}, will be ignored", status, permissionId);
+            LOGGER.info("Got master data for {} permission request {}, will be ignored",
+                        status,
+                        permissionId);
             return new InboundMessageResult(
                     InboundStatusEnum.SUCCESS,
                     "Data was already received for this permission request %s".formatted(permissionId)
