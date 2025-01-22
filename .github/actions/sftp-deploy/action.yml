@@ -16,27 +16,37 @@ inputs:
   private_key:
     required: true
     description: "Private key for the SFTP server"
-  key_file:
+  keyfile:
     required: false
     description: "Filepath for private key"
-    default: "/tmp/sftp_key"
+    default: "./sftp_key"
+  batchfile:
+    required: false
+    description: "Filepath for private key"
+    default: "./batchfile"
 runs:
   using: composite
   steps:
     - name: Get keys
       shell: bash
       run: |
-        echo ${{ inputs.private_key }} > ${{ inputs.sftp_key }}
+        echo "${{ inputs.private_key }}" > ${{ inputs.keyfile }}
+        chmod 400 ${{ inputs.keyfile }}
+    - name: Create batchfile
+      shell: bash
+      run: |
+        echo "mkdir ${{ inputs.destination }}" > ${{ inputs.batchfile }}
+        echo "put -r ${{ inputs.source }} ${{ inputs.destination }}" >> ${{ inputs.batchfile }}
+    - name: See batchfile
+      shell: bash
+      run: |
+        cat ${{ inputs.batchfile }}
     - name: Deploy files to SFTP server
       shell: bash
       run: |
-        sftp ${{ inputs.login_name}}@${{ inputs.host }} <<END
-        mkdir ${{ inputs.destionation }}
-        put -r ${{ inputs.source }} ${{ inputs.destionation }}
-        END
-
+        sftp -i ${{ inputs.keyfile }} -b ${{ inputs.batchfile }} ${{ inputs.login_name}}@${{ inputs.host }}
     - name: Clean up
       if: always()
       shell: bash
       run: |
-        rm  ${{ inputs.sftp_key }}
+        rm  ${{ inputs.sftp_key }} ${{ inputs.batchfile }}

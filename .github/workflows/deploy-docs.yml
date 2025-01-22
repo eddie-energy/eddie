@@ -25,5 +25,5 @@ jobs:
           host: ${{ secrets.WEBSERVER_SFTP_HOST }}
           login_name: ${{ secrets.WEBSERVER_SFTP_USERNAME }}
           private_key: ${{ secrets.WEBSERVER_SFTP_KEY }}
-          source: ./docs/.vitepress/dist/**
-          destination: framework/
+          source: "./docs/.vitepress/dist/**"
+          destination: "/public_html/framework/"
