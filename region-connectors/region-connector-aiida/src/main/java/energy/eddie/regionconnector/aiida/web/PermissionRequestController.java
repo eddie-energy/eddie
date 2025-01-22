@@ -61,17 +61,19 @@ public class PermissionRequestController {
             @PathVariable String permissionId,
             @Valid @RequestBody PermissionUpdateDto updateDto
     ) throws PermissionNotFoundException, CredentialsAlreadyExistException, PermissionStateTransitionException {
+        var aiidaId = updateDto.aiidaId();
+
         switch (updateDto.operation()) {
             case ACCEPT -> {
-                MqttDto body = permissionService.acceptPermission(permissionId);
+                MqttDto body = permissionService.acceptPermission(permissionId, aiidaId);
                 return ResponseEntity.ok(body);
             }
             case REJECT -> {
-                permissionService.rejectPermission(permissionId);
+                permissionService.rejectPermission(permissionId, aiidaId);
                 return ResponseEntity.noContent().build();
             }
             case UNFULFILLABLE -> {
-                permissionService.unableToFulFillPermission(permissionId);
+                permissionService.unableToFulFillPermission(permissionId, aiidaId);
                 return ResponseEntity.noContent().build();
             }
             default -> {

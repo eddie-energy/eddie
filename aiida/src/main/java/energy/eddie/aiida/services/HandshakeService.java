@@ -13,15 +13,24 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
 import static energy.eddie.api.agnostic.aiida.PermissionUpdateOperation.*;
 
 @Component
 public class HandshakeService {
     private static final Logger LOGGER = LoggerFactory.getLogger(HandshakeService.class);
     private static final String BEARER_PREFIX = "Bearer ";
+    private final UUID aiidaId;
     private final WebClient webClient;
 
-    public HandshakeService(WebClient webClient) {this.webClient = webClient;}
+    public HandshakeService(
+            ApplicationInformationService applicationInformationService,
+            WebClient webClient
+    ) {
+        this.aiidaId = applicationInformationService.applicationInformation().aiidaId();
+        this.webClient = webClient;
+    }
 
     /**
      * Fetches the details about the permission and the associated data need from the respective EDDIE framework. This
@@ -51,7 +60,7 @@ public class HandshakeService {
 
         LOGGER.info("Sending {} for permission {}", status, permission.permissionId());
 
-        var operation = new PermissionUpdateDto(otherStatus);
+        var operation = new PermissionUpdateDto(otherStatus, aiidaId);
 
         webClient.patch()
                  .uri(permission.handshakeUrl())
@@ -76,7 +85,7 @@ public class HandshakeService {
     public Mono<MqttDto> fetchMqttDetails(Permission permission) {
         LOGGER.info("Fetching mqtt details for permission {}", permission.permissionId());
 
-        var operation = new PermissionUpdateDto(ACCEPT);
+        var operation = new PermissionUpdateDto(ACCEPT, aiidaId);
 
         return webClient.patch()
                         .uri(permission.handshakeUrl())

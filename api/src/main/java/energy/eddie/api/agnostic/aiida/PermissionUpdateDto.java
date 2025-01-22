@@ -1,3 +1,5 @@
 package energy.eddie.api.agnostic.aiida;
 
-public record PermissionUpdateDto(PermissionUpdateOperation operation) {}
+import java.util.UUID;
+
+public record PermissionUpdateDto(PermissionUpdateOperation operation, UUID aiidaId) {}

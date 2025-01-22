@@ -17,10 +17,7 @@ import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.mqtt.MqttService;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
-import energy.eddie.regionconnector.aiida.permission.request.events.CreatedEvent;
-import energy.eddie.regionconnector.aiida.permission.request.events.FailedToTerminateEvent;
-import energy.eddie.regionconnector.aiida.permission.request.events.MqttCredentialsCreatedEvent;
-import energy.eddie.regionconnector.aiida.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.aiida.permission.request.events.*;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
@@ -128,22 +125,31 @@ public class AiidaPermissionService {
         }
     }
 
-    public void unableToFulFillPermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException {
+    public void unableToFulFillPermission(
+            String permissionId,
+            UUID aiidaId
+    ) throws PermissionNotFoundException, PermissionStateTransitionException {
         checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, UNFULFILLABLE);
 
-        outbox.commit(new SimpleEvent(permissionId, UNFULFILLABLE));
+        outbox.commit(new AiidaIdReceivedEvent(permissionId, UNFULFILLABLE, aiidaId));
     }
 
-    public void rejectPermission(String permissionId) throws PermissionNotFoundException, PermissionStateTransitionException {
+    public void rejectPermission(
+            String permissionId,
+            UUID aiidaId
+    ) throws PermissionNotFoundException, PermissionStateTransitionException {
         checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, REJECTED);
 
-        outbox.commit(new SimpleEvent(permissionId, REJECTED));
+        outbox.commit(new AiidaIdReceivedEvent(permissionId, REJECTED, aiidaId));
     }
 
-    public MqttDto acceptPermission(String permissionId) throws CredentialsAlreadyExistException, PermissionNotFoundException, PermissionStateTransitionException {
+    public MqttDto acceptPermission(
+            String permissionId,
+            UUID aiidaId
+    ) throws CredentialsAlreadyExistException, PermissionNotFoundException, PermissionStateTransitionException {
         checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, ACCEPTED);
 
-        outbox.commit(new SimpleEvent(permissionId, ACCEPTED));
+        outbox.commit(new AiidaIdReceivedEvent(permissionId, ACCEPTED, aiidaId));
 
         var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId);
 

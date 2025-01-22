@@ -39,7 +39,7 @@ public interface AiidaPermissionRequestViewRepository extends
     }
 
     @Query(
-            value = "SELECT permission_id, status, connection_id, data_need_id, permission_start, permission_end, termination_topic, created, mqtt_username, message " +
+            value = "SELECT permission_id, status, connection_id, data_need_id, permission_start, permission_end, termination_topic, created, mqtt_username, message, aiida_id " +
                     "FROM aiida.aiida_permission_request_view WHERE status = 'SENT_TO_PERMISSION_ADMINISTRATOR' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )
