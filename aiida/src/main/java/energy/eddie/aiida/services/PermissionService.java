@@ -20,10 +20,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.List;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
@@ -110,7 +107,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     /**
      * Saves a new permission in the database and fetches the details of the permission by executing the first part of
      * the handshake with the associated EDDIE framework. If the permission is not fulfillable by this AIIDA instance,
-     * e.g. because the requested data is missing, an {@code UNFULFILLABLE} status message is sent to EDDIE, before a
+     * e.g. because the requested data is missing or the start date lies in the past, an {@code UNFULFILLABLE} status message is sent to EDDIE, before a
      * {@link PermissionUnfulfillableException} is thrown.
      * <p>
      * After this method, the status of the permission will be either {@code FETCHED_DETAILS} or {@code UNFULFILLABLE}.
@@ -120,7 +117,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @return Permission object with the details as fetched from EDDIE.
      * @throws PermissionAlreadyExistsException If there is already a permission with the ID.
      * @throws PermissionUnfulfillableException If the permission cannot be fulfilled for whatever reason.
-     * @throws InvalidUserException If the id of the current user can not be determined by the token.
+     * @throws InvalidUserException             If the id of the current user can not be determined by the token.
      */
     public Permission setupNewPermission(QrCodeDto qrCodeDto) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
@@ -141,6 +138,11 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         if (details == null) {
             throw new DetailFetchingFailedException(permission.permissionId());
+        }
+
+        var now = LocalDate.now(ZoneId.systemDefault());
+        if(details.start().isBefore(now)){
+            markPermissionAsUnfulfillable(permission);
         }
 
         return updatePermissionWithDetails(permission, details);
@@ -168,16 +170,23 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setStatus(FETCHED_DETAILS);
 
         if (!isPermissionFulfillable(permission)) {
-            permission.setStatus(UNFULFILLABLE);
-            permission.setRevokeTime(clock.instant());
-            // TODO save reason or at least return to user why it cannot be fulfilled --> GH-1040
-            permission = repository.save(permission);
-
-            handshakeService.sendUnfulfillableOrRejected(permission, UNFULFILLABLE);
-            throw new PermissionUnfulfillableException(permission.serviceName());
+            markPermissionAsUnfulfillable(permission);
         }
 
         return repository.save(permission);
+    }
+
+    /**
+     * Sets the provided {@code permission} as unfulfillable and throws a {@code PermissionUnfulfillableException}
+     */
+    private void markPermissionAsUnfulfillable(Permission permission) throws PermissionUnfulfillableException {
+        permission.setStatus(UNFULFILLABLE);
+        permission.setRevokeTime(clock.instant());
+        // TODO save reason or at least return to user why it cannot be fulfilled --> GH-1040
+        permission = repository.save(permission);
+
+        handshakeService.sendUnfulfillableOrRejected(permission, UNFULFILLABLE);
+        throw new PermissionUnfulfillableException(permission.serviceName());
     }
 
     /**
