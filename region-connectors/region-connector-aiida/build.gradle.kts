@@ -42,6 +42,7 @@ dependencies {
     testRuntimeOnly(libs.postgresql)
     testRuntimeOnly(libs.flyway.core)
     testRuntimeOnly(libs.flyway.postgresql)
+    testRuntimeOnly(libs.h2database)
 }
 
 tasks.test {

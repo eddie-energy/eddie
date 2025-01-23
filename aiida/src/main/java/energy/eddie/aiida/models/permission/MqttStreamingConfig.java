@@ -6,12 +6,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "mqtt_streaming_config")
 public class MqttStreamingConfig {
     @Id
     @Column(name = "permission_id", nullable = false)
-    private String permissionId;
+    private UUID permissionId;
     @Column(name = "username", nullable = false)
     private String username;
     @Column(name = "password", nullable = false)
@@ -25,29 +27,11 @@ public class MqttStreamingConfig {
     @Column(name = "termination_topic", nullable = false)
     private String terminationTopic;
 
-    public MqttStreamingConfig(
-            String permissionId,
-            String username,
-            String password,
-            String serverUri,
-            String dataTopic,
-            String statusTopic,
-            String terminationTopic
-    ) {
-        this.permissionId = permissionId;
-        this.username = username;
-        this.password = password;
-        this.serverUri = serverUri;
-        this.dataTopic = dataTopic;
-        this.statusTopic = statusTopic;
-        this.terminationTopic = terminationTopic;
-    }
-
     @SuppressWarnings("NullAway.Init") // required by JPA
     protected MqttStreamingConfig() {
     }
 
-    public MqttStreamingConfig(String permissionId, MqttDto mqttDto) {
+    public MqttStreamingConfig(UUID permissionId, MqttDto mqttDto) {
         this.permissionId = permissionId;
         this.username = mqttDto.username();
         this.password = mqttDto.password();
@@ -57,7 +41,7 @@ public class MqttStreamingConfig {
         this.terminationTopic = mqttDto.terminationTopic();
     }
 
-    public String permissionId() {
+    public UUID permissionId() {
         return permissionId;
     }
 

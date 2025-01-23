@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.aiida.services;
 
+import energy.eddie.api.agnostic.ApplicationInformationAware;
 import energy.eddie.api.agnostic.aiida.MqttDto;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.data.needs.*;
@@ -28,6 +29,7 @@ import energy.eddie.regionconnector.shared.security.JwtUtil;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriTemplate;
 import reactor.core.publisher.Sinks;
@@ -47,6 +49,7 @@ public class AiidaPermissionService {
     private final AiidaPermissionRequestViewRepository viewRepository;
     private final JwtUtil jwtUtil;
     private final DataNeedCalculationService<DataNeed> calculationService;
+    private final UUID eddieId;
 
     public AiidaPermissionService(
             Outbox outbox,
@@ -58,7 +61,8 @@ public class AiidaPermissionService {
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // is injected from another Spring context
             JwtUtil jwtUtil,
             DataNeedCalculationService<DataNeed> calculationService,
-            Sinks.Many<String> revocationSink
+            Sinks.Many<String> revocationSink,
+            ApplicationContext applicationContext
     ) {
         this.outbox = outbox;
         this.dataNeedsService = dataNeedsService;
@@ -68,6 +72,7 @@ public class AiidaPermissionService {
         this.jwtUtil = jwtUtil;
         this.calculationService = calculationService;
         revocationSink.asFlux().subscribe(this::revokePermission);
+        this.eddieId = applicationContext.getBean(ApplicationInformationAware.BEAN_NAME, UUID.class);
     }
 
     public void revokePermission(String permissionId) {
@@ -114,7 +119,11 @@ public class AiidaPermissionService {
                 var handshakeUrl = new UriTemplate(configuration.handshakeUrl()).expand(permissionId).toString();
                 var jwtString = jwtUtil.createJwt(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
                 var dataNeed = dataNeedsService.getById(dataNeedId);
-                return new QrCodeDto(permissionId, dataNeed.name(), handshakeUrl, jwtString);
+                return new QrCodeDto(eddieId,
+                                     UUID.fromString(permissionId),
+                                     dataNeed.name(),
+                                     handshakeUrl,
+                                     jwtString);
             }
         }
     }
@@ -180,7 +189,7 @@ public class AiidaPermissionService {
         DataNeed dataNeed = dataNeedsService.findById(request.dataNeedId())
                                             .orElseThrow(() -> new DataNeedNotFoundException(request.dataNeedId()));
 
-        return new PermissionDetailsDto(request, dataNeed);
+        return new PermissionDetailsDto(eddieId, request, dataNeed);
     }
 
     private AiidaPermissionRequest checkIfPermissionHasValidStatus(

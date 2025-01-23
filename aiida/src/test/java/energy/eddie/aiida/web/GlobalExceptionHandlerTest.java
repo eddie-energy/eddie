@@ -22,6 +22,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,13 +33,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
     private final GlobalExceptionHandler advice = new GlobalExceptionHandler();
-
-    private static List<ObjectError> createErrorFields() {
-        List<ObjectError> errors = new ArrayList<>();
-        errors.add(new FieldError("field1", "field1", "Error message 1"));
-        errors.add(new FieldError("field2", "field2", "Error message 2"));
-        return errors;
-    }
+    private final UUID permissionId = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a5");
 
     @Test
     void givenHttpMessageNotReadableException_returnsBadRequest() {
@@ -88,9 +83,8 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void givenMethodArgumentNotValidException_returnsBadRequest() {
-        var expectedErrors = List.of(
-                new EddieApiError("field1: Error message 1"),
-                new EddieApiError("field2: Error message 2"));
+        var expectedErrors = List.of(new EddieApiError("field1: Error message 1"),
+                                     new EddieApiError("field2: Error message 2"));
 
         // Given
         BindingResult bindingResult = mock(BindingResult.class);
@@ -113,7 +107,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void givenPermissionNotFoundException_returnsNotFound() {
         // Given
-        var exception = new PermissionNotFoundException("some-non-existing-id");
+        var exception = new PermissionNotFoundException(permissionId);
 
         // When
         ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handlePermissionNotFoundException(exception);
@@ -121,11 +115,11 @@ class GlobalExceptionHandlerTest {
         // Then
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         var responseBody = response.getBody();
+        var message = "No permission with ID '%s' found.".formatted(permissionId);
         assertNotNull(responseBody);
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertEquals("No permission with ID 'some-non-existing-id' found.",
-                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+        assertEquals(message, responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 
     @Test
@@ -149,7 +143,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void givenPermissionAlreadyExistsException_returnsBadRequest() {
         // Given
-        var exception = new PermissionAlreadyExistsException("testId");
+        var exception = new PermissionAlreadyExistsException(permissionId);
 
         // When
         var response = advice.handlePermissionAlreadyExistsException(exception);
@@ -157,11 +151,11 @@ class GlobalExceptionHandlerTest {
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         var responseBody = response.getBody();
+        var message = "Permission with ID '%s' already exists.".formatted(permissionId);
         assertNotNull(responseBody);
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertEquals("Permission with ID 'testId' already exists.",
-                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+        assertEquals(message, responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 
     @Test
@@ -203,7 +197,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void givenDetailFetchingFailedException_returnsServiceUnavailable() {
         // Given
-        var exception = new DetailFetchingFailedException("SomeId");
+        var exception = new DetailFetchingFailedException(permissionId);
 
         // When
         var response = advice.handleDetailFetchingFailedException(exception);
@@ -211,10 +205,18 @@ class GlobalExceptionHandlerTest {
         // Then
         assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
         var responseBody = response.getBody();
+        var message = "Failed to fetch permission details or MQTT credentials for permission '%s'".formatted(
+                permissionId);
         assertNotNull(responseBody);
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertThat(responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message()).isEqualTo(
-                "Failed to fetch permission details or MQTT credentials for permission 'SomeId' from EDDIE framework");
+        assertThat(responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message()).isEqualTo(message);
+    }
+
+    private static List<ObjectError> createErrorFields() {
+        List<ObjectError> errors = new ArrayList<>();
+        errors.add(new FieldError("field1", "field1", "Error message 1"));
+        errors.add(new FieldError("field2", "field2", "Error message 2"));
+        return errors;
     }
 }

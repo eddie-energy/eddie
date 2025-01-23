@@ -1,8 +1,9 @@
 package energy.eddie.aiida.errors;
 
+import java.util.UUID;
+
 public class DetailFetchingFailedException extends Exception {
-    public DetailFetchingFailedException(String permissionId) {
-        super("Failed to fetch permission details or MQTT credentials for permission '%s' from EDDIE framework".formatted(
-                permissionId));
+    public DetailFetchingFailedException(UUID permissionId) {
+        super("Failed to fetch permission details or MQTT credentials for permission '%s'".formatted(permissionId));
     }
 }

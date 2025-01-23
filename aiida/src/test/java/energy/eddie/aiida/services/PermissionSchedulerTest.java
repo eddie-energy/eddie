@@ -30,31 +30,35 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionSchedulerTest {
+    private final Clock clock = Clock.fixed(Instant.parse("2023-10-10T10:00:00.00Z"), AiidaConfiguration.AIIDA_ZONE_ID);
+    private final UUID eddieId = UUID.fromString("a69f9bc2-e16c-4de4-8c3e-00d219dcd819");
+    private final UUID permissionId = UUID.fromString("b69f9bc2-e16c-4de4-8c3e-00d219dcd819");
+    private final String serviceName = "My Test Service";
+    private final String handshakeUrl = "https://example.org";
+    private final String accessToken = "fooBar";
+    private final Permission permission = new Permission(new QrCodeDto(eddieId,
+                                                                       permissionId,
+                                                                       serviceName,
+                                                                       handshakeUrl,
+                                                                       accessToken), UUID.randomUUID());
     @Mock
     private TaskScheduler mockTaskScheduler;
     @Mock
     private PermissionRepository mockRepository;
     @Spy
-    private ConcurrentMap<String, ScheduledFuture<?>> permissionFutures;
+    private ConcurrentMap<UUID, ScheduledFuture<?>> permissionFutures;
     @Mock
     private StreamerManager mockStreamerManager;
     @Mock
     private ScheduledFuture<?> mockScheduledFuture;
     private PermissionScheduler permissionScheduler;
-    private final Clock clock = Clock.fixed(Instant.parse("2023-10-10T10:00:00.00Z"), AiidaConfiguration.AIIDA_ZONE_ID);
-    private final String permissionId = "fooId";
-    private final String serviceName = "My Test Service";
-    private final String handshakeUrl = "https://example.org";
-    private final String accessToken = "fooBar";
-    private final Permission permission = new Permission(new QrCodeDto(permissionId,
-                                                                       serviceName,
-                                                                       handshakeUrl,
-                                                                       accessToken), UUID.randomUUID());
 
     @BeforeEach
     void setUp() {
-        permissionScheduler = new PermissionScheduler(clock, mockTaskScheduler,
-                                                      mockRepository, permissionFutures,
+        permissionScheduler = new PermissionScheduler(clock,
+                                                      mockTaskScheduler,
+                                                      mockRepository,
+                                                      permissionFutures,
                                                       mockStreamerManager);
     }
 

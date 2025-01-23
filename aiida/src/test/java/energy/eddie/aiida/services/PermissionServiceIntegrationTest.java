@@ -30,24 +30,22 @@ import java.sql.Connection;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@TestPropertySource(properties = {
-        "spring.main.allow-bean-definition-overriding=true",
+@TestPropertySource(properties = {"spring.main.allow-bean-definition-overriding=true",
         // manually trigger migration
-        "spring.flyway.enabled=false"
-})
+        "spring.flyway.enabled=false"})
 @MockBean(classes = {ClientRegistrationRepository.class, OAuth2SecurityConfiguration.class, CorsConfigurationSource.class})
 @Testcontainers
 public class PermissionServiceIntegrationTest {
     @Container
     @ServiceConnection
-    static final PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(
-            DockerImageName.parse("timescale/timescaledb:2.11.2-pg15")
-                           .asCompatibleSubstituteFor("postgres")
-    );
+    static final PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(DockerImageName.parse(
+            "timescale/timescaledb:2.11.2-pg15").asCompatibleSubstituteFor("postgres"));
+    private final UUID permissionId = UUID.fromString("8609a9b3-0718-4082-935d-6a98c0f8c5a2");
     @Autowired
     Clock clock;
     @Autowired
@@ -64,15 +62,25 @@ public class PermissionServiceIntegrationTest {
     public static void setUpBeforeClass() throws Exception {
         DriverManagerDataSource dataSource = getDataSource();
 
-        Flyway flyway = Flyway.configure()
-                              .locations("classpath:db/aiida/migration")
-                              .dataSource(dataSource)
-                              .load();
+        Flyway flyway = Flyway.configure().locations("classpath:db/aiida/migration").dataSource(dataSource).load();
         flyway.migrate();
 
         Connection conn = dataSource.getConnection();
         ScriptUtils.executeSqlScript(conn, new ClassPathResource("updatePermissionOnStartup.sql"));
         JdbcUtils.closeConnection(conn);
+    }
+
+    /**
+     * Tests that permissions are queried from the DB on startup and if their expiration time has passed, their status
+     * is set accordingly or streaming is started again otherwise.
+     */
+    @Test
+    void givenVariousPermissions_statusAsExpected() {
+        var permission = repository.findById(permissionId).orElseThrow();
+        assertEquals(PermissionStatus.FULFILLED, permission.status());
+
+        permission = repository.findById(permissionId).orElseThrow();
+        assertEquals(PermissionStatus.FULFILLED, permission.status());
     }
 
     private static DriverManagerDataSource getDataSource() {
@@ -82,19 +90,6 @@ public class PermissionServiceIntegrationTest {
         dataSource.setPassword(timescale.getPassword());
         dataSource.setDriverClassName(timescale.getDriverClassName());
         return dataSource;
-    }
-
-    /**
-     * Tests that permissions are queried from the DB on startup and if their expiration time has passed, their status
-     * is set accordingly or streaming is started again otherwise.
-     */
-    @Test
-    void givenVariousPermissions_statusAsExpected() {
-        var permission = repository.findById("9609a9b3-0718-4082-935d-6a98c0f8c5a2").orElseThrow();
-        assertEquals(PermissionStatus.FULFILLED, permission.status());
-
-        permission = repository.findById("0b3b6f6d-d878-49dd-9dfd-62156b5cdc37").orElseThrow();
-        assertEquals(PermissionStatus.FULFILLED, permission.status());
     }
 
     /**

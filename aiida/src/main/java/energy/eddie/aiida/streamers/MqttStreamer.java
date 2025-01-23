@@ -25,6 +25,7 @@ import reactor.core.scheduler.Schedulers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
 
 public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttStreamer.class);
@@ -51,7 +52,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     public MqttStreamer(
             Permission permission,
             Flux<AiidaRecord> recordFlux,
-            Sinks.One<String> terminationRequestSink,
+            Sinks.One<UUID> terminationRequestSink,
             MqttStreamingConfig streamingConfig,
             MqttAsyncClient client,
             ObjectMapper mapper,
@@ -101,8 +102,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     @Override
     public void close() {
         isBeingTerminated = true;
-        if (subscription != null)
-            subscription.dispose();
+        if (subscription != null) subscription.dispose();
         terminationRequestSink.tryEmitEmpty();
 
         LOGGER.info("Closing MqttStreamer for permission {}", streamingConfig.permissionId());
@@ -111,15 +111,15 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             client.close();
         } catch (MqttException e) {
             LOGGER.info("MqttStreamer for permission {} has encountered an error while disconnecting/closing streamer",
-                        streamingConfig.permissionId(), e);
+                        streamingConfig.permissionId(),
+                        e);
         }
     }
 
     @Override
     public void closeTerminally(ConnectionStatusMessage statusMessage) {
         isBeingTerminated = true;
-        if (subscription != null)
-            subscription.dispose();
+        if (subscription != null) subscription.dispose();
         LOGGER.atInfo()
               .addArgument(statusMessage.permissionId())
               .addArgument(statusMessage.status())
@@ -146,19 +146,24 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
         LOGGER.info("Got termination message {}", message);
+        var payload = new String(message.getPayload(), StandardCharsets.UTF_8);
 
-        if (!payload.equals(streamingConfig.permissionId())) {
+        try {
+            var permissionId = UUID.fromString(payload);
+            if (permissionId.compareTo(streamingConfig.permissionId()) != 0) {
+                throw new IllegalArgumentException();
+            }
+
+            isBeingTerminated = true;
+            terminationRequestSink.emitValue(streamingConfig.permissionId(),
+                                             Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(3)));
+        } catch (IllegalArgumentException e) {
             LOGGER.warn(
                     "MqttStreamer got request to terminate permission {}, but received wrong permission.permissionId() {}",
                     streamingConfig.permissionId(),
-                    payload);
-            return;
+                    message.getPayload());
         }
-
-        isBeingTerminated = true;
-        terminationRequestSink.emitValue(payload, Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(3)));
     }
 
     @Override
@@ -188,9 +193,8 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                      aiidaRecord);
 
         try {
-            var schemas = (permission.dataNeed() == null)
-                    ? List.of(AiidaSchema.SMART_METER_P1_RAW)
-                    : permission.dataNeed().schemas();
+            var schemas = (permission.dataNeed() == null) ? List.of(AiidaSchema.SMART_METER_P1_RAW) : permission.dataNeed()
+                                                                                                                .schemas();
 
             for (var schema : schemas) {
                 var schemaFormatter = SchemaFormatter.getFormatter(schema);

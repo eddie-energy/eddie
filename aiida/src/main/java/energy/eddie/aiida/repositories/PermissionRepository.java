@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.UUID;
 
-public interface PermissionRepository extends JpaRepository<Permission, String> {
+public interface PermissionRepository extends JpaRepository<Permission, UUID> {
     /**
      * Returns all permission objects for the given userId, sorted by their grantTime descending.
      *

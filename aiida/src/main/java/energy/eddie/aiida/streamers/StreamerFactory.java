@@ -7,12 +7,16 @@ import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.utils.MqttFactory;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
+import org.springframework.web.util.UriTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+
+import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
 
 public class StreamerFactory {
+
     private StreamerFactory() {
     }
 
@@ -30,16 +34,24 @@ public class StreamerFactory {
     protected static AiidaStreamer getAiidaStreamer(
             Permission permission,
             Flux<AiidaRecord> recordFlux,
-            Sinks.One<String> terminationRequestSink,
+            Sinks.One<UUID> terminationRequestSink,
             ObjectMapper mapper,
             FailedToSendRepository failedToSendRepository
     ) throws MqttException {
+        var mqttFilePersistenceDirectory = "mqtt-persistence/{eddieId}/{permissionId}";
         var mqttConfig = requireNonNull(permission.mqttStreamingConfig());
-        String permissionId = permission.permissionId();
-
         var client = MqttFactory.getMqttAsyncClient(mqttConfig.serverUri(),
                                                     mqttConfig.username(),
-                                                    new MqttDefaultFilePersistence("mqtt-persistence/" + permissionId));
-        return new MqttStreamer(permission, recordFlux, terminationRequestSink, mqttConfig, client, mapper, failedToSendRepository);
+                                                    new MqttDefaultFilePersistence(new UriTemplate(
+                                                            mqttFilePersistenceDirectory).expand(permission.eddieId(),
+                                                                                                 permission.permissionId())
+                                                                                         .getPath()));
+        return new MqttStreamer(permission,
+                                recordFlux,
+                                terminationRequestSink,
+                                mqttConfig,
+                                client,
+                                mapper,
+                                failedToSendRepository);
     }
 }

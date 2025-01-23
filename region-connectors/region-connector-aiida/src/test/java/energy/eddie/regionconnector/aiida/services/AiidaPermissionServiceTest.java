@@ -33,13 +33,13 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationContext;
 import reactor.core.publisher.Sinks;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -83,6 +83,8 @@ class AiidaPermissionServiceTest {
     @Captor
     private ArgumentCaptor<PermissionEvent> permissionEventCaptor;
     private AiidaPermissionService service;
+    @Mock
+    private ApplicationContext applicationContext;
 
     @BeforeEach
     void setUp() {
@@ -94,7 +96,8 @@ class AiidaPermissionServiceTest {
                 mockViewRepository,
                 mockJwtUtil,
                 calculationService,
-                Sinks.many().multicast().onBackpressureBuffer()
+                Sinks.many().multicast().onBackpressureBuffer(),
+                applicationContext
         );
     }
 
@@ -150,7 +153,7 @@ class AiidaPermissionServiceTest {
         var expectedHandshakeUrl = HANDSHAKE_URL.substring(0,
                                                            HANDSHAKE_URL.indexOf("{permissionId}")) + dto.permissionId();
         assertAll(
-                () -> assertDoesNotThrow(() -> UUID.fromString(dto.permissionId())),
+                () -> assertDoesNotThrow(dto::permissionId),
                 () -> assertEquals("myToken", dto.accessToken()),
                 () -> assertEquals("Test Service", dto.serviceName()),
                 () -> assertEquals(expectedHandshakeUrl, dto.handshakeUrl())

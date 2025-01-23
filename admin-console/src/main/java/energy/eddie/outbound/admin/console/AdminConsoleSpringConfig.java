@@ -2,6 +2,7 @@ package energy.eddie.outbound.admin.console;
 
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -10,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebMvc
 @SpringBootApplication
 @OutboundConnector(name = "admin-console")
+@EnableJpaRepositories
 public class AdminConsoleSpringConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

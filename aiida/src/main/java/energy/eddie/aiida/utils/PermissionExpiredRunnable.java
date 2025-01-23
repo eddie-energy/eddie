@@ -68,7 +68,9 @@ public class PermissionExpiredRunnable implements Runnable {
                                                            dataNeedId,
                                                            clock.instant(),
                                                            PermissionStatus.FULFILLED,
-                                                           permission.permissionId());
+                                                           permission.permissionId(),
+                                                           permission.eddieId()
+        );
 
         permission.setStatus(PermissionStatus.FULFILLED);
         repository.save(permission);

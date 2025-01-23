@@ -22,6 +22,7 @@ import reactor.test.StepVerifier;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
@@ -33,7 +34,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class StreamerManagerTest {
-    private final String permissionId = "72831e2c-a01c-41b8-9db6-3f51670df7a5";
+    private final UUID eddieId = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a5");
+    private final UUID permissionId = UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final Instant grant = Instant.parse("2023-08-01T10:00:00.00Z");
     private final Instant start = grant.plusSeconds(100_000);
     private final Instant expirationTime = start.plusSeconds(800_000);
@@ -51,7 +53,7 @@ class StreamerManagerTest {
     @Mock
     private AiidaStreamer mockAiidaStreamer;
     @Mock
-    private Map<String, AiidaStreamer> mockMap;
+    private Map<UUID, AiidaStreamer> mockMap;
 
     @BeforeEach
     void setUp() {
@@ -63,6 +65,7 @@ class StreamerManagerTest {
     void givenSamePermissionTwice_createNewStreamer_throws() {
         // Given
         when(aggregatorMock.getFilteredFlux(any(), any(), any())).thenReturn(Flux.empty());
+        when(mockPermission.eddieId()).thenReturn(eddieId);
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
@@ -77,7 +80,7 @@ class StreamerManagerTest {
 
             // When, Then
             var thrown = assertThrows(IllegalStateException.class, () -> manager.createNewStreamer(mockPermission));
-            assertThat(thrown.getMessage(), startsWith("An AiidaStreamer for permission "));
+            assertThat(thrown.getMessage(), startsWith("An AiidaStreamer for EDDIE "));
         }
     }
 
@@ -105,7 +108,7 @@ class StreamerManagerTest {
     @Test
     void givenInvalidPermissionId_stopStreamer_throws() {
         // Given
-        when(mockStatusMessage.permissionId()).thenReturn("non-existing");
+        when(mockStatusMessage.permissionId()).thenReturn(UUID.fromString("62831e2c-a01c-41b8-9db6-3f51670df7a5"));
 
         // When, Then
         assertThrows(IllegalArgumentException.class, () -> manager.stopStreamer(mockStatusMessage));

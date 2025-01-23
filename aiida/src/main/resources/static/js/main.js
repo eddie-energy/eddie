@@ -136,9 +136,8 @@ aiidaCodeInput.addEventListener("sl-input", () => {
   try {
     // check if input can be parsed into correct format
     // noinspection JSUnusedLocalSymbols
-    const { permissionId, serviceName, handshakeUrl, accessToken } = JSON.parse(
-      atob(aiidaCodeInput.value),
-    );
+    const { eddieId, permissionId, serviceName, handshakeUrl, accessToken } =
+      JSON.parse(atob(aiidaCodeInput.value));
   } catch (error) {
     console.debug(error);
     aiidaCodeInput.setCustomValidity(
@@ -153,7 +152,7 @@ function toLocalDateString(time) {
 
 function permissionElement(permission) {
   console.log(permission)
-  const { permissionId, status, serviceName } = permission;
+  const { eddieId, permissionId, status, serviceName } = permission;
   const dataTags = permission.hasOwnProperty("dataNeed")
     ? permission.dataNeed.dataTags
     : ["Not available yet."];
@@ -193,6 +192,9 @@ function permissionElement(permission) {
             </sl-badge>
           </sl-tooltip>
         </dd>
+
+        <dt>EDDIE Application</dt>
+        <dd>${eddieId}</dd>
 
         <dt>Permission ID</dt>
         <dd>${permissionId}</dd>
@@ -317,6 +319,7 @@ function updatePermissionDialogWithDetails(permission) {
   console.debug("Updating dialog with details", permission);
 
   const {
+    eddieId,
     permissionId,
     serviceName,
     startTime,
@@ -334,6 +337,9 @@ function updatePermissionDialogWithDetails(permission) {
     <dl class="permission-details">
       <dt>Service</dt>
       <dd>${serviceName}</dd>
+
+      <dt>EDDIE Application</dt>
+      <dd>${eddieId}</dd>
 
       <dt>Permission ID</dt>
       <dd>${permissionId}</dd>

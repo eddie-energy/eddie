@@ -23,7 +23,11 @@ public class AiidaRecordConverter {
         var connectionId = requireNonNull(permission.connectionId());
         var dataNeed = requireNonNull(permission.dataNeed());
 
-        return new AiidaRecordStreamingDto(aiidaRecord.timestamp(), aiidaRecord.asset(),
-                                           connectionId, dataNeed.dataNeedId(), permission.permissionId(), aiidaRecord.aiidaRecordValue());
+        return new AiidaRecordStreamingDto(aiidaRecord.timestamp(),
+                                           aiidaRecord.asset(),
+                                           connectionId,
+                                           dataNeed.dataNeedId(),
+                                           permission.permissionId(),
+                                           aiidaRecord.aiidaRecordValue());
     }
 }

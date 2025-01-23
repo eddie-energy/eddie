@@ -1,0 +1,21 @@
+package energy.eddie.aiida.services;
+
+import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
+import energy.eddie.aiida.repositories.AiidaLocalDataNeedRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+import java.util.UUID;
+
+@Service
+public class AiidaLocalDataNeedService {
+    private final AiidaLocalDataNeedRepository repository;
+
+    public AiidaLocalDataNeedService(AiidaLocalDataNeedRepository repository) {
+        this.repository = repository;
+    }
+
+    public Optional<AiidaLocalDataNeed> optionalAiidaLocalDataNeedById(UUID id) {
+        return repository.findById(id);
+    }
+}

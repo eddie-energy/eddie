@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.UUID;
 
 import static energy.eddie.aiida.models.permission.PermissionStatus.STREAMING_DATA;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,6 +30,7 @@ class PermissionExpiredRunnableTest {
     @Mock
     private AiidaLocalDataNeed mockAiidaDataNeed;
     private final Instant fixedInstant = Instant.parse("2024-05-01T23:59:59.00Z");
+    private final UUID dataNeedId = UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final Clock clock = Clock.fixed(fixedInstant, AiidaConfiguration.AIIDA_ZONE_ID);
 
     @Test
@@ -38,7 +40,7 @@ class PermissionExpiredRunnableTest {
         when(mockPermission.status()).thenReturn(PermissionStatus.STREAMING_DATA);
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.dataNeed()).thenReturn(mockAiidaDataNeed);
-        when(mockAiidaDataNeed.dataNeedId()).thenReturn("dataNeedId");
+        when(mockAiidaDataNeed.dataNeedId()).thenReturn(dataNeedId);
         when(mockPermission.status()).thenReturn(STREAMING_DATA);
         var runnable = new PermissionExpiredRunnable(mockPermission, streamerManager, repository, clock);
 

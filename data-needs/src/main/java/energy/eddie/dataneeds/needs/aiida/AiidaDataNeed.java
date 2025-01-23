@@ -14,12 +14,13 @@ import jakarta.validation.constraints.NotEmpty;
 import org.springframework.scheduling.support.CronExpression;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "aiida_data_need", schema = "data_needs")
 @IsValidAiidaSchema
 @SuppressWarnings("NullAway")
-public class AiidaDataNeed extends TimeframedDataNeed {
+public class AiidaDataNeed extends TimeframedDataNeed implements AiidaDataNeedInterface {
     public static final String DISCRIMINATOR_VALUE = "aiida";
 
     @Column(name = "transmission_schedule", nullable = false)
@@ -64,35 +65,28 @@ public class AiidaDataNeed extends TimeframedDataNeed {
     protected AiidaDataNeed() {
     }
 
-    /**
-     * Returns the schedule in cron format, at which the AIIDA instance should send data.
-     */
-    public CronExpression transmissionSchedule() {
-        return transmissionSchedule;
-    }
-
-    /**
-     * Returns the schema for the outgoing data
-     *
-     * @see AiidaSchema
-     */
-    public Set<AiidaSchema> schemas() {
-        return schemas;
-    }
-
-    /**
-     * Returns the kind of asset the data is retrieved from
-     *
-     * @see AiidaAsset
-     */
+    @Override
     public AiidaAsset asset() {
         return asset;
     }
 
-    /**
-     * Returns the set of identifiers for the data that should be shared by the AIIDA instance.
-     */
+    @Override
+    public UUID dataNeedId() {
+        return UUID.fromString(id());
+    }
+
+    @Override
     public Set<String> dataTags() {
         return dataTags;
+    }
+
+    @Override
+    public Set<AiidaSchema> schemas() {
+        return schemas;
+    }
+
+    @Override
+    public CronExpression transmissionSchedule() {
+        return transmissionSchedule;
     }
 }

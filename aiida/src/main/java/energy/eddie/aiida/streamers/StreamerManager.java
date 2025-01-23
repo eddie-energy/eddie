@@ -19,6 +19,7 @@ import reactor.core.publisher.Sinks;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
 
@@ -30,9 +31,9 @@ import static java.util.Objects.requireNonNull;
 public class StreamerManager implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamerManager.class);
     private final ObjectMapper mapper;
-    private final Map<String, AiidaStreamer> streamers;
+    private final Map<UUID, AiidaStreamer> streamers;
     private final Aggregator aggregator;
-    private final Sinks.Many<String> terminationRequests;
+    private final Sinks.Many<UUID> terminationRequests;
     private final FailedToSendRepository failedToSendRepository;
 
     /**
@@ -58,10 +59,13 @@ public class StreamerManager implements AutoCloseable {
      */
     public void createNewStreamer(Permission permission) throws IllegalArgumentException, MqttException {
         LOGGER.info("Will create a new AiidaStreamer for permission {}", permission.permissionId());
+        var id = permission.permissionId();
 
-        if (streamers.get(permission.permissionId()) != null) {
-            throw new IllegalStateException("An AiidaStreamer for permission %s has already been created.".formatted(
-                    permission.permissionId()));
+        if (streamers.get(id) != null) {
+            throw new IllegalStateException(
+                    "An AiidaStreamer for EDDIE framework '%s' with permission '%s' has already been created.".formatted(
+                            permission.eddieId(),
+                            permission.permissionId()));
         }
 
         var expirationTime = requireNonNull(permission.expirationTime());
@@ -70,14 +74,14 @@ public class StreamerManager implements AutoCloseable {
         CronExpression transmissionSchedule = requireNonNull(dataNeed.transmissionSchedule());
 
         Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(codes, expirationTime, transmissionSchedule);
-        Sinks.One<String> streamerTerminationRequestSink = Sinks.one();
+        Sinks.One<UUID> streamerTerminationRequestSink = Sinks.one();
 
         streamerTerminationRequestSink.asMono().subscribe(permissionId -> {
             var result = terminationRequests.tryEmitNext(permissionId);
-            if (result.isFailure())
-                LOGGER.error("Error while emitting termination request for permission {}. Error was: {}",
-                             permissionId,
-                             result);
+            if (result.isFailure()) LOGGER.error(
+                    "Error while emitting termination request for permission {}. Error was: {}",
+                    permissionId,
+                    result);
         });
 
         var streamer = StreamerFactory.getAiidaStreamer(permission,
@@ -86,7 +90,7 @@ public class StreamerManager implements AutoCloseable {
                                                         mapper,
                                                         failedToSendRepository);
         streamer.connect();
-        streamers.put(permission.permissionId(), streamer);
+        streamers.put(id, streamer);
     }
 
     /**
@@ -95,7 +99,7 @@ public class StreamerManager implements AutoCloseable {
      *
      * @return Flux of permissionIDs for which the EP requested termination.
      */
-    public Flux<String> terminationRequestsFlux() {
+    public Flux<UUID> terminationRequestsFlux() {
         return terminationRequests.asFlux();
     }
 
@@ -107,11 +111,11 @@ public class StreamerManager implements AutoCloseable {
      *                {@link PermissionStatus#FULFILLED}.
      */
     public void stopStreamer(ConnectionStatusMessage message) {
-        var permissionId = message.permissionId();
-        AiidaStreamer streamer = streamers.get(permissionId);
+        var id = message.permissionId();
+        AiidaStreamer streamer = streamers.get(id);
 
         if (streamer == null)
-            throw new IllegalArgumentException("No streamer for permissionId %s exists.".formatted(permissionId));
+            throw new IllegalArgumentException("No streamer for permissionId '%s' exists.".formatted(id));
 
         streamer.closeTerminally(message);
     }

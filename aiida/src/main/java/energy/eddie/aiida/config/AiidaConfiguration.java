@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Clock;
 import java.time.ZoneId;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
@@ -68,7 +69,7 @@ public class AiidaConfiguration {
     @Bean
     // Spring's TaskScheduler only returns a ScheduledFuture<?>, so we have to use wildcards
     @SuppressWarnings("java:S1452")
-    public ConcurrentMap<String, ScheduledFuture<?>> permissionFutures() {
+    public ConcurrentMap<UUID, ScheduledFuture<?>> permissionFutures() {
         return new ConcurrentHashMap<>();
     }
 }
