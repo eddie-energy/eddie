@@ -69,10 +69,12 @@ public class HomeController {
     @GetMapping("/**")
     public String index(
             Model model,
-            @Value("${eddie.public.url}") String publicUrl
+            @Value("${eddie.public.url}") String publicUrl,
+            @Value("#{servletContext.contextPath}") String contextPath
     ) {
         model.addAttribute("eddiePublicUrl", publicUrl);
-        model.addAttribute("eddieAdminConsoleUrl", ADMIN_CONSOLE_BASE_URL);
+        model.addAttribute("eddieAdminConsoleUrl",
+                           contextPath + ADMIN_CONSOLE_BASE_URL);
 
         return "index";
     }
