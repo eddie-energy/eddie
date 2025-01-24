@@ -3,7 +3,6 @@ package energy.eddie.tests.e2e.fr;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.playwright.Locator;
 import energy.eddie.tests.e2e.E2eTestSetup;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -15,7 +14,6 @@ class FrEnedisTest extends E2eTestSetup {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    @Disabled("Until Enedis' sandbox is working again")
     void buttonClickOpensNewPage_statusIsFulfilled() {
         this.navigateToRegionConnector(null, "France", null);
 
