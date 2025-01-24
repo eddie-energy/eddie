@@ -752,8 +752,8 @@ class EddieConnectButton extends LitElement {
                     <p>
                       We are loading our service that handles permission
                       requests for
-                      ${this._selectedPermissionAdministrator?.company}. This
-                      may take a moment.
+                      ${this._selectedPermissionAdministrator?.name}. This may
+                      take a moment.
                     </p>
                   </sl-alert>
                 `
