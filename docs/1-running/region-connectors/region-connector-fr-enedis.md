@@ -30,7 +30,7 @@ depends on the way you deploy the region connector.
 
 | Configuration values                       | Description                                                                                                 |
 |--------------------------------------------|-------------------------------------------------------------------------------------------------------------|
-| `region-connector.fr.enedis.basepath`      | Path to the data connect endpoints: https://ext.prod.api.enedis.fr for production.                          |
+| `region-connector.fr.enedis.basepath`      | Path to the data connect endpoints: https://gw.ext.prod.api.enedis.fr for production.                          |
 | `region-connector.fr.enedis.client.id`     | Public key/id of the application you want to switch to production. Can be found under "_Mes applications_". |
 | `region-connector.fr.enedis.client.secret` | Secret key of the application you want to switch to production. Can be found under "_Mes applications_".    |
 | `region-connector.fr.enedis.polling`       | Configures when future data should be polled. Uses spring Cron syntax. The default is 17 o'clock every day. |
@@ -40,7 +40,7 @@ depends on the way you deploy the region connector.
 Example configuration for an `application.properties` file:
 
 ```properties
-region-connector.fr.enedis.basepath=https://ext.prod.api.enedis.fr
+region-connector.fr.enedis.basepath=https://gw.ext.prod.api.enedis.fr
 region-connector.fr.enedis.client.id=a5d5ce56-2bca-123d-1ccd-46a28f1ac132
 region-connector.fr.enedis.client.secret=11d145d8-25a6-55c1-b6af-04ac332211b1
 region-connector.fr.enedis.polling=0 0 17 * * *
@@ -56,7 +56,7 @@ When using environment variables, the configuration values need to be converted 
 Example configuration for dotenv file:
 
 ```dotenv
-REGION_CONNECTOR_FR_ENEDIS_BASEPATH=https://ext.prod.api.enedis.fr
+REGION_CONNECTOR_FR_ENEDIS_BASEPATH=https://gw.ext.prod.api.enedis.fr
 REGION_CONNECTOR_FR_ENEDIS_CLIENT_ID=a5d5ce56-2bca-123d-1ccd-46a28f1ac132
 REGION_CONNECTOR_FR_ENEDIS_CLIENT_SECRET=11d145d8-25a6-55c1-b6af-04ac332211b1
 REGION_CONNECTOR_FR_ENEDIS_POLLING='0 0 17 * * *'
