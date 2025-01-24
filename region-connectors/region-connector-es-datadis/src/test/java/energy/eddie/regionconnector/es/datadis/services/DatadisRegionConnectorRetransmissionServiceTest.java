@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
 import energy.eddie.api.agnostic.retransmission.result.*;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.EnergyType;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -72,7 +72,7 @@ class DatadisRegionConnectorRetransmissionServiceTest {
     @Test
     void requestRetransmission_whenPermissionRequestNotFound_returnsPermissionRequestNotFound() {
         var before = ZonedDateTime.now(ZONE_ID_SPAIN);
-        LocalDate today = LocalDate.now();
+        var today = LocalDate.now(ZONE_ID_SPAIN);
         when(repository.findByPermissionId(PERMISSION_ID)).thenReturn(Optional.empty());
         var retransmissionService = new DatadisRegionConnectorRetransmissionService(
                 repository,
@@ -97,7 +97,7 @@ class DatadisRegionConnectorRetransmissionServiceTest {
     @EnumSource(value = PermissionProcessStatus.class, names = {"ACCEPTED", "FULFILLED"}, mode = EnumSource.Mode.EXCLUDE)
     void requestRetransmission_forNonAcceptedOrFulfilledRequest_returnsNoActivePermission(PermissionProcessStatus status) {
         var before = ZonedDateTime.now(ZONE_ID_SPAIN);
-        LocalDate today = LocalDate.now();
+        var today = LocalDate.now(ZONE_ID_SPAIN);
         var permissionRequest = permissionRequest(today, today, status);
         when(repository.findByPermissionId(PERMISSION_ID)).thenReturn(Optional.of(permissionRequest));
         var retransmissionService = new DatadisRegionConnectorRetransmissionService(
@@ -124,7 +124,7 @@ class DatadisRegionConnectorRetransmissionServiceTest {
     @Test
     void requestRetransmission_forAccountingPointDataNeed_returnsNotSupported() {
         var before = ZonedDateTime.now(ZONE_ID_SPAIN);
-        LocalDate today = LocalDate.now();
+        var today = LocalDate.now(ZONE_ID_SPAIN);
         var permissionRequest = permissionRequest(today, today, PermissionProcessStatus.ACCEPTED);
         when(repository.findByPermissionId(PERMISSION_ID)).thenReturn(Optional.of(permissionRequest));
         when(dataNeedsService.getById(DATA_NEED_ID)).thenReturn(ACCOUNTING_POINT_DATA_NEED);
@@ -192,7 +192,7 @@ class DatadisRegionConnectorRetransmissionServiceTest {
     @MethodSource("retransmissionToInvalidDate")
     void requestRetransmission_retransmissionToIsToday_returnsNotSupported(LocalDate retransmissionTo) {
         var before = ZonedDateTime.now(ZONE_ID_SPAIN);
-        LocalDate today = LocalDate.now();
+        var today = LocalDate.now(ZONE_ID_SPAIN);
         var permissionRequest = permissionRequest(today.minusWeeks(1),
                                                   today.plusMonths(1),
                                                   PermissionProcessStatus.ACCEPTED);
@@ -316,7 +316,7 @@ class DatadisRegionConnectorRetransmissionServiceTest {
     @Test
     void requestRetransmission_fetchesEmptyData_emitsDataNotAvailable() {
         var before = ZonedDateTime.now(ZONE_ID_SPAIN);
-        var today = LocalDate.now();
+        var today = LocalDate.now(ZONE_ID_SPAIN);
         var permissionRequest = permissionRequest(today.minusWeeks(1),
                                                   today.plusWeeks(1),
                                                   PermissionProcessStatus.ACCEPTED);
@@ -383,7 +383,7 @@ class DatadisRegionConnectorRetransmissionServiceTest {
     @MethodSource("apiErrors")
     void requestRetransmission_fetchErrors_emitsFailure(Throwable throwable, String expectedReason) {
         var before = ZonedDateTime.now(ZONE_ID_SPAIN);
-        var today = LocalDate.now();
+        var today = LocalDate.now(ZONE_ID_SPAIN);
         var permissionRequest = permissionRequest(today.minusWeeks(1),
                                                   today.plusWeeks(1),
                                                   PermissionProcessStatus.ACCEPTED);
@@ -416,9 +416,9 @@ class DatadisRegionConnectorRetransmissionServiceTest {
     }
 
     private static Stream<Arguments> retransmissionOutsidePermissionTimeFrame() {
-        LocalDate today = LocalDate.now();
-        LocalDate startDate = today.minusDays(5);
-        LocalDate endDate = today.plusDays(5);
+        var today = LocalDate.now(ZONE_ID_SPAIN);
+        var startDate = today.minusDays(5);
+        var endDate = today.plusDays(5);
         return Stream.of(
                 Arguments.of(startDate,
                              endDate,
@@ -437,7 +437,7 @@ class DatadisRegionConnectorRetransmissionServiceTest {
     }
 
     private static Stream<Arguments> retransmissionToInvalidDate() {
-        LocalDate today = LocalDate.now();
+        var today = LocalDate.now(ZONE_ID_SPAIN);
         return Stream.of(
                 Arguments.of(today),
                 Arguments.of(today.plusDays(1)),
@@ -446,7 +446,7 @@ class DatadisRegionConnectorRetransmissionServiceTest {
     }
 
     private static Stream<Arguments> apiErrors() {
-        DatadisApiException forbidden = new DatadisApiException("FORBIDDEN", HttpResponseStatus.FORBIDDEN, "");
+        var forbidden = new DatadisApiException("FORBIDDEN", HttpResponseStatus.FORBIDDEN, "");
         return Stream.of(
                 Arguments.of(new Throwable("reason"), "reason"),
                 Arguments.of(new DatadisApiException("", HttpResponseStatus.TOO_MANY_REQUESTS, ""),
