@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.dtos;
 
+import reactor.core.publisher.Mono;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -12,14 +14,17 @@ public record IntermediateMeteringData(
 ) {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
-    public static IntermediateMeteringData fromMeteringData(List<MeteringData> meteringData) {
+    public static Mono<IntermediateMeteringData> fromMeteringData(List<MeteringData> meteringData) {
+        if (meteringData == null || meteringData.isEmpty()) {
+            return Mono.empty();
+        }
         MeteringData first = meteringData.getFirst();
         MeteringData last = meteringData.getLast();
 
         LocalDate start = parseDate(first.date(), first.time());
         LocalDate end = parseDate(last.date(), last.time());
 
-        return new IntermediateMeteringData(meteringData, start, end);
+        return Mono.just(new IntermediateMeteringData(meteringData, start, end));
     }
 
     private static LocalDate parseDate(LocalDate date, String timeString) {

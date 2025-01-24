@@ -4,6 +4,7 @@ import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -16,7 +17,7 @@ class IntermediateMeteringDataTest {
         LocalDate end = LocalDate.of(2024, 1, 1);
 
         IntermediateMeteringData intermediateMeteringData = IntermediateMeteringData.fromMeteringData(
-                MeteringDataProvider.loadMeteringData());
+                MeteringDataProvider.loadMeteringData()).block(Duration.ofMillis(10));
 
         assertAll(
                 () -> assertEquals(start, intermediateMeteringData.start()),

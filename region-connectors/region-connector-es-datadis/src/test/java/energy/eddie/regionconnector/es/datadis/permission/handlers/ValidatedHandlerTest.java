@@ -1,14 +1,13 @@
 package energy.eddie.regionconnector.es.datadis.permission.handlers;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestFactory;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsValidatedEvent;
-import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
@@ -24,7 +23,6 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,23 +62,14 @@ class ValidatedHandlerTest {
     void testAccept_withSuccessResponse_emitsSentToPA() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new DatadisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                Granularity.PT1H,
-                "NIF",
-                "mid",
-                now,
-                now,
-                null,
-                null,
-                null,
-                PermissionProcessStatus.VALIDATED,
-                null,
-                false,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                AllowedGranularity.PT15M_OR_PT1H);
+        var pr = new DatadisPermissionRequestBuilder()
+                .setMeteringPointId("mid")
+                .setNif("NIF")
+                .setStart(now)
+                .setEnd(now)
+                .setStatus(PermissionProcessStatus.VALIDATED)
+                .build();
+
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(pr));
         when(authorizationApi.postAuthorizationRequest(any()))
                 .thenReturn(Mono.just(AuthorizationRequestResponse.fromResponse("ok")));
@@ -97,23 +86,14 @@ class ValidatedHandlerTest {
     void testAccept_withErrorResponse_emitsUnableToSend() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new DatadisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                Granularity.PT1H,
-                "NIF",
-                "mid",
-                now,
-                now,
-                null,
-                null,
-                null,
-                PermissionProcessStatus.VALIDATED,
-                null,
-                false,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                AllowedGranularity.PT15M_OR_PT1H);
+        var pr = new DatadisPermissionRequestBuilder()
+                .setMeteringPointId("mid")
+                .setNif("NIF")
+                .setStart(now)
+                .setEnd(now)
+                .setStatus(PermissionProcessStatus.VALIDATED)
+                .build();
+
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(pr));
         when(authorizationApi.postAuthorizationRequest(any()))
                 .thenReturn(Mono.error(new DatadisApiException("error", HttpResponseStatus.BAD_REQUEST, "blb")));

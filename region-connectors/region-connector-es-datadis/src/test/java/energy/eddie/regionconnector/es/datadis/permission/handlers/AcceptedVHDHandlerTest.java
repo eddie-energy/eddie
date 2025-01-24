@@ -1,10 +1,9 @@
 package energy.eddie.regionconnector.es.datadis.permission.handlers;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEventForVHD;
-import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.services.HistoricalDataService;
@@ -22,9 +21,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -47,28 +43,6 @@ class AcceptedVHDHandlerTest {
     @SuppressWarnings("unused")
     private AcceptedVHDHandler acceptedVHDHandler;
 
-    private static Stream<Arguments> unfulfillableGranularities() {
-        return Stream.of(
-                Arguments.of(AllowedGranularity.PT15M, 3),
-                Arguments.of(AllowedGranularity.PT15M, 4)
-        );
-    }
-
-    private static Stream<Arguments> fulfillableGranularities() {
-        return Stream.of(
-                Arguments.of(AllowedGranularity.PT15M, 1, Granularity.PT15M),
-                Arguments.of(AllowedGranularity.PT15M, 2, Granularity.PT15M),
-                Arguments.of(AllowedGranularity.PT15M_OR_PT1H, 1, Granularity.PT15M),
-                Arguments.of(AllowedGranularity.PT15M_OR_PT1H, 2, Granularity.PT15M),
-                Arguments.of(AllowedGranularity.PT15M_OR_PT1H, 3, Granularity.PT1H),
-                Arguments.of(AllowedGranularity.PT15M_OR_PT1H, 4, Granularity.PT1H),
-                Arguments.of(AllowedGranularity.PT1H, 1, Granularity.PT1H),
-                Arguments.of(AllowedGranularity.PT1H, 2, Granularity.PT1H),
-                Arguments.of(AllowedGranularity.PT1H, 3, Granularity.PT1H),
-                Arguments.of(AllowedGranularity.PT1H, 4, Granularity.PT1H)
-        );
-    }
-
     @Test
     void testAccept_withUnknownPermissionRequest_doesNothing() {
         // Given
@@ -88,25 +62,11 @@ class AcceptedVHDHandlerTest {
             int supplyPointType
     ) {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new DatadisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                Granularity.PT1H,
-                "nif",
-                "mid",
-                now,
-                now.plusDays(10),
-                null,
-                null,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                null,
-                false,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                allowedGranularity
-        );
+        var pr = new DatadisPermissionRequestBuilder()
+                .setGranularity(Granularity.PT1H)
+                .setAllowedGranularity(allowedGranularity)
+                .build();
+
         when(repository.getByPermissionId("pid")).thenReturn(pr);
 
         // When
@@ -128,25 +88,11 @@ class AcceptedVHDHandlerTest {
             Granularity expectedGranularity
     ) {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new DatadisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                Granularity.PT1H,
-                "nif",
-                "mid",
-                now,
-                now.plusDays(10),
-                null,
-                supplyPointType,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                null,
-                false,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                allowedGranularity
-        );
+        var pr = new DatadisPermissionRequestBuilder()
+                .setGranularity(Granularity.PT1H)
+                .setAllowedGranularity(allowedGranularity)
+                .build();
+
         when(repository.getByPermissionId("pid")).thenReturn(pr);
 
         // When
@@ -159,5 +105,27 @@ class AcceptedVHDHandlerTest {
                 () -> assertEquals(Optional.of(supplyPointType), permissionRequest.pointType()),
                 () -> assertTrue(permissionRequest.productionSupport())
         )));
+    }
+
+    private static Stream<Arguments> unfulfillableGranularities() {
+        return Stream.of(
+                Arguments.of(AllowedGranularity.PT15M, 3),
+                Arguments.of(AllowedGranularity.PT15M, 4)
+        );
+    }
+
+    private static Stream<Arguments> fulfillableGranularities() {
+        return Stream.of(
+                Arguments.of(AllowedGranularity.PT15M, 1, Granularity.PT15M),
+                Arguments.of(AllowedGranularity.PT15M, 2, Granularity.PT15M),
+                Arguments.of(AllowedGranularity.PT15M_OR_PT1H, 1, Granularity.PT15M),
+                Arguments.of(AllowedGranularity.PT15M_OR_PT1H, 2, Granularity.PT15M),
+                Arguments.of(AllowedGranularity.PT15M_OR_PT1H, 3, Granularity.PT1H),
+                Arguments.of(AllowedGranularity.PT15M_OR_PT1H, 4, Granularity.PT1H),
+                Arguments.of(AllowedGranularity.PT1H, 1, Granularity.PT1H),
+                Arguments.of(AllowedGranularity.PT1H, 2, Granularity.PT1H),
+                Arguments.of(AllowedGranularity.PT1H, 3, Granularity.PT1H),
+                Arguments.of(AllowedGranularity.PT1H, 4, Granularity.PT1H)
+        );
     }
 }

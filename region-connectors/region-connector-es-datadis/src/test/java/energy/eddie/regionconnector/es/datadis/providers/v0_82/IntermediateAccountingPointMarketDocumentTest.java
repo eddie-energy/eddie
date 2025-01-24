@@ -6,10 +6,11 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.es.datadis.ContractDetailsProvider;
+import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
+import energy.eddie.regionconnector.es.datadis.PointType;
 import energy.eddie.regionconnector.es.datadis.SupplyProvider;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
-import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
@@ -24,6 +25,29 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 import static org.junit.jupiter.api.Assertions.*;
 
 class IntermediateAccountingPointMarketDocumentTest {
+    public static IdentifiableAccountingPointData identifiableAccountingPointData() throws IOException {
+        EsPermissionRequest permissionRequest = new DatadisPermissionRequestBuilder()
+                .setPermissionId("permissionId")
+                .setConnectionId("connectionId")
+                .setDataNeedId("dataNeedId")
+                .setNif("nif")
+                .setMeteringPointId("meteringPointId")
+                .setStart(LocalDate.now(ZONE_ID_SPAIN))
+                .setEnd(LocalDate.now(ZONE_ID_SPAIN))
+                .setDistributorCode(DistributorCode.IDE)
+                .setPointType(PointType.TYPE_1)
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                .build();
+        return new IdentifiableAccountingPointData(
+                permissionRequest,
+                new AccountingPointData(
+                        SupplyProvider.loadSupply().getFirst(),
+                        ContractDetailsProvider.loadContractDetails().getFirst()
+                )
+        );
+    }
+
     @Test
     @SuppressWarnings("java:S5961")
         // too many assertions
@@ -47,8 +71,8 @@ class IntermediateAccountingPointMarketDocumentTest {
         // Then
         var md = res.getAccountingPointMarketDocument();
         var accountingPoint = md.getAccountingPointList()
-                                                       .getAccountingPoints()
-                                                       .getFirst();
+                                .getAccountingPoints()
+                                .getFirst();
         AddressComplexType address = accountingPoint
                 .getAddressList()
                 .getAddresses()
@@ -100,33 +124,6 @@ class IntermediateAccountingPointMarketDocumentTest {
                 () -> assertEquals("2", address.getDoorNumber()),
                 () -> assertEquals("MADRID", address.getCityName()),
                 () -> assertEquals("MADRID", address.getAddressSuffix())
-        );
-    }
-
-    public static IdentifiableAccountingPointData identifiableAccountingPointData() throws IOException {
-        EsPermissionRequest permissionRequest = new DatadisPermissionRequest(
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
-                null,
-                "nif",
-                "meteringPointId",
-                LocalDate.now(ZONE_ID_SPAIN),
-                LocalDate.now(ZONE_ID_SPAIN),
-                DistributorCode.IDE,
-                1,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                null,
-                false,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                null);
-        return new IdentifiableAccountingPointData(
-                permissionRequest,
-                new AccountingPointData(
-                        SupplyProvider.loadSupply().getFirst(),
-                        ContractDetailsProvider.loadContractDetails().getFirst()
-                )
         );
     }
 }

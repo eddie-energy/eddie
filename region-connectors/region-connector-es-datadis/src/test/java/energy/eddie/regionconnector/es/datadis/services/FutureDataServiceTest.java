@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
-import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
+import energy.eddie.regionconnector.es.datadis.PointType;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
@@ -13,8 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -51,29 +49,6 @@ class FutureDataServiceTest {
         verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest1, yesterday, yesterday);
         verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest2, yesterday, yesterday);
         verifyNoMoreInteractions(dataApiService);
-    }
-
-    private static EsPermissionRequest acceptedPermissionRequest(
-            LocalDate start, LocalDate end,
-            LocalDate latestMeterReading
-    ) {
-        return new DatadisPermissionRequest(
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
-                Granularity.PT1H,
-                "nif",
-                "meteringPointId",
-                start,
-                end,
-                DistributorCode.ASEME,
-                1,
-                latestMeterReading,
-                PermissionProcessStatus.ACCEPTED,
-                null,
-                false,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                AllowedGranularity.PT15M_OR_PT1H);
     }
 
     @Test
@@ -115,5 +90,20 @@ class FutureDataServiceTest {
         // Then
         verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, yesterday, yesterday);
         verifyNoMoreInteractions(dataApiService);
+    }
+
+    private static EsPermissionRequest acceptedPermissionRequest(
+            LocalDate start, LocalDate end,
+            LocalDate latestMeterReading
+    ) {
+        return new DatadisPermissionRequestBuilder()
+                .setGranularity(Granularity.PT1H)
+                .setStart(start)
+                .setEnd(end)
+                .setDistributorCode(DistributorCode.ASEME)
+                .setPointType(PointType.TYPE_1)
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .setLatestMeterReadingEndDate(latestMeterReading)
+                .build();
     }
 }

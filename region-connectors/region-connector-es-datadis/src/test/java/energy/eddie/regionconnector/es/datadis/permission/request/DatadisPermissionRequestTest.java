@@ -1,17 +1,13 @@
 package energy.eddie.regionconnector.es.datadis.permission.request;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
-import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,23 +26,9 @@ class DatadisPermissionRequestTest {
     @MethodSource
     void testMeasurementType_returnsExpectedValues(Granularity granularity, MeasurementType measurementType) {
         // Given
-        var pr = new DatadisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                granularity,
-                "NIF",
-                "mpid",
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                null,
-                null,
-                null,
-                PermissionProcessStatus.CREATED,
-                null,
-                false,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                AllowedGranularity.PT15M_OR_PT1H);
+        var pr = new DatadisPermissionRequestBuilder()
+                .setGranularity(granularity)
+                .build();
 
         // When
         var res = pr.measurementType();
@@ -58,23 +40,9 @@ class DatadisPermissionRequestTest {
     @Test
     void testMeasurementType_throwsOnUnexpected() {
         // Given
-        var pr = new DatadisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                Granularity.PT5M,
-                "NIF",
-                "mpid",
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                null,
-                null,
-                null,
-                PermissionProcessStatus.CREATED,
-                null,
-                false,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                AllowedGranularity.PT15M_OR_PT1H);
+        var pr = new DatadisPermissionRequestBuilder()
+                .setGranularity(Granularity.PT5M)
+                .build();
 
         // When
         // Then
