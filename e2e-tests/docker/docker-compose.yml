@@ -7,8 +7,6 @@ services:
       POSTGRES_USER: "test"
       POSTGRES_DB: "eddie"
     restart: "always"
-    volumes:
-      - ./create-example-app-db.sql:/docker-entrypoint-initdb.d/create_database.sql
 
   eddie:
     image: ghcr.io/eddie-energy/eddie:e2e-test
@@ -24,25 +22,6 @@ services:
     depends_on:
       - kafka
       - db
-
-  eddie-example-app:
-    image: ghcr.io/eddie-energy/eddie-example-app:e2e-test
-    build:
-      dockerfile: src/main/docker/Dockerfile
-      context: ../../examples/example-app
-    environment:
-      JDBC_URL: "jdbc:postgresql://db:5432/example_app"
-      JDBC_USER: "test"
-      JDBC_PASSWORD: "test"
-      EDDIE_PUBLIC_URL: ${EDDIE_PUBLIC_URL}
-      PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
-    restart: always
-    depends_on:
-      db:
-        condition: service_started
-      eddie:
-        condition: service_started
 
   kafka:
     # Docs: https://github.com/bitnami/containers/tree/main/bitnami/kafka#accessing-apache-kafka-with-internal-and-external-clients

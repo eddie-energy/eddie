@@ -29,11 +29,6 @@ tasks.register("record-test", JavaExec::class) {
 }
 
 tasks.test {
-    if (environment["CI"] == "true") {
-        environment("EXAMPLE_APP", "http://eddie-example-app:8081/prototype/main")
-    } else {
-        environment("EXAMPLE_APP", "http://localhost:8081")
-    }
     useJUnitPlatform()
     testLogging {
         events("passed", "skipped", "failed")
