@@ -23,7 +23,7 @@ public class MqttService implements AutoCloseable {
     private final MqttUserRepository userRepository;
     private final MqttAclRepository aclRepository;
     private final PasswordGenerator passwordGenerator;
-    private final BCryptPasswordEncoder encoder;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final MqttAsyncClient mqttClient;
     private final AiidaConfiguration aiidaConfiguration;
 
@@ -31,7 +31,7 @@ public class MqttService implements AutoCloseable {
             MqttUserRepository userRepository,
             MqttAclRepository aclRepository,
             PasswordGenerator passwordGenerator,
-            BCryptPasswordEncoder encoder,
+            BCryptPasswordEncoder bCryptPasswordEncoder,
             MqttAsyncClient mqttClient,
             AiidaConfiguration aiidaConfiguration,
             MqttMessageCallback mqttMessageCallback
@@ -39,7 +39,7 @@ public class MqttService implements AutoCloseable {
         this.userRepository = userRepository;
         this.aclRepository = aclRepository;
         this.passwordGenerator = passwordGenerator;
-        this.encoder = encoder;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.mqttClient = mqttClient;
         this.mqttClient.setCallback(mqttMessageCallback);
         this.aiidaConfiguration = aiidaConfiguration;
@@ -80,7 +80,7 @@ public class MqttService implements AutoCloseable {
     private UserPasswordWrapper createAndSaveMqttUser(String permissionId) {
         String rawPassword = passwordGenerator.generatePassword(PASSWORD_LENGTH);
         // BCryptPasswordEncoder will generate and store the salt in the hash
-        var passwordHash = encoder.encode(rawPassword);
+        var passwordHash = bCryptPasswordEncoder.encode(rawPassword);
 
         MqttUser mqttUser = new MqttUser(permissionId, passwordHash, false, permissionId);
         return new UserPasswordWrapper(userRepository.save(mqttUser), rawPassword);
