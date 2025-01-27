@@ -38,6 +38,22 @@ tasks.register<PnpmTask>("pnpmBuild") {
     pnpmCommand.set(listOf("run", "build"))
 }
 
+tasks.register<PnpmTask>("pnpmBuildAdminConsole") {
+    group = "build"
+    description = "builds and bundles the admin console ui"
+    dependsOn("pnpmInstall")
+    pnpmCommand.set(listOf("run", "admin:build"))
+    environment = System.getenv()
+
+    doLast {
+        copy {
+            from("admin-console/ui/dist")
+            into("admin-console/src/main/resources/public")
+        }
+        file("admin-console/src/main/resources/public/index.html").renameTo(file("admin-console/src/main/resources/templates/index.html"))
+    }
+}
+
 tasks.register<PnpmTask>("pnpmBuildDocs") {
     group = "documentation"
     description = "builds the eddie framework documentation"

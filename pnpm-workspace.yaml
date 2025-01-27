@@ -2,3 +2,4 @@ packages:
   - 'core'
   - 'region-connectors/*'
   - 'docs'
+  - 'admin-console/ui'

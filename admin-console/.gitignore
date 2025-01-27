@@ -1,0 +1,4 @@
+# Vue build output
+src/main/resources/public/
+# Generated Vue entrypoint
+src/main/resources/templates/index.html

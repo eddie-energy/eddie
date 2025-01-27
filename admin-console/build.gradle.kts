@@ -5,7 +5,6 @@ import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
-    id("energy.eddie.pnpm-build")
 
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
@@ -34,6 +33,11 @@ dependencies {
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.reactor.test)
+    testRuntimeOnly(libs.h2database)
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    dependsOn(":pnpmBuildAdminConsole")
 }
 
 tasks.test {
@@ -44,7 +48,7 @@ tasks.withType<JavaCompile>().configureEach {
     if (!name.lowercase(Locale.getDefault()).contains("test")) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "energy.eddie.admin.console")
+            option("NullAway:AnnotatedPackages", "energy.eddie.outbound.admin.console")
         }
     }
 }

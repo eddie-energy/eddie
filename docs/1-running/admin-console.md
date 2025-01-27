@@ -10,12 +10,14 @@ The username for the admin user and a ***BCrypt encrypted*** password can be con
 
 ## Configuration of the Admin Console
 
-| Configuration values                                     | Description                                                                                  |
-|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| `outbound-connector.admin.console.enabled`               | `true` or `false`, enables the admin console. Default is `false`                             |
-| `outbound-connector.admin.console.login.enabled`         | `true` or `false`, enables basic auth authentication. Default is `false`                     |
-| `outbound-connector.admin.console.login.username`        | Only required if login is enabled. Username for the admin user.                              |
-| `outbound-connector.admin.console.login.encodedPassword` | Only required if login is enabled. Password for the admin user ***encrypted using BCrypt***. |
+| Configuration values                                     | Description                                                                                                                   |
+|----------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| `outbound-connector.admin.console.enabled`               | `true` or `false`, enables the admin console. Default is `false`                                                              |
+| `outbound-connector.admin.console.login.enabled`         | `true` or `false`, enables basic auth authentication. Default is `false`                                                      |
+| `outbound-connector.admin.console.login.username`        | Only required if login is enabled. Username for the admin user.                                                               |
+| `outbound-connector.admin.console.login.encodedPassword` | Only required if login is enabled. Password for the admin user ***encrypted using BCrypt***.                                  |
+
+`eddie.public.url` and `eddie.management.url` are also required for the admin console to work as expected.
 
 ### .properties file
 
@@ -43,9 +45,3 @@ OUTBOUND_CONNECTOR_ADMIN_CONSOLE_LOGIN_ENABLED=true
 OUTBOUND_CONNECTOR_ADMIN_CONSOLE_LOGIN_USERNAME=admin
 OUTBOUND_CONNECTOR_ADMIN_CONSOLE_LOGIN_ENCODEDPASSWORD=$2a$10$qYTmwhGa3dd7Sl1CdXKKHOfmf0lNXL3L2k4CVhhm3CfY131hrcEyS # encrypted value of 'password'
 ```
-
-## Current Appearances
-
-![Admin Console Dark Theme](Admin-console-dark.png)
-
-![Admin Console Light Theme](Admin-console-light.png)
