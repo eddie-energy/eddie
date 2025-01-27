@@ -1,7 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import '@fontsource/poppins'
-import './assets/normalize.css'
+import 'modern-normalize/modern-normalize.css'
+
 import './assets/main.css'
 
 import router from './router'
