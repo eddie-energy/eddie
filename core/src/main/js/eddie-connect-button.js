@@ -536,11 +536,6 @@ class EddieConnectButton extends LitElement {
         Function(`"use strict";${statusHandler}`)();
       }
     });
-
-    // Handle creation event separately, as it is not passed as a status change
-    this.addEventListener("eddie-request-created", (event) => {
-      Function(`"use strict";${this.getAttribute("onCreated")}`)(event);
-    });
   }
 
   simIsEnabled() {
@@ -752,8 +747,8 @@ class EddieConnectButton extends LitElement {
                     <p>
                       We are loading our service that handles permission
                       requests for
-                      ${this._selectedPermissionAdministrator?.company}. This
-                      may take a moment.
+                      ${this._selectedPermissionAdministrator?.name}. This may
+                      take a moment.
                     </p>
                   </sl-alert>
                 `

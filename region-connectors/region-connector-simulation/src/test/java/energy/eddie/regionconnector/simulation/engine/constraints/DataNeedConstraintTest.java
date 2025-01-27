@@ -80,7 +80,7 @@ class DataNeedConstraintTest {
         );
         var constraint = new DataNeedConstraint(dataNeedsService, ctx);
         when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of((new AiidaDataNeed(Set.of()))));
+                .thenReturn(Optional.of(new AiidaDataNeed(Set.of())));
 
         // When
         var res = constraint.violatesConstraint(step);
@@ -105,12 +105,12 @@ class DataNeedConstraintTest {
         );
         var constraint = new DataNeedConstraint(dataNeedsService, ctx);
         when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of((new ValidatedHistoricalDataDataNeed(
+                .thenReturn(Optional.of(new ValidatedHistoricalDataDataNeed(
                         new RelativeDuration(Period.ZERO, Period.ZERO, null),
                         EnergyType.ELECTRICITY,
                         Granularity.PT5M,
                         Granularity.P1Y
-                ))));
+                )));
 
         // When
         var res = constraint.violatesConstraint(step);
