@@ -63,6 +63,9 @@ jobs:
       - name: Install playwright dependencies
         run: ./gradlew e2e-tests:install-playwright-deps
 
+      - name: Sleep for 30 seconds to let the region connectors warm up
+        run: sleep 30s
+
       - name: Run playwright tests
         env:
           E2E_BASE_URL: "http://eddie:8080"
