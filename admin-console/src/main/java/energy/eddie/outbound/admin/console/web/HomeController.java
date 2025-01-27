@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
+import static energy.eddie.outbound.admin.console.config.AdminConsoleSecurityConfig.ADMIN_CONSOLE_BASE_URL;
+
 @Controller
 public class HomeController {
 
@@ -68,12 +70,12 @@ public class HomeController {
     public String index(
             Model model,
             @Value("${eddie.public.url}") String publicUrl,
-            @Value("${outbound-connector.admin.console.url}") String adminConsoleUrl,
-            @Value("${outbound-connector.admin.console.management.url}") String managementUrl
+            @Value("${eddie.management.url}") String managementUrl,
+            @Value("${eddie.management.server.urlprefix}") String managementUrlPrefix
     ) {
         model.addAttribute("eddiePublicUrl", publicUrl);
-        model.addAttribute("eddieAdminConsoleUrl", adminConsoleUrl);
-        model.addAttribute("eddieManagementUrl", managementUrl);
+        model.addAttribute("eddieAdminConsoleUrl", managementUrl + ADMIN_CONSOLE_BASE_URL);
+        model.addAttribute("eddieManagementUrl", managementUrl + "/" + managementUrlPrefix);
 
         return "index";
     }

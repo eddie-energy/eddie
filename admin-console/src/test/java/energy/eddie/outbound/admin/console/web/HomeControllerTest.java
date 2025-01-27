@@ -29,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = {HomeController.class}, properties = {
         "eddie.public.url=http://localhost:8080",
+        "eddie.management.url=http://localhost:9090",
+        "eddie.management.server.urlprefix=management",
         "outbound-connector.admin-console.login.enabled=true",
         "outbound-connector.admin-console.login.username=user",
         "outbound-connector.admin-console.login.encodedPassword=$2a$10$qYTmwhGa3dd7Sl1CdXKKHOfmf0lNXL3L2k4CVhhm3CfY131hrcEyS"
@@ -66,6 +68,10 @@ class HomeControllerTest {
     private TerminationAdminConsoleConnector terminationConnector;
     @Value("${eddie.public.url}")
     private String publicUrl;
+    @Value("${eddie.management.url}")
+    private String managementUrl;
+    @Value("${eddie.management.server.urlprefix}")
+    private String managementUrlPrefix;
 
     @Test
     void testGetStatusMessages() throws Exception {
@@ -137,6 +143,7 @@ class HomeControllerTest {
                .andExpect(status().isOk())
                .andExpect(view().name("index"))
                .andExpect(model().attribute("eddiePublicUrl", publicUrl))
-               .andExpect(model().attribute("eddieAdminConsoleUrl", ADMIN_CONSOLE_BASE_URL));
+               .andExpect(model().attribute("eddieAdminConsoleUrl", managementUrl + ADMIN_CONSOLE_BASE_URL))
+               .andExpect(model().attribute("eddieManagementUrl", managementUrl + "/" + managementUrlPrefix));
     }
 }

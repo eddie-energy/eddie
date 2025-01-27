@@ -10,14 +10,14 @@ The username for the admin user and a ***BCrypt encrypted*** password can be con
 
 ## Configuration of the Admin Console
 
-| Configuration values                                     | Description                                                                                                                                                     |
-|----------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `outbound-connector.admin.console.enabled`               | `true` or `false`, enables the admin console. Default is `false`                                                                                                |
-| `outbound-connector.admin.console.login.enabled`         | `true` or `false`, enables basic auth authentication. Default is `false`                                                                                        |
-| `outbound-connector.admin.console.login.username`        | Only required if login is enabled. Username for the admin user.                                                                                                 |
-| `outbound-connector.admin.console.login.encodedPassword` | Only required if login is enabled. Password for the admin user ***encrypted using BCrypt***.                                                                    |
-| `outbound-connector.admin.console.url`                   | Full URL of the deployed admin console. Usually `<protocol>://<origin>:${eddie.management.server.port}/outbound-connectors/admin-console`.                      |
-| `outbound-connector.admin.console.management.url`        | Full URL of the management API including its url prefix. Usually  `<protocol>://<origin>:${eddie.management.server.port}/${eddie.management.server.urlprefix}`. |
+| Configuration values                                     | Description                                                                                                                   |
+|----------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| `outbound-connector.admin.console.enabled`               | `true` or `false`, enables the admin console. Default is `false`                                                              |
+| `outbound-connector.admin.console.login.enabled`         | `true` or `false`, enables basic auth authentication. Default is `false`                                                      |
+| `outbound-connector.admin.console.login.username`        | Only required if login is enabled. Username for the admin user.                                                               |
+| `outbound-connector.admin.console.login.encodedPassword` | Only required if login is enabled. Password for the admin user ***encrypted using BCrypt***.                                  |
+
+`eddie.public.url` and `eddie.management.url` are also required for the admin console to work as expected.
 
 ### .properties file
 
