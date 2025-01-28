@@ -176,13 +176,13 @@ async function getPermissionCountPerRegionConnector() {
 
 .bottom {
   display: grid;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--p-surface-700);
   border-radius: 0.25rem;
   gap: 1rem;
 }
 
 .card--top {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--p-surface-700);
   border-radius: 0.25rem;
   padding: 1rem;
   overflow: auto;
@@ -207,7 +207,7 @@ async function getPermissionCountPerRegionConnector() {
 
 .card__item-highlighted {
   font-size: 2.125rem;
-  color: var(--color-accent);
+  color: var(--p-primary-color);
   font-weight: bold;
 }
 
@@ -217,7 +217,7 @@ async function getPermissionCountPerRegionConnector() {
 }
 
 .item {
-  border: 2px dashed var(--color-border);
+  border: 2px dashed var(--p-surface-700);
   border-radius: 0.4rem;
   padding: 0.5rem;
   max-width: 100%;

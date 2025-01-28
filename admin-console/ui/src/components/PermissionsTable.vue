@@ -187,7 +187,7 @@ function confirmTermination(permissionId: string) {
   </DataTable>
 </template>
 
-<style>
+<style scoped>
 ul {
   padding: 0;
   display: grid;
@@ -198,5 +198,10 @@ li {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+}
+
+/* Prevent search from overflowing on mobile */
+input {
+  max-width: 100%;
 }
 </style>

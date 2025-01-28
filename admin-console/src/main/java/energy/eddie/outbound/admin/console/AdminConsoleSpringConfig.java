@@ -20,8 +20,8 @@ public class AdminConsoleSpringConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/index.html")
                 .addResourceLocations("classpath:/public/index.html");
         // Vue favicon
-        registry.addResourceHandler("/favicon.ico")
-                .addResourceLocations("classpath:/public/favicon.ico");
+        registry.addResourceHandler("/favicon.svg")
+                .addResourceLocations("classpath:/public/favicon.svg");
         // Static resources separate from the Vue app
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/");

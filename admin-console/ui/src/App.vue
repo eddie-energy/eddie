@@ -20,10 +20,13 @@ import { ConfirmDialog, Toast } from 'primevue'
 <style scoped>
 .wrapper {
   height: 100%;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: 100%;
-  padding: 2rem;
-  gap: 2rem;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  gap: 1rem;
+
+  @media only screen and (min-width: 1280px) {
+    flex-direction: row;
+  }
 }
 </style>

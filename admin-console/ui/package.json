@@ -13,9 +13,10 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@heroicons/vue": "^2.1.5",
+    "@fontsource/poppins": "^5.1.1",
     "@primevue/themes": "^4.2.4",
     "chart.js": "^4.4.4",
+    "modern-normalize": "^3.0.1",
     "primeicons": "^7.0.0",
     "primevue": "^4.2.4",
     "vue": "^3.4.29",

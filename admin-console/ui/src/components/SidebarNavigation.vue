@@ -1,34 +1,26 @@
 <script setup lang="ts">
 import EddieIcon from '@/components/EddieIcon.vue'
-import {
-  BriefcaseIcon,
-  CheckBadgeIcon,
-  GlobeEuropeAfricaIcon,
-  HomeIcon
-} from '@heroicons/vue/24/solid'
 </script>
 
 <template>
   <aside>
-    <RouterLink to="/">
-      <EddieIcon class="logo" />
-    </RouterLink>
+    <EddieIcon class="logo" />
 
     <nav>
       <RouterLink to="/">
-        <HomeIcon />
+        <span class="pi pi-home"></span>
         Dashboard
       </RouterLink>
       <RouterLink to="/permissions">
-        <CheckBadgeIcon />
+        <span class="pi pi-check-circle"></span>
         Permissions
       </RouterLink>
       <RouterLink to="/region-connectors">
-        <GlobeEuropeAfricaIcon />
+        <span class="pi pi-globe"></span>
         Region Connectors
       </RouterLink>
       <RouterLink to="/data-needs">
-        <BriefcaseIcon />
+        <span class="pi pi-briefcase"></span>
         Data Needs
       </RouterLink>
     </nav>
@@ -37,14 +29,11 @@ import {
 
 <style scoped>
 .logo {
-  margin-left: 0.5rem;
-  margin-bottom: 1rem;
-  color: var(--color-text);
+  margin: 0.5rem;
 }
 
 nav {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 0.5rem;
 }
 
@@ -52,21 +41,17 @@ nav a {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: var(--font-size-lg);
   padding: 0.5rem;
   text-decoration: none;
   transition: 0.4s;
-  color: var(--color-text);
   border-radius: 0.25rem;
+  white-space: nowrap;
+  color: var(--p-text-color);
 }
 
 nav a:hover,
 nav a.router-link-exact-active {
-  background-color: var(--color-accent-bg);
-  color: var(--color-accent);
-}
-
-nav a svg {
-  height: 1.5em;
+  background-color: var(--p-highlight-background);
+  color: var(--p-highlight-color);
 }
 </style>
