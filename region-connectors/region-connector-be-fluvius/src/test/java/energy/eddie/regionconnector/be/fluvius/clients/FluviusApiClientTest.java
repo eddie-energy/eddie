@@ -15,11 +15,15 @@ import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
 import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.actuate.health.Status;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -202,6 +206,26 @@ class FluviusApiClientTest {
         StepVerifier.create(res)
                     .expectError(OAuthRequestException.class)
                     .verify();
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {500, 408})
+    void testEnergy_updatesHealth_onServerErrorAndTimeout(int responseCode) throws OAuthException, URISyntaxException, IOException, ParseException {
+        // Given
+        SERVER.enqueue(new MockResponse().setResponseCode(responseCode));
+        when(oAuthTokenService.accessToken()).thenReturn("token");
+        var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+
+        // When
+        var res = api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now);
+
+        // Then
+        Assertions.assertEquals(Status.UNKNOWN, api.health().getStatus());
+        StepVerifier.create(res)
+                    .expectError()
+                    .verify();
+        Assertions.assertEquals(Status.DOWN, api.health().getStatus());
     }
 
     private static FluviusConfiguration getConfiguration() {
