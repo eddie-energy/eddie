@@ -1,13 +1,11 @@
 package energy.eddie.regionconnector.us.green.button.permission.handlers;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
-import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
@@ -39,20 +37,9 @@ class MeterReadingUpdateHandlerTest {
     @Test
     void meterReadingBeforeEnd_doesNotFulfillPermissionRequest() {
         // Given
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                LocalDate.of(2024, 9, 1),
-                LocalDate.of(2024, 9, 30),
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.of(2024, 9, 1, 0, 0, 0, 0, ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
+        var pr = new GreenButtonPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .build();
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         var readingDate = ZonedDateTime.of(2024, 9, 10, 0, 0, 0, 0, ZoneOffset.UTC);
         var meterReading = new MeterReading("pid", "usagePoint", readingDate, PollingStatus.DATA_NOT_READY);
@@ -81,20 +68,10 @@ class MeterReadingUpdateHandlerTest {
     @Test
     void meterReadingAfterEnd_fulfillsPermissionRequest() {
         // Given
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                LocalDate.of(2024, 9, 1),
-                LocalDate.of(2024, 9, 30),
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.of(2024, 9, 1, 0, 0, 0, 0, ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
+        var pr = new GreenButtonPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setEnd(LocalDate.of(2024, 9, 30))
+                .build();
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         var readingDate = ZonedDateTime.of(2024, 10, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         var meterReading = new MeterReading("pid", "usagePoint", readingDate, PollingStatus.DATA_NOT_READY);
@@ -109,20 +86,10 @@ class MeterReadingUpdateHandlerTest {
     @Test
     void meterReadingEqualsEnd_fulfillsPermissionRequest() {
         // Given
-        var pr = new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                LocalDate.of(2024, 9, 1),
-                LocalDate.of(2024, 9, 30),
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.of(2024, 9, 1, 0, 0, 0, 0, ZoneOffset.UTC),
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                "1111");
+        var pr = new GreenButtonPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setEnd(LocalDate.of(2024, 9, 30))
+                .build();
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         var readingDate = ZonedDateTime.of(2024, 9, 30, 23, 59, 59, 0, ZoneOffset.UTC);
         var meterReading = new MeterReading("pid", "usagePoint", readingDate, PollingStatus.DATA_NOT_READY);

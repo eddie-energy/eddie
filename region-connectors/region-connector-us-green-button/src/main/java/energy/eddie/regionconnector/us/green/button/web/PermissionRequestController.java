@@ -3,8 +3,7 @@ package energy.eddie.regionconnector.us.green.button.web;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
-import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
+import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingCredentialsException;
 import energy.eddie.regionconnector.us.green.button.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.us.green.button.services.PermissionRequestCreationService;
@@ -52,7 +51,7 @@ public class PermissionRequestController {
             @RequestBody
             @Valid
             PermissionRequestForCreation permissionRequest
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, MissingClientIdException, MissingClientSecretException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, MissingCredentialsException {
         var createdPermissionRequest = permissionRequestCreationService.createPermissionRequest(
                 permissionRequest
         );

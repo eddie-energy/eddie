@@ -1,13 +1,13 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsUnfulfillableEvent;
 import energy.eddie.regionconnector.us.green.button.permission.request.GreenButtonPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,14 +16,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestServiceTest {
@@ -31,38 +29,50 @@ class PermissionRequestServiceTest {
     private Outbox outbox;
     @Mock
     private UsPermissionRequestRepository repository;
+    @Mock
+    @SuppressWarnings("unused")
+    private EntityManager entityManager;
     @InjectMocks
     private PermissionRequestService permissionRequestService;
     @Captor
     private ArgumentCaptor<UsUnfulfillableEvent> eventCaptor;
 
     @Test
-    void removeUnfulfillablePermissionRequests_emitsUnfulfillable() {
+    void removeUnfulfillablePermissionRequest_emitsUnfulfillable() {
         // Given
-        var meterReadings = List.of(new MeterReading("pid",
-                                                     "mid",
-                                                     ZonedDateTime.now(ZoneOffset.UTC),
-                                                     PollingStatus.DATA_READY));
-        var pr1 = getPermissionRequest(meterReadings, "pid1");
-        var pr2 = getPermissionRequest(List.of(), "pid2");
-        when(repository.findAllById(List.of("pid1", "pid2"))).thenReturn(List.of(pr1, pr2));
+        var pr = getPermissionRequest(List.of());
+        when(repository.getByPermissionId("pid")).thenReturn(pr);
 
         // When
-        permissionRequestService.removeUnfulfillablePermissionRequests(List.of("pid1", "pid2"));
+        permissionRequestService.removeUnfulfillablePermissionRequest("pid");
 
         // Then
         verify(outbox).commit(eventCaptor.capture());
         var res = eventCaptor.getValue();
         assertAll(
-                () -> assertEquals("pid2", res.permissionId()),
+                () -> assertEquals("pid", res.permissionId()),
                 () -> assertTrue(res.requiresExternalTermination())
         );
     }
 
     @Test
+    void removeUnfulfillablePermissionRequest_doesNothingForFulfillablePermissionRequest() {
+        // Given
+        var meterReading = new MeterReading("pid", "muid", ZonedDateTime.now(ZoneOffset.UTC), PollingStatus.DATA_READY);
+        var pr = getPermissionRequest(List.of(meterReading));
+        when(repository.getByPermissionId("pid")).thenReturn(pr);
+
+        // When
+        permissionRequestService.removeUnfulfillablePermissionRequest("pid");
+
+        // Then
+        verify(outbox, never()).commit(any());
+    }
+
+    @Test
     void findActivePermissionRequests_returnsActivePermissionRequests() {
         // Given
-        var permissionRequests = List.of(getPermissionRequest(List.of(), "pid"));
+        var permissionRequests = List.of(getPermissionRequest(List.of()));
         when(repository.findActivePermissionRequests())
                 .thenReturn(permissionRequests);
 
@@ -73,24 +83,9 @@ class PermissionRequestServiceTest {
         assertEquals(permissionRequests, res);
     }
 
-    private static GreenButtonPermissionRequest getPermissionRequest(List<MeterReading> meterReadings, String pid) {
-        var today = LocalDate.now(ZoneOffset.UTC);
-        var now = ZonedDateTime.now(ZoneOffset.UTC);
-        return new GreenButtonPermissionRequest(
-                pid,
-                "cid",
-                "dnid",
-                today,
-                today,
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                now,
-                "US",
-                "company",
-                null,
-                null,
-                meterReadings,
-                "1111"
-        );
+    private static GreenButtonPermissionRequest getPermissionRequest(List<MeterReading> meterReadings) {
+        return new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                        .setLastMeterReadings(meterReadings)
+                                                        .build();
     }
 }

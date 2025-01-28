@@ -4,7 +4,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.us.green.button.PermissionRequestCreator;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
 import energy.eddie.regionconnector.us.green.button.client.dtos.authorization.Authorization;
 import energy.eddie.regionconnector.us.green.button.client.dtos.authorization.Scope;
@@ -49,8 +49,12 @@ class RequiresExternalTerminationHandlerTest {
     void testHandler_terminatesExternally_onSuccessfulAPICall() {
         // Given
         when(repository.getByPermissionId("pid"))
-                .thenReturn(PermissionRequestCreator.createPermissionRequest());
-        when(api.revoke("1111"))
+                .thenReturn(new GreenButtonPermissionRequestBuilder()
+                                    .setPermissionId("pid")
+                                    .setCompanyId("company")
+                                    .setAuthUid("1111")
+                                    .build());
+        when(api.revoke("1111", "company"))
                 .thenReturn(Mono.just(createAuthorization()));
 
         // When
@@ -67,8 +71,11 @@ class RequiresExternalTerminationHandlerTest {
     void testHandler_emitsTerminationFailed_onError() {
         // Given
         when(repository.getByPermissionId("pid"))
-                .thenReturn(PermissionRequestCreator.createPermissionRequest());
-        when(api.revoke("1111"))
+                .thenReturn(new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                                     .setCompanyId("company")
+                                                                     .setAuthUid("1111")
+                                                                     .build());
+        when(api.revoke("1111", "company"))
                 .thenReturn(Mono.error(WebClientResponseException.create(402, "", null, null, null)));
 
         // When
@@ -85,8 +92,11 @@ class RequiresExternalTerminationHandlerTest {
     void testHandler_emitsExternallyTerminated_ifPermissionCannotBeFound() {
         // Given
         when(repository.getByPermissionId("pid"))
-                .thenReturn(PermissionRequestCreator.createPermissionRequest());
-        when(api.revoke("1111"))
+                .thenReturn(new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                                     .setCompanyId("company")
+                                                                     .setAuthUid("1111")
+                                                                     .build());
+        when(api.revoke("1111", "company"))
                 .thenReturn(Mono.error(WebClientResponseException.create(404, "", null, null, null)));
 
         // When

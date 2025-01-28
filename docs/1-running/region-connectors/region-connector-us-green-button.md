@@ -36,17 +36,16 @@ tbd
 The region connector needs a set of configuration values to be able to function correctly, how you provide these values
 depends on the way you deploy the region connector.
 
-| Configuration values                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-|--------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `region-connector.us.green.button.basepath`                  | Base path for the client (default is https://utilityapi.com/)                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `region-connector.us.green.button.redirect.url`              | The redirect url for the OAuth flow                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `region-connector.us.green.button.client.api.token`          | The api token in order to check the API status                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `region-connector.us.green.button.webhook.secret`            | The webhook secret in order to validate webhook events. Not used yet, can contain any value.                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `region-connector.us.green.button.client-ids.REPLACE_ME`     | The client ids of the utilities you want to support. The name of the utility should replace the `REPLACE_ME` placeholder.                                                                                                                                                                                                                                                                                                                                                                                         |
-| `region-connector.us.green.button.client-secrets.REPLACE_ME` | The client secrets of the utilities you want to support. The name of the utility should replace the `REPLACE_ME` placeholder.                                                                                                                                                                                                                                                                                                                                                                                     |
-| `region-connector.us.green-button.activation-batch-size`     | The batch size in which the collection of metering data should be triggered. The green button defers collecting data from the metered data administrator until it has been triggered. This means that no data is lost if the collection is triggered at a later point. If immediate activation is needed set to `1`. Recommended maximum is `1000` to avoid paging API calls. Keep in mind that if the collection is not finished before the data is polled incomplete or no data can be requested for the batch. |
-| `region-connector.us.green.button.termination.retry`         | When termination of permission requests with the green button API should be retried. Uses Spring cron syntax. Default is hourly                                                                                                                                                                                                                                                                                                                                                                                   |
-| `region-connector.us.green.button.polling`                   | Optional configuration variable that sets the time when the region-connector should poll future validated historical data. Uses Spring CRON syntax. Default is `0 0 17 * * *`.                                                                                                                                                                                                                                                                                                                                    |
+| Configuration values                                         | Description                                                                                                                                                                    |
+|--------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `region-connector.us.green.button.basepath`                  | Base path for the client (default is https://utilityapi.com/)                                                                                                                  |
+| `region-connector.us.green.button.redirect.url`              | The redirect url for the OAuth flow                                                                                                                                            |
+| `region-connector.us.green.button.webhook.secret`            | The webhook secret in order to validate webhook events. Not used yet, can contain any value.                                                                                   |
+| `region-connector.us.green.button.client-ids.REPLACE_ME`     | The client ids of the utilities you want to support. The name of the utility should replace the `REPLACE_ME` placeholder.                                                      |
+| `region-connector.us.green.button.client-secrets.REPLACE_ME` | The client secrets of the utilities you want to support. The name of the utility should replace the `REPLACE_ME` placeholder.                                                  |
+| `region-connector.us.green.button.tokens.REPLACE_ME`         | The API token for the utilities you want to support. The name of the utility should replace the `REPLACE_ME` placeholder.                                                      |
+| `region-connector.us.green.button.termination.retry`         | When termination of permission requests with the green button API should be retried. Uses Spring cron syntax. Default is hourly                                                |
+| `region-connector.us.green.button.polling`                   | Optional configuration variable that sets the time when the region-connector should poll future validated historical data. Uses Spring CRON syntax. Default is `0 0 17 * * *`. |
 
 ### .properties file
 
@@ -55,11 +54,10 @@ Example configuration for an `application.properties` file:
 ```properties
 region-connector.us.green.button.basepath=https://utilityapi.com/
 region-connector.us.green.button.redirect.url=https://your-eddie-instance.example/region-connectors/us-green-button/authorization-callback
-region-connector.us.green.button.client.api.token=REPLACE_ME
 region-connector.us.green.button.webhook.secret=REPLACE_ME
 region-connector.us.green.button.client-ids.REPLACE_ME=REPLACE_ME
 region-connector.us.green.button.client-secrets.REPLACE_ME=REPLACE_ME
-region-connector.us.green-button.activation-batch-size=1
+region-connector.us.green.button.tokens.REPLACE_ME=REPLACE_ME
 region-connector.us.green.button.polling=0 0 17 * * *
 ```
 
@@ -76,11 +74,10 @@ Example configuration for dotenv file:
 ```dotenv
 REGIONCONNECTOR_US_GREEN_BUTTON_BASEPATH=https://utilityapi.com/
 REGIONCONNECTOR_US_GREEN_BUTTON_REDIRECTURI=https://your-eddie-instance.example/region-connectors/us-green-button/authorization-callback
-REGIONCONNECTOR_US_GREEN_BUTTON_APITOKEN=REPLACE_ME
 REGIONCONNECTOR_US_GREEN_BUTTON_WEBHOOK_SECRET=REPLACE_ME
 REGIONCONNECTOR_US_GREEN_BUTTON_CLIENTIDS_REPLACEME=REPLACE_ME
 REGIONCONNECTOR_US_GREEN_BUTTON_CLIENTSECRETS_REPLACEME=REPLACE_ME
-REGIONCONNECTOR_US_GREEN_BUTTON_ACTIVATIONBATCHSIZE=1
+REGIONCONNECTOR_US_GREEN_BUTTON_TOKENS_REPLACEME=REPLACE_ME
 REGIONCONNECTOR_US_GREEN_BUTTON_POLLING=0 0 17 * * *
 ```
 

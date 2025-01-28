@@ -9,8 +9,10 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
+import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingApiTokenException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
+import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingCredentialsException;
 import energy.eddie.regionconnector.us.green.button.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.us.green.button.permission.GreenButtonDataSourceInformation;
@@ -56,7 +58,7 @@ public class PermissionRequestCreationService {
         this.outbox = outbox;
     }
 
-    public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequestForCreation) throws DataNeedNotFoundException, UnsupportedDataNeedException, MissingClientIdException, MissingClientSecretException {
+    public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequestForCreation) throws DataNeedNotFoundException, UnsupportedDataNeedException, MissingCredentialsException {
         var permissionId = UUID.randomUUID().toString();
         var dataSourceInformation = new GreenButtonDataSourceInformation(permissionRequestForCreation.companyId(),
                                                                          permissionRequestForCreation.countryCode());
@@ -90,14 +92,13 @@ public class PermissionRequestCreationService {
         };
 
         var companyId = permissionRequestForCreation.companyId();
+        String clientId;
         try {
-            validateUsConfiguration(companyId);
-        } catch (MissingClientIdException | MissingClientSecretException e) {
+            clientId = validateUsConfigurationAndGetClientId(companyId);
+        } catch (MissingClientIdException | MissingClientSecretException | MissingApiTokenException e) {
             outbox.commit(new UsMalformedEvent(permissionId, List.of(new AttributeError("companyId", e.getMessage()))));
             throw e;
         }
-
-        var clientId = configuration.clientIds().get(companyId);
 
         Scope scope;
         try {
@@ -127,14 +128,24 @@ public class PermissionRequestCreationService {
         return new CreatedPermissionRequest(permissionId, redirectUri);
     }
 
-    private void validateUsConfiguration(String companyId) throws MissingClientIdException, MissingClientSecretException {
-        if (!configuration.clientIds().containsKey(companyId)) {
-            throw new MissingClientIdException();
-        }
+    public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
+        return repository.findByPermissionId(permissionId)
+                         .map(request -> new ConnectionStatusMessage(request.connectionId(),
+                                                                     request.permissionId(),
+                                                                     request.dataNeedId(),
+                                                                     request.dataSourceInformation(),
+                                                                     request.status()));
+    }
 
-        if (!configuration.clientSecrets().containsKey(companyId)) {
-            throw new MissingClientSecretException();
-        }
+    public Optional<String> findDataNeedIdByPermissionId(String permissionId) {
+        return repository.findByPermissionId(permissionId)
+                         .map(PermissionRequest::dataNeedId);
+    }
+
+    private String validateUsConfigurationAndGetClientId(String companyId) throws MissingClientIdException, MissingClientSecretException, MissingApiTokenException {
+        configuration.getClientSecretOrThrow(companyId);
+        configuration.throwOnMissingToken(companyId);
+        return configuration.getClientIdOrThrow(companyId);
     }
 
     private URI buildRedirectUri(String permissionId, String jumpOffUrl, String clientId, String scope) {
@@ -148,19 +159,5 @@ public class PermissionRequestCreationService {
                                    .queryParam("scope", UriUtils.encode(scope, StandardCharsets.UTF_8))
                                    .build(true)
                                    .toUri();
-    }
-
-    public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
-        return repository.findByPermissionId(permissionId)
-                         .map(request -> new ConnectionStatusMessage(request.connectionId(),
-                                                                     request.permissionId(),
-                                                                     request.dataNeedId(),
-                                                                     request.dataSourceInformation(),
-                                                                     request.status()));
-    }
-
-    public Optional<String> findDataNeedIdByPermissionId(String permissionId) {
-        return repository.findByPermissionId(permissionId)
-                         .map(PermissionRequest::dataNeedId);
     }
 }

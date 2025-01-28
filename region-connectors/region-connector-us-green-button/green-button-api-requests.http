@@ -1,0 +1,4 @@
+### GET meter by id
+@meter_id = 1807351
+GET https://utilityapi.com/api/v2/meters/{{meter_id}}?expand_meter_blocks=true
+Authorization: Bearer {{token}}

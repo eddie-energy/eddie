@@ -4,6 +4,7 @@ package energy.eddie.regionconnector.us.green.button.services;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingApiTokenException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
 import energy.eddie.regionconnector.us.green.button.exceptions.InvalidScopesException;
@@ -37,7 +38,7 @@ public class PermissionRequestAuthorizationService {
 
     public void authorizePermissionRequest(
             OAuthCallback callback
-    ) throws PermissionNotFoundException, MissingClientIdException, MissingClientSecretException, UnauthorizedException {
+    ) throws PermissionNotFoundException, MissingClientIdException, MissingClientSecretException, UnauthorizedException, MissingApiTokenException {
         var permissionId = callback.state();
         var pr = permissionRequestRepository.findById(permissionId);
         if (pr.isEmpty()) {

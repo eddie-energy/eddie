@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.persistence.MeterReadingRepository;
 import energy.eddie.regionconnector.us.green.button.services.historical.collection.HistoricalCollectionService;
@@ -46,14 +45,13 @@ public class FutureDataService {
                                                                             meterReading.permissionId(),
                                                                             meterReading.meterUid());
         }
-        var permissionIds = activePermissionRequests.stream()
-                                                    .map(PermissionRequest::permissionId)
-                                                    .toList();
-        historicalCollectionService.triggerHistoricalDataCollection(meterReadings)
-                                   .publishOn(Schedulers.boundedElastic())
-                                   .doFinally(meters -> permissionRequestService.removeUnfulfillablePermissionRequests(
-                                           permissionIds
-                                   ))
-                                   .subscribe();
+        for (var pr : activePermissionRequests) {
+            historicalCollectionService.triggerHistoricalDataCollection(pr)
+                                       .publishOn(Schedulers.boundedElastic())
+                                       .doFinally(meters -> permissionRequestService.removeUnfulfillablePermissionRequest(
+                                               pr.permissionId()
+                                       ))
+                                       .subscribe();
+        }
     }
 }

@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.us.green.button;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
@@ -24,9 +25,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.http.codec.xml.Jaxb2XmlDecoder;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.ZoneOffset;
@@ -47,20 +49,27 @@ public class GreenButtonBeanConfig {
     }
 
     @Bean
-    public WebClient webClient(GreenButtonConfiguration greenButtonConfiguration) {
-        var exchangeStrategies = ExchangeStrategies
-                .builder()
-                .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs().jaxb2Decoder(
-                        new Jaxb2XmlDecoder(MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.TEXT_PLAIN)
-                ))
+    public WebClient webClient(
+            GreenButtonConfiguration greenButtonConfiguration,
+            ObjectMapper objectMapper,
+            WebClient.Builder builder
+    ) {
+        return builder
+                .baseUrl(greenButtonConfiguration.basePath())
+                .defaultHeader(HttpHeaders.ACCEPT, "application/atom+xml")
+                .codecs(codecs -> {
+                    codecs.defaultCodecs()
+                          .jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON));
+                    codecs.defaultCodecs()
+                          .jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON));
+                    codecs.defaultCodecs()
+                          .jaxb2Decoder(
+                                  new Jaxb2XmlDecoder(MediaType.APPLICATION_XML,
+                                                      MediaType.TEXT_XML,
+                                                      MediaType.TEXT_PLAIN)
+                          );
+                })
                 .build();
-
-        return WebClient.builder()
-                        .baseUrl(greenButtonConfiguration.basePath())
-                        .exchangeStrategies(exchangeStrategies)
-                        .defaultHeader(HttpHeaders.ACCEPT, "application/atom+xml")
-                        .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + greenButtonConfiguration.apiToken())
-                        .build();
     }
 
     @Bean

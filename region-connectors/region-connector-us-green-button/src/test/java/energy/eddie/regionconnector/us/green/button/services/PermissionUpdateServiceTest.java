@@ -2,10 +2,9 @@ package energy.eddie.regionconnector.us.green.button.services;
 
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.us.green.button.GreenButtonBeanConfig;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.XmlLoader;
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsMeterReadingUpdateEvent;
@@ -29,11 +28,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.assertArg;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionUpdateServiceTest {
@@ -119,7 +115,7 @@ class PermissionUpdateServiceTest {
     }
 
     @Test
-    void updatePermissionRequest_withoutIntervalBlock_emitsUnfulfillable() throws FeedException {
+    void updatePermissionRequest_withoutIntervalBlock_doesNothing() throws FeedException {
         // Given
         var xml = XmlLoader.xmlFromResource("/xml/batch/BatchWithoutIntervalBlock.xml");
         var feed = new SyndFeedInput().build(new StringReader(xml));
@@ -132,7 +128,7 @@ class PermissionUpdateServiceTest {
         permissionUpdateService.updatePermissionRequest(payload);
 
         // Then
-        verify(outbox).commit(assertArg(res -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, res.status())));
+        verify(outbox, never()).commit(any());
     }
 
     private static GreenButtonPermissionRequest createPermissionRequest(
@@ -141,20 +137,10 @@ class PermissionUpdateServiceTest {
             String meterUid
     ) {
         var meterReading = new MeterReading("pid", meterUid, created.minusDays(1), PollingStatus.DATA_NOT_READY);
-        return new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                start,
-                LocalDate.of(2024, 9, 4),
-                Granularity.PT15M,
-                PermissionProcessStatus.ACCEPTED,
-                created,
-                "US",
-                "company",
-                "http://localhost",
-                "scope",
-                List.of(meterReading),
-                "1111");
+        return new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                        .setStart(start)
+                                                        .setCreated(created)
+                                                        .setLastMeterReadings(List.of(meterReading))
+                                                        .build();
     }
 }

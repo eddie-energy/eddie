@@ -37,7 +37,7 @@ public class RequiresExternalTerminationHandler implements EventHandler<Permissi
     public void accept(PermissionEvent permissionEvent) {
         var permissionId = permissionEvent.permissionId();
         var pr = repository.getByPermissionId(permissionId);
-        api.revoke(pr.authorizationUid())
+        api.revoke(pr.authorizationUid(), pr.dataSourceInformation().meteredDataAdministratorId())
            .subscribe(res -> outbox.commit(new UsSimpleEvent(permissionId,
                                                              PermissionProcessStatus.EXTERNALLY_TERMINATED)),
                       err -> handleError(err, permissionId));

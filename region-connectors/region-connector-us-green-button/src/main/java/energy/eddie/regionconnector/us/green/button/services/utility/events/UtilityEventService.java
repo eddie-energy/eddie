@@ -48,13 +48,20 @@ public class UtilityEventService {
             return;
         }
         var permissionId = res.permissionId();
-        LOGGER.info("Got webhook event '{}' for permission request {}", event.type(), permissionId);
+        LOGGER.debug("Got webhook event '{}' for permission request {}", event.type(), permissionId);
         switch (event.type()) {
             case "authorization_expired":
-                if (res.status() != PermissionProcessStatus.EXTERNALLY_TERMINATED)
+                LOGGER.info("Got authorization expired event for {} permission request {}",
+                            res.status(),
+                            permissionId);
+                if (res.status() != PermissionProcessStatus.EXTERNALLY_TERMINATED) {
                     outbox.commit(new UsUnfulfillableEvent(permissionId, false));
+                }
                 break;
             case "authorization_revoked":
+                LOGGER.info("Got authorization revoked for {} permission request {}",
+                            res.status(),
+                            permissionId);
                 outbox.commit(new UsSimpleEvent(permissionId, PermissionProcessStatus.REVOKED));
                 break;
             case "meter_created":
@@ -67,8 +74,9 @@ public class UtilityEventService {
                 if (res.status() == PermissionProcessStatus.ACCEPTED) {
                     outbox.commit(new UsAuthorizationUpdateFinishedEvent(permissionId));
                 } else {
-                    LOGGER.info("Permission request {} is not accepted, not emitting authorization event",
-                                permissionId);
+                    LOGGER.info("Permission request {} is not accepted, but {}, not emitting authorization event",
+                                permissionId,
+                                res.status());
                 }
                 break;
             default:

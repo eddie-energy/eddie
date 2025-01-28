@@ -13,14 +13,7 @@ class GreenButtonConfigurationTest {
     @ValueSource(strings = {"id", "ID", "Id"})
     void testClientId_ignoresCase(String clientId) {
         // Given
-        var config = new GreenButtonConfiguration(
-                "token",
-                "http://localhost",
-                Map.of("id", "value"),
-                Map.of("id", "secret"),
-                "http://localhost",
-                1,
-                "secret");
+        var config = getGreenButtonConfiguration();
 
         // When
         var res = config.clientIds().containsKey(clientId);
@@ -33,19 +26,22 @@ class GreenButtonConfigurationTest {
     @ValueSource(strings = {"id", "ID", "Id"})
     void testClientSecret_ignoresCase(String clientId) {
         // Given
-        var config = new GreenButtonConfiguration(
-                "token",
-                "http://localhost",
-                Map.of("id", "value"),
-                Map.of("id", "secret"),
-                "http://localhost",
-                1,
-                "secret");
+        var config = getGreenButtonConfiguration();
 
         // When
         var res = config.clientSecrets().containsKey(clientId);
 
         // Then
         assertTrue(res);
+    }
+
+    private static GreenButtonConfiguration getGreenButtonConfiguration() {
+        return new GreenButtonConfiguration(
+                "http://localhost",
+                Map.of("id", "value"),
+                Map.of("id", "secret"),
+                Map.of("id", "token"),
+                "http://localhost",
+                "secret");
     }
 }

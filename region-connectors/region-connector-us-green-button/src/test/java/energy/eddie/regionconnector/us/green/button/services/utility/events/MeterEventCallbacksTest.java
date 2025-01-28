@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.us.green.button.services.utility.events;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Exports;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
@@ -16,17 +16,21 @@ import energy.eddie.regionconnector.us.green.button.services.historical.collecti
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -43,6 +47,14 @@ class MeterEventCallbacksTest {
     private DataNeedMatcher matcher;
     @InjectMocks
     private MeterEventCallbacks meterEventCallbacks;
+
+    public static Stream<Arguments> testOnMeterCreatedEvent_apiThrowsException_doesNothing() {
+        var error = WebClientResponseException.create(404, "", null, null, null);
+        return Stream.of(
+                Arguments.of(new Exception()),
+                Arguments.of(error)
+        );
+    }
 
     @Test
     void testOnHistoricalCollectionFinishedEvent_withoutMeterUid_doesNothing() {
@@ -82,9 +94,10 @@ class MeterEventCallbacksTest {
         var event = getEvent("muid");
         var meter = getMeter();
         var publisher = TestPublisher.<Meter>create();
-        when(api.fetchMeter("muid")).thenReturn(publisher.mono());
+        when(api.fetchMeter("muid", "company")).thenReturn(publisher.mono());
         when(matcher.isRelevantEnergyType(meter, pr)).thenReturn(true);
         when(meterReadingRepository.findAllByPermissionId("pid")).thenReturn(List.of(getMeterReading(PollingStatus.DATA_READY)));
+        when(meterReadingRepository.existsById(any())).thenReturn(true);
 
         // When
         meterEventCallbacks.onHistoricalCollectionFinishedEvent(event, pr);
@@ -109,7 +122,7 @@ class MeterEventCallbacksTest {
         var event = getEvent("muid");
         var meter = getMeter();
         var publisher = TestPublisher.<Meter>create();
-        when(api.fetchMeter("muid")).thenReturn(publisher.mono());
+        when(api.fetchMeter("muid", "company")).thenReturn(publisher.mono());
         when(matcher.isRelevantEnergyType(meter, pr)).thenReturn(true);
         when(meterReadingRepository.findAllByPermissionId("pid")).thenReturn(List.of(getMeterReading(PollingStatus.DATA_READY)));
 
@@ -134,7 +147,7 @@ class MeterEventCallbacksTest {
         var event = getEvent("muid");
         var meter = getMeter();
         var publisher = TestPublisher.<Meter>create();
-        when(api.fetchMeter("muid")).thenReturn(publisher.mono());
+        when(api.fetchMeter("muid", "company")).thenReturn(publisher.mono());
         when(matcher.isRelevantEnergyType(meter, pr)).thenReturn(true);
         when(meterReadingRepository.findAllByPermissionId("pid")).thenReturn(List.of());
 
@@ -159,7 +172,7 @@ class MeterEventCallbacksTest {
         var event = getEvent("muid");
         var meter = getMeter();
         var publisher = TestPublisher.<Meter>create();
-        when(api.fetchMeter("muid")).thenReturn(publisher.mono());
+        when(api.fetchMeter("muid", "company")).thenReturn(publisher.mono());
         when(matcher.isRelevantEnergyType(meter, pr)).thenReturn(true);
         when(meterReadingRepository.findAllByPermissionId("pid"))
                 .thenReturn(List.of(getMeterReading(PollingStatus.DATA_READY),
@@ -186,7 +199,7 @@ class MeterEventCallbacksTest {
         var event = getEvent("muid");
         var meter = getMeter();
         var publisher = TestPublisher.<Meter>create();
-        when(api.fetchMeter("muid")).thenReturn(publisher.mono());
+        when(api.fetchMeter("muid", "company")).thenReturn(publisher.mono());
         when(matcher.isRelevantEnergyType(meter, pr)).thenReturn(false);
 
         // When
@@ -240,7 +253,7 @@ class MeterEventCallbacksTest {
         var event = getEvent("muid");
         var meter = getMeter();
         var publisher = TestPublisher.<Meter>create();
-        when(api.fetchMeter("muid")).thenReturn(publisher.mono());
+        when(api.fetchMeter("muid", "company")).thenReturn(publisher.mono());
         when(matcher.isRelevantEnergyType(meter, pr)).thenReturn(false);
 
         // When
@@ -265,8 +278,9 @@ class MeterEventCallbacksTest {
         var event = getEvent("muid");
         var meter = getMeter();
         var publisher = TestPublisher.<Meter>create();
-        when(api.fetchMeter("muid")).thenReturn(publisher.mono());
+        when(api.fetchMeter("muid", "company")).thenReturn(publisher.mono());
         when(matcher.isRelevantEnergyType(meter, pr)).thenReturn(true);
+        when(meterReadingRepository.existsById(any())).thenReturn(true);
 
         // When
         meterEventCallbacks.onMeterCreatedEvent(event, pr);
@@ -291,7 +305,7 @@ class MeterEventCallbacksTest {
         var event = getEvent("muid");
         var meter = getMeter();
         var publisher = TestPublisher.<Meter>create();
-        when(api.fetchMeter("muid")).thenReturn(publisher.mono());
+        when(api.fetchMeter("muid", "company")).thenReturn(publisher.mono());
         when(matcher.isRelevantEnergyType(meter, pr)).thenReturn(true);
 
         // When
@@ -305,6 +319,30 @@ class MeterEventCallbacksTest {
                     .verifyComplete();
         verify(outbox, never()).commit(isA(UsStartPollingEvent.class));
         verify(meterReadingRepository).save(any());
+        verify(meterReadingRepository, never()).updateHistoricalCollectionStatusForMeter(any(), any(), any());
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void testOnMeterCreatedEvent_apiThrowsException_doesNothing(Exception e) {
+        // Given
+        var pr = getPermissionRequest(PermissionProcessStatus.ACCEPTED, List.of());
+        var event = getEvent("muid");
+        var publisher = TestPublisher.<Meter>create();
+        when(api.fetchMeter("muid", "company"))
+                .thenReturn(publisher.mono());
+
+        // When
+        meterEventCallbacks.onMeterCreatedEvent(event, pr);
+
+        // Then
+        StepVerifier.create(publisher)
+                    .then(() -> publisher.error(e))
+                    .then(publisher::complete)
+                    .expectError()
+                    .verify();
+        verify(outbox, never()).commit(isA(UsStartPollingEvent.class));
+        verify(meterReadingRepository, never()).save(any());
         verify(meterReadingRepository, never()).updateHistoricalCollectionStatusForMeter(any(), any(), any());
     }
 
@@ -349,30 +387,19 @@ class MeterEventCallbacksTest {
                 List.of(),
                 new Exports(null, null, null, null, null),
                 List.of(),
-                List.of()
-        );
+                List.of(),
+                List.of(),
+                List.of(), List.of());
     }
 
     private static GreenButtonPermissionRequest getPermissionRequest(
             PermissionProcessStatus status,
             List<@NotNull MeterReading> meterReadings
     ) {
-        var now = LocalDate.now(ZoneOffset.UTC);
-        return new GreenButtonPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                now,
-                now,
-                Granularity.P1D,
-                status,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                "US",
-                "company",
-                "https://localhost:8080",
-                "scope",
-                meterReadings,
-                "1111"
-        );
+        return new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                        .setStatus(status)
+                                                        .setCompanyId("company")
+                                                        .setLastMeterReadings(meterReadings)
+                                                        .build();
     }
 }

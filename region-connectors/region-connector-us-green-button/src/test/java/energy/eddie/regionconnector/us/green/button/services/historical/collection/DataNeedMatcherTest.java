@@ -2,11 +2,11 @@ package energy.eddie.regionconnector.us.green.button.services.historical.collect
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Exports;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
@@ -23,7 +23,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -36,23 +35,10 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DataNeedMatcherTest {
-    public static final LocalDate NOW = LocalDate.now(ZoneOffset.UTC);
     public static final GreenButtonPermissionRequest PERMISSION_REQUEST =
-            new GreenButtonPermissionRequest(
-                    "pid",
-                    "cid",
-                    "dnid",
-                    NOW,
-                    NOW,
-                    Granularity.PT15M,
-                    PermissionProcessStatus.ACCEPTED,
-                    NOW.atStartOfDay(ZoneOffset.UTC),
-                    "US",
-                    "company",
-                    "http://localhost",
-                    "scope",
-                    "1111"
-            );
+            new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                     .setDataNeedId("dnid")
+                                                     .build();
     private final Meter meter = new Meter(
             "uid",
             "1111",
@@ -76,8 +62,9 @@ class DataNeedMatcherTest {
             List.of(),
             new Exports(null, null, null, null, null),
             List.of(),
-            List.of()
-    );
+            List.of(),
+            List.of(),
+            List.of(), List.of());
     @Mock
     private DataNeedsService dataNeedsService;
     @Mock
@@ -173,8 +160,9 @@ class DataNeedMatcherTest {
                 List.of(),
                 new Exports(null, null, null, null, null),
                 List.of(),
-                List.of()
-        );
+                List.of(),
+                List.of(),
+                List.of(), List.of());
         meter.setMeterBlock("electric", new MeterBlock("id", "tariff", "electric", "", List.of(), "", "", ""));
         waterMeter.setMeterBlock("water", new MeterBlock("id", "tariff", "water", "", List.of(), "", "", ""));
         var data = new MeterListing(List.of(meter, waterMeter), null);

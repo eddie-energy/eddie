@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.client;
 
-import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.oauth.dto.AccessTokenResponse;
 import energy.eddie.regionconnector.us.green.button.oauth.dto.ClientAccessTokenResponse;
 import energy.eddie.regionconnector.us.green.button.oauth.request.AccessTokenWithCodeRequest;
@@ -11,12 +10,11 @@ import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
-
-import static org.mockito.Mockito.mock;
 
 class OAuthTokenClientTest {
 
@@ -28,11 +26,10 @@ class OAuthTokenClientTest {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
         String baseUrl = mockWebServer.url("/").toString();
-        var greenButtonConfiguration = mock(GreenButtonConfiguration.class);
         oAuthTokenClient = new OAuthTokenClient(baseUrl,
                                                 "test-client-id",
                                                 "test-client-secret",
-                                                greenButtonConfiguration);
+                                                WebClient.builder().baseUrl(baseUrl).build());
     }
 
     @AfterEach

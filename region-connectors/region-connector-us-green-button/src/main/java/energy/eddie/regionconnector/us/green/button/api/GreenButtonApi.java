@@ -14,12 +14,6 @@ import java.util.List;
 
 public interface GreenButtonApi {
 
-    /**
-     * Max. amount of meters returned on one page by {@code fetchMeters}. For more information see <a
-     * href="https://utilityapi.com/docs/api/meters/list#meter-listing">this</a>.
-     */
-    int MAX_METER_RESULTS = 1000;
-
     Mono<ServiceStatus> readServiceStatus();
 
     Mono<Boolean> isAlive();
@@ -32,7 +26,14 @@ public interface GreenButtonApi {
             ZonedDateTime publishedMax
     );
 
-    Mono<HistoricalCollectionResponse> collectHistoricalData(List<String> meterIds);
+    /**
+     * Triggers historical data collection for the meters.
+     *
+     * @param meterIds the meters for which the collection should be triggered
+     * @param company  the company to which the meters belong to
+     * @return the result of the API call
+     */
+    Mono<HistoricalCollectionResponse> collectHistoricalData(List<String> meterIds, String company);
 
     /**
      * Fetches all meters that have been shared with this utility user. Uses the JSON API to fetch the meter data: <a
@@ -41,17 +42,19 @@ public interface GreenButtonApi {
      *
      * @param slurp   if all pages should be requested
      * @param authIds auth IDs of the meters of interest
+     * @param company the company which the meters belong to
      * @return shared meter
      */
-    Flux<MeterListing> fetchInactiveMeters(Pages slurp, List<String> authIds);
+    Flux<MeterListing> fetchMeters(Pages slurp, List<String> authIds, String company);
 
     /**
      * Fetches the details for one meter.
      *
-     * @param meterId the UID of the meter.
+     * @param meterId the UID of the meter
+     * @param company the company of the meter
      * @return the meter details
      */
-    Mono<Meter> fetchMeter(String meterId);
+    Mono<Meter> fetchMeter(String meterId, String company);
 
-    Mono<Authorization> revoke(String authUid);
+    Mono<Authorization> revoke(String authUid, String company);
 }

@@ -73,26 +73,6 @@ public class GreenButtonPermissionRequest implements UsGreenButtonPermissionRequ
         authUid = null;
     }
 
-    @SuppressWarnings("java:S107")
-    public GreenButtonPermissionRequest(
-            String permissionId,
-            String connectionId,
-            String dataNeedId,
-            LocalDate start,
-            LocalDate end,
-            Granularity granularity,
-            PermissionProcessStatus status,
-            ZonedDateTime created,
-            String countryCode,
-            String companyId,
-            String jumpOffUrl,
-            String scope,
-            String authUid
-    ) {
-        this(permissionId, connectionId, dataNeedId, start, end, granularity, status, created, countryCode,
-             companyId, jumpOffUrl, scope, List.of(), authUid);
-    }
-
     @SuppressWarnings({"java:S107"})
     public GreenButtonPermissionRequest(
             String permissionId,

@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.us.green.button.config.exceptions;
 
-public class MissingClientSecretException extends Exception {
-    private static final String MESSAGE = "No client secret found for the given utility. Please check the configuration.";
+public class MissingClientSecretException extends MissingCredentialsException{
+    private static final String MESSAGE = "No client secret found for the given utility %s. Please check the configuration.";
 
-    public MissingClientSecretException() {
-        super(MESSAGE);
+    public MissingClientSecretException(String company) {
+        super(MESSAGE, company);
     }
 }

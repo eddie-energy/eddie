@@ -28,6 +28,9 @@ public class DateTimeUtils {
     public static Optional<ZonedDateTime> oldestDateTime(Collection<ZonedDateTime> dateTimes) {
         ZonedDateTime oldest = null;
         for (var value : dateTimes) {
+            if (value == null) {
+                return Optional.empty();
+            }
             if (oldest == null || value.isBefore(oldest)) {
                 oldest = value;
             }

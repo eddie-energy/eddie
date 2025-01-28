@@ -9,11 +9,13 @@ import energy.eddie.regionconnector.us.green.button.client.dtos.authorization.Au
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.HistoricalCollectionResponse;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.MeterList;
+import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.xml.helper.Status;
 import jakarta.annotation.Nullable;
 import org.naesb.espi.ServiceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -37,18 +39,24 @@ public class GreenButtonClient implements GreenButtonApi {
     private final WebClient webClient;
     private final SyndFeedInput input = new SyndFeedInput();
     private final AtomFeedTransformer atomFeedTransformer = new AtomFeedTransformer();
+    private final GreenButtonConfiguration config;
 
-    public GreenButtonClient(WebClient webClient) {
+    public GreenButtonClient(WebClient webClient, GreenButtonConfiguration config) {
         this.webClient = webClient;
+        this.config = config;
     }
 
     @Override
     public Mono<ServiceStatus> readServiceStatus() {
         synchronized (webClient) {
-            return webClient.get()
-                            .uri("/DataCustodian/espi/1_1/resource/ReadServiceStatus")
-                            .retrieve()
-                            .bodyToMono(ServiceStatus.class);
+            var company = List.copyOf(config.tokens().keySet()).getFirst();
+            return withBearerToken(
+                    webClient.get()
+                             .uri("/DataCustodian/espi/1_1/resource/ReadServiceStatus"),
+                    company
+            )
+                    .retrieve()
+                    .bodyToMono(ServiceStatus.class);
         }
     }
 
@@ -71,63 +79,79 @@ public class GreenButtonClient implements GreenButtonApi {
     }
 
     @Override
-    public Mono<HistoricalCollectionResponse> collectHistoricalData(List<String> meterIds) {
+    public Mono<HistoricalCollectionResponse> collectHistoricalData(List<String> meterIds, String company) {
         LOGGER.info("Triggering historical data collection for meters {}", meterIds);
         if (meterIds.isEmpty()) {
             return Mono.error(new IllegalArgumentException("meterIds is empty"));
         }
         var meterList = new MeterList(meterIds);
         synchronized (webClient) {
-            return webClient.post()
-                            .uri("/api/v2/meters/historical-collection")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .bodyValue(meterList)
-                            .retrieve()
-                            .bodyToMono(HistoricalCollectionResponse.class);
+            return withBearerToken(
+                    webClient.post()
+                             .uri("/api/v2/meters/historical-collection")
+                             .contentType(MediaType.APPLICATION_JSON)
+                             .bodyValue(meterList),
+                    company
+            )
+                    .retrieve()
+                    .bodyToMono(HistoricalCollectionResponse.class);
         }
     }
 
     @Override
-    public Flux<MeterListing> fetchInactiveMeters(Pages slurp, List<String> authIds) {
+    public Flux<MeterListing> fetchMeters(Pages slurp, List<String> authIds, String company) {
         LOGGER.info("Fetching accounting point JSON data for following meters with authorization IDs {}", authIds);
         synchronized (webClient) {
-            return webClient.get()
-                            .uri(builder -> builder.path("/api/v2/meters")
-                                                   .queryParam("is_activated", false)
-                                                   .queryParam("authorizations", authIds)
-                                                   .build())
-                            .retrieve()
-                            .bodyToMono(MeterListing.class)
-                            .expand(response -> {
-                                if (response.next() == null || !slurp.value()) {
-                                    return Mono.empty();
-                                }
-                                return fetchAdditionalMeters(response.next());
-                            });
+            return withBearerToken(
+                    webClient.get()
+                             .uri(builder -> builder.path("/api/v2/meters")
+                                                    .queryParam("authorizations", authIds)
+                                                    .build()),
+                    company
+            )
+                    .retrieve()
+                    .bodyToMono(MeterListing.class)
+                    .expand(response -> {
+                        if (response.next() == null || !slurp.value()) {
+                            return Mono.empty();
+                        }
+                        return fetchAdditionalMeters(response.next());
+                    });
         }
     }
 
     @Override
-    public Mono<Meter> fetchMeter(String meterId) {
+    public Mono<Meter> fetchMeter(String meterId, String company) {
         synchronized (webClient) {
-            return webClient.get()
-                            .uri(builder -> builder.path("/api/v2/meters/{meterId}")
-                                                   .queryParam("expand_meter_blocks", true)
-                                                   .build(meterId))
-                            .retrieve()
-                            .bodyToMono(Meter.class);
+            return withBearerToken(
+                    webClient.get()
+                             .uri(builder -> builder.path("/api/v2/meters/{meterId}")
+                                                    .queryParam("expand_meter_blocks", true)
+                                                    .build(meterId)),
+                    company
+            )
+                    .retrieve()
+                    .bodyToMono(Meter.class);
         }
     }
 
     @Override
-    public Mono<Authorization> revoke(String authUid) {
+    public Mono<Authorization> revoke(String authUid, String company) {
         LOGGER.info("Triggering revocation for authorization UID {}", authUid);
         synchronized (webClient) {
-            return webClient.post()
-                            .uri("/api/v2/authorizations/{authUid}/revoke", Map.of("authUid", authUid))
-                            .retrieve()
-                            .bodyToMono(Authorization.class);
+            return withBearerToken(
+                    webClient.post()
+                             .uri("/api/v2/authorizations/{authUid}/revoke", Map.of("authUid", authUid)),
+                    company
+            )
+                    .retrieve()
+                    .bodyToMono(Authorization.class);
         }
+    }
+
+    private WebClient.RequestHeadersSpec<?> withBearerToken(WebClient.RequestHeadersSpec<?> spec, String company) {
+        var token = config.tokens().get(company);
+        return spec.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
     }
 
     private Mono<SyndFeed> batchSubscription(

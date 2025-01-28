@@ -55,8 +55,14 @@ public class Meter {
     private final Exports exports;
     @JsonProperty(value = "exports_list", required = true)
     private final List<Export> exportList;
-    @JsonProperty(required = true)
+    @JsonProperty(value = "blocks", required = true)
     private final List<String> blocks;
+    @JsonProperty(value = "other_devices")
+    private final List<Device> otherDevices;
+    @JsonProperty(value = "programs")
+    private final List<Program> programs;
+    @JsonProperty(value = "suppliers")
+    private final List<Supplier> suppliers;
     @JsonProperty
     private final Map<String, MeterBlock> meterBlocks = new HashMap<>();
 
@@ -82,8 +88,12 @@ public class Meter {
             int intervalCount,
             List<List<ZonedDateTime>> intervalCoverage,
             List<String> intervalSources,
-            Exports exports, List<Export> exportList,
-            List<String> blocks
+            Exports exports,
+            List<Export> exportList,
+            List<String> blocks,
+            List<Device> otherDevices,
+            List<Program> programs,
+            List<Supplier> suppliers
     ) {
         this.uid = uid;
         this.authorizationUid = authorizationUid;
@@ -108,6 +118,9 @@ public class Meter {
         this.exports = exports;
         this.exportList = exportList;
         this.blocks = blocks;
+        this.otherDevices = otherDevices;
+        this.programs = programs;
+        this.suppliers = suppliers;
     }
 
     public String uid() {

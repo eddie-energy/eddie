@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.us.green.button.services;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import energy.eddie.regionconnector.us.green.button.client.OAuthTokenClientFactory;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
+import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingApiTokenException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientIdException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingClientSecretException;
 import energy.eddie.regionconnector.us.green.button.exceptions.InvalidScopesException;
@@ -72,7 +73,7 @@ public class CredentialService {
     public Mono<OAuthTokenDetails> retrieveAccessToken(
             UsGreenButtonPermissionRequest permissionRequest,
             String code
-    ) throws MissingClientSecretException, MissingClientIdException {
+    ) throws MissingClientSecretException, MissingClientIdException, MissingApiTokenException {
         var companyId = permissionRequest.dataSourceInformation().permissionAdministratorId();
         var oAuthTokenClient = factory.create(companyId, permissionRequest.jumpOffUrl().orElseThrow());
         var accessTokenRequest = new AccessTokenWithCodeRequest(code, config.redirectUri());

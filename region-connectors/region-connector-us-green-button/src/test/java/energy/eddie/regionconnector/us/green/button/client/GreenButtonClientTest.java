@@ -10,6 +10,7 @@ import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Exports;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.HistoricalCollectionResponse;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.Meter;
 import energy.eddie.regionconnector.us.green.button.client.dtos.meter.OngoingMonitoring;
+import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -25,10 +26,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -57,8 +55,10 @@ class GreenButtonClientTest {
             List.of(),
             new Exports(null, null, null, null, null),
             List.of(),
-            List.of()
-    );
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of());
     private static MockWebServer mockBackEnd;
 
     private static String basePath;
@@ -88,7 +88,7 @@ class GreenButtonClientTest {
                         .setHeader("Content-Type", "application/xml")
                         .setBody(XmlLoader.xmlFromResource("/xml/usagepoint/UsagePoint.xml"))
         );
-        var api = new GreenButtonClient(client);
+        var api = new GreenButtonClient(client, getConfig());
 
         // When
         var res = api.batchSubscription("1111", "token", List.of("uid"), now, now);
@@ -115,7 +115,7 @@ class GreenButtonClientTest {
                         .setHeader("Content-Type", "application/xml")
                         .setBody(XmlLoader.xmlFromResource("/xml/usagepoint/UsagePointWithInvalidPayload.xml"))
         );
-        var api = new GreenButtonClient(client);
+        var api = new GreenButtonClient(client, getConfig());
 
         // When
         var res = api.batchSubscription("1111", "token", List.of("uid"), now, now);
@@ -125,7 +125,6 @@ class GreenButtonClientTest {
                     .expectError()
                     .verify();
     }
-
 
     @Test
     void batchSubscription_respondsWith202_retriesAfterHeader() {
@@ -143,7 +142,7 @@ class GreenButtonClientTest {
                         .setHeader("Content-Type", "application/xml")
                         .setBody(XmlLoader.xmlFromResource("/xml/usagepoint/UsagePoint.xml"))
         );
-        var api = new GreenButtonClient(client);
+        var api = new GreenButtonClient(client, getConfig());
 
         // When
         var res = api.batchSubscription("1111", "token", List.of("uid"), now, now);
@@ -168,7 +167,7 @@ class GreenButtonClientTest {
                 new MockResponse()
                         .setResponseCode(202)
         );
-        var api = new GreenButtonClient(client);
+        var api = new GreenButtonClient(client, getConfig());
 
         // When
         var res = api.batchSubscription("1111", "token", List.of("uid"), now, now);
@@ -191,10 +190,10 @@ class GreenButtonClientTest {
         );
 
         var client = WebClient.create(basePath);
-        var api = new GreenButtonClient(client);
+        var api = new GreenButtonClient(client, getConfig());
 
         // When
-        var res = api.collectHistoricalData(List.of("mid1", "mid2"));
+        var res = api.collectHistoricalData(List.of("mid1", "mid2"), "company");
 
         // Then
         StepVerifier.create(res)
@@ -209,10 +208,10 @@ class GreenButtonClientTest {
     void collectHistoricalData_withEmptyMeterList_returnsMonoWithError() {
         // Given
         var client = WebClient.create(basePath);
-        var api = new GreenButtonClient(client);
+        var api = new GreenButtonClient(client, getConfig());
 
         // When
-        var res = api.collectHistoricalData(Collections.emptyList());
+        var res = api.collectHistoricalData(Collections.emptyList(), "company");
 
         // Then
         StepVerifier.create(res)
@@ -221,7 +220,7 @@ class GreenButtonClientTest {
     }
 
     @Test
-    void fetchInactiveMeters_withoutSlurp_doesNotExpandAllPages() throws JsonProcessingException {
+    void fetchMeters_withoutSlurp_doesNotExpandAllPages() throws JsonProcessingException {
         // Given
         var response = new MockResponse()
                 .setResponseCode(200)
@@ -229,10 +228,10 @@ class GreenButtonClientTest {
                 .setBody(mapper.writeValueAsString(new MeterListing(List.of(METER), URI.create(basePath))));
         mockBackEnd.enqueue(response);
         var client = WebClient.create(basePath);
-        var api = new GreenButtonClient(client);
+        var api = new GreenButtonClient(client, getConfig());
 
         // When
-        var res = api.fetchInactiveMeters(Pages.NO_SLURP, List.of("1111"));
+        var res = api.fetchMeters(Pages.NO_SLURP, List.of("1111"), "company");
 
         // Then
         StepVerifier.create(res)
@@ -241,7 +240,7 @@ class GreenButtonClientTest {
     }
 
     @Test
-    void fetchInactiveMeters_withSlurp_expandsAllPages() throws JsonProcessingException {
+    void fetchMeters_withSlurp_expandsAllPages() throws JsonProcessingException {
         // Given
         var response1 = new MockResponse()
                 .setResponseCode(200)
@@ -254,10 +253,10 @@ class GreenButtonClientTest {
         mockBackEnd.enqueue(response1);
         mockBackEnd.enqueue(response2);
         var client = WebClient.create(basePath);
-        var api = new GreenButtonClient(client);
+        var api = new GreenButtonClient(client, getConfig());
 
         // When
-        var res = api.fetchInactiveMeters(Pages.SLURP, List.of("1111"));
+        var res = api.fetchMeters(Pages.SLURP, List.of("1111"), "company");
 
         // Then
         StepVerifier.create(res)
@@ -280,10 +279,10 @@ class GreenButtonClientTest {
                         .setBody(json)
         );
         var client = WebClient.create(basePath);
-        var api = new GreenButtonClient(client);
+        var api = new GreenButtonClient(client, getConfig());
 
         // When
-        var res = api.revoke("1111");
+        var res = api.revoke("1111", "company");
 
         // Then
         StepVerifier.create(res)
@@ -300,14 +299,25 @@ class GreenButtonClientTest {
                 .setBody(mapper.writeValueAsString(METER));
         mockBackEnd.enqueue(response);
         var client = WebClient.create(basePath);
-        var api = new GreenButtonClient(client);
+        var api = new GreenButtonClient(client, getConfig());
 
         // When
-        var res = api.fetchMeter("1111");
+        var res = api.fetchMeter("1111", "company");
 
         // Then
         StepVerifier.create(res)
                     .expectNextCount(1)
                     .verifyComplete();
+    }
+
+    private static GreenButtonConfiguration getConfig() {
+        return new GreenButtonConfiguration(
+                "http://localhost",
+                Map.of(),
+                Map.of(),
+                Map.of("company", "token"),
+                "http://localhost",
+                "secret"
+        );
     }
 }

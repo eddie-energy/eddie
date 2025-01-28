@@ -30,15 +30,18 @@ public class MeterReadingUpdateHandler implements EventHandler<UsMeterReadingUpd
 
     @Override
     public void accept(UsMeterReadingUpdateEvent event) {
-        LOGGER.info("Got meter reading update for permission request {}", event.permissionId());
+        var permissionId = event.permissionId();
+        LOGGER.info("Got meter reading update for permission request {}", permissionId);
         var latestReading = event.latestMeterReadingEndDateTime();
         if (latestReading.isEmpty()) {
-            LOGGER.info("No meter reading update for permission request {}", event.permissionId());
+            LOGGER.info("No meter reading update for permission request {}", permissionId);
             return;
         }
-        var pr = repository.getByPermissionId(event.permissionId());
+        var readingDateTime = latestReading.get();
+        LOGGER.info("Latest meter reading is {} for permission request {}", readingDateTime, permissionId);
+        var pr = repository.getByPermissionId(permissionId);
         var end = DateTimeUtils.endOfDay(pr.end(), ZoneOffset.UTC);
-        if (latestReading.get().isAfter(end) || latestReading.get().isEqual(end)) {
+        if (readingDateTime.isAfter(end) || readingDateTime.isEqual(end)) {
             fulfillmentService.tryFulfillPermissionRequest(pr);
         }
     }
