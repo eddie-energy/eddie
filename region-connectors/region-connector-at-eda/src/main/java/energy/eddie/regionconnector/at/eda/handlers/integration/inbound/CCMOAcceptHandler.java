@@ -52,7 +52,15 @@ public class CCMOAcceptHandler {
 
         AtPermissionRequest permissionRequest = permissionRequests.getFirst();
 
-        acceptPermissionRequest(cmRequestStatus.consentData().getFirst(), permissionRequest);
+        var status = permissionRequest.status();
+        if (status == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR) {
+            acceptPermissionRequest(cmRequestStatus.consentData().getFirst(), permissionRequest);
+        } else {
+            LOGGER.atInfo()
+                    .addArgument(status)
+                    .addArgument(permissionRequest::permissionId)
+                    .log("Got acceptance message for {} permission request {}, ignoring status change");
+        }
         for (var consentData : cmRequestStatus.consentData().subList(1, cmRequestStatus.consentData().size())) {
             createNewPermissionRequest(consentData, permissionRequest);
         }

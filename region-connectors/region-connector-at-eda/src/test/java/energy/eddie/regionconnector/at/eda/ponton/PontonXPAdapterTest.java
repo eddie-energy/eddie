@@ -324,8 +324,11 @@ class PontonXPAdapterTest {
         stepVerifier.verify();
     }
 
-    @Test
-    void handleMasterDataMessage_whenPontonMessengerConnectionCallsMasterDataHandler_forFulfilledPermissionRequest_emitsNothing() {
+    @ParameterizedTest
+    @EnumSource(value = PermissionProcessStatus.class, names = {"FULFILLED", "REJECTED", "EXTERNALLY_TERMINATED"})
+    void handleMasterDataMessage_whenPontonMessengerConnectionCallsMasterDataHandler_forCompletedPermissionRequest_emitsNothing(
+            PermissionProcessStatus status
+    ) {
         // Given
         EdaMasterData masterData = masterData();
         var identifiedMasterData = new IdentifiableMasterData(
@@ -335,7 +338,7 @@ class PontonXPAdapterTest {
                                             "dnid",
                                             "cmRequestId",
                                             "convId",
-                                            PermissionProcessStatus.FULFILLED)
+                                            status)
         );
         when(identifiableMasterDataService.mapToIdentifiableMasterData(masterData))
                 .thenReturn(Optional.of(identifiedMasterData));
@@ -350,7 +353,8 @@ class PontonXPAdapterTest {
 
         assertAll(
                 () -> assertEquals(InboundStatusEnum.SUCCESS, messageResult.status()),
-                () -> assertEquals("Data was already received for this permission request pid", messageResult.statusMessage())
+                () -> assertEquals("Data was already received for this permission request pid",
+                                   messageResult.statusMessage())
         );
         pontonXPAdapter.close();
         stepVerifier.verify();

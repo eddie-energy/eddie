@@ -41,6 +41,9 @@ public class IdentifiableMasterDataService {
               .addArgument(request::permissionId)
               .addArgument(request::connectionId)
               .log("Received master data (ConversationId '{}') for permissionId {} and connectionId {}");
+        if (request.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR) {
+            outbox.commit(new SimpleEvent(request.permissionId(), PermissionProcessStatus.ACCEPTED));
+        }
 
         outbox.commit(new SimpleEvent(request.permissionId(), PermissionProcessStatus.FULFILLED));
         return Optional.of(new IdentifiableMasterData(
