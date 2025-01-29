@@ -36,7 +36,7 @@ public record MeteringDataFilter(
      *
      * @param startDate data before this date is omitted
      * @param endDate   data after this date is omitted
-     * @return data between the start and end date (startDate < data <= endDate)
+     * @return data between the start and end date (startDate &lt; data &lt;= endDate)
      */
     public Mono<IntermediateMeteringData> filter(
             LocalDate startDate,
