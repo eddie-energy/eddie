@@ -9,7 +9,7 @@ on:
 
 jobs:
   docs-deploy:
-    runs-on: self-hosted
+    runs-on: linux
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
@@ -20,10 +20,10 @@ jobs:
       - name: Gradle build framework-docs
         run: ./gradlew pnpmBuildDocs
       - name: Deploy docs to webserver
-        uses: SamKirkland/web-deploy@v1
+        uses: eddie-energy/ftp-deploy-action@main
         with:
-          target-server: ${{ secrets.WEBSERVER_SSH_HOST }}
-          remote-user: ${{ secrets.WEBSERVER_SSH_USERNAME }}
-          private-ssh-key: ${{ secrets.WEBSERVER_SSH_KEY }}
-          source-path: ./docs/.vitepress/dist/
-          destination-path: /web/framework/
+          host: ${{ secrets.WEBSERVER_SFTP_HOST }}
+          password: ${{ secrets.WEBSERVER_SFTP_PASSWORD }}
+          user: ${{ secrets.WEBSERVER_SFTP_USERNAME }}
+          source: "./docs/.vitepress/dist/"
+          destination: "/public_html/framework/"
