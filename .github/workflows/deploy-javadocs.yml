@@ -1,5 +1,10 @@
-name: Deploy EDDIE javadocs
+name: Build and deploy EDDIE javadocs
 on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
   push:
     branches:
       - main
@@ -9,7 +14,7 @@ on:
 
 jobs:
   docs-deploy:
-    runs-on: [linux, no-dind]
+    runs-on: [ linux, no-dind ]
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
@@ -20,6 +25,7 @@ jobs:
       - name: Gradle build javadocs
         run: ./gradlew allJavadoc
       - name: Deploy javadoc to webserver
+        if: github.ref_name == 'main'
         uses: eddie-energy/ftp-deploy-action@main
         with:
           host: ${{ secrets.WEBSERVER_SFTP_HOST }}
