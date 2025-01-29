@@ -20,10 +20,10 @@ jobs:
       - name: Gradle build framework-docs
         run: ./gradlew pnpmBuildDocs
       - name: Deploy docs to webserver
-        uses: ./.github/actions/sftp-deploy
+        uses: eddie-energy/ftp-deploy-action@main
         with:
           host: ${{ secrets.WEBSERVER_SFTP_HOST }}
-          login_name: ${{ secrets.WEBSERVER_SFTP_USERNAME }}
-          private_key: ${{ secrets.WEBSERVER_SFTP_KEY }}
-          source: "./docs/.vitepress/dist/**"
+          password: ${{ secrets.WEBSERVER_SFTP_PASSWORD }}
+          user: ${{ secrets.WEBSERVER_SFTP_USERNAME }}
+          source: "./docs/.vitepress/dist/"
           destination: "/public_html/framework/"
