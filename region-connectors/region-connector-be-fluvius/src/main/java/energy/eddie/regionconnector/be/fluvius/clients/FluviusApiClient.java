@@ -10,9 +10,12 @@ import jakarta.annotation.Priority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
@@ -22,12 +25,13 @@ import java.time.format.DateTimeFormatter;
 @Priority(value = 2)
 public class FluviusApiClient implements FluviusApi {
     public static final String OCP_APIM_SUBSCRIPTION_KEY = "Ocp-Apim-Subscription-Key";
-    private static final Logger LOGGER = LoggerFactory.getLogger(FluviusApiClient.class);
     public static final String PERIOD_TYPE_READ_TIME = "readTime";
+    private static final Logger LOGGER = LoggerFactory.getLogger(FluviusApiClient.class);
     private final WebClient webClient;
     private final FluviusConfiguration fluviusConfiguration;
     private final OAuthTokenService oAuthTokenService;
     private final RedirectUriHelper uriHelper;
+    private Health health = Health.unknown().build();
 
     public FluviusApiClient(
             WebClient webClient,
@@ -83,6 +87,10 @@ public class FluviusApiClient implements FluviusApi {
         );
     }
 
+    public Health health() {
+        return health;
+    }
+
     private Mono<GetEnergyResponseModelApiDataResponse> energy(
             String permissionId,
             String eanNumber,
@@ -95,21 +103,29 @@ public class FluviusApiClient implements FluviusApi {
         var toIso = to.format(DateTimeFormatter.ISO_DATE_TIME);
 
         return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v2.0/Mandate/energy")
-                        .queryParam("referenceNumber", transformPermissionId(permissionId))
-                        .queryParam("eanNumber", eanNumber)
-                        .queryParam("DataServiceType", dataServiceType.value())
-                        .queryParam("PeriodType", PERIOD_TYPE_READ_TIME)
-                        .queryParam("from", fromIso)
-                        .queryParam("to", toIso)
-                        .build()
-                )
-                .headers(h -> h.setBearerAuth(token))
-                .header(OCP_APIM_SUBSCRIPTION_KEY,
-                        fluviusConfiguration.subscriptionKey())
-                .retrieve()
-                .bodyToMono(GetEnergyResponseModelApiDataResponse.class);
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/api/v2.0/Mandate/energy")
+                                .queryParam("referenceNumber", transformPermissionId(permissionId))
+                                .queryParam("eanNumber", eanNumber)
+                                .queryParam("DataServiceType", dataServiceType.value())
+                                .queryParam("PeriodType", PERIOD_TYPE_READ_TIME)
+                                .queryParam("from", fromIso)
+                                .queryParam("to", toIso)
+                                .build()
+                        )
+                        .headers(h -> h.setBearerAuth(token))
+                        .header(OCP_APIM_SUBSCRIPTION_KEY,
+                                fluviusConfiguration.subscriptionKey())
+                        .retrieve()
+                        .bodyToMono(GetEnergyResponseModelApiDataResponse.class)
+                        .doOnError(WebClientResponseException.class, e -> {
+                            var status = e.getStatusCode();
+                            // Narrow down status codes that update health to account for expected error responses
+                            if (status.is5xxServerError() || status == HttpStatus.REQUEST_TIMEOUT) {
+                                health = Health.down(e).build();
+                            }
+                        })
+                        .doOnSuccess(ignored -> health = Health.up().build());
     }
 
     private Mono<FluviusSessionCreateResultResponseModelApiDataResponse> shortUrlIdentifier(
@@ -138,14 +154,16 @@ public class FluviusApiClient implements FluviusApi {
                 .sso(true)
                 .enterpriseNumber(null);
         return webClient.post()
-                .uri("/api/v2.0/shortUrlIdentifier")
-                .headers(h -> h.setBearerAuth(token))
-                .header(OCP_APIM_SUBSCRIPTION_KEY,
-                        fluviusConfiguration.subscriptionKey())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(FluviusSessionCreateResultResponseModelApiDataResponse.class);
+                        .uri("/api/v2.0/shortUrlIdentifier")
+                        .headers(h -> h.setBearerAuth(token))
+                        .header(OCP_APIM_SUBSCRIPTION_KEY,
+                                fluviusConfiguration.subscriptionKey())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(request)
+                        .retrieve()
+                        .bodyToMono(FluviusSessionCreateResultResponseModelApiDataResponse.class)
+                        .doOnError(Exception.class, err -> health = Health.down(err).build())
+                        .doOnSuccess(ignored -> health = Health.up().build());
     }
 
     private Mono<GetMandateResponseModelApiDataResponse> mandateFor(
@@ -153,14 +171,16 @@ public class FluviusApiClient implements FluviusApi {
             String token
     ) {
         return webClient.get()
-                .uri(u -> u.path("/api/v2.0/Mandate")
-                        .queryParam("ReferenceNumber", transformPermissionId(permissionId))
-                        .build())
-                .headers(h -> h.setBearerAuth(token))
-                .header(OCP_APIM_SUBSCRIPTION_KEY,
-                        fluviusConfiguration.subscriptionKey())
-                .retrieve()
-                .bodyToMono(GetMandateResponseModelApiDataResponse.class);
+                        .uri(u -> u.path("/api/v2.0/Mandate")
+                                   .queryParam("ReferenceNumber", transformPermissionId(permissionId))
+                                   .build())
+                        .headers(h -> h.setBearerAuth(token))
+                        .header(OCP_APIM_SUBSCRIPTION_KEY,
+                                fluviusConfiguration.subscriptionKey())
+                        .retrieve()
+                        .bodyToMono(GetMandateResponseModelApiDataResponse.class)
+                        .doOnError(Exception.class, err -> health = Health.down(err).build())
+                        .doOnSuccess(ignored -> health = Health.up().build());
     }
 
     private Mono<String> fetchAccessToken() {
@@ -194,25 +214,29 @@ public class FluviusApiClient implements FluviusApi {
                 .mandateExpirationDate(end)
                 .renewalStatus("ToBeRenewed");
         return webClient.post()
-                .uri("/api/v2.0/Mandate/mock")
-                .headers(h -> h.setBearerAuth(token))
-                .header(OCP_APIM_SUBSCRIPTION_KEY, fluviusConfiguration.subscriptionKey())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(CreateMandateResponseModelApiDataResponse.class)
-                .doOnSuccess(res -> LOGGER.info("Created mock mandate for permission request {}",
-                        permissionId))
-                .doOnError(
-                        Throwable.class,
-                        t -> LOGGER.warn("Failed to create mock mandate for permission request {}",
-                                permissionId,
-                                t)
-                );
+                        .uri("/api/v2.0/Mandate/mock")
+                        .headers(h -> h.setBearerAuth(token))
+                        .header(OCP_APIM_SUBSCRIPTION_KEY, fluviusConfiguration.subscriptionKey())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(request)
+                        .retrieve()
+                        .bodyToMono(CreateMandateResponseModelApiDataResponse.class)
+                        .doOnSuccess(ignored -> {
+                            LOGGER.info("Created mock mandate for permission request {}", permissionId);
+                            health = Health.up().build();
+                        })
+                        .doOnError(
+                                Exception.class,
+                                err -> {
+                                    LOGGER.warn("Failed to create mock mandate for permission request {}",
+                                                permissionId,
+                                                err);
+                                    health = Health.down(err).build();
+                                }
+                        );
     }
 
     private static String transformPermissionId(String permissionId) {
         return permissionId.replace("-", "");
     }
-
 }
