@@ -34,6 +34,7 @@ dependencies {
     implementation(project(":region-connectors:region-connector-fi-fingrid"))
     implementation(project(":region-connectors:region-connector-simulation"))
     implementation(project(":region-connectors:region-connector-us-green-button"))
+    implementation(project(":region-connectors:region-connector-cds"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.websocket)
     implementation(libs.spring.openapi.webmvc.ui)
