@@ -1,0 +1,35 @@
+openapi: 3.1.0
+info:
+  title: CDS
+  description: https://customerdata.carbondataspec.org
+  version: 0.0.0
+servers:
+  - url: https://{cds-server}
+    variables:
+      cds-server:
+        default: cds.utilityapi.com
+        descriptions: The base URL to a cds server
+paths:
+  /.well-known/carbon-data-spec.json:
+    get:
+      description: |
+        If the Server wishes to provide metadata publicly, the Server MUST support a metadata endpoint at the Well-Known URI "/.well-known/carbon-data-spec.json" on their hostname (e.g. https://example.com/.well-known/carbon-data-spec.json). 
+        Servers MAY additionally support other public and restricted URLs for special case or private metadata endpoints, as needed.
+      responses:
+        200:
+          description: CDS Metadata response
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/CDS Metadata"
+  /.well-known/oauth-authorization-server:
+    get:
+      description: |
+      responses:
+        200:
+          description: OAuth Metadata, containing URIs to endpoints to create an oauth client
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/OAuth Metadata"
+

@@ -1,0 +1,376 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eddie.energy/schemas/region-connectors/cds",
+  "$defs": {
+    "CDS Metadata": {
+      "type": "object",
+      "properties": {
+        "cds_metadata_version": {
+          "type": "string",
+          "description": "The version of metadata object format this Server follows, which for this version of the specification is v1.\n"
+        },
+        "cds_metadata_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "A URL link to this metadata object’s canonical network location."
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the metadata url was first made available."
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this metadata object was last modified."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the utility or entity (e.g. “Demo Gas & Electric”)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description about the utility or entity (e.g. “An electric and gas utility serving customers in Northern California”).\n"
+        },
+        "website": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where users can learn more about the utility or entity and its capabilities."
+        },
+        "documentation": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where Clients can find the utility or entity’s technical reference documentation."
+        },
+        "support": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where Clients can find contact information for technical support on the Server’s capabilities.\n"
+        },
+        "capabilities": {
+          "description": "What capabilities and functionality this Server supports, which may be an empty array if the Server is not offering any additional capabilities beyond just this metadata object.\nIf the list of capabilities includes coverage, this array MUST also include a union of the capabilities listed in the Coverage Endpoint list of Coverage Entry objects’ capabilities values.\n",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "coverage": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where to find the Coverage Endpoint. This field is REQUIRED if coverage is listed in the capabilities array.\n"
+        },
+        "related_metadata": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "Where to find other related Metadata Endpoints."
+        },
+        "commodity_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "infrastructure_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "oauth_metadata": {
+          "type": "string",
+          "format": "uri",
+          "description": "Endpoint for oauth metadata, only available if capabilities includes 'oauth'."
+        }
+      },
+      "required": [
+        "cds_metadata_version",
+        "cds_metadata_url",
+        "created",
+        "updated",
+        "name",
+        "description",
+        "website",
+        "documentation",
+        "support",
+        "capabilities"
+      ],
+      "if": {
+        "properties": {
+          "capabilities": {
+            "type": "array",
+            "contains": {
+              "const": "coverage"
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "coverage"
+        ]
+      }
+    },
+    "OAuth Metadata": {
+      "type": "object",
+      "properties": {
+        "authorization_details_types_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Lists which authorization details are supported such as 'client_admin' or 'customer_data'"
+        },
+        "authorization_endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_client_settings_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_client_updates_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_clients_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_accounts_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_aggregations_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_billsections_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_billstatements_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_eacs_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_meterdevices_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_servicecontracts_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_servicepoints_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_usagesegments_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_directory_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_grants_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_human_directory": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_human_registration": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_oauth_version": {
+          "type": "string"
+        },
+        "cds_registration_fields": {
+          "type": "object"
+        },
+        "cds_scope_credentials_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_scope_descriptions": {
+          "type": "object",
+          "description": "Lists all scopes available",
+          "patternProperties": {
+            ".*": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "authorization_details_fields": {
+                  "type": "array"
+                },
+                "documentation": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "grant_types_supported": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "registration_optional": {
+                  "type": "array"
+                },
+                "registration_requirements": {
+                  "type": "array"
+                },
+                "response_types_supported": {
+                  "type": "array"
+                },
+                "token_endpoint_auth_methods_supported": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "authorization_details_fields",
+                "description",
+                "documentation",
+                "grant_types_supported",
+                "id",
+                "name",
+                "registration_optional",
+                "registration_requirements",
+                "response_types_supported",
+                "token_endpoint_auth_methods_supported"
+              ]
+            }
+          }
+        },
+        "cds_test_accounts": {
+          "type": "string",
+          "format": "uri"
+        },
+        "code_challenge_methods_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "grant_types_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "introspection_endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "issuer": {
+          "type": "string",
+          "format": "uri"
+        },
+        "op_policy_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "op_tos_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "pushed_authorization_request_endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "registration_endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "response_types_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "revocation_endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "scopes_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "service_documentation": {
+          "type": "string",
+          "format": "uri"
+        },
+        "token_endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "token_endpoint_auth_methods_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "authorization_details_types_supported",
+        "authorization_endpoint",
+        "cds_client_settings_api",
+        "cds_client_updates_api",
+        "cds_clients_api",
+        "cds_customerdata_accounts_api",
+        "cds_customerdata_aggregations_api",
+        "cds_customerdata_billsections_api",
+        "cds_customerdata_billstatements_api",
+        "cds_customerdata_eacs_api",
+        "cds_customerdata_meterdevices_api",
+        "cds_customerdata_servicecontracts_api",
+        "cds_customerdata_servicepoints_api",
+        "cds_customerdata_usagesegments_api",
+        "cds_directory_api",
+        "cds_grants_api",
+        "cds_human_directory",
+        "cds_human_registration",
+        "cds_oauth_version",
+        "cds_registration_fields",
+        "cds_scope_credentials_api",
+        "cds_scope_descriptions",
+        "cds_test_accounts",
+        "code_challenge_methods_supported",
+        "grant_types_supported",
+        "introspection_endpoint",
+        "issuer",
+        "op_policy_uri",
+        "op_tos_uri",
+        "pushed_authorization_request_endpoint",
+        "registration_endpoint",
+        "response_types_supported",
+        "revocation_endpoint",
+        "scopes_supported",
+        "service_documentation",
+        "token_endpoint",
+        "token_endpoint_auth_methods_supported"
+      ]
+    }
+  }
+}
