@@ -2,6 +2,8 @@ package eddie.energy.europeanmasterdata;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.master.data.MeteredDataAdministrator;
+import energy.eddie.api.agnostic.master.data.PermissionAdministrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,8 +18,7 @@ import java.net.URL;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-class EuropeanMasterDataServiceTest {
-
+class JsonMasterDataTest {
     @Mock
     private ObjectMapper objectMapper;
 
@@ -33,9 +34,9 @@ class EuropeanMasterDataServiceTest {
         Mockito.when(objectMapper.readValue(ArgumentMatchers.any(URL.class), ArgumentMatchers.any(JavaType.class)))
                .thenReturn(permissionAdministrators);
 
-        EuropeanMasterDataService europeanMasterDataService = new EuropeanMasterDataService(objectMapper);
+        JsonMasterData jsonMasterData = new JsonMasterData(objectMapper);
 
-        List<PermissionAdministrator> result = europeanMasterDataService.getPermissionAdministrators();
+        List<PermissionAdministrator> result = jsonMasterData.permissionAdministrators();
         Assertions.assertEquals(permissionAdministrators, result);
     }
 
@@ -51,10 +52,10 @@ class EuropeanMasterDataServiceTest {
         Mockito.when(objectMapper.readValue(ArgumentMatchers.any(URL.class), ArgumentMatchers.any(JavaType.class)))
                .thenReturn(List.of(permissionAdministrator));
 
-        EuropeanMasterDataService europeanMasterDataService = new EuropeanMasterDataService(objectMapper);
+        JsonMasterData jsonMasterData = new JsonMasterData(objectMapper);
 
-        PermissionAdministrator result = europeanMasterDataService.getPermissionAdministrator("company-id")
-                                                                  .orElseThrow();
+        PermissionAdministrator result = jsonMasterData.getPermissionAdministrator("company-id")
+                                                       .orElseThrow();
         Assertions.assertEquals(permissionAdministrator, result);
     }
 
@@ -71,9 +72,9 @@ class EuropeanMasterDataServiceTest {
                                             ArgumentMatchers.any(JavaType.class)))
                .thenReturn(meteredDataAdministrators);
 
-        EuropeanMasterDataService europeanMasterDataService = new EuropeanMasterDataService(objectMapper);
+        JsonMasterData jsonMasterData = new JsonMasterData(objectMapper);
 
-        List<MeteredDataAdministrator> result = europeanMasterDataService.getMeteredDataAdministrators();
+        List<MeteredDataAdministrator> result = jsonMasterData.meteredDataAdministrators();
         Assertions.assertEquals(meteredDataAdministrators, result);
     }
 
@@ -89,10 +90,10 @@ class EuropeanMasterDataServiceTest {
         Mockito.when(objectMapper.readValue(ArgumentMatchers.any(URL.class), ArgumentMatchers.any(JavaType.class)))
                .thenReturn(List.of(meteredDataAdministrator));
 
-        EuropeanMasterDataService europeanMasterDataService = new EuropeanMasterDataService(objectMapper);
+        JsonMasterData jsonMasterData = new JsonMasterData(objectMapper);
 
-        MeteredDataAdministrator result = europeanMasterDataService.getMeteredDataAdministrator("company-id")
-                                                                   .orElseThrow();
+        MeteredDataAdministrator result = jsonMasterData.getMeteredDataAdministrator("company-id")
+                                                        .orElseThrow();
         Assertions.assertEquals(meteredDataAdministrator, result);
     }
 
@@ -101,6 +102,6 @@ class EuropeanMasterDataServiceTest {
         Mockito.when(objectMapper.readValue(ArgumentMatchers.any(URL.class), ArgumentMatchers.any(JavaType.class)))
                .thenThrow(new IOException());
 
-        Assertions.assertThrows(FileNotFoundException.class, () -> new EuropeanMasterDataService(objectMapper));
+        Assertions.assertThrows(FileNotFoundException.class, () -> new JsonMasterData(objectMapper));
     }
 }

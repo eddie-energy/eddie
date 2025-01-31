@@ -16,6 +16,7 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":api"))
     implementation(libs.jackson.annotations)
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.openapi.webmvc.ui)

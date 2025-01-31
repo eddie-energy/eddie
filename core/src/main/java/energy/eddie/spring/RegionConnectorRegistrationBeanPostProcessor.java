@@ -265,7 +265,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         // use unique name
         connectorServletBean.setName(regionConnectorName);
         // start all region connector servlets with same priority
-        connectorServletBean.setLoadOnStartup(2);
+        connectorServletBean.setLoadOnStartup(Integer.MAX_VALUE);
 
         return BeanDefinitionBuilder
                 .genericBeanDefinition(ServletRegistrationBean.class, () -> connectorServletBean)
