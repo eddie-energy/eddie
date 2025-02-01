@@ -3,6 +3,7 @@ import RegionConnectorAccordions from '@/components/RegionConnectorAccordions.vu
 </script>
 
 <template>
+  <h1>Region Connectors</h1>
   <Suspense>
     <RegionConnectorAccordions />
     <template #fallback>

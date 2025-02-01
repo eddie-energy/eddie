@@ -11,7 +11,7 @@ import { ConfirmDialog, Toast } from 'primevue'
   <div class="wrapper">
     <SidebarNavigation />
 
-    <div>
+    <div class="routerView-wrapper">
       <RouterView />
     </div>
   </div>
@@ -28,5 +28,9 @@ import { ConfirmDialog, Toast } from 'primevue'
   @media only screen and (min-width: 1280px) {
     flex-direction: row;
   }
+}
+
+.routerView-wrapper {
+  width: 100%;
 }
 </style>

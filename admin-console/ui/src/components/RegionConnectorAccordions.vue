@@ -75,7 +75,6 @@ function getDisabledRegionConnectors() {
 
 <template>
   <main class="outer">
-    <h1>Region Connectors</h1>
     <div class="accordion-grid">
       <Accordion value="0">
         <AccordionPanel value="0">
