@@ -48,7 +48,7 @@ async function getPermissionCountPerRegionConnector() {
 <template>
   <main class="outer">
     <div class="row--top">
-      <div class="card card--top">
+      <div class="card card--top" tabindex="0">
         <header class="card__item card__item--header">
           <span class="card__item-highlighted">{{ permissions.length }}</span>
           <h2>Permissions <span>active</span></h2>
@@ -70,7 +70,7 @@ async function getPermissionCountPerRegionConnector() {
         </div>
       </div>
 
-      <div class="card card--top">
+      <div class="card card--top" tabindex="0">
         <header class="card__item card__item--header">
           <span class="card__item-highlighted">1470</span>
           <h2>Data Packages <span>per minute</span></h2>
@@ -83,7 +83,7 @@ async function getPermissionCountPerRegionConnector() {
         </div>
       </div>
 
-      <div class="card card--top">
+      <div class="card card--top" tabindex="0">
         <header class="card__item card__item--header">
           <span class="card__item-highlighted">{{ dataNeeds.length }}</span>
           <h2>Data Needs <span>enabled</span></h2>
@@ -130,7 +130,9 @@ async function getPermissionCountPerRegionConnector() {
               <h3>
                 <b>{{ regionConnector.id }}</b>
               </h3>
-              <span v-tooltip.top="regionConnectorHealth.get(regionConnector.id) || 'DISABLED'"
+              <span
+                :aria-description="regionConnectorHealth.get(regionConnector.id) || 'DISABLED'"
+                v-tooltip.top="regionConnectorHealth.get(regionConnector.id) || 'DISABLED'"
                 >{{
                   HEALTH_INDICATOR[
                     (regionConnectorHealth.get(
@@ -160,7 +162,7 @@ async function getPermissionCountPerRegionConnector() {
           class="card__map"
         />
       </div>
-      <div class="card card--bottom">
+      <div tabindex="0" class="card card--bottom">
         <DoughnutChartRegions
           :permission-count-per-region-connector="permissionCountPerRegionConnector"
         ></DoughnutChartRegions>
