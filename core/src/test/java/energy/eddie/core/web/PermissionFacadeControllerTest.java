@@ -4,6 +4,8 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.core.application.information.ApplicationInformation;
+import energy.eddie.core.services.ApplicationInformationService;
 import energy.eddie.core.services.DataNeedCalculationRouter;
 import energy.eddie.core.services.MetadataService;
 import org.junit.jupiter.api.Test;
@@ -34,13 +36,20 @@ class PermissionFacadeControllerTest {
     private MetadataService metadataService;
     @MockitoBean
     private DataNeedCalculationRouter router;
+    @MockBean
+    private ApplicationInformationService applicationInformationService;
+
+    @Test
+    void applicationInformation_returnsApplicationInformation() throws Exception {
+        when(applicationInformationService.applicationInformation()).thenReturn(mock(ApplicationInformation.class));
+
+        mockMvc.perform(get("/api/application-information")).andExpect(status().isOk());
+    }
 
     @Test
     void regionConnectorsMetadata_returnsAllRegionConnectorsMetadata() throws Exception {
-        when(metadataService.getRegionConnectorMetadata()).thenReturn(List.of(
-                mock(RegionConnectorMetadata.class),
-                mock(RegionConnectorMetadata.class)
-        ));
+        when(metadataService.getRegionConnectorMetadata()).thenReturn(List.of(mock(RegionConnectorMetadata.class),
+                                                                              mock(RegionConnectorMetadata.class)));
 
         mockMvc.perform(get("/api/region-connectors-metadata"))
                .andExpect(status().isOk())
@@ -50,13 +59,11 @@ class PermissionFacadeControllerTest {
     @Test
     void regionConnectorsCalculateDataNeed_returnsDataNeedInformation() throws Exception {
         var now = LocalDate.now(ZoneOffset.UTC);
-        when(router.calculateFor("at-eda", "9bd0668f-cc19-40a8-99db-dc2cb2802b17"))
-                .thenReturn(new DataNeedCalculation(
-                        true,
-                        List.of(Granularity.PT15M),
-                        new Timeframe(now, now),
-                        new Timeframe(now, now)
-                ));
+        when(router.calculateFor("at-eda", "9bd0668f-cc19-40a8-99db-dc2cb2802b17")).thenReturn(new DataNeedCalculation(
+                true,
+                List.of(Granularity.PT15M),
+                new Timeframe(now, now),
+                new Timeframe(now, now)));
 
         mockMvc.perform(get("/api/region-connectors/at-eda/data-needs/9bd0668f-cc19-40a8-99db-dc2cb2802b17"))
                .andExpect(status().isOk())
@@ -67,15 +74,15 @@ class PermissionFacadeControllerTest {
     @Test
     void regionConnectorsCalculateDataNeedForAll_returnsDataNeedInformation() throws Exception {
         var now = LocalDate.now(ZoneOffset.UTC);
-        when(router.calculate("9bd0668f-cc19-40a8-99db-dc2cb2802b17"))
-                .thenReturn(Map.of("at-eda",
-                                   new DataNeedCalculation(
-                                           true,
-                                           List.of(Granularity.PT15M),
-                                           new Timeframe(now, now),
-                                           new Timeframe(now, now)
-                                   )
-                ));
+        when(router.calculate("9bd0668f-cc19-40a8-99db-dc2cb2802b17")).thenReturn(Map.of("at-eda",
+                                                                                         new DataNeedCalculation(true,
+                                                                                                                 List.of(Granularity.PT15M),
+                                                                                                                 new Timeframe(
+                                                                                                                         now,
+                                                                                                                         now),
+                                                                                                                 new Timeframe(
+                                                                                                                         now,
+                                                                                                                         now))));
 
         mockMvc.perform(get("/api/region-connectors/data-needs/9bd0668f-cc19-40a8-99db-dc2cb2802b17"))
                .andExpect(status().isOk())

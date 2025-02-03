@@ -9,5 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface ApplicationInformationRepository extends JpaRepository<ApplicationInformation, UUID> {
-    Optional<ApplicationInformation> findFirstByOrderByCreatedAtAsc();
+    Optional<ApplicationInformation> findFirstByOrderByCreatedAtDesc();
 }

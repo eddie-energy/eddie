@@ -9,26 +9,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class ApplicationInformationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationInformationService.class);
-    private ApplicationInformation applicationInformation;
+    private final ApplicationInformationRepository repository;
 
     public ApplicationInformationService(ApplicationInformationRepository repository) {
-        createApplicationInformationIfExists(repository);
+        this.repository = repository;
     }
 
     public ApplicationInformation applicationInformation() {
-        return this.applicationInformation;
-    }
-
-    private void createApplicationInformationIfExists(ApplicationInformationRepository repository) {
-        var optionalApplicationInformation = repository.findFirstByOrderByCreatedAtAsc();
-
-        if (optionalApplicationInformation.isPresent()) {
-            this.applicationInformation = optionalApplicationInformation.get();
-        } else {
-            var newApplicationInformation = new ApplicationInformation();
-            repository.save(newApplicationInformation);
-            LOGGER.info("Created ApplicationInformation.");
-            this.applicationInformation = newApplicationInformation;
-        }
+        return repository.findFirstByOrderByCreatedAtDesc().orElseGet(() -> {
+            LOGGER.info("Creating new ApplicationInformation");
+            return repository.save(new ApplicationInformation());
+        });
     }
 }

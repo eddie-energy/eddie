@@ -26,7 +26,7 @@ class ApplicationInformationServiceTest {
     @Test
     void testApplicationInformationService_applicationInformationDoesExist() {
         // Given
-        when(applicationInformationRepository.findFirstByOrderByCreatedAtAsc()).thenReturn(Optional.of(new ApplicationInformation(
+        when(applicationInformationRepository.findFirstByOrderByCreatedAtDesc()).thenReturn(Optional.of(new ApplicationInformation(
                 aiidaId,
                 Instant.now())));
         var applicationInformationService = new ApplicationInformationService(applicationInformationRepository);
@@ -41,10 +41,11 @@ class ApplicationInformationServiceTest {
     @Test
     void testApplicationInformationService_applicationInformationDoesNotExist() {
         // Given
-        var message = "Created ApplicationInformation.";
+        var message = "Creating new ApplicationInformation";
+        var applicationInformationService = new ApplicationInformationService(applicationInformationRepository);
 
         // When
-        new ApplicationInformationService(applicationInformationRepository);
+        applicationInformationService.applicationInformation();
 
         // Then
         assertTrue(logCaptor.getInfoLogs().contains(message));

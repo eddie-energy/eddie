@@ -11,22 +11,16 @@ import org.springframework.stereotype.Service;
 @RegionConnectorExtension
 public class ApplicationInformationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationInformationService.class);
-    private final ApplicationInformation applicationInformation;
+    private final ApplicationInformationRepository repository;
 
     public ApplicationInformationService(ApplicationInformationRepository repository) {
-        var optionalApplicationInformation = repository.findFirstByOrderByCreatedAtAsc();
-
-        if (optionalApplicationInformation.isPresent()) {
-            this.applicationInformation = optionalApplicationInformation.get();
-        } else {
-            var newApplicationInformation = new ApplicationInformation();
-            repository.save(newApplicationInformation);
-            LOGGER.info("Created ApplicationInformation.");
-            this.applicationInformation = newApplicationInformation;
-        }
+        this.repository = repository;
     }
 
     public ApplicationInformation applicationInformation() {
-        return this.applicationInformation;
+        return repository.findFirstByOrderByCreatedAtDesc().orElseGet(() -> {
+            LOGGER.info("Creating new ApplicationInformation");
+            return repository.save(new ApplicationInformation());
+        });
     }
 }
