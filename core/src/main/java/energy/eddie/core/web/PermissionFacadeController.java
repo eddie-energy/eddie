@@ -2,6 +2,8 @@ package energy.eddie.core.web;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.core.application.information.ApplicationInformation;
+import energy.eddie.core.services.ApplicationInformationService;
 import energy.eddie.core.services.DataNeedCalculationRouter;
 import energy.eddie.core.services.MetadataService;
 import energy.eddie.core.services.UnknownRegionConnectorException;
@@ -19,15 +21,23 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 public class PermissionFacadeController {
+    private final ApplicationInformation applicationInformation;
     private final MetadataService metadataService;
     private final DataNeedCalculationRouter dataNeedCalculationRouter;
 
     public PermissionFacadeController(
+            ApplicationInformationService applicationInformationService,
             MetadataService metadataService,
             DataNeedCalculationRouter dataNeedCalculationRouter
     ) {
+        this.applicationInformation = applicationInformationService.applicationInformation();
         this.metadataService = metadataService;
         this.dataNeedCalculationRouter = dataNeedCalculationRouter;
+    }
+
+    @GetMapping(value = "/application-information")
+    public ResponseEntity<ApplicationInformation> applicationInformation() {
+        return ResponseEntity.ok(applicationInformation);
     }
 
     @GetMapping("/region-connectors-metadata")

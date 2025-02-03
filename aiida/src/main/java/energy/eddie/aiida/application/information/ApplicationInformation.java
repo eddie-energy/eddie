@@ -1,5 +1,6 @@
 package energy.eddie.aiida.application.information;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -15,6 +16,7 @@ import java.util.UUID;
 public class ApplicationInformation {
     @Id
     @Column(name = "aiida_id")
+    @JsonProperty
     private UUID aiidaId;
 
     @CreatedDate
