@@ -24,7 +24,6 @@ import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -33,6 +32,7 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriTemplate;
 
@@ -66,19 +66,19 @@ class PermissionRequestControllerTest {
     private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
+    @MockitoBean
     private AiidaPermissionService mockService;
     @SuppressWarnings("unused")
-    @MockBean
+    @MockitoBean
     private AiidaPermissionEventRepository mockRepository;
     @SuppressWarnings("unused")
-    @MockBean
+    @MockitoBean
     private AiidaPermissionRequestViewRepository mockViewRepository;
     @SuppressWarnings("unused")
-    @MockBean
+    @MockitoBean
     private DataNeedsService unusedDataNeedsService;
     @SuppressWarnings("unused")
-    @MockBean
+    @MockitoBean
     private MqttService unusedMqttService;
 
     @Test

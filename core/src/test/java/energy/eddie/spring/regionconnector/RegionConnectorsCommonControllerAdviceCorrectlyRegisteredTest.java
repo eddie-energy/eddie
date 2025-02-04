@@ -8,12 +8,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -48,9 +48,9 @@ class RegionConnectorsCommonControllerAdviceCorrectlyRegisteredTest {
     private static final String PREFIX_SERVLET_ATTRIBUTE_NAME = "org.springframework.web.servlet.FrameworkServlet.CONTEXT.";
     @Autowired
     private WebApplicationContext applicationContext;
-    @MockBean
+    @MockitoBean
     private DataNeedsService unusedDataNeedsService;
-    @MockBean
+    @MockitoBean
     private JwtUtil jwtUtil;
     private MockMvc mockMvc;
 

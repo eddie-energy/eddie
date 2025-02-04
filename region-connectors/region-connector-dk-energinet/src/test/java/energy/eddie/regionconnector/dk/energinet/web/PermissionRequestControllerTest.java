@@ -26,10 +26,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -54,23 +54,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PermissionRequestControllerTest {
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
+    @MockitoBean
     private PermissionRequestService service;
-    @MockBean
+    @MockitoBean
     private PermissionCreationService creationService;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private DkPermissionRequestRepository repository;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private DkPermissionEventRepository eventRepository;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private Flux<IdentifiableApiResponse> unusedIdentifiableApiResponseFlux;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private Flux<IdentifiableAccountingPointDetails> unusedIdentifiableMeteringPointDetailsFlux;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private DataNeedsService dataNeedsService;
     @Autowired

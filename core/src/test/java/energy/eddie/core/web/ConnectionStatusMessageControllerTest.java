@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
@@ -20,7 +20,7 @@ import static org.mockito.BDDMockito.given;
 @AutoConfigureMockMvc(addFilters = false) // disables spring security filters
 class ConnectionStatusMessageControllerTest {
 
-    @MockBean
+    @MockitoBean
     private PermissionService permissionService;
     @Qualifier("webTestClient")
     @Autowired

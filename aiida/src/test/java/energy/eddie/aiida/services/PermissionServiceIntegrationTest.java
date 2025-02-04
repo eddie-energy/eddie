@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
@@ -20,6 +18,8 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestPropertySource(properties = {"spring.main.allow-bean-definition-overriding=true",
         // manually trigger migration
         "spring.flyway.enabled=false"})
-@MockBean(classes = {ClientRegistrationRepository.class, OAuth2SecurityConfiguration.class, CorsConfigurationSource.class})
+@MockitoBean(types = {ClientRegistrationRepository.class, OAuth2SecurityConfiguration.class, CorsConfigurationSource.class})
 @Testcontainers
 public class PermissionServiceIntegrationTest {
     @Container
@@ -50,7 +50,7 @@ public class PermissionServiceIntegrationTest {
     Clock clock;
     @Autowired
     PermissionRepository repository;
-    @SpyBean
+    @MockitoSpyBean
     StreamerManager streamerManager;
 
     /**

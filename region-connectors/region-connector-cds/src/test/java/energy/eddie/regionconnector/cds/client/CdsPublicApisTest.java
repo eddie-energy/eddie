@@ -1,11 +1,13 @@
 package energy.eddie.regionconnector.cds.client;
 
+import energy.eddie.regionconnector.cds.CdsBeanConfig;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
 
@@ -18,8 +20,20 @@ class CdsPublicApisTest {
     private static MockWebServer server;
     private static String basepath;
 
-    private final CdsPublicApis publicApis = new CdsPublicApis(WebClient.builder().build(),
-                                                               new CdsConfiguration(URI.create("http://localhost")));
+    private final CdsBeanConfig cdsBeanConfig = new CdsBeanConfig();
+    private final CdsPublicApis publicApis = new CdsPublicApis(
+            WebClient.builder()
+                     .codecs(configurer -> {
+                         var decoder = new Jackson2JsonDecoder(
+                                 cdsBeanConfig.customObjectMapper()
+                                              .build()
+                         );
+                         configurer.defaultCodecs()
+                                   .jackson2JsonDecoder(decoder);
+                     })
+                     .build(),
+            new CdsConfiguration(URI.create("http://localhost"))
+    );
 
     @BeforeAll
     static void setUp() throws IOException {
@@ -270,8 +284,7 @@ class CdsPublicApisTest {
                       ],
                       "map_resource": "https://example.com/",
                       "map_content_type": "string",
-                      "geojson_resource": "https://example.com/",
-                      "additionalProp1": {}
+                      "geojson_resource": "https://example.com/"
                     }
                   ]
                 }

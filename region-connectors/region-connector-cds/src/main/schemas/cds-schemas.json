@@ -542,14 +542,12 @@
         "next": {
           "type": ["string", "null"],
           "format": "uri",
-          "description": "URL to the next page of results",
-          "nullable": true
+          "description": "URL to the next page of results"
         },
         "previous": {
           "type": ["string", "null"],
           "format": "uri",
-          "description": "URL to the previous page of results",
-          "nullable": true
+          "description": "URL to the previous page of results"
         }
       },
       "additionalProperties": false

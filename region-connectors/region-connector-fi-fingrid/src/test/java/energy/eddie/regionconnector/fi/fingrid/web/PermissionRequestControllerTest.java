@@ -24,9 +24,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -45,9 +45,9 @@ class PermissionRequestControllerTest {
             .registerModule(new Jdk8Module());
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
+    @MockitoBean
     private PermissionCreationService creationService;
-    @MockBean
+    @MockitoBean
     private PermissionRequestService requestService;
 
     @Test

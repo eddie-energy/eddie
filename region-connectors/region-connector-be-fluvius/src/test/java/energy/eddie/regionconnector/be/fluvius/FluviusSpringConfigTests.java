@@ -8,10 +8,10 @@ import energy.eddie.regionconnector.shared.timeout.CommonTimeoutService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -25,13 +25,13 @@ class FluviusSpringConfigTests {
     @Container
     @ServiceConnection
     private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:15-alpine");
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private WebClient webClient;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private DataNeedsService dataNeedsService;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private CommonTimeoutService timeoutService;
 

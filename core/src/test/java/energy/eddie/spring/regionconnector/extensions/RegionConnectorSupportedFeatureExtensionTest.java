@@ -12,8 +12,8 @@ import energy.eddie.core.services.SupportedFeatureService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,28 +23,28 @@ import static org.mockito.Mockito.when;
 class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
     @Autowired
     private ConfigurableApplicationContext applicationContext;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private RegionConnectorMetadata metadata;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private ConnectionStatusMessageProvider connectionStatusMessageProvider;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private RawDataProvider rawDataProvider;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private RegionConnector regionConnector;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private AccountingPointEnvelopeProvider accountingPointEnvelopeProvider;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private PermissionMarketDocumentProvider permissionMarketDocumentProvider;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private ValidatedHistoricalDataEnvelopeProvider validatedHistoricalDataEnvelopeProvider;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private RegionConnectorRetransmissionService regionConnectorRetransmissionService;
 
@@ -96,7 +96,7 @@ class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
 class RegionConnectorSupportedFeatureExtensionWithoutBeansPresentTest {
     @Autowired
     private ConfigurableApplicationContext applicationContext;
-    @MockBean
+    @MockitoBean
     private RegionConnectorMetadata metadata;
 
     @Test
