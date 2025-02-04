@@ -76,4 +76,12 @@ public class CdsServer {
     public String id() {
         return Objects.toString(id);
     }
+
+    public String clientId() {
+        return clientId;
+    }
+
+    public String clientSecret() {
+        return clientSecret;
+    }
 }
