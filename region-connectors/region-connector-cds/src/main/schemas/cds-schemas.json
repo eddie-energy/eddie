@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://eddie.energy/schemas/region-connectors/cds",
   "$defs": {
-    "CDS Metadata": {
+    "CDSMetadata": {
       "type": "object",
       "properties": {
         "cds_metadata_version": {
@@ -57,7 +57,7 @@
         "coverage": {
           "type": "string",
           "format": "uri",
-          "description": "Where to find the Coverage Endpoint. This field is REQUIRED if coverage is listed in the capabilities array.\n"
+          "description": "Where to find the Coverage Endpoint. This field is REQUIRED if coverage is listed in the capabilities array."
         },
         "related_metadata": {
           "type": "array",
@@ -97,23 +97,44 @@
         "support",
         "capabilities"
       ],
-      "if": {
-        "properties": {
-          "capabilities": {
-            "type": "array",
-            "contains": {
-              "const": "coverage"
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "capabilities": {
+                "type": "array",
+                "contains": {
+                  "const": "coverage"
+                }
+              }
             }
+          },
+          "then": {
+            "required": [
+              "coverage"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "capabilities": {
+                "type": "array",
+                "contains": {
+                  "const": "oauth"
+                }
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "oauth_metadata"
+            ]
           }
         }
-      },
-      "then": {
-        "required": [
-          "coverage"
-        ]
-      }
+      ]
     },
-    "OAuth Metadata": {
+    "OAuthMetadata": {
       "type": "object",
       "properties": {
         "authorization_details_types_supported": {
@@ -204,61 +225,8 @@
         "cds_scope_descriptions": {
           "type": "object",
           "description": "Lists all scopes available",
-          "patternProperties": {
-            ".*": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                },
-                "authorization_details_fields": {
-                  "type": "array"
-                },
-                "documentation": {
-                  "type": "string",
-                  "format": "uri"
-                },
-                "grant_types_supported": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "registration_optional": {
-                  "type": "array"
-                },
-                "registration_requirements": {
-                  "type": "array"
-                },
-                "response_types_supported": {
-                  "type": "array"
-                },
-                "token_endpoint_auth_methods_supported": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "required": [
-                "authorization_details_fields",
-                "description",
-                "documentation",
-                "grant_types_supported",
-                "id",
-                "name",
-                "registration_optional",
-                "registration_requirements",
-                "response_types_supported",
-                "token_endpoint_auth_methods_supported"
-              ]
-            }
+          "additionalProperties": {
+            "$ref": "#/$defs/CdsScopeDescription"
           }
         },
         "cds_test_accounts": {
@@ -370,6 +338,326 @@
         "service_documentation",
         "token_endpoint",
         "token_endpoint_auth_methods_supported"
+      ]
+    },
+    "CdsScopeDescription": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "authorization_details_fields": {
+          "type": "array"
+        },
+        "documentation": {
+          "type": "string",
+          "format": "uri"
+        },
+        "grant_types_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "registration_optional": {
+          "type": "array"
+        },
+        "registration_requirements": {
+          "type": "array"
+        },
+        "response_types_supported": {
+          "type": "array"
+        },
+        "token_endpoint_auth_methods_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "authorization_details_fields",
+        "description",
+        "documentation",
+        "grant_types_supported",
+        "id",
+        "name",
+        "registration_optional",
+        "registration_requirements",
+        "response_types_supported",
+        "token_endpoint_auth_methods_supported"
+      ]
+    },
+    "CoverageListing": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Page"
+        },
+        {
+          "properties": {
+            "coverage_entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CoverageEntry"
+              }
+            }
+          },
+          "required": ["coverage_entries"]
+        }
+      ]
+    },
+    "CoverageEntry": {
+      "type": "object",
+      "description": "https://daniel-utilityapi.github.io/Connectivity/specs/cdsc-wg1-01/#coverage-entry-format",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "A unique identifier for the coverage entry"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this coverage entry was first made available"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this coverage entry was last modified"
+        },
+        "entity_name": {
+          "type": "string",
+          "description": "A human readable name for the entity being covered (e.g. “Demo Gas & Electric”). The entity name in a coverage entry MAY be different than the Server metadata name value in situations where the Server is operated by a parent or other entity."
+        },
+        "entity_abbreviation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The abbreviation for the entity being covered by the coverage entry (e.g. “DG&E”). This field is to assist Clients in parsing coverage for entities that are commonly known by their abbreviated names (e.g. “DG&E” rather than “Demo Gas & Electric”). If no abbreviation is available for the entity being covered, this value is null."
+        },
+        "name": {
+          "type": "string",
+          "description": "A human readable name for the coverage area or category (e.g. “Upstate New York electric territory”)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the coverage area or category"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "geographic",
+            "logical"
+          ],
+          "description": "The type of coverage entry"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "authoritative",
+            "official",
+            "aggregator"
+          ],
+          "description": "The role of the Server in offering capabilities for the coverage entry"
+        },
+        "infrastructure_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "distribution_utility",
+              "metering_provider",
+              "supplier",
+              "generator",
+              "market_operator",
+              "distribution_service_operator",
+              "transmission_service_operator",
+              "service_provider"
+            ]
+          },
+          "description": "A list of infrastructure categories applicable to the coverage entry"
+        },
+        "commodity_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "electricity",
+              "natural_gas",
+              "fuel_oil",
+              "water",
+              "wastewater",
+              "trash",
+              "distributed_energy"
+            ]
+          },
+          "description": "A list of services or commodities applicable to the coverage entry"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "What capabilities and functionality this Server supports for the coverage entry"
+        },
+        "map_resource": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to a map of the coverage territory"
+        },
+        "map_content_type": {
+          "type": "string",
+          "description": "Content-Type format of the map_resource"
+        },
+        "geojson_resource": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to a GeoJSON object mapping the coverage territory"
+        }
+      },
+      "required": [
+        "id",
+        "created",
+        "updated",
+        "entity_name",
+        "entity_abbreviation",
+        "name",
+        "type",
+        "role",
+        "infrastructure_types",
+        "commodity_types",
+        "capabilities"
+      ],
+      "additionalProperties": false
+    },
+    "Page": {
+      "type": "object",
+      "properties": {
+        "next": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the next page of results",
+          "nullable": true
+        },
+        "previous": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the previous page of results",
+          "nullable": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "ClientRegistrationRequest": {
+      "type": "object",
+      "properties": {
+        "redirect_uris": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "scope": {
+          "type": "string",
+          "description": "A space separated list containing all the scopes that should be available for the client."
+        }
+      }
+    },
+    "ClientRegistrationResponse": {
+      "description": "Modeled after Client Registration Response, see: https://www.rfc-editor.org/rfc/rfc7591#section-3.2.1",
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string"
+        },
+        "client_id_issued_at": {
+          "type": "integer",
+          "description": "A unix timestamp when the client_id was issued."
+        },
+        "client_name": {
+          "type": "string"
+        },
+        "client_secret": {
+          "type": "string",
+          "description": "A client_secret value MUST be present in the response and be limited to client_admin scope use only."
+        },
+        "client_secret_expires_at": {
+          "type": "integer",
+          "description": "A unix timestamp when the client_secret expires, if equals to 0 it never expires."
+        },
+        "redirect_uris": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "grant_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "response_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scope": {
+          "type": "string",
+          "description": "Space separated list of scopes, must include 'client_admin'",
+          "pattern": ".*client_admin.*"
+        },
+        "token_endpoint_auth_method": {
+          "type": "string",
+          "enum": [
+            "client_secret_basic"
+          ]
+        },
+        "cds_server_metadata": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where the Client can find their registration-specific version of the CDSC-WG1-01 Server Metadata. If the Client’s CDSC server metadata is no different from the public CDSC server metadata, Servers MAY simply link to the public URL. If this metadata endpoint requires authentication, Servers MUST authenticate Client requests to this endpoint via Bearer access token obtained using OAuth’s client_credentials grant with a scope of client_admin, and reject unauthenticated requests with a 401 Unauthorized response code. Clients know that they must use a Bearer token when Servers return a 401 response code for this endpoint when the Client makes an unauthenticated request to the endpoint."
+        },
+        "cds_clients_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Clients API."
+        },
+        "cds_client_messages_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Clients Messages API."
+        },
+        "cds_scope_credentials_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Scope Credentials API."
+        },
+        "cds_grants_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Grants API."
+        }
+      },
+      "required": [
+        "client_id",
+        "client_secret",
+        "scope",
+        "token_endpoint_auth_method",
+        "cds_server_metadata",
+        "cds_clients_api",
+        "cds_client_messages_api",
+        "cds_scope_credentials_api",
+        "cds_grants_api"
       ]
     }
   }
