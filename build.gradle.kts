@@ -9,6 +9,8 @@ plugins {
     id("com.github.node-gradle.node") version "5.0.0"
     id("com.github.jk1.dependency-license-report") version "2.5"
     id("org.sonarqube")
+    // Needed for newer openapi builds, see: https://github.com/OpenAPITools/openapi-generator/issues/18753
+    alias(libs.plugins.openapi.generator)
     jacoco
 }
 
