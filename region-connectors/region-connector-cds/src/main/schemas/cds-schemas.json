@@ -540,13 +540,13 @@
       "type": "object",
       "properties": {
         "next": {
-          "type": "string",
+          "type": ["string", "null"],
           "format": "uri",
           "description": "URL to the next page of results",
           "nullable": true
         },
         "previous": {
-          "type": "string",
+          "type": ["string", "null"],
           "format": "uri",
           "description": "URL to the previous page of results",
           "nullable": true
