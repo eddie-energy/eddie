@@ -11,6 +11,7 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -64,7 +65,8 @@ public class CdsApiClientFactory {
                                                    tuple.getT2(),
                                                    tuple.getT3()
                                            ));
-                            });
+                            })
+                .onErrorReturn(throwable -> throwable instanceof WebClientResponseException.NotFound, new NotACdsServerResponse());
     }
 
     private Mono<ApiClientCreationResponse> createOAuthCredentials(

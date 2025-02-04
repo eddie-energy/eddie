@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -166,6 +167,26 @@ class CdsApiClientFactoryTest {
                     .verifyComplete();
         verify(repository, never()).save(any());
     }
+
+    @Test
+    void testGetCdsApiClient_forUnknownCdsServer_returnsNotACdsServer_forInvalidCdsServer() throws MalformedURLException {
+        // Given
+        var baseUrl = "http://localhost:8080";
+        var baseUri = URI.create(baseUrl);
+        when(repository.findByBaseUri(baseUrl)).thenReturn(Optional.empty());
+        when(api.carbonDataSpec(baseUri))
+                .thenReturn(Mono.error(WebClientResponseException.create(404, "text", null, null, null)));
+
+        // When
+        var res = factory.getCdsApiClient(baseUri.toURL());
+
+        // Then
+        StepVerifier.create(res)
+                    .assertNext(resp -> assertThat(resp).isInstanceOf(NotACdsServerResponse.class))
+                    .verifyComplete();
+        verify(repository, never()).save(any());
+    }
+
     @Test
     void testGetCdsApiClient_forUnknownCdsServer_returnsOAuthNotSupported_forCDSServerThatDoesNotSupportOAuth() throws MalformedURLException {
         // Given
@@ -193,7 +214,10 @@ class CdsApiClientFactoryTest {
 
     @ParameterizedTest
     @MethodSource
-    void testGetCdsApiClient_forUnknownCdsServer_returnsGrantTypeNotSupported_whenGrantTypeNotSupported(String grantType, Class<?> result) throws MalformedURLException {
+    void testGetCdsApiClient_forUnknownCdsServer_returnsGrantTypeNotSupported_whenGrantTypeNotSupported(
+            String grantType,
+            Class<?> result
+    ) throws MalformedURLException {
         // Given
         var baseUrl = "http://localhost:8080";
         var baseUri = URI.create(baseUrl);
