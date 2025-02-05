@@ -16,10 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.util.UriTemplate;
@@ -44,16 +44,16 @@ class PermissionRequestControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper mapper;
-    @MockBean
+    @MockitoBean
     private PermissionRequestService permissionRequestService;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private FrPermissionRequestRepository unusedRepository;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private FrPermissionEventRepository permissionEventRepository;
     @SuppressWarnings("unused")
-    @MockBean
+    @MockitoBean
     private DataNeedsService dataNeedsService;
 
     @Test

@@ -16,10 +16,10 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -50,13 +50,13 @@ class DatadisApiHealthIndicatorTest {
     private HttpClient httpClient;
     @Autowired
     private DatadisApiHealthIndicator healthIndicator;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private DataNeedsService dataNeedsService;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private JwtUtil jwtUtil;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private TimeoutConfiguration timeoutConfiguration;
     @Autowired

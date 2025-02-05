@@ -1,0 +1,109 @@
+openapi: 3.1.0
+info:
+  title: CDS
+  description: https://customerdata.carbondataspec.org
+  version: 0.0.0
+servers:
+  - url: https://{cds-server}
+    variables:
+      cds-server:
+        default: cds.utilityapi.com
+tags:
+  - name: Server Metadata
+    description: |
+      This specification defines how utilities and other entities may provide structured “metadata”, such as reference information about them, functionality they offer, and how organizations can interoperate with them. The defined base metadata endpoint is intended to act as a starting point for organizations to discover details and capabilities of energy utilities and other similar entities.
+    externalDocs:
+      url: https://daniel-utilityapi.github.io/Connectivity/specs/cdsc-wg1-01/
+  - name: Client Registration
+    description: |
+      This specification defines how utilities and other central entities (“Servers”) may allow third parties (“Clients”) to register, configure, and maintain connectivity with the utility or other central entity. This specification mostly extends various OAuth specifications (Dynamic Client Registration, Authorization Server Metadata, and more) to create a robust framework for offering secure, streamlined, and standardized connectivity between utilities and third parties.
+    externalDocs:
+      url: https://daniel-utilityapi.github.io/Connectivity/specs/cdsc-wg1-02/
+paths:
+  /.well-known/carbon-data-spec.json:
+    get:
+      operationId: Carbon Data Spec
+      description: |
+        If the Server wishes to provide metadata publicly, the Server MUST support a metadata endpoint at the Well-Known URI "/.well-known/carbon-data-spec.json" on their hostname (e.g. https://example.com/.well-known/carbon-data-spec.json). 
+        Servers MAY additionally support other public and restricted URLs for special case or private metadata endpoints, as needed.
+      tags:
+        - Server Metadata
+      responses:
+        200:
+          description: CDS Metadata response
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/CDSMetadata"
+  /api/cds/v1/coverages/:
+    get:
+      operationId: Coverages
+      description: |
+        If Servers include the coverage Server capability, a URL to the utility or entity’s coverage MUST be included in the metadata object.
+        When the URL is requested using the HTTP GET method and the request is valid, the Server MUST respond with a “200 OK” Status Code and body containing JSON object formatted according to the Coverage Listing Format.
+        Cache-optimized responses, such as “304 Not Modified”, to Client requests with cached value headers, such as If-None-Match, is also acceptable.
+        For invalid requests and error responses, Servers MUST respond with the appropriate Response Code for the type of issue or error (e.g. “503 Service Unavailable” if the Server is temporarily down for maintenance).
+      tags:
+        - Server Metadata
+      parameters:
+        - in: query
+          name: ids
+          required: false
+          schema:
+            type: string
+            example: "123e4567-e89b-12d3-a456-426614174000 123e4567-e89b-12d3-a456-426614174001"
+
+      responses:
+        200:
+          description: |
+            Returns the supported Coverages of the server.
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/CoverageListing"
+        304:
+          description: Can be used when content has not been modified.
+        404:
+          description: Used when server does not include coverage in capabilities.
+        503:
+          description: Used when server is down for maintenance.
+
+  /.well-known/oauth-authorization-server:
+    get:
+      operationId: OAuth Authorization Server
+      description: |
+      tags:
+        - Client Registration
+      responses:
+        200:
+          description: OAuth Metadata, containing URIs to endpoints to create an oauth client
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/OAuthMetadata"
+
+  /oauth/register/:
+    post:
+      operationId: OAuth Client Registration
+      description: |
+        This specification requires Clients and Servers follow the process described in OAuth’s Client Registration Request, with the following modifications. 
+        
+        - Clients MAY submit additional named values that are defined as part of scope registration_requirements and registration_optional arrays in cds_scope_descriptions objects, using the registration field reference’s field_name value as the submitted key in the registration request.
+        
+        See https://daniel-utilityapi.github.io/Connectivity/specs/cdsc-wg1-02/#client-registration-process
+      tags:
+        - Client Registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "cds-schemas.json/#/$defs/ClientRegistrationRequest"
+      responses:
+        200:
+          description: OAuth Client has been successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/ClientRegistrationResponse"
+

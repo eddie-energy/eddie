@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
 import energy.eddie.spring.OutboundConnectorRegistrationBeanPostProcessor;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;
 import energy.eddie.spring.SharedBeansRegistrar;
+import energy.eddie.spring.regionconnector.extensions.MasterDataRegistrar;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,6 +132,7 @@ public class CoreSpringConfig implements WebMvcConfigurer {
     public ServletRegistrationBean<DispatcherServlet> europeanMasterDataDispatcherServlet() {
         AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
         context.register(EuropeanMasterDataSpringConfig.class);
+        context.register(MasterDataRegistrar.class);
         enableSpringDoc(context);
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet(context);

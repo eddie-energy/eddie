@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.simulation.engine.steps;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.simulation.engine.SimulationContext;
@@ -21,6 +22,7 @@ public final class StatusChangeStep extends Model {
     @JsonProperty("delayInSeconds")
     private final long delay;
 
+    @JsonCreator
     public StatusChangeStep(PermissionProcessStatus status, long delay) {
         super(DISCRIMINATOR_VALUE);
         this.status = status;

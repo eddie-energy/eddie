@@ -25,7 +25,7 @@ class RegionConnectorConnectorElementProviderTest {
     void givenFileOnClasspath_returnsContentsOfFile() throws Exception {
         mockMvc.perform(get("/region-connectors/TestRegionConnector/ce.js"))
                 .andExpect(status().isOk())
-                .andExpect(header().string("content-type", "application/javascript"))
+                .andExpect(header().string("content-type", "text/javascript"))
                 .andExpect(content().string(containsString("This is a test javascript file")));
     }
 

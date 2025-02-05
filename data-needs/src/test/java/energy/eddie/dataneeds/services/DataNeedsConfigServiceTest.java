@@ -10,9 +10,9 @@ import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class DataNeedsConfigServiceTest {
     private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-    @MockBean
+    @MockitoBean
     private DataNeedsConfigService unusedMockService;
     @Autowired
     private ApplicationContext context;

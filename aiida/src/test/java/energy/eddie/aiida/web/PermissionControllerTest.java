@@ -13,10 +13,10 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
@@ -43,7 +43,7 @@ class PermissionControllerTest {
     private final UUID userId = UUID.randomUUID();
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
+    @MockitoBean
     private PermissionService permissionService;
     @Mock
     private Permission mockPermission;

@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.net.URISyntaxException;
@@ -24,15 +24,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(ControllerAdvice.class)
 @AutoConfigureMockMvc(addFilters = false)
 class ControllerAdviceTest {
-    @MockBean
+    @MockitoBean
     private PkceClientController controller;
-    @MockBean
+    @MockitoBean
     private PrivateKey ignored;
-    @MockBean
+    @MockitoBean
     private PermissionEventRepository ignoredEventRepo;
-    @MockBean
+    @MockitoBean
     private NlPermissionRequestRepository ignoredPermissionRequestRepo;
-    @MockBean
+    @MockitoBean
     private PermissionRequestService ignoredPermissionRequestService;
     @Autowired
     private MockMvc mockMvc;

@@ -2,22 +2,25 @@ package eddie.energy.europeanmasterdata;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import org.springframework.stereotype.Service;
+import energy.eddie.api.agnostic.master.data.MasterData;
+import energy.eddie.api.agnostic.master.data.MeteredDataAdministrator;
+import energy.eddie.api.agnostic.master.data.PermissionAdministrator;
+import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-@Service
-public class EuropeanMasterDataService {
+@Component
+public class JsonMasterData implements MasterData {
 
     private final List<PermissionAdministrator> permissionAdministrators;
     private final List<MeteredDataAdministrator> meteredDataAdministrators;
 
     private final ObjectMapper objectMapper;
 
-    public EuropeanMasterDataService(ObjectMapper objectMapper) throws FileNotFoundException {
+    public JsonMasterData(ObjectMapper objectMapper) throws FileNotFoundException {
         this.objectMapper = objectMapper;
 
         this.permissionAdministrators = readJsonFile("permission-administrators.json",
@@ -37,20 +40,24 @@ public class EuropeanMasterDataService {
         }
     }
 
-    public List<PermissionAdministrator> getPermissionAdministrators() {
+    @Override
+    public List<PermissionAdministrator> permissionAdministrators() {
         return permissionAdministrators;
     }
 
+    @Override
     public Optional<PermissionAdministrator> getPermissionAdministrator(String id) {
         return permissionAdministrators.stream()
                                        .filter(p -> p.companyId().equals(id))
                                        .findFirst();
     }
 
-    public List<MeteredDataAdministrator> getMeteredDataAdministrators() {
+    @Override
+    public List<MeteredDataAdministrator> meteredDataAdministrators() {
         return meteredDataAdministrators;
     }
 
+    @Override
     public Optional<MeteredDataAdministrator> getMeteredDataAdministrator(String id) {
         return meteredDataAdministrators.stream()
                                         .filter(m -> m.companyId().equals(id))

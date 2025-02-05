@@ -202,7 +202,7 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
         // use unique name
         connectorServletBean.setName(outboundConnectorName);
         // start all outbound-connector servlets with same priority
-        connectorServletBean.setLoadOnStartup(2);
+        connectorServletBean.setLoadOnStartup(Integer.MAX_VALUE);
 
         return BeanDefinitionBuilder
                 .genericBeanDefinition(ServletRegistrationBean.class, () -> connectorServletBean)

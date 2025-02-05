@@ -24,11 +24,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -54,16 +54,16 @@ class PermissionControllerTest {
     private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
+    @MockitoBean
     private PermissionRequestService mockService;
-    @MockBean
+    @MockitoBean
     private EsPermissionRequestRepository unusedMockRepository;
-    @MockBean
+    @MockitoBean
     private EsPermissionEventRepository unusedPermissionEventRepository;
-    @MockBean
+    @MockitoBean
     private DatadisApiHealthIndicator healthIndicator;
     @SuppressWarnings("unused")
-    @MockBean
+    @MockitoBean
     private DataNeedsService dataNeedsService;
 
     @Test

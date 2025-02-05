@@ -23,7 +23,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +30,7 @@ import org.springframework.http.*;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -55,7 +55,7 @@ class DataNeedsManagementControllerTest {
     private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
+    @MockitoBean
     private DataNeedsDbService mockService;
     private DataNeed exampleVhd;
     private DataNeed exampleAccount;
@@ -257,7 +257,7 @@ class DataNeedsManagementFullTest {
     private int port;
     @Autowired
     private TestRestTemplate restTemplate;
-    @MockBean
+    @MockitoBean
     @SuppressWarnings("unused")
     private SecurityFilterChain mockSecurityFilterChain;
 

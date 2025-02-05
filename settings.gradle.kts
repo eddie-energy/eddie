@@ -42,6 +42,9 @@ findProject(":region-connectors:region-connector-simulation")?.name = "region-co
 include("region-connectors:region-connector-us-green-button")
 findProject(":region-connectors:region-connector-us-green-button")?.name = "region-connector-us-green-button"
 
+include("region-connectors:region-connector-cds")
+findProject(":region-connectors:region-connector-cds")?.name = "region-connector-cds"
+
 include("region-connectors:shared")
 findProject(":region-connectors:shared")?.name = "shared"
 

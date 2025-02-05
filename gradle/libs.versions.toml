@@ -1,6 +1,6 @@
 # See: https://docs.gradle.org/current/userguide/platforms.html#sub:conventional-dependencies-toml
 [versions]
-spring-boot = "3.2.4"
+spring-boot = "3.4.2"
 spring-dependency-management = "1.1.2"
 spring-retry = "2.0.4"
 spring-aspects = "6.1.1"
@@ -19,14 +19,13 @@ jsr305 = "3.0.2"
 jaxb = "4.0.2"
 jaxb-plugins = "4.0.0"
 jakarta-xml-bind = "4.0.0"
-jackson-jakarta-xmlbind-annotations = "2.18.1"
 rometools = "2.1.0"
 jakarta-annotation = "2.1.0"
 jakarta-validation = "3.0.2"
 jakarta-persistence-api = "3.2.0"
 sonar = "4.0.0.2929"
 commons-codec = "1.15"
-jackson = "2.15.2"
+jackson = "2.18.2"
 h2database = "2.3.232"
 postgresql = "42.7.3"
 javalin = "6.3.0"
@@ -50,10 +49,10 @@ bouncycastle = "1.78"
 keycloak = "25.0.3"
 
 swagger-annotations = "2.2.22"
-openapi-generator = "7.3.0"
+openapi-generator = "7.11.0"
 openapi-webmvc-ui = "2.3.0"
 apache-httpcomponents-version = "4.5.14"
-apache-httpcomponents-client-version = "5.2.1"
+apache-httpcomponents-client-version = "5.4.1"
 jackson-databind-nullable-version = "0.2.6"
 google-jib = "3.4.0"
 
@@ -108,13 +107,13 @@ netty-codec-http = { module = "io.netty:netty-codec-http", version.ref = "netty-
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
 
 # dependencies required by outbound-connectors
-jackson-jakarta-xmlbind-annotations = { module = "com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations", version.ref = "jackson-jakarta-xmlbind-annotations" }
+jackson-jakarta-xmlbind-annotations = { module = "com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations", version.ref = "jackson" }
 
 # dependencies required by outbound-kafka
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
 testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers" }
 jackson-dataformat-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
-jackson-core = { module = "com.fasterxml.jackson.core:jackson-core" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
 
 # dpendencies required by outbound-amqp
 rabbitmq-amqp-client = { module = "com.rabbitmq.client:amqp-client", version.ref = "rabbitmq-amqp-client" }

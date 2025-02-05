@@ -1,5 +1,8 @@
 package eddie.energy.europeanmasterdata;
 
+import energy.eddie.api.agnostic.master.data.MasterDataCollection;
+import energy.eddie.api.agnostic.master.data.MeteredDataAdministrator;
+import energy.eddie.api.agnostic.master.data.PermissionAdministrator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -15,33 +18,35 @@ import java.util.List;
 @Tag(name = "European Master Data API", description = "Access to permission administrators and metered data administrators")
 public class EuropeanMasterDataController {
 
-    private final EuropeanMasterDataService europeanMasterDataService;
+    private final MasterDataCollection masterDataService;
 
-    public EuropeanMasterDataController(EuropeanMasterDataService europeanMasterDataService) {
-        this.europeanMasterDataService = europeanMasterDataService;
+    public EuropeanMasterDataController(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // Injected from parent context
+            MasterDataCollection masterDataService) {
+        this.masterDataService = masterDataService;
     }
 
     @Operation(summary = "Get a list of all permission administrators")
     @GetMapping(value = "/permission-administrators")
     public List<PermissionAdministrator> getPermissionAdministrators() {
-        return europeanMasterDataService.getPermissionAdministrators();
+        return masterDataService.getPermissionAdministrators();
     }
 
     @Operation(summary = "Get a single permission administrator by its company ID")
     @GetMapping("/permission-administrators/{id}")
     public ResponseEntity<PermissionAdministrator> getPermissionAdministrator(@PathVariable String id) {
-        return ResponseEntity.of(europeanMasterDataService.getPermissionAdministrator(id));
+        return ResponseEntity.of(masterDataService.getPermissionAdministrator(id));
     }
 
     @Operation(summary = "Get a list of all metered data administrators")
     @GetMapping("/metered-data-administrators")
     public List<MeteredDataAdministrator> getMeteredDataAdministrators() {
-        return europeanMasterDataService.getMeteredDataAdministrators();
+        return masterDataService.getMeteredDataAdministrators();
     }
 
     @Operation(summary = "Get a single metered data administrator by its company ID")
     @GetMapping("/metered-data-administrators/{id}")
     public ResponseEntity<MeteredDataAdministrator> getMeteredDataAdministrator(@PathVariable String id) {
-        return ResponseEntity.of(europeanMasterDataService.getMeteredDataAdministrator(id));
+        return ResponseEntity.of(masterDataService.getMeteredDataAdministrator(id));
     }
 }
