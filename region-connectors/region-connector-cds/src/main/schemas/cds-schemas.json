@@ -137,261 +137,466 @@
     "OAuthMetadata": {
       "type": "object",
       "properties": {
-        "authorization_details_types_supported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Lists which authorization details are supported such as 'client_admin' or 'customer_data'"
-        },
-        "authorization_endpoint": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_client_settings_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_client_updates_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_clients_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_accounts_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_aggregations_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_billsections_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_billstatements_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_eacs_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_meterdevices_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_servicecontracts_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_servicepoints_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_usagesegments_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_directory_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_grants_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_human_directory": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_human_registration": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_oauth_version": {
-          "type": "string"
-        },
-        "cds_registration_fields": {
-          "type": "object"
-        },
-        "cds_scope_credentials_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_scope_descriptions": {
-          "type": "object",
-          "description": "Lists all scopes available",
-          "additionalProperties": {
-            "$ref": "#/$defs/CdsScopeDescription"
-          }
-        },
-        "cds_test_accounts": {
-          "type": "string",
-          "format": "uri"
-        },
-        "code_challenge_methods_supported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "grant_types_supported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "introspection_endpoint": {
-          "type": "string",
-          "format": "uri"
-        },
-        "issuer": {
-          "type": "string",
-          "format": "uri"
-        },
-        "op_policy_uri": {
-          "type": "string",
-          "format": "uri"
-        },
-        "op_tos_uri": {
-          "type": "string",
-          "format": "uri"
-        },
-        "pushed_authorization_request_endpoint": {
-          "type": "string",
-          "format": "uri"
-        },
         "registration_endpoint": {
           "type": "string",
-          "format": "uri"
-        },
-        "response_types_supported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "revocation_endpoint": {
-          "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "OAuth’s Dynamic Client Registration functionality is required to enable the Client Registration Process."
         },
         "scopes_supported": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "The scopes in this array MUST represent a union of all scope id values contained in the cds_scope_descriptions objects."
         },
         "service_documentation": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "Developer documentation is required by the Server to help streamline Client integration."
         },
-        "token_endpoint": {
+        "op_policy_uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "Policies for Clients registering is required."
+        },
+        "op_tos_uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "Terms of use for Clients registering is required."
+        },
+        "revocation_endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "OAuth’s Token Revocation functionality is required."
+        },
+        "code_challenge_methods_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The code challenge methods in this array MUST represent a union of all code_challenge_methods_supported values contained in the cds_scope_descriptions objects."
+        },
+        "introspection_endpoint": {
           "type": "string",
           "format": "uri"
+        }
+      },
+      "required": [
+        "registration_endpoint",
+        "scopes_supported",
+        "service_documentation",
+        "op_policy_uri",
+        "op_tos_uri",
+        "revocation_endpoint",
+        "introspection_endpoint",
+        "code_challenge_methods_supported",
+        "token_endpoint"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/$defs/OAuthCDSValues"
+        },
+        {
+          "$ref": "#/$defs/OAuthExtensions"
+        },
+        {
+          "$ref": "#/$defs/OAuthStandardValues"
+        }
+      ]
+    },
+    "OAuthExtensions": {
+      "type": "object",
+      "properties": {
+        "authorization_details_types_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "OAuth’s Rich Authorization Requests functionality is required. This array of values MUST be the same as scopes_supported."
+        },
+        "pushed_authorization_request_endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "OAuth’s Pushed Authorization Requests functionality is required."
+        }
+      },
+      "required": [
+        "authorization_details_types_supported",
+        "pushed_authorization_request_endpoint"
+      ]
+    },
+    "OAuthStandardValues": {
+      "properties": {
+        "response_types_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The response types in this array MUST represent a union of all response_types_supported values contained in the cds_scope_descriptions objects."
+        },
+        "grant_types_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The response types in this array MUST represent a union of all grant_types_supported values contained in the cds_scope_descriptions objects."
         },
         "token_endpoint_auth_methods_supported": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "The response types in this array MUST represent a union of all token_endpoint_auth_methods_supported values contained in the cds_scope_descriptions object."
         }
       },
       "required": [
-        "authorization_details_types_supported",
-        "authorization_endpoint",
-        "cds_client_settings_api",
-        "cds_client_updates_api",
-        "cds_clients_api",
-        "cds_customerdata_accounts_api",
-        "cds_customerdata_aggregations_api",
-        "cds_customerdata_billsections_api",
-        "cds_customerdata_billstatements_api",
-        "cds_customerdata_eacs_api",
-        "cds_customerdata_meterdevices_api",
-        "cds_customerdata_servicecontracts_api",
-        "cds_customerdata_servicepoints_api",
-        "cds_customerdata_usagesegments_api",
-        "cds_directory_api",
-        "cds_grants_api",
-        "cds_human_directory",
-        "cds_human_registration",
-        "cds_oauth_version",
-        "cds_registration_fields",
-        "cds_scope_credentials_api",
-        "cds_scope_descriptions",
-        "cds_test_accounts",
-        "code_challenge_methods_supported",
-        "grant_types_supported",
-        "introspection_endpoint",
-        "issuer",
-        "op_policy_uri",
-        "op_tos_uri",
-        "pushed_authorization_request_endpoint",
-        "registration_endpoint",
         "response_types_supported",
-        "revocation_endpoint",
-        "scopes_supported",
-        "service_documentation",
-        "token_endpoint",
+        "grant_types_supported",
         "token_endpoint_auth_methods_supported"
+      ]
+    },
+    "OAuthCDSValues": {
+      "type": "object",
+      "properties": {
+        "cds_oauth_version": {
+          "type": "string",
+          "description": "The version of the CDS-WG1-02 Client Registration specification that the Server has implemented, which for this version of the specification is v1"
+        },
+        "cds_human_registration": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where Clients who do not have the technical capacity to use the registration_endpoint can visit to manually register a Client using a user device"
+        },
+        "cds_test_accounts": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where Clients can find developer documentation on what test account credentials may be used for testing OAuth response_type=code authorization requests"
+        },
+        "cds_scope_descriptions": {
+          "type": "object",
+          "description": "An object providing additional information about what Scope values listed in scopes_supported mean. This object MUST include a key for each Scope listed in scopes_supported with a Scope Description as that key’s value.",
+          "additionalProperties": {
+            "$ref": "#/$defs/CdsScopeDescription"
+          }
+        },
+        "cds_registration_fields": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/RegistrationField"
+          },
+          "description": "An object providing additional information about Registration Field that are referenced in Scope Description’s registration_requirements list. This object MUST include a key for each Registration Field id included in the registration_requirements lists in the metadata object with a Registration Field as that key’s value. If all registration_requirements lists are empty, this reference object is an empty object ({})."
+        }
+      },
+      "required": [
+        "cds_oauth_version",
+        "cds_human_registration",
+        "cds_test_accounts",
+        "cds_scope_descriptions",
+        "cds_registration_fields"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/$defs/CdsOAuthMetadataAndClientRegistrationResponseEndpoints"
+        }
       ]
     },
     "CdsScopeDescription": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "The unique identifier of the scope. This MUST be the same value as the object key the Metadata Object’s cds_scope_descriptions object."
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "A human-readable name of the scope."
         },
         "description": {
-          "type": "string"
-        },
-        "authorization_details_fields": {
-          "type": "array"
+          "type": "string",
+          "description": "A human-readable description of what access or actions the scope will enable."
         },
         "documentation": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "Where developers can find documentation for the scope."
+        },
+        "registration_requirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of any registration fields that MUST be submitted with Client Registration Requests or requirements that must be completed after registration before the scope is available to use in the Server’s production environment. All values in this array MUST be included in the Metadata Object’s cds_registration_fields object for a complete description of the requirement. If no additional requirements are needed, this value is an empty array ([])."
+        },
+        "registration_optional": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of any registration fields that Clients MAY submit with the Client Registration Requests. If no additional fields are available, this value is an empty array ([])."
+        },
+        "response_types_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The OAuth response_type values that can be used with this scope. This value follows the same behavior as OAuth’s Metadata object response_types_supported, except that this value represents the response types supported for this individual scope and not all scopes for the Client. If a scope is not available for OAuth authorization requests (e.g. a client_credentials-only scope), this value is an empty array ([])."
         },
         "grant_types_supported": {
           "type": "array",
           "items": {
             "type": "string"
-          }
-        },
-        "registration_optional": {
-          "type": "array"
-        },
-        "registration_requirements": {
-          "type": "array"
-        },
-        "response_types_supported": {
-          "type": "array"
+          },
+          "description": "The OAuth grant type values that can be used with this scope. This value follows the same behavior as OAuth’s Metadata object grant_types_supported, except that this value represents the grant types supported for this individual scope and not all scopes for the Client. This array MUST contain at least one grant type."
         },
         "token_endpoint_auth_methods_supported": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "The OAuth client authentication methods that can be used for granting tokens with this scope. This value follows the same behavior as OAuth’s Metadata object token_endpoint_auth_methods_supported, except that this value represents the client authentication methods supported for this individual scope and not all scopes for the Client. A value of \"none\" this array indicates that the scope may be used for public application without using a client secret."
+        },
+        "code_challenge_methods_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "For scope descriptions where grant_types_supported includes the value authorization_code, OAuth’s Proof Key for Code Exchange by OAuth Public Clients functionality is required, and Servers MUST offer S256 and MUST NOT offer plain code verifier methods. For scope descriptions where grant_types_supported does not include authorization_code, no authorization request is performed, so no code challenge is required and this field value is and empty list ([])."
+        },
+        "authorization_details_fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AuthorizationDetailsField"
+          },
+          "description": "A list of fields that MAY be included in Rich Authorization Requests the authorization details object for this scope type. If no extra authorization details fields are available, this value is an empty list ([])."
         }
       },
       "required": [
-        "authorization_details_fields",
-        "description",
-        "documentation",
-        "grant_types_supported",
         "id",
         "name",
-        "registration_optional",
+        "description",
+        "documentation",
         "registration_requirements",
         "response_types_supported",
-        "token_endpoint_auth_methods_supported"
+        "grant_types_supported",
+        "token_endpoint_auth_methods_supported",
+        "code_challenge_methods_supported",
+        "authorization_details_fields"
+      ]
+    },
+    "AuthorizationDetailsField": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique identifier of the authorization details field. This value is used as the key for the field when added to authorization_details data fields as part of OAuth’s Rich Authorization Requests."
+        },
+        "name": {
+          "type": "string",
+          "description": "A human-readable name of the authorization details field."
+        },
+        "description": {
+          "type": "string",
+          "description": "A human-readable description of what submitting values for this authorization details field means."
+        },
+        "documentation": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where developers can find more information about this authorization details field."
+        },
+        "format": {
+          "type": "string",
+          "anyOf": [
+            {
+              "type": "string",
+              "const": "relative_or_absolute_date",
+              "description": "A relative or absolute date string. Relative dates are formatted as defined by duration in RFC 3339 Appendix A. For example, P3Y represents a relative date range of 3 years. Absolute dates are formatted as date (YYYY-MM-DD). For example, 2024-01-02 represents the 2nd of January, 2024. Dates are defined as the date from the perspective of the Server’s local timezone."
+            },
+            {
+              "type": "string",
+              "const": "int",
+              "description": "An integer value."
+            },
+            {
+              "type": "string",
+              "const": "decimal",
+              "description": "A decimal value, which can have any number of significant units, but MUST NOT be stored or handled as a float value, in order to retain the precision of the value throughout Server and Client processing."
+            }
+          ],
+          "description": "The data format that MUST be used in the value of the field when including it as a data field in authorization_details objects."
+        },
+        "default": {
+          "description": "The default value that will be used in lieu of the Client submitting a value themselves. This is also the value that will be used if a basic OAuth scope string parameter is used instead of an authorization_details parameter."
+        },
+        "relative_date_limit": {
+          "type": "integer",
+          "description": "If format is relative_or_absolute_date, this is the largest relative date range that may be submitted. Servers MUST validate both submitted absolute dates and relative dates against the relative date limit, where when comparing to a submitted absolute date, the current Server date in the Server’s local timezone is used as the relative point of reference."
+        },
+        "absolute_date_limit": {
+          "type": "integer",
+          "description": "If format is relative_or_absolute_date, this is the furthest away date that may be submitted. Servers MUST validate both submitted absolute dates and relative dates against the absolute date limit, where when comparing to a submitted relative date, the current Server date in the Server’s local timezone is used as the relative point of reference."
+        },
+        "limit": {
+          "type": "integer",
+          "description": "If format is one of int or decimal, this is the largest value that can be the submitted."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "documentation",
+        "format",
+        "default"
+      ]
+    },
+    "RegistrationField": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique identifier of the registration field. This MUST be the same value as the object key the Metadata Object’s cds_registration_fields object."
+        },
+        "type": {
+          "$ref": "#/$defs/RegistrationFieldType",
+          "description": "What type of Registration Field this entry is."
+        },
+        "description": {
+          "type": "string",
+          "description": "A human-readable description of what should be submitted or expected for this registration field."
+        },
+        "documentation": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where developers can find more information about this registration field."
+        },
+        "field_name": {
+          "type": "string",
+          "description": "If type is registration_field, this is the name of the field to submit in the Client Registration Request and MUST start with cds_."
+        },
+        "format": {
+          "description": "If type is registration_field, this is the data format that MUST be used in the value of the field.",
+          "$ref": "#/$defs/RegistrationFieldFormat"
+        },
+        "default": {
+          "description": "If type is registration_field and the field is optional, this is the default value that will be used in lieu of the Client submitting a value themselves. Including this default value in the object indicates the registration field is optional."
+        },
+        "max_length": {
+          "type": "integer",
+          "description": "If format is one of string, string_or_null, url, url_or_null, email, or email_or_null, this is the maximum length of the submitted value, if not null."
+        },
+        "max_size": {
+          "type": "integer",
+          "description": "If format is one of image, image_or_null, pdf, or pdf_or_null, this is the maximum file size of the submitted value before encoding into Base64, if not null."
+        },
+        "amount": {
+          "type": "number",
+          "description": "If type is payment_required, this is the amount in currency that will be required to complete registration."
+        },
+        "currency": {
+          "type": "string",
+          "description": "If type is payment_required, this is the monetary currency in ISO 4217 currency code."
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "description",
+        "documentation"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "payment_required"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "amount",
+              "currency"
+            ]
+          }
+        }
+      ]
+    },
+    "RegistrationFieldType": {
+      "type": "string",
+      "description": "Registration Field types define which type of action the Client or Server will take for that registration field. Registration Fields can be either something that MUST or MAY be submitted as part of the Client Registration Request, depending on the submitted scope’s registration_requirements and registration_optional values, or can be something that a Client must do after registration in order to be full approved for use in the production environment.",
+      "anyOf": [
+        {
+          "const": "registration_field",
+          "description": "This field should be submitted with the Client Registration Request as the field_name. This type of registration field MUST also have field_name and format values. If this field is optional as part of registration, default must also be defined in the registration field object."
+        },
+        {
+          "const": "manual_review",
+          "description": "This field indicates that the Server will manually review the registration before approving it for production use. Notifications and communication about the status of this manual review will be conveyed using the Client Messages API."
+        },
+        {
+          "const": "payment_required",
+          "description": "This field indicates that a setup payment will be required before the Server will approve the Client for production use. Notifications and communication about how to pay and confirmation of payment will be conveyed using the Client Messages API."
+        },
+        {
+          "const": "email_verification",
+          "description": "This field indicates that the Client must verify their email before the Server will approve the Client for production use. Notifications and communication about how to verify the Client’s contact email will be conveyed using the Client Messages API."
+        }
+      ]
+    },
+    "RegistrationFieldFormat": {
+      "type": "string",
+      "description": "Registration Field formats define the data type of submitted values for these fields in Client Registration Requests.",
+      "anyOf": [
+        {
+          "const": "string",
+          "description": "If required, a string value MUST be submitted."
+        },
+        {
+          "const": "string_or_null",
+          "description": "Same as string, only with null being an additional possible value."
+        },
+        {
+          "const": "url",
+          "description": "If required, a URL value MUST be submitted"
+        },
+        {
+          "const": "url_or_null",
+          "description": "Same as url, only with null being an additional possible value."
+        },
+        {
+          "const": "email",
+          "description": "If required, a valid email address string MUST be submitted."
+        },
+        {
+          "const": "email_or_null",
+          "description": "Same as email, only with null being an additional possible value."
+        },
+        {
+          "const": "boolean",
+          "description": "If required, either true or false MUST be submitted."
+        },
+        {
+          "const": "boolean_or_null",
+          "description": "Same as boolean, only with null being an additional possible value."
+        },
+        {
+          "const": "image",
+          "description": "If required, a valid image file formatted as image/jpeg or image/png encoded as a string using Base64 MUST be submitted."
+        },
+        {
+          "const": "image_or_null",
+          "description": "Same as image, only with null being an additional possible value."
+        },
+        {
+          "const": "pdf",
+          "description": "If required, a valid pdf file formatted encoded using Base64 as a string MUST be submitted."
+        },
+        {
+          "const": "pdf_or_null",
+          "description": "Same as pdf, only with null being an additional possible value."
+        }
       ]
     },
     "CoverageListing": {
@@ -408,7 +613,9 @@
               }
             }
           },
-          "required": ["coverage_entries"]
+          "required": [
+            "coverage_entries"
+          ]
         }
       ]
     },
@@ -540,12 +747,18 @@
       "type": "object",
       "properties": {
         "next": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "uri",
           "description": "URL to the next page of results"
         },
         "previous": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "uri",
           "description": "URL to the previous page of results"
         }
@@ -555,29 +768,63 @@
     "ClientRegistrationRequest": {
       "type": "object",
       "properties": {
+        "client_name": {
+          "type": "string"
+        },
+        "client_uri": {
+          "type": "string",
+          "format": "client_uri"
+        },
+        "logo_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "tos_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "policy_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "contacts": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string",
+          "description": "A space separated list containing all the scopes that should be available for the client."
+        },
         "redirect_uris": {
           "type": "array",
           "items": {
             "type": "string",
             "format": "uri"
-          }
+          },
+          "minItems": 1
         },
-        "scope": {
-          "type": "string",
-          "description": "A space separated list containing all the scopes that should be available for the client."
+        "cds_initial_scope_of_use": {
+          "type": "string"
+        },
+        "cds_autolist_in_directory": {
+          "type": "boolean"
         }
-      }
+      },
+      "required": [
+        "redirect_uris",
+        "scope"
+      ]
     },
     "ClientRegistrationResponse": {
       "description": "Modeled after Client Registration Response, see: https://www.rfc-editor.org/rfc/rfc7591#section-3.2.1",
       "type": "object",
       "properties": {
         "client_id": {
-          "type": "string"
+          "type": "string",
+          "description": "OAuth 2.0 client identifier string.  It SHOULD NOT be currently valid for any other registered client, though an authorization server MAY issue the same client identifier to multiple instances of a registered client at its discretion."
         },
         "client_id_issued_at": {
           "type": "integer",
-          "description": "A unix timestamp when the client_id was issued."
+          "description": "Time at which the client identifier was issued.  The time is represented as the number of seconds from 1970-01-01T00:00:00Z as measured in UTC until the date/time of issuance."
         },
         "client_name": {
           "type": "string"
@@ -588,7 +835,7 @@
         },
         "client_secret_expires_at": {
           "type": "integer",
-          "description": "A unix timestamp when the client_secret expires, if equals to 0 it never expires."
+          "description": "REQUIRED if 'client_secret' is issued.  Time at which the client secret will expire or 0 if it will not expire.  The time is represented as the number of seconds from 1970-01-01T00:00:00Z as measured in UTC until the date/time of expiration."
         },
         "redirect_uris": {
           "type": "array",
@@ -624,7 +871,24 @@
           "type": "string",
           "format": "uri",
           "description": "Where the Client can find their registration-specific version of the CDSC-WG1-01 Server Metadata. If the Client’s CDSC server metadata is no different from the public CDSC server metadata, Servers MAY simply link to the public URL. If this metadata endpoint requires authentication, Servers MUST authenticate Client requests to this endpoint via Bearer access token obtained using OAuth’s client_credentials grant with a scope of client_admin, and reject unauthenticated requests with a 401 Unauthorized response code. Clients know that they must use a Bearer token when Servers return a 401 response code for this endpoint when the Client makes an unauthenticated request to the endpoint."
-        },
+        }
+      },
+      "required": [
+        "client_id",
+        "client_secret",
+        "client_secret_expires_at",
+        "scope",
+        "token_endpoint_auth_method",
+        "cds_server_metadata"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/$defs/CdsOAuthMetadataAndClientRegistrationResponseEndpoints"
+        }
+      ]
+    },
+    "CdsOAuthMetadataAndClientRegistrationResponseEndpoints": {
+      "properties": {
         "cds_clients_api": {
           "type": "string",
           "format": "uri",
@@ -647,11 +911,6 @@
         }
       },
       "required": [
-        "client_id",
-        "client_secret",
-        "scope",
-        "token_endpoint_auth_method",
-        "cds_server_metadata",
         "cds_clients_api",
         "cds_client_messages_api",
         "cds_scope_credentials_api",
