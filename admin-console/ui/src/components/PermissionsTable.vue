@@ -157,7 +157,9 @@ function confirmTermination(permissionId: string) {
     </Column>
     <Column field="status" header="Status" sortable>
       <template #body="slotProps">
-        <Tag :value="slotProps.data.status" :severity="getStatusSeverity(slotProps.data.status)" />
+        <Tag :severity="getStatusSeverity(slotProps.data.status)">
+          <span class="status-tag-value">{{ slotProps.data.status }}</span>
+        </Tag>
       </template>
     </Column>
     <Column field="cimStatus" header="CIM Status" sortable />
@@ -203,5 +205,12 @@ li {
 /* Prevent search from overflowing on mobile */
 input {
   max-width: 100%;
+}
+
+/* Prevent long status texts from overflowing table columns */
+.status-tag-value {
+  text-overflow: ellipsis;
+  max-width: 10ch;
+  overflow: hidden;
 }
 </style>
