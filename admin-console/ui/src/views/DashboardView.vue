@@ -48,7 +48,7 @@ async function getPermissionCountPerRegionConnector() {
 <template>
   <main class="outer">
     <div class="row--top">
-      <div class="card card--top" tabindex="0">
+      <section class="card card--top">
         <header class="card__item card__item--header">
           <span class="card__item-highlighted">{{ permissions.length }}</span>
           <h2>Permissions <span>active</span></h2>
@@ -68,9 +68,9 @@ async function getPermissionCountPerRegionConnector() {
         <div>
           <LineChartPermissions :permissions="permissions"></LineChartPermissions>
         </div>
-      </div>
+      </section>
 
-      <div class="card card--top" tabindex="0">
+      <section class="card card--top">
         <header class="card__item card__item--header">
           <span class="card__item-highlighted">1470</span>
           <h2>Data Packages <span>per minute</span></h2>
@@ -81,9 +81,9 @@ async function getPermissionCountPerRegionConnector() {
         <div>
           <LineChartPackages></LineChartPackages>
         </div>
-      </div>
+      </section>
 
-      <div class="card card--top" tabindex="0">
+      <section class="card card--top">
         <header class="card__item card__item--header">
           <span class="card__item-highlighted">{{ dataNeeds.length }}</span>
           <h2>Data Needs <span>enabled</span></h2>
@@ -107,10 +107,10 @@ async function getPermissionCountPerRegionConnector() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
 
-    <div class="bottom">
+    <section class="bottom">
       <div class="card card--bottom">
         <header class="card__item card__item--header">
           <span class="card__item-highlighted">{{ permissionCountPerRegionConnector.length }}</span>
@@ -162,12 +162,12 @@ async function getPermissionCountPerRegionConnector() {
           class="card__map"
         />
       </div>
-      <div tabindex="0" class="card card--bottom">
+      <div class="card card--bottom">
         <DoughnutChartRegions
           :permission-count-per-region-connector="permissionCountPerRegionConnector"
         ></DoughnutChartRegions>
       </div>
-    </div>
+    </section>
   </main>
 </template>
 
