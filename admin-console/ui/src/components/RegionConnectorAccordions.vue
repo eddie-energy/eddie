@@ -8,11 +8,11 @@ import {
   type RegionConnectorSupportedDataNeeds,
   type RegionConnectorSupportedFeatures
 } from '@/api'
-import { HEALTH_INDICATOR } from '@/constants/health-indicator'
 import { allRegionConnectors } from '@/constants/region-connectors'
 
 import { Accordion, AccordionContent, AccordionHeader, AccordionPanel, Panel } from 'primevue'
 import { onMounted, ref } from 'vue'
+import HealthIcon from '@/components/HealthIcon.vue'
 
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
@@ -92,24 +92,20 @@ function getDisabledRegionConnectors() {
                 <div class="flex items-center gap-2">
                   <span class="font-bold">{{ countryFlag(regionConnector.countryCodes[0]) }}</span>
                   <span>{{ regionConnector.id }}</span>
-                  <span
-                    v-tooltip.top="regionConnectorHealth.get(regionConnector.id) || 'UNKNOWN'"
-                    class="font-bold"
-                    >{{
-                      HEALTH_INDICATOR[
-                        (regionConnectorHealth.get(
-                          regionConnector.id
-                        ) as keyof typeof HEALTH_INDICATOR) || 'UNKNOWN'
-                      ]
-                    }}</span
-                  >
+
+                  <HealthIcon :health="regionConnectorHealth.get(regionConnector.id)" />
                 </div>
               </template>
-              <p class="m-0">Country: {{ formatCountry(regionConnector.countryCodes[0]) }}</p>
-              <p class="m-0">Timezone: {{ regionConnector.timeZone }}</p>
-              <p class="m-0">
-                Status: {{ regionConnectorHealth.get(regionConnector.id) || 'UNKNOWN' }}
-              </p>
+
+              <dl style="display: grid; grid-template-columns: auto 1fr; column-gap: 2rem">
+                <dt>Country:</dt>
+                <dd>{{ formatCountry(regionConnector.countryCodes[0]) }}</dd>
+                <dt>Timezone:</dt>
+                <dd>{{ regionConnector.timeZone }}</dd>
+                <dt>Status:</dt>
+                <dd>{{ regionConnectorHealth.get(regionConnector.id) || 'UNKNOWN' }}</dd>
+              </dl>
+
               <Panel class="panel-data-needs" toggleable collapsed header="Supported DataNeeds">
                 <ul>
                   <li

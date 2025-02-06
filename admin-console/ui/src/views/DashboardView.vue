@@ -12,7 +12,7 @@ import LineChartPermissions from '@/components/LineChartPermissions.vue'
 import DoughnutChartRegions from '@/components/DoughnutChartRegions.vue'
 import LineChartPackages from '@/components/LineChartPackages.vue'
 import { onMounted, ref } from 'vue'
-import { HEALTH_INDICATOR } from '@/constants/health-indicator'
+import HealthIcon from '@/components/HealthIcon.vue'
 
 type PermissionsPerRegionConnector = { id: string; count: number }
 
@@ -130,16 +130,10 @@ async function getPermissionCountPerRegionConnector() {
               <h3>
                 <b>{{ regionConnector.id }}</b>
               </h3>
-              <span
-                :aria-description="regionConnectorHealth.get(regionConnector.id) || 'DISABLED'"
-                v-tooltip.top="regionConnectorHealth.get(regionConnector.id) || 'DISABLED'"
-                >{{
-                  HEALTH_INDICATOR[
-                    (regionConnectorHealth.get(
-                      regionConnector.id
-                    ) as keyof typeof HEALTH_INDICATOR) || 'DISABLED'
-                  ]
-                }}
+
+              <span>
+                {{ regionConnectorHealth.get(regionConnector.id) }}&nbsp;
+                <HealthIcon :health="regionConnectorHealth.get(regionConnector.id)" />
               </span>
             </div>
             <div class="card__item card__item--addition">
