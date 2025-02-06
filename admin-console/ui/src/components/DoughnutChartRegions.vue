@@ -31,6 +31,10 @@ watch(props, () => {
       type="doughnut"
       :data="chartData"
       :options="chartOptions"
+      :canvasProps="{
+        role: 'img',
+        'aria-label': 'Pie chart describing the number of permissions per region connector.'
+      }"
     />
   </div>
 </template>

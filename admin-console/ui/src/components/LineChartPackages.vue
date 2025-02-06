@@ -39,7 +39,16 @@ const setChartOptions = () => {
 
 <template>
   <div class="dataPackages-chart-container">
-    <Chart class="dataPackages-chart" type="line" :data="chartData" :options="chartOptions" />
+    <Chart
+      class="dataPackages-chart"
+      type="line"
+      :data="chartData"
+      :options="chartOptions"
+      :canvasProps="{
+        role: 'img',
+        'aria-label': 'Line chart describing the number of sent packages over time.'
+      }"
+    />
   </div>
 </template>
 
