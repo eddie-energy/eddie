@@ -599,6 +599,158 @@
         }
       ]
     },
+    "ClientRegistrationRequest": {
+      "type": "object",
+      "properties": {
+        "client_name": {
+          "type": "string"
+        },
+        "client_uri": {
+          "type": "string",
+          "format": "client_uri"
+        },
+        "logo_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "tos_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "policy_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "contacts": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string",
+          "description": "A space separated list containing all the scopes that should be available for the client."
+        },
+        "redirect_uris": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "minItems": 1
+        },
+        "cds_initial_scope_of_use": {
+          "type": "string"
+        },
+        "cds_autolist_in_directory": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "redirect_uris",
+        "scope"
+      ]
+    },
+    "ClientRegistrationResponse": {
+      "description": "Modeled after Client Registration Response, see: https://www.rfc-editor.org/rfc/rfc7591#section-3.2.1",
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "description": "OAuth 2.0 client identifier string.  It SHOULD NOT be currently valid for any other registered client, though an authorization server MAY issue the same client identifier to multiple instances of a registered client at its discretion."
+        },
+        "client_id_issued_at": {
+          "type": "integer",
+          "description": "Time at which the client identifier was issued.  The time is represented as the number of seconds from 1970-01-01T00:00:00Z as measured in UTC until the date/time of issuance."
+        },
+        "client_name": {
+          "type": "string"
+        },
+        "client_secret": {
+          "type": "string",
+          "description": "A client_secret value MUST be present in the response and be limited to client_admin scope use only."
+        },
+        "client_secret_expires_at": {
+          "type": "integer",
+          "description": "REQUIRED if 'client_secret' is issued.  Time at which the client secret will expire or 0 if it will not expire.  The time is represented as the number of seconds from 1970-01-01T00:00:00Z as measured in UTC until the date/time of expiration."
+        },
+        "redirect_uris": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "grant_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "response_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scope": {
+          "type": "string",
+          "description": "Space separated list of scopes, must include 'client_admin'",
+          "pattern": ".*client_admin.*"
+        },
+        "token_endpoint_auth_method": {
+          "type": "string",
+          "enum": [
+            "client_secret_basic"
+          ]
+        },
+        "cds_server_metadata": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where the Client can find their registration-specific version of the CDSC-WG1-01 Server Metadata. If the Client’s CDSC server metadata is no different from the public CDSC server metadata, Servers MAY simply link to the public URL. If this metadata endpoint requires authentication, Servers MUST authenticate Client requests to this endpoint via Bearer access token obtained using OAuth’s client_credentials grant with a scope of client_admin, and reject unauthenticated requests with a 401 Unauthorized response code. Clients know that they must use a Bearer token when Servers return a 401 response code for this endpoint when the Client makes an unauthenticated request to the endpoint."
+        }
+      },
+      "required": [
+        "client_id",
+        "client_secret",
+        "client_secret_expires_at",
+        "scope",
+        "token_endpoint_auth_method",
+        "cds_server_metadata"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/$defs/CdsOAuthMetadataAndClientRegistrationResponseEndpoints"
+        }
+      ]
+    },
+    "CdsOAuthMetadataAndClientRegistrationResponseEndpoints": {
+      "properties": {
+        "cds_clients_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Clients API."
+        },
+        "cds_client_messages_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Clients Messages API."
+        },
+        "cds_scope_credentials_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Scope Credentials API."
+        },
+        "cds_grants_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Grants API."
+        }
+      },
+      "required": [
+        "cds_clients_api",
+        "cds_client_messages_api",
+        "cds_scope_credentials_api",
+        "cds_grants_api"
+      ]
+    },
     "CoverageListing": {
       "allOf": [
         {
@@ -764,158 +916,6 @@
         }
       },
       "additionalProperties": false
-    },
-    "ClientRegistrationRequest": {
-      "type": "object",
-      "properties": {
-        "client_name": {
-          "type": "string"
-        },
-        "client_uri": {
-          "type": "string",
-          "format": "client_uri"
-        },
-        "logo_uri": {
-          "type": "string",
-          "format": "uri"
-        },
-        "tos_uri": {
-          "type": "string",
-          "format": "uri"
-        },
-        "policy_uri": {
-          "type": "string",
-          "format": "uri"
-        },
-        "contacts": {
-          "type": "string"
-        },
-        "scope": {
-          "type": "string",
-          "description": "A space separated list containing all the scopes that should be available for the client."
-        },
-        "redirect_uris": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uri"
-          },
-          "minItems": 1
-        },
-        "cds_initial_scope_of_use": {
-          "type": "string"
-        },
-        "cds_autolist_in_directory": {
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "redirect_uris",
-        "scope"
-      ]
-    },
-    "ClientRegistrationResponse": {
-      "description": "Modeled after Client Registration Response, see: https://www.rfc-editor.org/rfc/rfc7591#section-3.2.1",
-      "type": "object",
-      "properties": {
-        "client_id": {
-          "type": "string",
-          "description": "OAuth 2.0 client identifier string.  It SHOULD NOT be currently valid for any other registered client, though an authorization server MAY issue the same client identifier to multiple instances of a registered client at its discretion."
-        },
-        "client_id_issued_at": {
-          "type": "integer",
-          "description": "Time at which the client identifier was issued.  The time is represented as the number of seconds from 1970-01-01T00:00:00Z as measured in UTC until the date/time of issuance."
-        },
-        "client_name": {
-          "type": "string"
-        },
-        "client_secret": {
-          "type": "string",
-          "description": "A client_secret value MUST be present in the response and be limited to client_admin scope use only."
-        },
-        "client_secret_expires_at": {
-          "type": "integer",
-          "description": "REQUIRED if 'client_secret' is issued.  Time at which the client secret will expire or 0 if it will not expire.  The time is represented as the number of seconds from 1970-01-01T00:00:00Z as measured in UTC until the date/time of expiration."
-        },
-        "redirect_uris": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uri"
-          }
-        },
-        "grant_types": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "response_types": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "scope": {
-          "type": "string",
-          "description": "Space separated list of scopes, must include 'client_admin'",
-          "pattern": ".*client_admin.*"
-        },
-        "token_endpoint_auth_method": {
-          "type": "string",
-          "enum": [
-            "client_secret_basic"
-          ]
-        },
-        "cds_server_metadata": {
-          "type": "string",
-          "format": "uri",
-          "description": "Where the Client can find their registration-specific version of the CDSC-WG1-01 Server Metadata. If the Client’s CDSC server metadata is no different from the public CDSC server metadata, Servers MAY simply link to the public URL. If this metadata endpoint requires authentication, Servers MUST authenticate Client requests to this endpoint via Bearer access token obtained using OAuth’s client_credentials grant with a scope of client_admin, and reject unauthenticated requests with a 401 Unauthorized response code. Clients know that they must use a Bearer token when Servers return a 401 response code for this endpoint when the Client makes an unauthenticated request to the endpoint."
-        }
-      },
-      "required": [
-        "client_id",
-        "client_secret",
-        "client_secret_expires_at",
-        "scope",
-        "token_endpoint_auth_method",
-        "cds_server_metadata"
-      ],
-      "allOf": [
-        {
-          "$ref": "#/$defs/CdsOAuthMetadataAndClientRegistrationResponseEndpoints"
-        }
-      ]
-    },
-    "CdsOAuthMetadataAndClientRegistrationResponseEndpoints": {
-      "properties": {
-        "cds_clients_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Clients API."
-        },
-        "cds_client_messages_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Clients Messages API."
-        },
-        "cds_scope_credentials_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Scope Credentials API."
-        },
-        "cds_grants_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Grants API."
-        }
-      },
-      "required": [
-        "cds_clients_api",
-        "cds_client_messages_api",
-        "cds_scope_credentials_api",
-        "cds_grants_api"
-      ]
     }
   }
 }
