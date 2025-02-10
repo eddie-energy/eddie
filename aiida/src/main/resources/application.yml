@@ -34,49 +34,8 @@ spring:
             provider: keycloak
 
 aiida:
+  mqtt:
+    host: ${MQTT_EXTERNAL_HOST:tcp://localhost:1884}
   keycloak:
     account-uri: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/account
     end-session-uri: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/logout
-#  datasources:
-#    at:
-#      oeas:
-#      - enabled: false
-#        id: REPLACE_ME_1
-#        mqtt-server-uri: REPLACE_ME
-#        mqtt-subscribe-topic: REPLACE_ME
-#        mqtt-username: REPLACE_ME_OR_EMPTY
-#        mqtt-password: REPLACE_ME_OR_EMPTY
-#      - enabled: false
-#        id: REPLACE_ME_2
-#        mqtt-server-uri: REPLACE_ME
-#        mqtt-subscribe-topic: REPLACE_ME
-#        mqtt-username: REPLACE_ME_OR_EMPTY
-#        mqtt-password: REPLACE_ME_OR_EMPTY
-#    fr:
-#      teleinfo:
-#      - enabled: false
-#        id: REPLACE_ME_1
-#        mqtt-server-uri: REPLACE_ME
-#        mqtt-subscribe-topic: teleinfo
-#        mqtt-username: REPLACE_ME_OR_EMPTY
-#        mqtt-password: REPLACE_ME_OR_EMPTY
-#        metering-id: REPLACE_ME
-#      - enabled: false
-#        id: REPLACE_ME_2
-#        mqtt-server-uri: REPLACE_ME
-#        mqtt-subscribe-topic: teleinfo
-#        mqtt-username: REPLACE_ME_OR_EMPTY
-#        mqtt-password: REPLACE_ME_OR_EMPTY
-#        metering-id: REPLACE_ME
-#     sga:
-#       - enabled: true
-#         id: REPLACE_ME_1
-#         mqtt-server-uri: REPLACE_ME
-#         mqtt-subscribe-topic: REPLACE_ME
-#         mqtt-username: REPLACE_ME_OR_EMPTY
-#         mqtt-password: REPLACE_ME_OR_EMPTY
-#    sim:
-#      simulations:
-#        - enabled: true
-#          id: 1
-#          simulation-period-in-seconds: 5

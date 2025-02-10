@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class SimulationDataSourceTest {
-    private SimulationDataSource simulator;
+    private SimulationDataSourceAdapter simulator;
     private Clock fixedClock;
 
     @BeforeEach
@@ -31,10 +31,10 @@ class SimulationDataSourceTest {
         Duration period = Duration.ofSeconds(1);
 
         // when
-        simulator = new SimulationDataSource("1", fixedClock, period);
+        simulator = new SimulationDataSourceAdapter("1", "simulation", period);
 
         // then
-        assertEquals("SimulationDataSource", simulator.name());
+        assertEquals("simulation", simulator.name());
         assertEquals("1", simulator.id());
     }
 
@@ -42,7 +42,7 @@ class SimulationDataSourceTest {
     void verify_bundleOfFourValuesIsGeneratedPerPeriod_andCloseEmitsCompleteOnFlux() {
         Duration period = Duration.ofSeconds(1);
 
-        simulator = new SimulationDataSource("1", "Test Simulator", fixedClock, period);
+        simulator = new SimulationDataSourceAdapter("1", "Test Simulator", period);
 
         StepVerifier.withVirtualTime(() -> simulator.start())
                     .expectSubscription()
@@ -65,7 +65,7 @@ class SimulationDataSourceTest {
      */
     @Test
     void verify_close_immediatelyEmitsCompleteOnFlux() {
-        simulator = new SimulationDataSource("1", "Test Simulator", fixedClock, Duration.ofSeconds(200));
+        simulator = new SimulationDataSourceAdapter("1", "Test Simulator", Duration.ofSeconds(200));
 
         var stepVerifier = StepVerifier.create(simulator.start())
                                        .expectComplete()
@@ -79,7 +79,7 @@ class SimulationDataSourceTest {
 
     @Test
     void testHealth() {
-        simulator = new SimulationDataSource("1", "Test Simulator", fixedClock, Duration.ofSeconds(200));
+        simulator = new SimulationDataSourceAdapter("1", "Test Simulator", Duration.ofSeconds(200));
         assertEquals(Status.UP, simulator.health().getStatus());
     }
 }

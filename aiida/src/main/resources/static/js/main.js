@@ -69,7 +69,8 @@ const STATUS = {
   },
 };
 
-const BASE_URL = "/permissions";
+const PERMISSIONS_BASE_URL = "/permissions";
+const DATASOURCES_BASE_URL = "/datasources";
 
 const permissionDialog = document.getElementById("permission-dialog");
 const permissionDialogContent = document.getElementById(
@@ -104,7 +105,7 @@ function getCsrfToken() {
 }
 
 function permissions() {
-  return fetch(BASE_URL).then((response) => response.json());
+  return fetch(PERMISSIONS_BASE_URL).then((response) => response.json());
 }
 
 function handlePermissionFormSubmit(event) {
@@ -152,25 +153,14 @@ function toLocalDateString(time) {
 
 function permissionElement(permission) {
   console.log(permission)
+  const notYetAvailable = "Not available yet.";
   const { eddieId, permissionId, status, serviceName } = permission;
-  const dataTags = permission.hasOwnProperty("dataNeed")
-    ? permission.dataNeed.dataTags
-    : ["Not available yet."];
-  const startTime = permission.hasOwnProperty("startTime")
-    ? toLocalDateString(permission.startTime)
-    : "Not available yet.";
-  const expirationTime = permission.hasOwnProperty("expirationTime")
-    ? toLocalDateString(permission.expirationTime)
-    : "Not available yet.";
-  const transmissionSchedule = permission.hasOwnProperty("dataNeed")
-    ? permission.dataNeed.transmissionSchedule
-    : "Not available yet.";
-  const asset = permission.hasOwnProperty("dataNeed")
-    ? permission.dataNeed.asset
-    : "Not available yet.";
-  const schemas = permission.hasOwnProperty("dataNeed")
-    ? permission.dataNeed.schemas
-    : ["Not available yet."];
+  const dataTags = permission.dataNeed.dataTags ?? notYetAvailable;
+  const startTime = toLocalDateString(permission.startTime) ?? notYetAvailable;
+  const expirationTime = toLocalDateString(permission.expirationTime) ?? notYetAvailable;
+  const transmissionSchedule = permission.dataNeed.transmissionSchedule ?? notYetAvailable;
+  const asset = permission.dataNeed.asset ?? notYetAvailable;
+  const schemas = permission.dataNeed.schemas ?? notYetAvailable;
 
   return /* HTML */ `
     <sl-details>
@@ -240,6 +230,7 @@ function renderPermissions() {
 
     permissions.forEach((permission) => {
       const element = permissionElement(permission);
+      console.log("element: ", element);
 
       if (STATUS[permission.status].isActive) {
         activePermissionsList.insertAdjacentHTML("beforeend", element);
@@ -253,7 +244,7 @@ function renderPermissions() {
 function addPermission() {
   const body = JSON.parse(atob(aiidaCodeInput.value));
 
-  fetch(BASE_URL, {
+  fetch(PERMISSIONS_BASE_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -299,7 +290,7 @@ function updatePermission(operation) {
 
   const { permissionId } = JSON.parse(atob(aiidaCodeInput.value));
 
-  fetch(`${BASE_URL}/${permissionId}`, {
+  fetch(`${PERMISSIONS_BASE_URL}/${permissionId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -383,7 +374,7 @@ function openRevokePermissionDialog(permissionId) {
 }
 
 function revokePermission(permissionId) {
-  fetch(`${BASE_URL}/${permissionId}`, {
+  fetch(`${PERMISSIONS_BASE_URL}/${permissionId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -394,6 +385,376 @@ function revokePermission(permissionId) {
     }),
   }).then(() => renderPermissions());
 }
+
+function renderDataSources() {
+  fetch(`${DATASOURCES_BASE_URL}`)
+    .then((response) => response.json())
+    .then((dataSources) => {
+      const dataSourceList = document.getElementById("data-source-list");
+      dataSourceList.innerHTML = "";
+
+      dataSources.forEach((dataSource) => {
+        const element = document.createElement("div");
+        const generalDetails = /* HTML */`
+          <p><strong>Asset:</strong> ${dataSource.asset}</p>
+          <p><strong>Type:</strong> ${dataSource.dataSourceType}</p>`;
+
+        let dataSourceTypeDetails =
+          dataSource.dataSourceType === "SIMULATION"
+            ? /* HTML */`
+              <p><strong>Simulation Period:</strong> ${dataSource.simulationPeriod}</p>
+            `
+            : /* HTML */`
+              <p><strong>MQTT Server URI:</strong> ${dataSource.mqttServerUri}</p>
+              <p><strong>MQTT Topic:</strong> ${dataSource.mqttSubscribeTopic}</p>
+              <p><strong>MQTT Username:</strong> ${dataSource.mqttUsername}</p>
+              <p><strong>MQTT Password:</strong> ${dataSource.mqttPassword}</p>
+            `;
+
+        if (dataSource.dataSourceType === "Micro Teleinfo v3") {
+          dataSourceTypeDetails += `<p><strong>Metering ID:</strong> ${dataSource.meteringId}</p>`;
+        }
+
+        element.innerHTML = /* HTML */`
+          <sl-card>
+            <h3>${dataSource.name}</h3>
+            ${generalDetails + dataSourceTypeDetails}
+            <p>
+              <strong>Enabled:</strong> 
+              <sl-switch 
+                class="toggle-enabled" 
+                ${dataSource.enabled ? "checked" : ""} 
+                data-id="${dataSource.id}">
+              </sl-switch>
+            </p>
+            <sl-button class="delete-button" data-id="${dataSource.id}">Delete</sl-button>
+            <sl-button class="edit-button" data-id="${dataSource.id}">Edit</sl-button>
+          </sl-card>
+        `;
+
+        dataSourceList.appendChild(element);
+      });
+
+      document.querySelectorAll(".delete-button").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          deleteDataSource(event.target.dataset.id);
+        });
+      });
+
+      document.querySelectorAll(".toggle-enabled").forEach((toggle) => {
+        toggle.addEventListener("sl-change", (event) => {
+          const newEnabledState = event.target.checked;
+          updateEnabledState(event.target.dataset.id, newEnabledState);
+        });
+      });
+
+      document.querySelectorAll(".edit-button").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          openEditDataSourceDialog(event.target.dataset.id);
+        });
+      });
+    })
+    .catch((error) => {
+      console.error("Failed to fetch data sources:", error);
+    });
+}
+
+function deleteDataSource(dataSourceId) {
+  fetch(`${DATASOURCES_BASE_URL}/${dataSourceId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      [getCsrfHeader()]: getCsrfToken(),
+    }
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to delete data source");
+      }
+      console.log(`Data source with ID ${dataSourceId} deleted.`);
+      renderDataSources(); // Refresh the list after deletion
+    })
+    .catch((error) => {
+      console.error("Failed to delete data source:", error);
+    });
+}
+
+function updateEnabledState(dataSourceId, enabled) {
+  fetch(`${DATASOURCES_BASE_URL}/${dataSourceId}/enabled`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      [getCsrfHeader()]: getCsrfToken(),
+    },
+    body: JSON.stringify(enabled),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to update enabled state");
+      }
+      console.log(`Enabled state for data source with ID ${dataSourceId} updated to ${enabled}.`);
+    })
+    .catch((error) => {
+      console.error("Failed to update enabled state:", error);
+    });
+}
+
+
+function openAddDataSourceDialog() {
+  const dialog = document.getElementById("add-data-source-dialog");
+  const dataSourceSelect = document.getElementById("data-source-type");
+  const assetSelect = document.getElementById("asset-type");
+
+  fetch(`${DATASOURCES_BASE_URL}/types`)
+    .then((response) => response.json())
+    .then((types) => {
+      console.log(types);
+      dataSourceSelect.innerHTML = types
+        .map(
+          (type) =>
+            `<sl-option value="${type.identifier}">${type.name}</sl-option>`
+        )
+        .join("");
+
+      dataSourceSelect.addEventListener("sl-change", (event) => {
+        const selectedValue = event.target.value;
+        const selectedType = types.find((type) => type.identifier === selectedValue);
+        if (!selectedType) {
+          console.error(`Type not found for value: ${selectedValue}`);
+          return;
+        }
+
+        updateDataSourceFields(selectedType.identifier);
+      });
+
+      if (types.length > 0) {
+        dataSourceSelect.value = types[0].identifier;
+        updateDataSourceFields(types[0].identifier);
+      }
+    })
+    .catch((error) => console.error("Failed to fetch data source types:", error));
+
+  fetch(`${DATASOURCES_BASE_URL}/assets`)
+    .then((response) => response.json())
+    .then((assets) => {
+      assetSelect.innerHTML = assets
+        .map(
+          (asset) =>
+            `<sl-option value="${asset.asset}">${asset.asset}</sl-option>`
+        )
+        .join("");
+
+      if (assets.length > 0) {
+        assetSelect.value = assets[0].asset;
+      }
+    })
+    .catch((error) => console.error("Failed to fetch assets:", error));
+
+  dialog.show();
+}
+
+function updateDataSourceFields(type) {
+  const dataSourceFields = document.getElementById("data-source-fields");
+  const commonFields = /* HTML */`
+    <sl-input name="name" label="Name" required></sl-input>
+    <sl-checkbox name="enabled" checked>Enabled</sl-checkbox>`;
+
+  let dataTypeFields = "";
+  if (type === "SIMULATION") {
+    dataTypeFields += `<sl-input name="simulationPeriod" label="Simulation Period" type="number" required></sl-input>`;
+  } else {
+    dataTypeFields += `<sl-input name="mqttTopic" label="MQTT Topic" required></sl-input>`;
+
+    if (type === "MICRO_TELEINFO") {
+      dataTypeFields += `<sl-input name="meteringID" label="MeteringID" required></sl-input>`;
+    }
+  }
+
+  dataSourceFields.innerHTML = commonFields + dataTypeFields;
+}
+
+function closeAddDataSourceDialog() {
+  document.getElementById("add-data-source-dialog").hide();
+}
+
+function openEditDataSourceDialog(dataSourceId) {
+  fetch(`${DATASOURCES_BASE_URL}/${dataSourceId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      [getCsrfHeader()]: getCsrfToken(),
+    }
+  })
+    .then((response) => response.json())
+    .then((dataSource) => {
+      const editDataSourceFields = document.getElementById("edit-data-source-fields");
+
+      console.log(dataSource);
+      Promise.all([
+        fetch(`${DATASOURCES_BASE_URL}/types`).then((response) => response.json()),
+        fetch(`${DATASOURCES_BASE_URL}/assets`).then((response) => response.json()),
+      ])
+        .then(([types, assets]) => {
+          console.log(types);
+
+          let editFields = /* HTML */`
+            <sl-input name="name" label="Name" value="${dataSource.name}" required></sl-input>
+            <sl-checkbox name="enabled" ${dataSource.enabled ? "checked" : ""}>Enabled</sl-checkbox>
+
+            <sl-select id="asset-select" name="asset" label="Asset" required>
+              ${assets
+            .map((asset) => `<sl-option value="${asset.asset}">${asset.asset}</sl-option>`)
+            .join("")}
+            </sl-select>
+
+            <sl-select id="type-select" name="dataSourceType" label="Type" required>
+              ${types
+            .map((type) => `<sl-option value="${type.identifier}">${type.name}</sl-option>`)
+            .join("")}
+            </sl-select>
+          `;
+
+          if (dataSource.dataSourceType === "SIMULATION") {
+            editFields += /* HTML */`
+              <sl-input name="simulationPeriod" label="Simulation Period" type="number" value="${dataSource.simulationPeriod}" required></sl-input>
+            `;
+          } else {
+            editFields += /* HTML */`
+              <sl-input name="mqttServerUri" label="MQTT Server URI" value="${dataSource.mqttServerUri}" required></sl-input>
+              <sl-input name="mqttTopic" label="MQTT Topic" value="${dataSource.mqttSubscribeTopic}" required></sl-input>
+              <sl-input name="mqttUsername" label="MQTT Username" value="${dataSource.mqttUsername}" required></sl-input>
+              <sl-input name="mqttPassword" label="MQTT Password" value="${dataSource.mqttPassword}" required></sl-input>
+            `;
+
+            if (dataSource.dataSourceType === "TELEINFO") {
+              editFields += /* HTML */`
+              <sl-input name="meteringId" label="Metering ID" value="${dataSource.meteringId}" required></sl-input>
+            `;
+            }
+          }
+
+          editDataSourceFields.innerHTML = editFields;
+
+          const assetSelect = document.getElementById("asset-select");
+          const typeSelect = document.getElementById("type-select");
+
+          assetSelect.value = dataSource.asset;
+          typeSelect.value = dataSource.dataSourceType;
+
+
+          document
+            .getElementById("edit-data-source-form")
+            .setAttribute("data-id", dataSourceId);
+
+          document.getElementById("edit-data-source-dialog").show();
+        })
+        .catch((error) => {
+          console.error("Failed to fetch types or assets:", error);
+        });
+    })
+    .catch((error) => {
+      console.error("Failed to fetch data source details:", error);
+    });
+}
+
+function closeEditDataSourceDialog() {
+  document.getElementById("edit-data-source-dialog").hide();
+}
+
+document
+  .getElementById("add-data-source-form")
+  .addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const dataSourceType = formData.get("dataSourceType");
+
+    const newDataSource = {
+      name: formData.get("name"),
+      enabled: formData.get("enabled") === "on",
+      asset: document.getElementById("asset-type").value,
+      dataSourceType: document.getElementById("data-source-type").value,
+    };
+
+    if (dataSourceType === "SIMULATION") {
+      newDataSource.simulationPeriod = parseInt(formData.get("simulationPeriod"), 10);
+    } else {
+      newDataSource.mqttSubscribeTopic = formData.get("mqttTopic");
+
+      if (dataSourceType === "MICRO_TELEINFO") {
+        newDataSource.meteringId = formData.get("meteringID");
+      }
+  }
+
+    console.log(newDataSource);
+
+    fetch(DATASOURCES_BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        [getCsrfHeader()]: getCsrfToken(),
+      },
+      body: JSON.stringify(newDataSource),
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to add data source");
+        return response;
+      })
+      .then(() => {
+        closeAddDataSourceDialog();
+        renderDataSources();
+      })
+      .catch((error) => console.error("Failed to add data source:", error));
+  });
+
+document
+  .getElementById("edit-data-source-form")
+  .addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const dataSourceId = event.target.getAttribute("data-id");
+
+    const updatedDataSource = {
+      id: dataSourceId,
+      name: formData.get("name"),
+      enabled: formData.get("enabled") === "on",
+      asset: document.getElementById("asset-select").value,
+      dataSourceType: document.getElementById("type-select").value,
+      mqttServerUri: formData.get("mqttServerUri"),
+      mqttSubscribeTopic: formData.get("mqttTopic"),
+      mqttUsername: formData.get("mqttUsername"),
+      mqttPassword: formData.get("mqttPassword"),
+      meteringId: formData.get("meteringID"),
+    };
+    console.log(updatedDataSource);
+
+    if (formData.has("simulationPeriod")) {
+      updatedDataSource.simulationPeriod = parseInt(
+        formData.get("simulationPeriod"),
+        10
+      );
+    }
+
+    fetch(`${DATASOURCES_BASE_URL}/${dataSourceId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        [getCsrfHeader()]: getCsrfToken(),
+      },
+      body: JSON.stringify(updatedDataSource),
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to update data source");
+      })
+      .then(() => {
+        closeEditDataSourceDialog();
+        renderDataSources(); // Refresh the list after editing
+      })
+      .catch((error) => {
+        console.error("Failed to update data source:", error);
+      });
+  });
 
 // wait for Shoelace elements to ensure validation before submit
 Promise.all([
@@ -406,6 +767,7 @@ Promise.all([
 });
 
 renderPermissions();
+renderDataSources();
 
 window.openRevokePermissionDialog = openRevokePermissionDialog;
 window.addPermission = addPermission;
@@ -414,3 +776,5 @@ window.hidePermissionDialog = () => permissionDialog.hide();
 window.hideRevokeDialog = () => revokeDialog.hide();
 window.showUserDrawer = () => userDrawer.show();
 window.hideUserDrawer = () => userDrawer.hide();
+window.openAddDataSourceDialog = openAddDataSourceDialog;
+window.closeAddDataSourceDialog = closeAddDataSourceDialog;

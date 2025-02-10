@@ -53,6 +53,19 @@ body {
   margin-bottom: var(--sl-spacing-large);
 }
 
+.datasources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-evenly;
+}
+
+.datasources > div {
+  flex: 1 1 calc(30% - 1rem);
+  max-width: 30%;
+  box-sizing: border-box;
+}
+
 .user-drawer-content {
   display: flex;
   gap: var(--sl-spacing-small);
