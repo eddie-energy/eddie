@@ -36,7 +36,7 @@ class PermissionFacadeControllerTest {
     private MetadataService metadataService;
     @MockitoBean
     private DataNeedCalculationRouter router;
-    @MockBean
+    @MockitoBean
     private ApplicationInformationService applicationInformationService;
 
     @Test

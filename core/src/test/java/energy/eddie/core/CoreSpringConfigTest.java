@@ -30,7 +30,7 @@ class CoreSpringConfigTest {
         private MetadataService unusedMetadataService;
         @MockitoBean
         private DataNeedCalculationRouter dataNeedCalculationRouter;
-        @MockBean
+        @MockitoBean
         private ApplicationInformationService unusedApplicationInformationService;
 
         @Test
@@ -51,7 +51,7 @@ class CoreSpringConfigTest {
         private MetadataService unusedMetadataService;
         @MockitoBean
         private DataNeedCalculationRouter dataNeedCalculationRouter;
-        @MockBean
+        @MockitoBean
         private ApplicationInformationService unusedApplicationInformationService;
 
         @Test
