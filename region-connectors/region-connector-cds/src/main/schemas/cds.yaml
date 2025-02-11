@@ -19,6 +19,11 @@ tags:
       This specification defines how utilities and other central entities (“Servers”) may allow third parties (“Clients”) to register, configure, and maintain connectivity with the utility or other central entity. This specification mostly extends various OAuth specifications (Dynamic Client Registration, Authorization Server Metadata, and more) to create a robust framework for offering secure, streamlined, and standardized connectivity between utilities and third parties.
     externalDocs:
       url: https://daniel-utilityapi.github.io/Connectivity/specs/cdsc-wg1-02/
+  - name: Customer Data
+    description: |
+      This specification defines how utilities and other central entities (“Servers”) may allow third parties (“Clients”) to access utility account holder data (“Customer Data”), including for use cases that require account holders to authorize the access. This specification extends CDSC-WG1-02 (Client Registration) to add OAuth authorization scopes for Customer Data, as well as defining the APIs used to access Customer Data when authorization is granted.
+    externalDocs:
+      url: https://daniel-utilityapi.github.io/Customer-Data/specs/cdsc-wg3-01/
 paths:
   /.well-known/carbon-data-spec.json:
     get:
@@ -107,3 +112,164 @@ paths:
               schema:
                 $ref: "cds-schemas.json/#/$defs/ClientRegistrationResponse"
 
+  /api/accounts:
+    get:
+      operationId: Accounts Endpoint
+      description: |
+        This specification requires Servers provide a set of Application Programming Interfaces (APIs) allowing Clients to retrieve a Customer’s Account details for which they are authorized to access. These APIs are authenticated using a Bearer access_token granted that provisions access for a scope that allows access to the Accounts API.
+      externalDocs:
+        url: https://daniel-utilityapi.github.io/Customer-Data/specs/cdsc-wg3-01/#accounts-api
+      tags:
+        - Customer Data
+      parameters:
+        - name: "cds_account_ids"
+          in: query
+          description: "A space-separated list of cds_account_id values for which the Servers MUST filter the Accounts."
+          required: false
+          schema:
+            type: string
+            example: "123 456 789"
+
+        - name: "customer_numbers"
+          in: query
+          description: "A space-separated list of customer_number values for which the Servers MUST filter the Accounts. Customer number values of null MUST be treated as invalid for this URL parameter filter."
+          required: false
+          schema:
+            type: string
+            example: "1001 1002"
+
+        - name: "account_numbers"
+          in: query
+          description: "A space-separated list of account_number values for which the Servers MUST filter the Accounts."
+          required: false
+          schema:
+            type: string
+            example: "A001 A002 A003"
+
+        - name: "q"
+          in: query
+          description: |
+            A search term for which the Servers MUST filter the Accounts following fields for values that case-insensitive contains the search term.
+            Fields that may be searched by the query term include:
+            - cds_account_id
+            - customer_number
+            - account_number
+            - account_address
+            - account_name
+          required: false
+          schema:
+            type: string
+            example: "John Doe"
+      responses:
+        200:
+          description: |
+            Listings of Account objects MUST be ordered in reverse chronological order by cds_modified timestamp, where the most recently updated relevant Account MUST be first in each listing.
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/Accounts"
+
+  /api/usagesegments:
+    get:
+      operationId: Usage Segment Endpoint
+      externalDocs:
+        url: https://daniel-utilityapi.github.io/Customer-Data/specs/cdsc-wg3-01/overview#usage-segment-api
+      description: |
+        This specification requires Servers provide a set of APIs allowing Clients to retrieve a Customer’s and Server’s Usage Segment objects for which they are authorized to access. These APIs are authenticated using a Bearer access_token granted that provisions access for a scope that allows access to the Usage Segments API.
+      tags:
+        - Customer Data
+      parameters:
+        - name: cds_usagesegment_ids
+          in: query
+          description: A space-separated list of cds_usagesegment_id values for which the Servers MUST filter the Usage Segments.
+          required: false
+          schema:
+            type: string
+            example: "usage_segment_id_1 usage_segment_id_2"
+        - name: before
+          in: query
+          description: An ISO8601 datetime for which the Server MUST filter the Usage Segment object segment_start to values that are on or before this date.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2023-01-01T00:00:00Z"
+        - name: after
+          in: query
+          description: An ISO8601 datetime for which the Server MUST filter the Usage Segment object segment_end to values that are on or after this date.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2023-02-01T00:00:00Z"
+        - name: cds_account_ids
+          in: query
+          description: A space-separated list of cds_account_id values for which the Servers MUST filter the Usage Segments.
+          required: false
+          schema:
+            type: string
+            example: "account_id_1 account_id_2"
+        - name: account_numbers
+          in: query
+          description: A space-separated list of account_number values for which the Servers MUST filter the Usage Segments.
+          required: false
+          schema:
+            type: string
+            example: "12345 67890"
+        - name: cds_servicecontract_ids
+          in: query
+          description: A space-separated list of cds_servicecontract_id values for which the Servers MUST filter the Usage Segments.
+          required: false
+          schema:
+            type: string
+            example: "servicecontract_id_1 servicecontract_id_2"
+        - name: contract_numbers
+          in: query
+          description: A space-separated list of contract_number values for which the Servers MUST filter the Usage Segments.
+          required: false
+          schema:
+            type: string
+            example: "contract_001 contract_002"
+        - name: cds_servicepoint_ids
+          in: query
+          description: A space-separated list of cds_servicepoint_id values for which the Servers MUST filter the Usage Segments.
+          required: false
+          schema:
+            type: string
+            example: "servicepoint_id_1 servicepoint_id_2"
+        - name: servicepoint_numbers
+          in: query
+          description: A space-separated list of servicepoint_number values for which the Servers MUST filter the Usage Segments.
+          required: false
+          schema:
+            type: string
+            example: "servicepoint_123 servicepoint_456"
+        - name: cds_meterdevice_ids
+          in: query
+          description: A space-separated list of cds_meterdevice_ids values for which the Servers MUST filter the Usage Segments.
+          required: false
+          schema:
+            type: string
+            example: "meterdevice_id_1 meterdevice_id_2"
+        - name: meter_numbers
+          in: query
+          description: A space-separated list of meter_numbers values for which the Servers MUST filter the Usage Segments.
+          required: false
+          schema:
+            type: string
+            example: "meter_001 meter_002"
+        - name: cds_billsection_ids
+          in: query
+          description: A space-separated list of cds_billsection_id values for which the Servers MUST filter the Usage Segments.
+          required: false
+          schema:
+            type: string
+            example: "billsection_id_1 billsection_id_2"
+      responses:
+        200:
+          description: |
+            Listings of Usage Segments MUST be ordered in alphanumeric order by aggregation_number. In situations where relevant Usage Segments have the same aggregation_number, those Usage Segments with the same aggregation_number are further ordered in alphanumeric order by account_number. In situations where relevant Usage Segments have the same account_number, those Usage Segments with the same account_number are further ordered in alphanumeric order by contract_number. In situations where relevant Usage Segments have the same contract_number, those Usage Segments with the same contract_number are further ordered in chronological order by segment_start, where the relevant Usage Segment object with the earliest date is listed first. In situations where relevant Usage Segments have the same segment_start, those Usage Segments with the same segment_start are further ordered in reverse chronological order by cds_modified, where the most recently updated relevant Usage Segment object is listed first.
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/UsageSegments"
