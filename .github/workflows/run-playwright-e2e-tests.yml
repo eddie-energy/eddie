@@ -89,7 +89,6 @@ jobs:
         run: |
           mkdir -p ./e2e-tests/build/docker-logs
           docker logs eddie-e2e-test-eddie-1 &> ./e2e-tests/build/docker-logs/eddie.log
-          docker logs eddie-e2e-test-eddie-example-app-1 &> ./e2e-tests/build/docker-logs/example-app.log
 
       - name: Archive results
         if: ${{ failure() }}  # we are only interested in failed tests
