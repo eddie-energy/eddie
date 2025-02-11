@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "status_messages", schema = "admin_console")
+@SuppressWarnings("NullAway") // Needed for JPA
 public class StatusMessage {
 
     @Id
@@ -36,7 +37,7 @@ public class StatusMessage {
 
     // Constructors
     public StatusMessage(String permissionId, String regionConnectorId, String dataNeedId, String country, String dso, String startDate, String status, String description) {
-        this.id = 0L;
+        this.id = null;
         this.permissionId = permissionId;
         this.regionConnectorId = regionConnectorId;
         this.dataNeedId = dataNeedId;
@@ -47,7 +48,6 @@ public class StatusMessage {
         this.description = description;
     }
 
-    @SuppressWarnings("NullAway") // Hibernate requires a no-arg constructor
     protected StatusMessage() {
         this.id = null;
         this.permissionId = null;
