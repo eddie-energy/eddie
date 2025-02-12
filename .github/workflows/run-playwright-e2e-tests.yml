@@ -26,6 +26,7 @@ env:
   E2E_TEST_COMPOSE_FILE: "./e2e-tests/docker/docker-compose.yml"
   E2E_COMPOSE_SECRETS_FILE: "./e2e-tests/docker/.env_secrets"
   KEYS_FOLDER: "./e2e-tests/docker/keys"
+  MIJN_AANSLUITING_JKS_FILE: "./e2e-tests/docker/keys/mijn-aansluiting.jks"
   PONTON_FOLDER: "./e2e-tests/docker/ponton"
   PONTON_ID_DAT_FILE: "./e2e-tests/docker/ponton/id.dat"
 
@@ -51,23 +52,12 @@ jobs:
       - name: Build docker images
         run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} build
 
-      - name: Generate keys
-        run: |
-          mkdir -p ${{ env.KEYS_FOLDER }}
-          keytool -genkey -noprompt \
-                  -alias mijn-aansluiting \
-                  -dname "CN=eddie.energy" \
-                  -keystore ${{ env.KEYS_FOLDER }}/mijn-aansluiting.jks \
-                  -storepass "password" \
-                  -keypass "password" \
-                  -validity 30 \
-                  -deststoretype pkcs12 \
-                  -keyalg RSA
-
       - name: Write secrets to files
         run: |
           echo "${{ secrets.E2E_TEST_ALL_SECRETS }}" >  ${{ env.E2E_COMPOSE_SECRETS_FILE }}
           echo "${{ secrets.EDDIE_JWT_HMAC_SECRET }}" >>  ${{ env.E2E_COMPOSE_SECRETS_FILE }}
+          mkdir -p ${{ env.KEYS_FOLDER }}
+          echo -n ${{ secrets.E2E_MIJN_AANSLUITING_JKS }} | base64 -di > ${{ env.MIJN_AANSLUITING_JKS_FILE }}
           mkdir -p ${{ env.PONTON_FOLDER }}
           echo -n "${{ secrets.PONTON_ID_DAT_FILE }}" | base64 -di > ${{ env.PONTON_ID_DAT_FILE }}
 
