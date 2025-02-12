@@ -26,6 +26,8 @@ env:
   E2E_TEST_COMPOSE_FILE: "./e2e-tests/docker/docker-compose.yml"
   E2E_COMPOSE_SECRETS_FILE: "./e2e-tests/docker/.env_secrets"
   KEYS_FOLDER: "./e2e-tests/docker/keys"
+  FLUVIUS_CER_FILE: "./e2e-tests/docker/keys/fluvius.cer"
+  FLUVIUS_KEY_FILE: "./e2e-tests/docker/keys/fluvius.key"
   MIJN_AANSLUITING_JKS_FILE: "./e2e-tests/docker/keys/mijn-aansluiting.jks"
   PONTON_FOLDER: "./e2e-tests/docker/ponton"
   PONTON_ID_DAT_FILE: "./e2e-tests/docker/ponton/id.dat"
@@ -58,6 +60,8 @@ jobs:
           echo "${{ secrets.EDDIE_JWT_HMAC_SECRET }}" >>  ${{ env.E2E_COMPOSE_SECRETS_FILE }}
           mkdir -p ${{ env.KEYS_FOLDER }}
           echo -n ${{ secrets.E2E_MIJN_AANSLUITING_JKS }} | base64 -di > ${{ env.MIJN_AANSLUITING_JKS_FILE }}
+          echo -n ${{ secrets.E2E_FLUVIUS_CER }} | base64 -di > ${{ env.FLUVIUS_CER_FILE }}
+          echo -n ${{ secrets.E2E_FLUVIUS_KEY }} | base64 -di > ${{ env.FLUVIUS_KEY_FILE }}
           mkdir -p ${{ env.PONTON_FOLDER }}
           echo -n "${{ secrets.PONTON_ID_DAT_FILE }}" | base64 -di > ${{ env.PONTON_ID_DAT_FILE }}
 
