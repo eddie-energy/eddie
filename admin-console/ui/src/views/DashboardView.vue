@@ -46,7 +46,7 @@ async function getPermissionCountPerRegionConnector() {
 </script>
 
 <template>
-  <main class="outer">
+  <div class="outer">
     <div class="row--top">
       <section class="card card--top">
         <header class="card__item card__item--header">
@@ -162,7 +162,7 @@ async function getPermissionCountPerRegionConnector() {
         ></DoughnutChartRegions>
       </div>
     </section>
-  </main>
+  </div>
 </template>
 
 <style scoped>
