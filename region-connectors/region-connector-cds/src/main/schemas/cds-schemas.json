@@ -626,7 +626,72 @@
         },
         "scope": {
           "type": "string",
-          "description": "A space separated list containing all the scopes that should be available for the client."
+          "description": "A space separated list containing all the scopes that should be available for the client.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "const": "cds_accounts_basic",
+              "description": "Access to basic customer account information."
+            },
+            {
+              "const": "cds_accounts_contacts",
+              "description": "Access to the current contact information for a customer’s accounts."
+            },
+            {
+              "const": "cds_accounts_detailed",
+              "description": "Access to detailed information for a customer’s accounts."
+            },
+            {
+              "const": "cds_servicecontracts_basic",
+              "description": "Access to a customer’s list of service contracts (e.g. an electrical, natural gas, or water service) with some basic information about each service."
+            },
+            {
+              "const": "cds_servicecontracts_suppliers",
+              "description": "Access to the energy supplier or retailer information for a customer’s service contracts."
+            },
+            {
+              "const": "cds_servicecontracts_detailed",
+              "description": "Access to detailed service contract information for a customer’s services."
+            },
+            {
+              "const": "cds_bill_amount_due",
+              "description": "Access to the current amounts due for a customer’s accounts."
+            },
+            {
+              "const": "cds_bill_statements_basic",
+              "description": "Access to basic information about a customer’s bill statements."
+            },
+            {
+              "const": "cds_bill_statements_detailed",
+              "description": "Access to detailed information about a customer’s bill statements."
+            },
+            {
+              "const": "cds_bill_statements_files",
+              "description": "Access to the raw files (e.g. pdf bills) for a customer’s bill statements."
+            },
+            {
+              "const": "cds_bill_sections_basic",
+              "description": "Access to summary data of a customer’s bill sections."
+            },
+            {
+              "const": "cds_bill_sections_detailed",
+              "description": "Access to detailed data of a customer’s bill sections."
+            },
+            {
+              "const": "cds_usage_basic",
+              "description": "Access to basic usage data for a customer’s service contracts."
+            },
+            {
+              "const": "cds_usage_detailed",
+              "description": "Access to detailed usage data for a customer’s service contracts."
+            },
+            {
+              "const": "cds_aggregation_inclusion",
+              "description": "Approval for being included in an aggregation (e.g. whole-building benchmarking)."
+            }
+          ]
         },
         "redirect_uris": {
           "type": "array",
@@ -718,6 +783,9 @@
       "allOf": [
         {
           "$ref": "#/$defs/CdsOAuthMetadataAndClientRegistrationResponseEndpoints"
+        },
+        {
+          "$ref": "#/$defs/ClientMetadataExtension"
         }
       ]
     },
@@ -749,6 +817,62 @@
         "cds_client_messages_api",
         "cds_scope_credentials_api",
         "cds_grants_api"
+      ]
+    },
+    "ClientMetadataExtension": {
+      "type": "object",
+      "description": "This specification extends CDSC-WG1-02 (Client Registration) to add the following named values to the Client Registration Response objects",
+      "properties": {
+        "cds_accounts_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Accounts API"
+        },
+        "cds_servicecontracts_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Service Contracts API"
+        },
+        "cds_servicepoints_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Service Points API"
+        },
+        "cds_meterdevices_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Meter Devices API"
+        },
+        "cds_billstatement_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Bill Statements API"
+        },
+        "cds_billsection_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Bill Sections API"
+        },
+        "cds_aggregations_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Aggregations API"
+        },
+        "cds_usagesegments_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Usage Segments API"
+        }
+      },
+      "required": [
+        "cds_accounts_api",
+        "cds_servicecontracts_api",
+        "cds_servicepoints_api",
+        "cds_meterdevices_api",
+        "cds_billstatement_api",
+        "cds_billsection_api",
+        "cds_aggregations_api",
+        "cds_usagesegments_api"
       ]
     },
     "CoverageListing": {
@@ -894,6 +1018,336 @@
         "capabilities"
       ],
       "additionalProperties": false
+    },
+    "Accounts": {
+      "description": "Clients may request to list Account objects that they have access to by making an HTTPS GET request, authenticated with a valid Bearer access_token that is scoped to provide access to a set of Accounts, to the cds_accounts_api URL included in the Client Registration Response or Clients API. The Account listing request responses are formatted as JSON objects and contain the following named values.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/Page"
+        },
+        {
+          "properties": {
+            "accounts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Account"
+              }
+            }
+          },
+          "required": [
+            "accounts"
+          ]
+        }
+      ]
+    },
+    "Account": {
+      "type": "object",
+      "properties": {
+        "cds_account_id": {
+          "type": "string",
+          "description": "The Server’s unique identifier for this Account object."
+        },
+        "cds_created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Server created this Account object."
+        },
+        "cds_modified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Server last modified this Account object."
+        },
+        "cds_account_parent": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The cds_account_id of a parent Account object of which this Account is grouped under. If the Account is not a part of a parent grouping, this value is null."
+        },
+        "customer_number": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The identifier that a Customer has access to that identifies a collection of Accounts as being for the same Customer. If a Server only stores Accounts as the top-level identifier for Customers, or does not have a Customer-accessible identifier set for this Account, this value is null."
+        },
+        "account_number": {
+          "type": "string",
+          "description": "The number that a Customer sees on their bill and online user interface as the identifier for this Account."
+        },
+        "account_name": {
+          "type": "string",
+          "description": "The name that a Customer sees on their bill and online user interface as the name for this Account, if available."
+        },
+        "account_address": {
+          "type": "string",
+          "description": "The address that a Customer sees on their bill and online user interface as the address for this Account, if available."
+        },
+        "account_type": {
+          "type": "string",
+          "description": "What type of Account this is. (Replace with actual Account types)"
+        },
+        "account_contacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Type of contact"
+              },
+              "value": {
+                "type": "string",
+                "description": "Value of contact"
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ]
+          },
+          "description": "A list of Account Contacts for the Account."
+        }
+      },
+      "required": [
+        "cds_account_id",
+        "cds_created",
+        "cds_modified",
+        "cds_account_parent",
+        "customer_number",
+        "account_number",
+        "account_type",
+        "account_contacts"
+      ]
+    },
+    "UsageSegments": {
+      "type": "object",
+      "allOf": [
+        {
+          "properties": {
+            "usage_segments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/UsageSegment"
+              }
+            }
+          },
+          "required": [
+            "usage_segments"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Page"
+        }
+      ]
+    },
+    "UsageSegment": {
+      "type": "object",
+      "properties": {
+        "cds_usagesegment_id": {
+          "type": "string",
+          "description": "The Server’s unique identifier for this Usage Segment object."
+        },
+        "cds_created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Server created this Usage Segment object."
+        },
+        "cds_modified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Server last modified this Usage Segment object."
+        },
+        "related_aggregations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "The unique identifiers for Aggregations to which this Usage Segment is applicable."
+          },
+          "minItems": 1,
+          "description": "The list of Aggregation unique identifiers to which this Usage Segment is applicable."
+        },
+        "related_accounts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "The unique identifiers for Accounts to which this Usage Segment is applicable."
+          },
+          "minItems": 1,
+          "description": "The list of Account unique identifiers to which this Usage Segment is applicable."
+        },
+        "related_servicecontracts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "The unique identifiers for Service Contracts to which this Usage Segment is applicable."
+          },
+          "minItems": 1,
+          "description": "The list of Service Contract unique identifiers to which this Usage Segment is applicable."
+        },
+        "related_servicepoints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "The unique identifiers for Service Points to which this Usage Segment is applicable."
+          },
+          "minItems": 1,
+          "description": "The list of Service Point unique identifiers to which this Usage Segment is applicable."
+        },
+        "related_meterdevices": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "The unique identifiers for Meter Devices to which this Usage Segment is applicable."
+          },
+          "minItems": 1,
+          "description": "The list of Meter Device unique identifiers to which this Usage Segment is applicable."
+        },
+        "related_billsections": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "The unique identifiers for Bill Sections to which this Usage Segment is applicable."
+          },
+          "minItems": 1,
+          "description": "The list of Bill Section unique identifiers to which this Usage Segment is applicable."
+        },
+        "segment_start": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The starting timestamp for the list of Usage Segment values."
+        },
+        "segment_end": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The ending timestamp for the list of Usage Segment values."
+        },
+        "interval": {
+          "type": "number",
+          "format": "decimal",
+          "description": "How long between values, in seconds."
+        },
+        "format": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "The formats of the values, presented in the order in which the values are presented.",
+            "enum": [
+              "usage_kwh",
+              "usage_fwd_kwh",
+              "usage_rev_kwh",
+              "usage_net_kwh",
+              "aggregated_kwh",
+              "demand_kw",
+              "water_m3",
+              "water_gal",
+              "water_ft3",
+              "gas_therm",
+              "gas_ccf",
+              "gas_mcf",
+              "gas_mmbtu",
+              "supply_mix",
+              "eacs"
+            ],
+            "oneOf": [
+              {
+                "const": "usage_kwh",
+                "description": "General Electric Usage in kWh object"
+              },
+              {
+                "const": "usage_fwd_kwh",
+                "description": "Forward Electric Usage in kWh object"
+              },
+              {
+                "const": "usage_rev_kwh",
+                "description": "Reverse Electric Usage in kWh object"
+              },
+              {
+                "const": "usage_net_kwh",
+                "description": "Net Electric Usage in kWh object"
+              },
+              {
+                "const": "aggregated_kwh",
+                "description": "Aggregated Electric Usage in kWh object"
+              },
+              {
+                "const": "demand_kw",
+                "description": "Electric Demand in kW object"
+              },
+              {
+                "const": "water_m3",
+                "description": "Water Usage in Cubic Meters object"
+              },
+              {
+                "const": "water_gal",
+                "description": "Water Usage in Gallons object"
+              },
+              {
+                "const": "water_ft3",
+                "description": "Water Usage in Cubic Feet object"
+              },
+              {
+                "const": "gas_therm",
+                "description": "Natural Gas Usage in Therms object"
+              },
+              {
+                "const": "gas_ccf",
+                "description": "Natural Gas Usage in CCF object"
+              },
+              {
+                "const": "gas_mcf",
+                "description": "Natural Gas Usage in MCF object"
+              },
+              {
+                "const": "gas_mmbtu",
+                "description": "Natural Gas Usage in mmBTU object"
+              },
+              {
+                "const": "supply_mix",
+                "description": "Electric Supply Mix object"
+              },
+              {
+                "const": "eacs",
+                "description": "Energy Attribute Certificates object"
+              }
+            ]
+          },
+          "minItems": 1,
+          "description": "For each entry in values, these are the formats that are included."
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "description": "A list of Value Sets representing the entries included in the Usage Segment.",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number",
+                "description": "A value set"
+              }
+            }
+          },
+          "minItems": 1,
+          "description": "A list of Value Sets that represent the entries included in the Usage Segment."
+        }
+      },
+      "required": [
+        "cds_usagesegment_id",
+        "cds_created",
+        "cds_modified",
+        "related_aggregations",
+        "related_accounts",
+        "related_servicecontracts",
+        "related_servicepoints",
+        "related_meterdevices",
+        "related_billsections",
+        "segment_start",
+        "segment_end",
+        "interval",
+        "format",
+        "values"
+      ]
     },
     "Page": {
       "type": "object",
