@@ -7,10 +7,10 @@
 #### Request to create a permission request
 # In our case the referenceNumber is the permisisonId, so for test requests, just use a random uuid
 < {%
-    const shortendUUid = $uuid.replace(/-/g, "");
+  const shortendUUid = $uuid.replace(/-/g, "");
 
-    console.log(shortendUUid)
-    client.global.set("referenceNumber", shortendUUid)
+  console.log(shortendUUid)
+  client.global.set("referenceNumber", shortendUUid)
 %}
 POST {{baseUrl}}//api/v2.0/shortUrlIdentifier
 Authorization: Bearer {{$auth.token("fluvius")}}
@@ -72,10 +72,10 @@ Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 
 ### Request energy consumption data from mandate
 GET {{baseUrl}}/api/v2.0/Mandate/energy?
-                                referenceNumber={{referenceNumber}}&
+    referenceNumber={{referenceNumber}}&
     eanNumber={{ean}}&
     DataServiceType={{granularity}}&
-                                PeriodType=readTime&
+    PeriodType=readTime&
     from={{start}}&
     to={{end}}
 Authorization: Bearer {{$auth.token("fluvius")}}

@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.be.fluvius.permission.handlers;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
@@ -57,7 +56,7 @@ public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
         var from = vhdDataNeed.permissionTimeframe().start().atStartOfDay(ZoneOffset.UTC);
         var end = DateTimeUtils.endOfDay(vhdDataNeed.permissionTimeframe().end(), ZoneOffset.UTC);
         LOGGER.info("Sending permission request {} to fluvius from {} to {}", permissionId, from, end);
-        fluviusApi.shortUrlIdentifier(permissionId, event.flow(), from, end, Granularity.PT15M)
+        fluviusApi.shortUrlIdentifier(permissionId, event.flow(), from, end, event.granularity())
                   .subscribe(res -> handleSuccess(permissionId, res),
                              throwable -> handleError(throwable, event));
     }
