@@ -21,6 +21,21 @@ const regionConnectorHealth = ref<Map<string, string>>(new Map())
 const regionConnectorSupportedFeatures = ref<RegionConnectorSupportedFeatures[]>([])
 const regionConnectorSupportedDataNeeds = ref<RegionConnectorSupportedDataNeeds[]>([])
 
+const SUPPORTED_FEATURES = {
+  supportsConnectionsStatusMessages: 'Connections Status Messages',
+  supportsRawDataMessages: 'Raw Data Messages',
+  supportsTermination: 'Termination',
+  supportsAccountingPointMarketDocuments: 'Accounting Point Market Documents',
+  supportsPermissionMarketDocuments: 'Permission Market Documents',
+  supportsValidatedHistoricalDataMarketDocuments: 'Validated Historical Data Market Documents',
+  supportsRetransmissionRequests: 'Retransmission Requests'
+}
+
+const SUPPORTED_DATA_NEEDS = {
+  ValidatedHistoricalDataDataNeed: 'Validated Historical Data',
+  AccountingPointDataNeed: 'Accounting Point'
+}
+
 onMounted(async () => {
   regionConnectors.value = await getRegionConnectors()
   regionConnectorSupportedFeatures.value = await getRegionConnectorsSupportedFeatures()
@@ -111,7 +126,7 @@ function getDisabledRegionConnectors() {
                   <li
                     v-for="supportedDataNeed in getDataNeedsByRegionConnectorId(regionConnector.id)"
                   >
-                    {{ supportedDataNeed }}
+                    {{ SUPPORTED_DATA_NEEDS[supportedDataNeed] }}
                   </li>
                 </ul>
               </Panel>
@@ -122,7 +137,7 @@ function getDisabledRegionConnectors() {
                       regionConnector.id
                     )"
                   >
-                    {{ supportedFeature }}
+                    {{ SUPPORTED_FEATURES[supportedFeature] }}
                   </li>
                 </ul>
               </Panel>
