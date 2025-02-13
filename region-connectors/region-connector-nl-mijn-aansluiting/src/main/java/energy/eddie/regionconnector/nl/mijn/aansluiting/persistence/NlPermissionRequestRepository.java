@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.persistence;
 
-import energy.eddie.api.agnostic.process.model.persistence.FullPermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.StatusPermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
@@ -13,7 +15,9 @@ import java.util.Optional;
 
 public interface NlPermissionRequestRepository extends
         JpaRepository<MijnAansluitingPermissionRequest, String>,
-        FullPermissionRequestRepository<NlPermissionRequest> {
+        PermissionRequestRepository<NlPermissionRequest>,
+        StalePermissionRequestRepository<MijnAansluitingPermissionRequest>,
+        StatusPermissionRequestRepository<NlPermissionRequest> {
     Optional<NlPermissionRequest> findByStateAndPermissionId(String state, String permissionId);
 
     List<NlPermissionRequest> findByStatus(PermissionProcessStatus status);
@@ -26,5 +30,5 @@ public interface NlPermissionRequestRepository extends
             nativeQuery = true
     )
     @Override
-    List<NlPermissionRequest> findStalePermissionRequests(@Param("hours") int timeoutDuration);
+    List<MijnAansluitingPermissionRequest> findStalePermissionRequests(@Param("hours") int timeoutDuration);
 }

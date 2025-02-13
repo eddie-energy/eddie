@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis.persistence;
 
-import energy.eddie.api.agnostic.process.model.persistence.FullPermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.StatusPermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
@@ -14,7 +16,9 @@ import java.util.List;
 @Repository
 public interface FrPermissionRequestRepository extends
         CrudRepository<EnedisPermissionRequest, String>,
-        FullPermissionRequestRepository<FrEnedisPermissionRequest> {
+        PermissionRequestRepository<FrEnedisPermissionRequest>,
+        StalePermissionRequestRepository<EnedisPermissionRequest>,
+        StatusPermissionRequestRepository<FrEnedisPermissionRequest> {
 
     List<FrEnedisPermissionRequest> findByStatus(PermissionProcessStatus status);
 
@@ -24,5 +28,5 @@ public interface FrPermissionRequestRepository extends
             nativeQuery = true
     )
     @Override
-    List<FrEnedisPermissionRequest> findStalePermissionRequests(@Param("hours") int timeoutDuration);
+    List<EnedisPermissionRequest> findStalePermissionRequests(@Param("hours") int timeoutDuration);
 }
