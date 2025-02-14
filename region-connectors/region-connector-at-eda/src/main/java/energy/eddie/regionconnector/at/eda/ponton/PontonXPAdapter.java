@@ -273,8 +273,15 @@ public class PontonXPAdapter implements EdaAdapter {
     private InboundMessageResult handleMasterDataMessage(EdaMasterData masterData) {
         var identifiableMasterData = identifiableMasterDataService.mapToIdentifiableMasterData(masterData);
         if (identifiableMasterData.isEmpty()) {
+            /*
+             * This rescheduling is essentially only necessary for the case, where a customer accepts a PermissionRequest for multiple MeteringPoints
+             * and when the DSO then sends the Data for the MeteringPoints before the "ZUSTIMMUNG_CCMO".
+             * The reason for this, is that until we process the "ZUSTIMMUNG_CCMO", identifiableMasterDataService.mapToIdentifiableMasterData
+             * will always return empty, as it will not be able to find a PermissionRequest for the received data.
+             * Once we receive the "ZUSTIMMUNG_CCMO" the CCMOAcceptHandler will create a PermissionRequest for every MeteringPoints contained.
+             */
             var date = masterData.documentCreationDateTime();
-            scheduleMessageResent(date);
+            scheduleMessageResend(date, masterData.messageId());
             LOGGER.atWarn()
                   .addArgument(masterData::conversationId)
                   .log("Received master data for conversationId '{}' before ZUSTIMMUNG_CCMO");
@@ -302,11 +309,19 @@ public class PontonXPAdapter implements EdaAdapter {
     }
 
     private InboundMessageResult handleConsumptionRecordMessage(EdaConsumptionRecord consumptionRecord) {
-        var identifiableConsumptionRecord = identifiableConsumptionRecordService.mapToIdentifiableConsumptionRecord(
-                consumptionRecord);
+        var identifiableConsumptionRecord = identifiableConsumptionRecordService
+                .mapToIdentifiableConsumptionRecord(consumptionRecord);
+
         if (identifiableConsumptionRecord.isEmpty()) {
+            /*
+             * This rescheduling is essentially only necessary for the case, where a customer accepts a PermissionRequest for multiple MeteringPoints
+             * and when the DSO then sends the Data for the MeteringPoints before the "ZUSTIMMUNG_CCMO".
+             * The reason for this, is that until we process the "ZUSTIMMUNG_CCMO", identifiableConsumptionRecordService.mapToIdentifiableConsumptionRecord
+             * will always return empty, as it will not be able to find a PermissionRequest for the received data.
+             * Once we receive the "ZUSTIMMUNG_CCMO" the CCMOAcceptHandler will create a PermissionRequest for every MeteringPoints contained.
+             */
             var date = consumptionRecord.documentCreationDateTime();
-            scheduleMessageResent(date);
+            scheduleMessageResend(date, consumptionRecord.messageId());
             return new InboundMessageResult(
                     InboundStatusEnum.REJECTED,
                     "No permission requests found for consumption record, trying again later."
@@ -342,12 +357,13 @@ public class PontonXPAdapter implements EdaAdapter {
     }
 
     @SuppressWarnings("FutureReturnValueIgnored") // we do not care about the result of the scheduled task
-    private void scheduleMessageResent(ZonedDateTime date) {
+    private void scheduleMessageResend(ZonedDateTime date, String messageId) {
         LOGGER.atInfo()
+              .addArgument(messageId)
               .addArgument(date::toString)
-              .log("Scheduling resend for failed messages that arrived after '{}'");
+              .log("Scheduling resend of failed message '{}' that arrived after '{}'");
         scheduler.schedule(
-                () -> pontonMessengerConnection.resendFailedMessages(date),
+                () -> pontonMessengerConnection.resendFailedMessage(date, messageId),
                 Instant.now().plusSeconds(30)
         );
     }

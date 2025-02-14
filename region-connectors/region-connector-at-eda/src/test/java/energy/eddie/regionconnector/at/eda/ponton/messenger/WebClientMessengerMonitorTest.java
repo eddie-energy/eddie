@@ -58,14 +58,15 @@ class WebClientMessengerMonitorTest {
 
     @SuppressWarnings("DataFlowIssue")
     @Test
-    void resendFailedMessages_sendsExpectedRequest() throws InterruptedException, JsonProcessingException {
+    void resendFailedMessage_sendsExpectedRequest() throws InterruptedException, JsonProcessingException {
         // Given
         var webClientMessengerMonitor = new WebClientMessengerMonitor(config, webClient, this.tokenProvider);
         when(tokenProvider.getToken()).thenReturn(Mono.just("token123"));
 
         // When
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
-        webClientMessengerMonitor.resendFailedMessages(now);
+        String messageId = "mId";
+        webClientMessengerMonitor.resendFailedMessage(now, messageId);
         var request = mockBackEnd.takeRequest(10, TimeUnit.SECONDS);
         var authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         JsonNode body = objectMapper.readTree(request.getBody().readUtf8());
@@ -75,16 +76,15 @@ class WebClientMessengerMonitorTest {
                 () -> assertEquals("Bearer token123", authHeader),
                 () -> assertEquals(now.format(DateTimeFormatter.ofPattern(PONTON_DATE_PATTERN)),
                                    body.findValue("fromDate").asText()),
-                () -> assertEquals(config.adapterId(),
-                                   body.findValue("adapterIds").elements().next().asText()),
-                () -> assertEquals("FAILED",
-                                   body.findValue("inboundStates").elements().next().asText())
+                () -> assertEquals(messageId, body.findValue("messageId").asText()),
+                () -> assertEquals(config.adapterId(), body.findValue("adapterIds").elements().next().asText()),
+                () -> assertEquals("FAILED", body.findValue("inboundStates").elements().next().asText())
         );
     }
 
     @SuppressWarnings("DataFlowIssue")
     @Test
-    void resendFailedMessages_whenTokenInvalid_retriesWithNewToken() throws InterruptedException {
+    void resendFailedMessage_whenTokenInvalid_retriesWithNewToken() throws InterruptedException {
         // Given
         var webClientMessengerMonitor = new WebClientMessengerMonitor(config, webClient, this.tokenProvider);
         when(tokenProvider.getToken())
@@ -113,7 +113,7 @@ class WebClientMessengerMonitorTest {
         );
 
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
-        webClientMessengerMonitor.resendFailedMessages(now);
+        webClientMessengerMonitor.resendFailedMessage(now, "messageId");
         VirtualTimeScheduler.getOrSet();
         var request1 = mockBackEnd.takeRequest(10, TimeUnit.SECONDS);
         var request2 = mockBackEnd.takeRequest(10, TimeUnit.SECONDS);

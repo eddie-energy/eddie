@@ -119,7 +119,7 @@ public class PontonMessengerConnectionTestImpl implements PontonMessengerConnect
     }
 
     @Override
-    public void resendFailedMessages(ZonedDateTime date) {
+    public void resendFailedMessage(ZonedDateTime date, String messageId) {
         // empty
     }
 }

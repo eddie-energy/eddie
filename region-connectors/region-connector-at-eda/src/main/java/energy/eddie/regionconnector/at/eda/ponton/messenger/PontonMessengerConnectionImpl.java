@@ -161,8 +161,8 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     }
 
     @Override
-    public void resendFailedMessages(ZonedDateTime date) {
-        messengerMonitor.resendFailedMessages(date);
+    public void resendFailedMessage(ZonedDateTime date, String messageId) {
+        messengerMonitor.resendFailedMessage(date, messageId);
     }
 
     private static AdapterInfo createAdapterInfo(PontonXPAdapterConfiguration config) {
