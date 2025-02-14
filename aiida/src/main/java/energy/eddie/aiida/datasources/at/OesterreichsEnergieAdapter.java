@@ -56,21 +56,23 @@ public class OesterreichsEnergieAdapter extends AiidaMqttDataSource {
 
             List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
             for (var entry : json.energyData().entrySet()) {
-                var obisCode = ObisCode.from(entry.getKey());
-                var value = String.valueOf(entry.getValue().value());
+                var obisCode = ObisCode.forCode(entry.getKey());
+                var oeaMeasurement = new OesterreichsEnergieAdapterMeasurement(obisCode,
+                                                                               String.valueOf(entry.getValue()
+                                                                                                   .value()));
 
                 aiidaRecordValues.add(new AiidaRecordValue(entry.getKey(),
-                                                           obisCode.code(),
-                                                           value,
-                                                           obisCode.unitOfMeasurement(),
-                                                           value,
-                                                           obisCode.unitOfMeasurement()
-                ));
+                                                           obisCode,
+                                                           oeaMeasurement.rawValue(),
+                                                           oeaMeasurement.rawUnitOfMeasurement(),
+                                                           oeaMeasurement.value(),
+                                                           oeaMeasurement.unitOfMeasurement()));
             }
             emitAiidaRecord(AiidaAsset.CONNECTION_AGREEMENT_POINT.toString(), aiidaRecordValues);
         } catch (IOException e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
-                         new String(message.getPayload(), StandardCharsets.UTF_8), e);
+                         new String(message.getPayload(), StandardCharsets.UTF_8),
+                         e);
         }
     }
 
@@ -85,8 +87,7 @@ public class OesterreichsEnergieAdapter extends AiidaMqttDataSource {
         LOGGER.warn(
                 "Got deliveryComplete notification, but {} mustn't publish any MQTT messages but just listen. Token was {}",
                 OesterreichsEnergieAdapter.class.getName(),
-                token
-        );
+                token);
         throw new UnsupportedOperationException("The " + OesterreichsEnergieAdapter.class.getName() + " mustn't publish any MQTT messages");
     }
 }
