@@ -8,7 +8,7 @@ public enum UnitOfMeasurement {
     AMPERE("A"),
     VOLT("V"),
     VOLTAMPERE("VA"),
-    TEXT("text"),
+    NONE("none"),
     UNKNOWN("unknown");
 
     private final String unit;

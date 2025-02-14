@@ -16,10 +16,10 @@ public class SmartGatewaysAdapterValueDeserializer {
         return new SmartGatewaysAdapterMessage(
                 new SmartGatewaysMessageField("electricityEquipmentId",
                                               lines[0],
-                                              UnitOfMeasurement.TEXT,
+                                              UnitOfMeasurement.NONE,
                                               ObisCode.UNKNOWN),
-                new SmartGatewaysMessageField("gasEquipmentId", lines[1], UnitOfMeasurement.TEXT, ObisCode.UNKNOWN),
-                new SmartGatewaysMessageField("electricityTariff", lines[2], UnitOfMeasurement.TEXT, ObisCode.UNKNOWN),
+                new SmartGatewaysMessageField("gasEquipmentId", lines[1], UnitOfMeasurement.NONE, ObisCode.UNKNOWN),
+                new SmartGatewaysMessageField("electricityTariff", lines[2], UnitOfMeasurement.NONE, ObisCode.UNKNOWN),
                 new SmartGatewaysMessageField("electricityDeliveredTariff1",
                                               lines[3],
                                               UnitOfMeasurement.KWH,
