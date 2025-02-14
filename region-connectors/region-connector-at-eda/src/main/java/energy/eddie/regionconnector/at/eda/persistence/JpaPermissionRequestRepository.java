@@ -43,11 +43,16 @@ public interface JpaPermissionRequestRepository extends PagingAndSortingReposito
              WHERE pr.meteringPointId = :meteringPointId
                  AND (pr.status = energy.eddie.api.v0.PermissionProcessStatus.ACCEPTED
                     OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.FULFILLED
+                    OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.REVOKED
+                    OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.TERMINATED
+                    OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION
+                    OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.EXTERNALLY_TERMINATED
+                    OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.FAILED_TO_TERMINATE
                     OR pr.status = energy.eddie.api.v0.PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
                  AND pr.start <= :date
                  AND (pr.end >= :date OR pr.end IS NULL)
             """)
-    List<AtPermissionRequest> findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(
+    List<AtPermissionRequest> findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted(
             @Param("meteringPointId") String meteringPointId,
             @Param("date") LocalDate date
     );

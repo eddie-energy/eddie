@@ -29,8 +29,13 @@ public class IdentifiableConsumptionRecordService {
         LocalDate endDate = consumptionRecord.endDate();
         String meteringPoint = consumptionRecord.meteringPoint();
 
+        // we consider all permission requests that match the metering point and date and are in state SentToPa or after Accepted as relevant.
+        // All states after Accepted are relevant, not only because we cant uniquely identify for which PermissionRequest data actually is, but also because
+        // DSOs can send data for PermissionRequests that have already been revoked/terminated. This happens for example if some metering values
+        // in the Timeframe we still had access are updated (e.g from replacement to actual values).
+        // Please note that this causes the ConsumptionRecords to also be emitted for these PermissionRequests (EPs should be able to deal with values for previously received data being updated(
         List<AtPermissionRequest> permissionRequests = repository
-                .findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(
+                .findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted(
                         meteringPoint,
                         startDate
                 );

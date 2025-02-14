@@ -38,11 +38,12 @@ public class WebClientMessengerMonitor implements MessengerMonitor {
     }
 
     @Override
-    public void resendFailedMessages(ZonedDateTime date) {
+    public void resendFailedMessage(ZonedDateTime date, String messageId) {
         var request = new ResendRequest(
                 List.of("FAILED"),
                 List.of(config.adapterId()),
-                date
+                date,
+                messageId
         );
         Mono.defer(() -> tokenProvider
                     .getToken()
@@ -73,7 +74,8 @@ public class WebClientMessengerMonitor implements MessengerMonitor {
             List<String> inboundStates,
             List<String> adapterIds,
             @JsonFormat(pattern = PONTON_DATE_PATTERN)
-            ZonedDateTime fromDate
+            ZonedDateTime fromDate,
+            String messageId
     ) {
     }
 }

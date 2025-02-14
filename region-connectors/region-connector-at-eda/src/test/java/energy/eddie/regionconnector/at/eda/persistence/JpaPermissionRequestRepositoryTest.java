@@ -151,7 +151,7 @@ class JpaPermissionRequestRepositoryTest {
     }
 
     @Test
-    void findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate_returnsEmptyList_forNonExistingPermissionRequest() {
+    void findByMeteringPointIdAndDate_AndStateAfterAcceptedOrSentToPA_returnsEmptyList_forNonExistingPermissionRequest() {
         // Given
         var start = LocalDate.of(2024, 1, 1);
         var end = LocalDate.of(2024, 1, 31);
@@ -162,7 +162,7 @@ class JpaPermissionRequestRepositoryTest {
         permissionEventRepository.saveAndFlush(event);
 
         // When
-        var res = permissionRequestRepository.findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate("mid",
+        var res = permissionRequestRepository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted("mid",
                                                                                                           start.plusDays(
                                                                                                                   1));
 
@@ -171,7 +171,7 @@ class JpaPermissionRequestRepositoryTest {
     }
 
     @Test
-    void findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate_returnsPermissionRequest_forNonExistingPermissionRequest() {
+    void findByMeteringPointIdAndDate_AndStateAfterAcceptedOrSentToPA_returnsPermissionRequest_forNonExistingPermissionRequest() {
         // Given
         var start = LocalDate.of(2024, 1, 1);
         PermissionEvent event1 = new CreatedEvent("pid", "cid", "did", new EdaDataSourceInformation("asd"), "mid");
@@ -183,7 +183,7 @@ class JpaPermissionRequestRepositoryTest {
         PermissionEvent event3 = new SimpleEvent("pid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
         permissionEventRepository.saveAndFlush(event3);
         // When
-        var res = permissionRequestRepository.findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate("mid",
+        var res = permissionRequestRepository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted("mid",
                                                                                                           start.plusDays(
                                                                                                                   1));
 

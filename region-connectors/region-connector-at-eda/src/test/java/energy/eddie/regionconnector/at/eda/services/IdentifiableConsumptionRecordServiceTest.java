@@ -32,7 +32,7 @@ class IdentifiableConsumptionRecordServiceTest {
         String identifiableMeteringPoint = "identifiableMeteringPoint";
         var identifiableConsumptionRecord = createConsumptionRecord(identifiableMeteringPoint);
 
-        when(repository.findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(
+        when(repository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted(
                 eq(identifiableMeteringPoint),
                 any()
         ))
@@ -51,6 +51,22 @@ class IdentifiableConsumptionRecordServiceTest {
                 () -> assertEquals(identifiableConsumptionRecord, result.get().consumptionRecord()),
                 () -> assertEquals(2, result.get().permissionRequests().size())
         );
+    }
+
+    @Test
+    void mapToIdentifiableConsumptionRecord_withUnmappableRecord_returnsEmpty() {
+        String unidentifiableMeteringPoint = "unidentifiableMeteringPoint";
+        var unidentifiableConsumptionRecord = createConsumptionRecord(unidentifiableMeteringPoint);
+
+        when(repository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted(eq(unidentifiableMeteringPoint),
+                                                                                    any()))
+                .thenReturn(List.of());
+
+        IdentifiableConsumptionRecordService service = new IdentifiableConsumptionRecordService(repository);
+
+        var result = service.mapToIdentifiableConsumptionRecord(unidentifiableConsumptionRecord);
+
+        assertTrue(result.isEmpty());
     }
 
     private EdaConsumptionRecord createConsumptionRecord(String meteringPoint) {
@@ -91,21 +107,5 @@ class IdentifiableConsumptionRecordServiceTest {
                                                 )
                                 ))
                 ));
-    }
-
-    @Test
-    void mapToIdentifiableConsumptionRecord_withUnmappableRecord_returnsEmpty() {
-        String unidentifiableMeteringPoint = "unidentifiableMeteringPoint";
-        var unidentifiableConsumptionRecord = createConsumptionRecord(unidentifiableMeteringPoint);
-
-        when(repository.findAcceptedAndFulfilledAndSentToPAByMeteringPointIdAndDate(eq(unidentifiableMeteringPoint),
-                                                                                    any()))
-                .thenReturn(List.of());
-
-        IdentifiableConsumptionRecordService service = new IdentifiableConsumptionRecordService(repository);
-
-        var result = service.mapToIdentifiableConsumptionRecord(unidentifiableConsumptionRecord);
-
-        assertTrue(result.isEmpty());
     }
 }
