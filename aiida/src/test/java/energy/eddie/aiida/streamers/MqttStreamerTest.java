@@ -29,6 +29,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static energy.eddie.aiida.models.record.UnitOfMeasurement.KWH;
+import static energy.eddie.aiida.utils.ObisCode.NEGATIVE_ACTIVE_ENERGY;
+import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -42,20 +45,20 @@ class MqttStreamerTest {
     private final Sinks.One<UUID> terminationSink = Sinks.one();
     private final AiidaRecord record1 = new AiidaRecord(Instant.now(),
                                                         "Test",
-                                                        List.of(new AiidaRecordValue("1.8.0",
-                                                                                     "1.8.0",
+                                                        List.of(new AiidaRecordValue("1-0:1.8.0",
+                                                                                     POSITIVE_ACTIVE_ENERGY,
                                                                                      "444",
-                                                                                     "kWh",
+                                                                                     KWH,
                                                                                      "10",
-                                                                                     "kWh")));
+                                                                                     KWH)));
     private final AiidaRecord record2 = new AiidaRecord(Instant.now(),
                                                         "Test",
-                                                        List.of(new AiidaRecordValue("2.8.0",
-                                                                                     "2.8.0",
+                                                        List.of(new AiidaRecordValue("1-0:2.8.0",
+                                                                                     NEGATIVE_ACTIVE_ENERGY,
                                                                                      "888",
-                                                                                     "kWh",
+                                                                                     KWH,
                                                                                      "10",
-                                                                                     "kWh")));
+                                                                                     KWH)));
     private final UUID permissionId = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a5");
 
     @Mock

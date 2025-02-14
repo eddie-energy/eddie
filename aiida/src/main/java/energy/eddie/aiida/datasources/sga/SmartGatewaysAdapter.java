@@ -51,19 +51,9 @@ public class SmartGatewaysAdapter extends AiidaMqttDataSource {
             emitAiidaRecord(AiidaAsset.CONNECTION_AGREEMENT_POINT.toString(), aiidaRecordValues);
         } catch (Exception e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
-                         new String(message.getPayload(), StandardCharsets.UTF_8), e);
+                         new String(message.getPayload(), StandardCharsets.UTF_8),
+                         e);
         }
-    }
-
-    private void addAiidaRecordValue(List<AiidaRecordValue> aiidaRecordValues, SmartGatewaysMessageField recordValue) {
-        aiidaRecordValues.add(new AiidaRecordValue(
-                recordValue.rawTag(),
-                recordValue.obisCode().code(),
-                String.valueOf(recordValue.value()),
-                recordValue.unitOfMeasurement().unit(),
-                String.valueOf(recordValue.value()),
-                recordValue.unitOfMeasurement().unit()
-        ));
     }
 
     /**
@@ -77,8 +67,16 @@ public class SmartGatewaysAdapter extends AiidaMqttDataSource {
         LOGGER.warn(
                 "Got deliveryComplete notification, but {} mustn't publish any MQTT messages but just listen. Token was {}",
                 SmartGatewaysAdapter.class.getName(),
-                token
-        );
+                token);
         throw new UnsupportedOperationException("The " + SmartGatewaysAdapter.class.getName() + " mustn't publish any MQTT messages");
+    }
+
+    private void addAiidaRecordValue(List<AiidaRecordValue> aiidaRecordValues, SmartGatewaysMessageField recordValue) {
+        aiidaRecordValues.add(new AiidaRecordValue(recordValue.rawTag(),
+                                                   recordValue.obisCode(),
+                                                   String.valueOf(recordValue.value()),
+                                                   recordValue.unitOfMeasurement(),
+                                                   String.valueOf(recordValue.value()),
+                                                   recordValue.unitOfMeasurement()));
     }
 }

@@ -20,7 +20,7 @@ public enum AiidaAsset {
     @JsonCreator
     public static AiidaAsset forValue(String value) {
         return Arrays.stream(AiidaAsset.values())
-                     .filter(op -> op.getValue().equals(value))
+                     .filter(op -> op.asset().equals(value))
                      .findFirst()
                      .orElseThrow();
     }
@@ -31,7 +31,7 @@ public enum AiidaAsset {
     }
 
     @JsonValue
-    public String getValue() {
+    public String asset() {
         return asset;
     }
 }

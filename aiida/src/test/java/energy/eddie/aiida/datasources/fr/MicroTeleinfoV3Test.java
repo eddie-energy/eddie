@@ -21,6 +21,8 @@ import reactor.test.StepVerifier;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
+import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
+import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
@@ -54,10 +56,7 @@ class MicroTeleinfoV3Test {
                            .thenReturn(mockClient);
             when(mockClient.isConnected()).thenReturn(true);
 
-            StepVerifier.create(adapter.start())
-                        .then(adapter::close)
-                        .expectComplete()
-                        .verify();
+            StepVerifier.create(adapter.start()).then(adapter::close).expectComplete().verify();
 
             verify(mockClient).disconnect(anyLong());
             verify(mockClient).close();
@@ -74,10 +73,7 @@ class MicroTeleinfoV3Test {
                            .thenReturn(mockClient);
             when(mockClient.isConnected()).thenReturn(false);
 
-            StepVerifier.create(adapter.start())
-                        .then(adapter::close)
-                        .expectComplete()
-                        .verify();
+            StepVerifier.create(adapter.start()).then(adapter::close).expectComplete().verify();
 
             verify(mockClient, never()).disconnect(anyLong());
             verify(mockClient).close();
@@ -117,10 +113,9 @@ class MicroTeleinfoV3Test {
 
     @Test
     void givenUsernameAndPassword_isUsedByAdapter() {
-        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data")
-                .setUsername("User")
-                .setPassword("Pass")
-                .build();
+        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data").setUsername("User")
+                                                                                          .setPassword("Pass")
+                                                                                          .build();
         config = spy(config);
         adapter = new MicroTeleinfoV3("1", config, mapper);
 
@@ -164,15 +159,16 @@ class MicroTeleinfoV3Test {
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("teleinfo/data", message))
-                        .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                        .expectNextMatches(received -> received.aiidaRecordValue()
+                                                               .stream()
                                                                .anyMatch(aiidaRecordValue -> (aiidaRecordValue.dataTag()
-                                                                                                              .equals("1-0:1.7.0")
-                                                                                              && aiidaRecordValue.value()
-                                                                                                                 .equals("126"))
-                                                                                             || (aiidaRecordValue.dataTag()
-                                                                                                                 .equals("1-0:1.8.0")
-                                                                                                 && aiidaRecordValue.value()
-                                                                                                                    .equals("6367621"))))
+                                                                                                              .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) &&
+                                                                                              aiidaRecordValue.value()
+                                                                                                              .equals("126")) ||
+                                                                                             (aiidaRecordValue.dataTag()
+                                                                                                              .equals(POSITIVE_ACTIVE_ENERGY) &&
+                                                                                              aiidaRecordValue.value()
+                                                                                                              .equals("6367621"))))
                         .then(adapter::close)
                         .expectComplete()
                         .log()
@@ -264,11 +260,12 @@ class MicroTeleinfoV3Test {
         var validJson = "{\"ADCO\":{\"raw\":\"123456789123\",\"value\":123456789123},\"OPTARIF\":{\"raw\":\"BASE\",\"value\":\"BASE\"},\"ISOUSC\":{\"raw\":\"30\",\"value\":30},\"BASE\":{\"raw\":\"006367621\",\"value\":6367621},\"PTEC\":{\"raw\":\"TH..\",\"value\":\"TH\"},\"IINST\":{\"raw\":\"001\",\"value\":1},\"IMAX\":{\"raw\":\"090\",\"value\":90},\"PAPP\":{\"raw\":\"00126\",\"value\":126},\"HHPHC\":{\"raw\":\"A\",\"value\":\"A\"}}";
 
         StepVerifier stepVerifier = StepVerifier.create(adapter.start())
-                                                .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                                                .expectNextMatches(received -> received.aiidaRecordValue()
+                                                                                       .stream()
                                                                                        .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
-                                                                                                                                     .equals("1-0:1.7.0")
-                                                                                                                     || aiidaRecordValue.dataTag()
-                                                                                                                                        .equals("1-0:1.8.0")))
+                                                                                                                                     .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) ||
+                                                                                                                     aiidaRecordValue.dataTag()
+                                                                                                                                     .equals(POSITIVE_ACTIVE_ENERGY)))
                                                 .then(adapter::close)
                                                 .expectComplete()
                                                 .verifyLater();
@@ -277,8 +274,7 @@ class MicroTeleinfoV3Test {
         adapter.messageArrived(config.subscribeTopic(), new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
-                                                   invalidJson),
-                                           logCaptor, JsonMappingException.class);
+                invalidJson), logCaptor, JsonMappingException.class);
 
         stepVerifier.verify(Duration.ofSeconds(2));
     }

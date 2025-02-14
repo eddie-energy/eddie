@@ -26,8 +26,8 @@ public class MicroTeleinfoV3ValueDeserializer extends StdDeserializer<MicroTelei
         JsonNode valueNode = node.get("value");
         Object value = valueNode.asText();
 
-        UnitOfMeasurement unit = determineUnit(jp.getCurrentName());
-        ObisCode obisCode = determineObisCode(jp.getCurrentName());
+        UnitOfMeasurement unit = determineUnit(jp.currentName());
+        ObisCode obisCode = determineObisCode(jp.currentName());
 
         return new MicroTeleinfoV3Json.TeleinfoDataField(raw, value, unit, obisCode);
     }

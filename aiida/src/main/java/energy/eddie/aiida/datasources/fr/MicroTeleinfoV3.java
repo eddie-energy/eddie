@@ -41,8 +41,7 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
         super(dataSourceId, DATASOURCE_NAME, mqttConfig, LOGGER);
 
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(MicroTeleinfoV3Json.TeleinfoDataField.class,
-                               new MicroTeleinfoV3ValueDeserializer(null));
+        module.addDeserializer(MicroTeleinfoV3Json.TeleinfoDataField.class, new MicroTeleinfoV3ValueDeserializer(null));
         mapper.registerModule(module);
         this.mapper = mapper;
 
@@ -79,19 +78,24 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
                 var base = json.base();
                 var baseValue = String.valueOf(base.value());
 
-                aiidaRecordValues.add(
-                        new AiidaRecordValue("PAPP", papp.mappedObisCode().code(),
-                                             pappValue, papp.unitOfMeasurement().unit(),
-                                             pappValue, papp.unitOfMeasurement().unit()));
-                aiidaRecordValues.add(
-                        new AiidaRecordValue("BASE", base.mappedObisCode().code(),
-                                             baseValue, base.unitOfMeasurement().unit(),
-                                             pappValue, base.unitOfMeasurement().unit()));
+                aiidaRecordValues.add(new AiidaRecordValue("PAPP",
+                                                           papp.mappedObisCode(),
+                                                           pappValue,
+                                                           papp.unitOfMeasurement(),
+                                                           pappValue,
+                                                           papp.unitOfMeasurement()));
+                aiidaRecordValues.add(new AiidaRecordValue("BASE",
+                                                           base.mappedObisCode(),
+                                                           baseValue,
+                                                           base.unitOfMeasurement(),
+                                                           pappValue,
+                                                           base.unitOfMeasurement()));
 
                 emitAiidaRecord(AiidaAsset.CONNECTION_AGREEMENT_POINT.toString(), aiidaRecordValues);
             } catch (IOException e) {
                 LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
-                             new String(message.getPayload(), StandardCharsets.UTF_8), e);
+                             new String(message.getPayload(), StandardCharsets.UTF_8),
+                             e);
             }
         }
     }
@@ -107,8 +111,7 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
         LOGGER.warn(
                 "Got deliveryComplete notification, but {} mustn't publish any MQTT messages but just listen. Token was {}",
                 MicroTeleinfoV3.class.getName(),
-                token
-        );
+                token);
         throw new UnsupportedOperationException("The " + MicroTeleinfoV3.class.getName() + " mustn't publish any MQTT messages");
     }
 
@@ -117,8 +120,7 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
         LOGGER.info("Will subscribe to health topic {}", healthTopic);
 
         try {
-            if (asyncClient != null)
-                asyncClient.subscribe(healthTopic, 1);
+            if (asyncClient != null) asyncClient.subscribe(healthTopic, 1);
         } catch (MqttException ex) {
             LOGGER.error("Error while subscribing to topic {}", healthTopic, ex);
             healthSink.tryEmitNext(Health.down().withDetail("Error", ex).build());

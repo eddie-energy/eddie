@@ -38,10 +38,10 @@ public class SimulationDataSourceAdapter extends AiidaDataSource {
      * It will publish an {@link AiidaRecord} with a random value in {@code simulationPeriod} time gaps
      * for these OBIS codes:
      * <ul>
-     * <li>1.8.0</li>
-     * <li>2.8.0</li>
-     * <li>1.7.0</li>
-     * <li>2.7.0</li>
+     * <li>1-0:1.8.0</li>
+     * <li>1-0:2.8.0</li>
+     * <li>1-0:1.7.0</li>
+     * <li>1-0:2.7.0</li>
      * </ul>
      *
      * @param name             Display name of this datasource.
@@ -92,8 +92,9 @@ public class SimulationDataSourceAdapter extends AiidaDataSource {
     public void close() {
         LOGGER.info("Closing {}", name());
 
-        if (periodicFlux != null)
+        if (periodicFlux != null) {
             periodicFlux.dispose();
+        }
 
         // ignore if this fails
         recordSink.tryEmitComplete();
@@ -110,11 +111,12 @@ public class SimulationDataSourceAdapter extends AiidaDataSource {
         for (ObisCode code : obisCodes) {
             var value = String.valueOf(random.nextInt(2000));
 
-            aiidaRecordValues.add(new AiidaRecordValue(
-                    code.code(), code.code(),
-                    value, code.unitOfMeasurement(),
-                    value, code.unitOfMeasurement()
-            ));
+            aiidaRecordValues.add(new AiidaRecordValue(code.toString(),
+                                                       code,
+                                                       value,
+                                                       code.unitOfMeasurement(),
+                                                       value,
+                                                       code.unitOfMeasurement()));
         }
 
         emitAiidaRecord(AiidaAsset.CONNECTION_AGREEMENT_POINT.toString(), aiidaRecordValues);

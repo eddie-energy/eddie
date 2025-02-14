@@ -1,14 +1,18 @@
 package energy.eddie.aiida.utils;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import energy.eddie.aiida.models.record.UnitOfMeasurement;
+
+import java.util.Arrays;
 
 public enum ObisCode {
     POSITIVE_ACTIVE_ENERGY("1-0:1.8.0", UnitOfMeasurement.KWH),
     NEGATIVE_ACTIVE_ENERGY("1-0:2.8.0", UnitOfMeasurement.KWH),
     POSITIVE_ACTIVE_INSTANTANEOUS_POWER("1-0:1.7.0", UnitOfMeasurement.KW),
     NEGATIVE_ACTIVE_INSTANTANEOUS_POWER("1-0:2.7.0", UnitOfMeasurement.KW),
-    POSITIVE_REACTIVE_INSTANTANEOUS_POWER("1-0:3.7.0", UnitOfMeasurement.KW),
-    NEGATIVE_REACTIVE_INSTANTANEOUS_POWER("1-0:4.7.0", UnitOfMeasurement.KW),
+    POSITIVE_REACTIVE_INSTANTANEOUS_POWER("1-0:3.7.0", UnitOfMeasurement.KVAR),
+    NEGATIVE_REACTIVE_INSTANTANEOUS_POWER("1-0:4.7.0", UnitOfMeasurement.KVAR),
     POSITIVE_REACTIVE_ENERGY_IN_TARIFF("1-0:3.8.1", UnitOfMeasurement.KVARH),
     NEGATIVE_REACTIVE_ENERGY_IN_TARIFF("1-0:4.8.1", UnitOfMeasurement.KVARH),
     INSTANTANEOUS_POWER_FACTOR("1-0:13.7.0", UnitOfMeasurement.NONE),
@@ -33,20 +37,21 @@ public enum ObisCode {
         this.unitOfMeasurement = unitOfMeasurement;
     }
 
-    public String code() {
+    @JsonCreator
+    public static ObisCode forCode(String code) {
+        return Arrays.stream(ObisCode.values())
+                     .filter(obisCode -> obisCode.toString().equals(code))
+                     .findFirst()
+                     .orElse(UNKNOWN);
+    }
+
+    public UnitOfMeasurement unitOfMeasurement() {
+        return unitOfMeasurement;
+    }
+
+    @Override
+    @JsonValue
+    public String toString() {
         return code;
-    }
-
-    public String unitOfMeasurement() {
-        return unitOfMeasurement.unit();
-    }
-
-    public static ObisCode from(String code) {
-        for (ObisCode obisCode : ObisCode.values()) {
-            if (obisCode.code.equals(code)) {
-                return obisCode;
-            }
-        }
-        return UNKNOWN;
     }
 }

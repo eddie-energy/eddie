@@ -139,7 +139,9 @@ class OesterreichsAdapterIntegrationTest {
                 .setUsername(username)
                 .setPassword(password).build();
 
-        var json = "{\"1-0:2.7.0\":{\"value\":20,\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";
+        var value = 20;
+        var expectedValue = String.valueOf(value / 1000f);
+        var json = "{\"1-0:2.7.0\":{\"value\":" + value + ",\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";
 
         var adapter = new OesterreichsEnergieAdapter("1", config, mapper);
 
@@ -152,7 +154,8 @@ class OesterreichsAdapterIntegrationTest {
 
         StepVerifier.create(adapter.start())
                 .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValue().stream()
-                        .anyMatch(aiidaRecordValue -> aiidaRecordValue.value().equals("20")))
+                                                             .anyMatch(aiidaRecordValue -> aiidaRecordValue.value()
+                                                                                                           .equals(expectedValue)))
                 .then(adapter::close)
                 .expectComplete()
                 .verify(Duration.ofSeconds(10));

@@ -48,7 +48,8 @@ public class DataSourceController {
     @GetMapping("/types")
     public List<DataSourceTypeDto> getDataSourceTypes() {
         return Arrays.stream(DataSourceType.values())
-                                              .map(dataSourceType -> new DataSourceTypeDto(dataSourceType.getIdentifier(), dataSourceType.getName()))
+                     .map(dataSourceType -> new DataSourceTypeDto(dataSourceType.identifier(),
+                                                                  dataSourceType.dataSourceName()))
                                               .toList();
     }
 
@@ -61,7 +62,7 @@ public class DataSourceController {
     @GetMapping("/assets")
     public List<AiidaAssetDto> getAssets() {
         return Arrays.stream(AiidaAsset.values())
-                                           .map(aiidaAsset -> new AiidaAssetDto(aiidaAsset.getValue()))
+                     .map(aiidaAsset -> new AiidaAssetDto(aiidaAsset.asset()))
                                            .toList();
     }
 

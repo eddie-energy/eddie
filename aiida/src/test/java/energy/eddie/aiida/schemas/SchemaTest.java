@@ -16,6 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 
+import static energy.eddie.aiida.models.record.UnitOfMeasurement.*;
+import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
+import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -29,14 +32,19 @@ class SchemaTest {
     private static final AiidaRecord aiidaRecordAT = new AiidaRecord(
             timestamp,
             "AT",
-            List.of(new AiidaRecordValue("1-0:1.7.0", "1-0:1.7.0", "10", "kW", "10", "kW"),
-                    new AiidaRecordValue("1-0:1.8.0", "1-0:1.8.0", "50", "kWh", "50", "kWh")));
+            List.of(new AiidaRecordValue("1-0:1.7.0", POSITIVE_ACTIVE_INSTANTANEOUS_POWER, "10", KW, "10", KW),
+                    new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KWH, "50", KWH)));
 
     private static final AiidaRecord aiidaRecordFR = new AiidaRecord(
             timestamp,
             "FR",
-            List.of(new AiidaRecordValue("PAPP", "1-0:1.7.0", "10", "VA", "10", "VA"),
-                    new AiidaRecordValue("BASE", "1-0:1.8.0", "50", "Wh", "50", "Wh")));
+            List.of(new AiidaRecordValue("PAPP",
+                                         POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
+                                         "10",
+                                         VOLTAMPERE,
+                                         "10",
+                                         VOLTAMPERE),
+                    new AiidaRecordValue("BASE", POSITIVE_ACTIVE_ENERGY, "50", WH, "50", WH)));
 
     @BeforeEach
     void setUp() {

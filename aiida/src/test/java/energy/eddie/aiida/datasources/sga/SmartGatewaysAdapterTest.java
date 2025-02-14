@@ -15,72 +15,74 @@ import reactor.test.StepVerifier;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
+import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
+import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-public class SmartGatewaysAdapterTest {
-    private static final LogCaptor logCaptor = LogCaptor.forClass(SmartGatewaysAdapter.class);
+class SmartGatewaysAdapterTest {
+    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(SmartGatewaysAdapter.class);
+    private static final String TEST_MESSAGE_TARIFF_1 = """
+            4530303632303030303037393239333232
+            4730303732303034303036353733323230
+            0001
+            3845.467
+            2621.303
+            1894.882
+            1435.228
+            0.000
+            0.000
+            0.000
+            0.000
+            0.531
+            0.445
+            0
+            71
+            460
+            30
+            0
+            0
+            233.00
+            234.00
+            234.00
+            0.00
+            0.00
+            2.00
+            736.650
+            -0.061
+            0.002""";
+    private static final String TEST_MESSAGE_TARIFF_2 = """
+            4530303632303030303037393239333232
+            4730303732303034303036353733323230
+            0002
+            3845.467
+            2621.303
+            1894.882
+            1435.228
+            0.000
+            0.000
+            0.000
+            0.000
+            0.531
+            0.030
+            0
+            71
+            460
+            30
+            0
+            0
+            233.00
+            234.00
+            234.00
+            0.00
+            0.00
+            2.00
+            736.650
+            -0.061
+            0.002""";
     private SmartGatewaysAdapter adapter;
     private MqttConfig config;
-    private static final String testMessageTariff1 = """
-                4530303632303030303037393239333232
-                4730303732303034303036353733323230
-                0001
-                3845.467
-                2621.303
-                1894.882
-                1435.228
-                0.000
-                0.000
-                0.000
-                0.000
-                0.531
-                0.445
-                0
-                71
-                460
-                30
-                0
-                0
-                233.00
-                234.00
-                234.00
-                0.00
-                0.00
-                2.00
-                736.650
-                -0.061
-                0.002""";
-    private static final String testMessageTariff2 = """
-                4530303632303030303037393239333232
-                4730303732303034303036353733323230
-                0002
-                3845.467
-                2621.303
-                1894.882
-                1435.228
-                0.000
-                0.000
-                0.000
-                0.000
-                0.531
-                0.030
-                0
-                71
-                460
-                30
-                0
-                0
-                233.00
-                234.00
-                234.00
-                0.00
-                0.00
-                2.00
-                736.650
-                -0.061
-                0.002""";
 
     @BeforeEach
     void setUp() {
@@ -92,7 +94,7 @@ public class SmartGatewaysAdapterTest {
 
     @AfterEach
     void tearDown() {
-        logCaptor.clearLogs();
+        LOG_CAPTOR.clearLogs();
     }
 
     @Test
@@ -103,10 +105,7 @@ public class SmartGatewaysAdapterTest {
                            .thenReturn(mockClient);
             when(mockClient.isConnected()).thenReturn(true);
 
-            StepVerifier.create(adapter.start())
-                        .then(adapter::close)
-                        .expectComplete()
-                        .verify();
+            StepVerifier.create(adapter.start()).then(adapter::close).expectComplete().verify();
 
             verify(mockClient).disconnect(anyLong());
             verify(mockClient).close();
@@ -123,10 +122,7 @@ public class SmartGatewaysAdapterTest {
                            .thenReturn(mockClient);
             when(mockClient.isConnected()).thenReturn(false);
 
-            StepVerifier.create(adapter.start())
-                        .then(adapter::close)
-                        .expectComplete()
-                        .verify();
+            StepVerifier.create(adapter.start()).then(adapter::close).expectComplete().verify();
 
             verify(mockClient, never()).disconnect(anyLong());
             verify(mockClient).close();
@@ -166,10 +162,9 @@ public class SmartGatewaysAdapterTest {
 
     @Test
     void givenUsernameAndPassword_isUsedByAdapter() {
-        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "sga/data")
-                .setUsername("User")
-                .setPassword("Pass")
-                .build();
+        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "sga/data").setUsername("User")
+                                                                                     .setPassword("Pass")
+                                                                                     .build();
         config = spy(config);
         adapter = new SmartGatewaysAdapter("1", config);
 
@@ -206,20 +201,21 @@ public class SmartGatewaysAdapterTest {
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
 
-            MqttMessage message = new MqttMessage(testMessageTariff1.getBytes(StandardCharsets.UTF_8));
+            MqttMessage message = new MqttMessage(TEST_MESSAGE_TARIFF_1.getBytes(StandardCharsets.UTF_8));
 
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("sga/data", message))
-                        .expectNextMatches(received -> received.aiidaRecordValue().stream()
-                                                               .anyMatch(aiidaRecordValue -> (aiidaRecordValue.dataTag()
-                                                                                                             .equals("1-0:1.7.0")
-                                                                                             && aiidaRecordValue.value()
-                                                                                                                .equals("0.445"))
-                                                                                             || (aiidaRecordValue.dataTag()
-                                                                                                                 .equals("1-0:1.8.0")
-                                                                                                 && aiidaRecordValue.value()
-                                                                                                                    .equals("3845.467"))))
+                        .expectNextMatches(received -> received.aiidaRecordValue()
+                                                               .stream()
+                                                               .anyMatch(aiidaRecordValue -> (
+                                                                                                     aiidaRecordValue.dataTag()
+                                                                                                                     .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) &&
+                                                                                                     aiidaRecordValue.value()
+                                                                                                                     .equals("0.445")) ||
+                                                                                             (aiidaRecordValue.dataTag()
+                                                                                                              .equals(POSITIVE_ACTIVE_ENERGY) && aiidaRecordValue.value()
+                                                                                                                                                                 .equals("3845.467"))))
                         .then(adapter::close)
                         .expectComplete()
                         .log()
@@ -234,20 +230,21 @@ public class SmartGatewaysAdapterTest {
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
 
-            MqttMessage message = new MqttMessage(testMessageTariff2.getBytes(StandardCharsets.UTF_8));
+            MqttMessage message = new MqttMessage(TEST_MESSAGE_TARIFF_2.getBytes(StandardCharsets.UTF_8));
 
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("sga/data", message))
-                        .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                        .expectNextMatches(received -> received.aiidaRecordValue()
+                                                               .stream()
                                                                .anyMatch(aiidaRecordValue -> (aiidaRecordValue.dataTag()
-                                                                                                             .equals("1-0:1.7.0")
-                                                                                             && aiidaRecordValue.value()
-                                                                                                                .equals("0.030"))
-                                                                                             || (aiidaRecordValue.dataTag()
-                                                                                                                 .equals("1-0:1.8.0")
-                                                                                                 && aiidaRecordValue.value()
-                                                                                                                    .equals("1894.882"))))
+                                                                                                              .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) &&
+                                                                                              aiidaRecordValue.value()
+                                                                                                              .equals("0.030")) ||
+                                                                                             (aiidaRecordValue.dataTag()
+                                                                                                              .equals(POSITIVE_ACTIVE_ENERGY) &&
+                                                                                              aiidaRecordValue.value()
+                                                                                                              .equals("1894.882"))))
                         .then(adapter::close)
                         .expectComplete()
                         .log()

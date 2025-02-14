@@ -2,6 +2,7 @@ package energy.eddie.aiida.repositories;
 
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.models.record.UnitOfMeasurement;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -16,6 +17,8 @@ import org.testcontainers.utility.DockerImageName;
 import java.time.Instant;
 import java.util.List;
 
+import static energy.eddie.aiida.utils.ObisCode.METER_SERIAL;
+import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
@@ -41,9 +44,19 @@ class AiidaRecordRepositoryIntegrationTest {
     void givenIntegerAndStringRecord_valueIsDeserializedProperly() {
         Instant now = Instant.now();
         AiidaRecord intRecord = new AiidaRecord(now, "Test", List.of(
-                new AiidaRecordValue("1.8.0", "1.8.0", "237", "kWh", "237", "kWh")));
+                new AiidaRecordValue("1-0:1.8.0",
+                                     POSITIVE_ACTIVE_ENERGY,
+                                     "237",
+                                     UnitOfMeasurement.KWH,
+                                     "237",
+                                     UnitOfMeasurement.KWH)));
         AiidaRecord stringRecord = new AiidaRecord(now, "Test", List.of(
-                new AiidaRecordValue("C.1.0", "C.1.0", "Hello Test", "text", "Hello Test", "text")));
+                new AiidaRecordValue("0-0:C.1.0",
+                                     METER_SERIAL,
+                                     "Hello Test",
+                                     UnitOfMeasurement.NONE,
+                                     "Hello Test",
+                                     UnitOfMeasurement.NONE)));
 
         repository.save(intRecord);
         repository.save(stringRecord);
@@ -53,12 +66,12 @@ class AiidaRecordRepositoryIntegrationTest {
         assertEquals(2, all.size());
 
         AiidaRecord first = all.getFirst();
-        assertEquals("1.8.0", first.aiidaRecordValue().getFirst().dataTag());
+        assertEquals(POSITIVE_ACTIVE_ENERGY, first.aiidaRecordValue().getFirst().dataTag());
         assertEquals(now.toEpochMilli(), first.timestamp().toEpochMilli());
         assertEquals("237", first.aiidaRecordValue().getFirst().value());
 
         AiidaRecord second = all.get(1);
-        assertEquals("C.1.0", second.aiidaRecordValue().getFirst().dataTag());
+        assertEquals(METER_SERIAL, second.aiidaRecordValue().getFirst().dataTag());
         assertEquals(now.toEpochMilli(), second.timestamp().toEpochMilli());
         assertEquals("Hello Test", second.aiidaRecordValue().getFirst().value());
     }
