@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 
 @Entity
@@ -51,6 +52,9 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     private final String message;
     @Column(name = "created")
     private final Instant created;
+    @Column(name = "aiida_id")
+    @Nullable
+    private final UUID aiidaId;
 
     @SuppressWarnings("NullAway") // Needed for JPA
     protected AiidaPermissionRequest() {
@@ -64,6 +68,7 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
         this.mqttUsername = null;
         this.message = null;
         this.created = null;
+        this.aiidaId = null;
     }
 
     @Override
@@ -123,5 +128,11 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     @Nullable
     public String message() {
         return message;
+    }
+
+    @Override
+    @Nullable
+    public UUID aiidaId() {
+        return aiidaId;
     }
 }

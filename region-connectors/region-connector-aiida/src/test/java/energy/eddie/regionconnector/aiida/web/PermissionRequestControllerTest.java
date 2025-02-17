@@ -64,6 +64,7 @@ class PermissionRequestControllerTest {
     static final String HMAC_SECRET = "RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=";
     private final UUID eddieId = UUID.fromString("a69f9bc2-e16c-4de4-8c3e-00d219dcd819");
     private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
+    private final UUID aiidaId = UUID.fromString("00000000-0000-0000-0000-000000000000");
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
@@ -215,8 +216,9 @@ class PermissionRequestControllerTest {
     @Test
     void givenAccepted_updatePermissionRequest_callsServiceAndReturnsCredentials() throws Exception {
         // Given
-        var json = "{\"operation\":\"ACCEPT\"}";
-        when(mockService.acceptPermission(permissionId.toString())).thenReturn(new MqttDto("tcp://localhost:1883",
+        var json = "{\"operation\":\"ACCEPT\", \"aiidaId\":\"" + aiidaId + "\"}";
+        when(mockService.acceptPermission(permissionId.toString(), aiidaId)).thenReturn(new MqttDto(
+                "tcp://localhost:1883",
                                                                                            permissionId.toString(),
                                                                                            "MySuperSafePassword",
                                                                                            "data",

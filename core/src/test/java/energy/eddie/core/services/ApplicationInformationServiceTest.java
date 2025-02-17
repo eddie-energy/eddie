@@ -25,8 +25,8 @@ class ApplicationInformationServiceTest {
     @Test
     void testApplicationInformationService() {
         // Given
-        when(repository.findFirstByOrderByCreatedAtAsc()).thenReturn(Optional.of(new ApplicationInformation(eddieId,
-                                                                                                            createdAt)));
+        when(repository.findFirstByOrderByCreatedAtDesc()).thenReturn(Optional.of(new ApplicationInformation(eddieId,
+                                                                                                             createdAt)));
         ApplicationInformationService service = new ApplicationInformationService(repository);
 
         // When

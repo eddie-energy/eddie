@@ -1,4 +1,4 @@
-package energy.eddie.core.application.information;
+package energy.eddie.aiida.application.information;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
@@ -11,13 +11,13 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(schema = "core", name = "eddie_application_information")
+@Table(name = "aiida_application_information")
 @SuppressWarnings("NullAway")
 public class ApplicationInformation {
     @Id
-    @Column(name = "eddie_id")
+    @Column(name = "aiida_id")
     @JsonProperty
-    private UUID eddieId;
+    private UUID aiidaId;
 
     @CreatedDate
     @SuppressWarnings("unused")
@@ -27,12 +27,12 @@ public class ApplicationInformation {
         this(UUID.randomUUID(), Instant.now());
     }
 
-    public ApplicationInformation(UUID eddieId, Instant createdAt) {
-        this.eddieId = eddieId;
+    public ApplicationInformation(UUID aiidaId, Instant createdAt) {
+        this.aiidaId = aiidaId;
         this.createdAt = createdAt;
     }
 
-    public UUID eddieId() {
-        return eddieId;
+    public UUID aiidaId() {
+        return aiidaId;
     }
 }

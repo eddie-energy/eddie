@@ -4,6 +4,8 @@ package energy.eddie.regionconnector.aiida.permission.request.api;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import jakarta.annotation.Nullable;
 
+import java.util.UUID;
+
 public interface AiidaPermissionRequestInterface extends PermissionRequest {
     /**
      * Topic on which a permission termination request should be published.
@@ -24,4 +26,10 @@ public interface AiidaPermissionRequestInterface extends PermissionRequest {
      */
     @Nullable
     String message();
+
+    /**
+     * The unique identifier of the AIIDA application to which the permission belongs.
+     */
+    @Nullable
+    UUID aiidaId();
 }

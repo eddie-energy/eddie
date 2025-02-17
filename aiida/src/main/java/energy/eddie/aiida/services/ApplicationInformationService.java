@@ -1,14 +1,12 @@
-package energy.eddie.core.services;
+package energy.eddie.aiida.services;
 
-import energy.eddie.api.agnostic.RegionConnectorExtension;
-import energy.eddie.core.application.information.ApplicationInformation;
-import energy.eddie.core.application.information.persistence.ApplicationInformationRepository;
+import energy.eddie.aiida.application.information.ApplicationInformation;
+import energy.eddie.aiida.application.information.persistence.ApplicationInformationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-@RegionConnectorExtension
 public class ApplicationInformationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationInformationService.class);
     private final ApplicationInformationRepository repository;
