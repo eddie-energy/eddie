@@ -90,12 +90,16 @@ public class CdsApiClientFactory {
                                          carbonDataSpec.getName(),
                                          commodityTypes,
                                          creds.getClientId(),
-                                         creds.getClientSecret()
+                                         creds.getClientSecret(),
+                                         // TODO: Get actual token endpoint and authorization endpoint
+                                         null,
+                                         null,
+                                         oauthMetadata.getPushedAuthorizationRequestEndpoint().toString()
                                  )
                             )
                             .doOnSuccess(cdsServerRepository::save)
                             .map(res -> {
-                                LOGGER.info("Created oauth credentials for");
+                                LOGGER.info("Created oauth credentials for {}", cdsBaseUri);
                                 var cdsApiClient = new CdsApiClient();
                                 cdsApiClients.put(res.baseUri(), cdsApiClient);
                                 return new CreatedApiClientResponse(cdsApiClient);

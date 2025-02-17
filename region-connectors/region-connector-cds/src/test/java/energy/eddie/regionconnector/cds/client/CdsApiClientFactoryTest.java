@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.cds.client;
 
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.regionconnector.cds.client.responses.*;
-import energy.eddie.regionconnector.cds.master.data.CdsServer;
+import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
 import energy.eddie.regionconnector.cds.openapi.model.CarbonDataSpec200Response;
 import energy.eddie.regionconnector.cds.openapi.model.Coverages200ResponseAllOfCoverageEntriesInner;
 import energy.eddie.regionconnector.cds.openapi.model.OAuthAuthorizationServer200Response;
@@ -53,11 +53,8 @@ class CdsApiClientFactoryTest {
     void testGetCdsApiClient_forKnownCdsServer_returnsClient() throws MalformedURLException {
         // Given
         when(repository.findByBaseUri("http://localhost:8080"))
-                .thenReturn(Optional.of(new CdsServer("http://localhost:8080",
-                                                      "CDS Server",
-                                                      Set.of(),
-                                                      "client-id",
-                                                      "client-secret")));
+                .thenReturn(Optional.of(new CdsServerBuilder().setBaseUri("http://localhost:8080")
+                                                              .build()));
 
         // When
         var res = factory.getCdsApiClient(URI.create("http://localhost:8080").toURL());
@@ -73,11 +70,8 @@ class CdsApiClientFactoryTest {
     void testGetCdsApiClient_forCachedCdsServer_returnsClient() throws MalformedURLException {
         // Given
         when(repository.findByBaseUri("http://localhost:8080"))
-                .thenReturn(Optional.of(new CdsServer("http://localhost:8080",
-                                                      "CDS Server",
-                                                      Set.of(),
-                                                      "client-id",
-                                                      "client-secret")));
+                .thenReturn(Optional.of(new CdsServerBuilder().setBaseUri("http://localhost:8080")
+                                                              .build()));
 
         // When
         var res = factory.getCdsApiClient(URI.create("http://localhost:8080").toURL())
@@ -111,6 +105,7 @@ class CdsApiClientFactoryTest {
                         new OAuthAuthorizationServer200Response()
                                 .grantTypesSupported(List.of("authorization_code", "refresh_token"))
                                 .registrationEndpoint(baseUri)
+                                .pushedAuthorizationRequestEndpoint(baseUri)
                 ));
         when(api.coverage(baseUri))
                 .thenReturn(Mono.just(

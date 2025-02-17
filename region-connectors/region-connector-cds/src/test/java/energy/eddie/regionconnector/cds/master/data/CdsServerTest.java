@@ -11,7 +11,16 @@ class CdsServerTest {
     @Test
     void testId_returnsCorrectId() {
         // Given
-        var cdsServer = new CdsServer(1L, "http://localhost", "CDS Server", Set.of(EnergyType.ELECTRICITY), "client-id", "client-secret");
+        var cdsServer = new CdsServerBuilder().setId(1L)
+                                              .setBaseUri("http://localhost")
+                                              .setName("CDS Server")
+                                              .setCoverages(Set.of(EnergyType.ELECTRICITY))
+                                              .setClientId("client-id")
+                                              .setClientSecret("client-secret")
+                                              .setTokenEndpoint("http://localhost")
+                                              .setAuthorizationEndpoint(null)
+                                              .setParEndpoint(null)
+                                              .build();
 
         // When
         var res = cdsServer.id();
@@ -23,7 +32,16 @@ class CdsServerTest {
     @Test
     void testDisplayName_returnsCorrectDisplayName() {
         // Given
-        var cdsServer = new CdsServer(1L, "http://localhost", "CDS Server", Set.of(EnergyType.ELECTRICITY), "client-id", "client-secret");
+        var cdsServer = new CdsServerBuilder().setId(1L)
+                                              .setBaseUri("http://localhost")
+                                              .setName("CDS Server")
+                                              .setCoverages(Set.of(EnergyType.ELECTRICITY))
+                                              .setClientId("client-id")
+                                              .setClientSecret("client-secret")
+                                              .setTokenEndpoint("http://localhost")
+                                              .setAuthorizationEndpoint(null)
+                                              .setParEndpoint(null)
+                                              .build();
 
         // When
         var res = cdsServer.displayName();

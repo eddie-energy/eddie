@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest
+@WebMvcTest(controllers = CdsController.class)
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class CdsControllerTest {
     private final ObjectMapper objectMapper = new ObjectMapper();

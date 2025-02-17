@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.cds.master.data;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import jakarta.persistence.*;
 
+import java.net.URI;
 import java.util.Objects;
 import java.util.Set;
 
@@ -19,32 +20,58 @@ public class CdsServer {
     @ElementCollection
     @CollectionTable(
             name = "coverage",
-            joinColumns = @JoinColumn(name = "cds_server_id")
+            joinColumns = @JoinColumn(name = "cds_server_id"),
+            schema = "cds"
     )
+    @Column(name = "energy_type")
     @Enumerated(EnumType.STRING)
     private final Set<EnergyType> coverages;
     @Column(name = "client_id", nullable = false)
     private final String clientId;
     @Column(name = "client_secret", nullable = false)
     private final String clientSecret;
+    @Column(name = "token_endpoint", nullable = false)
+    private final String tokenEndpoint;
+    @Column(name = "authorization_endpoint", nullable = false)
+    private final String authorizationEndpoint;
+    @Column(name = "pushed_authorization_request_endpoint", nullable = false)
+    private final String pushedAuthorizationRequestEndpoint;
 
-    @SuppressWarnings("NullAway")
-    public CdsServer(String baseUri, String name, Set<EnergyType> coverages, String clientId, String clientSecret) {
-        id = null;
-        this.baseUri = baseUri;
-        this.name = name;
-        this.coverages = coverages;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
+    @SuppressWarnings({"NullAway","java:S107"})
+    public CdsServer(
+            String baseUri,
+            String name,
+            Set<EnergyType> coverages,
+            String clientId,
+            String clientSecret,
+            String tokenEndpoint,
+            String authorizationEndpoint,
+            String parEndpoint
+    ) {
+        this(null, baseUri, name, coverages, clientId, clientSecret, tokenEndpoint, authorizationEndpoint, parEndpoint);
     }
 
-    CdsServer(Long id, String baseUri, String name, Set<EnergyType> coverages, String clientId, String clientSecret) {
+    @SuppressWarnings("java:S107")
+    CdsServer(
+            Long id,
+            String baseUri,
+            String name,
+            Set<EnergyType> coverages,
+            String clientId,
+            String clientSecret,
+            String tokenEndpoint,
+            String authorizationEndpoint,
+            String parEndpoint
+    ) {
         this.id = id;
         this.baseUri = baseUri;
         this.name = name;
         this.coverages = coverages;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
+        this.tokenEndpoint = tokenEndpoint;
+        this.authorizationEndpoint = authorizationEndpoint;
+        this.pushedAuthorizationRequestEndpoint = parEndpoint;
     }
 
     @SuppressWarnings("NullAway")
@@ -55,6 +82,9 @@ public class CdsServer {
         coverages = null;
         clientId = null;
         clientSecret = null;
+        tokenEndpoint = null;
+        authorizationEndpoint = null;
+        pushedAuthorizationRequestEndpoint = null;
     }
 
     public String baseUri() {
@@ -83,5 +113,20 @@ public class CdsServer {
 
     public String clientSecret() {
         return clientSecret;
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    public URI tokenEndpoint() {
+        return URI.create(tokenEndpoint);
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    public URI authorizationEndpoint() {
+        return URI.create(authorizationEndpoint);
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    public URI pushedAuthorizationRequestEndpoint() {
+        return URI.create(pushedAuthorizationRequestEndpoint);
     }
 }

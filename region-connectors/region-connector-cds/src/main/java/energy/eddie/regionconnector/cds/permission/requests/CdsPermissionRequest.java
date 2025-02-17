@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.cds.permission.requests;
 
-import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.persistence.*;
@@ -9,6 +8,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 @Entity
+@Table(name = "permission_request", schema = "cds")
 public class CdsPermissionRequest implements PermissionRequest {
     @Id
     @Column(name = "permission_id")
@@ -36,7 +36,7 @@ public class CdsPermissionRequest implements PermissionRequest {
             String connectionId,
             String dataNeedId,
             PermissionProcessStatus status,
-            String cdsServer,
+            long cdsServer,
             ZonedDateTime created,
             LocalDate dataStart,
             LocalDate dataEnd
@@ -84,7 +84,7 @@ public class CdsPermissionRequest implements PermissionRequest {
     }
 
     @Override
-    public DataSourceInformation dataSourceInformation() {
+    public CdsDataSourceInformation dataSourceInformation() {
         return dataSourceInformation;
     }
 
