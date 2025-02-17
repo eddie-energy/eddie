@@ -2,6 +2,7 @@ package energy.eddie.aiida.models.record;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.utils.ObisCode;
 import jakarta.persistence.*;
 
 @Entity
@@ -19,22 +20,29 @@ public class AiidaRecordValue {
     @JsonProperty
     private String rawTag;
     @JsonProperty
-    private String dataTag;
+    @Enumerated(EnumType.STRING)
+    private ObisCode dataTag;
     @JsonProperty
     private String rawValue;
     @SuppressWarnings("unused") // Used when serialized to JSON
     @JsonProperty
-    private String rawUnitOfMeasurement;
+    @Enumerated(EnumType.STRING)
+    private UnitOfMeasurement rawUnitOfMeasurement;
     @JsonProperty
     private String value;
     @SuppressWarnings("unused") // Used when serialized to JSON
     @JsonProperty
-    private String unitOfMeasurement;
+    @Enumerated(EnumType.STRING)
+    private UnitOfMeasurement unitOfMeasurement;
 
     @SuppressWarnings("NullAway.Init")
     public AiidaRecordValue(
-            String rawTag, String dataTag,
-            String rawValue, String rawUnitOfMeasurement, String value, String unitOfMeasurement
+            String rawTag,
+            ObisCode dataTag,
+            String rawValue,
+            UnitOfMeasurement rawUnitOfMeasurement,
+            String value,
+            UnitOfMeasurement unitOfMeasurement
     ) {
         this.rawTag = rawTag;
         this.dataTag = dataTag;
@@ -60,7 +68,7 @@ public class AiidaRecordValue {
         this.aiidaRecord = aiidaRecord;
     }
 
-    public String dataTag() {
+    public ObisCode dataTag() {
         return dataTag;
     }
 
@@ -76,7 +84,11 @@ public class AiidaRecordValue {
         return rawValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public UnitOfMeasurement unitOfMeasurement() {
+        return unitOfMeasurement;
+    }
+
+    public UnitOfMeasurement rawUnitOfMeasurement() {
+        return rawUnitOfMeasurement;
     }
 }

@@ -50,8 +50,8 @@ class DataSourceServiceTest {
         dataSourceService = spy(new DataSourceService(repository, aggregator, authService, mqttConfiguration, objectMapper));
         smartGatewaysDataSourceDto = new DataSourceDto(
                 1L,
-                DataSourceType.SMART_GATEWAYS_ADAPTER.getIdentifier(),
-                AiidaAsset.CONNECTION_AGREEMENT_POINT.getValue(),
+                DataSourceType.SMART_GATEWAYS_ADAPTER.identifier(),
+                AiidaAsset.CONNECTION_AGREEMENT_POINT.asset(),
                 "Smart Gateways",
                 true,
                 "mqtt://test-broker",
@@ -120,8 +120,8 @@ class DataSourceServiceTest {
 
         var updatedDataSource = new DataSourceDto(
                 1000L,
-                DataSourceType.SMART_METER_ADAPTER.getIdentifier(),
-                AiidaAsset.CONNECTION_AGREEMENT_POINT.getValue(),
+                DataSourceType.SMART_METER_ADAPTER.identifier(),
+                AiidaAsset.CONNECTION_AGREEMENT_POINT.asset(),
                 "New Name",
                 true,
                 "new-uri",

@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import static energy.eddie.aiida.utils.MqttConfig.MqttConfigBuilder;
+import static energy.eddie.aiida.utils.ObisCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -79,10 +80,7 @@ class OesterreichsEnergieAdapterTest {
                            .thenReturn(mockClient);
             when(mockClient.isConnected()).thenReturn(true);
 
-            StepVerifier.create(adapter.start())
-                        .then(adapter::close)
-                        .expectComplete()
-                        .verify();
+            StepVerifier.create(adapter.start()).then(adapter::close).expectComplete().verify();
 
             verify(mockClient).disconnect(anyLong());
             verify(mockClient).close();
@@ -99,10 +97,7 @@ class OesterreichsEnergieAdapterTest {
                            .thenReturn(mockClient);
             when(mockClient.isConnected()).thenReturn(false);
 
-            StepVerifier.create(adapter.start())
-                        .then(adapter::close)
-                        .expectComplete()
-                        .verify();
+            StepVerifier.create(adapter.start()).then(adapter::close).expectComplete().verify();
 
             verify(mockClient, never()).disconnect(anyLong());
             verify(mockClient).close();
@@ -142,10 +137,9 @@ class OesterreichsEnergieAdapterTest {
 
     @Test
     void givenUsernameAndPassword_isUsedByAdapter() {
-        config = new MqttConfigBuilder("tcp://localhost:1883", "MyTestTopic")
-                .setUsername("User")
-                .setPassword("Pass")
-                .build();
+        config = new MqttConfigBuilder("tcp://localhost:1883", "MyTestTopic").setUsername("User")
+                                                                             .setPassword("Pass")
+                                                                             .build();
         config = spy(config);
         adapter = new OesterreichsEnergieAdapter("1", config, mapper);
 
@@ -188,11 +182,11 @@ class OesterreichsEnergieAdapterTest {
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("MyTestTopic", message))
-                        .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                        .expectNextMatches(received -> received.aiidaRecordValue()
+                                                               .stream()
                                                                .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
-                                                                                                             .equals("0-0:96.1.0")
-                                                                                             && aiidaRecordValue.value()
-                                                                                                                .equals("90296857")))
+                                                                                                             .equals(DEVICE_ID_1) && aiidaRecordValue.value()
+                                                                                                                                                     .equals("90296857")))
                         .then(adapter::close)
                         .expectComplete()
                         .log()
@@ -202,7 +196,7 @@ class OesterreichsEnergieAdapterTest {
 
     @Test
     void givenRecordFromMqttBroker_isPublishedOnFlux() {
-        var recordJson = "{\"1-0:1.7.0\":{\"value\":45,\"time\":1698915600},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":782238.7}";
+        var recordJson = "{\"1-0:1.7.0\":{\"value\":152,\"time\":1698915600},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":782238.7}";
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
@@ -214,11 +208,14 @@ class OesterreichsEnergieAdapterTest {
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("MyTestTopic", message))
-                        .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                        .expectNextMatches(received -> received.aiidaRecordValue()
+                                                               .stream()
                                                                .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
-                                                                                                             .equals("1-0:1.7.0")
-                                                                                             && aiidaRecordValue.value()
-                                                                                                                .equals("45")))
+                                                                                                             .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) &&
+                                                                                             aiidaRecordValue.value()
+                                                                                                             .equals(String.valueOf(
+                                                                                                                     152 / 1000f))
+                                                               ))
                         .then(adapter::close)
                         .expectComplete()
                         .log()
@@ -263,9 +260,10 @@ class OesterreichsEnergieAdapterTest {
         var validJson = "{\"1-0:2.7.0\":{\"value\":0,\"time\":1697622950},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2370.6}";
 
         StepVerifier stepVerifier = StepVerifier.create(adapter.start())
-                                                .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                                                .expectNextMatches(received -> received.aiidaRecordValue()
+                                                                                       .stream()
                                                                                        .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
-                                                                                                                                     .equals("1-0:2.7.0")))
+                                                                                                                                     .equals(NEGATIVE_ACTIVE_INSTANTANEOUS_POWER)))
                                                 .then(adapter::close)
                                                 .expectComplete()
                                                 .verifyLater();
@@ -274,8 +272,7 @@ class OesterreichsEnergieAdapterTest {
         adapter.messageArrived(config.subscribeTopic(), new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
-                                                   invalidJson),
-                                           logCaptor, JsonMappingException.class);
+                invalidJson), logCaptor, JsonMappingException.class);
 
         stepVerifier.verify();
     }
@@ -292,15 +289,15 @@ class OesterreichsEnergieAdapterTest {
         StepVerifier.create(adapter.start())
                     .then(() -> adapter.messageArrived(config.subscribeTopic(),
                                                        new MqttMessage(json.getBytes(StandardCharsets.UTF_8))))
-                    .expectNextMatches(received -> received.aiidaRecordValue().stream()
+                    .expectNextMatches(received -> received.aiidaRecordValue()
+                                                           .stream()
                                                            .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
-                                                                                                         .equals("1-0:1.8.0")))
+                                                                                                         .equals(POSITIVE_ACTIVE_ENERGY)))
                     .then(adapter::close)
                     .expectComplete()
                     .verify();
 
-        assertThat(logCaptorAiidaDataSource.getDebugLogs()).contains(
-                "Found unknown OBIS-CODES from " + AiidaAsset.CONNECTION_AGREEMENT_POINT + ": [UNKNOWN-OBIS-CODE]");
+        assertThat(logCaptorAiidaDataSource.getDebugLogs()).contains("Found unknown OBIS-CODES from " + AiidaAsset.CONNECTION_AGREEMENT_POINT + ": [UNKNOWN-OBIS-CODE]");
     }
 
     @Test

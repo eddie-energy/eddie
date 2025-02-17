@@ -14,6 +14,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static energy.eddie.aiida.models.record.UnitOfMeasurement.KW;
+import static energy.eddie.aiida.models.record.UnitOfMeasurement.NONE;
+import static energy.eddie.aiida.utils.ObisCode.METER_SERIAL;
+import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
@@ -30,7 +34,7 @@ class AiidaRecordConverterTest {
         // Given
         Instant timestamp = Instant.now();
         var aiidaRecord = new AiidaRecord(timestamp, "Test", List.of(
-                new AiidaRecordValue("1.8.0", "1.8.0", "23", "kWh", "10", "kWh")));
+                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "23", KW, "10", KW)));
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
@@ -41,7 +45,7 @@ class AiidaRecordConverterTest {
         // Then
         assertEquals("10", dto.aiidaRecordValues().getFirst().value());
         assertEquals("23", dto.aiidaRecordValues().getFirst().rawValue());
-        assertEquals("1.8.0", dto.aiidaRecordValues().getFirst().rawTag());
+        assertEquals("1-0:1.8.0", dto.aiidaRecordValues().getFirst().rawTag());
         assertEquals("connectionId", dto.connectionId());
         assertEquals(permissionId, dto.permissionId());
         assertEquals(timestamp.toEpochMilli(), dto.timestamp().toEpochMilli());
@@ -52,7 +56,7 @@ class AiidaRecordConverterTest {
         // Given
         Instant timestamp = Instant.now();
         var aiidaRecord = new AiidaRecord(timestamp, "Test", List.of(
-                new AiidaRecordValue("C.1.0", "C.1.0", "Hello!", "kWh", "10", "kWh")));
+                new AiidaRecordValue("0-0:C.1.0", METER_SERIAL, "Hello!", NONE, "10", NONE)));
 
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.permissionId()).thenReturn(permissionId);
@@ -63,7 +67,7 @@ class AiidaRecordConverterTest {
 
         // Then
         assertEquals("Hello!", dto.aiidaRecordValues().getFirst().rawValue());
-        assertEquals("C.1.0", dto.aiidaRecordValues().getFirst().rawTag());
+        assertEquals("0-0:C.1.0", dto.aiidaRecordValues().getFirst().rawTag());
         assertEquals("connectionId", dto.connectionId());
         assertEquals(permissionId, dto.permissionId());
         assertEquals(timestamp.toEpochMilli(), dto.timestamp().toEpochMilli());
