@@ -151,8 +151,11 @@ public class Aggregator implements AutoCloseable {
                                         .stream()
                                         .filter(value -> allowedDataTags.contains(value.dataTag().toString()))
                                         .toList();
-        aiidaRecord.setAiidaRecordValues(filteredValues);
-        return aiidaRecord;
+        return new AiidaRecord(
+                aiidaRecord.timestamp(),
+                aiidaRecord.asset(),
+                new ArrayList<>(filteredValues)
+        );
     }
 
     private boolean isRecordValid(AiidaRecord aiidaRecord, Instant expirationTime) {

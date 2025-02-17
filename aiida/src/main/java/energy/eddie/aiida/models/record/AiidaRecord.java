@@ -53,10 +53,6 @@ public class AiidaRecord {
         return aiidaRecordValues;
     }
 
-    public void setAiidaRecordValues(List<AiidaRecordValue> aiidaRecordValues) {
-        this.aiidaRecordValues = aiidaRecordValues;
-    }
-
     public String asset() {
         return asset;
     }
