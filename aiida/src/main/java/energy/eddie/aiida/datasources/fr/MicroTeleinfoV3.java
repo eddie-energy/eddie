@@ -120,7 +120,9 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
         LOGGER.info("Will subscribe to health topic {}", healthTopic);
 
         try {
-            if (asyncClient != null) asyncClient.subscribe(healthTopic, 1);
+            if (asyncClient != null) {
+                asyncClient.subscribe(healthTopic, 1);
+            }
         } catch (MqttException ex) {
             LOGGER.error("Error while subscribing to topic {}", healthTopic, ex);
             healthSink.tryEmitNext(Health.down().withDetail("Error", ex).build());

@@ -16,12 +16,13 @@ import reactor.core.publisher.Flux;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 
 public abstract class AiidaMqttDataSource extends AiidaDataSource implements MqttCallback {
     private static final Duration DISCONNECT_TIMEOUT = Duration.ofSeconds(30);
     private final Logger logger;
     private final MqttConfig mqttConfig;
-    private final String clientId;
+    private final UUID clientId;
     @Nullable
     protected MqttAsyncClient asyncClient;
 
@@ -40,7 +41,7 @@ public abstract class AiidaMqttDataSource extends AiidaDataSource implements Mqt
     ) {
         super(id, name);
         this.mqttConfig = mqttConfig;
-        clientId = "AIIDA";
+        clientId = UUID.randomUUID();
         logger = childLogger;
     }
 
@@ -54,7 +55,7 @@ public abstract class AiidaMqttDataSource extends AiidaDataSource implements Mqt
 
         try {
             // persistence is only required when publishing messages with QOS 1 or 2
-            asyncClient = MqttFactory.getMqttAsyncClient(mqttConfig.serverURI(), clientId, null);
+            asyncClient = MqttFactory.getMqttAsyncClient(mqttConfig.serverURI(), clientId.toString(), null);
             asyncClient.setCallback(this);
 
             MqttConnectionOptions connectOptions = createConnectOptions();
@@ -69,25 +70,6 @@ public abstract class AiidaMqttDataSource extends AiidaDataSource implements Mqt
         }
 
         return recordSink.asFlux();
-    }
-
-    private MqttConnectionOptions createConnectOptions() {
-        MqttConnectionOptions options = new MqttConnectionOptions();
-        options.setCleanStart(mqttConfig.cleanStart());
-        options.setAutomaticReconnect(mqttConfig.automaticReconnect());
-        options.setKeepAliveInterval(mqttConfig.keepAliveInterval());
-
-        if (mqttConfig.username() != null) {
-            options.setUserName(mqttConfig.username());
-        }
-
-        // extra variable required to avoid NPE warning
-        String password = mqttConfig.password();
-        if (password != null) {
-            options.setPassword(password.getBytes(StandardCharsets.UTF_8));
-        }
-
-        return options;
     }
 
     /**
@@ -138,9 +120,10 @@ public abstract class AiidaMqttDataSource extends AiidaDataSource implements Mqt
         logger.info("Will subscribe to topic {}", mqttConfig.subscribeTopic());
 
         try {
-            if (asyncClient != null)
+            if (asyncClient != null) {
                 asyncClient.subscribe(mqttConfig.subscribeTopic(), 2);
-            subscribeToHealthTopic();
+                subscribeToHealthTopic();
+            }
         } catch (MqttException ex) {
             logger.error("Error while subscribing to topic {}", mqttConfig.subscribeTopic(), ex);
             recordSink.tryEmitError(ex);
@@ -152,10 +135,6 @@ public abstract class AiidaMqttDataSource extends AiidaDataSource implements Mqt
         // implementation not needed by this datasource
     }
 
-    protected void subscribeToHealthTopic() {
-        // Not needed in MqttDataSource
-    }
-
     @Override
     public Health health() {
         if (asyncClient == null) {
@@ -165,5 +144,28 @@ public abstract class AiidaMqttDataSource extends AiidaDataSource implements Mqt
         return (asyncClient.isConnected() ? Health.up() : Health.down()
                                                                 .withDetail("MqttDataSource",
                                                                             "Client not connected with server " + asyncClient.getServerURI())).build();
+    }
+
+    protected void subscribeToHealthTopic() {
+        // Not needed in MqttDataSource
+    }
+
+    private MqttConnectionOptions createConnectOptions() {
+        MqttConnectionOptions options = new MqttConnectionOptions();
+        options.setCleanStart(mqttConfig.cleanStart());
+        options.setAutomaticReconnect(mqttConfig.automaticReconnect());
+        options.setKeepAliveInterval(mqttConfig.keepAliveInterval());
+
+        if (mqttConfig.username() != null) {
+            options.setUserName(mqttConfig.username());
+        }
+
+        // extra variable required to avoid NPE warning
+        String password = mqttConfig.password();
+        if (password != null) {
+            options.setPassword(password.getBytes(StandardCharsets.UTF_8));
+        }
+
+        return options;
     }
 }
