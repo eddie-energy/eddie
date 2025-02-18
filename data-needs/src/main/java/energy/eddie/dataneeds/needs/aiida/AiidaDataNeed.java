@@ -7,7 +7,6 @@ import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
 import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
-import energy.eddie.dataneeds.validation.aiida.schema.IsValidAiidaSchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -18,7 +17,6 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "aiida_data_need", schema = "data_needs")
-@IsValidAiidaSchema
 @SuppressWarnings("NullAway")
 public class AiidaDataNeed extends TimeframedDataNeed implements AiidaDataNeedInterface {
     public static final String DISCRIMINATOR_VALUE = "aiida";
