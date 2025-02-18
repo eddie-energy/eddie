@@ -97,11 +97,15 @@ permissionDialog.addEventListener("sl-request-close", (event) => {
 });
 
 function getCsrfHeader() {
-  return document.querySelector('meta[name="csrf-header"]').getAttribute('content');
+  return document
+    .querySelector('"meta[name=\"csrf-header\"]"
+      .getAttribute("content");
 }
 
 function getCsrfToken() {
-  return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  return document
+    .querySelector('meta[name="csrf-token"]')
+    .getAttribute("content");
 }
 
 function permissions() {
@@ -152,13 +156,15 @@ function toLocalDateString(time) {
 }
 
 function permissionElement(permission) {
-  console.log(permission)
+  console.log(permission);
   const notYetAvailable = "Not available yet.";
   const { eddieId, permissionId, status, serviceName } = permission;
   const dataTags = permission.dataNeed.dataTags ?? notYetAvailable;
   const startTime = toLocalDateString(permission.startTime) ?? notYetAvailable;
-  const expirationTime = toLocalDateString(permission.expirationTime) ?? notYetAvailable;
-  const transmissionSchedule = permission.dataNeed.transmissionSchedule ?? notYetAvailable;
+  const expirationTime =
+    toLocalDateString(permission.expirationTime) ?? notYetAvailable;
+  const transmissionSchedule =
+    permission.dataNeed.transmissionSchedule ?? notYetAvailable;
   const asset = permission.dataNeed.asset ?? notYetAvailable;
   const schemas = permission.dataNeed.schemas ?? notYetAvailable;
 
@@ -206,8 +212,12 @@ function permissionElement(permission) {
         <dt>Asset</dt>
         <dd>${asset}</dd>
 
-        <dt>OBIS-Codes</dt>
-        <dd>${dataTags.map((code) => `<span>${code}</span>`).join("<br>")}</dd>
+        ${dataTags && dataTags.length
+          ? `
+            <dt>OBIS-Codes</dt>
+            <dd>${dataTags.map((code) => `<span>${code}</span>`).join("<br>")}</dd>
+        `
+          : ""}
       </dl>
       ${STATUS[status].isRevocable
         ? /* HTML */ `
@@ -277,7 +287,7 @@ function addPermission() {
               There was an error confirming the permission request. Please
               contact the service provider if this issue persists.
             </p>
-          </sl-alert>`,
+          </sl-alert>`
       );
 
       acceptButton.loading = rejectButton.loading = closeButton.loading = false;
@@ -299,7 +309,7 @@ function updatePermission(operation) {
     body: JSON.stringify({
       operation: operation,
     }),
-  }).then((res) => {
+  }).then(() => {
     permissionDialog.hide();
     aiidaCodeInput.value = "";
     renderPermissions();
@@ -350,8 +360,12 @@ function updatePermissionDialogWithDetails(permission) {
       <dt>Asset</dt>
       <dd>${asset}</dd>
 
-      <dt>OBIS-Codes</dt>
-      <dd>${dataTags.map((code) => `<span>${code}</span>`).join("<br>")}</dd>
+      ${dataTags && dataTags.length
+        ? `
+            <dt>OBIS-Codes</dt>
+            <dd>${dataTags.map((code) => `<span>${code}</span>`).join("<br>")}</dd>
+        `
+        : ""}
     </dl>
 
     <p class="text">
@@ -395,40 +409,57 @@ function renderDataSources() {
 
       dataSources.forEach((dataSource) => {
         const element = document.createElement("div");
-        const generalDetails = /* HTML */`
-          <p><strong>Asset:</strong> ${dataSource.asset}</p>
+        const generalDetails = /* HTML */ ` <p>
+            <strong>Asset:</strong> ${dataSource.asset}
+          </p>
           <p><strong>Type:</strong> ${dataSource.dataSourceType}</p>`;
 
         let dataSourceTypeDetails =
           dataSource.dataSourceType === "SIMULATION"
-            ? /* HTML */`
-              <p><strong>Simulation Period:</strong> ${dataSource.simulationPeriod}</p>
-            `
-            : /* HTML */`
-              <p><strong>MQTT Server URI:</strong> ${dataSource.mqttServerUri}</p>
-              <p><strong>MQTT Topic:</strong> ${dataSource.mqttSubscribeTopic}</p>
-              <p><strong>MQTT Username:</strong> ${dataSource.mqttUsername}</p>
-              <p><strong>MQTT Password:</strong> ${dataSource.mqttPassword}</p>
-            `;
+            ? /* HTML */ `
+                <p>
+                  <strong>Simulation Period:</strong>
+                  ${dataSource.simulationPeriod}
+                </p>
+              `
+            : /* HTML */ `
+                <p>
+                  <strong>MQTT Server URI:</strong> ${dataSource.mqttServerUri}
+                </p>
+                <p>
+                  <strong>MQTT Topic:</strong> ${dataSource.mqttSubscribeTopic}
+                </p>
+                <p>
+                  <strong>MQTT Username:</strong> ${dataSource.mqttUsername}
+                </p>
+                <p>
+                  <strong>MQTT Password:</strong> ${dataSource.mqttPassword}
+                </p>
+              `;
 
         if (dataSource.dataSourceType === "Micro Teleinfo v3") {
           dataSourceTypeDetails += `<p><strong>Metering ID:</strong> ${dataSource.meteringId}</p>`;
         }
 
-        element.innerHTML = /* HTML */`
+        element.innerHTML = /* HTML */ `
           <sl-card>
             <h3>${dataSource.name}</h3>
             ${generalDetails + dataSourceTypeDetails}
             <p>
-              <strong>Enabled:</strong> 
-              <sl-switch 
-                class="toggle-enabled" 
-                ${dataSource.enabled ? "checked" : ""} 
-                data-id="${dataSource.id}">
+              <strong>Enabled:</strong>
+              <sl-switch
+                class="toggle-enabled"
+                ${dataSource.enabled ? "checked" : ""}
+                data-id="${dataSource.id}"
+              >
               </sl-switch>
             </p>
-            <sl-button class="delete-button" data-id="${dataSource.id}">Delete</sl-button>
-            <sl-button class="edit-button" data-id="${dataSource.id}">Edit</sl-button>
+            <sl-button class="delete-button" data-id="${dataSource.id}"
+              >Delete</sl-button
+            >
+            <sl-button class="edit-button" data-id="${dataSource.id}"
+              >Edit</sl-button
+            >
           </sl-card>
         `;
 
@@ -465,7 +496,7 @@ function deleteDataSource(dataSourceId) {
     headers: {
       "Content-Type": "application/json",
       [getCsrfHeader()]: getCsrfToken(),
-    }
+    },
   })
     .then((response) => {
       if (!response.ok) {
@@ -492,13 +523,14 @@ function updateEnabledState(dataSourceId, enabled) {
       if (!response.ok) {
         throw new Error("Failed to update enabled state");
       }
-      console.log(`Enabled state for data source with ID ${dataSourceId} updated to ${enabled}.`);
+      console.log(
+        `Enabled state for data source with ID ${dataSourceId} updated to ${enabled}.`
+      );
     })
     .catch((error) => {
       console.error("Failed to update enabled state:", error);
     });
 }
-
 
 function openAddDataSourceDialog() {
   const dialog = document.getElementById("add-data-source-dialog");
@@ -518,7 +550,9 @@ function openAddDataSourceDialog() {
 
       dataSourceSelect.addEventListener("sl-change", (event) => {
         const selectedValue = event.target.value;
-        const selectedType = types.find((type) => type.identifier === selectedValue);
+        const selectedType = types.find(
+          (type) => type.identifier === selectedValue
+        );
         if (!selectedType) {
           console.error(`Type not found for value: ${selectedValue}`);
           return;
@@ -532,7 +566,9 @@ function openAddDataSourceDialog() {
         updateDataSourceFields(types[0].identifier);
       }
     })
-    .catch((error) => console.error("Failed to fetch data source types:", error));
+    .catch((error) =>
+      console.error("Failed to fetch data source types:", error)
+    );
 
   fetch(`${DATASOURCES_BASE_URL}/assets`)
     .then((response) => response.json())
@@ -555,8 +591,11 @@ function openAddDataSourceDialog() {
 
 function updateDataSourceFields(type) {
   const dataSourceFields = document.getElementById("data-source-fields");
-  const commonFields = /* HTML */`
-    <sl-input name="name" label="Name" required></sl-input>
+  const commonFields = /* HTML */ ` <sl-input
+      name="name"
+      label="Name"
+      required
+    ></sl-input>
     <sl-checkbox name="enabled" checked>Enabled</sl-checkbox>`;
 
   let dataTypeFields = "";
@@ -583,53 +622,108 @@ function openEditDataSourceDialog(dataSourceId) {
     headers: {
       "Content-Type": "application/json",
       [getCsrfHeader()]: getCsrfToken(),
-    }
+    },
   })
     .then((response) => response.json())
     .then((dataSource) => {
-      const editDataSourceFields = document.getElementById("edit-data-source-fields");
+      const editDataSourceFields = document.getElementById(
+        "edit-data-source-fields"
+      );
 
       console.log(dataSource);
       Promise.all([
-        fetch(`${DATASOURCES_BASE_URL}/types`).then((response) => response.json()),
-        fetch(`${DATASOURCES_BASE_URL}/assets`).then((response) => response.json()),
+        fetch(`${DATASOURCES_BASE_URL}/types`).then((response) =>
+          response.json()
+        ),
+        fetch(`${DATASOURCES_BASE_URL}/assets`).then((response) =>
+          response.json()
+        ),
       ])
         .then(([types, assets]) => {
           console.log(types);
 
-          let editFields = /* HTML */`
-            <sl-input name="name" label="Name" value="${dataSource.name}" required></sl-input>
-            <sl-checkbox name="enabled" ${dataSource.enabled ? "checked" : ""}>Enabled</sl-checkbox>
+          let editFields = /* HTML */ `
+            <sl-input
+              name="name"
+              label="Name"
+              value="${dataSource.name}"
+              required
+            ></sl-input>
+            <sl-checkbox name="enabled" ${dataSource.enabled ? "checked" : ""}
+              >Enabled</sl-checkbox
+            >
 
             <sl-select id="asset-select" name="asset" label="Asset" required>
               ${assets
-            .map((asset) => `<sl-option value="${asset.asset}">${asset.asset}</sl-option>`)
-            .join("")}
+                .map(
+                  (asset) =>
+                    `<sl-option value="${asset.asset}">${asset.asset}</sl-option>`
+                )
+                .join("")}
             </sl-select>
 
-            <sl-select id="type-select" name="dataSourceType" label="Type" required>
+            <sl-select
+              id="type-select"
+              name="dataSourceType"
+              label="Type"
+              required
+            >
               ${types
-            .map((type) => `<sl-option value="${type.identifier}">${type.name}</sl-option>`)
-            .join("")}
+                .map(
+                  (type) =>
+                    `<sl-option value="${type.identifier}">${type.name}</sl-option>`
+                )
+                .join("")}
             </sl-select>
           `;
 
           if (dataSource.dataSourceType === "SIMULATION") {
-            editFields += /* HTML */`
-              <sl-input name="simulationPeriod" label="Simulation Period" type="number" value="${dataSource.simulationPeriod}" required></sl-input>
+            editFields += /* HTML */ `
+              <sl-input
+                name="simulationPeriod"
+                label="Simulation Period"
+                type="number"
+                value="${dataSource.simulationPeriod}"
+                required
+              ></sl-input>
             `;
           } else {
-            editFields += /* HTML */`
-              <sl-input name="mqttServerUri" label="MQTT Server URI" value="${dataSource.mqttServerUri}" required></sl-input>
-              <sl-input name="mqttTopic" label="MQTT Topic" value="${dataSource.mqttSubscribeTopic}" required></sl-input>
-              <sl-input name="mqttUsername" label="MQTT Username" value="${dataSource.mqttUsername}" required></sl-input>
-              <sl-input name="mqttPassword" label="MQTT Password" value="${dataSource.mqttPassword}" required></sl-input>
+            editFields += /* HTML */ `
+              <sl-input
+                name="mqttServerUri"
+                label="MQTT Server URI"
+                value="${dataSource.mqttServerUri}"
+                required
+              ></sl-input>
+              <sl-input
+                name="mqttTopic"
+                label="MQTT Topic"
+                value="${dataSource.mqttSubscribeTopic}"
+                required
+              ></sl-input>
+              <sl-input
+                name="mqttUsername"
+                label="MQTT Username"
+                value="${dataSource.mqttUsername}"
+                required
+              ></sl-input>
+              <sl-input
+                name="mqttPassword"
+                label="MQTT Password"
+                value="${dataSource.mqttPassword}"
+                required
+              ></sl-input>
             `;
 
             if (dataSource.dataSourceType === "TELEINFO") {
-              editFields += /* HTML */`
-              <sl-input name="meteringId" label="Metering ID" value="${dataSource.meteringId}" required></sl-input>
-            `;
+              editFields += /* HTML */ `
+                <sl-input
+                  name="meteringId"
+                  label="Metering ID"
+                  value="${dataSource.meteringId}"
+                  required
+                ></sl-input>
+              `;
             }
           }
 
@@ -640,7 +734,6 @@ function openEditDataSourceDialog(dataSourceId) {
 
           assetSelect.value = dataSource.asset;
           typeSelect.value = dataSource.dataSourceType;
-
 
           document
             .getElementById("edit-data-source-form")
@@ -677,14 +770,17 @@ document
     };
 
     if (dataSourceType === "SIMULATION") {
-      newDataSource.simulationPeriod = parseInt(formData.get("simulationPeriod"), 10);
+      newDataSource.simulationPeriod = parseInt(
+        formData.get("simulationPeriod"),
+        10
+      );
     } else {
       newDataSource.mqttSubscribeTopic = formData.get("mqttTopic");
 
       if (dataSourceType === "MICRO_TELEINFO") {
         newDataSource.meteringId = formData.get("meteringID");
       }
-  }
+    }
 
     console.log(newDataSource);
 

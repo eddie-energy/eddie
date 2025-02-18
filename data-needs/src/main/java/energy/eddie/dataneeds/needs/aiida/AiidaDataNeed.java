@@ -46,13 +46,12 @@ public class AiidaDataNeed extends TimeframedDataNeed implements AiidaDataNeedIn
     @Enumerated(EnumType.STRING)
     private AiidaAsset asset;
 
+    @Column(name = "data_tag")
     @ElementCollection
     @CollectionTable(name = "aiida_data_need_data_tags",
             joinColumns = @JoinColumn(name = "data_need_id"),
             schema = "data_needs")
-    @Column(name = "data_tag")
-    @JsonProperty(required = true)
-    @NotEmpty(message = "must contain at least one data tag")
+    @JsonProperty
     private Set<String> dataTags;
 
     public AiidaDataNeed(Set<String> dataTags) {
