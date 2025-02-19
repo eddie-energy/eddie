@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <link href="/img/icon.svg" rel="icon" type="image/svg+xml" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" th:content="${_csrf.token}" />
+    <meta name="csrf-header" th:content="${_csrf.headerName}" />
+
+    <title>AIIDA Installer</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/themes/light.css"
+    />
+    <link rel="stylesheet" th:href="@{/css/installer.css}" />
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/shoelace-autoloader.js"
+    ></script>
+  </head>
+  <body>
+    <header>
+      <h1>AIIDA Installer</h1>
+    </header>
+
+    <div id="general-error-container" class="error-container"></div>
+
+    <h2>AIIDA</h2>
+    <div id="aiida-error-container" class="error-container"></div>
+
+    <div id="aiida-version-info" class="version-infos">
+      <sl-progress-bar indeterminate></sl-progress-bar>
+    </div>
+
+    <h2>Services</h2>
+    <div id="services-error-container" class="error-container"></div>
+
+    <div id="services-version-infos" class="version-infos">
+      <sl-progress-bar indeterminate></sl-progress-bar>
+    </div>
+
+    <script th:src="@{/js/installer.js}" type="module"></script>
+  </body>
+</html>
