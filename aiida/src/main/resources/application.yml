@@ -34,6 +34,8 @@ spring:
             provider: keycloak
 
 aiida:
+  installer:
+    host: http://aiida-installer:8010
   mqtt:
     host: ${MQTT_EXTERNAL_HOST:tcp://localhost:1884}
   keycloak:

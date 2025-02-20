@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <link href="/img/icon.svg" rel="icon" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="permissions-base-url" th:content="@{/permissions}" />
+    <meta name="datasources-base-url" th:content="@{/datasources}" />
     <meta name="csrf-token" th:content="${_csrf.token}" />
     <meta name="csrf-header" th:content="${_csrf.headerName}" />
 
@@ -43,9 +45,14 @@
       </div>
 
       <div class="user-drawer-content">
-        <sl-button variant="primary" th:href="@{/account}">
+        <sl-button variant="primary" outline th:href="@{/account}">
           <sl-icon slot="prefix" name="person-fill"></sl-icon>
           Account settings
+        </sl-button>
+
+        <sl-button variant="primary" outline th:href="@{/installer}">
+          <sl-icon slot="prefix" name="box-arrow-in-down"></sl-icon>
+          Installer
         </sl-button>
 
         <form method="post" th:action="@{/logout}">

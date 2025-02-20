@@ -10,7 +10,9 @@ const RELEASE_STATUS = {
   "pending-rollback": { variant: "info", icon: "🔽" },
 };
 
-const INSTALLER_BASE_URL = "/installer";
+const INSTALLER_BASE_URL = document
+  .querySelector('meta[name="installer-base-url"]')
+  .getAttribute("content");
 const INSTALLER_HEALTH_URL = `${INSTALLER_BASE_URL}/health`;
 const INSTALLER_AIIDA_URL = `${INSTALLER_BASE_URL}/aiida`;
 const INSTALLER_SERVICES_BASE_URL = `${INSTALLER_BASE_URL}/services/user`;
@@ -18,12 +20,22 @@ const INSTALLER_SERVICES_BASE_URL = `${INSTALLER_BASE_URL}/services/user`;
 const generalErrorContainer = document.getElementById(
   "general-error-container"
 );
+
+const aiidaLoadingBar = document.getElementById("aiida-loading-bar");
 const aiidaErrorContainer = document.getElementById("aiida-error-container");
+const aiidaVersionInfoElement = document.getElementById("aiida-version-info");
+
+const servicesNewChartName = document.getElementById(
+  "services-install-new-chart-name"
+);
+const servicesNewCustomValues = document.getElementById(
+  "services-install-new-custom-values"
+);
+
+const servicesLoadingBar = document.getElementById("services-loading-bar");
 const servicesErrorContainer = document.getElementById(
   "services-error-container"
 );
-
-const aiidaVersionInfoElement = document.getElementById("aiida-version-info");
 const servicesVersionInfosList = document.getElementById(
   "services-version-infos"
 );
@@ -40,18 +52,31 @@ function getCsrfToken() {
     .getAttribute("content");
 }
 
-async function checkResponse(response, errorContainer) {
-  const data = await response.json();
+function renderErrorMessage(errorMessage, errorContainer, loadingBar) {
+  errorContainer.innerHTML = /* HTML */ `
+    <sl-alert variant="danger" open class="error-alert">
+      <sl-icon slot="icon" name="exclamation-triangle-fill"></sl-icon>
+      <strong>Error: </strong>${errorMessage}
+    </sl-alert>
+  `;
+
+  if (loadingBar) loadingBar.style.visibility = "hidden";
+}
+
+async function checkResponse(response, errorContainer, loadingBar) {
+  if (loadingBar) loadingBar.style.visibility = "visible";
+
+  let data;
+  try {
+    data = await response.json();
+  } catch (error) {}
+
+  if (loadingBar) loadingBar.style.visibility = "hidden";
 
   if (!response.ok) {
     const errors = data.errors.map((error) => error.message).join("\n");
-
-    errorContainer.innerHTML = /* HTML */ `
-      <sl-alert variant="danger" open>
-        <sl-icon slot="icon" name="exclamation-triangle-fill"></sl-icon>
-        <strong>Error: </strong>${errors}
-      </sl-alert>
-    `;
+    renderErrorMessage(errors, errorContainer, loadingBar);
+    return Promise.reject(new Error(errors));
   }
 
   return data;
@@ -59,28 +84,46 @@ async function checkResponse(response, errorContainer) {
 
 function health() {
   return fetch(INSTALLER_HEALTH_URL).then((response) =>
-    checkResponse(response, generalErrorContainer)
+    checkResponse(response, generalErrorContainer, null)
   );
 }
 
 function aiidaVersionInfo() {
   return fetch(INSTALLER_AIIDA_URL).then((response) =>
-    checkResponse(response, aiidaErrorContainer)
+    checkResponse(response, aiidaErrorContainer, aiidaLoadingBar)
   );
 }
 
 function servicesVersionInfos() {
   return fetch(INSTALLER_SERVICES_BASE_URL).then((response) =>
-    checkResponse(response, servicesErrorContainer)
+    checkResponse(response, servicesErrorContainer, servicesLoadingBar)
   );
 }
 
-function installOrUpgrade(releaseName, isCore) {
-  console.log(`Install or upgrade ${releaseName} (isCore: ${isCore})`);
+function getChartServicePath(chartName) {
+  return `${INSTALLER_SERVICES_BASE_URL}/${chartName}`;
+}
 
-  const url = isCore
-    ? `/installer/aiida`
-    : `/installer/services/${releaseName}`;
+function getReleaseServicePath(chartName, releaseName) {
+  return `${INSTALLER_SERVICES_BASE_URL}/${chartName}/${releaseName}`;
+}
+
+function installOrUpgrade(chartName, releaseName, isCore) {
+  let url, errorContainer, successCallback, loadingBar;
+
+  if (isCore) {
+    url = INSTALLER_AIIDA_URL;
+    errorContainer = aiidaErrorContainer;
+    successCallback = renderAiidaVersionInfo;
+    loadingBar = aiidaLoadingBar;
+  } else {
+    url = getReleaseServicePath(chartName, releaseName);
+    errorContainer = servicesErrorContainer;
+    successCallback = renderServicesVersionInfos;
+    loadingBar = servicesLoadingBar;
+  }
+
+  loadingBar.style.visibility = "visible";
 
   fetch(url, {
     method: "POST",
@@ -89,22 +132,70 @@ function installOrUpgrade(releaseName, isCore) {
       [getCsrfHeader()]: getCsrfToken(),
     },
   })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to install or upgrade");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log(data);
-      renderVersionInfos();
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+    .then((response) => checkResponse(response, errorContainer, loadingBar))
+    .then((_) => successCallback())
+    .catch((error) =>
+      renderErrorMessage(error.message, errorContainer, loadingBar)
+    );
 }
 
-function uninstall(releaseName) {}
+function installNewService(event) {
+  event.preventDefault();
+
+  const chartName = servicesNewChartName.value;
+  const customValues = servicesNewCustomValues.value;
+
+  let setupDto = null;
+  if(customValues){
+    setupDto = JSON.stringify({"customValues": customValues.split("\n")})
+  }
+  console.log(setupDto)
+
+  servicesLoadingBar.style.visibility = "visible";
+
+  fetch(getChartServicePath(chartName), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      [getCsrfHeader()]: getCsrfToken(),
+    },
+    body: setupDto
+  })
+    .then((response) =>
+      checkResponse(response, servicesErrorContainer, servicesLoadingBar)
+    )
+    .then((_) => renderServicesVersionInfos())
+    .catch((error) =>
+      renderErrorMessage(
+        error.message,
+        servicesErrorContainer,
+        servicesLoadingBar
+      )
+    );
+}
+
+function uninstallService(chartName, releaseName) {
+  servicesLoadingBar.style.visibility = "visible";
+
+  fetch(getReleaseServicePath(chartName, releaseName), {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      [getCsrfHeader()]: getCsrfToken(),
+    },
+  })
+    .then((response) =>
+      checkResponse(response, servicesErrorContainer, servicesLoadingBar)
+    )
+    .then((_) => renderServicesVersionInfos())
+    .catch((error) =>
+      renderErrorMessage(
+        error.message,
+        servicesErrorContainer,
+        servicesLoadingBar
+      )
+    );
+}
 
 function toLocalDateString(time) {
   return time ? new Date(time).toLocaleString() : "N/A";
@@ -143,9 +234,9 @@ function versionInfoElement(versionInfo, isCore = false) {
           <dt>Deployment Name</dt>
           <dd>${releaseName}</dd>
           <dt>First Deployed</dt>
-          <dd>${toLocalDateString(releaseInfo.first_deployed)}</dd>
+          <dd>${toLocalDateString(releaseInfo.firstDeployed)}</dd>
           <dt>Last Deployed</dt>
-          <dd>${toLocalDateString(releaseInfo.last_deployed)}</dd>
+          <dd>${toLocalDateString(releaseInfo.lastDeployed)}</dd>
           <dt>Deployment Description</dt>
           <dd>${releaseInfo.description}</dd>
         </dl>
@@ -157,7 +248,7 @@ function versionInfoElement(versionInfo, isCore = false) {
               size="small"
               variant="primary"
               ${isLatest ? "disabled" : ""}
-              onclick="window.installOrUpgrade('${releaseName}', ${isCore})"
+              onclick="window.installOrUpgrade('${installedChart.name}', '${releaseName}', ${isCore})"
             >
               Upgrade
             </sl-button>
@@ -165,7 +256,7 @@ function versionInfoElement(versionInfo, isCore = false) {
               size="small"
               variant="danger"
               ${isCore ? "disabled" : ""}
-              onclick="window.uninstall('${releaseName}')"
+              onclick="window.uninstallService('${installedChart.name}', '${releaseName}')"
             >
               Uninstall
             </sl-button>
@@ -176,25 +267,51 @@ function versionInfoElement(versionInfo, isCore = false) {
   `;
 }
 
-function renderVersionInfos() {
+function renderAiidaVersionInfo() {
+  aiidaLoadingBar.style.visibility = "visible";
+
   aiidaVersionInfo().then((aiidaVersionInfo) => {
     aiidaVersionInfoElement.innerHTML = versionInfoElement(
       aiidaVersionInfo,
       true
     );
-  });
-
-  servicesVersionInfos().then((servicesVersionInfos) => {
-    servicesVersionInfosList.innerHTML = servicesVersionInfos.length
-      ? servicesVersionInfos
-          .map((versionInfo) => versionInfoElement(versionInfo))
-          .join("")
-      : "No services installed";
+    aiidaLoadingBar.style.visibility = "hidden";
   });
 }
 
+function renderServicesVersionInfos() {
+  servicesLoadingBar.style.visibility = "visible";
+
+  servicesVersionInfos().then((servicesVersionInfos) => {
+    servicesVersionInfosList.innerHTML = servicesVersionInfos
+      .map((versionInfo) => versionInfoElement(versionInfo))
+      .join("");
+
+    if (servicesVersionInfos.length === 0) {
+      servicesVersionInfosList.innerHTML = /* HTML */ `
+        <sl-alert variant="primary" open class="alert">
+          <sl-icon slot="icon" name="info-circle-fill"></sl-icon>
+          <strong>No services installed</strong>
+        </sl-alert>
+      `;
+    }
+
+    servicesLoadingBar.style.visibility = "hidden";
+  });
+}
+
+Promise.all([
+  customElements.whenDefined("sl-button"),
+  customElements.whenDefined("sl-input"),
+]).then(() => {
+  document
+    .getElementById("services-install-new-form")
+    .addEventListener("submit", installNewService);
+});
+
 health();
-renderVersionInfos();
+renderAiidaVersionInfo();
+renderServicesVersionInfos();
 
 window.installOrUpgrade = installOrUpgrade;
-window.uninstall = uninstall;
+window.uninstallService = uninstallService;

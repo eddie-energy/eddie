@@ -68,5 +68,11 @@ body {
 
 .user-drawer-content {
   display: flex;
-  gap: var(--sl-spacing-small);
+  flex-direction: column;
+  width: 100%;
+
+  sl-button {
+    width: 100%;
+    margin: 5px 0;
+  }
 }
