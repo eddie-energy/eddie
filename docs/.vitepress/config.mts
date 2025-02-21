@@ -33,6 +33,7 @@ export default withMermaid(defineConfig({
         text: "Running",
         items: [
           { text: "Operation", link: "1-running/OPERATION" },
+          { text: "EDDIE Button", link: "1-running/eddie-button/eddie-button.md" },
           {
             text: "Region Connectors",
             link: "1-running/region-connectors/region-connectors.md",
