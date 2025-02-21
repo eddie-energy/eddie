@@ -4,21 +4,23 @@ import {
   getRegionConnectors,
   getRegionConnectorsSupportedDataNeeds,
   getRegionConnectorsSupportedFeatures,
-  type RegionConnectorMetadata,
-  type RegionConnectorSupportedDataNeeds,
-  type RegionConnectorSupportedFeatures
+  type RegionConnectorMetadata
 } from '@/api'
 import { allRegionConnectors } from '@/constants/region-connectors'
 import { countryFlag, formatCountry } from '@/util/countries'
 
 import { Accordion, AccordionContent, AccordionHeader, AccordionPanel, Panel } from 'primevue'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import HealthIcon from '@/components/HealthIcon.vue'
 
 const regionConnectors = ref<RegionConnectorMetadata[]>([])
 const regionConnectorHealth = ref<Map<string, string>>(new Map())
-const regionConnectorSupportedFeatures = ref<RegionConnectorSupportedFeatures[]>([])
-const regionConnectorSupportedDataNeeds = ref<RegionConnectorSupportedDataNeeds[]>([])
+const regionConnectorSupportedFeatures = ref<Map<string, string>>(new Map())
+const regionConnectorSupportedDataNeeds = ref<Map<string, string[]>>(new Map())
+
+const disabledRegionConnectors = computed(() =>
+  regionConnectors.value.filter(({ id }) => !allRegionConnectors.includes(id))
+)
 
 const SUPPORTED_FEATURES = {
   supportsConnectionsStatusMessages: 'Connections Status Messages',
@@ -37,34 +39,24 @@ const SUPPORTED_DATA_NEEDS = {
 
 onMounted(async () => {
   regionConnectors.value = await getRegionConnectors()
-  regionConnectorSupportedFeatures.value = await getRegionConnectorsSupportedFeatures()
-  regionConnectorSupportedDataNeeds.value = await getRegionConnectorsSupportedDataNeeds()
+  regionConnectorSupportedFeatures.value = (await getRegionConnectorsSupportedFeatures()).reduce(
+    (map, { regionConnectorId, ...features }) =>
+      map.set(
+        regionConnectorId,
+        Object.entries(features)
+          .filter(([, value]) => value)
+          .map(([key]) => key)
+      ),
+    new Map()
+  )
+  regionConnectorSupportedDataNeeds.value = (await getRegionConnectorsSupportedDataNeeds()).reduce(
+    (map, { dataNeeds, regionConnectorId }) => map.set(regionConnectorId, dataNeeds),
+    new Map()
+  )
   for (const { id } of regionConnectors.value) {
     regionConnectorHealth.value.set(id, (await getRegionConnectorHealth(id))?.status || 'UNKNOWN')
   }
 })
-
-function getDataNeedsByRegionConnectorId(regionConnectorId: string) {
-  const regionConnector = regionConnectorSupportedDataNeeds.value.find(
-    (region) => region.regionConnectorId === regionConnectorId
-  )
-  return regionConnector?.dataNeeds
-}
-
-function getSupportedFeaturesByRegionConnectorId(regionConnectorId: string) {
-  const regionConnector = regionConnectorSupportedFeatures.value.find(
-    (region) => region.regionConnectorId === regionConnectorId
-  )
-  return regionConnector
-    ? Object.keys(regionConnector).filter(
-        (key) => key != 'regionConnectorId' && regionConnector[key]
-      )
-    : []
-}
-
-function getDisabledRegionConnectors() {
-  return regionConnectors.value.filter(({ id }) => !allRegionConnectors.includes(id))
-}
 </script>
 
 <template>
@@ -97,20 +89,20 @@ function getDisabledRegionConnectors() {
                 <dt>Timezone:</dt>
                 <dd>{{ timeZone }}</dd>
                 <dt>Status:</dt>
-                <dd>{{ regionConnectorHealth.get(id) || 'UNKNOWN' }}</dd>
+                <dd>{{ regionConnectorHealth.get(id) }}</dd>
               </dl>
 
               <Panel class="panel-data-needs" toggleable collapsed header="Supported DataNeeds">
                 <ul>
-                  <li v-for="supportedDataNeed in getDataNeedsByRegionConnectorId(id)">
+                  <li v-for="supportedDataNeed in regionConnectorSupportedDataNeeds.get(id)">
                     {{ SUPPORTED_DATA_NEEDS[supportedDataNeed] }}
                   </li>
                 </ul>
               </Panel>
               <Panel class="panel-features" toggleable collapsed header="Supported Features">
                 <ul>
-                  <li v-for="supportedFeature in getSupportedFeaturesByRegionConnectorId(id)">
-                    {{ SUPPORTED_FEATURES[supportedFeature] }}
+                  <li v-for="feature in regionConnectorSupportedFeatures.get(id)" :key="feature">
+                    {{ SUPPORTED_FEATURES[feature] }}
                   </li>
                 </ul>
               </Panel>
@@ -120,11 +112,11 @@ function getDisabledRegionConnectors() {
       </Accordion>
       <Accordion value="1">
         <AccordionPanel value="1">
-          <AccordionHeader>Disabled ({{ getDisabledRegionConnectors().length }})</AccordionHeader>
+          <AccordionHeader>Disabled ({{ disabledRegionConnectors.length }})</AccordionHeader>
           <AccordionContent>
             <Panel
               class="region-connector-panel"
-              v-for="regionConnector in getDisabledRegionConnectors()"
+              v-for="regionConnector in disabledRegionConnectors"
               :key="regionConnector"
               :value="regionConnector"
               collapsed

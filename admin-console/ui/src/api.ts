@@ -54,12 +54,18 @@ export type RegionConnectorHealth = {
 
 export type RegionConnectorSupportedFeatures = {
   regionConnectorId: string
-  dataNeeds: string[]
+  supportsRawDataMessages: boolean
+  supportsTermination: boolean
+  supportsAccountingPointMarketDocuments: boolean
+  supportsPermissionMarketDocuments: boolean
+  supportsValidatedHistoricalDataMarketDocuments: boolean
+  supportsRetransmissionRequests: boolean
+  supportsConnectionsStatusMessages: boolean
 }
 
 export type RegionConnectorSupportedDataNeeds = {
   regionConnectorId: string
-  dataNeeds: boolean[]
+  dataNeeds: string[]
 }
 
 export async function getPermissions(): Promise<StatusMessage[]> {
