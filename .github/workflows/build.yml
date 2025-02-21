@@ -5,9 +5,13 @@ on:
       - opened
       - reopened
       - synchronize
+    paths-ignore:
+      - "docs/**"
   push:
     branches:
       - main
+    paths-ignore:
+      - "docs/**"
 
 jobs:
   build:
