@@ -2,13 +2,13 @@
 import Chart from 'primevue/chart'
 import { ref, watch } from 'vue'
 
-const props = defineProps<{ permissionCountPerRegionConnector: { id: string; count: number }[] }>()
+const props = defineProps<{ permissionCountPerRegionConnector: { [key: string]: number } }>()
 
 const chartData = ref()
 const chartOptions = ref()
 watch(props, () => {
-  const labels = props.permissionCountPerRegionConnector.map(({ id }) => id)
-  const data = props.permissionCountPerRegionConnector.map(({ count }) => count)
+  const labels = Object.keys(props.permissionCountPerRegionConnector)
+  const data = Object.values(props.permissionCountPerRegionConnector)
 
   chartData.value = {
     labels: labels,
