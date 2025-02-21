@@ -37,7 +37,7 @@ public class OAuthService {
         var parUri = cdsServer.pushedAuthorizationRequestEndpoint();
         var authzReq = new AuthorizationRequest.Builder(ResponseType.CODE, clientID)
                 .endpointURI(parUri)
-                .scope(new Scope(scopes.toArray(new String[0])))
+                .scope(Scope.parse(scopes))
                 .state(state)
                 .redirectionURI(config.redirectUrl())
                 .responseType(ResponseType.CODE)
@@ -73,8 +73,8 @@ public class OAuthService {
         var callback = config.redirectUrl();
         var codeGrant = new AuthorizationCodeGrant(code, callback);
 
-        var clientID = new ClientID("123");
-        var clientSecret = new Secret("secret");
+        var clientID = new ClientID(cdsServer.clientId());
+        var clientSecret = new Secret(cdsServer.clientSecret());
         var clientAuth = new ClientSecretBasic(clientID, clientSecret);
 
         var tokenEndpoint = cdsServer.tokenEndpoint();
