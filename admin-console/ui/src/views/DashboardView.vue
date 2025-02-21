@@ -26,7 +26,7 @@ onMounted(async () => {
   dataNeeds.value = await getDataNeeds()
   regionConnectors.value = await getRegionConnectors()
   for (const { id } of regionConnectors.value) {
-    regionConnectorHealth.value.set(id, (await getRegionConnectorHealth(id))?.status || 'DISABLED')
+    regionConnectorHealth.value.set(id, (await getRegionConnectorHealth(id))?.status || 'UNKNOWN')
   }
 })
 
