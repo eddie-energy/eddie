@@ -21,9 +21,9 @@ import { setBasePath } from "https://cdn.jsdelivr.net/npm/@shoelace-style/shoela
 import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
 
-import PERMISSION_ADMINISTRATORS from "../../../../european-masterdata/src/main/resources/permission-administrators.json";
 import {
   getDataNeedAttributes,
+  getPermissionAdministrators,
   getRegionConnectorMetadata,
   getSupportedRegionConnectors,
 } from "./api.js";
@@ -31,12 +31,6 @@ import { flagStyles, hasFlag } from "./styles/flags.js";
 import { dataNeedDescription } from "./data-need-util.js";
 
 setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn");
-
-/**
- * All countries with at least one permission administrator as lowercase ISO 3166-1 alpha-2 country code.
- * @type {Set<string>}
- */
-const COUNTRIES = new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country));
 
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
@@ -75,18 +69,6 @@ const dialogCloseEvent = new Event("eddie-dialog-close", {
   bubbles: true,
   composed: true,
 });
-
-/**
- * Returns the country codes of all countries that are supported by at least one enabled region connector.
- * @param regionConnectors {RegionConnectorMetadata[]} - The region connectors to filter.
- * @returns {string[]} - The country codes of all enabled region connectors in lowercase.
- */
-function getEnabledCountries(regionConnectors) {
-  return [...new Set(regionConnectors.flatMap((rc) => rc.countryCodes))]
-    .map((countryCode) => countryCode.toLowerCase())
-    .filter((country) => COUNTRIES.has(country))
-    .sort((a, b) => a.localeCompare(b));
-}
 
 class EddieConnectButton extends LitElement {
   static properties = {
@@ -332,6 +314,23 @@ class EddieConnectButton extends LitElement {
   }
 
   /**
+   * Returns the country codes of all countries that are supported by at least one enabled region connector.
+   * @returns {string[]} - The country codes of all enabled region connectors in lowercase.
+   */
+  getEnabledCountries() {
+    return [
+      ...new Set(this._enabledConnectors.flatMap((rc) => rc.countryCodes)),
+    ]
+      .map((countryCode) => countryCode.toLowerCase())
+      .filter((country) =>
+        new Set(this._permissionAdministrators.map((pa) => pa.country)).has(
+          country
+        )
+      )
+      .sort((a, b) => a.localeCompare(b));
+  }
+
+  /**
    *
    * @param {string} companyId The company ID of the permission administrator.
    * @returns {PermissionAdministrator | undefined} The first permission administrator with the given company ID or undefined if none is found.
@@ -438,8 +437,6 @@ class EddieConnectButton extends LitElement {
       throw new Error("No enabled region connectors.");
     }
 
-    this._enabledCountries = getEnabledCountries(this._enabledConnectors);
-
     this._supportedConnectors = await getSupportedRegionConnectors(
       this.dataNeedId
     );
@@ -448,9 +445,12 @@ class EddieConnectButton extends LitElement {
       throw new Error("No region connector supports the data need.");
     }
 
-    this._supportedPermissionAdministrators = PERMISSION_ADMINISTRATORS.filter(
-      (pa) => this._supportedConnectors.includes(pa.regionConnector)
-    );
+    this._permissionAdministrators = await getPermissionAdministrators();
+
+    this._supportedPermissionAdministrators =
+      this._permissionAdministrators.filter((pa) =>
+        this._supportedConnectors.includes(pa.regionConnector)
+      );
 
     this._supportedCountries = new Set(
       this._supportedPermissionAdministrators.map((pa) => pa.country)
@@ -496,6 +496,8 @@ class EddieConnectButton extends LitElement {
     ) {
       this.loadPermissionAdministratorFromLocalStorage();
     }
+
+    this._enabledCountries = this.getEnabledCountries();
   }
 
   isAiida() {
