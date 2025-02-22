@@ -244,18 +244,18 @@ class EddieConnectButton extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    this.configure()
-      .then(() => {
-        this._isValidConfiguration = true;
+    this.addRequestStatusHandlers();
+    this.addViewChangeHandlers();
 
-        this.addRequestStatusHandlers();
-        this.addViewChangeHandlers();
-      })
-      .catch((error) => {
-        this._isValidConfiguration = false;
+    this.reset(); // Initial configuration
+  }
 
-        console.error(error);
-      });
+  updated(_changedProperties) {
+    super.updated(_changedProperties);
+
+    if (_changedProperties.has("dataNeedId")) {
+      this.reset();
+    }
   }
 
   openDialog() {
@@ -267,7 +267,23 @@ class EddieConnectButton extends LitElement {
   }
 
   reset() {
-    this.replaceWith(this.cloneNode());
+    // Set configuration status to loading
+    this._isValidConfiguration = undefined;
+
+    // Reset properties not set during configuration
+    this._activeView = "dn";
+    this._selectedCountry = undefined;
+    this._selectedPermissionAdministrator = undefined;
+    this._filteredPermissionAdministrators = [];
+
+    this.configure()
+      .then(() => {
+        this._isValidConfiguration = true;
+      })
+      .catch((error) => {
+        this._isValidConfiguration = false;
+        console.error(error);
+      });
   }
 
   async getRegionConnectorElement() {

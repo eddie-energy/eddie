@@ -76,6 +76,7 @@
           // Reselect button as replacing it breaks the reference
           const button = document.querySelector("eddie-connect-button");
           button.setAttribute(name, type === "checkbox" ? checked : value);
+          // Recreate over reset to ensure no data is left from the previous button
           button.replaceWith(button.cloneNode());
         });
       }
