@@ -69,7 +69,7 @@ public class HomeController {
     }
 
     @GetMapping("/installer")
-    public String logout() {
+    public String installer() {
         return "installer";
     }
 

@@ -99,4 +99,18 @@ class HomeControllerTest {
                .andExpect(status().isFound())
                .andExpect(redirectedUrl("https://auth.aiida.energy/account"));
     }
+
+    @Test
+    void getInstallerWithoutAuthentication_isUnauthorized() throws Exception {
+        mockMvc.perform(get("/"))
+               .andExpect(status().is3xxRedirection())
+               .andExpect(redirectedUrlPattern("**/oauth2/authorization/keycloak"));
+    }
+
+    @Test
+    @WithMockUser
+    void getInstallerWithAuthentication_isOk() throws Exception {
+        mockMvc.perform(get("/installer"))
+               .andExpect(status().isOk());
+    }
 }

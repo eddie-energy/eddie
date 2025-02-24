@@ -6,7 +6,6 @@ import energy.eddie.aiida.errors.InstallerException;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.services.InstallerService;
 import energy.eddie.api.agnostic.EddieApiError;
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -32,7 +31,30 @@ public class InstallerController {
     private static final String SERVICE_PATH = "/services/user";
     private static final String CHART_SERVICE_PATH = SERVICE_PATH + "/{chartName}";
     private static final String RELEASE_SERVICE_PATH = CHART_SERVICE_PATH + "/{releaseName}";
-    private static final String VERSION_INFO_EXAMPLE_RETURN_JSON = "{\"success\":true,\"data\":{\"releaseName\":\"aiida\",\"releaseInfo\":{\"first_deployed\":\"2025-02-19T09:47:36.084026563+01:00\",\"last_deployed\":\"2025-02-20T10:28:29.603718534+01:00\",\"deleted\":\"\",\"description\":\"Upgrade complete\",\"status\":\"deployed\"},\"installedChart\":{\"name\":\"aiida\",\"version\":\"0.1.0\",\"description\":\"A Helm chart for the AIIDA application\",\"apiVersion\":\"v2\",\"appVersion\":\"0.0.1\",\"type\":\"application\"},\"latestChart\":{\"name\":\"aiida\",\"version\":\"0.1.0\",\"description\":\"A Helm chart for the AIIDA application\",\"apiVersion\":\"v2\",\"appVersion\":\"0.0.1\",\"type\":\"application\"}}}";
+    private static final String VERSION_INFO_EXAMPLE_RETURN_JSON = """
+            {
+                "releaseName": "aiida",
+                "releaseInfo": {
+                    "firstDeployed": "2025-02-24T11:36:08.086379418+01:00",
+                    "lastDeployed": "2025-02-24T13:28:03.555518598+01:00",
+                    "deleted": "2025-02-24T13:28:03.555518598+01:00",
+                    "description": "Upgrade complete",
+                    "status": "deployed"
+                },
+                "installedChart": {
+                    "name": "aiida",
+                    "version": "0.1.0",
+                    "description": "AIIDA Core (Administrative Interface for In-House Data Access)",
+                    "appVersion": "0.0.1"
+                },
+                "latestChart": {
+                    "name": "aiida",
+                    "version": "0.1.0",
+                    "description": "AIIDA Core (Administrative Interface for In-House Data Access)",
+                    "appVersion": "0.0.1"
+                }
+            }
+            """;
 
     private final InstallerService installerService;
 
@@ -47,8 +69,8 @@ public class InstallerController {
             @ApiResponse(responseCode = "504", description = "Installer is unavailable or unreachable ", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
     })
     @GetMapping(path = "/health")
-    public ResponseEntity<Void> getHealth() throws InstallerException {
-        installerService.getHealth();
+    public ResponseEntity<Void> health() throws InstallerException {
+        installerService.health();
         return ResponseEntity.ok().build();
     }
 
@@ -58,9 +80,10 @@ public class InstallerController {
             @ApiResponse(responseCode = "502", description = "Installer has an internal error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
             @ApiResponse(responseCode = "504", description = "Installer is unavailable or unreachable ", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
     })
+    @Nullable
     @GetMapping(path = AIIDA_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<VersionInfoDto> getAiidaVersion() throws InstallerException, InvalidUserException {
-        return ResponseEntity.ok(installerService.getAiidaVersion());
+    public VersionInfoDto aiidaVersion() throws InstallerException, InvalidUserException {
+        return installerService.aiidaVersion();
     }
 
     @Operation(summary = "Install or upgrade AIIDA", operationId = "installOrUpgradeAiida", tags = {"installer"})
@@ -69,9 +92,10 @@ public class InstallerController {
             @ApiResponse(responseCode = "502", description = "Installer has an internal error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
             @ApiResponse(responseCode = "504", description = "Installer is unavailable or unreachable ", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
     })
+    @Nullable
     @PostMapping(path = AIIDA_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<VersionInfoDto> installOrUpgradeAiida() throws InstallerException, InvalidUserException {
-        return ResponseEntity.ok(installerService.installOrUpgradeAiida());
+    public VersionInfoDto installOrUpgradeAiida() throws InstallerException, InvalidUserException {
+        return installerService.installOrUpgradeAiida();
     }
 
     @Operation(summary = "Get version info of all services per user", operationId = "getServicesVersionsUser", tags = {"installer"})
@@ -80,9 +104,10 @@ public class InstallerController {
             @ApiResponse(responseCode = "502", description = "Installer has an internal error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
             @ApiResponse(responseCode = "504", description = "Installer is unavailable or unreachable ", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))})
     })
+    @Nullable
     @GetMapping(path = SERVICE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<VersionInfoDto>> getServicesVersions() throws InstallerException, InvalidUserException {
-        return ResponseEntity.ok(installerService.getServicesVersions());
+    public List<VersionInfoDto> servicesVersions() throws InstallerException, InvalidUserException {
+        return installerService.servicesVersions();
     }
 
     @Operation(summary = "Install new service", operationId = "installNewService", tags = {"installer"})
@@ -91,9 +116,13 @@ public class InstallerController {
             @ApiResponse(responseCode = "502", description = "Installer has an internal error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
             @ApiResponse(responseCode = "504", description = "Installer is unavailable or unreachable ", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))})
     })
+    @Nullable
     @PostMapping(path = CHART_SERVICE_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<VersionInfoDto> installNewService(@PathVariable String chartName, @RequestBody(required = false) InstallerSetupDto installerSetupDto) throws InstallerException, InvalidUserException {
-        return ResponseEntity.ok(installerService.installNewService(chartName, installerSetupDto));
+    public VersionInfoDto installNewService(
+            @PathVariable String chartName,
+            @RequestBody(required = false) InstallerSetupDto installerSetupDto
+    ) throws InstallerException, InvalidUserException {
+        return installerService.installNewService(chartName, installerSetupDto);
     }
 
     @Operation(summary = "Get version info a service", operationId = "getServiceVersion", tags = {"installer"})
@@ -102,12 +131,13 @@ public class InstallerController {
             @ApiResponse(responseCode = "502", description = "Installer has an internal error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
             @ApiResponse(responseCode = "504", description = "Installer is unavailable or unreachable ", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))})
     })
+    @Nullable
     @GetMapping(path = RELEASE_SERVICE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<VersionInfoDto> getServiceVersion(
+    public VersionInfoDto serviceVersion(
             @PathVariable String chartName,
             @PathVariable String releaseName
     ) throws InstallerException, InvalidUserException {
-        return ResponseEntity.ok(installerService.getServiceVersion(chartName, releaseName));
+        return installerService.serviceVersion(chartName, releaseName);
     }
 
     @Operation(summary = "Install or upgrade a service", operationId = "installOrUpgradeService", tags = {"installer"})
@@ -116,12 +146,13 @@ public class InstallerController {
             @ApiResponse(responseCode = "502", description = "Installer has an internal error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
             @ApiResponse(responseCode = "504", description = "Installer is unavailable or unreachable ", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
     })
+    @Nullable
     @PostMapping(path = RELEASE_SERVICE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<VersionInfoDto> installOrUpgradeService(
+    public VersionInfoDto installOrUpgradeService(
             @PathVariable String chartName,
             @PathVariable String releaseName
     ) throws InstallerException, InvalidUserException {
-        return ResponseEntity.ok(installerService.installOrUpgradeService(chartName, releaseName));
+        return installerService.installOrUpgradeService(chartName, releaseName);
     }
 
     @Operation(summary = "Delete a service", operationId = "deleteService", tags = {"installer"})

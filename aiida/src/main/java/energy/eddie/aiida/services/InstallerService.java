@@ -10,6 +10,7 @@ import energy.eddie.aiida.dtos.installer.VersionInfoDto;
 import energy.eddie.aiida.errors.InstallerException;
 import energy.eddie.aiida.errors.InvalidUserException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,13 +53,22 @@ public class InstallerService {
             AuthService authService,
             ObjectMapper objectMapper
     ) {
+        this(installerConfiguration, authService, objectMapper, HttpClient.newHttpClient());
+    }
+
+    public InstallerService(
+            InstallerConfiguration installerConfiguration,
+            AuthService authService,
+            ObjectMapper objectMapper,
+            HttpClient httpClient
+    ) {
         this.installerConfiguration = installerConfiguration;
         this.authService = authService;
         this.objectMapper = objectMapper;
-        this.httpClient = HttpClient.newHttpClient();
+        this.httpClient = httpClient;
     }
 
-    public void getHealth() throws InstallerException {
+    public void health() throws InstallerException {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                                              .uri(URI.create(installerConfiguration.host() + HEALTH_PATH))
@@ -75,27 +85,19 @@ public class InstallerService {
     }
 
     @Nullable
-    public VersionInfoDto getAiidaVersion() throws InstallerException, InvalidUserException {
-        return sendAuthenticatedRequest(AIIDA_PATH, "GET", VersionInfoDto.class);
+    public VersionInfoDto aiidaVersion() throws InstallerException, InvalidUserException {
+        return sendAuthenticatedRequest(AIIDA_PATH, HttpMethod.GET, VersionInfoDto.class);
     }
 
     @Nullable
     public VersionInfoDto installOrUpgradeAiida() throws InstallerException, InvalidUserException {
-        return sendAuthenticatedRequest(AIIDA_PATH, "POST", VersionInfoDto.class);
+        return sendAuthenticatedRequest(AIIDA_PATH, HttpMethod.POST, VersionInfoDto.class);
     }
 
     @Nullable
-    public List<VersionInfoDto> getServicesVersions() throws InstallerException, InvalidUserException {
-        var response = sendAuthenticatedRequest(SERVICE_PATH, "GET", VersionInfoDto[].class);
+    public List<VersionInfoDto> servicesVersions() throws InstallerException, InvalidUserException {
+        var response = sendAuthenticatedRequest(SERVICE_PATH, HttpMethod.GET, VersionInfoDto[].class);
         return response != null ? Arrays.asList(response) : Collections.emptyList();
-    }
-
-    @Nullable
-    public VersionInfoDto getServiceVersion(
-            String chartName,
-            String releaseName
-    ) throws InstallerException, InvalidUserException {
-        return sendAuthenticatedRequest(getReleaseServicePath(chartName, releaseName), "GET", VersionInfoDto.class);
     }
 
     @Nullable
@@ -104,11 +106,12 @@ public class InstallerService {
             @Nullable InstallerSetupDto installerSetupDto
     ) throws InstallerException, InvalidUserException {
         try {
-            var bodyPublisher = installerSetupDto != null ? HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(
-                    installerSetupDto)) : HttpRequest.BodyPublishers.noBody();
+            var bodyPublisher = installerSetupDto != null
+                    ? HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(installerSetupDto))
+                    : HttpRequest.BodyPublishers.noBody();
 
-            return sendAuthenticatedRequest(getChartServicePath(chartName),
-                                            "POST",
+            return sendAuthenticatedRequest(chartServicePath(chartName),
+                                            HttpMethod.POST,
                                             VersionInfoDto.class,
                                             bodyPublisher);
         } catch (JsonProcessingException e) {
@@ -117,54 +120,62 @@ public class InstallerService {
     }
 
     @Nullable
+    public VersionInfoDto serviceVersion(
+            String chartName,
+            String releaseName
+    ) throws InstallerException, InvalidUserException {
+        return sendAuthenticatedRequest(releaseServicePath(chartName, releaseName), HttpMethod.GET, VersionInfoDto.class);
+    }
+
+    @Nullable
     public VersionInfoDto installOrUpgradeService(
             String chartName,
             String releaseName
     ) throws InstallerException, InvalidUserException {
-        return sendAuthenticatedRequest(getReleaseServicePath(chartName, releaseName), "POST", VersionInfoDto.class);
+        return sendAuthenticatedRequest(releaseServicePath(chartName, releaseName), HttpMethod.POST, VersionInfoDto.class);
     }
 
     public void deleteService(String chartName, String releaseName) throws InstallerException, InvalidUserException {
-        sendAuthenticatedRequest(getReleaseServicePath(chartName, releaseName), "DELETE", Void.class);
+        sendAuthenticatedRequest(releaseServicePath(chartName, releaseName), HttpMethod.DELETE, Void.class);
     }
 
-    private String getChartServicePath(String chartName) {
+    private String chartServicePath(String chartName) {
         return SERVICE_PATH + "/" + chartName;
     }
 
-    private String getReleaseServicePath(String chartName, String releaseName) {
-        return getChartServicePath(chartName) + "/" + releaseName;
+    private String releaseServicePath(String chartName, String releaseName) {
+        return chartServicePath(chartName) + "/" + releaseName;
     }
 
     @Nullable
     private <T> T sendAuthenticatedRequest(
             String path,
-            String method,
+            HttpMethod httpMethod,
             Class<T> installerResponseDataType
     ) throws InstallerException, InvalidUserException {
-        return sendAuthenticatedRequest(path, method, installerResponseDataType, HttpRequest.BodyPublishers.noBody());
+        return sendAuthenticatedRequest(path, httpMethod, installerResponseDataType, HttpRequest.BodyPublishers.noBody());
     }
 
     @Nullable
     private <T> T sendAuthenticatedRequest(
             String path,
-            String method,
+            HttpMethod httpMethod,
             Class<T> installerResponseDataType,
             HttpRequest.BodyPublisher bodyPublisher
     ) throws InstallerException, InvalidUserException {
-        LOGGER.info("Sending {} request to installer service", method);
+        LOGGER.info("Sending {} request to installer service", httpMethod);
 
         if (authToken == null) {
             authenticate();
         }
 
         try {
-            var httpResponse = sendAuthenticatedHttpRequest(path, method, bodyPublisher);
+            var httpResponse = sendAuthenticatedHttpRequest(path, httpMethod, bodyPublisher);
 
             if (httpResponse.statusCode() == HttpStatus.UNAUTHORIZED.value()) {
                 LOGGER.warn("Token possibly expired. Re-authenticating...");
                 authenticate();
-                httpResponse = sendAuthenticatedHttpRequest(path, method, bodyPublisher);
+                httpResponse = sendAuthenticatedHttpRequest(path, httpMethod, bodyPublisher);
             }
 
             return processInstallerResponse(httpResponse, installerResponseDataType);
@@ -177,12 +188,12 @@ public class InstallerService {
 
     private HttpResponse<String> sendAuthenticatedHttpRequest(
             String path,
-            String method,
+            HttpMethod httpMethod,
             HttpRequest.BodyPublisher bodyPublisher
     ) throws IOException, InterruptedException {
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                                                         .uri(URI.create(installerConfiguration.host() + path))
-                                                        .method(method, bodyPublisher)
+                                                        .method(httpMethod.name(), bodyPublisher)
                                                         .header(AUTH_HEADER_NAME, AUTH_HEADER_VALUE_PREFIX + authToken);
 
         return httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
@@ -192,7 +203,7 @@ public class InstallerService {
         LOGGER.info("Authenticating with installer service...");
 
         var currentUserId = authService.getCurrentUserId();
-        var loginDto = new LoginDto(currentUserId.toString(), installerConfiguration.token());
+        var loginDto = new LoginDto(currentUserId, installerConfiguration.token());
 
         try {
             String requestBody = objectMapper.writeValueAsString(loginDto);
