@@ -10,11 +10,14 @@ next:
 # Messages and Documents
 
 EDDIE emits several messages and documents that can be used by the EP to react to permission request status changes, as well as collect the data that was requested from final customers.
-Furthermore, there are documents that can be sent to EDDIE to change the status of a permission request.
+Furthermore, there is one special kind of permission market document, which is called [termination document](./permission-market-documents.md#termination-documents), that can be sent to EDDIE to change the status of a permission request.
 There are two types of messages:
 
 - CIM documents: Those are documents that respect the CIM schema, which can be found [here](https://github.com/eddie-energy/eddie/tree/main/api/src/main/schemas/cim/xsd/v0_82).
 - EDDIE's internal format, which is not standardized, but can provide more detailed data or concise messages.
+
+> [!IMPORTANT]
+> These messages and documents are only exchanged between the eligible party and EDDIE, neither the permission administrator nor the metered data administrator are directly involved in the creation of the messages and documents.
 
 ## Common Information Model (CIM)
 
@@ -26,7 +29,7 @@ The common information model provides its schema as XSD files, so all CIM docume
 While some outbound-connectors support other formats, keep in mind that the CIM is built via XSD files.
 Therefore, only compatibility with the XSD files can be guaranteed.
 If an outbound-connector is configured to use any other format than XML, it might emit documents that look like CIM documents, but in another format.
-But the documents might violate the names that are defined in the CIM and can break existing integrations.
+But the documents might violate the names and structures that are defined in the CIM and can break existing integrations.
 
 There are three types of CIM documents currently supported by EDDIE:
 

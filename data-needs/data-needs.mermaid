@@ -1,12 +1,14 @@
 classDiagram
     class DataNeed {
         <<abstract>>
+        +boolean enabled
         +String type
         +String id
         +String name
         +String description
         +String purpose
         +URL policyLink
+        +RegionConnectorFilter regionConnectorFilter
     }
 
     class AccountingPointDataNeed
@@ -23,7 +25,7 @@ classDiagram
     }
 
     class AiidaDataNeed {
-        +String transmissionSchedule
+        +CronExpression transmissionSchedule
         +Set~AiidaSchema~ schemas
         +AiidaAsset asset
         +Set~String~ dataTags
