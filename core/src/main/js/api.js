@@ -50,3 +50,11 @@ export function getSupportedRegionConnectors(dataNeedId) {
 export function getRegionConnectorMetadata() {
   return fetchJson("/api/region-connectors-metadata");
 }
+
+/**
+ * Fetches all the metadata for all permission administrators.
+ * @returns {Promise<PermissionAdministrator[]>} - Metadata for all permission administrators.
+ */
+export function getPermissionAdministrators() {
+  return fetchJson("/european-masterdata/api/permission-administrators");
+}

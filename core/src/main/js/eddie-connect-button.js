@@ -21,9 +21,9 @@ import { setBasePath } from "https://cdn.jsdelivr.net/npm/@shoelace-style/shoela
 import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
 
-import PERMISSION_ADMINISTRATORS from "../../../../european-masterdata/src/main/resources/permission-administrators.json";
 import {
   getDataNeedAttributes,
+  getPermissionAdministrators,
   getRegionConnectorMetadata,
   getSupportedRegionConnectors,
 } from "./api.js";
@@ -32,16 +32,27 @@ import { dataNeedDescription } from "./data-need-util.js";
 
 setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn");
 
-/**
- * All countries with at least one permission administrator as lowercase ISO 3166-1 alpha-2 country code.
- * @type {Set<string>}
- */
-const COUNTRIES = new Set(PERMISSION_ADMINISTRATORS.map((pa) => pa.country));
-
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
 const CORE_URL =
   import.meta.env.VITE_CORE_URL ?? import.meta.url.split("/lib/")[0];
+
+const SPECIAL_PERMISSION_ADMINISTRATORS = {
+  AIIDA: {
+    country: "aiida",
+    company: "AIIDA",
+    name: "AIIDA",
+    companyId: "aiida",
+    regionConnector: "aiida",
+  },
+  SIM: {
+    country: "sim",
+    company: "Simulator",
+    name: "Simulator",
+    companyId: "sim",
+    regionConnector: "sim",
+  },
+};
 
 /**
  * Maps events dispatched by the button to the view they should navigate to.
@@ -75,18 +86,6 @@ const dialogCloseEvent = new Event("eddie-dialog-close", {
   bubbles: true,
   composed: true,
 });
-
-/**
- * Returns the country codes of all countries that are supported by at least one enabled region connector.
- * @param regionConnectors {RegionConnectorMetadata[]} - The region connectors to filter.
- * @returns {string[]} - The country codes of all enabled region connectors in lowercase.
- */
-function getEnabledCountries(regionConnectors) {
-  return [...new Set(regionConnectors.flatMap((rc) => rc.countryCodes))]
-    .map((countryCode) => countryCode.toLowerCase())
-    .filter((country) => COUNTRIES.has(country))
-    .sort((a, b) => a.localeCompare(b));
-}
 
 class EddieConnectButton extends LitElement {
   static properties = {
@@ -170,9 +169,10 @@ class EddieConnectButton extends LitElement {
 
     /**
      * Undefined until the configuration has been validated.
+     * During configuration, this will be undefined.
      * If the configuration is valid, this will be set to true.
      * If the configuration is invalid, this will be set to false.
-     * @type {boolean}
+     * @type {boolean | undefined}
      * @private
      */
     this._isValidConfiguration = undefined;
@@ -234,13 +234,6 @@ class EddieConnectButton extends LitElement {
     this._dataNeedAttributes = undefined;
 
     /**
-     * If data need is disabled.
-     * @type {boolean}
-     * @private
-     */
-    this._disabled = false;
-
-    /**
      * Should only be updated through {@link addViewChangeHandlers}.
      * @type {string}
      * @private
@@ -251,18 +244,18 @@ class EddieConnectButton extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    this.configure()
-      .then(() => {
-        this._isValidConfiguration = true;
+    this.addRequestStatusHandlers();
+    this.addViewChangeHandlers();
 
-        this.addRequestStatusHandlers();
-        this.addViewChangeHandlers();
-      })
-      .catch((error) => {
-        this._isValidConfiguration = false;
+    this.reset(); // Initial configuration
+  }
 
-        console.error(error);
-      });
+  updated(_changedProperties) {
+    super.updated(_changedProperties);
+
+    if (_changedProperties.has("dataNeedId")) {
+      this.reset();
+    }
   }
 
   openDialog() {
@@ -274,7 +267,23 @@ class EddieConnectButton extends LitElement {
   }
 
   reset() {
-    this.replaceWith(this.cloneNode());
+    // Set configuration status to loading
+    this._isValidConfiguration = undefined;
+
+    // Reset properties not set during configuration
+    this._activeView = "dn";
+    this._selectedCountry = undefined;
+    this._selectedPermissionAdministrator = undefined;
+    this._filteredPermissionAdministrators = [];
+
+    this.configure()
+      .then(() => {
+        this._isValidConfiguration = true;
+      })
+      .catch((error) => {
+        this._isValidConfiguration = false;
+        console.error(error);
+      });
   }
 
   async getRegionConnectorElement() {
@@ -332,6 +341,23 @@ class EddieConnectButton extends LitElement {
   }
 
   /**
+   * Returns the country codes of all countries that are supported by at least one enabled region connector.
+   * @returns {string[]} - The country codes of all enabled region connectors in lowercase.
+   */
+  getEnabledCountries() {
+    return [
+      ...new Set(this._enabledConnectors.flatMap((rc) => rc.countryCodes)),
+    ]
+      .map((countryCode) => countryCode.toLowerCase())
+      .filter((country) =>
+        new Set(this._permissionAdministrators.map((pa) => pa.country)).has(
+          country
+        )
+      )
+      .sort((a, b) => a.localeCompare(b));
+  }
+
+  /**
    *
    * @param {string} companyId The company ID of the permission administrator.
    * @returns {PermissionAdministrator | undefined} The first permission administrator with the given company ID or undefined if none is found.
@@ -364,6 +390,10 @@ class EddieConnectButton extends LitElement {
     this.dispatchEvent(new Event("eddie-view-region-connector"));
   }
 
+  /**
+   * Configures the dialog to select the given permission administrator.
+   * @param permissionAdministrator {PermissionAdministrator}
+   */
   selectPermissionAdministrator(permissionAdministrator) {
     this.selectCountry(permissionAdministrator?.country);
     this._selectedPermissionAdministrator = permissionAdministrator;
@@ -386,10 +416,8 @@ class EddieConnectButton extends LitElement {
     this._selectedCountry = country;
 
     if (country === "sim") {
-      this._selectedPermissionAdministrator = {
-        name: "Simulator",
-        regionConnector: "sim",
-      };
+      this._selectedPermissionAdministrator =
+        SPECIAL_PERMISSION_ADMINISTRATORS.SIM;
     }
 
     if (!country) {
@@ -424,12 +452,11 @@ class EddieConnectButton extends LitElement {
     this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
 
     if (!this._dataNeedAttributes) {
-      throw new Error(`Invalid Data Need ${this.dataNeedId}`);
+      throw new Error(`No data need is available for id ${this.dataNeedId}`);
     }
 
     if (!this._dataNeedAttributes.enabled) {
-      this._disabled = true;
-      return;
+      return; // No more configuration needed
     }
 
     this._enabledConnectors = await getRegionConnectorMetadata();
@@ -437,8 +464,6 @@ class EddieConnectButton extends LitElement {
     if (this._enabledConnectors.length === 0) {
       throw new Error("No enabled region connectors.");
     }
-
-    this._enabledCountries = getEnabledCountries(this._enabledConnectors);
 
     this._supportedConnectors = await getSupportedRegionConnectors(
       this.dataNeedId
@@ -448,9 +473,12 @@ class EddieConnectButton extends LitElement {
       throw new Error("No region connector supports the data need.");
     }
 
-    this._supportedPermissionAdministrators = PERMISSION_ADMINISTRATORS.filter(
-      (pa) => this._supportedConnectors.includes(pa.regionConnector)
-    );
+    this._permissionAdministrators = await getPermissionAdministrators();
+
+    this._supportedPermissionAdministrators =
+      this._permissionAdministrators.filter((pa) =>
+        this._supportedConnectors.includes(pa.regionConnector)
+      );
 
     this._supportedCountries = new Set(
       this._supportedPermissionAdministrators.map((pa) => pa.country)
@@ -471,7 +499,7 @@ class EddieConnectButton extends LitElement {
     }
 
     if (this.isAiida()) {
-      if (!this._enabledConnectors.some(rc => rc.id === "aiida")) {
+      if (!this._enabledConnectors.some((rc) => rc.id === "aiida")) {
         throw new Error(
           `Data need with id ${this.dataNeedId} is an AIIDA data need, but AIIDA is not enabled.`
         );
@@ -483,11 +511,8 @@ class EddieConnectButton extends LitElement {
         );
       }
 
-      this._selectedPermissionAdministrator = {
-        name: "AIIDA",
-        company: "AIIDA",
-        regionConnector: "aiida",
-      };
+      this._selectedPermissionAdministrator =
+        SPECIAL_PERMISSION_ADMINISTRATORS.AIIDA;
     }
 
     if (
@@ -496,6 +521,8 @@ class EddieConnectButton extends LitElement {
     ) {
       this.loadPermissionAdministratorFromLocalStorage();
     }
+
+    this._enabledCountries = this.getEnabledCountries();
   }
 
   isAiida() {
@@ -576,7 +603,7 @@ class EddieConnectButton extends LitElement {
       `;
     }
 
-    if (this._disabled) {
+    if (!this._dataNeedAttributes.enabled) {
       return html`
         <button class="eddie-connect-button" disabled>
           ${unsafeSVG(buttonIcon)}
