@@ -247,7 +247,14 @@ class EddieConnectButton extends LitElement {
     this.addRequestStatusHandlers();
     this.addViewChangeHandlers();
 
-    this.reset(); // Initial configuration
+    // Configure fields that do not depend on public properties
+    (async () => {
+      this._enabledConnectors = await getRegionConnectorMetadata();
+      this._permissionAdministrators = await getPermissionAdministrators();
+    })().then(() => {
+      this._enabledCountries = this.getEnabledCountries();
+      this.reset(); // Start initial configuration
+    });
   }
 
   updated(_changedProperties) {
@@ -461,8 +468,6 @@ class EddieConnectButton extends LitElement {
       return; // No more configuration needed
     }
 
-    this._enabledConnectors = await getRegionConnectorMetadata();
-
     if (this._enabledConnectors.length === 0) {
       throw new Error("No enabled region connectors.");
     }
@@ -474,8 +479,6 @@ class EddieConnectButton extends LitElement {
     if (this._supportedConnectors.length === 0) {
       throw new Error("No region connector supports the data need.");
     }
-
-    this._permissionAdministrators = await getPermissionAdministrators();
 
     this._supportedPermissionAdministrators =
       this._permissionAdministrators.filter((pa) =>
@@ -523,8 +526,6 @@ class EddieConnectButton extends LitElement {
     ) {
       this.loadPermissionAdministratorFromLocalStorage();
     }
-
-    this._enabledCountries = this.getEnabledCountries();
   }
 
   isAiida() {
