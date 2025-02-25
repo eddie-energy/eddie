@@ -607,21 +607,21 @@ function openAddDataSourceDialog() {
 
 function updateDataSourceFields(type) {
   const dataSourceFields = document.getElementById("data-source-fields");
-  const commonFields = /* HTML */ ` <sl-input
-      name="name"
-      label="Name"
-      required
-    ></sl-input>
-    <sl-checkbox name="enabled" checked>Enabled</sl-checkbox>`;
+  const commonFields = /* HTML */ `
+    <sl-input name="name" label="Name" required></sl-input>
+    <br />
+    <sl-checkbox name="enabled" checked>Enabled</sl-checkbox>
+    <br />
+  `;
 
   let dataTypeFields = "";
   if (type === "SIMULATION") {
-    dataTypeFields += `<sl-input name="simulationPeriod" label="Simulation Period" type="number" required></sl-input>`;
+    dataTypeFields += `<br /><sl-input name="simulationPeriod" label="Simulation Period" type="number" required></sl-input>`;
   } else {
-    dataTypeFields += `<sl-input name="mqttTopic" label="MQTT Topic" required></sl-input>`;
+    dataTypeFields += `<br /><sl-input name="mqttTopic" label="MQTT Topic" required></sl-input>`;
 
     if (type === "MICRO_TELEINFO") {
-      dataTypeFields += `<sl-input name="meteringID" label="MeteringID" required></sl-input>`;
+      dataTypeFields += `<br /><sl-input name="meteringID" label="MeteringID" required></sl-input>`;
     }
   }
 
@@ -665,10 +665,12 @@ function openEditDataSourceDialog(dataSourceId) {
               value="${dataSource.name}"
               required
             ></sl-input>
-            <sl-checkbox name="enabled" ${dataSource.enabled ? "checked" : ""}
-              >Enabled</sl-checkbox
-            >
-
+            <br />
+            <sl-checkbox name="enabled" ${dataSource.enabled ? "checked" : ""}>
+              Enabled
+            </sl-checkbox>
+            <br />
+            <br />
             <sl-select id="asset-select" name="asset" label="Asset" required>
               ${assets
                 .map(
@@ -677,7 +679,7 @@ function openEditDataSourceDialog(dataSourceId) {
                 )
                 .join("")}
             </sl-select>
-
+            <br />
             <sl-select
               id="type-select"
               name="dataSourceType"
@@ -695,6 +697,7 @@ function openEditDataSourceDialog(dataSourceId) {
 
           if (dataSource.dataSourceType === "SIMULATION") {
             editFields += /* HTML */ `
+              <br />
               <sl-input
                 name="simulationPeriod"
                 label="Simulation Period"
@@ -705,24 +708,28 @@ function openEditDataSourceDialog(dataSourceId) {
             `;
           } else {
             editFields += /* HTML */ `
+              <br />
               <sl-input
                 name="mqttServerUri"
                 label="MQTT Server URI"
                 value="${dataSource.mqttServerUri}"
                 required
               ></sl-input>
+              <br />
               <sl-input
                 name="mqttTopic"
                 label="MQTT Topic"
                 value="${dataSource.mqttSubscribeTopic}"
                 required
               ></sl-input>
+              <br />
               <sl-input
                 name="mqttUsername"
                 label="MQTT Username"
                 value="${dataSource.mqttUsername}"
                 required
               ></sl-input>
+              <br />
               <sl-input
                 name="mqttPassword"
                 label="MQTT Password"
@@ -733,6 +740,7 @@ function openEditDataSourceDialog(dataSourceId) {
 
             if (dataSource.dataSourceType === "TELEINFO") {
               editFields += /* HTML */ `
+                <br />
                 <sl-input
                   name="meteringId"
                   label="Metering ID"

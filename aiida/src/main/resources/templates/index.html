@@ -121,27 +121,33 @@
     <div id="expired-permissions" class="permissions"></div>
 
     <h2>Data Sources</h2>
-    <sl-button variant="primary" onclick="openAddDataSourceDialog()">Add Data Source</sl-button>
+    <sl-button variant="primary" onclick="window.openAddDataSourceDialog()">Add Data Source</sl-button>
     <sl-dialog id="add-data-source-dialog" label="Add Data Source">
       <form id="add-data-source-form">
         <sl-select id="asset-type" label="Asset Type"></sl-select>
+        <br />
         <sl-select id="data-source-type" name="dataSourceType" label="Data Source Type" required>
         </sl-select>
+        <br />
         <div id="data-source-fields"></div>
-        <div style="margin-top: 1rem; text-align: right;">
-          <sl-button type="submit" variant="primary">Save</sl-button>
-          <sl-button type="button" variant="neutral" onclick="closeAddDataSourceDialog()">Cancel</sl-button>
-        </div>
       </form>
+
+      <div slot="footer">
+        <sl-button type="submit" variant="primary" form="add-data-source-form">Save</sl-button>
+        <sl-button type="button" variant="neutral" onclick="closeAddDataSourceDialog()">Cancel</sl-button>
+      </div>
     </sl-dialog>
     <sl-dialog id="edit-data-source-dialog" label="Edit Data Source">
       <form id="edit-data-source-form">
         <div id="edit-data-source-fields"></div>
-        <sl-button type="submit" variant="primary">Save Changes</sl-button>
-        <sl-button type="button" variant="neutral" onclick="closeEditDataSourceDialog()">Cancel</sl-button>
       </form>
+      <div slot="footer">
+        <sl-button type="submit" variant="primary" form="edit-data-source-form">Save Changes</sl-button>
+        <sl-button type="button" variant="neutral" onclick="window.closeEditDataSourceDialog()">Cancel</sl-button>
+      </div>
     </sl-dialog>
-    <div id="data-source-list" class="datasources"></div>
+
+    <div id="data-source-list" class="data-sources"></div>
 
     <script th:src="@{/js/main.js}" type="module"></script>
   </body>
