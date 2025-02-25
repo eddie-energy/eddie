@@ -98,7 +98,7 @@ permissionDialog.addEventListener("sl-request-close", (event) => {
 
 function getCsrfHeader() {
   return document
-    .querySelector('"meta[name=\"csrf-header\"]"
+    .querySelector('meta[name="csrf-header"]')
       .getAttribute("content");
 }
 
@@ -410,8 +410,9 @@ function renderDataSources() {
       dataSources.forEach((dataSource) => {
         const element = document.createElement("div");
         const generalDetails = /* HTML */ ` <p>
-            <strong>Asset:</strong> ${dataSource.asset}
+            <strong>ID:</strong> ${dataSource.id}
           </p>
+          <p><strong>Asset:</strong> ${dataSource.asset}</p>
           <p><strong>Type:</strong> ${dataSource.dataSourceType}</p>`;
 
         let dataSourceTypeDetails =
@@ -433,7 +434,9 @@ function renderDataSources() {
                   <strong>MQTT Username:</strong> ${dataSource.mqttUsername}
                 </p>
                 <p>
-                  <strong>MQTT Password:</strong> ${dataSource.mqttPassword}
+                  <strong>MQTT Password:</strong>
+                  <span id="mqtt-password" style="visibility: hidden">${dataSource.mqttPassword}</span>
+                  <sl-icon id="toggle-mqtt-password" style="cursor: pointer" name="eye"></sl-icon>
                 </p>
               `;
 
@@ -464,6 +467,19 @@ function renderDataSources() {
         `;
 
         dataSourceList.appendChild(element);
+      });
+
+      const passwordSpan = document.getElementById("mqtt-password");
+      const toggleIcon = document.getElementById("toggle-mqtt-password");
+
+      toggleIcon.addEventListener("click", () => {
+        if (passwordSpan.style.visibility === "hidden") {
+          passwordSpan.style.visibility = "visible";
+          toggleIcon.setAttribute("name", "eye-slash");
+        } else {
+          passwordSpan.style.visibility = "hidden";
+          toggleIcon.setAttribute("name", "eye");
+        }
       });
 
       document.querySelectorAll(".delete-button").forEach((button) => {
