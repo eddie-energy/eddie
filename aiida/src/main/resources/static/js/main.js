@@ -74,7 +74,7 @@ const DATASOURCES_BASE_URL = "/datasources";
 
 const permissionDialog = document.getElementById("permission-dialog");
 const permissionDialogContent = document.getElementById(
-  "permission-dialog-content",
+  "permission-dialog-content"
 );
 
 const userDrawer = document.getElementById("user-drawer");
@@ -99,7 +99,7 @@ permissionDialog.addEventListener("sl-request-close", (event) => {
 function getCsrfHeader() {
   return document
     .querySelector('meta[name="csrf-header"]')
-      .getAttribute("content");
+    .getAttribute("content");
 }
 
 function getCsrfToken() {
@@ -146,7 +146,7 @@ aiidaCodeInput.addEventListener("sl-input", () => {
   } catch (error) {
     console.debug(error);
     aiidaCodeInput.setCustomValidity(
-      "Please confirm you entered a valid AIIDA code",
+      "Please confirm you entered a valid AIIDA code"
     );
   }
 });
@@ -266,7 +266,7 @@ function addPermission() {
       if (!response.ok) {
         return response.json().then((json) => {
           throw new Error(
-            `Failed to add permission: ${json.errors[0].message}`,
+            `Failed to add permission: ${json.errors[0].message}`
           );
         });
       }
