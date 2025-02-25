@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.cds.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.cds.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.cds.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.cds.exceptions.UnknownPermissionAdministratorException;
 import energy.eddie.regionconnector.cds.services.PermissionRequestCreationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,14 +18,14 @@ import org.springframework.web.util.UriTemplate;
 import java.net.URI;
 
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = {PermissionRequestController.class})
-@Import(PermissionRequestController.class)
+@Import({PermissionRequestController.class, PermissionRequestControllerAdvice.class})
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class PermissionRequestControllerTest {
     @Autowired
@@ -52,5 +53,21 @@ class PermissionRequestControllerTest {
                // Then
                .andExpect(header().string("Location", is(expectedLocationHeader)))
                .andExpect(content().json("{\"permissionId\":  \"pid\", \"redirectUri\": \"urn:example\"}"));
+    }
+
+    @Test
+    void testCreatePermissionRequest_withUnknownCdsServer_returnsBadRequest() throws Exception {
+        // Given
+        var pr = new PermissionRequestForCreation(1L, "dnid", "cid");
+        when(creationService.createPermissionRequest(pr))
+                .thenThrow(new UnknownPermissionAdministratorException(1L));
+
+        // When
+        mockMvc.perform(post("/permission-request")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(pr)))
+               // Then
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.errors[0].message", equalTo("Unknown permission administrator: 1")));
     }
 }
