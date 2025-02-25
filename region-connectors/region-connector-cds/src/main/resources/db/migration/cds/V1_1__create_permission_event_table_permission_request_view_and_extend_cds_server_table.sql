@@ -1,7 +1,7 @@
 ALTER TABLE cds.cds_server
     ADD COLUMN pushed_authorization_request_endpoint varchar(255) NOT NULL DEFAULT 'https://s-4371c8d6.cds.utilityapi.com/oauth/par',
-    ADD COLUMN authorization_endpoint varchar(255) NOT NULL DEFAULT 'https://s-4371c8d6.cds.utilityapi.com/oauth/authorization',
-    ADD COLUMN token_endpoint varchar(255) NOT NULL DEFAULT 'https://s-4371c8d6.cds.utilityapi.com/oauth/token';
+    ADD COLUMN authorization_endpoint                varchar(255) NOT NULL DEFAULT 'https://s-4371c8d6.cds.utilityapi.com/oauth/authorization',
+    ADD COLUMN token_endpoint                        varchar(255) NOT NULL DEFAULT 'https://s-4371c8d6.cds.utilityapi.com/oauth/token';
 
 ALTER TABLE cds.cds_server
     ALTER COLUMN pushed_authorization_request_endpoint DROP DEFAULT,
@@ -18,20 +18,21 @@ CREATE TABLE cds.oauth_credentials
 
 CREATE TABLE cds.permission_event
 (
-    id              bigserial PRIMARY KEY,
-    dtype           varchar(31) NOT NULL,
-    event_created   timestamp(6) WITH TIME ZONE,
-    permission_id   varchar(36),
-    status          text,
-    connection_id   text,
-    data_need_id    varchar(36),
-    data_start      date,
-    data_end        date,
-    granularity     text,
-    cds_server_id   bigint,
-    errors          text,
-    auth_expires_at timestamp(6) WITH TIME ZONE,
-    state           varchar(255)
+    id                 bigserial PRIMARY KEY,
+    dtype              varchar(31) NOT NULL,
+    event_created      timestamp(6) WITH TIME ZONE,
+    permission_id      varchar(36),
+    status             text,
+    connection_id      text,
+    data_need_id       varchar(36),
+    data_start         date,
+    data_end           date,
+    granularity        text,
+    cds_server_id      bigint,
+    errors             text,
+    auth_expires_at    timestamp(6) WITH TIME ZONE,
+    state              varchar(255),
+    oauth_request_type varchar(255)
 );
 
 CREATE FUNCTION cds.coalesce2(anyelement, anyelement) RETURNS anyelement

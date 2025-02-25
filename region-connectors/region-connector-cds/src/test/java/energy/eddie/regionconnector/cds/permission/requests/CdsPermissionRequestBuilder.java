@@ -14,6 +14,7 @@ public class CdsPermissionRequestBuilder {
     private ZonedDateTime created;
     private LocalDate dataStart;
     private LocalDate dataEnd;
+    private String state;
 
     public CdsPermissionRequestBuilder setPermissionId(String permissionId) {
         this.permissionId = permissionId;
@@ -55,6 +56,11 @@ public class CdsPermissionRequestBuilder {
         return this;
     }
 
+    public CdsPermissionRequestBuilder setState(String state) {
+        this.state = state;
+        return this;
+    }
+
     public CdsPermissionRequest build() {
         return new CdsPermissionRequest(permissionId,
                                         connectionId,
@@ -63,6 +69,7 @@ public class CdsPermissionRequestBuilder {
                                         cdsServer,
                                         created,
                                         dataStart,
-                                        dataEnd);
+                                        dataEnd,
+                                        state);
     }
 }

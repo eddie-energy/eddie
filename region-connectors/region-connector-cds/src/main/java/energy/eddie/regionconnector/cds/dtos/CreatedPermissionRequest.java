@@ -4,5 +4,5 @@ import jakarta.annotation.Nullable;
 
 import java.net.URI;
 
-public record CreatedPermissionRequest(String permissionId, @Nullable URI urn) {
+public record CreatedPermissionRequest(String permissionId, @Nullable URI redirectUri) {
 }

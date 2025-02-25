@@ -28,6 +28,8 @@ public class CdsPermissionRequest implements PermissionRequest {
     private final LocalDate dataStart;
     @Column(name = "data_end")
     private final LocalDate dataEnd;
+    @Column(name = "state")
+    private final String state;
 
 
     @SuppressWarnings("java:S107")
@@ -39,7 +41,8 @@ public class CdsPermissionRequest implements PermissionRequest {
             long cdsServer,
             ZonedDateTime created,
             LocalDate dataStart,
-            LocalDate dataEnd
+            LocalDate dataEnd,
+            String state
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -49,6 +52,7 @@ public class CdsPermissionRequest implements PermissionRequest {
         this.dataStart = dataStart;
         this.dataEnd = dataEnd;
         dataSourceInformation = new CdsDataSourceInformation(cdsServer);
+        this.state = state;
     }
 
     @SuppressWarnings("NullAway")
@@ -61,6 +65,7 @@ public class CdsPermissionRequest implements PermissionRequest {
         created = null;
         dataStart = null;
         dataEnd = null;
+        state = null;
     }
 
     @Override

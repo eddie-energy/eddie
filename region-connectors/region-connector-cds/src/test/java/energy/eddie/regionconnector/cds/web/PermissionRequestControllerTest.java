@@ -51,6 +51,6 @@ class PermissionRequestControllerTest {
                                 .content(objectMapper.writeValueAsString(pr)))
                // Then
                .andExpect(header().string("Location", is(expectedLocationHeader)))
-               .andExpect(content().json("{\"permissionId\":  \"pid\", \"urn\": \"urn:example\"}"));
+               .andExpect(content().json("{\"permissionId\":  \"pid\", \"redirectUri\": \"urn:example\"}"));
     }
 }

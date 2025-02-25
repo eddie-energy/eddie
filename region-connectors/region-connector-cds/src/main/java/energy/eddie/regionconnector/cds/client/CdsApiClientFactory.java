@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -92,8 +93,8 @@ public class CdsApiClientFactory {
                                          creds.getClientId(),
                                          creds.getClientSecret(),
                                          // TODO: Get actual token endpoint and authorization endpoint
-                                         null,
-                                         null,
+                                         UriComponentsBuilder.fromUriString(cdsBaseUri).pathSegment("oauth", "token").build().toString(),
+                                         UriComponentsBuilder.fromUriString(cdsBaseUri).pathSegment("oauth", "authorize").build().toString(),
                                          oauthMetadata.getPushedAuthorizationRequestEndpoint().toString()
                                  )
                             )

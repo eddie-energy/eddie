@@ -9,8 +9,8 @@ import energy.eddie.regionconnector.cds.persistence.OAuthCredentialsRepository;
 import energy.eddie.regionconnector.cds.services.oauth.authorization.AcceptedResult;
 import energy.eddie.regionconnector.cds.services.oauth.authorization.ErrorResult;
 import energy.eddie.regionconnector.cds.services.oauth.authorization.UnauthorizedResult;
-import energy.eddie.regionconnector.cds.services.oauth.code.Credentials;
-import energy.eddie.regionconnector.cds.services.oauth.code.InvalidCodeResult;
+import energy.eddie.regionconnector.cds.services.oauth.token.Credentials;
+import energy.eddie.regionconnector.cds.services.oauth.token.InvalidTokenResult;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -252,7 +252,7 @@ class CallbackServiceTest {
         when(cdsServerRepository.getReferenceById(1L))
                 .thenReturn(cdsServer);
         when(oAuthService.retrieveAccessToken("code", cdsServer))
-                .thenReturn(new InvalidCodeResult());
+                .thenReturn(new InvalidTokenResult());
         var callback = new Callback("code", null, "state");
 
         // When

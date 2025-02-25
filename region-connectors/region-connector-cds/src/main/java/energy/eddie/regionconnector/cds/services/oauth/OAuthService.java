@@ -7,13 +7,14 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
-import energy.eddie.regionconnector.cds.services.oauth.code.CodeResult;
-import energy.eddie.regionconnector.cds.services.oauth.code.Credentials;
-import energy.eddie.regionconnector.cds.services.oauth.code.InvalidCodeResult;
+import energy.eddie.regionconnector.cds.services.oauth.code.AuthorizationCodeResult;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.ParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.SuccessfulParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.UnableToSendPar;
+import energy.eddie.regionconnector.cds.services.oauth.token.Credentials;
+import energy.eddie.regionconnector.cds.services.oauth.token.InvalidTokenResult;
+import energy.eddie.regionconnector.cds.services.oauth.token.TokenResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -68,7 +69,22 @@ public class OAuthService {
         return new SuccessfulParResponse(redirectUri, expiresAt, state.getValue());
     }
 
-    public CodeResult retrieveAccessToken(String authCode, CdsServer cdsServer) {
+    public AuthorizationCodeResult createAuthorizationUri(CdsServer cdsServer, List<String> scopes) {
+        var clientId = new ClientID(cdsServer.clientId());
+        var state = new State();
+        var authUri = cdsServer.authorizationEndpoint();
+        var request = new AuthorizationRequest.Builder(
+                new ResponseType(ResponseType.Value.CODE), clientId)
+                .redirectionURI(config.redirectUrl())
+                .state(state)
+                .scope(Scope.parse(scopes))
+                .endpointURI(authUri)
+                .build();
+
+        return new AuthorizationCodeResult(request.toURI(), state.getValue());
+    }
+
+    public TokenResult retrieveAccessToken(String authCode, CdsServer cdsServer) {
         var code = new AuthorizationCode(authCode);
         var callback = config.redirectUrl();
         var codeGrant = new AuthorizationCodeGrant(code, callback);
@@ -86,13 +102,13 @@ public class OAuthService {
             response = TokenResponse.parse(request.toHTTPRequest().send());
         } catch (Exception e) {
             LOGGER.warn("Could not parse code response", e);
-            return new InvalidCodeResult();
+            return new InvalidTokenResult();
         }
 
         if (!response.indicatesSuccess()) {
             var errorResponse = response.toErrorResponse();
             LOGGER.info("Could not retrieve access token {}", errorResponse.getErrorObject());
-            return new InvalidCodeResult();
+            return new InvalidTokenResult();
         }
 
         var successResponse = response.toSuccessResponse();

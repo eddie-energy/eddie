@@ -10,8 +10,8 @@ import energy.eddie.regionconnector.cds.services.oauth.authorization.AcceptedRes
 import energy.eddie.regionconnector.cds.services.oauth.authorization.AuthorizationResult;
 import energy.eddie.regionconnector.cds.services.oauth.authorization.ErrorResult;
 import energy.eddie.regionconnector.cds.services.oauth.authorization.UnauthorizedResult;
-import energy.eddie.regionconnector.cds.services.oauth.code.Credentials;
-import energy.eddie.regionconnector.cds.services.oauth.code.InvalidCodeResult;
+import energy.eddie.regionconnector.cds.services.oauth.token.Credentials;
+import energy.eddie.regionconnector.cds.services.oauth.token.InvalidTokenResult;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.slf4j.Logger;
@@ -60,34 +60,33 @@ public class CallbackService {
             LOGGER.info("Operation cannot be done for permission request {} in state {}", permissionId, pr.status());
             return new ErrorResult(permissionId, "Wrong status of permission request " + pr.status());
         }
-        var error = callback.getError();
-        if (error.isPresent()) {
-            var err = error.get();
-            LOGGER.info("Permission request {} had error present {}", permissionId, err);
-            if (err.equals("access_denied")) {
+        var error = callback.error();
+        if (error != null) {
+            LOGGER.info("Permission request {} had error present {}", permissionId, error);
+            if (error.equals("access_denied")) {
                 outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REJECTED));
                 return new UnauthorizedResult(permissionId, PermissionProcessStatus.REJECTED);
             } else {
                 outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
-                return new ErrorResult(permissionId, err);
+                return new ErrorResult(permissionId, error);
             }
         }
-        var code = callback.getCode();
-        if (code.isEmpty()) {
+        var code = callback.code();
+        if (code == null) {
             LOGGER.info("Permission request {} has no code", permissionId);
             outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
             return new ErrorResult(permissionId, "No code provided");
         }
 
         var cdsServerId = pr.dataSourceInformation().cdsServerId();
-        var result = oAuthService.retrieveAccessToken(code.get(), cdsServerRepository.getReferenceById(cdsServerId));
+        var result = oAuthService.retrieveAccessToken(code, cdsServerRepository.getReferenceById(cdsServerId));
         return switch (result) {
             case Credentials(String refreshToken, String accessToken, ZonedDateTime expiresAt) -> {
                 credentialsRepository.save(new OAuthCredentials(permissionId, refreshToken, accessToken, expiresAt));
                 outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
                 yield new AcceptedResult(permissionId, pr.dataNeedId());
             }
-            case InvalidCodeResult ignored -> {
+            case InvalidTokenResult ignored -> {
                 outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
                 yield new ErrorResult(permissionId, "Could not retrieve access token");
             }

@@ -4,11 +4,11 @@ import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
-import energy.eddie.regionconnector.cds.services.oauth.code.Credentials;
-import energy.eddie.regionconnector.cds.services.oauth.code.InvalidCodeResult;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.SuccessfulParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.UnableToSendPar;
+import energy.eddie.regionconnector.cds.services.oauth.token.Credentials;
+import energy.eddie.regionconnector.cds.services.oauth.token.InvalidTokenResult;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -132,7 +132,7 @@ class OAuthServiceTest {
         var res = oAuthService.retrieveAccessToken("code", cdsServer);
 
         // Then
-        assertInstanceOf(InvalidCodeResult.class, res);
+        assertInstanceOf(InvalidTokenResult.class, res);
     }
 
     @Test
@@ -147,7 +147,7 @@ class OAuthServiceTest {
         var res = oAuthService.retrieveAccessToken("code", cdsServer);
 
         // Then
-        assertInstanceOf(InvalidCodeResult.class, res);
+        assertInstanceOf(InvalidTokenResult.class, res);
     }
 
     @Test
@@ -178,5 +178,18 @@ class OAuthServiceTest {
                 () -> assertEquals("refreshToken", creds.refreshToken()),
                 () -> assertThat(creds.expiresAt()).isCloseTo(expiresAt, within(5, ChronoUnit.SECONDS))
         );
+    }
+
+    @Test
+    void testCreateAuthorizationUri_returnsCorrectUri() {
+        // Given
+        var scopes = List.of(Scopes.USAGE_DETAILED_SCOPE);
+
+        // When
+        var res = oAuthService.createAuthorizationUri(cdsServer, scopes);
+
+        // Then
+        var expected = "http://localhost?response_type=code&redirect_uri=http%3A%2F%2Flocalhost&state=" + res.state() + "&client_id=client-id&scope=cds_usage_detailed";
+        assertEquals(expected, res.redirectUri().toString());
     }
 }

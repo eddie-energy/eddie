@@ -4,32 +4,25 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.cds.exceptions.UnknownPermissionAdministratorException;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
 import energy.eddie.regionconnector.cds.permission.events.CreatedEvent;
 import energy.eddie.regionconnector.cds.permission.events.MalformedEvent;
-import energy.eddie.regionconnector.cds.permission.events.SentToPaEvent;
 import energy.eddie.regionconnector.cds.permission.events.ValidatedEvent;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
-import energy.eddie.regionconnector.cds.services.oauth.OAuthService;
+import energy.eddie.regionconnector.cds.services.oauth.AuthorizationService;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
-import energy.eddie.regionconnector.cds.services.oauth.par.ParResponse;
-import energy.eddie.regionconnector.cds.services.oauth.par.SuccessfulParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.UnableToSendPar;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -56,7 +49,7 @@ class PermissionRequestCreationServiceTest {
     @Mock
     private DataNeedCalculationService<DataNeed> calculationService;
     @Mock
-    private OAuthService oAuthService;
+    private AuthorizationService authorizationService;
     @InjectMocks
     private PermissionRequestCreationService service;
     @Captor
@@ -151,8 +144,8 @@ class PermissionRequestCreationServiceTest {
                                                                       timeframe,
                                                                       timeframe));
         var urn = URI.create("urn:example:bwc4JK-ESC0w8acc191e-Y1LTC2");
-        when(oAuthService.pushAuthorization(cdsServer, List.of(Scopes.USAGE_DETAILED_SCOPE)))
-                .thenReturn(new SuccessfulParResponse(urn, today.atStartOfDay(ZoneOffset.UTC), "state"));
+        when(authorizationService.createOAuthRequest(eq(cdsServer), anyString()))
+                .thenReturn(urn);
         var creation = new PermissionRequestForCreation(0L, "dnid", "cid");
 
         // When
@@ -160,70 +153,16 @@ class PermissionRequestCreationServiceTest {
 
         // Then
         assertAll(
-                () -> assertEquals(urn, res.urn()),
+                () -> assertEquals(urn, res.redirectUri()),
                 () -> assertNotNull(res.permissionId())
         );
-        verify(outbox, times(3)).commit(eventCaptor.capture());
+        verify(outbox, times(2)).commit(eventCaptor.capture());
         var event = assertInstanceOf(ValidatedEvent.class, eventCaptor.getAllValues().get(1));
         assertAll(
                 () -> assertEquals(Granularity.PT15M, event.granularity()),
                 () -> assertEquals(today, event.start()),
                 () -> assertEquals(today, event.end())
         );
-    }
-
-    @Test
-    void testCreatePermissionRequest_withValidRequest_emitsSentToPaEvent() throws DataNeedNotFoundException, UnknownPermissionAdministratorException, UnsupportedDataNeedException {
-        // Given
-        var cdsServer = getCdsServer();
-        when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
-        var today = LocalDate.now(ZoneOffset.UTC);
-        var timeframe = new Timeframe(today, today);
-        when(calculationService.calculate(eq("dnid"), any()))
-                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
-                                                                      timeframe,
-                                                                      timeframe));
-        var urn = URI.create("urn:example:bwc4JK-ESC0w8acc191e-Y1LTC2");
-        var expiresAt = today.atStartOfDay(ZoneOffset.UTC);
-        when(oAuthService.pushAuthorization(cdsServer, List.of(Scopes.USAGE_DETAILED_SCOPE)))
-                .thenReturn(new SuccessfulParResponse(urn, expiresAt, "state"));
-        var creation = new PermissionRequestForCreation(0L, "dnid", "cid");
-
-        // When
-        service.createPermissionRequest(creation);
-
-        // Then
-        verify(outbox, times(3)).commit(eventCaptor.capture());
-        var event = assertInstanceOf(SentToPaEvent.class, eventCaptor.getValue());
-        assertAll(
-                () -> assertEquals(expiresAt, event.authExpiresAt()),
-                () -> assertEquals("state", event.state())
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource
-    void testCreatePermissionRequest_erroneousResponse_emitsUnableToSendEvent(ParResponse resp) throws DataNeedNotFoundException, UnknownPermissionAdministratorException, UnsupportedDataNeedException {
-        // Given
-        var cdsServer = getCdsServer();
-        when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
-        var today = LocalDate.now(ZoneOffset.UTC);
-        var timeframe = new Timeframe(today, today);
-        when(calculationService.calculate(eq("dnid"), any()))
-                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
-                                                                      timeframe,
-                                                                      timeframe));
-        when(oAuthService.pushAuthorization(cdsServer, List.of(Scopes.USAGE_DETAILED_SCOPE)))
-                .thenReturn(resp);
-        var creation = new PermissionRequestForCreation(0L, "dnid", "cid");
-
-        // When
-        service.createPermissionRequest(creation);
-
-        // Then
-        verify(outbox, times(3)).commit(eventCaptor.capture());
-        var event = eventCaptor.getValue();
-        assertEquals(PermissionProcessStatus.UNABLE_TO_SEND, event.status());
     }
 
     private static @NotNull CdsServer getCdsServer() {
