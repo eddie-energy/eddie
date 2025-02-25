@@ -35,6 +35,7 @@ import static org.mockito.Mockito.*;
 class AggregatorTest {
     private static final LogCaptor logCaptor = LogCaptor.forClass(Aggregator.class);
     private static final String DATASOURCE_NAME = "TestDataSource";
+    private static final String dataSourceId = "4211ea05-d4ab-48ff-8613-8f4791a56606";
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
     private Aggregator aggregator;
     private Set<String> wantedCodes;
@@ -57,13 +58,13 @@ class AggregatorTest {
         var instant = Instant.now().plusSeconds(600);
 
         wantedCodes = Set.of("1-0:1.8.0", "1-0:2.8.0");
-        unwanted1 = new AiidaRecord(instant, "Test", List.of(
+        unwanted1 = new AiidaRecord(instant, "Test", dataSourceId, List.of(
                 new AiidaRecordValue("1-0:1.7.0", POSITIVE_ACTIVE_INSTANTANEOUS_POWER, "10", KWH, "10", KWH)));
-        unwanted2 = new AiidaRecord(instant, "Test", List.of(
+        unwanted2 = new AiidaRecord(instant, "Test", dataSourceId, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KW, "10", KW)));
-        unwanted3 = new AiidaRecord(instant, "Test", List.of(
+        unwanted3 = new AiidaRecord(instant, "Test", dataSourceId, List.of(
                 new AiidaRecordValue("1-0:2.8.0", NEGATIVE_ACTIVE_ENERGY, "60", KWH, "10", KWH)));
-        wanted1 = new AiidaRecord(instant, "Test", List.of(
+        wanted1 = new AiidaRecord(instant, "Test", dataSourceId, List.of(
                 new AiidaRecordValue("1-01.8.0", POSITIVE_ACTIVE_ENERGY, "50", KW, "10", KW)));
         expiration = Instant.now().plusSeconds(300_000);
         transmissionSchedule = CronExpression.parse("* * * * * *");
@@ -181,7 +182,7 @@ class AggregatorTest {
         var mockDataSource = mock(AiidaDataSource.class);
         when(mockDataSource.start()).thenReturn(publisher.flux());
 
-        var unwantedBeforeCron = new AiidaRecord(Instant.now().minusSeconds(10), "Test",
+        var unwantedBeforeCron = new AiidaRecord(Instant.now().minusSeconds(10), "Test", dataSourceId,
                                                  List.of(new AiidaRecordValue("1-0:1.8.0",
                                                                               POSITIVE_ACTIVE_ENERGY,
                                                                               "50",
@@ -252,6 +253,7 @@ class AggregatorTest {
 
         var atExpirationTime = new AiidaRecord(expiration,
                                                "Test",
+                                               dataSourceId,
                                                List.of(new AiidaRecordValue("1-0:1.7.0",
                                                                             POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
                                                                             "111",
@@ -260,6 +262,7 @@ class AggregatorTest {
                                                                             KWH)));
         var afterExpirationTime = new AiidaRecord(expiration.plusSeconds(10),
                                                   "Test",
+                                                  dataSourceId,
                                                   List.of(new AiidaRecordValue("1-0:2.7.0",
                                                                                NEGATIVE_ACTIVE_INSTANTANEOUS_POWER,
                                                                                "111",

@@ -47,7 +47,7 @@ public abstract class AiidaDataSource implements AutoCloseable, HealthIndicator 
     public void emitAiidaRecord(String asset, List<AiidaRecordValue> aiidaRecordValues) {
         Instant timestamp = Instant.now();
 
-        var aiidaRecord = new AiidaRecord(timestamp, asset, aiidaRecordValues);
+        var aiidaRecord = new AiidaRecord(timestamp, asset, id, aiidaRecordValues);
         var invalidTags = AiidaRecordValidator.checkInvalidDataTags(aiidaRecord);
 
         if (!invalidTags.isEmpty()) {

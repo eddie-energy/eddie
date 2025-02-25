@@ -154,6 +154,7 @@ public class Aggregator implements AutoCloseable {
         return new AiidaRecord(
                 aiidaRecord.timestamp(),
                 aiidaRecord.asset(),
+                aiidaRecord.dataSourceId(),
                 new ArrayList<>(filteredValues)
         );
     }

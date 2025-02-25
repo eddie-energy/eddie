@@ -17,6 +17,7 @@ public record AiidaRecordStreamingDto(
         @JsonProperty String connectionId,
         @JsonProperty UUID dataNeedId,
         @JsonProperty UUID permissionId,
+        @JsonProperty String dataSourceId,
         @JsonProperty("values")
         List<AiidaRecordValue> aiidaRecordValues
 ) {

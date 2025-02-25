@@ -22,20 +22,24 @@ public class AiidaRecord {
     protected Instant timestamp;
     @JsonProperty
     protected String asset;
+    @JsonProperty
+    protected String dataSourceId;
     @OneToMany(mappedBy = "aiidaRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonProperty("values")
     private List<AiidaRecordValue> aiidaRecordValues;
 
     @SuppressWarnings("NullAway.Init")
-    protected AiidaRecord(Instant timestamp, String asset) {
+    protected AiidaRecord(Instant timestamp, String asset, String dataSourceId) {
         this.timestamp = timestamp;
         this.asset = asset;
+        this.dataSourceId = dataSourceId;
     }
 
-    public AiidaRecord(Instant timestamp, String asset, List<AiidaRecordValue> aiidaRecordValues) {
+    public AiidaRecord(Instant timestamp, String asset, String dataSourceId, List<AiidaRecordValue> aiidaRecordValues) {
         this.timestamp = timestamp;
         this.asset = asset;
         this.aiidaRecordValues = aiidaRecordValues;
+        this.dataSourceId = dataSourceId;
     }
 
     /**
@@ -53,11 +57,19 @@ public class AiidaRecord {
         return aiidaRecordValues;
     }
 
+    public void setAiidaRecordValues(List<AiidaRecordValue> aiidaRecordValues) {
+        this.aiidaRecordValues = aiidaRecordValues;
+    }
+
     public String asset() {
         return asset;
     }
 
     public Long id() {
         return id;
+    }
+
+    public String dataSourceId() {
+        return dataSourceId;
     }
 }

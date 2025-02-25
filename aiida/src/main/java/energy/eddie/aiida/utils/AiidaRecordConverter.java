@@ -28,6 +28,7 @@ public class AiidaRecordConverter {
                                            connectionId,
                                            dataNeed.dataNeedId(),
                                            permission.permissionId(),
+                                           aiidaRecord.dataSourceId(),
                                            aiidaRecord.aiidaRecordValue());
     }
 }
