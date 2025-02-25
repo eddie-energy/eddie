@@ -11,6 +11,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SimulationDataSourceTest {
     private SimulationDataSourceAdapter simulator;
     private Clock fixedClock;
+    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
 
     @BeforeEach
     void setUp() {
@@ -31,18 +33,18 @@ class SimulationDataSourceTest {
         Duration period = Duration.ofSeconds(1);
 
         // when
-        simulator = new SimulationDataSourceAdapter("1", "simulation", period);
+        simulator = new SimulationDataSourceAdapter(dataSourceId, "simulation", period);
 
         // then
         assertEquals("simulation", simulator.name());
-        assertEquals("1", simulator.id());
+        assertEquals(dataSourceId, simulator.id());
     }
 
     @Test
     void verify_bundleOfFourValuesIsGeneratedPerPeriod_andCloseEmitsCompleteOnFlux() {
         Duration period = Duration.ofSeconds(1);
 
-        simulator = new SimulationDataSourceAdapter("1", "Test Simulator", period);
+        simulator = new SimulationDataSourceAdapter(dataSourceId, "Test Simulator", period);
 
         StepVerifier.withVirtualTime(() -> simulator.start())
                     .expectSubscription()
@@ -55,7 +57,7 @@ class SimulationDataSourceTest {
                     .verify(Duration.ofSeconds(1));
 
         assertEquals("Test Simulator", simulator.name());
-        assertEquals("1", simulator.id());
+        assertEquals(dataSourceId, simulator.id());
     }
 
 
@@ -65,7 +67,7 @@ class SimulationDataSourceTest {
      */
     @Test
     void verify_close_immediatelyEmitsCompleteOnFlux() {
-        simulator = new SimulationDataSourceAdapter("1", "Test Simulator", Duration.ofSeconds(200));
+        simulator = new SimulationDataSourceAdapter(dataSourceId, "Test Simulator", Duration.ofSeconds(200));
 
         var stepVerifier = StepVerifier.create(simulator.start())
                                        .expectComplete()
@@ -79,7 +81,7 @@ class SimulationDataSourceTest {
 
     @Test
     void testHealth() {
-        simulator = new SimulationDataSourceAdapter("1", "Test Simulator", Duration.ofSeconds(200));
+        simulator = new SimulationDataSourceAdapter(dataSourceId, "Test Simulator", Duration.ofSeconds(200));
         assertEquals(Status.UP, simulator.health().getStatus());
     }
 }

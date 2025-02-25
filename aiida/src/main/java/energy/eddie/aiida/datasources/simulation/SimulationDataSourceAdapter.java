@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import static energy.eddie.aiida.utils.ObisCode.*;
 
@@ -29,7 +30,7 @@ public class SimulationDataSourceAdapter extends AiidaDataSource {
     @Nullable
     private Disposable periodicFlux;
 
-    public SimulationDataSourceAdapter(String id, Duration simulationPeriod) {
+    public SimulationDataSourceAdapter(UUID id, Duration simulationPeriod) {
         this(id, "SimulationDataSource", simulationPeriod);
     }
 
@@ -47,7 +48,7 @@ public class SimulationDataSourceAdapter extends AiidaDataSource {
      * @param name             Display name of this datasource.
      * @param simulationPeriod Duration to wait until new random records should be created.
      */
-    public SimulationDataSourceAdapter(String id, String name, Duration simulationPeriod) {
+    public SimulationDataSourceAdapter(UUID id, String name, Duration simulationPeriod) {
         super(id, name);
         this.simulationPeriod = simulationPeriod;
 

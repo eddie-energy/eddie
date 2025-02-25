@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class OesterreichsEnergieAdapter extends AiidaMqttDataSource {
     private static final Logger LOGGER = LoggerFactory.getLogger(OesterreichsEnergieAdapter.class);
@@ -31,7 +32,7 @@ public class OesterreichsEnergieAdapter extends AiidaMqttDataSource {
      * @param mapper     {@link ObjectMapper} that is used to deserialize the JSON messages. A
      *                   {@link OesterreichsEnergieAdapterValueDeserializer} will be registered to this mapper.
      */
-    public OesterreichsEnergieAdapter(String dataSourceId, MqttConfig mqttConfig, ObjectMapper mapper) {
+    public OesterreichsEnergieAdapter(UUID dataSourceId, MqttConfig mqttConfig, ObjectMapper mapper) {
         super(dataSourceId, "OesterreichsEnergieAdapter", mqttConfig, LOGGER);
         SimpleModule module = new SimpleModule();
         module.addDeserializer(OesterreichAdapterJson.AdapterValue.class,

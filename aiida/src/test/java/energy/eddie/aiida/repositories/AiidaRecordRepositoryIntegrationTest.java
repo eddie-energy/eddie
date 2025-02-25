@@ -16,6 +16,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import static energy.eddie.aiida.utils.ObisCode.METER_SERIAL;
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
@@ -36,7 +37,7 @@ class AiidaRecordRepositoryIntegrationTest {
             DockerImageName.parse("timescale/timescaledb:2.11.2-pg15")
                            .asCompatibleSubstituteFor("postgres")
     );
-    private static final String dataSourceId = "4211ea05-d4ab-48ff-8613-8f4791a56606";
+    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     @Autowired
     AiidaRecordRepository repository;
 

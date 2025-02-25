@@ -13,10 +13,9 @@ import java.util.UUID;
 @DiscriminatorColumn(name = "source_type", discriminatorType = DiscriminatorType.STRING)
 public abstract class DataSource {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    // Used just as JPA ID
     @SuppressWarnings({"unused", "NullAway"})
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     @Schema(description = "UUID of the user that owns the permission.")
     @Nullable
     private UUID userId;
@@ -47,11 +46,11 @@ public abstract class DataSource {
         this.dataSourceType = dataSourceType;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

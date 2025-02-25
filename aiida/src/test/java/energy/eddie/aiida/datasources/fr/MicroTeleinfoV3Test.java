@@ -20,6 +20,7 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
@@ -33,6 +34,7 @@ class MicroTeleinfoV3Test {
     private MicroTeleinfoV3 adapter;
     private MqttConfig config;
     private ObjectMapper mapper;
+    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
 
     @BeforeEach
     void setUp() {
@@ -40,7 +42,7 @@ class MicroTeleinfoV3Test {
 
         config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data").build();
         mapper = new AiidaConfiguration().objectMapper();
-        adapter = new MicroTeleinfoV3("1", config, mapper);
+        adapter = new MicroTeleinfoV3(dataSourceId, config, mapper);
     }
 
     @AfterEach
@@ -117,7 +119,7 @@ class MicroTeleinfoV3Test {
                                                                                           .setPassword("Pass")
                                                                                           .build();
         config = spy(config);
-        adapter = new MicroTeleinfoV3("1", config, mapper);
+        adapter = new MicroTeleinfoV3(dataSourceId, config, mapper);
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);

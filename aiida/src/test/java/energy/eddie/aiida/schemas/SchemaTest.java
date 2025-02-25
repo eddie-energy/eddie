@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import static energy.eddie.aiida.models.record.UnitOfMeasurement.*;
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
@@ -28,7 +29,7 @@ class SchemaTest {
     private ObjectMapper objectMapper;
 
     private static final Instant timestamp = Instant.ofEpochMilli(1729334059);
-    private static final String dataSourceId = "4211ea05-d4ab-48ff-8613-8f4791a56606";
+    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
 
     private static final AiidaRecord aiidaRecordAT = new AiidaRecord(
             timestamp,

@@ -14,6 +14,7 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
@@ -83,13 +84,14 @@ class SmartGatewaysAdapterTest {
             0.002""";
     private SmartGatewaysAdapter adapter;
     private MqttConfig config;
+    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
         config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "sga/data").build();
-        adapter = new SmartGatewaysAdapter("1", config);
+        adapter = new SmartGatewaysAdapter(dataSourceId, config);
     }
 
     @AfterEach
@@ -166,7 +168,7 @@ class SmartGatewaysAdapterTest {
                                                                                      .setPassword("Pass")
                                                                                      .build();
         config = spy(config);
-        adapter = new SmartGatewaysAdapter("1", config);
+        adapter = new SmartGatewaysAdapter(dataSourceId, config);
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);

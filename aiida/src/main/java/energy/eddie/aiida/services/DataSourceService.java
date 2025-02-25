@@ -28,10 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class DataSourceService {
@@ -61,7 +58,7 @@ public class DataSourceService {
         loadDataSources();
     }
 
-    public Optional<DataSource> getDataSourceById(Long dataSourceId) {
+    public Optional<DataSource> getDataSourceById(UUID dataSourceId) {
         return repository.findById(dataSourceId);
     }
 
@@ -109,7 +106,7 @@ public class DataSourceService {
         startDataSource(dataSource);
     }
 
-    public void deleteDataSource(Long dataSourceId) {
+    public void deleteDataSource(UUID dataSourceId) {
         findAiidaDataSource(dataSourceId).ifPresentOrElse(
                 this::closeDataSource,
                 () -> LOGGER.warn("AiidaDataSource for data source ID {} not found in aiidaDataSources.", dataSourceId)
@@ -153,7 +150,7 @@ public class DataSourceService {
         if (dataSourceType == DataSourceType.SIMULATION) {
             var simDataSource = (SimulationDataSource) dataSource;
             var simulationPeriod = simDataSource.getSimulationPeriod() == null ? 5 : simDataSource.getSimulationPeriod();
-            return new SimulationDataSourceAdapter(String.valueOf(dataSource.getId()), Duration.ofSeconds(simulationPeriod));
+            return new SimulationDataSourceAdapter(dataSource.getId(), Duration.ofSeconds(simulationPeriod));
         }
 
         var mqttDataSource = (MqttDataSource) dataSource;
@@ -166,11 +163,11 @@ public class DataSourceService {
 
         return switch (dataSourceType) {
             case SMART_GATEWAYS_ADAPTER ->
-                    new SmartGatewaysAdapter(String.valueOf(dataSource.getId()), mqttConfig);
+                    new SmartGatewaysAdapter(dataSource.getId(), mqttConfig);
             case MICRO_TELEINFO_V3 ->
-                    new MicroTeleinfoV3(String.valueOf(dataSource.getId()), mqttConfig, objectMapper);
+                    new MicroTeleinfoV3(dataSource.getId(), mqttConfig, objectMapper);
             case SMART_METER_ADAPTER ->
-                    new OesterreichsEnergieAdapter(String.valueOf(dataSource.getId()), mqttConfig, objectMapper);
+                    new OesterreichsEnergieAdapter(dataSource.getId(), mqttConfig, objectMapper);
             default -> {
                 LOGGER.error("Unknown data source type: {}", dataSourceType);
                 throw new IllegalArgumentException("Unknown data source type: " + dataSourceType);
@@ -178,7 +175,7 @@ public class DataSourceService {
         };
     }
 
-    public void updateEnabledState(Long dataSourceId, boolean enabled) {
+    public void updateEnabledState(UUID dataSourceId, boolean enabled) {
         DataSource dataSource = repository.findById(dataSourceId)
                                           .orElseThrow(() -> new EntityNotFoundException("Datasource not found with ID: " + dataSourceId));
 
@@ -257,9 +254,9 @@ public class DataSourceService {
         }
     }
 
-    Optional<AiidaDataSource> findAiidaDataSource(Long dataSourceId) {
+    Optional<AiidaDataSource> findAiidaDataSource(UUID dataSourceId) {
         return aiidaDataSources.stream()
-                               .filter(ds -> ds.id().equals(String.valueOf(dataSourceId)))
+                               .filter(ds -> ds.id().equals(dataSourceId))
                                .findFirst();
     }
 

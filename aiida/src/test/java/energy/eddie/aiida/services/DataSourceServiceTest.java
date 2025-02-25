@@ -38,6 +38,7 @@ class DataSourceServiceTest {
     private OesterreichsEnergieDataSource oesterreichsEnergieDataSource;
     private MicroTeleinfoV3DataSource microTeleinfoV3DataSource;
     private SimulationDataSource simulationDataSource;
+    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
 
     @BeforeEach
     void setUp() {
@@ -49,7 +50,7 @@ class DataSourceServiceTest {
         userId = UUID.randomUUID();
         dataSourceService = spy(new DataSourceService(repository, aggregator, authService, mqttConfiguration, objectMapper));
         smartGatewaysDataSourceDto = new DataSourceDto(
-                1L,
+                dataSourceId,
                 DataSourceType.SMART_GATEWAYS_ADAPTER.identifier(),
                 AiidaAsset.CONNECTION_AGREEMENT_POINT.asset(),
                 "Smart Gateways",
@@ -68,21 +69,21 @@ class DataSourceServiceTest {
     @Test
     void shouldReturnDataSourceById() {
         var dataSource = new SmartGatewaysDataSource();
-        dataSource.setId(1L);
-        when(repository.findById(1L)).thenReturn(Optional.of(dataSource));
+        dataSource.setId(dataSourceId);
+        when(repository.findById(dataSourceId)).thenReturn(Optional.of(dataSource));
 
-        var result = dataSourceService.getDataSourceById(1L);
+        var result = dataSourceService.getDataSourceById(dataSourceId);
 
         assertTrue(result.isPresent());
-        assertEquals(1L, result.get().getId());
-        verify(repository, times(1)).findById(1L);
+        assertEquals(dataSourceId, result.get().getId());
+        verify(repository, times(1)).findById(dataSourceId);
     }
 
     @Test
     void shouldReturnEmptyOptionalWhenDataSourceNotFound() {
-        when(repository.findById(1L)).thenReturn(Optional.empty());
+        when(repository.findById(dataSourceId)).thenReturn(Optional.empty());
 
-        var result = dataSourceService.getDataSourceById(1L);
+        var result = dataSourceService.getDataSourceById(dataSourceId);
 
         assertTrue(result.isEmpty(), "Expected Optional to be empty when DataSource is not found.");
     }
@@ -101,25 +102,25 @@ class DataSourceServiceTest {
     @Test
     void shouldDeleteDataSource() {
         doNothing().when(aggregator).addNewAiidaDataSource(any());
-        dataSourceService.deleteDataSource(1L);
+        dataSourceService.deleteDataSource(dataSourceId);
 
-        verify(repository, times(1)).deleteById(1L);
+        verify(repository, times(1)).deleteById(dataSourceId);
     }
 
 
     @Test
     void shouldUpdateDataSource() throws InvalidUserException {
-        oesterreichsEnergieDataSource.setId(1000L);
+        oesterreichsEnergieDataSource.setId(dataSourceId);
         oesterreichsEnergieDataSource.setName("Old Name");
         oesterreichsEnergieDataSource.setMqttServerUri("old-uri");
         oesterreichsEnergieDataSource.setEnabled(false);
 
-        when(repository.findById(1000L)).thenReturn(Optional.of(oesterreichsEnergieDataSource));
+        when(repository.findById(dataSourceId)).thenReturn(Optional.of(oesterreichsEnergieDataSource));
         when(repository.save(any(OesterreichsEnergieDataSource.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         var updatedDataSource = new DataSourceDto(
-                1000L,
+                dataSourceId,
                 DataSourceType.SMART_METER_ADAPTER.identifier(),
                 AiidaAsset.CONNECTION_AGREEMENT_POINT.asset(),
                 "New Name",
@@ -141,18 +142,22 @@ class DataSourceServiceTest {
 
     @Test
     void shouldLoadDataSourcesOnStartup() {
-        oesterreichsEnergieDataSource.setId(1L);
+        UUID dataSourceId1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+        UUID dataSourceId2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+        UUID dataSourceId3 = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
+
+        oesterreichsEnergieDataSource.setId(dataSourceId1);
         oesterreichsEnergieDataSource.setName("DataSource1");
         oesterreichsEnergieDataSource.setDataSourceType(DataSourceType.SMART_METER_ADAPTER);
         oesterreichsEnergieDataSource.setEnabled(true);
 
-        microTeleinfoV3DataSource.setId(2L);
+        microTeleinfoV3DataSource.setId(dataSourceId2);
         microTeleinfoV3DataSource.setName("DataSource2");
         microTeleinfoV3DataSource.setDataSourceType(DataSourceType.MICRO_TELEINFO_V3);
         microTeleinfoV3DataSource.setEnabled(false);
         microTeleinfoV3DataSource.setMqttSubscribeTopic("mqttTopic");
 
-        simulationDataSource.setId(3L);
+        simulationDataSource.setId(dataSourceId3);
         simulationDataSource.setName("DataSource3");
         simulationDataSource.setDataSourceType(DataSourceType.SIMULATION);
         simulationDataSource.setEnabled(true);
@@ -163,28 +168,28 @@ class DataSourceServiceTest {
         new DataSourceService(repository, aggregator, authService, mqttConfiguration, objectMapper);
 
         verify(aggregator, times(2)).addNewAiidaDataSource(any());
-        verify(aggregator, never()).addNewAiidaDataSource(argThat(ds -> ds.id().equals("2")));
+        verify(aggregator, never()).addNewAiidaDataSource(argThat(ds -> ds.id().equals(dataSourceId2)));
         verify(repository, times(2)).findAll();
     }
 
     @Test
     void testEnableDataSource() {
-        microTeleinfoV3DataSource.setId(1L);
+        microTeleinfoV3DataSource.setId(dataSourceId);
         microTeleinfoV3DataSource.setName("DataSource");
         microTeleinfoV3DataSource.setDataSourceType(DataSourceType.MICRO_TELEINFO_V3);
         microTeleinfoV3DataSource.setMqttSubscribeTopic("mqttTopic");
         microTeleinfoV3DataSource.setEnabled(false);
         var mockAiidaDataSource = mock(AiidaDataSource.class);
 
-        when(repository.findById(1L)).thenReturn(Optional.of(microTeleinfoV3DataSource));
-        doReturn(Optional.of(mockAiidaDataSource)).when(dataSourceService).findAiidaDataSource(1L);
+        when(repository.findById(dataSourceId)).thenReturn(Optional.of(microTeleinfoV3DataSource));
+        doReturn(Optional.of(mockAiidaDataSource)).when(dataSourceService).findAiidaDataSource(dataSourceId);
 
-        dataSourceService.updateEnabledState(1L, true);
+        dataSourceService.updateEnabledState(dataSourceId, true);
 
         verify(repository, times(1)).save(argThat(DataSource::isEnabled));
         verify(aggregator, times(1)).addNewAiidaDataSource(any());
 
-        dataSourceService.updateEnabledState(1L, false);
+        dataSourceService.updateEnabledState(dataSourceId, false);
 
         verify(repository, times(2)).save(argThat(ds -> !ds.isEnabled()));
         verify(aggregator, times(1)).removeAiidaDataSource(any());

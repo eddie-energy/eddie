@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AiidaRecordConverterTest {
     private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
-    private static final String dataSourceId = "4211ea05-d4ab-48ff-8613-8f4791a56606";
+    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     @Mock
     private AiidaLocalDataNeed mockDataNeed;
     @Mock
