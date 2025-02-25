@@ -17,6 +17,8 @@ import org.springframework.scheduling.support.CronExpression;
 import java.util.Set;
 import java.util.UUID;
 
+import static java.util.Objects.requireNonNullElse;
+
 /**
  * Stores the locally required information about a data need of a permission.
  */
@@ -93,19 +95,11 @@ public class AiidaLocalDataNeed implements AiidaDataNeedInterface {
         this.transmissionSchedule = details.dataNeed().transmissionSchedule();
         this.schemas = details.dataNeed().schemas();
         this.asset = details.dataNeed().asset();
-        this.dataTags = Set.copyOf(details.dataNeed().dataTags());
+        this.dataTags = requireNonNullElse(details.dataNeed().dataTags(), Set.of());
     }
 
     public String name() {
         return name;
-    }
-
-    public String policyLink() {
-        return policyLink;
-    }
-
-    public String purpose() {
-        return purpose;
     }
 
     @Override
