@@ -45,18 +45,6 @@ public class Aggregator implements AutoCloseable {
                     .subscribe();
     }
 
-    private void saveRecordToDatabase(AiidaRecord aiidaRecord) {
-        LOGGER.trace("Saving new record to db");
-        for (AiidaRecordValue value : aiidaRecord.aiidaRecordValue()) {
-            value.setAiidaRecord(aiidaRecord);
-        }
-        repository.save(aiidaRecord);
-    }
-
-    private void handleCombinedSinkError(Throwable throwable) {
-        LOGGER.error("Got error from combined sink", throwable);
-    }
-
     /**
      * Adds a new {@link AiidaDataSource} to this aggregator and will subscribe to the Flux returned by
      * {@link AiidaDataSource#start()}.
@@ -74,6 +62,7 @@ public class Aggregator implements AutoCloseable {
 
     /**
      * Removes a {@link AiidaDataSource} from this aggregator and will close the datasource.
+     *
      * @param dataSource The datasource to remove.
      */
     public void removeAiidaDataSource(AiidaDataSource dataSource) {
@@ -84,20 +73,10 @@ public class Aggregator implements AutoCloseable {
         dataSource.close();
     }
 
-    private void publishRecordToCombinedFlux(AiidaRecord data) {
-        var result = combinedSink.tryEmitNext(data);
-
-        if (result.isFailure()) LOGGER.error("Error while emitting record to combined sink. Error was: {}", result);
-    }
-
-    private void handleError(Throwable throwable, AiidaDataSource dataSource) {
-        // TODO: GH-1304 do we try to restart the affected datasource or only notify user?
-        LOGGER.error("Error from datasource {}", dataSource.name(), throwable);
-    }
-
     /**
-     * Returns a filtered Flux of {@link AiidaRecord}s that only contains records with a {@link AiidaRecordValue#dataTag()}
-     * that is in the set {@code allowedCodes} and that have a timestamp before {@code permissionExpirationTime}.
+     * Returns a Flux of {@link AiidaRecord}s that either contains all records or only contains records with a {@link AiidaRecordValue#dataTag()}
+     * that is in the set {@code allowedCodes}.
+     * All values must have a timestamp before {@code permissionExpirationTime}.
      * Additionally, the records are buffered and aggregated by the {@link CronExpression} {@code transmissionSchedule}.
      *
      * @param allowedDataTags          Tags which should be included in the returned Flux.
@@ -120,15 +99,18 @@ public class Aggregator implements AutoCloseable {
         @SuppressWarnings("unused") // Otherwise errorprone shows a warning
         var unused = cronScheduler.schedule(() -> cronSink.tryEmitNext(true), cronTrigger);
 
-        return combinedSink.asFlux()
-                           .doOnComplete(() -> {
-                               cronScheduler.stop();
-                               cronSink.tryEmitComplete();
-                           })
-                           .map(aiidaRecord -> filterAllowedDataTags(aiidaRecord, allowedDataTags))
-                           .filter(aiidaRecord -> isRecordValid(aiidaRecord, permissionExpirationTime))
-                           .buffer(cronSink.asFlux())
-                           .flatMapIterable(this::aggregateRecords);
+        var flux = combinedSink.asFlux().doOnComplete(() -> {
+            cronScheduler.stop();
+            cronSink.tryEmitComplete();
+        });
+
+        if (allowedDataTags.isEmpty()) {
+            flux = createAllValuesFlux(flux, permissionExpirationTime);
+        } else {
+            flux = createFilteredFlux(flux, allowedDataTags, permissionExpirationTime);
+        }
+
+        return flux.buffer(cronSink.asFlux()).flatMapIterable(this::aggregateRecords);
     }
 
     /**
@@ -146,16 +128,48 @@ public class Aggregator implements AutoCloseable {
         }
     }
 
+    private void saveRecordToDatabase(AiidaRecord aiidaRecord) {
+        LOGGER.trace("Saving new record to db");
+        for (AiidaRecordValue value : aiidaRecord.aiidaRecordValue()) {
+            value.setAiidaRecord(aiidaRecord);
+        }
+        repository.save(aiidaRecord);
+    }
+
+    private void handleCombinedSinkError(Throwable throwable) {
+        LOGGER.error("Got error from combined sink", throwable);
+    }
+
+    private void publishRecordToCombinedFlux(AiidaRecord data) {
+        var result = combinedSink.tryEmitNext(data);
+
+        if (result.isFailure()) LOGGER.error("Error while emitting record to combined sink. Error was: {}", result);
+    }
+
+    private void handleError(Throwable throwable, AiidaDataSource dataSource) {
+        // TODO: GH-1304 do we try to restart the affected datasource or only notify user?
+        LOGGER.error("Error from datasource {}", dataSource.name(), throwable);
+    }
+
+    private Flux<AiidaRecord> createFilteredFlux(
+            Flux<AiidaRecord> flux,
+            Set<String> allowedDataTags,
+            Instant permissionExpirationTime
+    ) {
+        return flux.map(aiidaRecord -> filterAllowedDataTags(aiidaRecord, allowedDataTags))
+                   .filter(aiidaRecord -> isRecordValid(aiidaRecord, permissionExpirationTime));
+    }
+
+    private Flux<AiidaRecord> createAllValuesFlux(Flux<AiidaRecord> flux, Instant permissionExpirationTime) {
+        return flux.filter(aiidaRecord -> isRecordValid(aiidaRecord, permissionExpirationTime));
+    }
+
     private AiidaRecord filterAllowedDataTags(AiidaRecord aiidaRecord, Set<String> allowedDataTags) {
         var filteredValues = aiidaRecord.aiidaRecordValue()
                                         .stream()
                                         .filter(value -> allowedDataTags.contains(value.dataTag().toString()))
                                         .toList();
-        return new AiidaRecord(
-                aiidaRecord.timestamp(),
-                aiidaRecord.asset(),
-                new ArrayList<>(filteredValues)
-        );
+        return new AiidaRecord(aiidaRecord.timestamp(), aiidaRecord.asset(), filteredValues);
     }
 
     private boolean isRecordValid(AiidaRecord aiidaRecord, Instant expirationTime) {
