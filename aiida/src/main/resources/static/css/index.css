@@ -71,3 +71,7 @@ body {
     margin: 5px 0;
   }
 }
+
+#mqtt-password:not([hidden]) + span {
+  display: none;
+}

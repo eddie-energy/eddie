@@ -439,8 +439,15 @@ function renderDataSources() {
                 </p>
                 <p>
                   <strong>MQTT Password:</strong>
-                  <span id="mqtt-password" style="visibility: hidden">${dataSource.mqttPassword}</span>
-                  <sl-icon id="toggle-mqtt-password" style="cursor: pointer" name="eye"></sl-icon>
+                  <span>
+                    <span hidden id="mqtt-password">${dataSource.mqttPassword}</span>
+                    <span>********</span>
+                    <sl-icon
+                      id="toggle-mqtt-password"
+                      style="cursor: pointer"
+                      name="eye"
+                    ></sl-icon>
+                  </span>
                 </p>
               `;
 
@@ -477,12 +484,11 @@ function renderDataSources() {
       const toggleIcon = document.getElementById("toggle-mqtt-password");
 
       toggleIcon.addEventListener("click", () => {
-        if (passwordSpan.style.visibility === "hidden") {
-          passwordSpan.style.visibility = "visible";
-          toggleIcon.setAttribute("name", "eye-slash");
-        } else {
-          passwordSpan.style.visibility = "hidden";
+        passwordSpan.toggleAttribute("hidden");
+        if (passwordSpan.hasAttribute("hidden")) {
           toggleIcon.setAttribute("name", "eye");
+        } else {
+          toggleIcon.setAttribute("name", "eye-slash");
         }
       });
 
