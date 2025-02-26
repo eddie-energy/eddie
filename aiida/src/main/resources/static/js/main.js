@@ -462,14 +462,7 @@ function renderDataSources() {
               ${dataSourceTypeDetails}
 
               <dt>Enabled:</dt>
-              <dd>
-                <sl-switch
-                  class="toggle-enabled"
-                  ${dataSource.enabled ? "checked" : ""}
-                  data-id="${dataSource.id}"
-                >
-                </sl-switch>
-              </dd>
+              <dd>${dataSource.enabled}</dd>
             </dl>
             <sl-button class="edit-button" data-id="${dataSource.id}">
               Edit
