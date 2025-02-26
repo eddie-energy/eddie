@@ -27,6 +27,7 @@ body {
 .permissions {
   display: grid;
   gap: var(--sl-spacing-small);
+  max-width: 800px;
 }
 
 .permission-form {
