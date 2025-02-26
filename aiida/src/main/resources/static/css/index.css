@@ -53,17 +53,12 @@ body {
   margin-bottom: var(--sl-spacing-large);
 }
 
-.datasources {
-  display: flex;
-  flex-wrap: wrap;
+.data-sources {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  align-items: stretch;
   gap: 1rem;
-  justify-content: space-evenly;
-}
-
-.datasources > div {
-  flex: 1 1 calc(30% - 1rem);
-  max-width: 30%;
-  box-sizing: border-box;
+  margin-top: 1rem;
 }
 
 .user-drawer-content {

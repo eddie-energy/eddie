@@ -408,7 +408,7 @@ function renderDataSources() {
       dataSourceList.innerHTML = "";
 
       dataSources.forEach((dataSource) => {
-        const element = document.createElement("div");
+        const template = document.createElement("template");
         const generalDetails = /* HTML */ ` <p>
             <strong>ID:</strong> ${dataSource.id}
           </p>
@@ -444,7 +444,7 @@ function renderDataSources() {
           dataSourceTypeDetails += `<p><strong>Metering ID:</strong> ${dataSource.meteringId}</p>`;
         }
 
-        element.innerHTML = /* HTML */ `
+        template.innerHTML = /* HTML */ `
           <sl-card>
             <h3>${dataSource.name}</h3>
             ${generalDetails + dataSourceTypeDetails}
@@ -457,16 +457,16 @@ function renderDataSources() {
               >
               </sl-switch>
             </p>
-            <sl-button class="delete-button" data-id="${dataSource.id}"
-              >Delete</sl-button
-            >
-            <sl-button class="edit-button" data-id="${dataSource.id}"
-              >Edit</sl-button
-            >
+            <sl-button class="delete-button" data-id="${dataSource.id}">
+              Delete
+            </sl-button>
+            <sl-button class="edit-button" data-id="${dataSource.id}">
+              Edit
+            </sl-button>
           </sl-card>
         `;
 
-        dataSourceList.appendChild(element);
+        dataSourceList.appendChild(template.content);
       });
 
       const passwordSpan = document.getElementById("mqtt-password");
