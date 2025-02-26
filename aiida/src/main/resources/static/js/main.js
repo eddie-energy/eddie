@@ -471,11 +471,11 @@ function renderDataSources() {
                 </sl-switch>
               </dd>
             </dl>
-            <sl-button class="delete-button" data-id="${dataSource.id}">
-              Delete
-            </sl-button>
             <sl-button class="edit-button" data-id="${dataSource.id}">
               Edit
+            </sl-button>
+            <sl-button class="delete-button" data-id="${dataSource.id}">
+              Delete
             </sl-button>
           </sl-card>
         `;
