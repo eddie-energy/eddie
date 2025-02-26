@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/datasources")
@@ -111,7 +112,7 @@ public class DataSourceController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDataSource(@PathVariable("id") Long dataSourceId) {
+    public ResponseEntity<Void> deleteDataSource(@PathVariable("id") UUID dataSourceId) {
         LOGGER.info("Deleting datasource with ID: {}", dataSourceId);
 
         service.deleteDataSource(dataSourceId);
@@ -130,7 +131,7 @@ public class DataSourceController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PatchMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> updateDataSource(@PathVariable("id") Long dataSourceId, @RequestBody DataSourceDto dataSource) throws InvalidUserException {
+    public ResponseEntity<Void> updateDataSource(@PathVariable("id") UUID dataSourceId, @RequestBody DataSourceDto dataSource) throws InvalidUserException {
         LOGGER.info("Updating datasource with ID: {} - {}", dataSourceId, dataSource);
 
         service.updateDataSource(dataSource);
@@ -147,7 +148,7 @@ public class DataSourceController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping("/{id}")
-    public ResponseEntity<DataSource> getDataSourceById(@PathVariable("id") Long dataSourceId) {
+    public ResponseEntity<DataSource> getDataSourceById(@PathVariable("id") UUID dataSourceId) {
         LOGGER.info("Fetching datasource with ID: {}", dataSourceId);
 
         return service.getDataSourceById(dataSourceId)
@@ -168,7 +169,7 @@ public class DataSourceController {
     })
     @PatchMapping(value = "{id}/enabled", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateEnabledState(
-            @PathVariable("id") Long dataSourceId,
+            @PathVariable("id") UUID dataSourceId,
             @RequestBody Boolean enabled) {
         LOGGER.info("Updating enabled state of datasource with ID: {} - {}", dataSourceId, enabled);
 

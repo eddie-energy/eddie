@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static energy.eddie.aiida.models.record.UnitOfMeasurement.KW;
 import static energy.eddie.aiida.models.record.UnitOfMeasurement.KWH;
@@ -35,6 +36,8 @@ import static org.mockito.Mockito.*;
 class AggregatorTest {
     private static final LogCaptor logCaptor = LogCaptor.forClass(Aggregator.class);
     private static final String DATASOURCE_NAME = "TestDataSource";
+    private static final UUID dataSourceId1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID dataSourceId2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
     private Aggregator aggregator;
     private Set<String> wantedCodes;
@@ -57,13 +60,13 @@ class AggregatorTest {
         var instant = Instant.now().plusSeconds(600);
 
         wantedCodes = Set.of("1-0:1.8.0", "1-0:2.8.0");
-        unwanted1 = new AiidaRecord(instant, "Test", List.of(
+        unwanted1 = new AiidaRecord(instant, "Test", dataSourceId1, List.of(
                 new AiidaRecordValue("1-0:1.7.0", POSITIVE_ACTIVE_INSTANTANEOUS_POWER, "10", KWH, "10", KWH)));
-        unwanted2 = new AiidaRecord(instant, "Test", List.of(
+        unwanted2 = new AiidaRecord(instant, "Test", dataSourceId1, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KW, "10", KW)));
-        unwanted3 = new AiidaRecord(instant, "Test", List.of(
+        unwanted3 = new AiidaRecord(instant, "Test", dataSourceId1, List.of(
                 new AiidaRecordValue("1-0:2.8.0", NEGATIVE_ACTIVE_ENERGY, "60", KWH, "10", KWH)));
-        wanted1 = new AiidaRecord(instant, "Test", List.of(
+        wanted1 = new AiidaRecord(instant, "Test", dataSourceId1, List.of(
                 new AiidaRecordValue("1-01.8.0", POSITIVE_ACTIVE_ENERGY, "50", KW, "10", KW)));
         expiration = Instant.now().plusSeconds(300_000);
         transmissionSchedule = CronExpression.parse("* * * * * *");
@@ -88,12 +91,15 @@ class AggregatorTest {
 
     @Test
     void verify_close_callsCloseOnAllDataSources() {
+        UUID dataSourceId1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+        UUID dataSourceId2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+
         var mockDataSource1 = mock(AiidaDataSource.class);
-        when(mockDataSource1.id()).thenReturn("1");
+        when(mockDataSource1.id()).thenReturn(dataSourceId1);
         when(mockDataSource1.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource1.start()).thenReturn(Flux.empty());
         var mockDataSource2 = mock(AiidaDataSource.class);
-        when(mockDataSource2.id()).thenReturn("2");
+        when(mockDataSource2.id()).thenReturn(dataSourceId2);
         when(mockDataSource2.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource2.start()).thenReturn(Flux.empty());
 
@@ -112,11 +118,11 @@ class AggregatorTest {
         TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
         TestPublisher<AiidaRecord> publisher2 = TestPublisher.create();
         var mockDataSource1 = mock(AiidaDataSource.class);
-        when(mockDataSource1.id()).thenReturn("1");
+        when(mockDataSource1.id()).thenReturn(dataSourceId1);
         when(mockDataSource1.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource1.start()).thenReturn(publisher1.flux());
         var mockDataSource2 = mock(AiidaDataSource.class);
-        when(mockDataSource2.id()).thenReturn("2");
+        when(mockDataSource2.id()).thenReturn(dataSourceId2);
         when(mockDataSource2.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource2.start()).thenReturn(publisher2.flux());
 
@@ -151,7 +157,7 @@ class AggregatorTest {
     void getFilteredFlux_doesNotReturnDataPublishedBeforeSubscribed() {
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
         var mockDataSource = mock(AiidaDataSource.class);
-        when(mockDataSource.id()).thenReturn("1");
+        when(mockDataSource.id()).thenReturn(dataSourceId1);
         when(mockDataSource.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource.start()).thenReturn(publisher.flux());
 
@@ -181,7 +187,7 @@ class AggregatorTest {
         var mockDataSource = mock(AiidaDataSource.class);
         when(mockDataSource.start()).thenReturn(publisher.flux());
 
-        var unwantedBeforeCron = new AiidaRecord(Instant.now().minusSeconds(10), "Test",
+        var unwantedBeforeCron = new AiidaRecord(Instant.now().minusSeconds(10), "Test", dataSourceId1,
                                                  List.of(new AiidaRecordValue("1-0:1.8.0",
                                                                               POSITIVE_ACTIVE_ENERGY,
                                                                               "50",
@@ -211,14 +217,14 @@ class AggregatorTest {
     void givenAiidaRecordFromDatasource_isSavedInDatabase() {
         TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
         var mockDataSource1 = mock(AiidaDataSource.class);
-        when(mockDataSource1.id()).thenReturn("1");
+        when(mockDataSource1.id()).thenReturn(dataSourceId1);
         when(mockDataSource1.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource1.start()).thenReturn(publisher1.flux());
 
 
         TestPublisher<AiidaRecord> publisher2 = TestPublisher.create();
         var mockDataSource2 = mock(AiidaDataSource.class);
-        when(mockDataSource2.id()).thenReturn("2");
+        when(mockDataSource2.id()).thenReturn(dataSourceId2);
         when(mockDataSource2.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource2.start()).thenReturn(publisher2.flux());
 
@@ -246,12 +252,13 @@ class AggregatorTest {
     void givenDataWithTimestampAfterFluxFilterTime_fluxDoesNotPublish() {
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
         var mockDataSource = mock(AiidaDataSource.class);
-        when(mockDataSource.id()).thenReturn("1");
+        when(mockDataSource.id()).thenReturn(dataSourceId1);
         when(mockDataSource.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource.start()).thenReturn(publisher.flux());
 
         var atExpirationTime = new AiidaRecord(expiration,
                                                "Test",
+                                               dataSourceId1,
                                                List.of(new AiidaRecordValue("1-0:1.7.0",
                                                                             POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
                                                                             "111",
@@ -260,6 +267,7 @@ class AggregatorTest {
                                                                             KWH)));
         var afterExpirationTime = new AiidaRecord(expiration.plusSeconds(10),
                                                   "Test",
+                                                  dataSourceId1,
                                                   List.of(new AiidaRecordValue("1-0:2.7.0",
                                                                                NEGATIVE_ACTIVE_INSTANTANEOUS_POWER,
                                                                                "111",
@@ -306,7 +314,7 @@ class AggregatorTest {
 
 
         var mockDataSource = mock(AiidaDataSource.class);
-        when(mockDataSource.id()).thenReturn("1");
+        when(mockDataSource.id()).thenReturn(dataSourceId1);
         when(mockDataSource.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource.start()).thenReturn(Flux.empty());
 
@@ -324,7 +332,7 @@ class AggregatorTest {
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
 
         var mockDataSource = mock(AiidaDataSource.class);
-        when(mockDataSource.id()).thenReturn("1");
+        when(mockDataSource.id()).thenReturn(dataSourceId1);
         when(mockDataSource.name()).thenReturn(DATASOURCE_NAME);
         when(mockDataSource.start()).thenReturn(publisher.flux());
 

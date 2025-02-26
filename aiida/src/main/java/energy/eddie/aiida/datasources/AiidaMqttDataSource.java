@@ -34,7 +34,7 @@ public abstract class AiidaMqttDataSource extends AiidaDataSource implements Mqt
      * @param mqttConfig The mqttConfiguration for the specified data source
      */
     protected AiidaMqttDataSource(
-            String id,
+            UUID id,
             String name,
             MqttConfig mqttConfig,
             Logger childLogger

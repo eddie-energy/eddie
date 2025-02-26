@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -22,20 +23,24 @@ public class AiidaRecord {
     protected Instant timestamp;
     @JsonProperty
     protected String asset;
+    @JsonProperty
+    protected UUID dataSourceId;
     @OneToMany(mappedBy = "aiidaRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonProperty("values")
     private List<AiidaRecordValue> aiidaRecordValues;
 
     @SuppressWarnings("NullAway.Init")
-    protected AiidaRecord(Instant timestamp, String asset) {
+    protected AiidaRecord(Instant timestamp, String asset, UUID dataSourceId) {
         this.timestamp = timestamp;
         this.asset = asset;
+        this.dataSourceId = dataSourceId;
     }
 
-    public AiidaRecord(Instant timestamp, String asset, List<AiidaRecordValue> aiidaRecordValues) {
+    public AiidaRecord(Instant timestamp, String asset, UUID dataSourceId, List<AiidaRecordValue> aiidaRecordValues) {
         this.timestamp = timestamp;
         this.asset = asset;
         this.aiidaRecordValues = aiidaRecordValues;
+        this.dataSourceId = dataSourceId;
     }
 
     /**
@@ -59,5 +64,9 @@ public class AiidaRecord {
 
     public Long id() {
         return id;
+    }
+
+    public UUID dataSourceId() {
+        return dataSourceId;
     }
 }

@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -25,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(DataSourceController.class)
 class DataSourceControllerTest {
+    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
 
     @Autowired
     private MockMvc mockMvc;
@@ -94,19 +96,19 @@ class DataSourceControllerTest {
     @Test
     @WithMockUser
     void deleteDataSource_shouldReturn200() throws Exception {
-        doNothing().when(service).deleteDataSource(1L);
+        doNothing().when(service).deleteDataSource(dataSourceId);
 
-        mockMvc.perform(delete("/datasources/1")
+        mockMvc.perform(delete("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .with(csrf()))
                .andExpect(status().isOk());
 
-        verify(service, times(1)).deleteDataSource(1L);
+        verify(service, times(1)).deleteDataSource(dataSourceId);
     }
 
     @Test
     @WithMockUser
     void updateDataSource_shouldReturn200() throws Exception {
-        mockMvc.perform(patch("/datasources/1")
+        mockMvc.perform(patch("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"name\":\"Updated Source\",\"dataSourceType\":\"SIMULATION\"}")
                                 .with(csrf()))
@@ -118,36 +120,36 @@ class DataSourceControllerTest {
     @Test
     @WithMockUser
     void updateEnabledState_shouldReturn200() throws Exception {
-        doNothing().when(service).updateEnabledState(1L, true);
+        doNothing().when(service).updateEnabledState(dataSourceId, true);
 
-        mockMvc.perform(patch("/datasources/1/enabled")
+        mockMvc.perform(patch("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606/enabled")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("true")
                                 .with(csrf()))
                .andExpect(status().isOk());
 
-        verify(service, times(1)).updateEnabledState(1L, true);
+        verify(service, times(1)).updateEnabledState(dataSourceId, true);
     }
 
     @Test
     @WithMockUser
     void getDataSourceById_shouldReturnDataSource() throws Exception {
         DataSource mockDataSource = new DataSource() {};
-        when(service.getDataSourceById(1L)).thenReturn(Optional.of(mockDataSource));
+        when(service.getDataSourceById(dataSourceId)).thenReturn(Optional.of(mockDataSource));
 
-        mockMvc.perform(get("/datasources/1")
+        mockMvc.perform(get("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
 
-        verify(service, times(1)).getDataSourceById(1L);
+        verify(service, times(1)).getDataSourceById(dataSourceId);
     }
 
     @Test
     @WithMockUser
     void getDataSourceById_shouldReturn404IfNotFound() throws Exception {
-        when(service.getDataSourceById(1L)).thenReturn(Optional.empty());
+        when(service.getDataSourceById(dataSourceId)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/datasources/1")
+        mockMvc.perform(get("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isNotFound());
     }

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MicroTeleinfoV3 extends AiidaMqttDataSource {
     private static final String DATASOURCE_NAME = "MicroTeleinfoV3";
@@ -37,7 +38,7 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
      * @param mapper     {@link ObjectMapper} that is used to deserialize the JSON messages. A
      *                   {@link MicroTeleinfoV3ValueDeserializer} will be registered to this mapper.
      */
-    public MicroTeleinfoV3(String dataSourceId, MqttConfig mqttConfig, ObjectMapper mapper) {
+    public MicroTeleinfoV3(UUID dataSourceId, MqttConfig mqttConfig, ObjectMapper mapper) {
         super(dataSourceId, DATASOURCE_NAME, mqttConfig, LOGGER);
 
         SimpleModule module = new SimpleModule();

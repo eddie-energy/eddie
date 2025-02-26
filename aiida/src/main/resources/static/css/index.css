@@ -76,3 +76,12 @@ body {
     margin: 5px 0;
   }
 }
+
+#add-data-source-form sl-select {
+margin-bottom: 1rem;
+}
+
+#add-data-source-form sl-checkbox {
+margin-bottom: 1rem;
+margin-top: 1rem;
+}

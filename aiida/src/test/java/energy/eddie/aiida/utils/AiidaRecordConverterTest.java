@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AiidaRecordConverterTest {
     private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
+    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     @Mock
     private AiidaLocalDataNeed mockDataNeed;
     @Mock
@@ -33,7 +34,7 @@ class AiidaRecordConverterTest {
     void givenIntegerAiidaRecord_returnsDtoWithFieldsSet() {
         // Given
         Instant timestamp = Instant.now();
-        var aiidaRecord = new AiidaRecord(timestamp, "Test", List.of(
+        var aiidaRecord = new AiidaRecord(timestamp, "Test", dataSourceId, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "23", KW, "10", KW)));
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.permissionId()).thenReturn(permissionId);
@@ -48,6 +49,7 @@ class AiidaRecordConverterTest {
         assertEquals("1-0:1.8.0", dto.aiidaRecordValues().getFirst().rawTag());
         assertEquals("connectionId", dto.connectionId());
         assertEquals(permissionId, dto.permissionId());
+        assertEquals(dataSourceId, dto.dataSourceId());
         assertEquals(timestamp.toEpochMilli(), dto.timestamp().toEpochMilli());
     }
 
@@ -55,7 +57,7 @@ class AiidaRecordConverterTest {
     void givenStringAiidaRecord_returnsDtoWithFieldsSet() {
         // Given
         Instant timestamp = Instant.now();
-        var aiidaRecord = new AiidaRecord(timestamp, "Test", List.of(
+        var aiidaRecord = new AiidaRecord(timestamp, "Test", dataSourceId, List.of(
                 new AiidaRecordValue("0-0:C.1.0", METER_SERIAL, "Hello!", NONE, "10", NONE)));
 
         when(mockPermission.connectionId()).thenReturn("connectionId");
@@ -70,6 +72,7 @@ class AiidaRecordConverterTest {
         assertEquals("0-0:C.1.0", dto.aiidaRecordValues().getFirst().rawTag());
         assertEquals("connectionId", dto.connectionId());
         assertEquals(permissionId, dto.permissionId());
+        assertEquals(dataSourceId, dto.dataSourceId());
         assertEquals(timestamp.toEpochMilli(), dto.timestamp().toEpochMilli());
     }
 }

@@ -13,13 +13,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public class SmartGatewaysAdapter extends AiidaMqttDataSource {
     private static final String DATASOURCE_NAME = "SmartGatewaysAdapter";
     private static final Logger LOGGER = LoggerFactory.getLogger(SmartGatewaysAdapter.class);
     private static final String DSMR_TARIFF_LOW = "0001";
 
-    public SmartGatewaysAdapter(String dataSourceId, MqttConfig mqttConfig) {
+    public SmartGatewaysAdapter(UUID dataSourceId, MqttConfig mqttConfig) {
         super(dataSourceId, DATASOURCE_NAME, mqttConfig, LOGGER);
     }
 

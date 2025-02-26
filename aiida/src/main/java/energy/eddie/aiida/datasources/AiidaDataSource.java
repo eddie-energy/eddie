@@ -12,12 +12,13 @@ import reactor.core.publisher.Sinks;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 public abstract class AiidaDataSource implements AutoCloseable, HealthIndicator {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaDataSource.class);
     protected final Sinks.Many<AiidaRecord> recordSink;
     protected final Sinks.Many<Health> healthSink;
-    private final String id;
+    private final UUID id;
     private final String name;
 
     /**
@@ -25,7 +26,7 @@ public abstract class AiidaDataSource implements AutoCloseable, HealthIndicator 
      *
      * @param name Display name of this new datasource.
      */
-    protected AiidaDataSource(String id, String name) {
+    protected AiidaDataSource(UUID id, String name) {
         this.id = id;
         this.name = name;
         recordSink = Sinks.many().unicast().onBackpressureBuffer();
@@ -47,7 +48,7 @@ public abstract class AiidaDataSource implements AutoCloseable, HealthIndicator 
     public void emitAiidaRecord(String asset, List<AiidaRecordValue> aiidaRecordValues) {
         Instant timestamp = Instant.now();
 
-        var aiidaRecord = new AiidaRecord(timestamp, asset, aiidaRecordValues);
+        var aiidaRecord = new AiidaRecord(timestamp, asset, id, aiidaRecordValues);
         var invalidTags = AiidaRecordValidator.checkInvalidDataTags(aiidaRecord);
 
         if (!invalidTags.isEmpty()) {
@@ -82,7 +83,7 @@ public abstract class AiidaDataSource implements AutoCloseable, HealthIndicator 
      *
      * @return Internal ID of the datasource
      */
-    public String id() {
+    public UUID id() {
         return id;
     }
 }

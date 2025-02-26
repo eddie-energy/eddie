@@ -16,6 +16,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import static energy.eddie.aiida.utils.ObisCode.METER_SERIAL;
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
@@ -36,21 +37,21 @@ class AiidaRecordRepositoryIntegrationTest {
             DockerImageName.parse("timescale/timescaledb:2.11.2-pg15")
                            .asCompatibleSubstituteFor("postgres")
     );
-
+    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     @Autowired
     AiidaRecordRepository repository;
 
     @Test
     void givenIntegerAndStringRecord_valueIsDeserializedProperly() {
         Instant now = Instant.now();
-        AiidaRecord intRecord = new AiidaRecord(now, "Test", List.of(
+        AiidaRecord intRecord = new AiidaRecord(now, "Test", dataSourceId, List.of(
                 new AiidaRecordValue("1-0:1.8.0",
                                      POSITIVE_ACTIVE_ENERGY,
                                      "237",
                                      UnitOfMeasurement.KWH,
                                      "237",
                                      UnitOfMeasurement.KWH)));
-        AiidaRecord stringRecord = new AiidaRecord(now, "Test", List.of(
+        AiidaRecord stringRecord = new AiidaRecord(now, "Test", dataSourceId, List.of(
                 new AiidaRecordValue("0-0:C.1.0",
                                      METER_SERIAL,
                                      "Hello Test",
