@@ -23,7 +23,7 @@ const disabledRegionConnectors = computed(() =>
   regionConnectors.value.filter(({ id }) => !allRegionConnectors.includes(id)).map(({ id }) => id)
 )
 
-const SUPPORTED_FEATURES = {
+const SUPPORTED_FEATURES: { [key: string]: string } = {
   supportsConnectionsStatusMessages: 'Connections Status Messages',
   supportsRawDataMessages: 'Raw Data Messages',
   supportsTermination: 'Termination',
@@ -33,7 +33,7 @@ const SUPPORTED_FEATURES = {
   supportsRetransmissionRequests: 'Retransmission Requests'
 }
 
-const SUPPORTED_DATA_NEEDS = {
+const SUPPORTED_DATA_NEEDS: { [key: string]: string } = {
   ValidatedHistoricalDataDataNeed: 'Validated Historical Data',
   AccountingPointDataNeed: 'Accounting Point'
 }

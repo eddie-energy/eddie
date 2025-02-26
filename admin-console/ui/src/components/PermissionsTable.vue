@@ -4,7 +4,6 @@ import {
   Button,
   Column,
   DataTable,
-  type DataTableFilterMeta,
   type DataTableRowExpandEvent,
   IconField,
   InputIcon,
@@ -19,7 +18,7 @@ import { countryFlag, formatCountry } from '@/util/countries'
 
 const permissions = await getPermissions()
 
-const filters = ref<DataTableFilterMeta>({ global: { value: null, matchMode: 'contains' } })
+const filters = ref({ global: { value: null, matchMode: 'contains' } })
 const expandedRows = ref({})
 const rowExpansions = ref<{ [key: string]: StatusMessage[] }>({})
 
