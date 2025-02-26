@@ -48,7 +48,7 @@ public class OAuth2SecurityConfiguration {
                                 "/login",
                                 "/actuator/health/**",
                                 "/application-information",
-                                "/img/eddie.svg",
+                                "/img/aiida.svg",
                                 "/img/icon.svg",
                                 "/css/style.css",
                                 "/css/login.css",
