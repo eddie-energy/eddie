@@ -136,6 +136,10 @@ application-local.properties
 
 # Ignore IntelliJ Run Configurations
 .run
+!.run/Aiida (Spring).run.xml
+!.run/Aiida (Gradle).run.xml
+!.run/Core (Spring).run.xml
+!.run/Core (Gradle).run.xml
 
 # IntelliJ HTTP Client environment secrets
 *.private.env.json
