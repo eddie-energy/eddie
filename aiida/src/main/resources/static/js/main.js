@@ -898,3 +898,4 @@ window.showUserDrawer = () => userDrawer.show();
 window.hideUserDrawer = () => userDrawer.hide();
 window.openAddDataSourceDialog = openAddDataSourceDialog;
 window.closeAddDataSourceDialog = closeAddDataSourceDialog;
+window.closeEditDataSourceDialog = closeEditDataSourceDialog;
