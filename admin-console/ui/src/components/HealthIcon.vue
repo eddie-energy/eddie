@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { HealthStatus } from '@/api'
+
 const HEALTH_INDICATOR_COLORS = {
   UP: 'var(--p-green-500)',
   UNKNOWN: 'var(--p-yellow-400)',
@@ -7,7 +9,7 @@ const HEALTH_INDICATOR_COLORS = {
   DISABLED: 'var(--p-gray-500)'
 }
 
-defineProps<{ health: keyof typeof HEALTH_INDICATOR_COLORS }>()
+defineProps<{ health: HealthStatus }>()
 </script>
 
 <template>

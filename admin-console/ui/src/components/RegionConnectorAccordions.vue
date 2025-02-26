@@ -4,6 +4,7 @@ import {
   getRegionConnectors,
   getRegionConnectorsSupportedDataNeeds,
   getRegionConnectorsSupportedFeatures,
+  HealthStatus,
   type RegionConnectorMetadata
 } from '@/api'
 import { allRegionConnectors } from '@/constants/region-connectors'
@@ -14,12 +15,12 @@ import { computed, onMounted, ref } from 'vue'
 import HealthIcon from '@/components/HealthIcon.vue'
 
 const regionConnectors = ref<RegionConnectorMetadata[]>([])
-const regionConnectorHealth = ref<Map<string, string>>(new Map())
+const regionConnectorHealth = ref<Map<string, HealthStatus>>(new Map())
 const regionConnectorSupportedFeatures = ref<Map<string, string>>(new Map())
 const regionConnectorSupportedDataNeeds = ref<Map<string, string[]>>(new Map())
 
 const disabledRegionConnectors = computed(() =>
-  regionConnectors.value.filter(({ id }) => !allRegionConnectors.includes(id))
+  regionConnectors.value.filter(({ id }) => !allRegionConnectors.includes(id)).map(({ id }) => id)
 )
 
 const SUPPORTED_FEATURES = {
@@ -54,7 +55,8 @@ onMounted(async () => {
     new Map()
   )
   for (const { id } of regionConnectors.value) {
-    regionConnectorHealth.value.set(id, (await getRegionConnectorHealth(id))?.status || 'UNKNOWN')
+    const health = await getRegionConnectorHealth(id)
+    regionConnectorHealth.value.set(id, health?.status || HealthStatus.UNKNOWN)
   }
 })
 </script>
@@ -79,7 +81,7 @@ onMounted(async () => {
                   <span class="font-bold">{{ countryFlag(countryCodes[0]) }}</span>
                   <span>{{ id }}</span>
 
-                  <HealthIcon :health="regionConnectorHealth.get(id)" />
+                  <HealthIcon :health="regionConnectorHealth.get(id) || HealthStatus.UNKNOWN" />
                 </div>
               </template>
 

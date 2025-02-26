@@ -42,11 +42,19 @@ export type DataNeed = {
   enabled: boolean
 }
 
+export enum HealthStatus {
+  UP = 'UP',
+  UNKNOWN = 'UNKNOWN',
+  OUT_OF_SERVICE = 'OUT_OF_SERVICE',
+  DOWN = 'DOWN',
+  DISABLED = 'DISABLED'
+}
+
 export type RegionConnectorHealth = {
-  status: string
+  status: HealthStatus
   components?: {
     [key: string]: {
-      status: string
+      status: HealthStatus
       details?: string
     }
   }
@@ -100,10 +108,10 @@ export async function getRegionConnectors(): Promise<RegionConnectorMetadata[]> 
 
 export async function getRegionConnectorHealth(
   regionConnectorId: string
-): Promise<RegionConnectorHealth | undefined> {
+): Promise<RegionConnectorHealth> {
   return await fetch(
     `${REGION_CONNECTOR_HEALTH_API_URL}/region-connector-${regionConnectorId}`
-  ).then((res) => (res.status === 404 ? undefined : res.json()))
+  ).then((res) => (res.status === 404 ? { status: HealthStatus.UNKNOWN } : res.json()))
 }
 
 export async function getRegionConnectorsSupportedFeatures(): Promise<
