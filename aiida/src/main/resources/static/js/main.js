@@ -206,7 +206,7 @@ function permissionElement(permission) {
         <dd>${expirationTime}</dd>
 
         <dt>Transmission Schedule</dt>
-        <dd>${transmissionSchedule}</dd>
+        <dd>${window.cronstrue.toString(transmissionSchedule)}</dd>
 
         <dt>Schemas</dt>
         <dd>
@@ -356,7 +356,7 @@ function updatePermissionDialogWithDetails(permission) {
       <dd>${toLocalDateString(expirationTime)}</dd>
 
       <dt>Transmission Schedule</dt>
-      <dd>${transmissionSchedule}</dd>
+      <dd>${window.cronstrue.toString(transmissionSchedule)}</dd>
 
       <dt>Schemas</dt>
       <dd>${schemas.map((schema) => `<span>${schema}</span>`).join("<br>")}</dd>
