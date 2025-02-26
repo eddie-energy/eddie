@@ -69,8 +69,12 @@ const STATUS = {
   },
 };
 
-const PERMISSIONS_BASE_URL = document.querySelector('meta[name="permissions-base-url"]').getAttribute("content");
-const DATASOURCES_BASE_URL = document.querySelector('meta[name="datasources-base-url"]').getAttribute("content");
+const PERMISSIONS_BASE_URL = document
+  .querySelector('meta[name="permissions-base-url"]')
+  .getAttribute("content");
+const DATASOURCES_BASE_URL = document
+  .querySelector('meta[name="datasources-base-url"]')
+  .getAttribute("content");
 
 const permissionDialog = document.getElementById("permission-dialog");
 const permissionDialogContent = document.getElementById(
@@ -175,7 +179,7 @@ function permissionElement(permission) {
         <small class="label">${permissionId}</small>
       </span>
 
-      <dl class="permission-details">
+      <dl class="details-list">
         <dt>Service</dt>
         <dd>${serviceName}</dd>
         <dt>Status</dt>
@@ -202,7 +206,7 @@ function permissionElement(permission) {
         <dd>${expirationTime}</dd>
 
         <dt>Transmission Schedule</dt>
-        <dd>${transmissionSchedule}</dd>
+        <dd>${window.cronstrue.toString(transmissionSchedule)}</dd>
 
         <dt>Schemas</dt>
         <dd>
@@ -352,7 +356,7 @@ function updatePermissionDialogWithDetails(permission) {
       <dd>${toLocalDateString(expirationTime)}</dd>
 
       <dt>Transmission Schedule</dt>
-      <dd>${transmissionSchedule}</dd>
+      <dd>${window.cronstrue.toString(transmissionSchedule)}</dd>
 
       <dt>Schemas</dt>
       <dd>${schemas.map((schema) => `<span>${schema}</span>`).join("<br>")}</dd>
@@ -408,77 +412,79 @@ function renderDataSources() {
       dataSourceList.innerHTML = "";
 
       dataSources.forEach((dataSource) => {
-        const element = document.createElement("div");
-        const generalDetails = /* HTML */ ` <p>
-            <strong>ID:</strong> ${dataSource.id}
-          </p>
-          <p><strong>Asset:</strong> ${dataSource.asset}</p>
-          <p><strong>Type:</strong> ${dataSource.dataSourceType}</p>`;
+        const template = document.createElement("template");
 
         let dataSourceTypeDetails =
           dataSource.dataSourceType === "SIMULATION"
             ? /* HTML */ `
-                <p>
-                  <strong>Simulation Period:</strong>
-                  ${dataSource.simulationPeriod}
-                </p>
+                <dt>Simulation Period:</dt>
+                <dd>${dataSource.simulationPeriod} seconds</dd>
               `
             : /* HTML */ `
-                <p>
-                  <strong>MQTT Server URI:</strong> ${dataSource.mqttServerUri}
-                </p>
-                <p>
-                  <strong>MQTT Topic:</strong> ${dataSource.mqttSubscribeTopic}
-                </p>
-                <p>
-                  <strong>MQTT Username:</strong> ${dataSource.mqttUsername}
-                </p>
-                <p>
-                  <strong>MQTT Password:</strong>
-                  <span id="mqtt-password" style="visibility: hidden">${dataSource.mqttPassword}</span>
-                  <sl-icon id="toggle-mqtt-password" style="cursor: pointer" name="eye"></sl-icon>
-                </p>
+                <dt>MQTT Server URI:</dt>
+                <dd>${dataSource.mqttServerUri}</dd>
+                <dt>MQTT Topic:</dt>
+                <dd>${dataSource.mqttSubscribeTopic}</dd>
+                <dt>MQTT Username:</dt>
+                <dd>${dataSource.mqttUsername}</dd>
+                <dt>MQTT Password:</dt>
+                <dd>
+                  <span hidden id="mqtt-password">
+                    ${dataSource.mqttPassword}
+                  </span>
+                  <span>********</span>
+                  <sl-icon
+                    id="toggle-mqtt-password"
+                    style="cursor: pointer"
+                    name="eye"
+                  ></sl-icon>
+                </dd>
               `;
 
         if (dataSource.dataSourceType === "Micro Teleinfo v3") {
           dataSourceTypeDetails += `<p><strong>Metering ID:</strong> ${dataSource.meteringId}</p>`;
         }
 
-        element.innerHTML = /* HTML */ `
+        template.innerHTML = /* HTML */ `
           <sl-card>
             <h3>${dataSource.name}</h3>
-            ${generalDetails + dataSourceTypeDetails}
-            <p>
-              <strong>Enabled:</strong>
-              <sl-switch
-                class="toggle-enabled"
-                ${dataSource.enabled ? "checked" : ""}
-                data-id="${dataSource.id}"
-              >
-              </sl-switch>
-            </p>
-            <sl-button class="delete-button" data-id="${dataSource.id}"
-              >Delete</sl-button
-            >
-            <sl-button class="edit-button" data-id="${dataSource.id}"
-              >Edit</sl-button
-            >
+
+            <dl class="details-list">
+              <dt>ID:</dt>
+              <dd>${dataSource.id}</dd>
+
+              <dt>Asset:</dt>
+              <dd>${dataSource.asset}</dd>
+
+              <dt>Type:</dt>
+              <dd>${dataSource.dataSourceType}</dd>
+
+              ${dataSourceTypeDetails}
+
+              <dt>Enabled:</dt>
+              <dd>${dataSource.enabled}</dd>
+            </dl>
+            <sl-button class="edit-button" data-id="${dataSource.id}">
+              Edit
+            </sl-button>
+            <sl-button class="delete-button" data-id="${dataSource.id}">
+              Delete
+            </sl-button>
           </sl-card>
         `;
 
-        dataSourceList.appendChild(element);
+        dataSourceList.appendChild(template.content);
       });
 
       const passwordSpan = document.getElementById("mqtt-password");
       const toggleIcon = document.getElementById("toggle-mqtt-password");
 
       toggleIcon.addEventListener("click", () => {
-        if (passwordSpan.style.visibility === "hidden") {
-          passwordSpan.style.visibility = "visible";
-          toggleIcon.setAttribute("name", "eye-slash");
-        } else {
-          passwordSpan.style.visibility = "hidden";
+        passwordSpan.toggleAttribute("hidden");
+        if (passwordSpan.hasAttribute("hidden")) {
           toggleIcon.setAttribute("name", "eye");
+        } else {
+          toggleIcon.setAttribute("name", "eye-slash");
         }
       });
 
@@ -607,21 +613,21 @@ function openAddDataSourceDialog() {
 
 function updateDataSourceFields(type) {
   const dataSourceFields = document.getElementById("data-source-fields");
-  const commonFields = /* HTML */ ` <sl-input
-      name="name"
-      label="Name"
-      required
-    ></sl-input>
-    <sl-checkbox name="enabled" checked>Enabled</sl-checkbox>`;
+  const commonFields = /* HTML */ `
+    <sl-input name="name" label="Name" required></sl-input>
+    <br />
+    <sl-checkbox name="enabled" checked>Enabled</sl-checkbox>
+    <br />
+  `;
 
   let dataTypeFields = "";
   if (type === "SIMULATION") {
-    dataTypeFields += `<sl-input name="simulationPeriod" label="Simulation Period" type="number" required></sl-input>`;
+    dataTypeFields += `<br /><sl-input name="simulationPeriod" label="Simulation Period" type="number" required></sl-input>`;
   } else {
-    dataTypeFields += `<sl-input name="mqttTopic" label="MQTT Topic" required></sl-input>`;
+    dataTypeFields += `<br /><sl-input name="mqttTopic" label="MQTT Topic" required></sl-input>`;
 
     if (type === "MICRO_TELEINFO") {
-      dataTypeFields += `<sl-input name="meteringID" label="MeteringID" required></sl-input>`;
+      dataTypeFields += `<br /><sl-input name="meteringID" label="MeteringID" required></sl-input>`;
     }
   }
 
@@ -665,10 +671,12 @@ function openEditDataSourceDialog(dataSourceId) {
               value="${dataSource.name}"
               required
             ></sl-input>
-            <sl-checkbox name="enabled" ${dataSource.enabled ? "checked" : ""}
-              >Enabled</sl-checkbox
-            >
-
+            <br />
+            <sl-checkbox name="enabled" ${dataSource.enabled ? "checked" : ""}>
+              Enabled
+            </sl-checkbox>
+            <br />
+            <br />
             <sl-select id="asset-select" name="asset" label="Asset" required>
               ${assets
                 .map(
@@ -677,7 +685,7 @@ function openEditDataSourceDialog(dataSourceId) {
                 )
                 .join("")}
             </sl-select>
-
+            <br />
             <sl-select
               id="type-select"
               name="dataSourceType"
@@ -695,6 +703,7 @@ function openEditDataSourceDialog(dataSourceId) {
 
           if (dataSource.dataSourceType === "SIMULATION") {
             editFields += /* HTML */ `
+              <br />
               <sl-input
                 name="simulationPeriod"
                 label="Simulation Period"
@@ -705,34 +714,41 @@ function openEditDataSourceDialog(dataSourceId) {
             `;
           } else {
             editFields += /* HTML */ `
+              <br />
               <sl-input
                 name="mqttServerUri"
                 label="MQTT Server URI"
                 value="${dataSource.mqttServerUri}"
                 required
               ></sl-input>
+              <br />
               <sl-input
                 name="mqttTopic"
                 label="MQTT Topic"
                 value="${dataSource.mqttSubscribeTopic}"
                 required
               ></sl-input>
+              <br />
               <sl-input
                 name="mqttUsername"
                 label="MQTT Username"
                 value="${dataSource.mqttUsername}"
                 required
               ></sl-input>
+              <br />
               <sl-input
                 name="mqttPassword"
                 label="MQTT Password"
                 value="${dataSource.mqttPassword}"
                 required
+                type="password"
+                password-toggle
               ></sl-input>
             `;
 
             if (dataSource.dataSourceType === "TELEINFO") {
               editFields += /* HTML */ `
+                <br />
                 <sl-input
                   name="meteringId"
                   label="Metering ID"
@@ -890,3 +906,4 @@ window.showUserDrawer = () => userDrawer.show();
 window.hideUserDrawer = () => userDrawer.hide();
 window.openAddDataSourceDialog = openAddDataSourceDialog;
 window.closeAddDataSourceDialog = closeAddDataSourceDialog;
+window.closeEditDataSourceDialog = closeEditDataSourceDialog;

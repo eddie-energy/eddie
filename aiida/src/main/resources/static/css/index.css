@@ -3,13 +3,13 @@ body {
   padding: var(--sl-spacing-small);
 }
 
-.permission-details {
+.details-list {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: var(--sl-spacing-x-small);
 }
 
-.permission-details dt {
+.details-list dt {
   font-weight: bold;
   color: var(--sl-color-neutral-500);
   font-size: var(--sl-font-size-small);
@@ -27,6 +27,7 @@ body {
 .permissions {
   display: grid;
   gap: var(--sl-spacing-small);
+  max-width: 800px;
 }
 
 .permission-form {
@@ -53,17 +54,12 @@ body {
   margin-bottom: var(--sl-spacing-large);
 }
 
-.datasources {
-  display: flex;
-  flex-wrap: wrap;
+.data-sources {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  align-items: stretch;
   gap: 1rem;
-  justify-content: space-evenly;
-}
-
-.datasources > div {
-  flex: 1 1 calc(30% - 1rem);
-  max-width: 30%;
-  box-sizing: border-box;
+  margin-top: 1rem;
 }
 
 .user-drawer-content {
@@ -77,11 +73,6 @@ body {
   }
 }
 
-#add-data-source-form sl-select {
-margin-bottom: 1rem;
-}
-
-#add-data-source-form sl-checkbox {
-margin-bottom: 1rem;
-margin-top: 1rem;
+#mqtt-password:not([hidden]) + span {
+  display: none;
 }
