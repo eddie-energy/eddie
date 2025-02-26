@@ -76,11 +76,16 @@ The example [docker-compose.yml](env/docker-compose.yml) contains a *db* service
 
 ## Building docker images locally
 
-Building and running can be done using `docker compose` with the files provided in the `/env` folder. For performing a
-local test run with compiling the software, building and starting a local docker environment shell scripts exist:
+Instructions on how to run the docker images locally exist in [env/README.md](env/README.md). 
+To perform a local test run with compiling the software, building, and starting a local docker environment, shell scripts exist in the repository root:
 
-- `build_and_run_containers.ps1`
-- `build_and_run_containers.bash`
+```shell
+powershell build_and_run_containers.ps1
+```
+
+```shell
+bash build_and_run_containers.bash
+```
 
 ## Configuring EDDIE
 
