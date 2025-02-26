@@ -296,7 +296,7 @@
       ],
       "allOf": [
         {
-          "$ref": "#/$defs/CdsOAuthMetadataAndClientRegistrationResponseEndpoints"
+          "$ref": "#/$defs/CdsEndpoints"
         }
       ]
     },
@@ -714,27 +714,31 @@
       ]
     },
     "ClientRegistrationResponse": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Client"
+        }
+      ],
+      "required": [
+        "client_secret"
+      ]
+    },
+    "Client": {
       "description": "Modeled after Client Registration Response, see: https://www.rfc-editor.org/rfc/rfc7591#section-3.2.1",
       "type": "object",
       "properties": {
         "client_id": {
           "type": "string",
-          "description": "OAuth 2.0 client identifier string.  It SHOULD NOT be currently valid for any other registered client, though an authorization server MAY issue the same client identifier to multiple instances of a registered client at its discretion."
+          "description": "OAuth 2.0 client identifier string. It SHOULD NOT be currently valid for any other registered client, though an authorization server MAY issue the same client identifier to multiple instances of a registered client at its discretion."
         },
         "client_id_issued_at": {
           "type": "integer",
-          "description": "Time at which the client identifier was issued.  The time is represented as the number of seconds from 1970-01-01T00:00:00Z as measured in UTC until the date/time of issuance."
+          "description": "Time at which the client identifier was issued. The time is represented as the number of seconds from 1970-01-01T00:00:00Z as measured in UTC until the date/time of issuance."
         },
-        "client_name": {
-          "type": "string"
-        },
-        "client_secret": {
+        "scope": {
           "type": "string",
-          "description": "A client_secret value MUST be present in the response and be limited to client_admin scope use only."
-        },
-        "client_secret_expires_at": {
-          "type": "integer",
-          "description": "REQUIRED if 'client_secret' is issued.  Time at which the client secret will expire or 0 if it will not expire.  The time is represented as the number of seconds from 1970-01-01T00:00:00Z as measured in UTC until the date/time of expiration."
+          "description": "Space separated list of scopes, must include 'client_admin'",
+          "pattern": ".*client_admin.*"
         },
         "redirect_uris": {
           "type": "array",
@@ -742,6 +746,12 @@
             "type": "string",
             "format": "uri"
           }
+        },
+        "token_endpoint_auth_method": {
+          "type": "string",
+          "enum": [
+            "client_secret_basic"
+          ]
         },
         "grant_types": {
           "type": "array",
@@ -751,57 +761,144 @@
         },
         "response_types": {
           "type": "array",
+          "description": "If no response types are configured, this value is an empty list ([]).",
           "items": {
             "type": "string"
           }
         },
-        "scope": {
+        "client_name": {
           "type": "string",
-          "description": "Space separated list of scopes, must include 'client_admin'",
-          "pattern": ".*client_admin.*"
+          "description": "If no value is submitted by the Client, the default value is the client_id."
         },
-        "token_endpoint_auth_method": {
+        "contacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "authorization_details_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "client_secret": {
           "type": "string",
-          "enum": [
-            "client_secret_basic"
-          ]
+          "description": "Only present when the client was initially created."
+        },
+        "cds_created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Client object was created."
+        },
+        "cds_modified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Client object was last modified."
+        },
+        "cds_client_uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where to submit modifications using the Clients API Modifying Clients functionality. Servers MUST make this URL unique for each Client object."
+        },
+        "cds_status": {
+          "type": "string",
+          "description": "The current status of availability for this Client."
+        },
+        "cds_status_options": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "oneOf": [
+              {
+                "const": "production",
+                "description": "The Client object MAY be used on the Server’s production systems. For scopes that require user authorization (e.g. response_type values of code), this cds_status indicates that the Client may request authorization from real users."
+              },
+              {
+                "const": "sandbox",
+                "description": "The Client object MAY be used to request access on the Server’s test environment systems. For scopes that require user authorization (i.e. response_type values of code), this cds_status indicates that the Client may request authorization from fictional test users, as provided in the Server’s cds_test_accounts documentation."
+              },
+              {
+                "const": "disabled",
+                "description": "The Client is is disabled."
+              }
+            ]
+          },
+          "description": "What cds_status values the Client MAY change to when modifying it. For Client objects with the client_admin scope, this list MUST NOT contain 'disabled'. For all other Client objects, this list MUST contain at least 'disabled', so that Clients MAY opt to disable Client objects as needed."
         },
         "cds_server_metadata": {
           "type": "string",
           "format": "uri",
-          "description": "Where the Client can find their registration-specific version of the CDSC-WG1-01 Server Metadata. If the Client’s CDSC server metadata is no different from the public CDSC server metadata, Servers MAY simply link to the public URL. If this metadata endpoint requires authentication, Servers MUST authenticate Client requests to this endpoint via Bearer access token obtained using OAuth’s client_credentials grant with a scope of client_admin, and reject unauthenticated requests with a 401 Unauthorized response code. Clients know that they must use a Bearer token when Servers return a 401 response code for this endpoint when the Client makes an unauthenticated request to the endpoint."
+          "description": "Where the Client can find their registration-specific version of the CDSC-WG1-01 Server Metadata."
+        },
+        "cds_server_provided_files_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base URL for the Server-Provided Files API. MUST be included if the Client’s registration response scope string included the 'server_provided_files' scope."
+        },
+        "cds_default_scope": {
+          "type": "string",
+          "description": "The default scope string used when no scope parameter is provided as part of an authorization request. MUST be included if response_types is not an empty list."
+        },
+        "cds_default_redirect_uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "The default redirect_uri used when no redirect_uri parameter is provided as part of an authorization request. MUST be included if response_types is not an empty list."
+        },
+        "cds_default_authorization_details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "description": "The default authorization details list used when no authorization_details parameter is provided as part of an authorization request. MUST be included if response_types is not an empty list."
         }
       },
       "required": [
         "client_id",
-        "client_secret",
-        "client_secret_expires_at",
+        "client_id_issued_at",
         "scope",
+        "redirect_uris",
         "token_endpoint_auth_method",
+        "grant_types",
+        "response_types",
+        "client_name",
+        "contacts",
+        "authorization_details_types",
+        "cds_created",
+        "cds_modified",
+        "cds_client_uri",
+        "cds_status",
+        "cds_status_options",
         "cds_server_metadata"
       ],
       "allOf": [
         {
-          "$ref": "#/$defs/CdsOAuthMetadataAndClientRegistrationResponseEndpoints"
+          "$ref": "#/$defs/CdsEndpoints"
         },
         {
           "$ref": "#/$defs/ClientMetadataExtension"
         }
       ]
     },
-    "CdsOAuthMetadataAndClientRegistrationResponseEndpoints": {
+    "CdsEndpoints": {
       "properties": {
         "cds_clients_api": {
           "type": "string",
           "format": "uri",
           "description": "The base url for the Clients API."
         },
-        "cds_client_messages_api": {
+        "cds_messages_api": {
           "type": "string",
           "format": "uri",
           "description": "The base url for the Clients Messages API."
         },
-        "cds_scope_credentials_api": {
+        "cds_credentials_api": {
           "type": "string",
           "format": "uri",
           "description": "The base url for the Scope Credentials API."
@@ -814,8 +911,8 @@
       },
       "required": [
         "cds_clients_api",
-        "cds_client_messages_api",
-        "cds_scope_credentials_api",
+        "cds_messages_api",
+        "cds_credentials_api",
         "cds_grants_api"
       ]
     },
@@ -1018,6 +1115,39 @@
         "capabilities"
       ],
       "additionalProperties": false
+    },
+    "Clients": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IndividualClient"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "results"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/$defs/Page"
+        }
+      ]
+    },
+    "IndividualClient": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Client",
+          "properties": {
+            "client_secret": false
+          }
+        }
+      ]
     },
     "Accounts": {
       "description": "Clients may request to list Account objects that they have access to by making an HTTPS GET request, authenticated with a valid Bearer access_token that is scoped to provide access to a set of Accounts, to the cds_accounts_api URL included in the Client Registration Response or Clients API. The Account listing request responses are formatted as JSON objects and contain the following named values.",
