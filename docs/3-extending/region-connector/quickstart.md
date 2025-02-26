@@ -860,6 +860,7 @@ The implementations just have to be defined as Spring beans in your Spring confi
 @RegionConnector(name = "foo-bar")
 public class FooBarSpringConfig {
 
+  // For connection status messages
   @Bean
   public ConnectionStatusMessageHandler<FooBarPermissionRequest> connectionStatusMessageHandler(
           EventBus eventBus,
@@ -872,6 +873,7 @@ public class FooBarSpringConfig {
     );
   }
 
+  // For permission market documents, the CIM pendant to connection status messages
   @Bean
   public PermissionMarketDocumentMessageHandler<FooBarPermissionRequest> permissionMarketDocumentMessageHandler(
           EventBus eventBus,
@@ -918,6 +920,10 @@ When they receive a new event, they generate a new connection status message or 
   :::
 
 Now we want to support historical validated data, so we have to update the supported data needs list in the region connector metadata implementation.
+Validated historical data is a term that describes metering data that was validated by the MDA.
+We take that validated historical data in the MDA's format and want to publish it.
+First, we are going to emit it as raw data, so we take the validated historical data as is and emit it to the outbound connectors.
+Later on, we will map the validated historical data to the validated historical data market documents, which is a CIM format.
 
 ```java
 public class FooBarRegionConnectorMetadata implements RegionConnectorMetadata {
@@ -929,7 +935,7 @@ public class FooBarRegionConnectorMetadata implements RegionConnectorMetadata {
 
 When a permission request is created now, it won't be malformed anymore, since one data need is supported now.
 Next, the validated historical data has to be requested and published to the raw data stream.
-Since, the same data is going to be emitted as a validated historical data market document later on, there should be one base stream that gets converted into the necessary format.
+Since the same data is going to be emitted as a validated historical data market document later on, there should be one base stream that gets converted into the necessary format.
 
 ```java
 

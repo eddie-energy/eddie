@@ -76,6 +76,8 @@ The permission request was not accepted by the user in time. Please try again.
 
 **ACCEPTED**  
 The user accepted the permission request.
+At this point the EDDIE framework can request data from the MDA.
+Depending on the results the permission request can be transitioned to one of the next states.
 
 **REJECTED**  
 The user rejected the permission request.
@@ -88,12 +90,14 @@ The user revoked the permission via the permission administrator or the permissi
 
 **TERMINATED**  
 The permission was terminated by the eligible party.
+A reason for this could be that the eligible party does not need that kind of data anymore.
 
 **FULFILLED**  
 The permission request has been fulfilled, i.e. all data has been delivered.
 
 **UNFULFILLABLE**  
-The permission request specifies data that is not available for that final customer.
+The data that can be requested from a final customer does not conform the format that is specified by the permission request.
+Therefore, the permission request is marked as unfulfillable.
 
 **REQUIRES_EXTERNAL_TERMINATION**  
 A follow-up state for UNFULFILLABLE, FULFILLED, TERMINATED, since sometimes these states have to be externally terminated.
@@ -133,13 +137,20 @@ _complete_, since they will not update without explicit interaction from the cus
 
 The following states are regarded as _final_, in that they will not be updated again.
 
-- TERMINATED
-- EXTERNALLY_TERMINATED
-- REVOKED
-- FULFILLED
+>[!NOTE]
+> States with an * are conditionally terminal states. 
+> This means for permission administrators that do not support externally terminating permission requests, these states are considered final.
+
+- REJECTED
+- TIMED_OUT
 - INVALID
-- MALFORMED
-- UNFULFILLABLE
+- REVOKED
+- TERMINATED*
+- FULFILLED*
+- MALFORMED*
+- UNFULFILLABLE*
+- EXTERNALLY_TERMINATED
+
 
 ### Terminable States
 

@@ -104,10 +104,6 @@ export default withMermaid(defineConfig({
               },
             ],
           },
-          {
-            text: "Data Needs",
-            link: "2-integrating/data-needs.md",
-          },
         ],
       },
       {
