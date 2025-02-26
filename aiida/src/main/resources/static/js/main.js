@@ -179,7 +179,7 @@ function permissionElement(permission) {
         <small class="label">${permissionId}</small>
       </span>
 
-      <dl class="permission-details">
+      <dl class="details-list">
         <dt>Service</dt>
         <dd>${serviceName}</dd>
         <dt>Status</dt>
@@ -413,42 +413,32 @@ function renderDataSources() {
 
       dataSources.forEach((dataSource) => {
         const template = document.createElement("template");
-        const generalDetails = /* HTML */ ` <p>
-            <strong>ID:</strong> ${dataSource.id}
-          </p>
-          <p><strong>Asset:</strong> ${dataSource.asset}</p>
-          <p><strong>Type:</strong> ${dataSource.dataSourceType}</p>`;
 
         let dataSourceTypeDetails =
           dataSource.dataSourceType === "SIMULATION"
             ? /* HTML */ `
-                <p>
-                  <strong>Simulation Period:</strong>
-                  ${dataSource.simulationPeriod} seconds
-                </p>
+                <dt>Simulation Period:</dt>
+                <dd>${dataSource.simulationPeriod} seconds</dd>
               `
             : /* HTML */ `
-                <p>
-                  <strong>MQTT Server URI:</strong> ${dataSource.mqttServerUri}
-                </p>
-                <p>
-                  <strong>MQTT Topic:</strong> ${dataSource.mqttSubscribeTopic}
-                </p>
-                <p>
-                  <strong>MQTT Username:</strong> ${dataSource.mqttUsername}
-                </p>
-                <p>
-                  <strong>MQTT Password:</strong>
-                  <span>
-                    <span hidden id="mqtt-password">${dataSource.mqttPassword}</span>
-                    <span>********</span>
-                    <sl-icon
-                      id="toggle-mqtt-password"
-                      style="cursor: pointer"
-                      name="eye"
-                    ></sl-icon>
+                <dt>MQTT Server URI:</dt>
+                <dd>${dataSource.mqttServerUri}</dd>
+                <dt>MQTT Topic:</dt>
+                <dd>${dataSource.mqttSubscribeTopic}</dd>
+                <dt>MQTT Username:</dt>
+                <dd>${dataSource.mqttUsername}</dd>
+                <dt>MQTT Password:</dt>
+                <dd>
+                  <span hidden id="mqtt-password">
+                    ${dataSource.mqttPassword}
                   </span>
-                </p>
+                  <span>********</span>
+                  <sl-icon
+                    id="toggle-mqtt-password"
+                    style="cursor: pointer"
+                    name="eye"
+                  ></sl-icon>
+                </dd>
               `;
 
         if (dataSource.dataSourceType === "Micro Teleinfo v3") {
@@ -458,16 +448,29 @@ function renderDataSources() {
         template.innerHTML = /* HTML */ `
           <sl-card>
             <h3>${dataSource.name}</h3>
-            ${generalDetails + dataSourceTypeDetails}
-            <p>
-              <strong>Enabled:</strong>
-              <sl-switch
-                class="toggle-enabled"
-                ${dataSource.enabled ? "checked" : ""}
-                data-id="${dataSource.id}"
-              >
-              </sl-switch>
-            </p>
+
+            <dl class="details-list">
+              <dt>ID:</dt>
+              <dd>${dataSource.id}</dd>
+
+              <dt>Asset:</dt>
+              <dd>${dataSource.asset}</dd>
+
+              <dt>Type:</dt>
+              <dd>${dataSource.dataSourceType}</dd>
+
+              ${dataSourceTypeDetails}
+
+              <dt>Enabled:</dt>
+              <dd>
+                <sl-switch
+                  class="toggle-enabled"
+                  ${dataSource.enabled ? "checked" : ""}
+                  data-id="${dataSource.id}"
+                >
+                </sl-switch>
+              </dd>
+            </dl>
             <sl-button class="delete-button" data-id="${dataSource.id}">
               Delete
             </sl-button>
