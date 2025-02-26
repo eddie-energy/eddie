@@ -69,8 +69,12 @@ const STATUS = {
   },
 };
 
-const PERMISSIONS_BASE_URL = document.querySelector('meta[name="permissions-base-url"]').getAttribute("content");
-const DATASOURCES_BASE_URL = document.querySelector('meta[name="datasources-base-url"]').getAttribute("content");
+const PERMISSIONS_BASE_URL = document
+  .querySelector('meta[name="permissions-base-url"]')
+  .getAttribute("content");
+const DATASOURCES_BASE_URL = document
+  .querySelector('meta[name="datasources-base-url"]')
+  .getAttribute("content");
 
 const permissionDialog = document.getElementById("permission-dialog");
 const permissionDialogContent = document.getElementById(
@@ -735,6 +739,8 @@ function openEditDataSourceDialog(dataSourceId) {
                 label="MQTT Password"
                 value="${dataSource.mqttPassword}"
                 required
+                type="password"
+                password-toggle
               ></sl-input>
             `;
 
