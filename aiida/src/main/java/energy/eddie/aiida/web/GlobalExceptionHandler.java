@@ -117,4 +117,10 @@ public class GlobalExceptionHandler {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errors);
     }
+
+    @ExceptionHandler(value = {InstallerException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleInstallerException(InstallerException exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(exception.httpStatus()).body(errors);
+    }
 }

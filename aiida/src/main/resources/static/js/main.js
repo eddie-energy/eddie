@@ -69,8 +69,8 @@ const STATUS = {
   },
 };
 
-const PERMISSIONS_BASE_URL = "/permissions";
-const DATASOURCES_BASE_URL = "/datasources";
+const PERMISSIONS_BASE_URL = document.querySelector('meta[name="permissions-base-url"]').getAttribute("content");
+const DATASOURCES_BASE_URL = document.querySelector('meta[name="datasources-base-url"]').getAttribute("content");
 
 const permissionDialog = document.getElementById("permission-dialog");
 const permissionDialogContent = document.getElementById(
