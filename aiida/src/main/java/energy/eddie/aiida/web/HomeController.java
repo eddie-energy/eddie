@@ -68,6 +68,11 @@ public class HomeController {
         return connectionId;
     }
 
+    @GetMapping("/installer")
+    public String installer() {
+        return "installer";
+    }
+
     @GetMapping("/login")
     public String login() {
         return "login";

@@ -24,6 +24,7 @@ tags:
       This specification defines how utilities and other central entities (“Servers”) may allow third parties (“Clients”) to access utility account holder data (“Customer Data”), including for use cases that require account holders to authorize the access. This specification extends CDSC-WG1-02 (Client Registration) to add OAuth authorization scopes for Customer Data, as well as defining the APIs used to access Customer Data when authorization is granted.
     externalDocs:
       url: https://daniel-utilityapi.github.io/Customer-Data/specs/cdsc-wg3-01/
+  - name: well-known
 paths:
   /.well-known/carbon-data-spec.json:
     get:
@@ -33,6 +34,7 @@ paths:
         Servers MAY additionally support other public and restricted URLs for special case or private metadata endpoints, as needed.
       tags:
         - Server Metadata
+        - well-known
       responses:
         200:
           description: CDS Metadata response
@@ -79,6 +81,7 @@ paths:
       description: |
       tags:
         - Client Registration
+        - well-known
       responses:
         200:
           description: OAuth Metadata, containing URIs to endpoints to create an oauth client
@@ -111,6 +114,57 @@ paths:
             application/json:
               schema:
                 $ref: "cds-schemas.json/#/$defs/ClientRegistrationResponse"
+  /api/clients:
+    get:
+      operationId: Client Endpoint
+      description: |
+        This specification requires Servers provide a set of Application Programming Interfaces (APIs) allowing Clients to view and edit their Client registrations.
+        These APIs are authenticated using a Bearer access_token obtained by the Client using OAuth’s client_credentials grant process, where the client_id used is for a Client that includes the client_admin scope.
+      tags:
+        - Client Registration
+      externalDocs:
+        url: https://daniel-utilityapi.github.io/Connectivity/specs/cdsc-wg1-02/#clients-api
+      security:
+        - oauth:
+            - client_admin
+      responses:
+        200:
+          description: |
+            Client objects are formatted as JSON objects and contain named values.
+            Client objects are required to follow the same object format as the OAuth Dynamic Client Registration Management Protocol’s Client Metadata, with the following modifications.
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/Clients"
+  /api/clients/{id}:
+    get:
+      operationId: Retrieving Individual Clients
+      description: |
+        The URL to be used to send GET requests for retrieving individual Client objects MUST be the cds_client_uri provided in the Client object.
+        If a Server has optionally implemented OAuth’s Dynamic Client Registration Management Protocol, the value of cds_client_uri MUST be the same as registration_client_uri, and access tokens issued from either a client_credentials grant with the scope client_admin or the access token provided as the registration_access_token MUST be valid access tokens to interact with the client retrieval endpoint (cds_client_uri).
+      tags:
+        - Client Registration
+      externalDocs:
+        url: https://daniel-utilityapi.github.io/Connectivity/specs/cdsc-wg1-02/#clients-get
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the client
+      security:
+        - oauth:
+            - client_admin
+      responses:
+        200:
+          description: |
+            Client objects are formatted as JSON objects and contain named values.
+            Client objects are required to follow the same object format as the OAuth Dynamic Client Registration Management Protocol’s Client Metadata, with the following modifications.
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/IndividualClient"
 
   /api/accounts:
     get:
@@ -121,6 +175,11 @@ paths:
         url: https://daniel-utilityapi.github.io/Customer-Data/specs/cdsc-wg3-01/#accounts-api
       tags:
         - Customer Data
+      security:
+        - oauth:
+            - cds_accounts_basic
+            - cds_accounts_contacts
+            - cds_accounts_detailed
       parameters:
         - name: "cds_account_ids"
           in: query
@@ -178,6 +237,10 @@ paths:
         This specification requires Servers provide a set of APIs allowing Clients to retrieve a Customer’s and Server’s Usage Segment objects for which they are authorized to access. These APIs are authenticated using a Bearer access_token granted that provisions access for a scope that allows access to the Usage Segments API.
       tags:
         - Customer Data
+      security:
+        - oauth:
+            - cds_usage_basic
+            - cds_usage_detailed
       parameters:
         - name: cds_usagesegment_ids
           in: query
@@ -273,3 +336,31 @@ paths:
             application/json:
               schema:
                 $ref: "cds-schemas.json/#/$defs/UsageSegments"
+components:
+  securitySchemes:
+    oauth:
+      type: oauth2
+      description: This API uses OAuth 2 with the implicit and client credentials grant flow.
+      flows:
+        implicit:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            cds_accounts_basic: Access to basic customer account information.
+            cds_accounts_contacts: Access to the current contact information for a customer’s accounts.
+            cds_accounts_detailed: Access to detailed information for a customer’s accounts.
+            cds_servicecontracts_basic: Access to a customer’s list of service contracts (e.g. an electrical, natural gas, or water service) with some basic information about each service.
+            cds_servicecontracts_suppliers: Access to the energy supplier or retailer information for a customer’s service contracts.
+            cds_servicecontracts_detailed: Access to detailed service contract information for a customer’s services.
+            cds_bill_amount_due: Access to the current amounts due for a customer’s accounts.
+            cds_bill_statements_basic: Access to basic information about a customer’s bill statements.
+            cds_bill_statements_detailed: Access to detailed information about a customer’s bill statements.
+            cds_bill_statements_files: Access to the raw files (e.g. pdf bills) for a customer’s bill statements.
+            cds_bill_sections_basic: Access to summary data of a customer’s bill sections.
+            cds_bill_sections_detailed: Access to detailed data of a customer’s bill sections.
+            cds_usage_basic: Access to basic usage data for a customer’s service contracts.
+            cds_usage_detailed: Access to detailed usage data for a customer’s service contracts.
+            cds_aggregation_inclusion: Approval for being included in an aggregation (e.g. whole-building benchmarking).
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            client_admin: operations concerning oauth clients

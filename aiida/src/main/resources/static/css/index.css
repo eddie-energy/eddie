@@ -68,14 +68,20 @@ body {
 
 .user-drawer-content {
   display: flex;
-  gap: var(--sl-spacing-small);
+  flex-direction: column;
+  width: 100%;
+
+  sl-button {
+    width: 100%;
+    margin: 5px 0;
+  }
 }
 
 #add-data-source-form sl-select {
-  margin-bottom: 1rem;
+margin-bottom: 1rem;
 }
 
 #add-data-source-form sl-checkbox {
-  margin-bottom: 1rem;
-  margin-top: 1rem;
+margin-bottom: 1rem;
+margin-top: 1rem;
 }
