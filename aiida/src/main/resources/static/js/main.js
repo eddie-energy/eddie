@@ -424,7 +424,7 @@ function renderDataSources() {
             ? /* HTML */ `
                 <p>
                   <strong>Simulation Period:</strong>
-                  ${dataSource.simulationPeriod}
+                  ${dataSource.simulationPeriod} seconds
                 </p>
               `
             : /* HTML */ `
