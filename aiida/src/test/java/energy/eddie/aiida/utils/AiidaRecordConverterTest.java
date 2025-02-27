@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 class AiidaRecordConverterTest {
     private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     @Mock
     private AiidaLocalDataNeed mockDataNeed;
     @Mock
@@ -34,7 +35,7 @@ class AiidaRecordConverterTest {
     void givenIntegerAiidaRecord_returnsDtoWithFieldsSet() {
         // Given
         Instant timestamp = Instant.now();
-        var aiidaRecord = new AiidaRecord(timestamp, "Test", dataSourceId, List.of(
+        var aiidaRecord = new AiidaRecord(timestamp, "Test", userId, dataSourceId,  List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "23", KW, "10", KW)));
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.permissionId()).thenReturn(permissionId);
@@ -57,7 +58,7 @@ class AiidaRecordConverterTest {
     void givenStringAiidaRecord_returnsDtoWithFieldsSet() {
         // Given
         Instant timestamp = Instant.now();
-        var aiidaRecord = new AiidaRecord(timestamp, "Test", dataSourceId, List.of(
+        var aiidaRecord = new AiidaRecord(timestamp, "Test", userId, dataSourceId, List.of(
                 new AiidaRecordValue("0-0:C.1.0", METER_SERIAL, "Hello!", NONE, "10", NONE)));
 
         when(mockPermission.connectionId()).thenReturn("connectionId");

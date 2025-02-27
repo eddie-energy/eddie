@@ -60,6 +60,7 @@ class OesterreichsAdapterIntegrationTest {
     private final String username = "testUser";
     private final String password = "testPassword";
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID userId = UUID.fromString("9211ea05-d4ab-48ff-8613-8f4791a56606");
 
     @BeforeEach
     void setUp() throws IOException {
@@ -94,7 +95,7 @@ class OesterreichsAdapterIntegrationTest {
                 .setPassword(password)
                 .build();
 
-        var adapter = new OesterreichsEnergieAdapter(dataSourceId, config, mapper);
+        var adapter = new OesterreichsEnergieAdapter(dataSourceId, userId, config, mapper);
 
         StepVerifier.create(adapter.start())
                 .then(() -> publishSampleMqttMessage(config.subscribeTopic(), sampleJson))
@@ -144,7 +145,7 @@ class OesterreichsAdapterIntegrationTest {
         var expectedValue = String.valueOf(value / 1000f);
         var json = "{\"1-0:2.7.0\":{\"value\":" + value + ",\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";
 
-        var adapter = new OesterreichsEnergieAdapter(dataSourceId, config, mapper);
+        var adapter = new OesterreichsEnergieAdapter(dataSourceId, userId, config, mapper);
 
         var scheduler = Executors.newSingleThreadScheduledExecutor();
 

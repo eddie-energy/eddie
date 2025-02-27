@@ -35,11 +35,12 @@ public abstract class AiidaMqttDataSource extends AiidaDataSource implements Mqt
      */
     protected AiidaMqttDataSource(
             UUID id,
+            UUID userId,
             String name,
             MqttConfig mqttConfig,
             Logger childLogger
     ) {
-        super(id, name);
+        super(id, userId, name);
         this.mqttConfig = mqttConfig;
         clientId = UUID.randomUUID();
         logger = childLogger;

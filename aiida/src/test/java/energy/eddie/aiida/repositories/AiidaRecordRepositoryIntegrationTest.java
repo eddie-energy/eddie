@@ -38,20 +38,21 @@ class AiidaRecordRepositoryIntegrationTest {
                            .asCompatibleSubstituteFor("postgres")
     );
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     @Autowired
     AiidaRecordRepository repository;
 
     @Test
     void givenIntegerAndStringRecord_valueIsDeserializedProperly() {
         Instant now = Instant.now();
-        AiidaRecord intRecord = new AiidaRecord(now, "Test", dataSourceId, List.of(
+        AiidaRecord intRecord = new AiidaRecord(now, "Test", dataSourceId, userId, List.of(
                 new AiidaRecordValue("1-0:1.8.0",
                                      POSITIVE_ACTIVE_ENERGY,
                                      "237",
                                      UnitOfMeasurement.KWH,
                                      "237",
                                      UnitOfMeasurement.KWH)));
-        AiidaRecord stringRecord = new AiidaRecord(now, "Test", dataSourceId, List.of(
+        AiidaRecord stringRecord = new AiidaRecord(now, "Test", dataSourceId, userId, List.of(
                 new AiidaRecordValue("0-0:C.1.0",
                                      METER_SERIAL,
                                      "Hello Test",

@@ -11,17 +11,14 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 import java.util.UUID;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * The StreamerManager manages the lifecycle of {@link AiidaStreamer}. Other components should rely on the
@@ -68,12 +65,16 @@ public class StreamerManager implements AutoCloseable {
                             permission.permissionId()));
         }
 
-        var expirationTime = requireNonNull(permission.expirationTime());
-        var dataNeed = requireNonNull(permission.dataNeed());
-        Set<String> codes = requireNonNull(dataNeed.dataTags());
-        CronExpression transmissionSchedule = requireNonNull(dataNeed.transmissionSchedule());
+        var dataNeed = Objects.requireNonNull(permission.dataNeed());
+        var allowedDataTags = Objects.requireNonNull(dataNeed.dataTags());
+        var transmissionSchedule = Objects.requireNonNull(dataNeed.transmissionSchedule());
+        var permissionExpirationTime = Objects.requireNonNull(permission.expirationTime());
+        var userId = Objects.requireNonNull(permission.userId());
 
-        Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(codes, expirationTime, transmissionSchedule);
+        Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(allowedDataTags,
+                                                                  permissionExpirationTime,
+                                                                  transmissionSchedule,
+                                                                  userId);
         Sinks.One<UUID> streamerTerminationRequestSink = Sinks.one();
 
         streamerTerminationRequestSink.asMono().subscribe(permissionId -> {

@@ -24,23 +24,33 @@ public class AiidaRecord {
     @JsonProperty
     protected String asset;
     @JsonProperty
+    protected UUID userId;
+    @JsonProperty
     protected UUID dataSourceId;
     @OneToMany(mappedBy = "aiidaRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonProperty("values")
     private List<AiidaRecordValue> aiidaRecordValues;
 
     @SuppressWarnings("NullAway.Init")
-    protected AiidaRecord(Instant timestamp, String asset, UUID dataSourceId) {
+    protected AiidaRecord(Instant timestamp, String asset, UUID userId, UUID dataSourceId) {
         this.timestamp = timestamp;
         this.asset = asset;
+        this.userId = userId;
         this.dataSourceId = dataSourceId;
     }
 
-    public AiidaRecord(Instant timestamp, String asset, UUID dataSourceId, List<AiidaRecordValue> aiidaRecordValues) {
+    public AiidaRecord(
+            Instant timestamp,
+            String asset,
+            UUID userId,
+            UUID dataSourceId,
+            List<AiidaRecordValue> aiidaRecordValues
+    ) {
         this.timestamp = timestamp;
         this.asset = asset;
-        this.aiidaRecordValues = aiidaRecordValues;
+        this.userId = userId;
         this.dataSourceId = dataSourceId;
+        this.aiidaRecordValues = aiidaRecordValues;
     }
 
     /**
@@ -48,6 +58,15 @@ public class AiidaRecord {
      */
     @SuppressWarnings("NullAway.Init")
     protected AiidaRecord() {
+    }
+
+    public AiidaRecord(AiidaRecord aiidaRecord) {
+        this.id = aiidaRecord.id;
+        this.timestamp = aiidaRecord.timestamp;
+        this.asset = aiidaRecord.asset;
+        this.userId = aiidaRecord.userId;
+        this.dataSourceId = aiidaRecord.dataSourceId;
+        this.aiidaRecordValues = aiidaRecord.aiidaRecordValues;
     }
 
     public Instant timestamp() {
@@ -58,6 +77,10 @@ public class AiidaRecord {
         return aiidaRecordValues;
     }
 
+    public void setAiidaRecordValues(List<AiidaRecordValue> aiidaRecordValues) {
+        this.aiidaRecordValues = aiidaRecordValues;
+    }
+
     public String asset() {
         return asset;
     }
@@ -66,7 +89,13 @@ public class AiidaRecord {
         return id;
     }
 
+    public UUID userId() {return userId;}
+
     public UUID dataSourceId() {
         return dataSourceId;
+    }
+
+    public void setDataSourceId(UUID dataSourceId) {
+        this.dataSourceId = dataSourceId;
     }
 }

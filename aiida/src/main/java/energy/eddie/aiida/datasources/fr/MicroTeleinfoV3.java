@@ -34,12 +34,14 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
      * adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be assigned a
      * Unix timestamp of 0.
      *
-     * @param mqttConfig Configuration detailing the MQTT broker to connect to and options to use.
-     * @param mapper     {@link ObjectMapper} that is used to deserialize the JSON messages. A
-     *                   {@link MicroTeleinfoV3ValueDeserializer} will be registered to this mapper.
+     * @param dataSourceId The unique identifier (UUID) of this data source.
+     * @param userId       The ID of the user who owns this data source.
+     * @param mqttConfig   Configuration detailing the MQTT broker to connect to and options to use.
+     * @param mapper       {@link ObjectMapper} that is used to deserialize the JSON messages. A
+     *                     {@link MicroTeleinfoV3ValueDeserializer} will be registered to this mapper.
      */
-    public MicroTeleinfoV3(UUID dataSourceId, MqttConfig mqttConfig, ObjectMapper mapper) {
-        super(dataSourceId, DATASOURCE_NAME, mqttConfig, LOGGER);
+    public MicroTeleinfoV3(UUID dataSourceId, UUID userId, MqttConfig mqttConfig, ObjectMapper mapper) {
+        super(dataSourceId, userId, DATASOURCE_NAME, mqttConfig, LOGGER);
 
         SimpleModule module = new SimpleModule();
         module.addDeserializer(MicroTeleinfoV3Json.TeleinfoDataField.class, new MicroTeleinfoV3ValueDeserializer(null));

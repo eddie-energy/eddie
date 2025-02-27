@@ -3,7 +3,6 @@ package energy.eddie.aiida.models.datasource;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.util.UUID;
@@ -17,7 +16,6 @@ public abstract class DataSource {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @Schema(description = "UUID of the user that owns the permission.")
-    @Nullable
     private UUID userId;
     @JsonProperty
     @Enumerated(EnumType.STRING)
@@ -34,11 +32,11 @@ public abstract class DataSource {
     private String sourceType;
 
     @SuppressWarnings("NullAway")
-    public DataSource() {
+    protected DataSource() {
     }
 
     @SuppressWarnings("NullAway")
-    public DataSource(String name, boolean enabled, UUID userId, AiidaAsset asset, DataSourceType dataSourceType) {
+    protected DataSource(String name, boolean enabled, UUID userId, AiidaAsset asset, DataSourceType dataSourceType) {
         this.name = name;
         this.enabled = enabled;
         this.userId = userId;
@@ -54,12 +52,11 @@ public abstract class DataSource {
         this.id = id;
     }
 
-    @Nullable
     public UUID getUserId() {
         return userId;
     }
 
-    public void setUserId(@Nullable UUID userId) {
+    public void setUserId(UUID userId) {
         this.userId = userId;
     }
 

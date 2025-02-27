@@ -1,6 +1,8 @@
 package energy.eddie.aiida.datasources.sga;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.datasources.AiidaMqttDataSource;
+import energy.eddie.aiida.datasources.fr.MicroTeleinfoV3ValueDeserializer;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -20,8 +22,17 @@ public class SmartGatewaysAdapter extends AiidaMqttDataSource {
     private static final Logger LOGGER = LoggerFactory.getLogger(SmartGatewaysAdapter.class);
     private static final String DSMR_TARIFF_LOW = "0001";
 
-    public SmartGatewaysAdapter(UUID dataSourceId, MqttConfig mqttConfig) {
-        super(dataSourceId, DATASOURCE_NAME, mqttConfig, LOGGER);
+    /**
+     * Creates the datasource for the Smart Gateways Adapter. It connects to the specified MQTT broker and expects that the
+     * adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be assigned a
+     * Unix timestamp of 0.
+     *
+     * @param dataSourceId The unique identifier (UUID) of this data source.
+     * @param userId       The ID of the user who owns this data source.
+     * @param mqttConfig   Configuration detailing the MQTT broker to connect to and options to use.
+      */
+    public SmartGatewaysAdapter(UUID dataSourceId, UUID userId, MqttConfig mqttConfig) {
+        super(dataSourceId, userId, DATASOURCE_NAME, mqttConfig, LOGGER);
     }
 
     @Override

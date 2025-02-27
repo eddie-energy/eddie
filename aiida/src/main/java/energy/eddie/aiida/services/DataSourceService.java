@@ -28,11 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class DataSourceService {
@@ -154,7 +150,9 @@ public class DataSourceService {
         if (dataSourceType == DataSourceType.SIMULATION) {
             var simDataSource = (SimulationDataSource) dataSource;
             var simulationPeriod = simDataSource.getSimulationPeriod() == null ? 5 : simDataSource.getSimulationPeriod();
-            return new SimulationDataSourceAdapter(dataSource.getId(), Duration.ofSeconds(simulationPeriod));
+            return new SimulationDataSourceAdapter(dataSource.getId(),
+                                                   dataSource.getUserId(),
+                                                   Duration.ofSeconds(simulationPeriod));
         }
 
         var mqttDataSource = (MqttDataSource) dataSource;
@@ -167,11 +165,13 @@ public class DataSourceService {
 
         return switch (dataSourceType) {
             case SMART_GATEWAYS_ADAPTER ->
-                    new SmartGatewaysAdapter(dataSource.getId(), mqttConfig);
+                    new SmartGatewaysAdapter(dataSource.getId(), dataSource.getUserId(), mqttConfig);
             case MICRO_TELEINFO_V3 ->
-                    new MicroTeleinfoV3(dataSource.getId(), mqttConfig, objectMapper);
-            case SMART_METER_ADAPTER ->
-                    new OesterreichsEnergieAdapter(dataSource.getId(), mqttConfig, objectMapper);
+                    new MicroTeleinfoV3(dataSource.getId(), dataSource.getUserId(), mqttConfig, objectMapper);
+            case SMART_METER_ADAPTER -> new OesterreichsEnergieAdapter(dataSource.getId(),
+                                                                       dataSource.getUserId(),
+                                                                       mqttConfig,
+                                                                       objectMapper);
             default -> {
                 LOGGER.error("Unknown data source type: {}", dataSourceType);
                 throw new IllegalArgumentException("Unknown data source type: " + dataSourceType);

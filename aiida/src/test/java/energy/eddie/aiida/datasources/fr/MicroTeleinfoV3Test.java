@@ -35,6 +35,7 @@ class MicroTeleinfoV3Test {
     private MqttConfig config;
     private ObjectMapper mapper;
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
 
     @BeforeEach
     void setUp() {
@@ -42,7 +43,7 @@ class MicroTeleinfoV3Test {
 
         config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data").build();
         mapper = new AiidaConfiguration().objectMapper();
-        adapter = new MicroTeleinfoV3(dataSourceId, config, mapper);
+        adapter = new MicroTeleinfoV3(dataSourceId, userId, config, mapper);
     }
 
     @AfterEach
@@ -119,7 +120,7 @@ class MicroTeleinfoV3Test {
                                                                                           .setPassword("Pass")
                                                                                           .build();
         config = spy(config);
-        adapter = new MicroTeleinfoV3(dataSourceId, config, mapper);
+        adapter = new MicroTeleinfoV3(dataSourceId, userId, config, mapper);
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);

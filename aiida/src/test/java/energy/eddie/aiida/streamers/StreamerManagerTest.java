@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 class StreamerManagerTest {
     private final UUID eddieId = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final UUID permissionId = UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5");
+    private final UUID userId = UUID.fromString("40201e2c-a01c-41b8-9db6-3f51670df7a5");
     private final Instant grant = Instant.parse("2023-08-01T10:00:00.00Z");
     private final Instant start = grant.plusSeconds(100_000);
     private final Instant expirationTime = start.plusSeconds(800_000);
@@ -64,11 +65,12 @@ class StreamerManagerTest {
     @Test
     void givenSamePermissionTwice_createNewStreamer_throws() {
         // Given
-        when(aggregatorMock.getFilteredFlux(any(), any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.eddieId()).thenReturn(eddieId);
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
+        when(mockPermission.userId()).thenReturn(userId);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
@@ -87,10 +89,11 @@ class StreamerManagerTest {
     @Test
     void givenPermission_createStreamer_callsConnect() throws MqttException {
         // Given
-        when(aggregatorMock.getFilteredFlux(any(), any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
+        when(mockPermission.userId()).thenReturn(userId);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
@@ -130,13 +133,14 @@ class StreamerManagerTest {
 
     @Test
     void verify_close_closesAllStreamers() throws MqttException {
-        when(aggregatorMock.getFilteredFlux(any(), any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
+        when(mockPermission.userId()).thenReturn(userId);
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
-        when(aggregatorMock.getFilteredFlux(any(), any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any())).thenReturn(Flux.empty());
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any()))
                      .thenReturn(mockAiidaStreamer);

@@ -16,10 +16,7 @@ import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -78,10 +75,10 @@ public class Aggregator implements AutoCloseable {
      * that is in the set {@code allowedCodes}.
      * All values must have a timestamp before {@code permissionExpirationTime}.
      * Additionally, the records are buffered and aggregated by the {@link CronExpression} {@code transmissionSchedule}.
-     *
      * @param allowedDataTags          Tags which should be included in the returned Flux.
      * @param permissionExpirationTime Instant when the permission expires.
      * @param transmissionSchedule     The schedule at which the data should be transmitted.
+     * @param userId                   The user id of the permission creator.
      * @return A Flux on which will only have AiidaRecords with a code matching one of the codes of the
      * {@code allowedCodes} set, a timestamp that is before {@code permissionExpirationTime} and that are aggregated
      * by the {@code transmissionSchedule}.
@@ -89,7 +86,8 @@ public class Aggregator implements AutoCloseable {
     public Flux<AiidaRecord> getFilteredFlux(
             Set<String> allowedDataTags,
             Instant permissionExpirationTime,
-            CronExpression transmissionSchedule
+            CronExpression transmissionSchedule,
+            UUID userId
     ) {
         var cronSink = Sinks.many().multicast().directAllOrNothing();
         var cronTrigger = new CronTrigger(transmissionSchedule.toString());
@@ -99,23 +97,21 @@ public class Aggregator implements AutoCloseable {
         @SuppressWarnings("unused") // Otherwise errorprone shows a warning
         var unused = cronScheduler.schedule(() -> cronSink.tryEmitNext(true), cronTrigger);
 
-        var flux = combinedSink.asFlux().doOnComplete(() -> {
-            cronScheduler.stop();
-            cronSink.tryEmitComplete();
-        });
+        var flux = combinedSink.asFlux()
+                               .doOnComplete(() -> {
+                                   cronScheduler.stop();
+                                   cronSink.tryEmitComplete();
+                               });
 
-        if (allowedDataTags.isEmpty()) {
-            flux = createAllValuesFlux(flux, permissionExpirationTime);
-        } else {
-            flux = createFilteredFlux(flux, allowedDataTags, permissionExpirationTime);
-        }
-
-        return flux.buffer(cronSink.asFlux()).flatMapIterable(this::aggregateRecords);
+        return flux.map(AiidaRecord::new)
+                   .filter(aiidaRecord -> isValidPermissionRecord(aiidaRecord, permissionExpirationTime, userId))
+                   .map(aiidaRecord -> filterAllowedDataTags(aiidaRecord, allowedDataTags))
+                   .buffer(cronSink.asFlux())
+                   .flatMapIterable(this::aggregateRecords);
     }
 
     /**
      * Closes all {@link AiidaDataSource}s and emits a complete signal for all the Flux returned by
-     * {@link #getFilteredFlux(Set, Instant, CronExpression)}.
      */
     @Override
     public void close() {
@@ -140,10 +136,12 @@ public class Aggregator implements AutoCloseable {
         LOGGER.error("Got error from combined sink", throwable);
     }
 
-    private void publishRecordToCombinedFlux(AiidaRecord data) {
+    private synchronized void publishRecordToCombinedFlux(AiidaRecord data) {
         var result = combinedSink.tryEmitNext(data);
 
-        if (result.isFailure()) LOGGER.error("Error while emitting record to combined sink. Error was: {}", result);
+        if (result.isFailure()) {
+            LOGGER.error("Error while emitting record to combined sink. Error was: {}", result);
+        }
     }
 
     private void handleError(Throwable throwable, AiidaDataSource dataSource) {
@@ -151,40 +149,32 @@ public class Aggregator implements AutoCloseable {
         LOGGER.error("Error from datasource {}", dataSource.name(), throwable);
     }
 
-    private Flux<AiidaRecord> createFilteredFlux(
-            Flux<AiidaRecord> flux,
-            Set<String> allowedDataTags,
-            Instant permissionExpirationTime
-    ) {
-        return flux.map(aiidaRecord -> filterAllowedDataTags(aiidaRecord, allowedDataTags))
-                   .filter(aiidaRecord -> isRecordValid(aiidaRecord, permissionExpirationTime));
-    }
-
-    private Flux<AiidaRecord> createAllValuesFlux(Flux<AiidaRecord> flux, Instant permissionExpirationTime) {
-        return flux.filter(aiidaRecord -> isRecordValid(aiidaRecord, permissionExpirationTime));
-    }
-
-    private AiidaRecord filterAllowedDataTags(AiidaRecord aiidaRecord, Set<String> allowedDataTags) {
-        var filteredValues = aiidaRecord.aiidaRecordValue()
-                                        .stream()
-                                        .filter(value -> allowedDataTags.contains(value.dataTag().toString()))
-                                        .toList();
-
-        return new AiidaRecord(aiidaRecord.timestamp(), aiidaRecord.asset(), aiidaRecord.dataSourceId(), filteredValues);
-    }
-
-    private boolean isRecordValid(AiidaRecord aiidaRecord, Instant expirationTime) {
-        return !aiidaRecord.aiidaRecordValue().isEmpty() && isBeforeExpiration(aiidaRecord, expirationTime);
+    private boolean isValidPermissionRecord(AiidaRecord aiidaRecord, Instant expirationTime, UUID userId) {
+        return aiidaRecord.userId().equals(userId)
+               && !aiidaRecord.aiidaRecordValue().isEmpty()
+               && isBeforeExpiration(aiidaRecord, expirationTime);
     }
 
     private boolean isBeforeExpiration(AiidaRecord aiidaRecord, Instant permissionExpirationTime) {
         return aiidaRecord.timestamp().isBefore(permissionExpirationTime);
     }
 
+    private AiidaRecord filterAllowedDataTags(AiidaRecord aiidaRecord, Set<String> allowedDataTags) {
+        if (!allowedDataTags.isEmpty()) {
+            var filteredValues = aiidaRecord.aiidaRecordValue()
+                                            .stream()
+                                            .filter(value -> allowedDataTags.contains(value.dataTag().toString()))
+                                            .toList();
+            aiidaRecord.setAiidaRecordValues(filteredValues);
+        }
+
+        return aiidaRecord;
+    }
+
     private List<AiidaRecord> aggregateRecords(List<AiidaRecord> aiidaRecords) {
         // TODO: GH-1307 Currently only the last record of an asset is kept. This should be changed to a more sophisticated aggregation.
         var aggregatedRecords = aiidaRecords.stream()
-                                            .collect(Collectors.toMap(AiidaRecord::asset,
+                                            .collect(Collectors.toMap(AiidaRecord::dataSourceId,
                                                                       Function.identity(),
                                                                       (existingRecord, newRecord) -> newRecord,
                                                                       LinkedHashMap::new));
