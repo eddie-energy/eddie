@@ -19,15 +19,19 @@ public abstract class AiidaDataSource implements AutoCloseable, HealthIndicator 
     protected final Sinks.Many<AiidaRecord> recordSink;
     protected final Sinks.Many<Health> healthSink;
     private final UUID id;
+    private final UUID userId;
     private final String name;
 
     /**
      * Creates a new {@code AiidaDataSource} with the specified display name.
      *
-     * @param name Display name of this new datasource.
+     * @param id     The unique identifier (UUID) of this data source.
+     * @param userId The ID of the user who owns this data source.
+     * @param name   Display name of this new datasource.
      */
-    protected AiidaDataSource(UUID id, String name) {
+    protected AiidaDataSource(UUID id, UUID userId, String name) {
         this.id = id;
+        this.userId = userId;
         this.name = name;
         recordSink = Sinks.many().unicast().onBackpressureBuffer();
         healthSink = Sinks.many().unicast().onBackpressureBuffer();
@@ -45,10 +49,10 @@ public abstract class AiidaDataSource implements AutoCloseable, HealthIndicator 
      *
      * @param aiidaRecordValues Values for the new aiida record
      */
-    public void emitAiidaRecord(String asset, List<AiidaRecordValue> aiidaRecordValues) {
+    public synchronized void emitAiidaRecord(String asset, List<AiidaRecordValue> aiidaRecordValues) {
         Instant timestamp = Instant.now();
 
-        var aiidaRecord = new AiidaRecord(timestamp, asset, id, aiidaRecordValues);
+        var aiidaRecord = new AiidaRecord(timestamp, asset, userId, id, aiidaRecordValues);
         var invalidTags = AiidaRecordValidator.checkInvalidDataTags(aiidaRecord);
 
         if (!invalidTags.isEmpty()) {

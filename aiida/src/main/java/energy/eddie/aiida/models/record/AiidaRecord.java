@@ -24,23 +24,25 @@ public class AiidaRecord {
     @JsonProperty
     protected String asset;
     @JsonProperty
+    protected UUID userId;
+    @JsonProperty
     protected UUID dataSourceId;
     @OneToMany(mappedBy = "aiidaRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonProperty("values")
     private List<AiidaRecordValue> aiidaRecordValues;
 
-    @SuppressWarnings("NullAway.Init")
-    protected AiidaRecord(Instant timestamp, String asset, UUID dataSourceId) {
+    public AiidaRecord(
+            Instant timestamp,
+            String asset,
+            UUID userId,
+            UUID dataSourceId,
+            List<AiidaRecordValue> aiidaRecordValues
+    ) {
         this.timestamp = timestamp;
         this.asset = asset;
+        this.userId = userId;
         this.dataSourceId = dataSourceId;
-    }
-
-    public AiidaRecord(Instant timestamp, String asset, UUID dataSourceId, List<AiidaRecordValue> aiidaRecordValues) {
-        this.timestamp = timestamp;
-        this.asset = asset;
         this.aiidaRecordValues = aiidaRecordValues;
-        this.dataSourceId = dataSourceId;
     }
 
     /**
@@ -50,12 +52,25 @@ public class AiidaRecord {
     protected AiidaRecord() {
     }
 
+    public AiidaRecord(AiidaRecord aiidaRecord) {
+        this.id = aiidaRecord.id;
+        this.timestamp = aiidaRecord.timestamp;
+        this.asset = aiidaRecord.asset;
+        this.userId = aiidaRecord.userId;
+        this.dataSourceId = aiidaRecord.dataSourceId;
+        this.aiidaRecordValues = aiidaRecord.aiidaRecordValues;
+    }
+
     public Instant timestamp() {
         return timestamp;
     }
 
-    public List<AiidaRecordValue> aiidaRecordValue() {
+    public List<AiidaRecordValue> aiidaRecordValues() {
         return aiidaRecordValues;
+    }
+
+    public void setAiidaRecordValues(List<AiidaRecordValue> aiidaRecordValues) {
+        this.aiidaRecordValues = aiidaRecordValues;
     }
 
     public String asset() {
@@ -65,6 +80,8 @@ public class AiidaRecord {
     public Long id() {
         return id;
     }
+
+    public UUID userId() {return userId;}
 
     public UUID dataSourceId() {
         return dataSourceId;

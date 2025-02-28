@@ -10,7 +10,7 @@ public class AiidaRecordValidator {
     }
 
     public static List<String> checkInvalidDataTags(AiidaRecord rec) {
-        return rec.aiidaRecordValue()
+        return rec.aiidaRecordValues()
                   .stream()
                   .filter(aiidaRecordValue -> aiidaRecordValue.dataTag() == ObisCode.UNKNOWN)
                   .map(AiidaRecordValue::rawTag)

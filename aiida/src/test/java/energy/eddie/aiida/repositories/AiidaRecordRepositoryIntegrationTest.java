@@ -38,20 +38,21 @@ class AiidaRecordRepositoryIntegrationTest {
                            .asCompatibleSubstituteFor("postgres")
     );
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     @Autowired
     AiidaRecordRepository repository;
 
     @Test
     void givenIntegerAndStringRecord_valueIsDeserializedProperly() {
         Instant now = Instant.now();
-        AiidaRecord intRecord = new AiidaRecord(now, "Test", dataSourceId, List.of(
+        AiidaRecord intRecord = new AiidaRecord(now, "Test", userId, dataSourceId, List.of(
                 new AiidaRecordValue("1-0:1.8.0",
                                      POSITIVE_ACTIVE_ENERGY,
                                      "237",
                                      UnitOfMeasurement.KWH,
                                      "237",
                                      UnitOfMeasurement.KWH)));
-        AiidaRecord stringRecord = new AiidaRecord(now, "Test", dataSourceId, List.of(
+        AiidaRecord stringRecord = new AiidaRecord(now, "Test", userId, dataSourceId, List.of(
                 new AiidaRecordValue("0-0:C.1.0",
                                      METER_SERIAL,
                                      "Hello Test",
@@ -67,13 +68,13 @@ class AiidaRecordRepositoryIntegrationTest {
         assertEquals(2, all.size());
 
         AiidaRecord first = all.getFirst();
-        assertEquals(POSITIVE_ACTIVE_ENERGY, first.aiidaRecordValue().getFirst().dataTag());
+        assertEquals(POSITIVE_ACTIVE_ENERGY, first.aiidaRecordValues().getFirst().dataTag());
         assertEquals(now.toEpochMilli(), first.timestamp().toEpochMilli());
-        assertEquals("237", first.aiidaRecordValue().getFirst().value());
+        assertEquals("237", first.aiidaRecordValues().getFirst().value());
 
         AiidaRecord second = all.get(1);
-        assertEquals(METER_SERIAL, second.aiidaRecordValue().getFirst().dataTag());
+        assertEquals(METER_SERIAL, second.aiidaRecordValues().getFirst().dataTag());
         assertEquals(now.toEpochMilli(), second.timestamp().toEpochMilli());
-        assertEquals("Hello Test", second.aiidaRecordValue().getFirst().value());
+        assertEquals("Hello Test", second.aiidaRecordValues().getFirst().value());
     }
 }

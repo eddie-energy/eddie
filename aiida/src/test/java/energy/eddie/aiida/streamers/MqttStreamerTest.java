@@ -42,10 +42,12 @@ class MqttStreamerTest {
     private static final String EXPECTED_STATUS_TOPIC = "aiida/v1/permission-id/status";
     private static final String EXPECTED_TERMINATION_TOPIC = "aiida/v1/permission-id/termination";
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private final TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
     private final Sinks.One<UUID> terminationSink = Sinks.one();
     private final AiidaRecord record1 = new AiidaRecord(Instant.now(),
                                                         "Test",
+                                                        userId,
                                                         dataSourceId,
                                                         List.of(new AiidaRecordValue("1-0:1.8.0",
                                                                                      POSITIVE_ACTIVE_ENERGY,
@@ -55,6 +57,7 @@ class MqttStreamerTest {
                                                                                      KWH)));
     private final AiidaRecord record2 = new AiidaRecord(Instant.now(),
                                                         "Test",
+                                                        userId,
                                                         dataSourceId,
                                                         List.of(new AiidaRecordValue("1-0:2.8.0",
                                                                                      NEGATIVE_ACTIVE_ENERGY,

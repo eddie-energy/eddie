@@ -30,8 +30,8 @@ public class SimulationDataSourceAdapter extends AiidaDataSource {
     @Nullable
     private Disposable periodicFlux;
 
-    public SimulationDataSourceAdapter(UUID id, Duration simulationPeriod) {
-        this(id, "SimulationDataSource", simulationPeriod);
+    public SimulationDataSourceAdapter(UUID id, UUID userId, Duration simulationPeriod) {
+        this(id, userId, "SimulationDataSource", simulationPeriod);
     }
 
     /**
@@ -45,11 +45,13 @@ public class SimulationDataSourceAdapter extends AiidaDataSource {
      * <li>1-0:2.7.0</li>
      * </ul>
      *
+     * @param dataSourceId     The unique identifier (UUID) of this data source.
+     * @param userId           The ID of the user who owns this data source.
      * @param name             Display name of this datasource.
      * @param simulationPeriod Duration to wait until new random records should be created.
      */
-    public SimulationDataSourceAdapter(UUID id, String name, Duration simulationPeriod) {
-        super(id, name);
+    public SimulationDataSourceAdapter(UUID dataSourceId, UUID userId, String name, Duration simulationPeriod) {
+        super(dataSourceId, userId, name);
         this.simulationPeriod = simulationPeriod;
 
         random = new SecureRandom();

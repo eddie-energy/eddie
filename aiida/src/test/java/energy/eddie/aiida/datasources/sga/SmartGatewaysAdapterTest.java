@@ -85,13 +85,14 @@ class SmartGatewaysAdapterTest {
     private SmartGatewaysAdapter adapter;
     private MqttConfig config;
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
         config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "sga/data").build();
-        adapter = new SmartGatewaysAdapter(dataSourceId, config);
+        adapter = new SmartGatewaysAdapter(dataSourceId, userId, config);
     }
 
     @AfterEach
@@ -168,7 +169,7 @@ class SmartGatewaysAdapterTest {
                                                                                      .setPassword("Pass")
                                                                                      .build();
         config = spy(config);
-        adapter = new SmartGatewaysAdapter(dataSourceId, config);
+        adapter = new SmartGatewaysAdapter(dataSourceId, userId, config);
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
@@ -208,7 +209,7 @@ class SmartGatewaysAdapterTest {
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("sga/data", message))
-                        .expectNextMatches(received -> received.aiidaRecordValue()
+                        .expectNextMatches(received -> received.aiidaRecordValues()
                                                                .stream()
                                                                .anyMatch(aiidaRecordValue -> (
                                                                                                      aiidaRecordValue.dataTag()
@@ -237,7 +238,7 @@ class SmartGatewaysAdapterTest {
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("sga/data", message))
-                        .expectNextMatches(received -> received.aiidaRecordValue()
+                        .expectNextMatches(received -> received.aiidaRecordValues()
                                                                .stream()
                                                                .anyMatch(aiidaRecordValue -> (aiidaRecordValue.dataTag()
                                                                                                               .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) &&
