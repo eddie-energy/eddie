@@ -7,6 +7,10 @@ public class MQTTSecretGenerator {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final int LENGTH = 10;
 
+    private MQTTSecretGenerator() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static String generate() {
         StringBuilder builder = new StringBuilder(LENGTH);
         for (int i = 0; i < LENGTH; i++) {

@@ -91,8 +91,4 @@ public abstract class DataSource {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-
-    public String getSourceType() {
-        return sourceType;
-    }
 }

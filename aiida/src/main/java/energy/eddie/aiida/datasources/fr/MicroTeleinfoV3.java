@@ -119,6 +119,15 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
     }
 
     @Override
+    public Health health() {
+        if (super.health().getStatus().equals(Status.DOWN)) {
+            return super.health();
+        }
+
+        return healthState;
+    }
+
+    @Override
     protected void subscribeToHealthTopic() {
         LOGGER.info("Will subscribe to health topic {}", healthTopic);
 
@@ -130,15 +139,6 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
             LOGGER.error("Error while subscribing to topic {}", healthTopic, ex);
             healthSink.tryEmitNext(Health.down().withDetail("Error", ex).build());
         }
-    }
-
-    @Override
-    public Health health() {
-        if (super.health().getStatus().equals(Status.DOWN)) {
-            return super.health();
-        }
-
-        return healthState;
     }
 
     /**

@@ -1,8 +1,6 @@
 package energy.eddie.aiida.datasources.sga;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.datasources.AiidaMqttDataSource;
-import energy.eddie.aiida.datasources.fr.MicroTeleinfoV3ValueDeserializer;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -30,7 +28,7 @@ public class SmartGatewaysAdapter extends AiidaMqttDataSource {
      * @param dataSourceId The unique identifier (UUID) of this data source.
      * @param userId       The ID of the user who owns this data source.
      * @param mqttConfig   Configuration detailing the MQTT broker to connect to and options to use.
-      */
+     */
     public SmartGatewaysAdapter(UUID dataSourceId, UUID userId, MqttConfig mqttConfig) {
         super(dataSourceId, userId, DATASOURCE_NAME, mqttConfig, LOGGER);
     }

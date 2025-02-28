@@ -28,13 +28,13 @@ class WebhookControllerTest {
     private LogCaptor logCaptor;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         logCaptor = LogCaptor.forClass(WebhookController.class);
         logCaptor.setLogLevelToDebug();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         logCaptor.clearLogs();
     }
 
