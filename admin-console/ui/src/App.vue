@@ -11,22 +11,27 @@ import { ConfirmDialog, Toast } from 'primevue'
   <div class="wrapper">
     <SidebarNavigation />
 
-    <div>
+    <main>
       <RouterView />
-    </div>
+    </main>
   </div>
 </template>
 
 <style scoped>
 .wrapper {
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  display: grid;
   padding: 1rem;
   gap: 1rem;
+}
 
-  @media only screen and (min-width: 1280px) {
-    flex-direction: row;
+@media only screen and (min-width: 1280px) {
+  .wrapper {
+    grid-template-columns: auto 1fr;
+  }
+
+  main {
+    overflow: auto;
   }
 }
 </style>

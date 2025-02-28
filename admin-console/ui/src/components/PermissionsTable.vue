@@ -4,7 +4,6 @@ import {
   Button,
   Column,
   DataTable,
-  type DataTableFilterMeta,
   type DataTableRowExpandEvent,
   IconField,
   InputIcon,
@@ -15,11 +14,11 @@ import {
 } from 'primevue'
 import { ref } from 'vue'
 
-const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
+import { countryFlag, formatCountry } from '@/util/countries'
 
 const permissions = await getPermissions()
 
-const filters = ref<DataTableFilterMeta>({ global: { value: null, matchMode: 'contains' } })
+const filters = ref({ global: { value: null, matchMode: 'contains' } })
 const expandedRows = ref({})
 const rowExpansions = ref<{ [key: string]: StatusMessage[] }>({})
 
@@ -28,24 +27,6 @@ function formatDate(date: string) {
     dateStyle: 'short',
     timeStyle: 'medium'
   }).format(new Date(date))
-}
-
-function formatCountry(country: string) {
-  try {
-    return COUNTRY_NAMES.of(country)
-  } catch {
-    return country
-  }
-}
-
-function countryFlag(countryCode: string) {
-  // check if result is in right range
-  if (countryCode.length !== 2) {
-    return ''
-  }
-  return [...countryCode]
-    .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
-    .reduce((a, b) => `${a}${b}`)
 }
 
 function getStatusSeverity(status: string) {
@@ -157,7 +138,9 @@ function confirmTermination(permissionId: string) {
     </Column>
     <Column field="status" header="Status" sortable>
       <template #body="slotProps">
-        <Tag :value="slotProps.data.status" :severity="getStatusSeverity(slotProps.data.status)" />
+        <Tag :severity="getStatusSeverity(slotProps.data.status)">
+          <span class="status-tag-value">{{ slotProps.data.status }}</span>
+        </Tag>
       </template>
     </Column>
     <Column field="cimStatus" header="CIM Status" sortable />
@@ -203,5 +186,12 @@ li {
 /* Prevent search from overflowing on mobile */
 input {
   max-width: 100%;
+}
+
+/* Prevent long status texts from overflowing table columns */
+.status-tag-value {
+  text-overflow: ellipsis;
+  max-width: 10ch;
+  overflow: hidden;
 }
 </style>

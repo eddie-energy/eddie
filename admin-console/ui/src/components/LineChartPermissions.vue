@@ -55,7 +55,16 @@ watch(props, () => {
 
 <template>
   <div class="permissions-chart-container">
-    <Chart class="permissions-chart" type="line" :data="chartData" :options="chartOptions" />
+    <Chart
+      class="permissions-chart"
+      type="line"
+      :data="chartData"
+      :options="chartOptions"
+      :canvasProps="{
+        role: 'img',
+        'aria-label': 'Line chart describing the number of permissions added over time.'
+      }"
+    />
   </div>
 </template>
 

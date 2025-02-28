@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { getDataNeeds } from '@/api.ts'
 import { onMounted, ref } from 'vue'
+import { type DataNeed, getDataNeeds } from '@/api'
 
-const dataNeeds = ref([])
+const dataNeeds = ref<DataNeed[]>([])
 
 onMounted(async () => {
   dataNeeds.value = await getDataNeeds()

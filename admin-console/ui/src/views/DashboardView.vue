@@ -5,49 +5,52 @@ import {
   getPermissions,
   getRegionConnectorHealth,
   getRegionConnectors,
+  HealthStatus,
   type RegionConnectorMetadata,
   type StatusMessage
 } from '@/api'
 import LineChartPermissions from '@/components/LineChartPermissions.vue'
 import DoughnutChartRegions from '@/components/DoughnutChartRegions.vue'
 import LineChartPackages from '@/components/LineChartPackages.vue'
-import { onMounted, ref } from 'vue'
-
-type PermissionsPerRegionConnector = { id: string; count: number }
+import { computed, onMounted, ref } from 'vue'
+import HealthIcon from '@/components/HealthIcon.vue'
+import { allRegionConnectors } from '@/constants/region-connectors'
 
 const permissions = ref<StatusMessage[]>([])
 const dataNeeds = ref<DataNeed[]>([])
 const regionConnectors = ref<RegionConnectorMetadata[]>([])
-const permissionCountPerRegionConnector = ref<PermissionsPerRegionConnector[]>([])
-const regionConnectorHealth = ref<Map<string, string>>(new Map())
+const permissionCountPerRegionConnector = computed(() => getPermissionCountPerRegionConnector())
+const regionConnectorHealth = ref<Map<string, HealthStatus>>(new Map())
 
 onMounted(async () => {
   permissions.value = await getPermissions()
-  permissionCountPerRegionConnector.value = await getPermissionCountPerRegionConnector()
   dataNeeds.value = await getDataNeeds()
   regionConnectors.value = await getRegionConnectors()
   for (const { id } of regionConnectors.value) {
-    regionConnectorHealth.value.set(id, (await getRegionConnectorHealth(id))?.status || 'DISABLED')
+    const health = await getRegionConnectorHealth(id)
+    regionConnectorHealth.value.set(id, health?.status || HealthStatus.UNKNOWN)
   }
 })
 
-async function getPermissionCountPerRegionConnector() {
-  const permissions = await getPermissions()
+function getPermissionCountPerRegionConnector() {
+  const permissionsPerRegionConnector: { [key: string]: number } = {}
 
-  let permissionsPerRegionConnector: { [key: string]: number } = {}
-  for (const { regionConnectorId } of permissions) {
-    permissionsPerRegionConnector[regionConnectorId] =
-      (permissionsPerRegionConnector[regionConnectorId] || 0) + 1
+  for (const id of allRegionConnectors) {
+    permissionsPerRegionConnector[id] = 0
   }
 
-  return Object.entries(permissionsPerRegionConnector).map(([id, count]) => ({ id, count }))
+  for (const { regionConnectorId } of permissions.value) {
+    permissionsPerRegionConnector[regionConnectorId]++
+  }
+
+  return permissionsPerRegionConnector
 }
 </script>
 
 <template>
-  <main class="outer">
+  <div class="outer">
     <div class="row--top">
-      <div class="card card--top">
+      <section class="card card--top">
         <header class="card__item card__item--header">
           <span class="card__item-highlighted">{{ permissions.length }}</span>
           <h2>Permissions <span>active</span></h2>
@@ -67,9 +70,9 @@ async function getPermissionCountPerRegionConnector() {
         <div>
           <LineChartPermissions :permissions="permissions"></LineChartPermissions>
         </div>
-      </div>
+      </section>
 
-      <div class="card card--top">
+      <section class="card card--top">
         <header class="card__item card__item--header">
           <span class="card__item-highlighted">1470</span>
           <h2>Data Packages <span>per minute</span></h2>
@@ -80,9 +83,9 @@ async function getPermissionCountPerRegionConnector() {
         <div>
           <LineChartPackages></LineChartPackages>
         </div>
-      </div>
+      </section>
 
-      <div class="card card--top">
+      <section class="card card--top">
         <header class="card__item card__item--header">
           <span class="card__item-highlighted">{{ dataNeeds.length }}</span>
           <h2>Data Needs <span>enabled</span></h2>
@@ -106,13 +109,13 @@ async function getPermissionCountPerRegionConnector() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
 
-    <div class="bottom">
+    <section class="bottom">
       <div class="card card--bottom">
         <header class="card__item card__item--header">
-          <span class="card__item-highlighted">{{ permissionCountPerRegionConnector.length }}</span>
+          <span class="card__item-highlighted">{{ regionConnectors.length }}</span>
           <h2>Region Connectors <span>enabled</span></h2>
         </header>
         <div class="card__item card__item--addition">
@@ -120,25 +123,23 @@ async function getPermissionCountPerRegionConnector() {
           <span><b>1</b> failed to start</span>
         </div>
         <div class="card__item card__item--list">
-          <div
-            v-for="regionConnector in permissionCountPerRegionConnector"
-            :key="regionConnector.id"
-            class="item"
-          >
+          <div v-for="{ id } in regionConnectors" :key="id" class="item">
             <div class="card__item card__item--addition">
               <h3>
-                <b>{{ regionConnector.id }}</b>
+                <b>{{ id }}</b>
               </h3>
+
               <span>
-                <b>{{ regionConnectorHealth.get(regionConnector.id) || 'DISABLED' }}</b>
+                {{ regionConnectorHealth.get(id) }}&nbsp;
+                <HealthIcon :health="regionConnectorHealth.get(id) || HealthStatus.UNKNOWN" />
               </span>
             </div>
             <div class="card__item card__item--addition">
               <span>
-                <b>{{ regionConnector.count }}</b> total permissions
+                <b>{{ permissionCountPerRegionConnector[id] }}</b> total permissions
               </span>
               <span>
-                <b>{{ regionConnector.count }}</b> granted permissions
+                <b>{{ permissionCountPerRegionConnector[id] }}</b> granted permissions
               </span>
             </div>
           </div>
@@ -158,8 +159,8 @@ async function getPermissionCountPerRegionConnector() {
           :permission-count-per-region-connector="permissionCountPerRegionConnector"
         ></DoughnutChartRegions>
       </div>
-    </div>
-  </main>
+    </section>
+  </div>
 </template>
 
 <style scoped>
