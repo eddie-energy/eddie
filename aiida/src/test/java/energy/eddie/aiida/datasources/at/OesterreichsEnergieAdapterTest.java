@@ -185,7 +185,7 @@ class OesterreichsEnergieAdapterTest {
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("MyTestTopic", message))
-                        .expectNextMatches(received -> received.aiidaRecordValue()
+                        .expectNextMatches(received -> received.aiidaRecordValues()
                                                                .stream()
                                                                .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
                                                                                                              .equals(DEVICE_ID_1) && aiidaRecordValue.value()
@@ -211,7 +211,7 @@ class OesterreichsEnergieAdapterTest {
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("MyTestTopic", message))
-                        .expectNextMatches(received -> received.aiidaRecordValue()
+                        .expectNextMatches(received -> received.aiidaRecordValues()
                                                                .stream()
                                                                .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
                                                                                                              .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) &&
@@ -263,7 +263,7 @@ class OesterreichsEnergieAdapterTest {
         var validJson = "{\"1-0:2.7.0\":{\"value\":0,\"time\":1697622950},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2370.6}";
 
         StepVerifier stepVerifier = StepVerifier.create(adapter.start())
-                                                .expectNextMatches(received -> received.aiidaRecordValue()
+                                                .expectNextMatches(received -> received.aiidaRecordValues()
                                                                                        .stream()
                                                                                        .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
                                                                                                                                      .equals(NEGATIVE_ACTIVE_INSTANTANEOUS_POWER)))
@@ -292,7 +292,7 @@ class OesterreichsEnergieAdapterTest {
         StepVerifier.create(adapter.start())
                     .then(() -> adapter.messageArrived(config.subscribeTopic(),
                                                        new MqttMessage(json.getBytes(StandardCharsets.UTF_8))))
-                    .expectNextMatches(received -> received.aiidaRecordValue()
+                    .expectNextMatches(received -> received.aiidaRecordValues()
                                                            .stream()
                                                            .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
                                                                                                          .equals(POSITIVE_ACTIVE_ENERGY)))

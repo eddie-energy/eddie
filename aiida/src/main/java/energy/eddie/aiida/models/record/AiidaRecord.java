@@ -31,14 +31,6 @@ public class AiidaRecord {
     @JsonProperty("values")
     private List<AiidaRecordValue> aiidaRecordValues;
 
-    @SuppressWarnings("NullAway.Init")
-    protected AiidaRecord(Instant timestamp, String asset, UUID userId, UUID dataSourceId) {
-        this.timestamp = timestamp;
-        this.asset = asset;
-        this.userId = userId;
-        this.dataSourceId = dataSourceId;
-    }
-
     public AiidaRecord(
             Instant timestamp,
             String asset,
@@ -73,7 +65,7 @@ public class AiidaRecord {
         return timestamp;
     }
 
-    public List<AiidaRecordValue> aiidaRecordValue() {
+    public List<AiidaRecordValue> aiidaRecordValues() {
         return aiidaRecordValues;
     }
 
@@ -93,9 +85,5 @@ public class AiidaRecord {
 
     public UUID dataSourceId() {
         return dataSourceId;
-    }
-
-    public void setDataSourceId(UUID dataSourceId) {
-        this.dataSourceId = dataSourceId;
     }
 }

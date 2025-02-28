@@ -209,7 +209,7 @@ class SmartGatewaysAdapterTest {
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("sga/data", message))
-                        .expectNextMatches(received -> received.aiidaRecordValue()
+                        .expectNextMatches(received -> received.aiidaRecordValues()
                                                                .stream()
                                                                .anyMatch(aiidaRecordValue -> (
                                                                                                      aiidaRecordValue.dataTag()
@@ -238,7 +238,7 @@ class SmartGatewaysAdapterTest {
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("sga/data", message))
-                        .expectNextMatches(received -> received.aiidaRecordValue()
+                        .expectNextMatches(received -> received.aiidaRecordValues()
                                                                .stream()
                                                                .anyMatch(aiidaRecordValue -> (aiidaRecordValue.dataTag()
                                                                                                               .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) &&

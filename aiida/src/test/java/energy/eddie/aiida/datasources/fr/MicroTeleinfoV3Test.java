@@ -162,7 +162,7 @@ class MicroTeleinfoV3Test {
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("teleinfo/data", message))
-                        .expectNextMatches(received -> received.aiidaRecordValue()
+                        .expectNextMatches(received -> received.aiidaRecordValues()
                                                                .stream()
                                                                .anyMatch(aiidaRecordValue -> (aiidaRecordValue.dataTag()
                                                                                                               .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) &&
@@ -263,7 +263,7 @@ class MicroTeleinfoV3Test {
         var validJson = "{\"ADCO\":{\"raw\":\"123456789123\",\"value\":123456789123},\"OPTARIF\":{\"raw\":\"BASE\",\"value\":\"BASE\"},\"ISOUSC\":{\"raw\":\"30\",\"value\":30},\"BASE\":{\"raw\":\"006367621\",\"value\":6367621},\"PTEC\":{\"raw\":\"TH..\",\"value\":\"TH\"},\"IINST\":{\"raw\":\"001\",\"value\":1},\"IMAX\":{\"raw\":\"090\",\"value\":90},\"PAPP\":{\"raw\":\"00126\",\"value\":126},\"HHPHC\":{\"raw\":\"A\",\"value\":\"A\"}}";
 
         StepVerifier stepVerifier = StepVerifier.create(adapter.start())
-                                                .expectNextMatches(received -> received.aiidaRecordValue()
+                                                .expectNextMatches(received -> received.aiidaRecordValues()
                                                                                        .stream()
                                                                                        .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
                                                                                                                                      .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) ||

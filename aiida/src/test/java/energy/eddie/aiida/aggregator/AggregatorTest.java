@@ -41,7 +41,6 @@ class AggregatorTest {
     private static final UUID dataSourceId1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID dataSourceId2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID userId1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56607");
-    private static final UUID userId2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56607");
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
     private Aggregator aggregator;
     private Set<String> wantedCodes;
@@ -95,9 +94,6 @@ class AggregatorTest {
 
     @Test
     void verify_close_callsCloseOnAllDataSources() {
-        UUID dataSourceId1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-        UUID dataSourceId2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-
         var mockDataSource1 = mock(AiidaDataSource.class);
         when(mockDataSource1.id()).thenReturn(dataSourceId1);
         when(mockDataSource1.name()).thenReturn(DATASOURCE_NAME1);
@@ -118,8 +114,14 @@ class AggregatorTest {
     }
 
     @Test
-    @Disabled // Disable till better aggregation method: GH-1307
+    @Disabled("Disable till better aggregation method: GH-1307")
     void getFilteredFlux_filtersFluxFromDataSources() {
+        var instant = Instant.now().plusSeconds(600);
+        wanted1 = new AiidaRecord(instant, "Test", userId1, dataSourceId2, List.of(
+                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KW, "10", KW)));
+        unwanted2 = new AiidaRecord(instant, "Test", userId1, dataSourceId2, List.of(
+                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KW, "10", KW)));
+
         TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
         TestPublisher<AiidaRecord> publisher2 = TestPublisher.create();
         var mockDataSource1 = mock(AiidaDataSource.class);
@@ -133,9 +135,6 @@ class AggregatorTest {
         when(mockDataSource2.name()).thenReturn(DATASOURCE_NAME2);
         when(mockDataSource2.start()).thenReturn(publisher2.flux());
 
-        wanted1.setDataSourceId(dataSourceId2);
-        unwanted2.setDataSourceId(dataSourceId2);
-
         aggregator.addNewAiidaDataSource(mockDataSource1);
         aggregator.addNewAiidaDataSource(mockDataSource2);
 
@@ -145,7 +144,7 @@ class AggregatorTest {
                                                                                    userId1))
                                                 .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
                                                         aiidaRecord,
-                                                        unwanted3.aiidaRecordValue().getFirst()))
+                                                        unwanted3.aiidaRecordValues().getFirst()))
                                                 .thenCancel()   // Flux of datasource doesn't terminate except if .close() is called
                                                 .verifyLater();
 
@@ -163,7 +162,7 @@ class AggregatorTest {
      * {@link AiidaRecord}s that have been published after the returned Flux has been created.
      */
     @Test
-    @Disabled // Disable till better aggregation method: GH-1307
+    @Disabled("Disable till better aggregation method: GH-1307")
     void getFilteredFlux_doesNotReturnDataPublishedBeforeSubscribed() throws InterruptedException {
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
         var mockDataSource = mock(AiidaDataSource.class);
@@ -179,7 +178,7 @@ class AggregatorTest {
                                                                                    userId1))
                                                 .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
                                                         aiidaRecord,
-                                                        wanted1.aiidaRecordValue().getFirst()))
+                                                        wanted1.aiidaRecordValues().getFirst()))
                                                 .thenCancel()
                                                 .verifyLater();
 
@@ -199,7 +198,7 @@ class AggregatorTest {
         var mockDataSource = mock(AiidaDataSource.class);
         when(mockDataSource.start()).thenReturn(publisher.flux());
 
-        var unwantedBeforeCron = new AiidaRecord(Instant.now().minusSeconds(10), "Test", dataSourceId1, userId1,
+        var unwantedBeforeCron = new AiidaRecord(Instant.now().minusSeconds(10), "Test", userId1, dataSourceId1,
                                                  List.of(new AiidaRecordValue("1-0:1.8.0",
                                                                               POSITIVE_ACTIVE_ENERGY,
                                                                               "50",
@@ -215,7 +214,7 @@ class AggregatorTest {
                                                                                    userId1))
                                                 .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
                                                         aiidaRecord,
-                                                        wanted1.aiidaRecordValue().getFirst()))
+                                                        wanted1.aiidaRecordValues().getFirst()))
                                                 .thenCancel()
                                                 .log()
                                                 .verifyLater();
@@ -262,7 +261,7 @@ class AggregatorTest {
      * expiration time.
      */
     @Test
-    @Disabled // Disable till better aggregation method: GH-1307
+    @Disabled("Disable till better aggregation method: GH-1307")
     void givenDataWithTimestampAfterFluxFilterTime_fluxDoesNotPublish() {
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
         var mockDataSource = mock(AiidaDataSource.class);
@@ -272,8 +271,8 @@ class AggregatorTest {
 
         var atExpirationTime = new AiidaRecord(expiration,
                                                "Test",
-                                               dataSourceId1,
                                                userId1,
+                                               dataSourceId1,
                                                List.of(new AiidaRecordValue("1-0:1.7.0",
                                                                             POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
                                                                             "111",
@@ -282,8 +281,8 @@ class AggregatorTest {
                                                                             KWH)));
         var afterExpirationTime = new AiidaRecord(expiration.plusSeconds(10),
                                                   "Test",
-                                                  dataSourceId1,
                                                   userId1,
+                                                  dataSourceId1,
                                                   List.of(new AiidaRecordValue("1-0:2.7.0",
                                                                                NEGATIVE_ACTIVE_INSTANTANEOUS_POWER,
                                                                                "111",
@@ -302,7 +301,7 @@ class AggregatorTest {
                     })
                     .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
                             aiidaRecord,
-                            wanted1.aiidaRecordValue().getFirst()))
+                            wanted1.aiidaRecordValues().getFirst()))
                     .then(aggregator::close)
                     .expectComplete()
                     .verify();
@@ -366,9 +365,9 @@ class AggregatorTest {
     }
 
     private boolean containsExpectedAiidaRecordValue(AiidaRecord actual, AiidaRecordValue expectedValue) {
-        System.out.println("actual: " + actual.aiidaRecordValue().getFirst().rawValue());
+        System.out.println("actual: " + actual.aiidaRecordValues().getFirst().rawValue());
         System.out.println("expected: " + expectedValue.rawValue());
-        return actual.aiidaRecordValue()
+        return actual.aiidaRecordValues()
                      .stream()
                      .anyMatch(aiidaRecordValue ->
                                        aiidaRecordValue.dataTag().equals(expectedValue.dataTag())

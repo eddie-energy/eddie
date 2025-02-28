@@ -18,6 +18,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -36,11 +37,13 @@ class InstallerControllerTest {
     private static final String SERVICE_PATH = BASE_PATH + "/services/user";
     private static final String SAMPLE_CHART = "my-chart";
     private static final String SAMPLE_RELEASE = "my-release";
+    private static final ZoneId ZONE_ID = ZoneId.of("UTC");
+
     private static final VersionInfoDto VERSION_INFO = new VersionInfoDto(
             "my-service-123",
             new ReleaseInfoDto(
-                    ZonedDateTime.now(),
-                    ZonedDateTime.now(),
+                    ZonedDateTime.now(ZONE_ID),
+                    ZonedDateTime.now(ZONE_ID),
                     null,
                     "Test release",
                     "DEPLOYED"

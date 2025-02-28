@@ -47,8 +47,8 @@ class MqttStreamerTest {
     private final Sinks.One<UUID> terminationSink = Sinks.one();
     private final AiidaRecord record1 = new AiidaRecord(Instant.now(),
                                                         "Test",
-                                                        dataSourceId,
                                                         userId,
+                                                        dataSourceId,
                                                         List.of(new AiidaRecordValue("1-0:1.8.0",
                                                                                      POSITIVE_ACTIVE_ENERGY,
                                                                                      "444",
@@ -57,8 +57,8 @@ class MqttStreamerTest {
                                                                                      KWH)));
     private final AiidaRecord record2 = new AiidaRecord(Instant.now(),
                                                         "Test",
-                                                        dataSourceId,
                                                         userId,
+                                                        dataSourceId,
                                                         List.of(new AiidaRecordValue("1-0:2.8.0",
                                                                                      NEGATIVE_ACTIVE_ENERGY,
                                                                                      "888",

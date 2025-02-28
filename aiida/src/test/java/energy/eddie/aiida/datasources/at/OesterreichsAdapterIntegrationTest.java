@@ -78,7 +78,7 @@ class OesterreichsAdapterIntegrationTest {
     }
 
     @AfterEach
-    public void teardown() throws Exception {
+    void teardown() throws Exception {
         logCaptor.clearLogs();
         proxy.delete();
     }
@@ -155,7 +155,7 @@ class OesterreichsAdapterIntegrationTest {
 
 
         StepVerifier.create(adapter.start())
-                .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValue().stream()
+                    .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValues().stream()
                                                              .anyMatch(aiidaRecordValue -> aiidaRecordValue.value()
                                                                                                            .equals(expectedValue)))
                 .then(adapter::close)
