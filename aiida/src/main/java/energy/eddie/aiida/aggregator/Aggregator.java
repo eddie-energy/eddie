@@ -75,6 +75,7 @@ public class Aggregator implements AutoCloseable {
      * that is in the set {@code allowedCodes}.
      * All values must have a timestamp before {@code permissionExpirationTime}.
      * Additionally, the records are buffered and aggregated by the {@link CronExpression} {@code transmissionSchedule}.
+     *
      * @param allowedDataTags          Tags which should be included in the returned Flux.
      * @param permissionExpirationTime Instant when the permission expires.
      * @param transmissionSchedule     The schedule at which the data should be transmitted.
@@ -97,14 +98,13 @@ public class Aggregator implements AutoCloseable {
         @SuppressWarnings("unused") // Otherwise errorprone shows a warning
         var unused = cronScheduler.schedule(() -> cronSink.tryEmitNext(true), cronTrigger);
 
-        var flux = combinedSink.asFlux()
-                               .doOnComplete(() -> {
-                                   cronScheduler.stop();
-                                   cronSink.tryEmitComplete();
-                               });
+        var flux = combinedSink.asFlux().doOnComplete(() -> {
+            cronScheduler.stop();
+            cronSink.tryEmitComplete();
+        });
 
         return flux.map(AiidaRecord::new)
-                   .filter(aiidaRecord -> isValidPermissionRecord(aiidaRecord, permissionExpirationTime, userId))
+                   .filter(aiidaRecord -> isValidAiidaRecord(aiidaRecord, permissionExpirationTime, userId))
                    .map(aiidaRecord -> filterAllowedDataTags(aiidaRecord, allowedDataTags))
                    .buffer(cronSink.asFlux())
                    .flatMapIterable(this::aggregateRecords);
@@ -126,7 +126,7 @@ public class Aggregator implements AutoCloseable {
 
     private void saveRecordToDatabase(AiidaRecord aiidaRecord) {
         LOGGER.trace("Saving new record to db");
-        for (AiidaRecordValue value : aiidaRecord.aiidaRecordValue()) {
+        for (AiidaRecordValue value : aiidaRecord.aiidaRecordValues()) {
             value.setAiidaRecord(aiidaRecord);
         }
         repository.save(aiidaRecord);
@@ -149,10 +149,18 @@ public class Aggregator implements AutoCloseable {
         LOGGER.error("Error from datasource {}", dataSource.name(), throwable);
     }
 
-    private boolean isValidPermissionRecord(AiidaRecord aiidaRecord, Instant expirationTime, UUID userId) {
-        return aiidaRecord.userId().equals(userId)
-               && !aiidaRecord.aiidaRecordValue().isEmpty()
-               && isBeforeExpiration(aiidaRecord, expirationTime);
+    private boolean isValidAiidaRecord(AiidaRecord aiidaRecord, Instant expirationTime, UUID userId) {
+        return areAiidaRecordValuesValid(aiidaRecord.aiidaRecordValues()) &&
+               isBeforeExpiration(aiidaRecord, expirationTime) &&
+               doesAiidaRecordBelongToCurrentUser(aiidaRecord, userId);
+    }
+
+    private boolean areAiidaRecordValuesValid(List<AiidaRecordValue> aiidaRecordValues) {
+        return !aiidaRecordValues.isEmpty();
+    }
+
+    private boolean doesAiidaRecordBelongToCurrentUser(AiidaRecord aiidaRecord, UUID userId) {
+        return aiidaRecord.userId().equals(userId);
     }
 
     private boolean isBeforeExpiration(AiidaRecord aiidaRecord, Instant permissionExpirationTime) {
@@ -161,7 +169,7 @@ public class Aggregator implements AutoCloseable {
 
     private AiidaRecord filterAllowedDataTags(AiidaRecord aiidaRecord, Set<String> allowedDataTags) {
         if (!allowedDataTags.isEmpty()) {
-            var filteredValues = aiidaRecord.aiidaRecordValue()
+            var filteredValues = aiidaRecord.aiidaRecordValues()
                                             .stream()
                                             .filter(value -> allowedDataTags.contains(value.dataTag().toString()))
                                             .toList();
