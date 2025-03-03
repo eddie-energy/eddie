@@ -33,8 +33,8 @@ public class CdsPublicApis {
         LOGGER.info("Requesting carbon data spec from {}", cdsUrl);
         return webClient.get()
                         .uri(cdsUrl)
-                .retrieve()
-                .bodyToMono(CarbonDataSpec200Response.class);
+                        .retrieve()
+                        .bodyToMono(CarbonDataSpec200Response.class);
     }
 
     public Mono<OAuthAuthorizationServer200Response> oauthMetadataSpec(URI oauthMetadataEndpoint) {

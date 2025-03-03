@@ -46,7 +46,7 @@ public class PermissionRequestCreationService {
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation creation) throws UnknownPermissionAdministratorException, UnsupportedDataNeedException, DataNeedNotFoundException {
         var permissionId = UUID.randomUUID().toString();
         var cdsServerId = creation.cdsId();
-        LOGGER.info("Creating new permission request {} for {} cds server", permissionId, cdsServerId);
+        LOGGER.info("Creating new permission request {} for cds server with id {}", permissionId, cdsServerId);
         var dataNeedId = creation.dataNeedId();
         var createdEvent = new CreatedEvent(permissionId,
                                             creation.connectionId(),
@@ -84,7 +84,7 @@ public class PermissionRequestCreationService {
                                          dataNeedCalc.granularities().getFirst(),
                                          dataNeedCalc.energyTimeframe().start(),
                                          dataNeedCalc.energyTimeframe().end()));
-        var uri = authorizationService.createOAuthRequest(cdsServer.get(), permissionId);
+        var uri = authorizationService.createOAuthRequest(cdsServer.get(), permissionId).block();
         return new CreatedPermissionRequest(permissionId, uri);
     }
 

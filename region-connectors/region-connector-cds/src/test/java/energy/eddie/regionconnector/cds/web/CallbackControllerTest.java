@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import reactor.core.publisher.Mono;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -45,7 +46,7 @@ class CallbackControllerTest {
     void callback_withError_returnsThymeleafTemplateWithError() throws Exception {
         // Given
         when(callbackService.processCallback(any()))
-                .thenReturn(new ErrorResult("pid", "error"));
+                .thenReturn(Mono.just(new ErrorResult("pid", "error")));
 
         // When
         mockMvc.perform(get("/callback")
@@ -61,7 +62,7 @@ class CallbackControllerTest {
     void callback_withRejected_returnsThymeleafTemplateWithDenied() throws Exception {
         // Given
         when(callbackService.processCallback(any()))
-                .thenReturn(new UnauthorizedResult("pid", PermissionProcessStatus.REJECTED));
+                .thenReturn(Mono.just(new UnauthorizedResult("pid", PermissionProcessStatus.REJECTED)));
 
         // When
         mockMvc.perform(get("/callback")
@@ -77,7 +78,7 @@ class CallbackControllerTest {
     void callback_successful_returnsDataNeedId() throws Exception {
         // Given
         when(callbackService.processCallback(any()))
-                .thenReturn(new AcceptedResult("pid", "dnid"));
+                .thenReturn(Mono.just(new AcceptedResult("pid", "dnid")));
 
         // When
         mockMvc.perform(get("/callback")

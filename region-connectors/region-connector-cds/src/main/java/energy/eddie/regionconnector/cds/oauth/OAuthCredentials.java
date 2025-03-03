@@ -14,8 +14,10 @@ import java.time.ZonedDateTime;
 public class OAuthCredentials {
     @Id
     @Column(name = "permission_id", length = 36, nullable = false)
+    @SuppressWarnings("unused")
     private final String permissionId;
-    @Column(name = "refresh_token", nullable = false)
+    @Column(name = "refresh_token")
+    @Nullable
     private final String refreshToken;
     @Column(name = "access_token", columnDefinition = "text")
     @Nullable
@@ -25,7 +27,9 @@ public class OAuthCredentials {
     private final ZonedDateTime expiresAt;
 
     public OAuthCredentials(
-            String permissionId, String refreshToken, @Nullable String accessToken,
+            String permissionId,
+            @Nullable String refreshToken,
+            @Nullable String accessToken,
             @Nullable ZonedDateTime expiresAt
     ) {
         this.permissionId = permissionId;
@@ -42,10 +46,12 @@ public class OAuthCredentials {
         expiresAt = null;
     }
 
+    @Nullable
     public String refreshToken() {
         return refreshToken;
     }
 
+    @Nullable
     public String accessToken() {
         return accessToken;
     }

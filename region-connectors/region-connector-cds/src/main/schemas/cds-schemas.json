@@ -1119,7 +1119,7 @@
     "Clients": {
       "type": "object",
       "properties": {
-        "results": {
+        "clients": {
           "type": "array",
           "items": {
             "allOf": [
@@ -1131,21 +1131,22 @@
         }
       },
       "required": [
-        "results"
+        "clients"
       ],
       "allOf": [
         {
           "$ref": "#/$defs/Page"
         }
-      ]
+      ],
+      "additionalProperties": false
     },
     "IndividualClient": {
+      "properties": {
+        "client_secret": false
+      },
       "allOf": [
         {
-          "$ref": "#/$defs/Client",
-          "properties": {
-            "client_secret": false
-          }
+          "$ref": "#/$defs/Client"
         }
       ]
     },
@@ -1499,7 +1500,11 @@
           "description": "URL to the previous page of results"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "required": [
+        "next",
+        "previous"
+      ]
     }
   }
 }

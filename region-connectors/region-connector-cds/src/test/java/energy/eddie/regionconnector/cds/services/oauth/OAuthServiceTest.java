@@ -1,21 +1,21 @@
 package energy.eddie.regionconnector.cds.services.oauth;
 
 import energy.eddie.regionconnector.cds.client.Scopes;
+import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientCredentials;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.SuccessfulParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.UnableToSendPar;
-import energy.eddie.regionconnector.cds.services.oauth.token.Credentials;
+import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithRefreshToken;
+import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithoutRefreshToken;
 import energy.eddie.regionconnector.cds.services.oauth.token.InvalidTokenResult;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.net.URI;
@@ -29,7 +29,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
 class OAuthServiceTest {
     private static MockWebServer mockWebServer;
     private static CdsServer cdsServer;
@@ -72,7 +71,9 @@ class OAuthServiceTest {
                 "http://localhost?client_id=client-id&request_uri=urn%3Aietf%3Aparams%3Aoauth%3Arequest_uri%3A6esc_11ACC5bwc014ltc14eY22c");
 
         // When
-        var res = oAuthService.pushAuthorization(cdsServer, List.of(Scopes.USAGE_DETAILED_SCOPE));
+        var res = oAuthService.pushAuthorization(cdsServer,
+                                                 new CustomerDataClientCredentials("client-id"),
+                                                 List.of(Scopes.USAGE_DETAILED_SCOPE));
 
         // Then
         var success = assertInstanceOf(SuccessfulParResponse.class, res);
@@ -82,13 +83,14 @@ class OAuthServiceTest {
     @Test
     void testPushAuthorization_withInvalidResponse_returnsErrorResponse() {
         // Given
+        //noinspection JsonStandardCompliance
         mockWebServer.enqueue(new MockResponse()
                                       .setResponseCode(200)
                                       .setBody("INVALID RESPONSE")
                                       .addHeader("Content-Type", "application/json"));
 
         // When
-        var res = oAuthService.pushAuthorization(cdsServer, List.of(Scopes.USAGE_DETAILED_SCOPE));
+        var res = oAuthService.pushAuthorization(cdsServer, new CustomerDataClientCredentials("client-id"), List.of(Scopes.USAGE_DETAILED_SCOPE));
 
         // Then
         assertInstanceOf(ErrorParResponse.class, res);
@@ -100,7 +102,7 @@ class OAuthServiceTest {
         mockWebServer.enqueue(new MockResponse().setStatus("INVALID STATUS LINE"));
 
         // When
-        var res = oAuthService.pushAuthorization(cdsServer, List.of(Scopes.USAGE_DETAILED_SCOPE));
+        var res = oAuthService.pushAuthorization(cdsServer, new CustomerDataClientCredentials("client-id"), List.of(Scopes.USAGE_DETAILED_SCOPE));
 
         // Then
         assertInstanceOf(UnableToSendPar.class, res);
@@ -115,7 +117,7 @@ class OAuthServiceTest {
                                       .addHeader("Content-Type", "application/json"));
 
         // When
-        var res = oAuthService.pushAuthorization(cdsServer, List.of(Scopes.USAGE_DETAILED_SCOPE));
+        var res = oAuthService.pushAuthorization(cdsServer, new CustomerDataClientCredentials("client-id"), List.of(Scopes.USAGE_DETAILED_SCOPE));
 
         // Then
         var error = assertInstanceOf(ErrorParResponse.class, res);
@@ -129,7 +131,7 @@ class OAuthServiceTest {
                                       .setStatus("Invalid status line"));
 
         // When
-        var res = oAuthService.retrieveAccessToken("code", cdsServer);
+        var res = oAuthService.retrieveAccessToken("code", cdsServer, new CustomerDataClientCredentials("client-id"));
 
         // Then
         assertInstanceOf(InvalidTokenResult.class, res);
@@ -144,7 +146,7 @@ class OAuthServiceTest {
                                       .setBody("{ \"error\": \"bla\" }"));
 
         // When
-        var res = oAuthService.retrieveAccessToken("code", cdsServer);
+        var res = oAuthService.retrieveAccessToken("code", cdsServer, new CustomerDataClientCredentials("client-id"));
 
         // Then
         assertInstanceOf(InvalidTokenResult.class, res);
@@ -168,14 +170,42 @@ class OAuthServiceTest {
         );
 
         // When
-        var res = oAuthService.retrieveAccessToken("code", cdsServer);
+        var res = oAuthService.retrieveAccessToken("code", cdsServer, new CustomerDataClientCredentials("client-id"));
 
         // Then
-        var creds = assertInstanceOf(Credentials.class, res);
+        var creds = assertInstanceOf(CredentialsWithRefreshToken.class, res);
         var expiresAt = ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(90);
         assertAll(
                 () -> assertEquals("accessToken", creds.accessToken()),
                 () -> assertEquals("refreshToken", creds.refreshToken()),
+                () -> assertThat(creds.expiresAt()).isCloseTo(expiresAt, within(5, ChronoUnit.SECONDS))
+        );
+    }
+
+    @Test
+    void testRetrieveAccessToken_withAdminCredentials_returnsCredentials() {
+        // Given
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .addHeader("Content-Type", "application/json")
+                        .setBody("""
+                                         {
+                                           "token_type": "Bearer",
+                                           "access_token": "accessToken",
+                                           "expires_in": 90
+                                         }
+                                         """)
+        );
+
+        // When
+        var res = oAuthService.retrieveAccessToken(cdsServer);
+
+        // Then
+        var creds = assertInstanceOf(CredentialsWithoutRefreshToken.class, res);
+        var expiresAt = ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(90);
+        assertAll(
+                () -> assertEquals("accessToken", creds.accessToken()),
                 () -> assertThat(creds.expiresAt()).isCloseTo(expiresAt, within(5, ChronoUnit.SECONDS))
         );
     }
@@ -186,7 +216,7 @@ class OAuthServiceTest {
         var scopes = List.of(Scopes.USAGE_DETAILED_SCOPE);
 
         // When
-        var res = oAuthService.createAuthorizationUri(cdsServer, scopes);
+        var res = oAuthService.createAuthorizationUri(cdsServer, new CustomerDataClientCredentials("client-id"), scopes);
 
         // Then
         var expected = "http://localhost?response_type=code&redirect_uri=http%3A%2F%2Flocalhost&state=" + res.state() + "&client_id=client-id&scope=cds_usage_detailed";

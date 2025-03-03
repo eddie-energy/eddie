@@ -1,10 +1,12 @@
 package energy.eddie.regionconnector.cds.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.cds.client.CdsApiClient;
-import energy.eddie.regionconnector.cds.client.CdsApiClientFactory;
-import energy.eddie.regionconnector.cds.client.responses.*;
+import energy.eddie.regionconnector.cds.client.admin.AdminClient;
+import energy.eddie.regionconnector.cds.client.admin.AdminClientFactory;
+import energy.eddie.regionconnector.cds.client.admin.responses.*;
 import energy.eddie.regionconnector.cds.dtos.CdsServerCreation;
+import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
+import energy.eddie.regionconnector.cds.services.oauth.OAuthService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -15,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -32,21 +35,27 @@ class CdsControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
-    private CdsApiClientFactory factory;
+    private AdminClientFactory factory;
+    @MockitoBean
+    private OAuthService oAuthService;
 
     @Test
     void testRegisterCdsClient_returnsOk() throws Exception {
         // Given
         var url = URI.create("http://localhost:8080").toURL();
-        when(factory.getCdsApiClient(url))
-                .thenReturn(Mono.just(new CreatedApiClientResponse(new CdsApiClient())));
+        var cdsServer = new CdsServerBuilder().build();
+        var webClient = WebClient.builder().build();
+        when(factory.getOrCreate(url))
+                .thenReturn(Mono.just(new CreatedAdminClientResponse(new AdminClient(webClient,
+                                                                                     cdsServer,
+                                                                                     oAuthService))));
         var body = objectMapper.writeValueAsString(new CdsServerCreation(url));
 
         // When
         mockMvc.perform(post("/register")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(body))
-               .andExpect(status().isOk());
+               .andExpect(status().isCreated());
     }
 
 
@@ -58,7 +67,7 @@ class CdsControllerTest {
     ) throws Exception {
         // Given
         var url = URI.create("http://localhost:8080").toURL();
-        when(factory.getCdsApiClient(url)).thenReturn(Mono.just(response));
+        when(factory.getOrCreate(url)).thenReturn(Mono.just(response));
         var body = objectMapper.writeValueAsString(new CdsServerCreation(url));
 
         // When

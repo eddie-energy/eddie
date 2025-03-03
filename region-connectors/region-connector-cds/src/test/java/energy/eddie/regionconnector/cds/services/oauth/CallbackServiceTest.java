@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.cds.services.oauth;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientCredentials;
+import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientFactory;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
 import energy.eddie.regionconnector.cds.persistence.CdsPermissionRequestRepository;
@@ -9,7 +11,8 @@ import energy.eddie.regionconnector.cds.persistence.OAuthCredentialsRepository;
 import energy.eddie.regionconnector.cds.services.oauth.authorization.AcceptedResult;
 import energy.eddie.regionconnector.cds.services.oauth.authorization.ErrorResult;
 import energy.eddie.regionconnector.cds.services.oauth.authorization.UnauthorizedResult;
-import energy.eddie.regionconnector.cds.services.oauth.token.Credentials;
+import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithRefreshToken;
+import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithoutRefreshToken;
 import energy.eddie.regionconnector.cds.services.oauth.token.InvalidTokenResult;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -18,6 +21,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -42,6 +47,8 @@ class CallbackServiceTest {
     private CdsServerRepository cdsServerRepository;
     @Mock
     private OAuthCredentialsRepository credentialsRepository;
+    @Mock
+    private CustomerDataClientFactory factory;
     @InjectMocks
     private CallbackService callbackService;
 
@@ -53,7 +60,7 @@ class CallbackServiceTest {
         var callback = new Callback(null, null, "state");
 
         // When & Then
-        assertThrows(PermissionNotFoundException.class, () -> callbackService.processCallback(callback));
+        assertThrows(PermissionNotFoundException.class, () -> callbackService.processCallback(callback).block());
     }
 
     @Test
@@ -71,11 +78,15 @@ class CallbackServiceTest {
         var res = callbackService.processCallback(callback);
 
         // Then
-        var unauth = assertInstanceOf(UnauthorizedResult.class, res);
-        assertAll(
-                () -> assertEquals("pid", unauth.permissionId()),
-                () -> assertEquals(PermissionProcessStatus.REJECTED, unauth.status())
-        );
+        StepVerifier.create(res)
+                    .assertNext(result -> {
+                        var unauth = assertInstanceOf(UnauthorizedResult.class, result);
+                        assertAll(
+                                () -> assertEquals("pid", unauth.permissionId()),
+                                () -> assertEquals(PermissionProcessStatus.REJECTED, unauth.status())
+                        );
+                    })
+                    .verifyComplete();
     }
 
     @Test
@@ -94,11 +105,15 @@ class CallbackServiceTest {
         var res = callbackService.processCallback(callback);
 
         // Then
-        var accepted = assertInstanceOf(AcceptedResult.class, res);
-        assertAll(
-                () -> assertEquals("pid", accepted.permissionId()),
-                () -> assertEquals("dnid", accepted.dataNeedId())
-        );
+        StepVerifier.create(res)
+                    .assertNext(result -> {
+                        var accepted = assertInstanceOf(AcceptedResult.class, result);
+                        assertAll(
+                                () -> assertEquals("pid", accepted.permissionId()),
+                                () -> assertEquals("dnid", accepted.dataNeedId())
+                        );
+                    })
+                    .verifyComplete();
     }
 
     @Test
@@ -116,11 +131,15 @@ class CallbackServiceTest {
         var res = callbackService.processCallback(callback);
 
         // Then
-        var error = assertInstanceOf(ErrorResult.class, res);
-        assertAll(
-                () -> assertEquals("pid", error.permissionId()),
-                () -> assertEquals("Wrong status of permission request REVOKED", error.error())
-        );
+        StepVerifier.create(res)
+                    .assertNext(result -> {
+                        var error = assertInstanceOf(ErrorResult.class, result);
+                        assertAll(
+                                () -> assertEquals("pid", error.permissionId()),
+                                () -> assertEquals("Wrong status of permission request REVOKED", error.error())
+                        );
+                    })
+                    .verifyComplete();
     }
 
     @Test
@@ -138,11 +157,15 @@ class CallbackServiceTest {
         var res = callbackService.processCallback(callback);
 
         // Then
-        var error = assertInstanceOf(UnauthorizedResult.class, res);
-        assertAll(
-                () -> assertEquals("pid", error.permissionId()),
-                () -> assertEquals(PermissionProcessStatus.REJECTED, error.status())
-        );
+        StepVerifier.create(res)
+                    .assertNext(result -> {
+                        var error = assertInstanceOf(UnauthorizedResult.class, result);
+                        assertAll(
+                                () -> assertEquals("pid", error.permissionId()),
+                                () -> assertEquals(PermissionProcessStatus.REJECTED, error.status())
+                        );
+                    })
+                    .verifyComplete();
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REJECTED, event.status())));
     }
 
@@ -161,11 +184,15 @@ class CallbackServiceTest {
         var res = callbackService.processCallback(callback);
 
         // Then
-        var error = assertInstanceOf(ErrorResult.class, res);
-        assertAll(
-                () -> assertEquals("pid", error.permissionId()),
-                () -> assertEquals("other_error", error.error())
-        );
+        StepVerifier.create(res)
+                    .assertNext(result -> {
+                        var error = assertInstanceOf(ErrorResult.class, result);
+                        assertAll(
+                                () -> assertEquals("pid", error.permissionId()),
+                                () -> assertEquals("other_error", error.error())
+                        );
+                    })
+                    .verifyComplete();
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.INVALID, event.status())));
     }
 
@@ -175,6 +202,7 @@ class CallbackServiceTest {
         var pr = new CdsPermissionRequestBuilder()
                 .setPermissionId("pid")
                 .setStatus(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
+                .setCdsServer(1L)
                 .build();
         when(permissionRequestRepository.findByState("state"))
                 .thenReturn(Optional.of(pr));
@@ -184,11 +212,15 @@ class CallbackServiceTest {
         var res = callbackService.processCallback(callback);
 
         // Then
-        var error = assertInstanceOf(ErrorResult.class, res);
-        assertAll(
-                () -> assertEquals("pid", error.permissionId()),
-                () -> assertEquals("No code provided", error.error())
-        );
+        StepVerifier.create(res)
+                    .assertNext(result -> {
+                        var error = assertInstanceOf(ErrorResult.class, result);
+                        assertAll(
+                                () -> assertEquals("pid", error.permissionId()),
+                                () -> assertEquals("No code provided", error.error())
+                        );
+                    })
+                    .verifyComplete();
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.INVALID, event.status())));
     }
 
@@ -204,6 +236,7 @@ class CallbackServiceTest {
         when(permissionRequestRepository.findByState("state"))
                 .thenReturn(Optional.of(pr));
         var cdsServer = new CdsServerBuilder().setBaseUri("http://localhost")
+                                              .setId(1L)
                                               .setName("CDS server")
                                               .setCoverages(Set.of())
                                               .setClientId("client-id")
@@ -212,20 +245,76 @@ class CallbackServiceTest {
                                               .build();
         when(cdsServerRepository.getReferenceById(1L))
                 .thenReturn(cdsServer);
-        var credentials = new Credentials("accessToken", "refreshToken", ZonedDateTime.now(ZoneOffset.UTC));
-        when(oAuthService.retrieveAccessToken("code", cdsServer))
+        var credentials = new CredentialsWithRefreshToken("accessToken",
+                                                          "refreshToken",
+                                                          ZonedDateTime.now(ZoneOffset.UTC));
+        var clientCredentials = new CustomerDataClientCredentials("client-id");
+        when(oAuthService.retrieveAccessToken("code", cdsServer, clientCredentials))
                 .thenReturn(credentials);
+        when(factory.create(1L))
+                .thenReturn(Mono.just(clientCredentials));
         var callback = new Callback("code", null, "state");
 
         // When
         var res = callbackService.processCallback(callback);
 
         // Then
-        var accepted = assertInstanceOf(AcceptedResult.class, res);
-        assertAll(
-                () -> assertEquals("pid", accepted.permissionId()),
-                () -> assertEquals("dnid", accepted.dataNeedId())
-        );
+        StepVerifier.create(res)
+                    .assertNext(result -> {
+                        var accepted = assertInstanceOf(AcceptedResult.class, result);
+                        assertAll(
+                                () -> assertEquals("pid", accepted.permissionId()),
+                                () -> assertEquals("dnid", accepted.dataNeedId())
+                        );
+                    })
+                    .verifyComplete();
+        verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.ACCEPTED, event.status())));
+        verify(credentialsRepository).save(any());
+    }
+
+    @Test
+    void testProcessCallback_withCodeWithoutRefreshToken_returnsAccepted() throws PermissionNotFoundException {
+        // Given
+        var pr = new CdsPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStatus(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
+                .setCdsServer(1)
+                .setDataNeedId("dnid")
+                .build();
+        when(permissionRequestRepository.findByState("state"))
+                .thenReturn(Optional.of(pr));
+        var cdsServer = new CdsServerBuilder().setBaseUri("http://localhost")
+                                              .setId(1L)
+                                              .setName("CDS server")
+                                              .setCoverages(Set.of())
+                                              .setClientId("client-id")
+                                              .setClientSecret("client-secret")
+                                              .setTokenEndpoint("http://localhost")
+                                              .build();
+        when(cdsServerRepository.getReferenceById(1L))
+                .thenReturn(cdsServer);
+        var credentials = new CredentialsWithoutRefreshToken("accessToken",
+                                                             ZonedDateTime.now(ZoneOffset.UTC));
+        var clientCredentials = new CustomerDataClientCredentials("client-id");
+        when(oAuthService.retrieveAccessToken("code", cdsServer, clientCredentials))
+                .thenReturn(credentials);
+        when(factory.create(1L))
+                .thenReturn(Mono.just(clientCredentials));
+        var callback = new Callback("code", null, "state");
+
+        // When
+        var res = callbackService.processCallback(callback);
+
+        // Then
+        StepVerifier.create(res)
+                    .assertNext(result -> {
+                        var accepted = assertInstanceOf(AcceptedResult.class, result);
+                        assertAll(
+                                () -> assertEquals("pid", accepted.permissionId()),
+                                () -> assertEquals("dnid", accepted.dataNeedId())
+                        );
+                    })
+                    .verifyComplete();
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.ACCEPTED, event.status())));
         verify(credentialsRepository).save(any());
     }
@@ -251,7 +340,10 @@ class CallbackServiceTest {
                                               .build();
         when(cdsServerRepository.getReferenceById(1L))
                 .thenReturn(cdsServer);
-        when(oAuthService.retrieveAccessToken("code", cdsServer))
+        var clientCredentials = new CustomerDataClientCredentials("client-id");
+        when(factory.create(1L))
+                .thenReturn(Mono.just(clientCredentials));
+        when(oAuthService.retrieveAccessToken("code", cdsServer, clientCredentials))
                 .thenReturn(new InvalidTokenResult());
         var callback = new Callback("code", null, "state");
 
@@ -259,11 +351,15 @@ class CallbackServiceTest {
         var res = callbackService.processCallback(callback);
 
         // Then
-        var error = assertInstanceOf(ErrorResult.class, res);
-        assertAll(
-                () -> assertEquals("pid", error.permissionId()),
-                () -> assertEquals("Could not retrieve access token", error.error())
-        );
+        StepVerifier.create(res)
+                    .assertNext(result -> {
+                        var error = assertInstanceOf(ErrorResult.class, result);
+                        assertAll(
+                                () -> assertEquals("pid", error.permissionId()),
+                                () -> assertEquals("Could not retrieve access token", error.error())
+                        );
+                    })
+                    .verifyComplete();
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.INVALID, event.status())));
     }
 }

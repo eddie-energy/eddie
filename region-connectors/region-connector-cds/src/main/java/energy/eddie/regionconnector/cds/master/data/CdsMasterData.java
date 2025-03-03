@@ -49,7 +49,7 @@ public class CdsMasterData implements MasterData {
         return new PermissionAdministrator("US",
                                            server.name(),
                                            server.displayName(),
-                                           server.id(),
+                                           server.idAsString(),
                                            server.baseUri(),
                                            REGION_CONNECTOR_ID);
     }
@@ -58,9 +58,9 @@ public class CdsMasterData implements MasterData {
         var website = server.baseUri();
         return new MeteredDataAdministrator("US",
                                             server.name(),
-                                            server.id(),
+                                            server.idAsString(),
                                             website,
                                             website,
-                                            server.id());
+                                            server.idAsString());
     }
 }

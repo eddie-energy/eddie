@@ -13,6 +13,7 @@ public class CdsServerBuilder {
     private String tokenEndpoint;
     private String authorizationEndpoint;
     private String parEndpoint;
+    private String clientsEndpoint;
     private Long id = null;
 
     public CdsServerBuilder setBaseUri(String baseUri) {
@@ -60,15 +61,23 @@ public class CdsServerBuilder {
         return this;
     }
 
+    public CdsServerBuilder setClientsEndpoint(String clientsEndpoint) {
+        this.clientsEndpoint = clientsEndpoint;
+        return this;
+    }
+
     public CdsServer build() {
-        return new CdsServer(id,
-                             baseUri,
-                             name,
-                             coverages,
-                             clientId,
-                             clientSecret,
-                             tokenEndpoint,
-                             authorizationEndpoint,
-                             parEndpoint);
+        return new CdsServer(
+                id,
+                baseUri,
+                name,
+                coverages,
+                clientId,
+                clientSecret,
+                tokenEndpoint,
+                authorizationEndpoint,
+                parEndpoint,
+                clientsEndpoint
+        );
     }
 }

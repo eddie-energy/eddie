@@ -1,9 +1,10 @@
 package energy.eddie.regionconnector.cds.web;
 
-import energy.eddie.regionconnector.cds.client.CdsApiClientFactory;
-import energy.eddie.regionconnector.cds.client.responses.*;
+import energy.eddie.regionconnector.cds.client.admin.AdminClientFactory;
+import energy.eddie.regionconnector.cds.client.admin.responses.*;
 import energy.eddie.regionconnector.cds.dtos.CdsServerCreation;
 import energy.eddie.regionconnector.cds.dtos.CdsServerCreationError;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,20 +12,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class CdsController {
-    private final CdsApiClientFactory cdsApiClientFactory;
+    private final AdminClientFactory adminClientFactory;
 
-    public CdsController(CdsApiClientFactory cdsApiClientFactory) {this.cdsApiClientFactory = cdsApiClientFactory;}
+    public CdsController(AdminClientFactory adminClientFactory) {this.adminClientFactory = adminClientFactory;}
 
     @PostMapping("register")
     public ResponseEntity<CdsServerCreationError> registerCdsServer(@RequestBody CdsServerCreation cdsServerCreation) {
-        return cdsApiClientFactory.getCdsApiClient(cdsServerCreation.cdsServerUri())
-                                  .map(CdsController::mapCdsClientResponse)
-                                  .block();
+        return adminClientFactory.getOrCreate(cdsServerCreation.cdsServerUri())
+                                 .map(CdsController::mapCdsClientResponse)
+                                 .block();
     }
 
     private static ResponseEntity<CdsServerCreationError> mapCdsClientResponse(ApiClientCreationResponse res) {
         return switch (res) {
-            case CreatedApiClientResponse ignored -> ResponseEntity.ok().build();
+            case CreatedAdminClientResponse ignored -> ResponseEntity.status(HttpStatus.CREATED).build();
             case AuthorizationCodeGrantTypeNotSupported ignored -> ResponseEntity
                     .badRequest()
                     .body(new CdsServerCreationError("Authorization code grant type not supported"));

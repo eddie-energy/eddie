@@ -36,6 +36,8 @@ public class CdsServer {
     private final String authorizationEndpoint;
     @Column(name = "pushed_authorization_request_endpoint", nullable = false)
     private final String pushedAuthorizationRequestEndpoint;
+    @Column(name = "clients_endpoint", nullable = false)
+    private final String clientsEndpoint;
 
     @SuppressWarnings({"NullAway","java:S107"})
     public CdsServer(
@@ -46,9 +48,10 @@ public class CdsServer {
             String clientSecret,
             String tokenEndpoint,
             String authorizationEndpoint,
-            String parEndpoint
+            String parEndpoint,
+            String clientsEndpoint
     ) {
-        this(null, baseUri, name, coverages, clientId, clientSecret, tokenEndpoint, authorizationEndpoint, parEndpoint);
+        this(null, baseUri, name, coverages, clientId, clientSecret, tokenEndpoint, authorizationEndpoint, parEndpoint, clientsEndpoint);
     }
 
     @SuppressWarnings("java:S107")
@@ -61,7 +64,8 @@ public class CdsServer {
             String clientSecret,
             String tokenEndpoint,
             String authorizationEndpoint,
-            String parEndpoint
+            String parEndpoint,
+            String clientsEndpoint
     ) {
         this.id = id;
         this.baseUri = baseUri;
@@ -72,6 +76,7 @@ public class CdsServer {
         this.tokenEndpoint = tokenEndpoint;
         this.authorizationEndpoint = authorizationEndpoint;
         this.pushedAuthorizationRequestEndpoint = parEndpoint;
+        this.clientsEndpoint = clientsEndpoint;
     }
 
     @SuppressWarnings("NullAway")
@@ -85,6 +90,7 @@ public class CdsServer {
         tokenEndpoint = null;
         authorizationEndpoint = null;
         pushedAuthorizationRequestEndpoint = null;
+        clientsEndpoint = null;
     }
 
     public String baseUri() {
@@ -103,8 +109,12 @@ public class CdsServer {
         return coverages;
     }
 
-    public String id() {
+    public String idAsString() {
         return Objects.toString(id);
+    }
+
+    public Long id() {
+        return id;
     }
 
     public String clientId() {
@@ -128,5 +138,10 @@ public class CdsServer {
     @SuppressWarnings("DataFlowIssue")
     public URI pushedAuthorizationRequestEndpoint() {
         return URI.create(pushedAuthorizationRequestEndpoint);
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    public URI clientsEndpoint() {
+        return URI.create(clientsEndpoint);
     }
 }

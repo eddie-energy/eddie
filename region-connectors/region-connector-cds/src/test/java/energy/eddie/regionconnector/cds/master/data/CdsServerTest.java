@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CdsServerTest {
     @Test
-    void testId_returnsCorrectId() {
+    void testId_returnsCorrectIdAsString() {
         // Given
         var cdsServer = new CdsServerBuilder().setId(1L)
                                               .setBaseUri("http://localhost")
@@ -23,7 +23,7 @@ class CdsServerTest {
                                               .build();
 
         // When
-        var res = cdsServer.id();
+        var res = cdsServer.idAsString();
 
         // Then
         assertEquals("1", res);

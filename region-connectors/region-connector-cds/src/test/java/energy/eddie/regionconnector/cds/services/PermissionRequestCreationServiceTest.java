@@ -16,18 +16,15 @@ import energy.eddie.regionconnector.cds.permission.events.MalformedEvent;
 import energy.eddie.regionconnector.cds.permission.events.ValidatedEvent;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import energy.eddie.regionconnector.cds.services.oauth.AuthorizationService;
-import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
-import energy.eddie.regionconnector.cds.services.oauth.par.UnableToSendPar;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.provider.Arguments;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -35,7 +32,6 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -54,13 +50,6 @@ class PermissionRequestCreationServiceTest {
     private PermissionRequestCreationService service;
     @Captor
     private ArgumentCaptor<PermissionEvent> eventCaptor;
-
-    public static Stream<Arguments> testCreatePermissionRequest_erroneousResponse_emitsUnableToSendEvent() {
-        return Stream.of(
-                Arguments.of(new ErrorParResponse("invalid_grant")),
-                Arguments.of(new UnableToSendPar())
-        );
-    }
 
     @Test
     void testCreatePermissionRequest_withUnknownCDSServer_throws() {
@@ -145,7 +134,7 @@ class PermissionRequestCreationServiceTest {
                                                                       timeframe));
         var urn = URI.create("urn:example:bwc4JK-ESC0w8acc191e-Y1LTC2");
         when(authorizationService.createOAuthRequest(eq(cdsServer), anyString()))
-                .thenReturn(urn);
+                .thenReturn(Mono.just(urn));
         var creation = new PermissionRequestForCreation(0L, "dnid", "cid");
 
         // When
@@ -165,7 +154,7 @@ class PermissionRequestCreationServiceTest {
         );
     }
 
-    private static @NotNull CdsServer getCdsServer() {
+    private static CdsServer getCdsServer() {
         return new CdsServerBuilder().setBaseUri("http://localhost")
                                      .setName("CDS Server")
                                      .setCoverages(Set.of(EnergyType.ELECTRICITY))
