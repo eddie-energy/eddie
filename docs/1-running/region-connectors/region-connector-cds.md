@@ -20,7 +20,7 @@ Example configuration for an `application.properties` file:
 
 ```properties
 region-connector.cds.enabled=true
-region-connector.cds.redirect.url=https://your-eddie-instance.com/region-connectors/cds/callback
+region-connector.cds.redirect.url=${eddie.public.url}/region-connectors/cds/callback
 ```
 
 ### Environment variables
@@ -35,5 +35,5 @@ Example configuration for dotenv file:
 
 ```dotenv
 REGION_CONNECTOR_CDS_ENABLED=true
-REGION_CONNECTOR_CDS_REDIRECT_URL=https://your-eddie-instance-com/region-connectors/cds/callback
+REGION_CONNECTOR_CDS_REDIRECT_URL=${EDDIE_PUBLIC_URL}/region-connectors/cds/callback
 ```
