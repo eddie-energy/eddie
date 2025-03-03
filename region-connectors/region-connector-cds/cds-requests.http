@@ -1,0 +1,39 @@
+### Get CDS Metadata
+GET {{cds_server}}/.well-known/carbon-data-spec.json
+
+> {%
+  client.global.set("oauth_metadata", response.body.oauth_metadata)
+%}
+
+### Get OAuth metadata
+GET {{oauth_metadata}}
+
+> {%
+  client.global.set("clients_endpoint", response.body.cds_clients_api)
+%}
+
+### Register Admin Client
+POST {{cds_server}}/oauth/register
+Content-Type: application/json
+
+{
+  "scope": "customer_data",
+  "redirect_uris": [
+    "https://localhost"
+  ]
+}
+
+
+### GET clients
+GET {{clients_endpoint}}
+Authorization: Bearer {{$auth.token("cds")}}
+
+###
+GET {{cds_server}}/oauth/authorize/?
+    client_id={{customer-data-client-id}}&
+    scope=customer_data&
+    redirect_uri=https://localhost&
+    state={{$random.alphabetic(10)}}&
+    response_type=code
+Cookie: sessionid=7zl5hfj4uo3xfshn9kcu7acyojpv9t5i
+Cookie: ph_phc_366Gtl3TyowmezKhliDsaTAFlRGUYADuDLMdtDh5iH2_posthog='{"distinct_id":"0194da76-d67a-78da-96c2-83a6bc2c0f8c","$sesid":[1739435212376,"0194fe6a-fe58-7cf9-adab-fdf30dabd78c",1739435212376],"$initial_person_info":{"r":"$direct","u":"https://utilityapi.com/docs"}}'
