@@ -1,4 +1,4 @@
-# AIIDA - Administrative Interface for In-house Data Access
+# ![AIIDA - Administrative Interface for In-house Data Access](docs/images/aiida-horizontal.svg)
 
 Development & Deployment Strategy can be
 found [here](https://github.com/eddie-energy/eddie/wiki/EDDIE-Development-&-Deployment-Strategy).
@@ -133,5 +133,5 @@ Currently, the following countries are supported:
 | FR                             | [MicroTeleinfoV3](docs/datasources/fr/MicroTeleinfoV3.md)                       |
 | NL, BE, SE, DK, FI, HU, LT, CH | [SmartGatewaysAdapter](docs/datasources/sga/SmartGatewaysAdapter.md)            |
 
-![SupportedMeters](docs/Smart_Meter_supported_by_AIIDA.png)
+![SupportedMeters](docs/images/Smart_Meter_supported_by_AIIDA.png)
 *Map created with https://www.mapchart.net*
