@@ -38,8 +38,9 @@ public class AdminClient {
     }
 
     public Mono<List<ClientEndpoint200ResponseClientsInner>> clients() {
+        var endpoint = cdsServer.endpoints().clientsEndpoint();
         return refreshTokenAsync()
-                .flatMapMany(token -> expandedClients(token, cdsServer.clientsEndpoint()))
+                .flatMapMany(token -> expandedClients(token, endpoint))
                 .flatMapIterable(ClientEndpoint200Response::getClients)
                 .collectList();
     }

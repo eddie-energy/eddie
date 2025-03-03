@@ -1,8 +1,6 @@
 package energy.eddie.regionconnector.cds.services.oauth;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientCredentials;
-import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientFactory;
 import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
 import energy.eddie.regionconnector.cds.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
@@ -21,7 +19,6 @@ import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundExceptio
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
 
@@ -33,74 +30,68 @@ public class CallbackService {
     private final OAuthService oAuthService;
     private final CdsServerRepository cdsServerRepository;
     private final OAuthCredentialsRepository credentialsRepository;
-    private final CustomerDataClientFactory customerDataClientFactory;
 
     public CallbackService(
             Outbox outbox,
             CdsPermissionRequestRepository permissionRequestRepository,
             OAuthService oAuthService,
             CdsServerRepository cdsServerRepository,
-            OAuthCredentialsRepository credentialsRepository,
-            CustomerDataClientFactory customerDataClientFactory
+            OAuthCredentialsRepository credentialsRepository
     ) {
         this.outbox = outbox;
         this.permissionRequestRepository = permissionRequestRepository;
         this.oAuthService = oAuthService;
         this.cdsServerRepository = cdsServerRepository;
         this.credentialsRepository = credentialsRepository;
-        this.customerDataClientFactory = customerDataClientFactory;
     }
 
-    public Mono<AuthorizationResult> processCallback(Callback callback) throws PermissionNotFoundException {
+    public AuthorizationResult processCallback(Callback callback) throws PermissionNotFoundException {
         var pr = permissionRequestRepository.findByState(callback.state())
                                             .orElseThrow(() -> new PermissionNotFoundException(callback.state()));
         var permissionId = pr.permissionId();
 
         if (pr.status() == PermissionProcessStatus.REJECTED) {
             LOGGER.info("Permission request {} was already rejected", permissionId);
-            return Mono.just(new UnauthorizedResult(permissionId, pr.status()));
+            return new UnauthorizedResult(permissionId, pr.status());
         }
         if (pr.status() == PermissionProcessStatus.ACCEPTED) {
             LOGGER.info("Permission request {} was already accepted", permissionId);
-            return Mono.just(new AcceptedResult(permissionId, pr.dataNeedId()));
+            return new AcceptedResult(permissionId, pr.dataNeedId());
         }
         if (pr.status() != PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR) {
             LOGGER.info("Operation cannot be done for permission request {} in state {}", permissionId, pr.status());
-            return Mono.just(new ErrorResult(permissionId, "Wrong status of permission request " + pr.status()));
+            return new ErrorResult(permissionId, "Wrong status of permission request " + pr.status());
         }
         var error = callback.error();
         if (error != null) {
             LOGGER.info("Permission request {} had error present {}", permissionId, error);
             if (error.equals("access_denied")) {
                 outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REJECTED));
-                return Mono.just(new UnauthorizedResult(permissionId, PermissionProcessStatus.REJECTED));
+                return new UnauthorizedResult(permissionId, PermissionProcessStatus.REJECTED);
             } else {
                 outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
-                return Mono.just(new ErrorResult(permissionId, error));
+                return new ErrorResult(permissionId, error);
             }
         }
         var code = callback.code();
         if (code == null) {
             LOGGER.info("Permission request {} has no code", permissionId);
             outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
-            return Mono.just(new ErrorResult(permissionId, "No code provided"));
+            return new ErrorResult(permissionId, "No code provided");
         }
 
         var cdsServerId = pr.dataSourceInformation().cdsServerId();
-        return customerDataClientFactory
-                .create(cdsServerId)
-                .map(creds -> getToken(creds, code, permissionId, pr, cdsServerId));
+        return getToken(code, permissionId, pr, cdsServerId);
     }
 
     private AuthorizationResult getToken(
-            CustomerDataClientCredentials creds,
             String code,
             String permissionId,
             CdsPermissionRequest pr,
             Long cdsServerId
     ) {
         var cdsServer = cdsServerRepository.getReferenceById(cdsServerId);
-        var result = oAuthService.retrieveAccessToken(code, cdsServer, creds);
+        var result = oAuthService.retrieveAccessToken(code, cdsServer);
         return switch (result) {
             case CredentialsWithRefreshToken(String refreshToken, String accessToken, ZonedDateTime expiresAt) -> {
                 credentialsRepository.save(new OAuthCredentials(permissionId, refreshToken, accessToken, expiresAt));

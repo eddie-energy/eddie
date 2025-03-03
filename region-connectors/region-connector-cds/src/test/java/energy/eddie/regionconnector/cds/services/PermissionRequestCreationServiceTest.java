@@ -24,7 +24,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -132,9 +131,9 @@ class PermissionRequestCreationServiceTest {
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                       timeframe,
                                                                       timeframe));
-        var urn = URI.create("urn:example:bwc4JK-ESC0w8acc191e-Y1LTC2");
+        var uri = URI.create("urn:example:bwc4JK-ESC0w8acc191e-Y1LTC2");
         when(authorizationService.createOAuthRequest(eq(cdsServer), anyString()))
-                .thenReturn(Mono.just(urn));
+                .thenReturn(uri);
         var creation = new PermissionRequestForCreation(0L, "dnid", "cid");
 
         // When
@@ -142,7 +141,7 @@ class PermissionRequestCreationServiceTest {
 
         // Then
         assertAll(
-                () -> assertEquals(urn, res.redirectUri()),
+                () -> assertEquals(uri, res.redirectUri()),
                 () -> assertNotNull(res.permissionId())
         );
         verify(outbox, times(2)).commit(eventCaptor.capture());
@@ -158,8 +157,8 @@ class PermissionRequestCreationServiceTest {
         return new CdsServerBuilder().setBaseUri("http://localhost")
                                      .setName("CDS Server")
                                      .setCoverages(Set.of(EnergyType.ELECTRICITY))
-                                     .setClientId("client-id")
-                                     .setClientSecret("client-secret")
+                                     .setAdminClientId("client-id")
+                                     .setAdminClientSecret("client-secret")
                                      .setTokenEndpoint("http://localhost")
                                      .build();
     }

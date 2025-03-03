@@ -43,8 +43,8 @@ class AdminClientTest {
     @Spy
     private final CdsServer cdsServer = new CdsServerBuilder()
             .setClientsEndpoint(basepath)
-            .setClientId("client-id")
-            .setClientSecret("client-secret")
+            .setAdminClientId("client-id")
+            .setAdminClientSecret("client-secret")
             .build();
     @Mock
     private OAuthService oAuthService;

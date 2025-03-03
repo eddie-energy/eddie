@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.cds.master.data;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import jakarta.persistence.*;
 
-import java.net.URI;
 import java.util.Objects;
 import java.util.Set;
 
@@ -26,32 +25,37 @@ public class CdsServer {
     @Column(name = "energy_type")
     @Enumerated(EnumType.STRING)
     private final Set<EnergyType> coverages;
-    @Column(name = "client_id", nullable = false)
-    private final String clientId;
-    @Column(name = "client_secret", nullable = false)
-    private final String clientSecret;
-    @Column(name = "token_endpoint", nullable = false)
-    private final String tokenEndpoint;
-    @Column(name = "authorization_endpoint", nullable = false)
-    private final String authorizationEndpoint;
-    @Column(name = "pushed_authorization_request_endpoint", nullable = false)
-    private final String pushedAuthorizationRequestEndpoint;
-    @Column(name = "clients_endpoint", nullable = false)
-    private final String clientsEndpoint;
+    @Column(name = "admin_client_id", nullable = false)
+    private final String adminClientId;
+    @Column(name = "admin_client_secret", nullable = false)
+    private final String adminClientSecret;
+    @Embedded
+    private final CdsEndpoints endpoints;
+    @Column(name = "customer_data_client_id", nullable = false)
+    private final String customerDataClientId;
 
-    @SuppressWarnings({"NullAway","java:S107"})
+    @SuppressWarnings({"NullAway", "java:S107"})
     public CdsServer(
             String baseUri,
             String name,
             Set<EnergyType> coverages,
-            String clientId,
-            String clientSecret,
-            String tokenEndpoint,
-            String authorizationEndpoint,
-            String parEndpoint,
-            String clientsEndpoint
+            String adminClientId,
+            String adminClientSecret,
+            CdsEndpoints endpoints
     ) {
-        this(null, baseUri, name, coverages, clientId, clientSecret, tokenEndpoint, authorizationEndpoint, parEndpoint, clientsEndpoint);
+        this(null, baseUri, name, coverages, adminClientId, adminClientSecret, endpoints, null);
+    }
+
+    public CdsServer(
+            String baseUri,
+            String name,
+            Set<EnergyType> coverages,
+            String adminClientId,
+            String adminClientSecret,
+            CdsEndpoints endpoints,
+            String customerDataClientId
+    ) {
+        this(null, baseUri, name, coverages, adminClientId, adminClientSecret, endpoints, customerDataClientId);
     }
 
     @SuppressWarnings("java:S107")
@@ -60,23 +64,19 @@ public class CdsServer {
             String baseUri,
             String name,
             Set<EnergyType> coverages,
-            String clientId,
-            String clientSecret,
-            String tokenEndpoint,
-            String authorizationEndpoint,
-            String parEndpoint,
-            String clientsEndpoint
+            String adminClientId,
+            String adminClientSecret,
+            CdsEndpoints endpoints,
+            String customerDataClientId
     ) {
         this.id = id;
         this.baseUri = baseUri;
         this.name = name;
         this.coverages = coverages;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.tokenEndpoint = tokenEndpoint;
-        this.authorizationEndpoint = authorizationEndpoint;
-        this.pushedAuthorizationRequestEndpoint = parEndpoint;
-        this.clientsEndpoint = clientsEndpoint;
+        this.adminClientId = adminClientId;
+        this.adminClientSecret = adminClientSecret;
+        this.endpoints = endpoints;
+        this.customerDataClientId = customerDataClientId;
     }
 
     @SuppressWarnings("NullAway")
@@ -85,12 +85,10 @@ public class CdsServer {
         baseUri = null;
         name = null;
         coverages = null;
-        clientId = null;
-        clientSecret = null;
-        tokenEndpoint = null;
-        authorizationEndpoint = null;
-        pushedAuthorizationRequestEndpoint = null;
-        clientsEndpoint = null;
+        adminClientId = null;
+        adminClientSecret = null;
+        endpoints = null;
+        customerDataClientId = null;
     }
 
     public String baseUri() {
@@ -117,31 +115,19 @@ public class CdsServer {
         return id;
     }
 
-    public String clientId() {
-        return clientId;
+    public String adminClientId() {
+        return adminClientId;
     }
 
-    public String clientSecret() {
-        return clientSecret;
+    public String adminClientSecret() {
+        return adminClientSecret;
     }
 
-    @SuppressWarnings("DataFlowIssue")
-    public URI tokenEndpoint() {
-        return URI.create(tokenEndpoint);
+    public CdsEndpoints endpoints() {
+        return endpoints;
     }
 
-    @SuppressWarnings("DataFlowIssue")
-    public URI authorizationEndpoint() {
-        return URI.create(authorizationEndpoint);
-    }
-
-    @SuppressWarnings("DataFlowIssue")
-    public URI pushedAuthorizationRequestEndpoint() {
-        return URI.create(pushedAuthorizationRequestEndpoint);
-    }
-
-    @SuppressWarnings("DataFlowIssue")
-    public URI clientsEndpoint() {
-        return URI.create(clientsEndpoint);
+    public String customerDataClientId() {
+        return customerDataClientId;
     }
 }

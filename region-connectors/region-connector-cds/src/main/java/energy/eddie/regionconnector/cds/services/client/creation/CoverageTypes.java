@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.cds.client.admin;
+package energy.eddie.regionconnector.cds.services.client.creation;
 
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.regionconnector.cds.openapi.model.Coverages200ResponseAllOfCoverageEntriesInner;
@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class CoverageTypes {
+public class CoverageTypes {
     private final List<Coverages200ResponseAllOfCoverageEntriesInner> coverages;
 
     public CoverageTypes(List<Coverages200ResponseAllOfCoverageEntriesInner> coverages) {this.coverages = coverages;}

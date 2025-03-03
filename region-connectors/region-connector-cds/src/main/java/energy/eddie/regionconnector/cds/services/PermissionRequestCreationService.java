@@ -84,7 +84,7 @@ public class PermissionRequestCreationService {
                                          dataNeedCalc.granularities().getFirst(),
                                          dataNeedCalc.energyTimeframe().start(),
                                          dataNeedCalc.energyTimeframe().end()));
-        var uri = authorizationService.createOAuthRequest(cdsServer.get(), permissionId).block();
+        var uri = authorizationService.createOAuthRequest(cdsServer.get(), permissionId);
         return new CreatedPermissionRequest(permissionId, uri);
     }
 

@@ -1,12 +1,10 @@
 package energy.eddie.regionconnector.cds.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.cds.client.admin.AdminClient;
-import energy.eddie.regionconnector.cds.client.admin.AdminClientFactory;
-import energy.eddie.regionconnector.cds.client.admin.responses.*;
 import energy.eddie.regionconnector.cds.dtos.CdsServerCreation;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
-import energy.eddie.regionconnector.cds.services.oauth.OAuthService;
+import energy.eddie.regionconnector.cds.services.client.creation.CdsClientCreationService;
+import energy.eddie.regionconnector.cds.services.client.creation.responses.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -17,8 +15,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.stream.Stream;
@@ -35,20 +31,15 @@ class CdsControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
-    private AdminClientFactory factory;
-    @MockitoBean
-    private OAuthService oAuthService;
+    private CdsClientCreationService creationService;
 
     @Test
     void testRegisterCdsClient_returnsOk() throws Exception {
         // Given
         var url = URI.create("http://localhost:8080").toURL();
         var cdsServer = new CdsServerBuilder().build();
-        var webClient = WebClient.builder().build();
-        when(factory.getOrCreate(url))
-                .thenReturn(Mono.just(new CreatedAdminClientResponse(new AdminClient(webClient,
-                                                                                     cdsServer,
-                                                                                     oAuthService))));
+        when(creationService.createOAuthClients(url))
+                .thenReturn(new CreatedCdsClientResponse(cdsServer));
         var body = objectMapper.writeValueAsString(new CdsServerCreation(url));
 
         // When
@@ -67,7 +58,7 @@ class CdsControllerTest {
     ) throws Exception {
         // Given
         var url = URI.create("http://localhost:8080").toURL();
-        when(factory.getOrCreate(url)).thenReturn(Mono.just(response));
+        when(creationService.createOAuthClients(url)).thenReturn(response);
         var body = objectMapper.writeValueAsString(new CdsServerCreation(url));
 
         // When

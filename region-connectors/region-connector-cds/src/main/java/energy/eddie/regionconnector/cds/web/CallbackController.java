@@ -27,7 +27,7 @@ public class CallbackController {
             Model model
     ) {
         try {
-            var res = callbackService.processCallback(new Callback(code, error, state)).block();
+            var res = callbackService.processCallback(new Callback(code, error, state));
             switch (res) {
                 case AcceptedResult(String ignoredPermissionId, String dataNeedId) -> {
                     model.addAttribute(STATUS, "OK");

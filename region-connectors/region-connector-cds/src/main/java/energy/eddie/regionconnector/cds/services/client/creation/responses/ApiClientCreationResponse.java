@@ -1,0 +1,4 @@
+package energy.eddie.regionconnector.cds.services.client.creation.responses;
+
+public sealed interface ApiClientCreationResponse permits AuthorizationCodeGrantTypeNotSupported, CoverageNotSupportedResponse, CreatedCdsClientResponse, NotACdsServerResponse, OAuthNotSupportedResponse, RefreshTokenGrantTypeNotSupported {
+}

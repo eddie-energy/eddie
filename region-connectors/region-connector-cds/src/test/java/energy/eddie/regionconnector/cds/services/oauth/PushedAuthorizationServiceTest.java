@@ -1,8 +1,6 @@
 package energy.eddie.regionconnector.cds.services.oauth;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientCredentials;
-import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientFactory;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
 import energy.eddie.regionconnector.cds.permission.events.SentToPaEvent;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
@@ -20,16 +18,13 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
 
 import java.net.URI;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,8 +35,6 @@ class PushedAuthorizationServiceTest {
     private Outbox outbox;
     @Mock
     private OAuthService oAuthService;
-    @Mock
-    private CustomerDataClientFactory factory;
     @InjectMocks
     private PushedAuthorizationService authorizationService;
     @Captor
@@ -59,16 +52,13 @@ class PushedAuthorizationServiceTest {
     void testCreateOAuthRequest_withInvalidParResponse_returnsNull(ParResponse parResponse) {
         // Given
         var cdsServer = new CdsServerBuilder().setId(1L).build();
-        when(oAuthService.pushAuthorization(eq(cdsServer), any(), any())).thenReturn(parResponse);
-        when(factory.create(1L))
-                .thenReturn(Mono.just(new CustomerDataClientCredentials("client-id")));
+        when(oAuthService.pushAuthorization(eq(cdsServer), any())).thenReturn(parResponse);
 
         // When
         var res = authorizationService.createOAuthRequest(cdsServer, "pid");
 
         // Then
-        StepVerifier.create(res)
-                    .verifyComplete();
+        assertNull(res);
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNABLE_TO_SEND, event.status())));
     }
 
@@ -80,17 +70,13 @@ class PushedAuthorizationServiceTest {
                 .build();
         var redirectUri = URI.create("http://localhost");
         var parResponse = new SuccessfulParResponse(redirectUri, ZonedDateTime.now(ZoneOffset.UTC), "state");
-        when(oAuthService.pushAuthorization(eq(cdsServer), any(), any())).thenReturn(parResponse);
-        when(factory.create(1L))
-                .thenReturn(Mono.just(new CustomerDataClientCredentials("client-id")));
+        when(oAuthService.pushAuthorization(eq(cdsServer), any())).thenReturn(parResponse);
 
         // When
         var res = authorizationService.createOAuthRequest(cdsServer, "pid");
 
         // Then
-        StepVerifier.create(res)
-                    .assertNext(uri -> assertEquals(redirectUri, uri))
-                    .verifyComplete();
+        assertEquals(redirectUri, res);
         verify(outbox).commit(sentToPaEvent.capture());
         var event = sentToPaEvent.getValue();
         assertTrue(event.isPushedAuthorizationRequest());

@@ -2,7 +2,13 @@ ALTER TABLE cds.cds_server
     ADD COLUMN pushed_authorization_request_endpoint varchar(255) NOT NULL DEFAULT 'https://s-4371c8d6.cds.utilityapi.com/oauth/par',
     ADD COLUMN authorization_endpoint                varchar(255) NOT NULL DEFAULT 'https://s-4371c8d6.cds.utilityapi.com/oauth/authorization',
     ADD COLUMN token_endpoint                        varchar(255) NOT NULL DEFAULT 'https://s-4371c8d6.cds.utilityapi.com/oauth/token',
-    ADD COLUMN clients_endpoint                      varchar(255) NOT NULL DEFAULT 'https://s-4371c8d6.cds.utilityapi.com/api/cds/v1/clients/';
+    ADD COLUMN clients_endpoint                      varchar(255) NOT NULL DEFAULT 'https://s-4371c8d6.cds.utilityapi.com/api/cds/v1/clients/',
+    ADD COLUMN customer_data_client_id               VARCHAR(255);
+
+ALTER TABLE cds.cds_server
+    RENAME COLUMN client_id TO admin_client_id;
+ALTER TABLE cds.cds_server
+    RENAME COLUMN client_secret TO admin_client_secret;
 
 ALTER TABLE cds.cds_server
     ALTER COLUMN pushed_authorization_request_endpoint DROP DEFAULT,

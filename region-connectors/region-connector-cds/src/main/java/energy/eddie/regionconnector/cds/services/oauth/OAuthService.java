@@ -7,7 +7,6 @@ import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import energy.eddie.regionconnector.cds.client.Scopes;
-import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientCredentials;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.services.oauth.code.AuthorizationCodeResult;
@@ -40,13 +39,12 @@ public class OAuthService {
     // TODO: Use correct credentials to push authorization request
     public ParResponse pushAuthorization(
             CdsServer cdsServer,
-            CustomerDataClientCredentials ignoredCreds,
             List<String> scopes
     ) {
-        var clientID = new ClientID(cdsServer.clientId());
-        var clientSecret = new Secret(cdsServer.clientSecret());
+        var clientID = new ClientID(cdsServer.adminClientId());
+        var clientSecret = new Secret(cdsServer.adminClientSecret());
         var state = new State();
-        var parUri = cdsServer.pushedAuthorizationRequestEndpoint();
+        var parUri = cdsServer.endpoints().pushedAuthorizationRequestEndpoint();
         var authzReq = new AuthorizationRequest.Builder(ResponseType.CODE, clientID)
                 .endpointURI(parUri)
                 .scope(Scope.parse(scopes))
@@ -73,8 +71,8 @@ public class OAuthService {
         var successResp = resp.toSuccessResponse();
         var expiresAt = ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(successResp.getLifetime());
         var urn = successResp.getRequestURI();
-        var redirectUri = new AuthorizationRequest.Builder(urn, new ClientID(cdsServer.clientId()))
-                .endpointURI(cdsServer.authorizationEndpoint())
+        var redirectUri = new AuthorizationRequest.Builder(urn, new ClientID(cdsServer.adminClientId()))
+                .endpointURI(cdsServer.endpoints().authorizationEndpoint())
                 .build()
                 .toURI();
         return new SuccessfulParResponse(redirectUri, expiresAt, state.getValue());
@@ -82,12 +80,11 @@ public class OAuthService {
 
     public AuthorizationCodeResult createAuthorizationUri(
             CdsServer cdsServer,
-            CustomerDataClientCredentials creds,
             List<String> scopes
     ) {
-        var clientId = new ClientID(creds.clientId());
+        var clientId = new ClientID(cdsServer.customerDataClientId());
         var state = new State();
-        var authUri = cdsServer.authorizationEndpoint();
+        var authUri = cdsServer.endpoints().authorizationEndpoint();
         var request = new AuthorizationRequest.Builder(
                 new ResponseType(ResponseType.Value.CODE), clientId)
                 .redirectionURI(config.redirectUrl())
@@ -109,15 +106,14 @@ public class OAuthService {
     // TODO: Use correct credentials to request token
     public TokenResult retrieveAccessToken(
             String authCode,
-            CdsServer cdsServer,
-            CustomerDataClientCredentials clientCredentials
+            CdsServer cdsServer
     ) {
         var code = new AuthorizationCode(authCode);
         var callback = config.redirectUrl();
         var codeGrant = new AuthorizationCodeGrant(code, callback);
-        var clientID = new ClientID(clientCredentials.clientId());
+        var clientID = new ClientID(cdsServer.customerDataClientId());
 
-        var tokenEndpoint = cdsServer.tokenEndpoint();
+        var tokenEndpoint = cdsServer.endpoints().tokenEndpoint();
 
         var request = new TokenRequest(tokenEndpoint, clientID, codeGrant);
 
@@ -133,12 +129,12 @@ public class OAuthService {
     public TokenResult retrieveAccessToken(CdsServer cdsServer) {
         AuthorizationGrant clientGrant = new ClientCredentialsGrant();
 
-        var clientID = new ClientID(cdsServer.clientId());
-        var clientSecret = new Secret(cdsServer.clientSecret());
+        var clientID = new ClientID(cdsServer.adminClientId());
+        var clientSecret = new Secret(cdsServer.adminClientSecret());
         ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
         var scope = new Scope(Scopes.CLIENT_ADMIN_SCOPE);
 
-        var tokenEndpoint = cdsServer.tokenEndpoint();
+        var tokenEndpoint = cdsServer.endpoints().tokenEndpoint();
         var request = new TokenRequest(tokenEndpoint, clientAuth, clientGrant, scope);
         return sendAccessTokenRequest(request);
     }
