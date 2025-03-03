@@ -66,18 +66,30 @@ The example [docker-compose.yml](env/docker-compose.yml) contains the _db_ and _
 
 ## Building Docker images locally
 
-Instructions on how to run the docker images locally exist in [env/README.md](env/README.md).
-To perform a local test run with compiling the software, building, and starting a local docker environment, shell scripts exist in the repository root:
+Instructions on how to run the Docker images locally exist in [env/README.md](env/README.md).
+The following instructions can be used to perform a local test run with compiling the software, building, and starting a local Docker environment.
 
-```shell
-powershell build_and_run_containers.ps1
-```
+1. Build the EDDIE Framework using Gradle:
 
-```shell
-bash build_and_run_containers.bash
-```
+   ```shell
+   ./gradlew clean installDist
+   ```
 
-Although the docker compose file and local configuration should run out of the box, EDDIE requires further configuration.
+2. Build the Docker containers:
+
+   ```shell
+   docker compose -f ./env/docker-compose.yml build
+   ```
+
+3. Start the containers with Docker Compose.
+
+   ```shell
+   docker compose -f ./env/docker-compose.yml up -d
+   ```
+
+4. The example app should be available on http://localhost:9000/prototype/main/.
+
+Although the Docker Compose file and local configuration should run out of the box, EDDIE requires further configuration.
 Please refer to the [Configuration](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/OPERATION.html#configuration) of the operation manual.
 
 ## Contributing
