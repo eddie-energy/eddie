@@ -41,8 +41,9 @@ aansluiting.
 
 ## Prerequisites
 
-- Register a user with Mijn Aansluting here: https://www.acc.mijnenergiedata.nl/toestemmingen/welkom
+- Register a user with Mijn Aansluiting here: https://www.acc.mijnenergiedata.nl/toestemmingen/welkom
 - Get the client-id and client-secret
+- Generate a JKS key pair and register your public key with Mijn Aansluiting.
 
 ## Configuration of the Region Connector
 
