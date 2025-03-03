@@ -13,7 +13,6 @@ import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrUsagePointTypeEvent;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.services.CommonAccountingPointDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,7 @@ import reactor.util.retry.RetryBackoffSpec;
 import java.time.Duration;
 
 @Service
-public class AccountingPointDataService implements CommonAccountingPointDataService {
+public class AccountingPointDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountingPointDataService.class);
     public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
                                                                    .filter(AccountingPointDataService::isRetryable);
