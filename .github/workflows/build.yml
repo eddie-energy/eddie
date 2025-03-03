@@ -7,11 +7,13 @@ on:
       - synchronize
     paths-ignore:
       - "docs/**"
+      - "**.md"
   push:
     branches:
       - main
     paths-ignore:
       - "docs/**"
+      - "**.md"
 
 jobs:
   build:

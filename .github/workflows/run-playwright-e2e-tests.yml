@@ -11,6 +11,7 @@ on:
       - "docs/**"
       - "env/**"
       - "outbound-connectors/**"
+      - "**.md"
   push:
     branches:
       - main
@@ -20,6 +21,7 @@ on:
       - "docs/**"
       - "env/**"
       - "outbound-connectors/**"
+      - "**.md"
   workflow_dispatch:
 
 env:
