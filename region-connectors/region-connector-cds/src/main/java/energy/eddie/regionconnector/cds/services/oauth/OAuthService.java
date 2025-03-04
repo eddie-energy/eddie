@@ -151,9 +151,11 @@ public class OAuthService {
 
         if (!response.indicatesSuccess()) {
             var errorResponse = response.toErrorResponse();
-            LOGGER.info("Could not retrieve access token, response had status {} and error object {}",
-                        errorResponse.getErrorObject().getHTTPStatusCode(),
-                        errorResponse.getErrorObject());
+            var errorObject = errorResponse.getErrorObject();
+            LOGGER.info("Could not retrieve access token, response had status {} and with code '{}': {}",
+                        errorObject.getHTTPStatusCode(),
+                        errorObject.getCode(),
+                        errorObject.getDescription());
             return new InvalidTokenResult();
         }
 

@@ -52,9 +52,7 @@ public class AdminClient {
                         .retrieve()
                         .bodyToMono(ClientEndpoint200Response.class)
                         .expand(res -> {
-                            LOGGER.error("Expanded client response: {}", res);
                             var nextPage = res.getNext();
-                            //noinspection ConstantValue
                             if (nextPage == null) {
                                 return Mono.empty();
                             }

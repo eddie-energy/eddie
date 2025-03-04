@@ -12,7 +12,6 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,6 +30,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -115,12 +115,11 @@ class AdminClientTest {
 
         // Then
         StepVerifier.create(res)
-                    .expectNextCount(1)
+                    .assertNext(clients -> assertThat(clients).hasSize(2))
                     .verifyComplete();
     }
 
     @Test
-    @Disabled
     void testClients_withCachedToken_returnsClients() {
         // Given
         var expiresTomorrow = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
@@ -160,7 +159,6 @@ class AdminClientTest {
 
 
     @Test
-    @Disabled
     void testClients_withoutToken_returnsNoTokenException() {
         // Given
         when(oAuthService.retrieveAccessToken(cdsServer))
@@ -177,7 +175,6 @@ class AdminClientTest {
     }
 
     @Test
-    @Disabled
     void testClients_withInvalidCachedToken_requestsNewToken() {
         // Given
         var now = ZonedDateTime.now(ZoneOffset.UTC);

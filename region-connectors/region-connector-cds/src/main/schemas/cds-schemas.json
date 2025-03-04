@@ -1137,8 +1137,7 @@
         {
           "$ref": "#/$defs/Page"
         }
-      ],
-      "additionalProperties": false
+      ]
     },
     "IndividualClient": {
       "properties": {
@@ -1500,7 +1499,6 @@
           "description": "URL to the previous page of results"
         }
       },
-      "additionalProperties": false,
       "required": [
         "next",
         "previous"
