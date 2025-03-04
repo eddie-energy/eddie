@@ -29,6 +29,7 @@ public class CdsPermissionRequest implements PermissionRequest {
     @Column(name = "data_end")
     private final LocalDate dataEnd;
     @Column(name = "state")
+    @SuppressWarnings("unused")
     private final String state;
 
 

@@ -52,7 +52,9 @@ public class AdminClient {
                         .retrieve()
                         .bodyToMono(ClientEndpoint200Response.class)
                         .expand(res -> {
+                            LOGGER.error("Expanded client response: {}", res);
                             var nextPage = res.getNext();
+                            //noinspection ConstantValue
                             if (nextPage == null) {
                                 return Mono.empty();
                             }
@@ -68,10 +70,10 @@ public class AdminClient {
         cachedToken = switch (res) {
             case CredentialsWithoutRefreshToken withoutRefreshToken -> withoutRefreshToken;
             case CredentialsWithRefreshToken(
-                    String ignoredAccessToken, String refreshToken, ZonedDateTime expiresAt
+                    String accessToken, String ignoredRefreshToken, ZonedDateTime expiresAt
             ) -> {
                 LOGGER.warn("Got unexpected token response with refresh token");
-                yield new CredentialsWithoutRefreshToken(refreshToken, expiresAt);
+                yield new CredentialsWithoutRefreshToken(accessToken, expiresAt);
             }
             case InvalidTokenResult ignored -> throw new NoTokenException();
         };
