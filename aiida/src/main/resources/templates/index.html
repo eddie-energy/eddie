@@ -78,9 +78,7 @@
     <form id="permission-form" class="permission-form" method="post">
       <sl-input id="aiida-code" placeholder="AIIDA code" required></sl-input>
       <sl-button type="submit" variant="primary">Add</sl-button>
-      <sl-button id="scan-qr-code" circle>
-        <sl-icon name="camera" label="Camera"></sl-icon>
-      </sl-button>
+      <qr-code-scanner></qr-code-scanner>
     </form>
 
     <sl-dialog id="permission-dialog" label="Add permission">
@@ -113,21 +111,6 @@
 
       <sl-button slot="footer" outline onclick="window.hideRevokeDialog()">
         Cancel
-      </sl-button>
-    </sl-dialog>
-
-    <sl-dialog id="scan-qr-code-dialog" label="Scan AIIDA code">
-      <video id="scan-qr-code-video" hidden style="width: 100%"></video>
-      <div id="scan-qr-code-loading">
-        Waiting for camera...
-        <br />
-        <sl-spinner></sl-spinner>
-      </div>
-
-      <div id="scan-qr-code-error"></div>
-
-      <sl-button id="scan-qr-code-close" slot="footer" outline>
-        Close
       </sl-button>
     </sl-dialog>
 
@@ -167,6 +150,6 @@
     <div id="data-source-list" class="data-sources"></div>
 
     <script th:src="@{/js/main.js}" type="module"></script>
-    <script th:src="@{/js/scanner.js}" type="module"></script>
+    <script th:src="@{/js/qr-code-scanner.js}" type="module"></script>
   </body>
 </html>

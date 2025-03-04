@@ -894,6 +894,14 @@ Promise.all([
     .addEventListener("submit", handlePermissionFormSubmit);
 });
 
+// process QR code scanner results
+document
+  .querySelector("qr-code-scanner")
+  .addEventListener(
+    "result",
+    (event) => (aiidaCodeInput.value = btoa(event.detail.result))
+  );
+
 renderPermissions();
 renderDataSources();
 
