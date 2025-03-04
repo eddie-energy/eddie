@@ -3,6 +3,7 @@ import {
   CSRF_TOKEN,
   DATA_NEEDS_API_URL,
   PERMISSIONS_API_URL,
+  LATEST_PERMISSIONS_API_URL,
   REGION_CONNECTOR_API_URL,
   REGION_CONNECTOR_HEALTH_API_URL,
   REGION_CONNECTORS_SUPPORTED_DATA_NEEDS_API_URL,
@@ -78,6 +79,14 @@ export type RegionConnectorSupportedDataNeeds = {
 
 export async function getPermissions(): Promise<StatusMessage[]> {
   return await fetch(PERMISSIONS_API_URL).then((res) => res.json())
+}
+
+export async function getLatestPermissions() {
+  return await fetch(LATEST_PERMISSIONS_API_URL).then((res) => res.json())
+}
+
+export async function getPermissionsPaginated(page: number, size: number) {
+  return await fetch(`${LATEST_PERMISSIONS_API_URL}?page=${page}&size=${size}`).then((res) => res.json())
 }
 
 export async function getStatusMessages(permissionId: string): Promise<StatusMessage[]> {

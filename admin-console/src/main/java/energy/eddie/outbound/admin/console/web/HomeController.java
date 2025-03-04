@@ -1,18 +1,22 @@
 package energy.eddie.outbound.admin.console.web;
 
 import energy.eddie.cim.v0_82.pmd.StatusTypeList;
+import energy.eddie.outbound.admin.console.data.PermissionPage;
 import energy.eddie.outbound.admin.console.data.StatusMessage;
 import energy.eddie.outbound.admin.console.data.StatusMessageDTO;
 import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConnector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -36,9 +40,20 @@ public class HomeController {
     @GetMapping("/statusMessages")
     public ResponseEntity<List<StatusMessageDTO>> statusMessagesList() {
         return ResponseEntity.ok(this.statusMessageRepository.findLatestStatusMessageForAllPermissions()
-                                                             .stream()
-                                                             .map(HomeController::dtoFromStatusMessage)
-                                                             .toList());
+                        .stream()
+                        .map(HomeController::dtoFromStatusMessage)
+                        .toList());
+    }
+
+    @GetMapping("/statusMessagesLatestPermissions")
+    public ResponseEntity<PermissionPage> statusMessagesLatestPermissions(@RequestParam(defaultValue = "0") int page,
+                                                                     @RequestParam(defaultValue = "500") int size) {
+        Page<StatusMessage> response = this.statusMessageRepository.findLatestStatusMessageForPaginatedPermissions(PageRequest.of(page, size));
+        List<StatusMessageDTO> permissions = response.getContent()
+                        .stream()
+                        .map(HomeController::dtoFromStatusMessage)
+                        .toList();
+        return ResponseEntity.ok(new PermissionPage(permissions, response.getTotalElements()));
     }
 
     @GetMapping("/statusMessages/{permissionId}")

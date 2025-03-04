@@ -1,9 +1,15 @@
 <script lang="ts" setup>
-import { getPermissions, getStatusMessages, type StatusMessage, terminatePermission } from '@/api'
+import {
+  getLatestPermissions,
+  getStatusMessages,
+  type StatusMessage,
+  terminatePermission
+} from '@/api'
 import {
   Button,
   Column,
   DataTable,
+  type DataTableFilterMeta,
   type DataTableRowExpandEvent,
   IconField,
   InputIcon,
@@ -16,11 +22,35 @@ import { ref } from 'vue'
 
 import { countryFlag, formatCountry } from '@/util/countries'
 
-const permissions = await getPermissions()
-
-const filters = ref({ global: { value: null, matchMode: 'contains' } })
+const filters = ref<DataTableFilterMeta>({ global: { value: null, matchMode: 'contains' } })
 const expandedRows = ref({})
 const rowExpansions = ref<{ [key: string]: StatusMessage[] }>({})
+
+const permissions = ref([])
+const totalRecords = ref(0)
+const rowOptions = [3, 50, 100, 250, 500]
+const rows = ref(rowOptions[0])
+
+async function fetchPermissions() {
+  try {
+    const response = await getLatestPermissions()
+    permissions.value = response.permissions
+    totalRecords.value = response.totalElements
+  } catch (error) {
+    console.error("Error fetching permissions", error)
+  }
+}
+
+/*
+function onPageChange(event: {first: number, rows: number}) {
+  fetchPermissions(event.first / event.rows, event.rows)
+}
+*/
+
+function loadPermissions() {
+  //TODO
+  console.log("loading..")
+}
 
 function formatDate(date: string) {
   return new Intl.DateTimeFormat('en-GB', {
@@ -86,6 +116,8 @@ function confirmTermination(permissionId: string) {
     }
   })
 }
+
+fetchPermissions()
 </script>
 
 <template>
@@ -95,8 +127,8 @@ function confirmTermination(permissionId: string) {
     v-model:expanded-rows="expandedRows"
     @row-expand="onRowExpand"
     paginator
-    :rows="10"
-    :rows-per-page-options="[10, 20, 50, 100]"
+    :rows
+    :rows-per-page-options="rowOptions"
     v-model:filters="filters"
     :global-filter-fields="[
       'country',
@@ -117,6 +149,10 @@ function confirmTermination(permissionId: string) {
         </InputIcon>
         <InputText v-model="filters.global.value" placeholder="Keyword Search" />
       </IconField>
+    </template>
+
+    <template #paginatorstart>
+      <p>Loaded <b>{{ permissions?.length }}</b> out of {{ totalRecords }} permissions. <a @click="loadPermissions()">Load more...</a></p>
     </template>
 
     <Column expander />
@@ -193,5 +229,9 @@ input {
   text-overflow: ellipsis;
   max-width: 10ch;
   overflow: hidden;
+}
+
+a:hover {
+  cursor:pointer;
 }
 </style>
