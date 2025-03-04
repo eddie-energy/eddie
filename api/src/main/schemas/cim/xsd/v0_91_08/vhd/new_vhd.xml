@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<new:VHD_Enveloppe xmlns:new="https://eddie.energy/CIM">
+    <new:messageDocumentHeader.creationDateTime>2025-03-04T11:03:41.335875327Z</new:messageDocumentHeader.creationDateTime>
+    <new:messageDocumentHeader.metaInformation.connectionId>1</new:messageDocumentHeader.metaInformation.connectionId>
+    <new:messageDocumentHeader.metaInformation.dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</new:messageDocumentHeader.metaInformation.dataNeedId>
+    <new:messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document</new:messageDocumentHeader.metaInformation.documentType>
+    <new:messageDocumentHeader.metaInformation.permissionId>a6075ca5-72b9-4cad-8446-8eff08adaaa3</new:messageDocumentHeader.metaInformation.permissionId>
+    <new:messageDocumentHeader.metaInformation.region.connector>sim</new:messageDocumentHeader.metaInformation.region.connector>
+    <new:messageDocumentHeader.metaInformation.region.country>sim</new:messageDocumentHeader.metaInformation.region.country>
+    <new:MarketDocument>
+        <new:mRID>bab6d3d1-af00-4cbf-a7-57eff6f04379</new:mRID>
+        <new:createdDateTime>2025-03-04T11:03:41Z</new:createdDateTime>
+        <new:sender_MarketParticipant.mRID codingScheme="A01">sim</new:sender_MarketParticipant.mRID>
+        <new:sender_MarketParticipant.marketRole.type>A26</new:sender_MarketParticipant.marketRole.type>
+        <new:receiver_MarketParticipant.mRID codingScheme="NAT">sim</new:receiver_MarketParticipant.mRID>
+        <new:receiver_MarketParticipant.marketRole.type>A13</new:receiver_MarketParticipant.marketRole.type>
+        <new:process.processType>A16</new:process.processType>
+        <new:period.timeInterval>
+                  
+            <new:start>2024-12-30T09:49Z</new:start>
+                  
+            <new:end>2024-12-30T10:04Z</new:end>
+                
+        </new:period.timeInterval>
+        <new:TimeSeries>
+            <new:timeSeriesElement>
+                <new:mRID>ffc8884a-9a06-4ab4-8b71-9b2d17fd87af</new:mRID>
+                <new:businessType>A04</new:businessType>
+                <new:product>8716867000030</new:product>
+                <new:version>1.0</new:version>
+                <new:flowDirection.direction>A02</new:flowDirection.direction>
+                <new:marketEvaluationPoint.mRID>
+                              
+                    <new:codingScheme>NFR</new:codingScheme>
+                              
+                    <new:value>mid</new:value>
+                            
+                </new:marketEvaluationPoint.mRID>
+                <new:marketEvaluationPoint.meterReadings.readings.ReadingType.aggregation>26</new:marketEvaluationPoint.meterReadings.readings.ReadingType.aggregation>
+                <new:marketEvaluationPoint.meterReadings.readings.ReadingType.commodity>0</new:marketEvaluationPoint.meterReadings.readings.ReadingType.commodity>
+                <new:energy_Measurement_Unit.name>WTT</new:energy_Measurement_Unit.name>
+                <new:Series_PeriodList>
+                              
+                    <new:Series_Period>
+                                    
+                        <new:timeInterval>
+                                          
+                            <new:start>2024-12-30T09:49Z</new:start>
+                                          
+                            <new:end>2024-12-30T10:04Z</new:end>
+                                        
+                        </new:timeInterval>
+                                    
+                        <new:resolution>PT15M</new:resolution>
+                                    
+                        <new:PointList>
+                                          
+                            <new:Point>
+                                                
+                                <new:position>0</new:position>
+                                                
+                                <new:energy_Quantity.quantity>10.0</new:energy_Quantity.quantity>
+                                                
+                                <new:energy_Quantity.quality>A04</new:energy_Quantity.quality>
+                                              
+                            </new:Point>
+                                        
+                        </new:PointList>
+                                  
+                    </new:Series_Period>
+                            
+                </new:Series_PeriodList>
+                <new:reason>
+                    <new:reason.code>999</new:reason.code>
+                    <new:reason.text>Not Specified</new:reason.text>
+                </new:reason>
+            </new:timeSeriesElement>
+        </new:TimeSeries>
+    </new:MarketDocument>
+</new:VHD_Enveloppe>
