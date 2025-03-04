@@ -157,11 +157,10 @@ public class CdsClientCreationService {
 
     private Mono<String> createCustomerDataClientCredentials(List<ClientEndpoint200ResponseClientsInner> response) {
         for (var result : response) {
-            if (!result.getScope().contains(Scopes.CUSTOMER_DATA_SCOPE)) {
-                continue;
+            if (result.getScope().contains(Scopes.CUSTOMER_DATA_SCOPE)) {
+                var clientId = result.getClientId();
+                return Mono.just(clientId);
             }
-            var clientId = result.getClientId();
-            return Mono.just(clientId);
         }
         return Mono.error(new NoCustomerDataClientFoundException());
     }
