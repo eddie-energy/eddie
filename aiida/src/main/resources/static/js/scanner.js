@@ -1,52 +1,39 @@
 const aiidaCodeInput = document.querySelector("#aiida-code");
-const permissionForm = document.querySelector("#permission-form");
 const scanQrCodeButton = document.querySelector("#scan-qr-code");
+const scanQrCodeClose = document.querySelector("#scan-qr-code-close");
 const scanQrCodeDialog = document.querySelector("#scan-qr-code-dialog");
-const scanQrCodeSelect = document.querySelector("#scan-qr-code-select");
 const scanQrCodeVideo = document.querySelector("#scan-qr-code-video");
 const scanQrCodeLoading = document.querySelector("#scan-qr-code-loading");
+const scanQrCodeError = document.querySelector("#scan-qr-code-error");
 
-try {
-  const codeReader = new ZXing.BrowserQRCodeReader();
-  const videoInputDevices = await codeReader.getVideoInputDevices();
+const codeReader = new ZXingBrowser.BrowserQRCodeReader();
 
-  let selectedDeviceId = videoInputDevices[0].deviceId;
-  if (videoInputDevices.length >= 1) {
-    for (const { deviceId, label } of videoInputDevices) {
-      const sourceOption = document.createElement("sl-option");
-      sourceOption.textContent = label;
-      sourceOption.value = deviceId;
-      scanQrCodeSelect.appendChild(sourceOption);
-    }
+scanQrCodeButton.addEventListener("click", async () => {
+  scanQrCodeDialog.show();
 
-    scanQrCodeSelect.addEventListener("sl-change", () => {
-      selectedDeviceId = scanQrCodeSelect.value;
-      codeReader.reset();
-      decode(codeReader, selectedDeviceId);
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
     });
+
+    const result = await codeReader.decodeOnceFromStream(
+      stream,
+      scanQrCodeVideo
+    );
+
+    aiidaCodeInput.value = btoa(result);
+    scanQrCodeDialog.hide();
+  } catch (error) {
+    console.error(error);
+    scanQrCodeLoading.remove();
+    scanQrCodeError.innerHTML = /* HTML */ `
+      <sl-alert variant="danger" open>
+        <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+        ${error}
+      </sl-alert>
+    `;
   }
-
-  scanQrCodeButton.addEventListener("click", () => {
-    scanQrCodeDialog.show();
-    decode(codeReader, selectedDeviceId);
-  });
-} catch (error) {
-  console.debug(error);
-  scanQrCodeButton.toggleAttribute("disabled");
-}
-
-function decode(codeReader, deviceId) {
-  codeReader
-    .decodeFromInputVideoDevice(deviceId, scanQrCodeVideo)
-    .then((result) => {
-      console.debug(result);
-      aiidaCodeInput.value = btoa(result);
-      scanQrCodeDialog.hide();
-    })
-    .catch((err) => {
-      console.error(err);
-    });
-}
+});
 
 // Hide video until it is showing content
 scanQrCodeVideo.addEventListener("play", () => {
@@ -54,6 +41,7 @@ scanQrCodeVideo.addEventListener("play", () => {
   scanQrCodeLoading.remove();
 });
 
-window.hideScanQrCodeDialog = () => {
+scanQrCodeClose.addEventListener("click", () => {
+  codeReader.reset();
   scanQrCodeDialog.hide();
-};
+});

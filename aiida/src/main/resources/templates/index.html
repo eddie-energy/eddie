@@ -21,7 +21,7 @@
       src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/shoelace-autoloader.js"
     ></script>
     <script src="https://unpkg.com/cronstrue@2.55.0/dist/cronstrue.min.js" async></script>
-    <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+    <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
   </head>
   <body>
     <sl-avatar class="user-button"
@@ -117,16 +117,17 @@
     </sl-dialog>
 
     <sl-dialog id="scan-qr-code-dialog" label="Scan AIIDA code">
-      <div id="sourceSelectPanel">
-        <sl-select label="Camera" id="scan-qr-code-select"></sl-select>
+      <video id="scan-qr-code-video" hidden style="width: 100%"></video>
+      <div id="scan-qr-code-loading">
+        Waiting for camera...
+        <br />
+        <sl-spinner></sl-spinner>
       </div>
 
-      <br />
-      <video id="scan-qr-code-video" hidden style="width: 100%"></video>
-      <sl-spinner id="scan-qr-code-loading"></sl-spinner>
+      <div id="scan-qr-code-error"></div>
 
-      <sl-button slot="footer" outline onclick="window.hideScanQrCodeDialog()">
-        Cancel
+      <sl-button id="scan-qr-code-close" slot="footer" outline>
+        Close
       </sl-button>
     </sl-dialog>
 
