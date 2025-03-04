@@ -21,6 +21,7 @@
       src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/shoelace-autoloader.js"
     ></script>
     <script src="https://unpkg.com/cronstrue@2.55.0/dist/cronstrue.min.js" async></script>
+    <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
   </head>
   <body>
     <sl-avatar class="user-button"
@@ -77,7 +78,7 @@
     <form id="permission-form" class="permission-form" method="post">
       <sl-input id="aiida-code" placeholder="AIIDA code" required></sl-input>
       <sl-button type="submit" variant="primary">Add</sl-button>
-      <sl-button circle disabled>
+      <sl-button id="scan-qr-code" circle>
         <sl-icon name="camera" label="Camera"></sl-icon>
       </sl-button>
     </form>
@@ -101,16 +102,30 @@
     </sl-dialog>
 
     <sl-dialog id="revoke-permission-dialog" label="Revoke permission">
-      <sl-button slot="footer" variant="primary" id="revoke-permission-button">
-        Revoke
-      </sl-button>
-
       <p class="text">
         This action will revoke the given permission. The eligible party will no
         longer be able to receive data for this entry.
       </p>
 
+      <sl-button slot="footer" variant="primary" id="revoke-permission-button">
+        Revoke
+      </sl-button>
+
       <sl-button slot="footer" outline onclick="window.hideRevokeDialog()">
+        Cancel
+      </sl-button>
+    </sl-dialog>
+
+    <sl-dialog id="scan-qr-code-dialog" label="Scan AIIDA code">
+      <div id="sourceSelectPanel">
+        <sl-select label="Camera" id="scan-qr-code-select"></sl-select>
+      </div>
+
+      <br />
+      <video id="scan-qr-code-video" hidden style="width: 100%"></video>
+      <sl-spinner id="scan-qr-code-loading"></sl-spinner>
+
+      <sl-button slot="footer" outline onclick="window.hideScanQrCodeDialog()">
         Cancel
       </sl-button>
     </sl-dialog>
@@ -151,5 +166,6 @@
     <div id="data-source-list" class="data-sources"></div>
 
     <script th:src="@{/js/main.js}" type="module"></script>
+    <script th:src="@{/js/scanner.js}" type="module"></script>
   </body>
 </html>
