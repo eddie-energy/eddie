@@ -5,6 +5,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.stream.Stream;
@@ -12,14 +14,6 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EnedisDurationTest {
-
-    private static Stream<Arguments> testEnedisDuration_returnsISODuration_ifEndIsInFuture_methodSource() {
-        LocalDate now = LocalDate.now(ZoneOffset.UTC);
-        return Stream.of(
-                Arguments.of(now.plusDays(3), "P3D"),
-                Arguments.of(now.plusYears(3), "P1095D")
-        );
-    }
 
     @Test
     void testEnedisDuration_returnsISODurationOfOneDay_ifEndIsInPast() {
@@ -36,14 +30,23 @@ class EnedisDurationTest {
 
     @ParameterizedTest
     @MethodSource("testEnedisDuration_returnsISODuration_ifEndIsInFuture_methodSource")
-    void testEnedisDuration_returnsISODuration_ifEndIsInFuture(LocalDate end, String expected) {
+    void testEnedisDuration_returnsISODuration_ifEndIsInFuture(LocalDate start, LocalDate end, String expected) {
         // Given
-        EnedisDuration duration = new EnedisDuration(end);
+        var startInstant = Instant.from(start.atStartOfDay(ZoneOffset.UTC));
+        EnedisDuration duration = new EnedisDuration(end, Clock.fixed(startInstant, ZoneOffset.UTC));
 
         // When
         var res = duration.toString();
 
         // Then
         assertEquals(expected, res);
+    }
+
+    private static Stream<Arguments> testEnedisDuration_returnsISODuration_ifEndIsInFuture_methodSource() {
+        LocalDate now = LocalDate.of(2021, 1, 1);
+        return Stream.of(
+                Arguments.of(now, now.plusDays(3), "P3D"),
+                Arguments.of(now, now.plusYears(3), "P1095D")
+        );
     }
 }
