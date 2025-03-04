@@ -69,6 +69,20 @@ jobs:
       - name: Install playwright dependencies
         run: ./gradlew e2e-tests:install-playwright-deps
 
+      - name: Wait for region connectors
+        run: |
+          RCS=$(echo "aiida at-eda dk-energinet es-datadis fr-enedis nl-mijn-aansluiting" | jq -R 'split(" ")')
+          for i in {1..20}; do
+            if curl -S --retry 5 --retry-connrefused http://eddie:8080/api/region-connectors-metadata | jq "[.[].id] | contains($RCS)"; then
+              echo "All connectors ready!"
+              exit 0
+            fi
+          
+            echo "Attempt $i/20 - Some connectors are missing - waiting 5s..."
+            sleep 5
+          done
+          exit 1
+
       - name: Run playwright tests
         env:
           E2E_BASE_URL: "http://eddie:8080"

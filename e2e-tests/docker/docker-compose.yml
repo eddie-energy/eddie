@@ -16,6 +16,9 @@ services:
     env_file:
       - .env
       - .env_secrets
+    ports:
+      - "8080:8080"
+      - "9090:9090"
     volumes:
       - ./keys:/opt/core/keys # mount a folder to store key files
       - ./ponton:/ponton # mount a folder to store ponton files
