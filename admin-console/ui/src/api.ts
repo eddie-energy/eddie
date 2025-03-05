@@ -81,10 +81,6 @@ export async function getPermissions(): Promise<StatusMessage[]> {
   return await fetch(PERMISSIONS_API_URL).then((res) => res.json())
 }
 
-export async function getLatestPermissions() {
-  return await fetch(LATEST_PERMISSIONS_API_URL).then((res) => res.json())
-}
-
 export async function getPermissionsPaginated(page: number, size: number) {
   return await fetch(`${LATEST_PERMISSIONS_API_URL}?page=${page}&size=${size}`).then((res) => res.json())
 }

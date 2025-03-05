@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import {
-  getLatestPermissions,
+  getPermissionsPaginated,
   getStatusMessages,
   type StatusMessage,
   terminatePermission
@@ -30,26 +30,21 @@ const permissions = ref([])
 const totalRecords = ref(0)
 const rowOptions = [3, 50, 100, 250, 500]
 const rows = ref(rowOptions[0])
+let loadedPage = 0
 
-async function fetchPermissions() {
+async function fetchPermissions(page: number = 0, size: number = 5) {
   try {
-    const response = await getLatestPermissions()
-    permissions.value = response.permissions
+    const response = await getPermissionsPaginated(page, size)
+    permissions.value = permissions.value.concat(response.permissions)
     totalRecords.value = response.totalElements
+    loadedPage++
   } catch (error) {
     console.error("Error fetching permissions", error)
   }
 }
 
-/*
-function onPageChange(event: {first: number, rows: number}) {
-  fetchPermissions(event.first / event.rows, event.rows)
-}
-*/
-
 function loadPermissions() {
-  //TODO
-  console.log("loading..")
+  fetchPermissions(loadedPage)
 }
 
 function formatDate(date: string) {
@@ -152,7 +147,7 @@ fetchPermissions()
     </template>
 
     <template #paginatorstart>
-      <p>Loaded <b>{{ permissions?.length }}</b> out of {{ totalRecords }} permissions. <a @click="loadPermissions()">Load more...</a></p>
+      <p>Loaded <b>{{ permissions?.length }}</b> out of {{ totalRecords }} permissions. <a v-if="permissions.length < totalRecords" @click="loadPermissions()">Load more...</a></p>
     </template>
 
     <Column expander />
