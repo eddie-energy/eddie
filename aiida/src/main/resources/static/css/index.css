@@ -3,16 +3,28 @@ body {
   padding: var(--sl-spacing-small);
 }
 
+img {
+  max-width: 100%;
+}
+
 .details-list {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: var(--sl-spacing-x-small);
+  gap: var(--sl-spacing-x-small) var(--sl-spacing-2x-large);
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .details-list dt {
   font-weight: bold;
   color: var(--sl-color-neutral-500);
   font-size: var(--sl-font-size-small);
+}
+
+.details-list dd {
+  margin: 0;
 }
 
 .label {
@@ -33,6 +45,7 @@ body {
 .permission-form {
   display: flex;
   gap: var(--sl-spacing-small);
+  flex-wrap: wrap;
 }
 
 .user-button {
@@ -56,7 +69,7 @@ body {
 
 .data-sources {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(500px, 100%), 1fr));
   align-items: stretch;
   gap: 1rem;
   margin-top: 1rem;
