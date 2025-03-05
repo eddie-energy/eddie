@@ -40,6 +40,9 @@ public class CdsController {
             case NotACdsServerResponse ignored -> ResponseEntity
                     .badRequest()
                     .body(new CdsServerCreationError("Not a CDS server"));
+            case NoTokenEndpoint ignored -> ResponseEntity
+                    .badRequest()
+                    .body(new CdsServerCreationError("No token endpoint"));
         };
     }
 }

@@ -3,10 +3,10 @@ package energy.eddie.regionconnector.cds.master.data;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 
+@SuppressWarnings("DataFlowIssue")
 @Embeddable
 public class CdsEndpoints {
     @Column(name = "token_endpoint", nullable = false)
@@ -24,13 +24,6 @@ public class CdsEndpoints {
         this.tokenEndpoint = tokenEndpoint;
         this.authorizationEndpoint = authorizationEndpoint;
         this.pushedAuthorizationRequestEndpoint = pushedAuthorizationRequestEndpoint;
-        this.clientsEndpoint = clientsEndpoint;
-    }
-
-    public CdsEndpoints(String baseUri, String pushedAuthorizationRequestEndpoint, String clientsEndpoint) {
-        this.pushedAuthorizationRequestEndpoint = pushedAuthorizationRequestEndpoint;
-        this.tokenEndpoint = buildOAuthEndpointFor(baseUri, "token");
-        this.authorizationEndpoint = buildOAuthEndpointFor(baseUri, "authorize");
         this.clientsEndpoint = clientsEndpoint;
     }
 
@@ -55,13 +48,5 @@ public class CdsEndpoints {
 
     public URI clientsEndpoint() {
         return URI.create(clientsEndpoint);
-    }
-
-    private static String buildOAuthEndpointFor(String cdsBaseUri, String endpoint) {
-        return UriComponentsBuilder.fromUriString(cdsBaseUri)
-                                   .pathSegment("oauth", endpoint)
-                                   .path("/")
-                                   .build()
-                                   .toString();
     }
 }

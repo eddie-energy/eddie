@@ -77,7 +77,8 @@ class CdsControllerTest {
                              "Authorization code grant type not supported"),
                 Arguments.of(new CoverageNotSupportedResponse(), "Coverage capability not supported"),
                 Arguments.of(new OAuthNotSupportedResponse(), "OAuth capability not supported"),
-                Arguments.of(new RefreshTokenGrantTypeNotSupported(), "Refresh token grant type not supported")
+                Arguments.of(new RefreshTokenGrantTypeNotSupported(), "Refresh token grant type not supported"),
+                Arguments.of(new NoTokenEndpoint(), "No token endpoint")
         );
     }
 }

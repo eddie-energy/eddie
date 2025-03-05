@@ -112,6 +112,9 @@ public class CdsClientCreationService {
         if (!oauthMetadata.getGrantTypesSupported().contains("refresh_token")) {
             return Mono.just(new RefreshTokenGrantTypeNotSupported());
         }
+        if (oauthMetadata.getTokenEndpoint() == null) {
+            return Mono.just(new NoTokenEndpoint());
+        }
         var coverageTypes = new CoverageTypes(coverages);
         var registrationEndpoint = oauthMetadata.getRegistrationEndpoint();
         LOGGER.info("Registering new CDS client at {}", registrationEndpoint);
@@ -123,9 +126,9 @@ public class CdsClientCreationService {
                                                  coverageTypes.toEnergyTypes(),
                                                  creds.getClientId(),
                                                  creds.getClientSecret(),
-                                                 // TODO: Get token endpoint and authorization endpoint from metadata
                                                  new CdsEndpoints(
-                                                         cdsBaseUri,
+                                                         oauthMetadata.getTokenEndpoint().toString(),
+                                                         oauthMetadata.getAuthorizationEndpoint().toString(),
                                                          oauthMetadata.getPushedAuthorizationRequestEndpoint().toString(),
                                                          oauthMetadata.getCdsClientsApi().toString()
                                                  )

@@ -93,6 +93,8 @@ class CdsClientCreationServiceTest {
                         .oauthMetadata(baseUri)
                         .capabilities(List.of("coverage", "oauth")),
                 new OAuthAuthorizationServer200Response()
+                        .tokenEndpoint(baseUri)
+                        .authorizationEndpoint(baseUri)
                         .grantTypesSupported(List.of("authorization_code", "refresh_token"))
                         .registrationEndpoint(baseUri)
                         .cdsClientsApi(baseUri)
@@ -147,6 +149,8 @@ class CdsClientCreationServiceTest {
                         .oauthMetadata(baseUri)
                         .capabilities(List.of("coverage", "oauth")),
                 new OAuthAuthorizationServer200Response()
+                        .authorizationEndpoint(baseUri)
+                        .tokenEndpoint(baseUri)
                         .grantTypesSupported(List.of("authorization_code", "refresh_token"))
                         .registrationEndpoint(baseUri)
                         .cdsClientsApi(baseUri)
@@ -246,6 +250,7 @@ class CdsClientCreationServiceTest {
                         .oauthMetadata(baseUri)
                         .capabilities(List.of("coverage", "oauth")),
                 new OAuthAuthorizationServer200Response()
+                        .tokenEndpoint(baseUri)
                         .grantTypesSupported(List.of(grantType))
                         .registrationEndpoint(baseUri),
                 List.of(
@@ -263,5 +268,37 @@ class CdsClientCreationServiceTest {
         // Then
         assertThat(res).isInstanceOf(result);
         verify(repository, never()).save(any());
+    }
+
+    @Test
+    void testGetOrCreate_forUnknownCdsServer_returnsNoTokenEndpoint_whenNoTokenEndpointPresent() throws MalformedURLException {
+        // Given
+        var baseUrl = "http://localhost:8080";
+        var baseUri = URI.create(baseUrl);
+        when(repository.findByBaseUri(baseUrl)).thenReturn(Optional.empty());
+        var metadata = Tuples.of(
+                new CarbonDataSpec200Response()
+                        .name("CDS Server")
+                        .coverage(baseUri)
+                        .oauthMetadata(baseUri)
+                        .capabilities(List.of("coverage", "oauth")),
+                new OAuthAuthorizationServer200Response()
+                        .authorizationEndpoint(baseUri)
+                        .grantTypesSupported(List.of("authorization_code", "refresh_token"))
+                        .registrationEndpoint(baseUri),
+                List.of(
+                        new Coverages200ResponseAllOfCoverageEntriesInner()
+                                .commodityTypes(Arrays.asList(
+                                        Coverages200ResponseAllOfCoverageEntriesInner.CommodityTypesEnum.values()))
+                )
+        );
+        when(metadataCollection.metadata(baseUri))
+                .thenReturn(Mono.just(metadata));
+
+        // When
+        var res = clientCreationService.createOAuthClients(baseUri.toURL());
+
+        // Then
+        assertThat(res).isInstanceOf(NoTokenEndpoint.class);
     }
 }

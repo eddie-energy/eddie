@@ -179,6 +179,22 @@
         "introspection_endpoint": {
           "type": "string",
           "format": "uri"
+        },
+        "issuer": {
+          "type": "string",
+          "format": "uri"
+        },
+        "authorization_endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "token_endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "jwks_uri": {
+          "type": "string",
+          "format": "uri"
         }
       },
       "required": [
@@ -188,10 +204,26 @@
         "op_policy_uri",
         "op_tos_uri",
         "revocation_endpoint",
-        "introspection_endpoint",
         "code_challenge_methods_supported",
-        "token_endpoint"
+        "introspection_endpoint",
+        "issuer",
+        "authorization_endpoint"
       ],
+      "if": {
+        "not": {
+          "grant_types_supported": {
+            "type": "array",
+            "const": [
+              "implicit"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "token_endpoint"
+        ]
+      },
       "allOf": [
         {
           "$ref": "#/$defs/OAuthCDSValues"
