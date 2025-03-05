@@ -160,8 +160,8 @@ function toLocalDateString(time) {
 }
 
 function permissionElement(permission) {
-  console.log(permission);
   const notYetAvailable = "Not available yet.";
+
   const { eddieId, permissionId, status, serviceName } = permission;
   const dataTags = permission.dataNeed.dataTags ?? notYetAvailable;
   const startTime = toLocalDateString(permission.startTime) ?? notYetAvailable;
@@ -244,7 +244,6 @@ function renderPermissions() {
 
     permissions.forEach((permission) => {
       const element = permissionElement(permission);
-      console.log("element: ", element);
 
       if (STATUS[permission.status].isActive) {
         activePermissionsList.insertAdjacentHTML("beforeend", element);
@@ -562,7 +561,6 @@ function openAddDataSourceDialog() {
   fetch(`${DATASOURCES_BASE_URL}/types`)
     .then((response) => response.json())
     .then((types) => {
-      console.log(types);
       dataSourceSelect.innerHTML = types
         .map(
           (type) =>
@@ -652,7 +650,6 @@ function openEditDataSourceDialog(dataSourceId) {
         "edit-data-source-fields"
       );
 
-      console.log(dataSource);
       Promise.all([
         fetch(`${DATASOURCES_BASE_URL}/types`).then((response) =>
           response.json()
@@ -662,8 +659,6 @@ function openEditDataSourceDialog(dataSourceId) {
         ),
       ])
         .then(([types, assets]) => {
-          console.log(types);
-
           let editFields = /* HTML */ `
             <sl-input
               name="name"
@@ -814,8 +809,6 @@ document
       }
     }
 
-    console.log(newDataSource);
-
     fetch(DATASOURCES_BASE_URL, {
       method: "POST",
       headers: {
@@ -855,7 +848,6 @@ document
       mqttPassword: formData.get("mqttPassword"),
       meteringId: formData.get("meteringID"),
     };
-    console.log(updatedDataSource);
 
     if (formData.has("simulationPeriod")) {
       updatedDataSource.simulationPeriod = parseInt(
