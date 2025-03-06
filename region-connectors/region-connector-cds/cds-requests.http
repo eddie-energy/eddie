@@ -28,6 +28,29 @@ Content-Type: application/json
 GET {{clients_endpoint}}
 Authorization: Bearer {{$auth.token("cds")}}
 
+> {%
+  const body = response.body
+  for (let item in body.clients) {
+    item = body.clients[item]
+    client.log(item)
+    if (item.scope === "customer_data") {
+      client.global.set("customer_client_endpoint", item.cds_client_uri)
+      break;
+    }
+  }
+%}
+
+### UPDATE client
+PUT {{customer_client_endpoint}}
+Authorization: Bearer {{$auth.token("cds")}}
+Content-Type: application/json
+
+{
+  "redirect_uris": [
+    "https://localhost"
+  ]
+}
+
 ###
 GET {{cds_server}}/oauth/authorize/?
     client_id={{customer-data-client-id}}&
