@@ -13,7 +13,6 @@ export const CSRF_HEADER = THYMELEAF_CSRF_HEADER
 export const CSRF_TOKEN = THYMELEAF_CSRF_TOKEN
 
 export const PERMISSIONS_API_URL = `${ADMIN_URL}/statusMessages`
-export const LATEST_PERMISSIONS_API_URL = `${ADMIN_URL}/statusMessagesLatestPermissions`
 export const TERMINATION_API_URL = `${ADMIN_URL}/terminate`
 export const DATA_NEEDS_API_URL = `${CORE_URL}/data-needs/api`
 export const REGION_CONNECTOR_API_URL = `${CORE_URL}/api/region-connectors-metadata`

@@ -1,7 +1,6 @@
 package energy.eddie.outbound.admin.console.web;
 
 import energy.eddie.cim.v0_82.pmd.StatusTypeList;
-import energy.eddie.outbound.admin.console.data.PermissionPage;
 import energy.eddie.outbound.admin.console.data.StatusMessage;
 import energy.eddie.outbound.admin.console.data.StatusMessageDTO;
 import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
@@ -10,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -45,15 +45,11 @@ public class HomeController {
                         .toList());
     }
 
-    @GetMapping("/statusMessagesLatestPermissions")
-    public ResponseEntity<PermissionPage> statusMessagesLatestPermissions(@RequestParam(defaultValue = "0") int page,
-                                                                     @RequestParam(defaultValue = "500") int size) {
-        Page<StatusMessage> response = this.statusMessageRepository.findLatestStatusMessageForPaginatedPermissions(PageRequest.of(page, size));
-        List<StatusMessageDTO> permissions = response.getContent()
-                        .stream()
-                        .map(HomeController::dtoFromStatusMessage)
-                        .toList();
-        return ResponseEntity.ok(new PermissionPage(permissions, response.getTotalElements()));
+    @GetMapping(value = "/statusMessages", params = {"page", "size"})
+    public ResponseEntity<PagedModel<StatusMessageDTO>> statusMessagesPaginated(@RequestParam(defaultValue = "0") int page,
+                                                                                @RequestParam(defaultValue = "500") int size) {
+        return ResponseEntity.ok(new PagedModel<>(this.statusMessageRepository.findLatestStatusMessageForPaginatedPermissions(PageRequest.of(page, size))
+                .map(HomeController::dtoFromStatusMessage)));
     }
 
     @GetMapping("/statusMessages/{permissionId}")

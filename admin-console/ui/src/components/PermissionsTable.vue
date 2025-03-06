@@ -9,7 +9,6 @@ import {
   Button,
   Column,
   DataTable,
-  type DataTableFilterMeta,
   type DataTableRowExpandEvent,
   IconField,
   InputIcon,
@@ -22,28 +21,33 @@ import { ref } from 'vue'
 
 import { countryFlag, formatCountry } from '@/util/countries'
 
-const filters = ref<DataTableFilterMeta>({ global: { value: null, matchMode: 'contains' } })
+const filters = ref({ global: { value: null, matchMode: 'contains' } })
 const expandedRows = ref({})
 const rowExpansions = ref<{ [key: string]: StatusMessage[] }>({})
 
-const permissions = ref([])
+const permissions = ref<StatusMessage[]>([])
 const totalRecords = ref(0)
-const rowOptions = [3, 50, 100, 250, 500]
-const rows = ref(rowOptions[0])
+const rowOptions = [50, 100, 250, 500]
+const rows = rowOptions[0]
 let loadedPage = 0
 
-async function fetchPermissions(page: number = 0, size: number = 5) {
+async function fetchPermissions(page: number = 0, size: number = 500) {
   try {
     const response = await getPermissionsPaginated(page, size)
-    permissions.value = permissions.value.concat(response.permissions)
-    totalRecords.value = response.totalElements
+    permissions.value.push(...response.content)
+    totalRecords.value = response.page.totalElements
     loadedPage++
   } catch (error) {
-    console.error("Error fetching permissions", error)
+    toast.add({
+      severity: 'error',
+      summary: 'Failed to fetch permissions',
+      detail: `The request to fetch additional permissions has failed`,
+      life: 3000
+    })
   }
 }
 
-function loadPermissions() {
+function loadMorePermissions() {
   fetchPermissions(loadedPage)
 }
 
@@ -147,7 +151,10 @@ fetchPermissions()
     </template>
 
     <template #paginatorstart>
-      <p>Loaded <b>{{ permissions?.length }}</b> out of {{ totalRecords }} permissions. <a v-if="permissions.length < totalRecords" @click="loadPermissions()">Load more...</a></p>
+      <p>
+        Loaded <b>{{ permissions?.length }}</b> out of {{ totalRecords }} permissions.
+        <a v-if="permissions.length < totalRecords" @click="loadMorePermissions()">Load more...</a>
+      </p>
     </template>
 
     <Column expander />
@@ -227,6 +234,6 @@ input {
 }
 
 a:hover {
-  cursor:pointer;
+  cursor: pointer;
 }
 </style>
