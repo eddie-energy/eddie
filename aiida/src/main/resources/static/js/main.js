@@ -91,6 +91,8 @@ const revokeDialog = document.getElementById("revoke-permission-dialog");
 const revokeButton = document.getElementById("revoke-permission-button");
 
 const aiidaCodeInput = document.getElementById("aiida-code");
+/** @type {HTMLFormElement} */
+const permissionForm = document.getElementById("permission-form");
 
 const activePermissionsList = document.getElementById("active-permissions");
 const expiredPermissionsList = document.getElementById("expired-permissions");
@@ -130,7 +132,7 @@ function handlePermissionFormSubmit(event) {
     </h3>
   `;
 
-  addPermission();
+  addPermission(permission);
   acceptButton.loading = true;
   rejectButton.loading = true;
   closeButton.loading = true;
@@ -143,7 +145,9 @@ function handlePermissionFormSubmit(event) {
 
 aiidaCodeInput.addEventListener("sl-input", () => {
   try {
-    // check if input can be parsed into correct format
+    // reset validity
+    aiidaCodeInput.setCustomValidity("")
+    // check if input can be parsed into the correct format
     // noinspection JSUnusedLocalSymbols
     const { eddieId, permissionId, serviceName, handshakeUrl, accessToken } =
       JSON.parse(atob(aiidaCodeInput.value));
@@ -160,8 +164,8 @@ function toLocalDateString(time) {
 }
 
 function permissionElement(permission) {
-  console.log(permission);
   const notYetAvailable = "Not available yet.";
+
   const { eddieId, permissionId, status, serviceName } = permission;
   const dataTags = permission.dataNeed.dataTags ?? notYetAvailable;
   const startTime = toLocalDateString(permission.startTime) ?? notYetAvailable;
@@ -244,7 +248,6 @@ function renderPermissions() {
 
     permissions.forEach((permission) => {
       const element = permissionElement(permission);
-      console.log("element: ", element);
 
       if (STATUS[permission.status].isActive) {
         activePermissionsList.insertAdjacentHTML("beforeend", element);
@@ -255,16 +258,14 @@ function renderPermissions() {
   });
 }
 
-function addPermission() {
-  const body = JSON.parse(atob(aiidaCodeInput.value));
-
+function addPermission(permission) {
   fetch(PERMISSIONS_BASE_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       [getCsrfHeader()]: getCsrfToken(),
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(permission),
   })
     .then((response) => {
       if (!response.ok) {
@@ -562,7 +563,6 @@ function openAddDataSourceDialog() {
   fetch(`${DATASOURCES_BASE_URL}/types`)
     .then((response) => response.json())
     .then((types) => {
-      console.log(types);
       dataSourceSelect.innerHTML = types
         .map(
           (type) =>
@@ -652,7 +652,6 @@ function openEditDataSourceDialog(dataSourceId) {
         "edit-data-source-fields"
       );
 
-      console.log(dataSource);
       Promise.all([
         fetch(`${DATASOURCES_BASE_URL}/types`).then((response) =>
           response.json()
@@ -662,8 +661,6 @@ function openEditDataSourceDialog(dataSourceId) {
         ),
       ])
         .then(([types, assets]) => {
-          console.log(types);
-
           let editFields = /* HTML */ `
             <sl-input
               name="name"
@@ -814,8 +811,6 @@ document
       }
     }
 
-    console.log(newDataSource);
-
     fetch(DATASOURCES_BASE_URL, {
       method: "POST",
       headers: {
@@ -855,7 +850,6 @@ document
       mqttPassword: formData.get("mqttPassword"),
       meteringId: formData.get("meteringID"),
     };
-    console.log(updatedDataSource);
 
     if (formData.has("simulationPeriod")) {
       updatedDataSource.simulationPeriod = parseInt(
@@ -894,11 +888,20 @@ Promise.all([
     .addEventListener("submit", handlePermissionFormSubmit);
 });
 
+// process QR code scanner results
+document
+  .querySelector("qr-code-scanner")
+  .addEventListener("result", (event) => {
+    aiidaCodeInput.value = btoa(event.detail.result);
+    aiidaCodeInput.updateComplete.then(() => {
+      permissionForm.requestSubmit();
+    });
+  });
+
 renderPermissions();
 renderDataSources();
 
 window.openRevokePermissionDialog = openRevokePermissionDialog;
-window.addPermission = addPermission;
 window.updatePermission = updatePermission;
 window.hidePermissionDialog = () => permissionDialog.hide();
 window.hideRevokeDialog = () => revokeDialog.hide();
