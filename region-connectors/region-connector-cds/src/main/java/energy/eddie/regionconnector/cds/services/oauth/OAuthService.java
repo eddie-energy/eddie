@@ -4,11 +4,13 @@ import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
+import com.nimbusds.oauth2.sdk.client.*;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
+import energy.eddie.regionconnector.cds.services.oauth.client.registration.RegistrationResponse;
 import energy.eddie.regionconnector.cds.services.oauth.code.AuthorizationCodeResult;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.ParResponse;
@@ -23,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -34,6 +37,47 @@ public class OAuthService {
 
     public OAuthService(CdsConfiguration config) {
         this.config = config;
+    }
+
+    public RegistrationResponse registerClient(URI registrationEndpoint) {
+        var clientMetadata = new ClientMetadata();
+        clientMetadata.setRedirectionURI(config.redirectUrl());
+        clientMetadata.setName(config.clientName());
+        clientMetadata.setScope(Scope.parse(Scopes.REQUIRED_SCOPES));
+
+        var regRequest = new ClientRegistrationRequest(registrationEndpoint, clientMetadata, null);
+        ClientRegistrationResponse regResponse;
+        try {
+            var httpResponse = regRequest.toHTTPRequest().send();
+            regResponse = ClientRegistrationResponse.parse(httpResponse);
+        } catch (IOException e) {
+            LOGGER.error("Could not register client for endpoint {}", registrationEndpoint, e);
+            return new RegistrationResponse.RegistrationError("Was not able to send request");
+        } catch (ParseException e) {
+            LOGGER.error("Could not register client for endpoint {}", registrationEndpoint, e);
+            return new RegistrationResponse.RegistrationError("Was not able to parse response");
+        }
+
+
+        if (!regResponse.indicatesSuccess()) {
+            // We have an error
+            var errorResponse = regResponse.toErrorResponse();
+            var errorObject = errorResponse.getErrorObject();
+            var code = errorObject.getCode();
+            var description = errorObject.getDescription();
+            LOGGER.warn("Could not register client for endpoint {} with code '{}' and description '{}'",
+                        registrationEndpoint,
+                        code,
+                        description);
+            return new RegistrationResponse.RegistrationError(code + ": " + description);
+        }
+
+        ClientInformationResponse successResponse = (ClientInformationResponse) regResponse;
+        ClientInformation clientInfo = successResponse.getClientInformation();
+        return new RegistrationResponse.Registered(
+                clientInfo.getID().getValue(),
+                clientInfo.getSecret().getValue()
+        );
     }
 
     // TODO: Use correct credentials to push authorization request

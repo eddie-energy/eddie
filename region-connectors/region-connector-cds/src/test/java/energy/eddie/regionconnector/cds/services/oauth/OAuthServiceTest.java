@@ -4,6 +4,7 @@ import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
+import energy.eddie.regionconnector.cds.services.oauth.client.registration.RegistrationResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.SuccessfulParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.UnableToSendPar;
@@ -31,13 +32,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class OAuthServiceTest {
     private static MockWebServer mockWebServer;
     private static CdsServer cdsServer;
-    private final OAuthService oAuthService = new OAuthService(new CdsConfiguration(URI.create("http://localhost")));
+    private final OAuthService oAuthService = new OAuthService(new CdsConfiguration(URI.create("http://localhost"),
+                                                                                    "EDDIE"));
 
     @BeforeAll
     static void setUp() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
-        cdsServer = new CdsServerBuilder().setBaseUri("http://localhost")
+        cdsServer = new CdsServerBuilder().setBaseUri(mockWebServer.url("/").toString())
                                           .setName("CDS server")
                                           .setCoverages(Set.of())
                                           .setAdminClientId("client-id")
@@ -219,5 +221,124 @@ class OAuthServiceTest {
         // Then
         var expected = "http://localhost?response_type=code&redirect_uri=http%3A%2F%2Flocalhost&state=" + res.state() + "&client_id=customer-data-client-id&scope=cds_usage_detailed";
         assertEquals(expected, res.redirectUri().toString());
+    }
+
+
+    @Test
+    void testRegisterClient_returnsNewClient() {
+        // Given
+        // language=JSON
+        var body = """
+                {
+                  "client_id": "string",
+                  "client_id_issued_at": 0,
+                  "client_name": "string",
+                  "client_secret": "string",
+                  "client_secret_expires_at": 0,
+                  "redirect_uris": [
+                    "https://example.com/"
+                  ],
+                  "grant_types": [
+                    "string"
+                  ],
+                  "response_types": [
+                    "string"
+                  ],
+                  "scope": "client_admin customer_data",
+                  "token_endpoint_auth_method": "client_secret_basic",
+                  "cds_server_metadata": "https://example.com/",
+                  "cds_clients_api": "https://example.com/",
+                  "cds_client_messages_api": "https://example.com/",
+                  "cds_scope_credentials_api": "https://example.com/",
+                  "cds_grants_api": "https://example.com/"
+                }
+                """;
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setHeader("Content-Type", "application/json")
+                        .setBody(body)
+                        .setResponseCode(200)
+        );
+
+        // When
+        var res = oAuthService.registerClient(URI.create(cdsServer.baseUri()));
+
+        // Then
+        var registered = assertInstanceOf(RegistrationResponse.Registered.class, res);
+        assertAll(
+                () -> assertEquals("string", registered.clientId()),
+                () -> assertEquals("string", registered.clientSecret())
+        );
+    }
+
+    @Test
+    void testRegisterClient_withErrorServerResponse_returnsRegistrationError() {
+        // Given
+        mockWebServer.enqueue(new MockResponse()
+                                      .setResponseCode(400)
+                                      .addHeader("Content-Type", "application/json")
+                                      .setBody("{ \"error\": \"bla\" }"));
+
+        // When
+        var res = oAuthService.registerClient(URI.create(cdsServer.baseUri()));
+
+        // Then
+        var registrationError = assertInstanceOf(RegistrationResponse.RegistrationError.class, res);
+        assertEquals("bla: null", registrationError.description());
+    }
+
+    @Test
+    void testRegisterClient_withoutServer_returnsRegistrationError() {
+        // Given
+
+        // When
+        var res = oAuthService.registerClient(URI.create("https://some-other-unknown-domain"));
+
+        // Then
+        var registrationError = assertInstanceOf(RegistrationResponse.RegistrationError.class, res);
+        assertEquals("Was not able to send request", registrationError.description());
+    }
+
+    @Test
+    void testRegisterClient_withoutParseableResponse_returnsRegistrationError() {
+        // Given
+        // language=JSON
+        var body = """
+                {
+                  "client_id": 10000,
+                  "client_id_issued_at": 0,
+                  "client_name": "string",
+                  "client_secret": "string",
+                  "client_secret_expires_at": 0,
+                  "redirect_uris": [
+                    "https://example.com/"
+                  ],
+                  "grant_types": [
+                    "string"
+                  ],
+                  "response_types": [
+                    "string"
+                  ],
+                  "scope": "client_admin customer_data",
+                  "token_endpoint_auth_method": "client_secret_basic",
+                  "cds_server_metadata": "https://example.com/",
+                  "cds_clients_api": "https://example.com/",
+                  "cds_client_messages_api": "https://example.com/",
+                  "cds_scope_credentials_api": "https://example.com/",
+                  "cds_grants_api": "https://example.com/"
+                }
+                """;
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setHeader("Content-Type", "application/json")
+                        .setBody(body)
+                        .setResponseCode(200)
+        );
+        // When
+        var res = oAuthService.registerClient(URI.create(cdsServer.baseUri()));
+
+        // Then
+        var registrationError = assertInstanceOf(RegistrationResponse.RegistrationError.class, res);
+        assertEquals("Was not able to parse response", registrationError.description());
     }
 }

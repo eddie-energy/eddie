@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.cds.client;
 
 import energy.eddie.regionconnector.cds.CdsBeanConfig;
-import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -31,8 +30,7 @@ class CdsPublicApisTest {
                          configurer.defaultCodecs()
                                    .jackson2JsonDecoder(decoder);
                      })
-                     .build(),
-            new CdsConfiguration(URI.create("http://localhost"))
+                     .build()
     );
 
     @BeforeAll
@@ -169,51 +167,6 @@ class CdsPublicApisTest {
 
         // When
         var res = publicApis.oauthMetadataSpec(URI.create(basepath));
-
-        // Then
-        StepVerifier.create(res)
-                    .expectNextCount(1)
-                    .verifyComplete();
-    }
-
-    @Test
-    void testCreateOAuthClient_returnsOAuthClient() {
-        // Given
-        // language=JSON
-        var body = """
-                {
-                  "client_id": "string",
-                  "client_id_issued_at": 0,
-                  "client_name": "string",
-                  "client_secret": "string",
-                  "client_secret_expires_at": 0,
-                  "redirect_uris": [
-                    "https://example.com/"
-                  ],
-                  "grant_types": [
-                    "string"
-                  ],
-                  "response_types": [
-                    "string"
-                  ],
-                  "scope": "client_admin customer_data",
-                  "token_endpoint_auth_method": "client_secret_basic",
-                  "cds_server_metadata": "https://example.com/",
-                  "cds_clients_api": "https://example.com/",
-                  "cds_client_messages_api": "https://example.com/",
-                  "cds_scope_credentials_api": "https://example.com/",
-                  "cds_grants_api": "https://example.com/"
-                }
-                """;
-        server.enqueue(
-                new MockResponse()
-                        .setHeader("Content-Type", "application/json")
-                        .setBody(body)
-                        .setResponseCode(200)
-        );
-
-        // When
-        var res = publicApis.createOAuthClient(URI.create(basepath));
 
         // Then
         StepVerifier.create(res)

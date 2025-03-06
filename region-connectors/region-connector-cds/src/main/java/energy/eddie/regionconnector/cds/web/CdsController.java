@@ -25,24 +25,15 @@ public class CdsController {
     private static ResponseEntity<CdsServerCreationError> toResponseEntity(ApiClientCreationResponse res) {
         return switch (res) {
             case CreatedCdsClientResponse ignored -> ResponseEntity.status(HttpStatus.CREATED).build();
-            case AuthorizationCodeGrantTypeNotSupported ignored -> ResponseEntity
-                    .badRequest()
-                    .body(new CdsServerCreationError("Authorization code grant type not supported"));
-            case CoverageNotSupportedResponse ignored -> ResponseEntity
-                    .badRequest()
-                    .body(new CdsServerCreationError("Coverage capability not supported"));
-            case OAuthNotSupportedResponse ignored -> ResponseEntity
-                    .badRequest()
-                    .body(new CdsServerCreationError("OAuth capability not supported"));
-            case RefreshTokenGrantTypeNotSupported ignored -> ResponseEntity
-                    .badRequest()
-                    .body(new CdsServerCreationError("Refresh token grant type not supported"));
             case NotACdsServerResponse ignored -> ResponseEntity
                     .badRequest()
                     .body(new CdsServerCreationError("Not a CDS server"));
-            case NoTokenEndpoint ignored -> ResponseEntity
+            case UnsupportedFeatureResponse(String message) -> ResponseEntity
                     .badRequest()
-                    .body(new CdsServerCreationError("No token endpoint"));
+                    .body(new CdsServerCreationError(message));
+            case UnableToRegisterClientResponse(String message) -> ResponseEntity
+                    .badRequest()
+                    .body(new CdsServerCreationError(message));
         };
     }
 }

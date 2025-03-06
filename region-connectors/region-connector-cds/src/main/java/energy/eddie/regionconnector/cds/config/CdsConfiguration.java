@@ -7,5 +7,5 @@ import java.net.URI;
 
 @ConfigurationProperties(value = "region-connector.cds")
 @ConditionalOnProperty(value = "region-connector.cds.enabled", havingValue = "true")
-public record CdsConfiguration(URI redirectUrl) {
+public record CdsConfiguration(URI redirectUrl, String clientName) {
 }

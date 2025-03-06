@@ -31,7 +31,7 @@ public class AdminClientFactory {
         return lookUpAdminClient(id)
                 .or(() -> createFromExistingCdsServer(id));
     }
-    public AdminClient get(CdsServer cdsServer) {
+    public AdminClient getTemporaryAdminClient(CdsServer cdsServer) {
         return new AdminClient(webClient, cdsServer, oAuthService);
     }
 

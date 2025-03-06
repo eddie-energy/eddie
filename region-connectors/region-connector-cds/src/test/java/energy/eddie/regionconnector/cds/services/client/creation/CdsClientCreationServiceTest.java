@@ -10,14 +10,21 @@ import energy.eddie.regionconnector.cds.exceptions.CoverageNotSupportedException
 import energy.eddie.regionconnector.cds.exceptions.OAuthNotSupportedException;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
-import energy.eddie.regionconnector.cds.openapi.model.*;
+import energy.eddie.regionconnector.cds.openapi.model.CarbonDataSpec200Response;
+import energy.eddie.regionconnector.cds.openapi.model.ClientEndpoint200ResponseClientsInner;
+import energy.eddie.regionconnector.cds.openapi.model.Coverages200ResponseAllOfCoverageEntriesInner;
+import energy.eddie.regionconnector.cds.openapi.model.OAuthAuthorizationServer200Response;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
-import energy.eddie.regionconnector.cds.services.client.creation.responses.*;
+import energy.eddie.regionconnector.cds.services.client.creation.responses.CreatedCdsClientResponse;
+import energy.eddie.regionconnector.cds.services.client.creation.responses.NotACdsServerResponse;
+import energy.eddie.regionconnector.cds.services.client.creation.responses.UnableToRegisterClientResponse;
+import energy.eddie.regionconnector.cds.services.client.creation.responses.UnsupportedFeatureResponse;
+import energy.eddie.regionconnector.cds.services.oauth.OAuthService;
+import energy.eddie.regionconnector.cds.services.oauth.client.registration.RegistrationResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -31,11 +38,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.Mockito.*;
@@ -52,15 +57,10 @@ class CdsClientCreationServiceTest {
     private AdminClientFactory factory;
     @Mock
     private AdminClient adminClient;
+    @Mock
+    private OAuthService oAuthService;
     @InjectMocks
     private CdsClientCreationService clientCreationService;
-
-    public static Stream<Arguments> testGetOrCreate_forUnknownCdsServer_returnsGrantTypeNotSupported_whenGrantTypeNotSupported() {
-        return Stream.of(
-                Arguments.of("authorization_code", RefreshTokenGrantTypeNotSupported.class),
-                Arguments.of("refresh_token", AuthorizationCodeGrantTypeNotSupported.class)
-        );
-    }
 
     @Test
     void testGetOrCreate_forKnownCdsServer_returnsClient() throws MalformedURLException {
@@ -106,14 +106,12 @@ class CdsClientCreationServiceTest {
         );
         when(metadataCollection.metadata(baseUri))
                 .thenReturn(Mono.just(metadataResponse));
-        when(api.createOAuthClient(baseUri))
-                .thenReturn(Mono.just(
-                        new OAuthClientRegistration200Response()
-                                .clientId("client-id")
-                                .clientSecret("client-secret")
-                                .cdsServerMetadata(baseUri)
+        when(oAuthService.registerClient(baseUri))
+                .thenReturn(new RegistrationResponse.Registered(
+                        "client-id",
+                        "client-secret"
                 ));
-        when(factory.get(any(CdsServer.class)))
+        when(factory.getTemporaryAdminClient(any(CdsServer.class)))
                 .thenReturn(adminClient);
         var client = new ClientEndpoint200ResponseClientsInner()
                 .clientId("client-id")
@@ -162,14 +160,12 @@ class CdsClientCreationServiceTest {
         );
         when(metadataCollection.metadata(baseUri))
                 .thenReturn(Mono.just(metadataResponse));
-        when(api.createOAuthClient(baseUri))
-                .thenReturn(Mono.just(
-                        new OAuthClientRegistration200Response()
-                                .clientId("client-id")
-                                .clientSecret("client-secret")
-                                .cdsServerMetadata(baseUri)
+        when(oAuthService.registerClient(baseUri))
+                .thenReturn(new RegistrationResponse.Registered(
+                        "client-id",
+                        "client-secret"
                 ));
-        when(factory.get(any(CdsServer.class)))
+        when(factory.getTemporaryAdminClient(any(CdsServer.class)))
                 .thenReturn(adminClient);
         var client = new ClientEndpoint200ResponseClientsInner()
                 .clientId("client-id")
@@ -181,7 +177,8 @@ class CdsClientCreationServiceTest {
         var res = clientCreationService.createOAuthClients(baseUri.toURL());
 
         // Then
-        assertThat(res).isInstanceOf(OAuthNotSupportedResponse.class);
+        var unsupported = assertInstanceOf(UnsupportedFeatureResponse.class, res);
+        assertEquals("Customer data not supported", unsupported.message());
     }
 
     @Test
@@ -197,7 +194,8 @@ class CdsClientCreationServiceTest {
         var res = clientCreationService.createOAuthClients(baseUri.toURL());
 
         // Then
-        assertThat(res).isInstanceOf(CoverageNotSupportedResponse.class);
+        var unsupportedFeature = assertInstanceOf(UnsupportedFeatureResponse.class, res);
+        assertEquals("Required coverage types are not supported", unsupportedFeature.message());
     }
 
     @Test
@@ -229,15 +227,15 @@ class CdsClientCreationServiceTest {
         var res = clientCreationService.createOAuthClients(baseUri.toURL());
 
         // Then
-        assertThat(res).isInstanceOf(OAuthNotSupportedResponse.class);
+        var unsupportedFeature = assertInstanceOf(UnsupportedFeatureResponse.class, res);
+        assertEquals("OAuth not supported", unsupportedFeature.message());
         verify(repository, never()).save(any());
     }
 
     @ParameterizedTest
-    @MethodSource
-    void testGetOrCreate_forUnknownCdsServer_returnsGrantTypeNotSupported_whenGrantTypeNotSupported(
-            String grantType,
-            Class<?> result
+    @ValueSource(strings = {"authorization_code", "refresh_token"})
+    void testGetOrCreate_forUnknownCdsServer_returnsUnsupportedFeatureResponse_whenGrantTypeNotSupported(
+            String grantType
     ) throws MalformedURLException {
         // Given
         var baseUrl = "http://localhost:8080";
@@ -266,7 +264,7 @@ class CdsClientCreationServiceTest {
         var res = clientCreationService.createOAuthClients(baseUri.toURL());
 
         // Then
-        assertThat(res).isInstanceOf(result);
+        assertThat(res).isInstanceOf(UnsupportedFeatureResponse.class);
         verify(repository, never()).save(any());
     }
 
@@ -299,6 +297,43 @@ class CdsClientCreationServiceTest {
         var res = clientCreationService.createOAuthClients(baseUri.toURL());
 
         // Then
-        assertThat(res).isInstanceOf(NoTokenEndpoint.class);
+        var unsupported = assertInstanceOf(UnsupportedFeatureResponse.class, res);
+        assertEquals("token endpoint is required", unsupported.message());
+    }
+
+    @Test
+    void testGetOrCreate_forUnknownCdsServer_returnsUnableToRegisterClientResponse_whenClientCouldNotBeRegistered() throws MalformedURLException {
+        // Given
+        var baseUrl = "http://localhost:8080";
+        var baseUri = URI.create(baseUrl);
+        when(repository.findByBaseUri(baseUrl)).thenReturn(Optional.empty());
+        var metadata = Tuples.of(
+                new CarbonDataSpec200Response()
+                        .name("CDS Server")
+                        .coverage(baseUri)
+                        .oauthMetadata(baseUri)
+                        .capabilities(List.of("coverage", "oauth")),
+                new OAuthAuthorizationServer200Response()
+                        .tokenEndpoint(baseUri)
+                        .authorizationEndpoint(baseUri)
+                        .grantTypesSupported(List.of("authorization_code", "refresh_token"))
+                        .registrationEndpoint(baseUri),
+                List.of(
+                        new Coverages200ResponseAllOfCoverageEntriesInner()
+                                .commodityTypes(Arrays.asList(
+                                        Coverages200ResponseAllOfCoverageEntriesInner.CommodityTypesEnum.values()))
+                )
+        );
+        when(metadataCollection.metadata(baseUri))
+                .thenReturn(Mono.just(metadata));
+        when(oAuthService.registerClient(baseUri))
+                .thenReturn(new RegistrationResponse.RegistrationError("bla"));
+
+        // When
+        var res = clientCreationService.createOAuthClients(baseUri.toURL());
+
+        // Then
+        var response = assertInstanceOf(UnableToRegisterClientResponse.class, res);
+        assertEquals("bla", response.message());
     }
 }

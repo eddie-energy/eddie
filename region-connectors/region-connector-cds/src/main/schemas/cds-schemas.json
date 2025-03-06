@@ -834,27 +834,13 @@
           "description": "Where to submit modifications using the Clients API Modifying Clients functionality. Servers MUST make this URL unique for each Client object."
         },
         "cds_status": {
-          "type": "string",
+          "$ref": "#/$defs/ClientStatus",
           "description": "The current status of availability for this Client."
         },
         "cds_status_options": {
           "type": "array",
           "items": {
-            "type": "string",
-            "oneOf": [
-              {
-                "const": "production",
-                "description": "The Client object MAY be used on the Server’s production systems. For scopes that require user authorization (e.g. response_type values of code), this cds_status indicates that the Client may request authorization from real users."
-              },
-              {
-                "const": "sandbox",
-                "description": "The Client object MAY be used to request access on the Server’s test environment systems. For scopes that require user authorization (i.e. response_type values of code), this cds_status indicates that the Client may request authorization from fictional test users, as provided in the Server’s cds_test_accounts documentation."
-              },
-              {
-                "const": "disabled",
-                "description": "The Client is is disabled."
-              }
-            ]
+            "$ref": "#/$defs/ClientStatus"
           },
           "description": "What cds_status values the Client MAY change to when modifying it. For Client objects with the client_admin scope, this list MUST NOT contain 'disabled'. For all other Client objects, this list MUST contain at least 'disabled', so that Clients MAY opt to disable Client objects as needed."
         },
@@ -916,6 +902,14 @@
         {
           "$ref": "#/$defs/ClientMetadataExtension"
         }
+      ]
+    },
+    "ClientStatus": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox",
+        "disabled"
       ]
     },
     "CdsEndpoints": {

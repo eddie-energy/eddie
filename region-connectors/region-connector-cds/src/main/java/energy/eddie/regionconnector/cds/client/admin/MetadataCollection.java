@@ -6,12 +6,14 @@ import energy.eddie.regionconnector.cds.exceptions.OAuthNotSupportedException;
 import energy.eddie.regionconnector.cds.openapi.model.CarbonDataSpec200Response;
 import energy.eddie.regionconnector.cds.openapi.model.Coverages200ResponseAllOfCoverageEntriesInner;
 import energy.eddie.regionconnector.cds.openapi.model.OAuthAuthorizationServer200Response;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 
 import java.net.URI;
 import java.util.List;
 
+@Component
 public class MetadataCollection {
     private final CdsPublicApis cdsPublicApis;
 

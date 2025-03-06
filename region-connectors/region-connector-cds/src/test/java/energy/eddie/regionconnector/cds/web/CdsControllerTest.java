@@ -73,12 +73,8 @@ class CdsControllerTest {
     private static Stream<Arguments> provideErrorCases() {
         return Stream.of(
                 Arguments.of(new NotACdsServerResponse(), "Not a CDS server"),
-                Arguments.of(new AuthorizationCodeGrantTypeNotSupported(),
-                             "Authorization code grant type not supported"),
-                Arguments.of(new CoverageNotSupportedResponse(), "Coverage capability not supported"),
-                Arguments.of(new OAuthNotSupportedResponse(), "OAuth capability not supported"),
-                Arguments.of(new RefreshTokenGrantTypeNotSupported(), "Refresh token grant type not supported"),
-                Arguments.of(new NoTokenEndpoint(), "No token endpoint")
+                Arguments.of(new UnsupportedFeatureResponse("test"), "test"),
+                Arguments.of(new UnableToRegisterClientResponse("Unable to register client"), "Unable to register client")
         );
     }
 }

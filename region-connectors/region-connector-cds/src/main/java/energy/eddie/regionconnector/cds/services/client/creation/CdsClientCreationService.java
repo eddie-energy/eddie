@@ -1,11 +1,9 @@
 package energy.eddie.regionconnector.cds.services.client.creation;
 
-import energy.eddie.regionconnector.cds.client.CdsPublicApis;
 import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.client.admin.AdminClientFactory;
 import energy.eddie.regionconnector.cds.client.admin.MetadataCollection;
 import energy.eddie.regionconnector.cds.exceptions.CoverageNotSupportedException;
-import energy.eddie.regionconnector.cds.exceptions.NoCustomerDataClientFoundException;
 import energy.eddie.regionconnector.cds.exceptions.OAuthNotSupportedException;
 import energy.eddie.regionconnector.cds.master.data.CdsEndpoints;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
@@ -15,9 +13,10 @@ import energy.eddie.regionconnector.cds.openapi.model.Coverages200ResponseAllOfC
 import energy.eddie.regionconnector.cds.openapi.model.OAuthAuthorizationServer200Response;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import energy.eddie.regionconnector.cds.services.client.creation.responses.*;
+import energy.eddie.regionconnector.cds.services.oauth.OAuthService;
+import energy.eddie.regionconnector.cds.services.oauth.client.registration.RegistrationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -31,33 +30,20 @@ public class CdsClientCreationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CdsClientCreationService.class);
     private final CdsServerRepository cdsServerRepository;
     private final MetadataCollection metadataCollection;
-    private final CdsPublicApis cdsPublicApis;
     private final AdminClientFactory adminClientFactory;
+    private final OAuthService oAuthService;
 
-    @Autowired
+
     public CdsClientCreationService(
-            CdsServerRepository cdsServerRepository,
-            CdsPublicApis cdsPublicApis,
-            AdminClientFactory adminClientFactory
-    ) {
-        this(
-                cdsServerRepository,
-                cdsPublicApis,
-                adminClientFactory,
-                new MetadataCollection(cdsPublicApis)
-        );
-    }
-
-    CdsClientCreationService(
             CdsServerRepository repository,
-            CdsPublicApis cdsPublicApis,
             AdminClientFactory adminClientFactory,
-            MetadataCollection metadataCollection
+            MetadataCollection metadataCollection,
+            OAuthService oAuthService
     ) {
         this.cdsServerRepository = repository;
-        this.cdsPublicApis = cdsPublicApis;
         this.metadataCollection = metadataCollection;
         this.adminClientFactory = adminClientFactory;
+        this.oAuthService = oAuthService;
     }
 
     public ApiClientCreationResponse createOAuthClients(URL cdsReferenceUri) {
@@ -91,11 +77,12 @@ public class CdsClientCreationService {
                                  .onErrorReturn(WebClientResponseException.NotFound.class::isInstance,
                                                 new NotACdsServerResponse())
                                  .onErrorReturn(CoverageNotSupportedException.class::isInstance,
-                                                new CoverageNotSupportedResponse())
+                                                new UnsupportedFeatureResponse(
+                                                        "Required coverage types are not supported"))
                                  .onErrorReturn(OAuthNotSupportedException.class::isInstance,
-                                                new OAuthNotSupportedResponse())
+                                                new UnsupportedFeatureResponse("OAuth not supported"))
                                  .onErrorReturn(NoCustomerDataClientFoundException.class::isInstance,
-                                                new OAuthNotSupportedResponse());
+                                                new UnsupportedFeatureResponse("Customer data not supported"));
     }
 
 
@@ -107,58 +94,60 @@ public class CdsClientCreationService {
     ) {
         LOGGER.info("Creating a new cds client for {}", cdsBaseUri);
         if (!oauthMetadata.getGrantTypesSupported().contains("authorization_code")) {
-            return Mono.just(new AuthorizationCodeGrantTypeNotSupported());
+            LOGGER.info("CDS server does not support authorization code grant type");
+            return Mono.just(new UnsupportedFeatureResponse("authorization_code grant type is not supported"));
         }
         if (!oauthMetadata.getGrantTypesSupported().contains("refresh_token")) {
-            return Mono.just(new RefreshTokenGrantTypeNotSupported());
+            LOGGER.info("CDS server does not support refresh token grant type");
+            return Mono.just(new UnsupportedFeatureResponse("refresh_token grant type is not supported"));
         }
         if (oauthMetadata.getTokenEndpoint() == null) {
-            return Mono.just(new NoTokenEndpoint());
+            LOGGER.info("CDS server does not support a token endpoint");
+            return Mono.just(new UnsupportedFeatureResponse("token endpoint is required"));
         }
-        var coverageTypes = new CoverageTypes(coverages);
         var registrationEndpoint = oauthMetadata.getRegistrationEndpoint();
         LOGGER.info("Registering new CDS client at {}", registrationEndpoint);
-        return cdsPublicApis.createOAuthClient(registrationEndpoint)
-                            .flatMap(creds -> {
-                                         var cdsServer = new CdsServer(
-                                                 cdsBaseUri,
-                                                 carbonDataSpec.getName(),
-                                                 coverageTypes.toEnergyTypes(),
-                                                 creds.getClientId(),
-                                                 creds.getClientSecret(),
-                                                 new CdsEndpoints(
-                                                         oauthMetadata.getTokenEndpoint().toString(),
-                                                         oauthMetadata.getAuthorizationEndpoint().toString(),
-                                                         oauthMetadata.getPushedAuthorizationRequestEndpoint().toString(),
-                                                         oauthMetadata.getCdsClientsApi().toString()
-                                                 )
-                                         );
-                                         return Mono.zip(Mono.just(cdsServer), getCustomerDataClientId(cdsServer));
-                                     }
-                            )
-                            .map(res -> {
-                                var cdsServer = res.getT1();
-                                var customerDataClientId = res.getT2();
-                                return new CdsServer(
-                                        cdsServer.baseUri(),
-                                        cdsServer.name(),
-                                        cdsServer.coverages(),
-                                        cdsServer.adminClientId(),
-                                        cdsServer.adminClientSecret(),
-                                        cdsServer.endpoints(),
-                                        customerDataClientId
-                                );
-                            })
-                            .map(CreatedCdsClientResponse::new);
+        RegistrationResponse.Registered credentials;
+        switch (oAuthService.registerClient(registrationEndpoint)) {
+            case RegistrationResponse.Registered registered -> credentials = registered;
+            case RegistrationResponse.RegistrationError(String description) -> {
+                return Mono.just(new UnableToRegisterClientResponse(description));
+            }
+        }
+        var coverageTypes = new CoverageTypes(coverages);
+        var cdsServer = new CdsServer(
+                cdsBaseUri,
+                carbonDataSpec.getName(),
+                coverageTypes.toEnergyTypes(),
+                credentials.clientId(),
+                credentials.clientSecret(),
+                new CdsEndpoints(
+                        oauthMetadata.getTokenEndpoint().toString(),
+                        oauthMetadata.getAuthorizationEndpoint().toString(),
+                        oauthMetadata.getPushedAuthorizationRequestEndpoint().toString(),
+                        oauthMetadata.getCdsClientsApi().toString()
+                )
+        );
+        return findCustomerDataClientId(cdsServer)
+                .map(customerDataClientId -> new CdsServer(
+                        cdsServer.baseUri(),
+                        cdsServer.name(),
+                        cdsServer.coverages(),
+                        cdsServer.adminClientId(),
+                        cdsServer.adminClientSecret(),
+                        cdsServer.endpoints(),
+                        customerDataClientId
+                ))
+                .map(CreatedCdsClientResponse::new);
     }
 
-    private Mono<String> getCustomerDataClientId(CdsServer cdsServer) {
-        return adminClientFactory.get(cdsServer)
+    private Mono<String> findCustomerDataClientId(CdsServer cdsServer) {
+        return adminClientFactory.getTemporaryAdminClient(cdsServer)
                                  .clients()
-                                 .flatMap(this::createCustomerDataClientCredentials);
+                                 .flatMap(this::findCustomerDataClientCredentials);
     }
 
-    private Mono<String> createCustomerDataClientCredentials(List<ClientEndpoint200ResponseClientsInner> response) {
+    private Mono<String> findCustomerDataClientCredentials(List<ClientEndpoint200ResponseClientsInner> response) {
         for (var result : response) {
             if (result.getScope().contains(Scopes.CUSTOMER_DATA_SCOPE)) {
                 var clientId = result.getClientId();
@@ -166,5 +155,8 @@ public class CdsClientCreationService {
             }
         }
         return Mono.error(new NoCustomerDataClientFoundException());
+    }
+
+    static class NoCustomerDataClientFoundException extends Exception {
     }
 }

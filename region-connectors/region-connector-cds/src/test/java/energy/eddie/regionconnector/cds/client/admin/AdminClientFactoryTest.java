@@ -59,4 +59,19 @@ class AdminClientFactoryTest {
         // Then
         assertThat(res).isPresent();
     }
+
+    @Test
+    void testGetTemporaryAdminClient_alwaysReturnsNewClient() {
+        // Given
+        var cdsServer = new CdsServerBuilder()
+                .setBaseUri("http://localhost:8080")
+                .build();
+
+        // When
+        var res1 = factory.getTemporaryAdminClient(cdsServer);
+        var res2 = factory.getTemporaryAdminClient(cdsServer);
+
+        // Then
+        assertThat(res1).isNotSameAs(res2);
+    }
 }
