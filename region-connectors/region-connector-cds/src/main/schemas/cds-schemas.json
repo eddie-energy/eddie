@@ -1175,6 +1175,71 @@
         }
       ]
     },
+    "ClientModification": {
+      "type": "object",
+      "properties": {
+        "redirect_uris": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "client_name": {
+          "type": "string"
+        },
+        "client_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "logo_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "contacts": {
+          "type": "array",
+          "items": {
+          }
+        },
+        "tos_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "policy_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_status": {
+          "$ref": "#/$defs/ClientStatus"
+        },
+        "cds_default_scope": {
+          "type": "string"
+        },
+        "cds_default_redirect_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_default_authorization_details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AuthorizationDetail"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "AuthorizationDetail": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
     "Accounts": {
       "description": "Clients may request to list Account objects that they have access to by making an HTTPS GET request, authenticated with a valid Bearer access_token that is scoped to provide access to a set of Accounts, to the cds_accounts_api URL included in the Client Registration Response or Clients API. The Account listing request responses are formatted as JSON objects and contain the following named values.",
       "allOf": [

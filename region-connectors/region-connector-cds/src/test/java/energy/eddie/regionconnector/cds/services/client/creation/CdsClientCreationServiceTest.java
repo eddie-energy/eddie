@@ -6,14 +6,12 @@ import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.client.admin.AdminClient;
 import energy.eddie.regionconnector.cds.client.admin.AdminClientFactory;
 import energy.eddie.regionconnector.cds.client.admin.MetadataCollection;
+import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.exceptions.CoverageNotSupportedException;
 import energy.eddie.regionconnector.cds.exceptions.OAuthNotSupportedException;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
-import energy.eddie.regionconnector.cds.openapi.model.CarbonDataSpec200Response;
-import energy.eddie.regionconnector.cds.openapi.model.ClientEndpoint200ResponseClientsInner;
-import energy.eddie.regionconnector.cds.openapi.model.Coverages200ResponseAllOfCoverageEntriesInner;
-import energy.eddie.regionconnector.cds.openapi.model.OAuthAuthorizationServer200Response;
+import energy.eddie.regionconnector.cds.openapi.model.*;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import energy.eddie.regionconnector.cds.services.client.creation.responses.CreatedCdsClientResponse;
 import energy.eddie.regionconnector.cds.services.client.creation.responses.NotACdsServerResponse;
@@ -27,6 +25,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -47,6 +46,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CdsClientCreationServiceTest {
+    @Spy
+    @SuppressWarnings("unused")
+    private final CdsConfiguration ignored = new CdsConfiguration(URI.create("http://localhost"), "EDDIE");
     @Mock
     private CdsServerRepository repository;
     @Mock
@@ -118,6 +120,8 @@ class CdsClientCreationServiceTest {
                 .scope(Scopes.CUSTOMER_DATA_SCOPE);
         when(adminClient.clients())
                 .thenReturn(Mono.just(List.of(client)));
+        when(adminClient.modifyClient(eq("client-id"), any()))
+                .thenReturn(Mono.just(new RetrievingIndividualClients200Response().clientId("client-id")));
 
         // When
         var res = clientCreationService.createOAuthClients(baseUri.toURL());

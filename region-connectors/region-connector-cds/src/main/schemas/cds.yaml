@@ -165,7 +165,44 @@ paths:
             application/json:
               schema:
                 $ref: "cds-schemas.json/#/$defs/IndividualClient"
-
+    put:
+      operationId: Modifying Clients
+      description: |
+        The URL to be used to send PUT requests for updating clients MUST be the cds_client_uri provided in the Client object.
+        If a Server has optionally implemented OAuth’s Dynamic Client Registration Management Protocol, the value of cds_client_uri MUST be the same as registration_client_uri, and access tokens issued from either a client_credentials grant with the scope client_admin or the access token provided as the registration_access_token MUST be valid access tokens to interact with the client endpoint.
+      tags:
+        - Client Registration
+      externalDocs:
+        url: https://daniel-utilityapi.github.io/Connectivity/specs/cdsc-wg1-02/#clients-modify
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: client_id
+      security:
+        - oauth:
+            - client_admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "cds-schemas.json/#/$defs/ClientModification"
+      responses:
+        200:
+          description: Client update was successful
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/IndividualClient"
+        202:
+          description: |
+            If a Server needs to asynchronously review and approve changes to any submitted Client object fields that have been submitted by the Client and are different from the current values, for valid update requests the Server MUST respond with a 202 Accepted response, which indicates that the submission was accepted but not fully saved as completed yet.
+            Any fields that have not been synchronously updated as part of the request and response MUST remain in the response as their previous values, and the Server MUST add one or more entries to the listed Messages for the modified fields that need to be asynchronously reviewed and approved.
+            Clients MAY then use the Messages API to track the asynchronous review of the modification request.
+            If all submitted fields have been synchronously updated as part of the response, Servers MUST respond with a 200 OK response.
   /api/accounts:
     get:
       operationId: Accounts Endpoint

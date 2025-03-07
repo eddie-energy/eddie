@@ -10,6 +10,7 @@ GET {{oauth_metadata}}
 
 > {%
   client.global.set("clients_endpoint", response.body.cds_clients_api)
+  client.global.set("credentials_endpoint", response.body.cds_credentials_api)
 %}
 
 ### Register Admin Client
@@ -32,9 +33,9 @@ Authorization: Bearer {{$auth.token("cds")}}
   const body = response.body
   for (let item in body.clients) {
     item = body.clients[item]
-    client.log(item)
     if (item.scope === "customer_data") {
       client.global.set("customer_client_endpoint", item.cds_client_uri)
+      client.global.set("customer_client_id", item.client_id)
       break;
     }
   }
@@ -50,6 +51,11 @@ Content-Type: application/json
     "https://localhost"
   ]
 }
+
+### GET client credentials
+GET {{credentials_endpoint}}?clients_ids={{customer_client_id}}
+Authorization: Bearer {{$auth.token("cds")}}
+
 
 ###
 GET {{cds_server}}/oauth/authorize/?

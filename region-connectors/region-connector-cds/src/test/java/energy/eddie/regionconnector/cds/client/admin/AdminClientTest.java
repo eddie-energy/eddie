@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.cds.client.admin;
 import energy.eddie.regionconnector.cds.exceptions.NoTokenException;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
+import energy.eddie.regionconnector.cds.openapi.model.ModifyingClientsRequest;
 import energy.eddie.regionconnector.cds.services.oauth.OAuthService;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithRefreshToken;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithoutRefreshToken;
@@ -208,6 +209,32 @@ class AdminClientTest {
         // When
         var res = adminClient.clients()
                              .then(Mono.defer(adminClient::clients));
+
+        // Then
+        StepVerifier.create(res)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void testModifyClient_returnsNewClient() {
+        // Given
+        when(oAuthService.retrieveAccessToken(cdsServer))
+                .thenReturn(new CredentialsWithoutRefreshToken("access-token", ZonedDateTime.now(ZoneOffset.UTC)));
+        // language=JSON
+        var client = """
+                {
+                  "clientId": "client-id"
+                }
+                """;
+
+        server.enqueue(new MockResponse()
+                               .setResponseCode(200)
+                               .addHeader("Content-Type", "application/json")
+                               .setBody(client));
+
+        // When
+        var res = adminClient.modifyClient("client-id", new ModifyingClientsRequest());
 
         // Then
         StepVerifier.create(res)

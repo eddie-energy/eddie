@@ -1,16 +1,15 @@
 package energy.eddie.regionconnector.cds.services.client.creation;
 
 import energy.eddie.regionconnector.cds.client.Scopes;
+import energy.eddie.regionconnector.cds.client.admin.AdminClient;
 import energy.eddie.regionconnector.cds.client.admin.AdminClientFactory;
 import energy.eddie.regionconnector.cds.client.admin.MetadataCollection;
+import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.exceptions.CoverageNotSupportedException;
 import energy.eddie.regionconnector.cds.exceptions.OAuthNotSupportedException;
 import energy.eddie.regionconnector.cds.master.data.CdsEndpoints;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
-import energy.eddie.regionconnector.cds.openapi.model.CarbonDataSpec200Response;
-import energy.eddie.regionconnector.cds.openapi.model.ClientEndpoint200ResponseClientsInner;
-import energy.eddie.regionconnector.cds.openapi.model.Coverages200ResponseAllOfCoverageEntriesInner;
-import energy.eddie.regionconnector.cds.openapi.model.OAuthAuthorizationServer200Response;
+import energy.eddie.regionconnector.cds.openapi.model.*;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import energy.eddie.regionconnector.cds.services.client.creation.responses.*;
 import energy.eddie.regionconnector.cds.services.oauth.OAuthService;
@@ -32,18 +31,21 @@ public class CdsClientCreationService {
     private final MetadataCollection metadataCollection;
     private final AdminClientFactory adminClientFactory;
     private final OAuthService oAuthService;
+    private final CdsConfiguration cdsConfiguration;
 
 
     public CdsClientCreationService(
             CdsServerRepository repository,
             AdminClientFactory adminClientFactory,
             MetadataCollection metadataCollection,
-            OAuthService oAuthService
+            OAuthService oAuthService,
+            CdsConfiguration cdsConfiguration
     ) {
         this.cdsServerRepository = repository;
         this.metadataCollection = metadataCollection;
         this.adminClientFactory = adminClientFactory;
         this.oAuthService = oAuthService;
+        this.cdsConfiguration = cdsConfiguration;
     }
 
     public ApiClientCreationResponse createOAuthClients(URL cdsReferenceUri) {
@@ -128,23 +130,30 @@ public class CdsClientCreationService {
                         oauthMetadata.getCdsClientsApi().toString()
                 )
         );
-        return findCustomerDataClientId(cdsServer)
-                .map(customerDataClientId -> new CdsServer(
+        var temporaryAdminClient = adminClientFactory.getTemporaryAdminClient(cdsServer);
+        var modifyingClientRequest = new ModifyingClientsRequest()
+                .addRedirectUrisItem(cdsConfiguration.redirectUrl());
+        return findCustomerDataClientId(temporaryAdminClient)
+                .flatMap(customerDataClientId -> temporaryAdminClient.modifyClient(
+                                 customerDataClientId, modifyingClientRequest
+                         )
+                )
+                .map(customerDataClient -> new CdsServer(
                         cdsServer.baseUri(),
                         cdsServer.name(),
                         cdsServer.coverages(),
                         cdsServer.adminClientId(),
                         cdsServer.adminClientSecret(),
                         cdsServer.endpoints(),
-                        customerDataClientId
+                        customerDataClient.getClientId()
                 ))
                 .map(CreatedCdsClientResponse::new);
     }
 
-    private Mono<String> findCustomerDataClientId(CdsServer cdsServer) {
-        return adminClientFactory.getTemporaryAdminClient(cdsServer)
-                                 .clients()
-                                 .flatMap(this::findCustomerDataClientCredentials);
+    private Mono<String> findCustomerDataClientId(AdminClient temporaryAdminClient) {
+        return temporaryAdminClient
+                .clients()
+                .flatMap(this::findCustomerDataClientCredentials);
     }
 
     private Mono<String> findCustomerDataClientCredentials(List<ClientEndpoint200ResponseClientsInner> response) {

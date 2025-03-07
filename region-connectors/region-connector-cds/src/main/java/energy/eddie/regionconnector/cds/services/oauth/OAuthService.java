@@ -41,7 +41,6 @@ public class OAuthService {
 
     public RegistrationResponse registerClient(URI registrationEndpoint) {
         var clientMetadata = new ClientMetadata();
-        clientMetadata.setRedirectionURI(config.redirectUrl());
         clientMetadata.setName(config.clientName());
         clientMetadata.setScope(Scope.parse(Scopes.REQUIRED_SCOPES));
 
