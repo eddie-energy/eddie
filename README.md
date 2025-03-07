@@ -32,52 +32,57 @@ The customer will usually select their country and data administrator, and input
 
 Any [status messages](https://eddie-web.projekte.fh-hagenberg.at/framework/2-integrating/messages/permission-market-documents.html) as well as the [requested data](https://eddie-web.projekte.fh-hagenberg.at/framework/2-integrating/messages/validated-historical-data-market-documents.html) are published to configured [data sinks](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/outbound-connectors/outbound-connectors.html) (like [Kafka](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/outbound-connectors/outbound-connector-kafka.html)) to be retrieved by your application.
 
-## Running EDDIE with Docker
+## Running the EDDIE Framework
 
 The recommended way of running the EDDIE Framework is using [Docker](https://www.docker.com/) containers.
 Instructions are found in the [operation manual](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/OPERATION.html).
 
-## Running EDDIE locally
-
 It is also possible to run the EDDIE Framework from source.
+The following instructions can be used to set up a local instance including our [example app](docs/1-running/example-app.md).
 
 **Prerequisites:**
 
 - Java Development Kit (JDK) Version 21 is installed
-- Node.js Version 18 with pnpm
 
 **Steps:**
 
 1. Clone the repository
-2. Start PostgreSQL and Apache Kafka: `docker compose -f .\env\docker-compose.yml up -d db kafka`
-3. Edit core/src/main/resources/application.properties and add a (random) secret for signing JWTs, e.g.
-   `eddie.jwt.hmac.secret=Y+nmICKhBcl4QbSItrf/IS9sVpUv4RMpiBtBPz0KYbM=`
-4. Start EDDIE Framework using Gradle: `./gradlew run-core`
-5. Start demo app (separate window): `./gradlew run-example-app`
-6. Open browser on demo app: <http://localhost:8081/login>
-   _login is possible with every email/password (not checked)_
-
-See [example app readme](docs/1-running/example-app.md) for further information.
-
-### Database & Kafka
-
-Be aware that EDDIE Core needs a PostgreSQL database to function properly.
-The example [docker-compose.yml](env/docker-compose.yml) contains the _db_ and _kafka_ services to be used.
+2. Start PostgreSQL and Apache Kafka: `docker compose -f ./env/docker-compose.yml up -d db kafka`
+3. Generate a secret for signing JWTs with `openssl rand -base64 32`
+4. Set the generated secret in `core/src/main/resources/application.properties`.
+   For example `eddie.jwt.hmac.secret=Y+nmICKhBcl4QbSItrf/IS9sVpUv4RMpiBtBPz0KYbM=`.
+5. Start the EDDIE Framework using Gradle: `./gradlew run-core`
+6. Start the example app: `./gradlew run-example-app`
+7. Open the example app on http://localhost:8081/login (_use any email/password_)
 
 ## Building Docker images locally
 
-Instructions on how to run the docker images locally exist in [env/README.md](env/README.md).
-To perform a local test run with compiling the software, building, and starting a local docker environment, shell scripts exist in the repository root:
+Instructions on how to run the Docker images locally exist in [env/README.md](env/README.md).
+The following instructions can be used to perform a local test run with compiling the software, building, and starting a local Docker environment.
 
-```shell
-powershell build_and_run_containers.ps1
-```
+1. Build the EDDIE Framework using Gradle:
 
-```shell
-bash build_and_run_containers.bash
-```
+   ```shell
+   ./gradlew clean installDist
+   ```
 
-Although the docker compose file and local configuration should run out of the box, EDDIE requires further configuration.
+2. Build the Docker containers:
+
+   ```shell
+   docker compose -f ./env/docker-compose.yml build
+   ```
+
+3. Start the containers with Docker Compose.
+
+   ```shell
+   docker compose -f ./env/docker-compose.yml up -d
+   ```
+
+4. The example app should be available on http://localhost:9000/prototype/main/.
+
+## Configuration
+
+Although the Docker Compose file and local configuration should run out of the box, EDDIE requires further configuration.
 Please refer to the [Configuration](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/OPERATION.html#configuration) of the operation manual.
 
 ## Contributing
