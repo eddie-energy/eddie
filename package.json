@@ -9,7 +9,7 @@
     "admin:build": "pnpm -C ./admin-console/ui run build --base=./"
   },
   "engines": {
-    "node": ">=18.14.0",
+    "node": ">=18.17.0",
     "pnpm": ">=8.5.0"
   },
   "devDependencies": {
