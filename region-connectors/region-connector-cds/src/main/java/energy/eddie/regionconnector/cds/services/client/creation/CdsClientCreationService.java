@@ -5,11 +5,15 @@ import energy.eddie.regionconnector.cds.client.admin.AdminClient;
 import energy.eddie.regionconnector.cds.client.admin.AdminClientFactory;
 import energy.eddie.regionconnector.cds.client.admin.MetadataCollection;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
+import energy.eddie.regionconnector.cds.dtos.CdsServerRedirectUriUpdate;
 import energy.eddie.regionconnector.cds.exceptions.CoverageNotSupportedException;
 import energy.eddie.regionconnector.cds.exceptions.OAuthNotSupportedException;
 import energy.eddie.regionconnector.cds.master.data.CdsEndpoints;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
-import energy.eddie.regionconnector.cds.openapi.model.*;
+import energy.eddie.regionconnector.cds.openapi.model.CarbonDataSpec200Response;
+import energy.eddie.regionconnector.cds.openapi.model.ClientEndpoint200ResponseClientsInner;
+import energy.eddie.regionconnector.cds.openapi.model.Coverages200ResponseAllOfCoverageEntriesInner;
+import energy.eddie.regionconnector.cds.openapi.model.OAuthAuthorizationServer200Response;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import energy.eddie.regionconnector.cds.services.client.creation.responses.*;
 import energy.eddie.regionconnector.cds.services.oauth.OAuthService;
@@ -127,25 +131,29 @@ public class CdsClientCreationService {
                         oauthMetadata.getTokenEndpoint().toString(),
                         oauthMetadata.getAuthorizationEndpoint().toString(),
                         oauthMetadata.getPushedAuthorizationRequestEndpoint().toString(),
-                        oauthMetadata.getCdsClientsApi().toString()
+                        oauthMetadata.getCdsClientsApi().toString(),
+                        oauthMetadata.getCdsCredentialsApi().toString()
                 )
         );
         var temporaryAdminClient = adminClientFactory.getTemporaryAdminClient(cdsServer);
-        var modifyingClientRequest = new ModifyingClientsRequest()
-                .addRedirectUrisItem(cdsConfiguration.redirectUrl());
+        var modifyingClientRequest = new CdsServerRedirectUriUpdate(List.of(cdsConfiguration.redirectUrl()));
         return findCustomerDataClientId(temporaryAdminClient)
                 .flatMap(customerDataClientId -> temporaryAdminClient.modifyClient(
                                  customerDataClientId, modifyingClientRequest
                          )
                 )
-                .map(customerDataClient -> new CdsServer(
+                .flatMap(customerDataClient -> temporaryAdminClient.credentials(
+                        customerDataClient.getClientId()
+                ))
+                .map(customerDataClients -> new CdsServer(
                         cdsServer.baseUri(),
                         cdsServer.name(),
                         cdsServer.coverages(),
                         cdsServer.adminClientId(),
                         cdsServer.adminClientSecret(),
                         cdsServer.endpoints(),
-                        customerDataClient.getClientId()
+                        customerDataClients.getCredentials().getFirst().getClientId(),
+                        customerDataClients.getCredentials().getFirst().getClientSecret()
                 ))
                 .map(CreatedCdsClientResponse::new);
     }

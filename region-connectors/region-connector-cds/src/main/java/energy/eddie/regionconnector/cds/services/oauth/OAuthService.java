@@ -79,13 +79,12 @@ public class OAuthService {
         );
     }
 
-    // TODO: Use correct credentials to push authorization request
     public ParResponse pushAuthorization(
             CdsServer cdsServer,
             List<String> scopes
     ) {
-        var clientID = new ClientID(cdsServer.adminClientId());
-        var clientSecret = new Secret(cdsServer.adminClientSecret());
+        var clientID = new ClientID(cdsServer.customerDataClientId());
+        var clientSecret = new Secret(cdsServer.customerDataClientSecret());
         var state = new State();
         var parUri = cdsServer.endpoints().pushedAuthorizationRequestEndpoint();
         var authzReq = new AuthorizationRequest.Builder(ResponseType.CODE, clientID)
@@ -146,7 +145,6 @@ public class OAuthService {
      * @param cdsServer the cds server that the user belongs to
      * @return the result of the token request
      */
-    // TODO: Use correct credentials to request token
     public TokenResult retrieveAccessToken(
             String authCode,
             CdsServer cdsServer
@@ -155,10 +153,12 @@ public class OAuthService {
         var callback = config.redirectUrl();
         var codeGrant = new AuthorizationCodeGrant(code, callback);
         var clientID = new ClientID(cdsServer.customerDataClientId());
+        var clientSecret = new Secret(cdsServer.customerDataClientSecret());
+        var clientCreds = new ClientSecretBasic(clientID, clientSecret);
 
         var tokenEndpoint = cdsServer.endpoints().tokenEndpoint();
 
-        var request = new TokenRequest(tokenEndpoint, clientID, codeGrant);
+        var request = new TokenRequest(tokenEndpoint, clientCreds, codeGrant);
 
         return sendAccessTokenRequest(request);
     }

@@ -100,6 +100,7 @@ class CdsClientCreationServiceTest {
                         .grantTypesSupported(List.of("authorization_code", "refresh_token"))
                         .registrationEndpoint(baseUri)
                         .cdsClientsApi(baseUri)
+                        .cdsCredentialsApi(baseUri)
                         .pushedAuthorizationRequestEndpoint(baseUri),
                 List.of(
                         new Coverages200ResponseAllOfCoverageEntriesInner()
@@ -122,6 +123,12 @@ class CdsClientCreationServiceTest {
                 .thenReturn(Mono.just(List.of(client)));
         when(adminClient.modifyClient(eq("client-id"), any()))
                 .thenReturn(Mono.just(new RetrievingIndividualClients200Response().clientId("client-id")));
+        var credentialResponse = new ListingCredentials200Response()
+                .addCredentialsItem(new ListingCredentials200ResponseCredentialsInner()
+                                            .clientId("client-id")
+                                            .clientSecret("client-secret"));
+        when(adminClient.credentials("client-id"))
+                .thenReturn(Mono.just(credentialResponse));
 
         // When
         var res = clientCreationService.createOAuthClients(baseUri.toURL());
@@ -156,6 +163,7 @@ class CdsClientCreationServiceTest {
                         .grantTypesSupported(List.of("authorization_code", "refresh_token"))
                         .registrationEndpoint(baseUri)
                         .cdsClientsApi(baseUri)
+                        .cdsCredentialsApi(baseUri)
                         .pushedAuthorizationRequestEndpoint(baseUri),
                 List.of(
                         new Coverages200ResponseAllOfCoverageEntriesInner()

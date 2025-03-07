@@ -1,9 +1,10 @@
 package energy.eddie.regionconnector.cds.client.admin;
 
+import energy.eddie.regionconnector.cds.dtos.CdsServerRedirectUriUpdate;
 import energy.eddie.regionconnector.cds.exceptions.NoTokenException;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
-import energy.eddie.regionconnector.cds.openapi.model.ModifyingClientsRequest;
+import energy.eddie.regionconnector.cds.openapi.model.ListingCredentials200ResponseCredentialsInner;
 import energy.eddie.regionconnector.cds.services.oauth.OAuthService;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithRefreshToken;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithoutRefreshToken;
@@ -29,6 +30,7 @@ import reactor.test.StepVerifier;
 import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +46,7 @@ class AdminClientTest {
     @Spy
     private final CdsServer cdsServer = new CdsServerBuilder()
             .setClientsEndpoint(basepath)
+            .setCredentialsEndpoint(basepath)
             .setAdminClientId("client-id")
             .setAdminClientSecret("client-secret")
             .build();
@@ -234,11 +237,55 @@ class AdminClientTest {
                                .setBody(client));
 
         // When
-        var res = adminClient.modifyClient("client-id", new ModifyingClientsRequest());
+        var res = adminClient.modifyClient("client-id", new CdsServerRedirectUriUpdate(List.of()));
 
         // Then
         StepVerifier.create(res)
                     .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void testCredentials_returnsCredentials() {
+        // Given
+        when(oAuthService.retrieveAccessToken(cdsServer))
+                .thenReturn(new CredentialsWithoutRefreshToken("access-token", ZonedDateTime.now(ZoneOffset.UTC)));
+        // language=JSON
+        var body = """
+                {
+                  "credentials": [
+                    {
+                      "client_id": "client-id",
+                      "client_secret": "secret",
+                      "client_secret_expires_at": 0,
+                      "created": "2025-03-06T09:01:25.085033+00:00",
+                      "credential_id": "b7b1edf0-fb17-48bc-926b-bfcc9731fc08",
+                      "modified": "2025-03-06T09:01:25.085042+00:00",
+                      "type": "client_secret",
+                      "uri": "https://s-1cd67f6d.cds.utilityapi.com/api/cds/v1/credentials/client-id"
+                    }
+                  ],
+                  "next": null,
+                  "previous": null
+                }
+                """;
+        server.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader("Content-Type", "application/json")
+                        .setBody(body)
+        );
+
+        // When
+        var res = adminClient.credentials("client-id");
+
+        // Then
+        StepVerifier.create(res)
+                    .assertNext(creds -> assertThat(creds.getCredentials())
+                            .singleElement()
+                            .extracting(ListingCredentials200ResponseCredentialsInner::getClientId,
+                                        ListingCredentials200ResponseCredentialsInner::getClientSecret)
+                            .isEqualTo(List.of("client-id", "secret")))
                     .verifyComplete();
     }
 }

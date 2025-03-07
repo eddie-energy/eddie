@@ -33,6 +33,8 @@ public class CdsServer {
     private final CdsEndpoints endpoints;
     @Column(name = "customer_data_client_id", nullable = false)
     private final String customerDataClientId;
+    @Column(name = "customer_data_client_secret", nullable = false)
+    private final String customerDataClientSecret;
 
     @SuppressWarnings({"NullAway", "java:S107"})
     public CdsServer(
@@ -43,9 +45,11 @@ public class CdsServer {
             String adminClientSecret,
             CdsEndpoints endpoints
     ) {
-        this(null, baseUri, name, coverages, adminClientId, adminClientSecret, endpoints, null);
+        this(null, baseUri, name, coverages, adminClientId, adminClientSecret, endpoints, null, null);
     }
 
+    @SuppressWarnings("java:S107")
+    // To not query the CDS api everytime credentials or endpoints are needed, they are saved in the CDS Server
     public CdsServer(
             String baseUri,
             String name,
@@ -53,9 +57,18 @@ public class CdsServer {
             String adminClientId,
             String adminClientSecret,
             CdsEndpoints endpoints,
-            String customerDataClientId
+            String customerDataClientId,
+            String customerDataClientSecret
     ) {
-        this(null, baseUri, name, coverages, adminClientId, adminClientSecret, endpoints, customerDataClientId);
+        this(null,
+             baseUri,
+             name,
+             coverages,
+             adminClientId,
+             adminClientSecret,
+             endpoints,
+             customerDataClientId,
+             customerDataClientSecret);
     }
 
     @SuppressWarnings("java:S107")
@@ -67,7 +80,8 @@ public class CdsServer {
             String adminClientId,
             String adminClientSecret,
             CdsEndpoints endpoints,
-            String customerDataClientId
+            String customerDataClientId,
+            String customerDataClientSecret
     ) {
         this.id = id;
         this.baseUri = baseUri;
@@ -77,6 +91,7 @@ public class CdsServer {
         this.adminClientSecret = adminClientSecret;
         this.endpoints = endpoints;
         this.customerDataClientId = customerDataClientId;
+        this.customerDataClientSecret = customerDataClientSecret;
     }
 
     @SuppressWarnings("NullAway")
@@ -89,6 +104,7 @@ public class CdsServer {
         adminClientSecret = null;
         endpoints = null;
         customerDataClientId = null;
+        customerDataClientSecret = null;
     }
 
     public String baseUri() {
@@ -129,5 +145,9 @@ public class CdsServer {
 
     public String customerDataClientId() {
         return customerDataClientId;
+    }
+
+    public String customerDataClientSecret() {
+        return customerDataClientSecret;
     }
 }

@@ -44,6 +44,8 @@ class OAuthServiceTest {
                                           .setCoverages(Set.of())
                                           .setAdminClientId("client-id")
                                           .setAdminClientSecret("client-secret")
+                                          .setCustomerDataClientId("client-id")
+                                          .setCustomerDataClientSecret("client-secret")
                                           .setCustomerDataClientId("customer-data-client-id")
                                           .setTokenEndpoint(mockWebServer.url("/").toString())
                                           .setAuthorizationEndpoint("http://localhost")

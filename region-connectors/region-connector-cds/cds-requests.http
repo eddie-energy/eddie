@@ -53,7 +53,7 @@ Content-Type: application/json
 }
 
 ### GET client credentials
-GET {{credentials_endpoint}}?clients_ids={{customer_client_id}}
+GET {{credentials_endpoint}}?client_ids={{customer_client_id}}
 Authorization: Bearer {{$auth.token("cds")}}
 
 

@@ -203,6 +203,48 @@ paths:
             Any fields that have not been synchronously updated as part of the request and response MUST remain in the response as their previous values, and the Server MUST add one or more entries to the listed Messages for the modified fields that need to be asynchronously reviewed and approved.
             Clients MAY then use the Messages API to track the asynchronous review of the modification request.
             If all submitted fields have been synchronously updated as part of the response, Servers MUST respond with a 200 OK response.
+  /api/credentials:
+    get:
+      operationId: Listing Credentials
+      description: |
+        Clients may request to list Credential objects that they have access to by making an HTTPS GET request, authenticated with a valid Bearer access_token scoped to the client_admin scope, to the cds_credentials_api URL included in the Client Registration Response or Clients API.
+      tags:
+        - Client Registration
+      externalDocs:
+        url: https://daniel-utilityapi.github.io/Connectivity/specs/cdsc-wg1-02/#credentials-list
+      parameters:
+        - in: query
+          name: credential_ids
+          schema:
+            type: string
+          description: A space-separated list of credential_id values for which the Servers MUST filter the Credentials.
+        - in: query
+          name: client_ids
+          schema:
+            type: string
+          description: A space-separated list of client_id values for which the Servers MUST filter the Credentials.
+        - in: query
+          name: after
+          schema:
+            type: datetime
+          description: A datetime for which the Server MUST filter Credentials that were created after or on the datetime.
+        - in: query
+          name: before
+          schema:
+            type: datetime
+          description: A datetime for which the Server MUST filter Credentials that were created before or on the datetime.
+      security:
+        - oauth:
+            - client_admin
+      responses:
+        200:
+          description: List of credentials
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/Credentials"
+
+
   /api/accounts:
     get:
       operationId: Accounts Endpoint

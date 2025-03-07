@@ -1,10 +1,11 @@
 package energy.eddie.regionconnector.cds.client.admin;
 
+import energy.eddie.regionconnector.cds.dtos.CdsServerRedirectUriUpdate;
 import energy.eddie.regionconnector.cds.exceptions.NoTokenException;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.openapi.model.ClientEndpoint200Response;
 import energy.eddie.regionconnector.cds.openapi.model.ClientEndpoint200ResponseClientsInner;
-import energy.eddie.regionconnector.cds.openapi.model.ModifyingClientsRequest;
+import energy.eddie.regionconnector.cds.openapi.model.ListingCredentials200Response;
 import energy.eddie.regionconnector.cds.openapi.model.RetrievingIndividualClients200Response;
 import energy.eddie.regionconnector.cds.services.oauth.OAuthService;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithRefreshToken;
@@ -13,6 +14,7 @@ import energy.eddie.regionconnector.cds.services.oauth.token.InvalidTokenResult;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
@@ -21,6 +23,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class AdminClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminClient.class);
@@ -48,15 +51,35 @@ public class AdminClient {
                 .collectList();
     }
 
-    public Mono<RetrievingIndividualClients200Response> modifyClient(String clientId, ModifyingClientsRequest request) {
+    public Mono<RetrievingIndividualClients200Response> modifyClient(
+            String clientId,
+            CdsServerRedirectUriUpdate request
+    ) {
         return refreshTokenAsync()
-                .flatMap(token -> modifyClient(clientId, request, token))
-                .doOnError(err -> LOGGER.error("Error modifying client {}", clientId, err));
+                .flatMap(token -> modifyClient(clientId, request, token));
+    }
+
+    public Mono<ListingCredentials200Response> credentials(String clientId) {
+        return refreshTokenAsync()
+                .flatMap(token -> credentials(clientId, token));
+    }
+
+    private Mono<ListingCredentials200Response> credentials(String clientId, CredentialsWithoutRefreshToken token) {
+        return webClient.get()
+                        .uri(
+                                cdsServer.endpoints().credentialsEndpoint().toString(),
+                                builder -> builder
+                                        .queryParam("client_ids", clientId)
+                                        .build()
+                        )
+                        .headers(setBearerToken(token))
+                        .retrieve()
+                        .bodyToMono(ListingCredentials200Response.class);
     }
 
     private Mono<RetrievingIndividualClients200Response> modifyClient(
             String clientId,
-            ModifyingClientsRequest request,
+            CdsServerRedirectUriUpdate request,
             CredentialsWithoutRefreshToken token
     ) {
         var requestUri = UriComponentsBuilder.fromUri(cdsServer.endpoints().clientsEndpoint())
@@ -65,16 +88,17 @@ public class AdminClient {
                                              .toUri();
         return webClient.put()
                         .uri(requestUri)
-                        .headers(header -> header.setBearerAuth(token.accessToken()))
+                        .headers(setBearerToken(token))
                         .bodyValue(request)
                         .retrieve()
-                        .bodyToMono(RetrievingIndividualClients200Response.class);
+                        .bodyToMono(RetrievingIndividualClients200Response.class)
+                        .doOnSuccess(body -> LOGGER.info("Modified client {}", body));
     }
 
     private Flux<ClientEndpoint200Response> expandedClients(CredentialsWithoutRefreshToken token, URI next) {
         return webClient.get()
                         .uri(next)
-                        .headers(header -> header.setBearerAuth(token.accessToken()))
+                        .headers(setBearerToken(token))
                         .retrieve()
                         .bodyToMono(ClientEndpoint200Response.class)
                         .expand(res -> {
@@ -113,5 +137,9 @@ public class AdminClient {
                 sink.error(e);
             }
         });
+    }
+
+    private static Consumer<HttpHeaders> setBearerToken(CredentialsWithoutRefreshToken token) {
+        return h -> h.setBearerAuth(token.accessToken());
     }
 }
