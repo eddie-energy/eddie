@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <!-- Page Type -->
+    <xs:complexType name="Page">
+        <xs:sequence>
+            <xs:element name="next" type="xs:anyURI" minOccurs="0"/>
+            <xs:element name="previous" type="xs:anyURI" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Account Type -->
+    <xs:complexType name="Account">
+        <xs:sequence>
+            <xs:element name="cds_account_id" type="xs:string"/>
+            <xs:element name="cds_created" type="xs:dateTime"/>
+            <xs:element name="cds_modified" type="xs:dateTime"/>
+            <xs:element name="cds_account_parent" type="xs:string" minOccurs="0"/>
+            <xs:element name="customer_number" type="xs:string" minOccurs="0"/>
+            <xs:element name="account_number" type="xs:string"/>
+            <xs:element name="account_name" type="xs:string" minOccurs="0"/>
+            <xs:element name="account_address" type="xs:string" minOccurs="0"/>
+            <xs:element name="account_type" type="xs:string"/>
+            <xs:element name="account_contacts" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="type" type="xs:string"/>
+                        <xs:element name="value" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Accounts Wrapper Type -->
+    <xs:complexType name="Accounts">
+        <xs:complexContent>
+            <xs:extension base="Page">
+                <xs:sequence>
+                    <xs:element name="accounts" type="Account" minOccurs="1" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- UsageSegment Type -->
+    <xs:complexType name="UsageSegment">
+        <xs:sequence>
+            <xs:element name="cds_usagesegment_id" type="xs:string"/>
+            <xs:element name="cds_created" type="xs:dateTime"/>
+            <xs:element name="cds_modified" type="xs:dateTime"/>
+            <xs:element name="related_aggregations" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="related_accounts" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="related_servicecontracts" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="related_servicepoints" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="related_meterdevices" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="related_billsections" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="segment_start" type="xs:dateTime"/>
+            <xs:element name="segment_end" type="xs:dateTime"/>
+            <xs:element name="interval" type="xs:decimal"/>
+            <xs:element name="format" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="values" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="value_set" type="xs:decimal" minOccurs="1" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- UsageSegments Wrapper Type -->
+    <xs:complexType name="UsageSegments">
+        <xs:complexContent>
+            <xs:extension base="Page">
+                <xs:sequence>
+                    <xs:element name="usage_segments" type="UsageSegment" minOccurs="1" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+</xs:schema>

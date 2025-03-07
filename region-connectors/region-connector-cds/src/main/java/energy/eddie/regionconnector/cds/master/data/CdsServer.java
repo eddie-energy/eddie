@@ -19,32 +19,79 @@ public class CdsServer {
     @ElementCollection
     @CollectionTable(
             name = "coverage",
-            joinColumns = @JoinColumn(name = "cds_server_id")
+            joinColumns = @JoinColumn(name = "cds_server_id"),
+            schema = "cds"
     )
+    @Column(name = "energy_type")
     @Enumerated(EnumType.STRING)
     private final Set<EnergyType> coverages;
-    @Column(name = "client_id", nullable = false)
-    private final String clientId;
-    @Column(name = "client_secret", nullable = false)
-    private final String clientSecret;
+    @Column(name = "admin_client_id", nullable = false)
+    private final String adminClientId;
+    @Column(name = "admin_client_secret", nullable = false)
+    private final String adminClientSecret;
+    @Embedded
+    private final CdsEndpoints endpoints;
+    @Column(name = "customer_data_client_id", nullable = false)
+    private final String customerDataClientId;
+    @Column(name = "customer_data_client_secret", nullable = false)
+    private final String customerDataClientSecret;
 
-    @SuppressWarnings("NullAway")
-    public CdsServer(String baseUri, String name, Set<EnergyType> coverages, String clientId, String clientSecret) {
-        id = null;
-        this.baseUri = baseUri;
-        this.name = name;
-        this.coverages = coverages;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
+    @SuppressWarnings({"NullAway", "java:S107"})
+    public CdsServer(
+            String baseUri,
+            String name,
+            Set<EnergyType> coverages,
+            String adminClientId,
+            String adminClientSecret,
+            CdsEndpoints endpoints
+    ) {
+        this(null, baseUri, name, coverages, adminClientId, adminClientSecret, endpoints, null, null);
     }
 
-    CdsServer(Long id, String baseUri, String name, Set<EnergyType> coverages, String clientId, String clientSecret) {
+    @SuppressWarnings("java:S107")
+    // To not query the CDS api everytime credentials or endpoints are needed, they are saved in the CDS Server
+    public CdsServer(
+            String baseUri,
+            String name,
+            Set<EnergyType> coverages,
+            String adminClientId,
+            String adminClientSecret,
+            CdsEndpoints endpoints,
+            String customerDataClientId,
+            String customerDataClientSecret
+    ) {
+        this(null,
+             baseUri,
+             name,
+             coverages,
+             adminClientId,
+             adminClientSecret,
+             endpoints,
+             customerDataClientId,
+             customerDataClientSecret);
+    }
+
+    @SuppressWarnings("java:S107")
+    CdsServer(
+            Long id,
+            String baseUri,
+            String name,
+            Set<EnergyType> coverages,
+            String adminClientId,
+            String adminClientSecret,
+            CdsEndpoints endpoints,
+            String customerDataClientId,
+            String customerDataClientSecret
+    ) {
         this.id = id;
         this.baseUri = baseUri;
         this.name = name;
         this.coverages = coverages;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
+        this.adminClientId = adminClientId;
+        this.adminClientSecret = adminClientSecret;
+        this.endpoints = endpoints;
+        this.customerDataClientId = customerDataClientId;
+        this.customerDataClientSecret = customerDataClientSecret;
     }
 
     @SuppressWarnings("NullAway")
@@ -53,8 +100,11 @@ public class CdsServer {
         baseUri = null;
         name = null;
         coverages = null;
-        clientId = null;
-        clientSecret = null;
+        adminClientId = null;
+        adminClientSecret = null;
+        endpoints = null;
+        customerDataClientId = null;
+        customerDataClientSecret = null;
     }
 
     public String baseUri() {
@@ -73,15 +123,31 @@ public class CdsServer {
         return coverages;
     }
 
-    public String id() {
+    public String idAsString() {
         return Objects.toString(id);
     }
 
-    public String clientId() {
-        return clientId;
+    public Long id() {
+        return id;
     }
 
-    public String clientSecret() {
-        return clientSecret;
+    public String adminClientId() {
+        return adminClientId;
+    }
+
+    public String adminClientSecret() {
+        return adminClientSecret;
+    }
+
+    public CdsEndpoints endpoints() {
+        return endpoints;
+    }
+
+    public String customerDataClientId() {
+        return customerDataClientId;
+    }
+
+    public String customerDataClientSecret() {
+        return customerDataClientSecret;
     }
 }

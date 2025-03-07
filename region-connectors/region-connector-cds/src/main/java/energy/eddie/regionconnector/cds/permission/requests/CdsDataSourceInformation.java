@@ -1,19 +1,23 @@
 package energy.eddie.regionconnector.cds.permission.requests;
 
 import energy.eddie.api.agnostic.DataSourceInformation;
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+
+import java.util.Objects;
 
 import static energy.eddie.regionconnector.cds.CdsRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 @Embeddable
 public class CdsDataSourceInformation implements DataSourceInformation {
-    private final String cdsServerName;
+    @Column(name = "cds_server_id")
+    private final long cdsServerId;
 
-    public CdsDataSourceInformation(String cdsServerName) {this.cdsServerName = cdsServerName;}
+    public CdsDataSourceInformation(long cdsServerId) {this.cdsServerId = cdsServerId;}
 
     @SuppressWarnings("NullAway")
     protected CdsDataSourceInformation() {
-        cdsServerName = null;
+        cdsServerId = 0;
     }
 
     @Override
@@ -28,11 +32,15 @@ public class CdsDataSourceInformation implements DataSourceInformation {
 
     @Override
     public String meteredDataAdministratorId() {
-        return cdsServerName;
+        return Objects.toString(cdsServerId);
     }
 
     @Override
     public String permissionAdministratorId() {
-        return cdsServerName;
+        return meteredDataAdministratorId();
+    }
+
+    public Long cdsServerId() {
+        return cdsServerId;
     }
 }

@@ -9,12 +9,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CdsServerTest {
     @Test
-    void testId_returnsCorrectId() {
+    void testId_returnsCorrectIdAsString() {
         // Given
-        var cdsServer = new CdsServer(1L, "http://localhost", "CDS Server", Set.of(EnergyType.ELECTRICITY), "client-id", "client-secret");
+        var cdsServer = new CdsServerBuilder().setId(1L)
+                                              .setBaseUri("http://localhost")
+                                              .setName("CDS Server")
+                                              .setCoverages(Set.of(EnergyType.ELECTRICITY))
+                                              .setAdminClientId("client-id")
+                                              .setAdminClientSecret("client-secret")
+                                              .setTokenEndpoint("http://localhost")
+                                              .setAuthorizationEndpoint(null)
+                                              .setParEndpoint(null)
+                                              .build();
 
         // When
-        var res = cdsServer.id();
+        var res = cdsServer.idAsString();
 
         // Then
         assertEquals("1", res);
@@ -23,7 +32,16 @@ class CdsServerTest {
     @Test
     void testDisplayName_returnsCorrectDisplayName() {
         // Given
-        var cdsServer = new CdsServer(1L, "http://localhost", "CDS Server", Set.of(EnergyType.ELECTRICITY), "client-id", "client-secret");
+        var cdsServer = new CdsServerBuilder().setId(1L)
+                                              .setBaseUri("http://localhost")
+                                              .setName("CDS Server")
+                                              .setCoverages(Set.of(EnergyType.ELECTRICITY))
+                                              .setAdminClientId("client-id")
+                                              .setAdminClientSecret("client-secret")
+                                              .setTokenEndpoint("http://localhost")
+                                              .setAuthorizationEndpoint(null)
+                                              .setParEndpoint(null)
+                                              .build();
 
         // When
         var res = cdsServer.displayName();

@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.cds.permission.requests;
 
-import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.persistence.*;
@@ -9,6 +8,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 @Entity
+@Table(name = "permission_request", schema = "cds")
 public class CdsPermissionRequest implements PermissionRequest {
     @Id
     @Column(name = "permission_id")
@@ -28,6 +28,9 @@ public class CdsPermissionRequest implements PermissionRequest {
     private final LocalDate dataStart;
     @Column(name = "data_end")
     private final LocalDate dataEnd;
+    @Column(name = "state")
+    @SuppressWarnings("unused")
+    private final String state;
 
 
     @SuppressWarnings("java:S107")
@@ -36,10 +39,11 @@ public class CdsPermissionRequest implements PermissionRequest {
             String connectionId,
             String dataNeedId,
             PermissionProcessStatus status,
-            String cdsServer,
+            long cdsServer,
             ZonedDateTime created,
             LocalDate dataStart,
-            LocalDate dataEnd
+            LocalDate dataEnd,
+            String state
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -49,6 +53,7 @@ public class CdsPermissionRequest implements PermissionRequest {
         this.dataStart = dataStart;
         this.dataEnd = dataEnd;
         dataSourceInformation = new CdsDataSourceInformation(cdsServer);
+        this.state = state;
     }
 
     @SuppressWarnings("NullAway")
@@ -61,6 +66,7 @@ public class CdsPermissionRequest implements PermissionRequest {
         created = null;
         dataStart = null;
         dataEnd = null;
+        state = null;
     }
 
     @Override
@@ -84,7 +90,7 @@ public class CdsPermissionRequest implements PermissionRequest {
     }
 
     @Override
-    public DataSourceInformation dataSourceInformation() {
+    public CdsDataSourceInformation dataSourceInformation() {
         return dataSourceInformation;
     }
 

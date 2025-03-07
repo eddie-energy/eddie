@@ -1,7 +1,9 @@
 package energy.eddie.regionconnector.cds.client;
 
-import energy.eddie.regionconnector.cds.config.CdsConfiguration;
-import energy.eddie.regionconnector.cds.openapi.model.*;
+import energy.eddie.regionconnector.cds.openapi.model.CarbonDataSpec200Response;
+import energy.eddie.regionconnector.cds.openapi.model.Coverages200Response;
+import energy.eddie.regionconnector.cds.openapi.model.Coverages200ResponseAllOfCoverageEntriesInner;
+import energy.eddie.regionconnector.cds.openapi.model.OAuthAuthorizationServer200Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -18,11 +20,9 @@ public class CdsPublicApis {
     private static final Logger LOGGER = LoggerFactory.getLogger(CdsPublicApis.class);
     private static final String CDS_METADATA_ENDPOINT = "/.well-known/carbon-data-spec.json";
     private final WebClient webClient;
-    private final CdsConfiguration cdsConfiguration;
 
-    public CdsPublicApis(WebClient webClient, CdsConfiguration cdsConfiguration) {
+    public CdsPublicApis(WebClient webClient) {
         this.webClient = webClient;
-        this.cdsConfiguration = cdsConfiguration;
     }
 
     public Mono<CarbonDataSpec200Response> carbonDataSpec(URI baseUrl) {
@@ -33,8 +33,8 @@ public class CdsPublicApis {
         LOGGER.info("Requesting carbon data spec from {}", cdsUrl);
         return webClient.get()
                         .uri(cdsUrl)
-                .retrieve()
-                .bodyToMono(CarbonDataSpec200Response.class);
+                        .retrieve()
+                        .bodyToMono(CarbonDataSpec200Response.class);
     }
 
     public Mono<OAuthAuthorizationServer200Response> oauthMetadataSpec(URI oauthMetadataEndpoint) {
@@ -42,17 +42,6 @@ public class CdsPublicApis {
                         .uri(oauthMetadataEndpoint)
                         .retrieve()
                         .bodyToMono(OAuthAuthorizationServer200Response.class);
-    }
-
-    public Mono<OAuthClientRegistration200Response> createOAuthClient(URI oauthRegistrationEndpoint) {
-        var body = new OAuthClientRegistrationRequest()
-                .addRedirectUrisItem(cdsConfiguration.redirectUrl())
-                .scope(String.join(" ", Scopes.REQUIRED_SCOPES));
-        return webClient.post()
-                        .uri(oauthRegistrationEndpoint)
-                        .bodyValue(body)
-                        .retrieve()
-                        .bodyToMono(OAuthClientRegistration200Response.class);
     }
 
     public Mono<List<Coverages200ResponseAllOfCoverageEntriesInner>> coverage(URI coverage) {

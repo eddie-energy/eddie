@@ -179,6 +179,22 @@
         "introspection_endpoint": {
           "type": "string",
           "format": "uri"
+        },
+        "issuer": {
+          "type": "string",
+          "format": "uri"
+        },
+        "authorization_endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "token_endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "jwks_uri": {
+          "type": "string",
+          "format": "uri"
         }
       },
       "required": [
@@ -188,10 +204,26 @@
         "op_policy_uri",
         "op_tos_uri",
         "revocation_endpoint",
-        "introspection_endpoint",
         "code_challenge_methods_supported",
-        "token_endpoint"
+        "introspection_endpoint",
+        "issuer",
+        "authorization_endpoint"
       ],
+      "if": {
+        "not": {
+          "grant_types_supported": {
+            "type": "array",
+            "const": [
+              "implicit"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "token_endpoint"
+        ]
+      },
       "allOf": [
         {
           "$ref": "#/$defs/OAuthCDSValues"
@@ -802,27 +834,13 @@
           "description": "Where to submit modifications using the Clients API Modifying Clients functionality. Servers MUST make this URL unique for each Client object."
         },
         "cds_status": {
-          "type": "string",
+          "$ref": "#/$defs/ClientStatus",
           "description": "The current status of availability for this Client."
         },
         "cds_status_options": {
           "type": "array",
           "items": {
-            "type": "string",
-            "oneOf": [
-              {
-                "const": "production",
-                "description": "The Client object MAY be used on the Server’s production systems. For scopes that require user authorization (e.g. response_type values of code), this cds_status indicates that the Client may request authorization from real users."
-              },
-              {
-                "const": "sandbox",
-                "description": "The Client object MAY be used to request access on the Server’s test environment systems. For scopes that require user authorization (i.e. response_type values of code), this cds_status indicates that the Client may request authorization from fictional test users, as provided in the Server’s cds_test_accounts documentation."
-              },
-              {
-                "const": "disabled",
-                "description": "The Client is is disabled."
-              }
-            ]
+            "$ref": "#/$defs/ClientStatus"
           },
           "description": "What cds_status values the Client MAY change to when modifying it. For Client objects with the client_admin scope, this list MUST NOT contain 'disabled'. For all other Client objects, this list MUST contain at least 'disabled', so that Clients MAY opt to disable Client objects as needed."
         },
@@ -884,6 +902,14 @@
         {
           "$ref": "#/$defs/ClientMetadataExtension"
         }
+      ]
+    },
+    "ClientStatus": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox",
+        "disabled"
       ]
     },
     "CdsEndpoints": {
@@ -1119,7 +1145,7 @@
     "Clients": {
       "type": "object",
       "properties": {
-        "results": {
+        "clients": {
           "type": "array",
           "items": {
             "allOf": [
@@ -1131,7 +1157,7 @@
         }
       },
       "required": [
-        "results"
+        "clients"
       ],
       "allOf": [
         {
@@ -1140,14 +1166,162 @@
       ]
     },
     "IndividualClient": {
+      "properties": {
+        "client_secret": false
+      },
       "allOf": [
         {
-          "$ref": "#/$defs/Client",
-          "properties": {
-            "client_secret": false
-          }
+          "$ref": "#/$defs/Client"
         }
       ]
+    },
+    "ClientModification": {
+      "type": "object",
+      "properties": {
+        "redirect_uris": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "client_name": {
+          "type": "string"
+        },
+        "client_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "logo_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "contacts": {
+          "type": "array",
+          "items": {
+          }
+        },
+        "tos_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "policy_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_status": {
+          "$ref": "#/$defs/ClientStatus"
+        },
+        "cds_default_scope": {
+          "type": "string"
+        },
+        "cds_default_redirect_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_default_authorization_details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AuthorizationDetail"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "AuthorizationDetail": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Credentials": {
+      "properties": {
+        "credentials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ScopeCredential"
+          },
+          "description": "A list of Credentials to which the requesting access_token is scoped to have access. If no Credentials are accessible, this value is an empty list ([]). If more than 100 sCredentials are available to be listed, Servers MAY truncate the list and use the next value to link to the next segment of the list of Credentials."
+        }
+      },
+      "allOf": [
+        {
+          "$ref": "#/$defs/Page"
+        }
+      ],
+      "required": [
+        "credentials"
+      ]
+    },
+    "ScopeCredential": {
+      "type": "object",
+      "properties": {
+        "credential_id": {
+          "type": "string",
+          "description": "The unique identifier for the Credential on the Server’s system."
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where to retrieve, modify, or delete this specific Credential object."
+        },
+        "client_id": {
+          "type": "string",
+          "description": "Which Client this Credential belongs to."
+        },
+        "created": {
+          "type": "string",
+          "format": "datetime",
+          "description": "When the Credential was created."
+        },
+        "modified": {
+          "type": "string",
+          "format": "datetime",
+          "description": "When the Credential was last modified."
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "client_secret"
+          ],
+          "description": "The type of credential."
+        },
+        "client_secret": {
+          "type": "string",
+          "description": "A sufficiently random value generated by the Server that can be used by the Client to authenticate themselves when obtaining an access_token from the Server’s OAuth token endpoint. This field MUST be included if the type is client_secret."
+        },
+        "client_secret_expires_at": {
+          "type": "integer",
+          "description": "The timestamp at which the client_secret will expire, as defined in OAuth’s Client Information Response. If the Client object refrenced by the client_id has a status of disabled, this value MUST be set to the time when the Client object was most recently disabled. This field MUST be included if the type is client_secret."
+        }
+      },
+      "required": [
+        "credential_id",
+        "uri",
+        "client_id",
+        "created",
+        "modified",
+        "type"
+      ],
+      "if": {
+        "properties": {
+          "type": {
+            "const": "client_secret"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "client_secret",
+          "client_secret_expires_at"
+        ]
+      }
     },
     "Accounts": {
       "description": "Clients may request to list Account objects that they have access to by making an HTTPS GET request, authenticated with a valid Bearer access_token that is scoped to provide access to a set of Accounts, to the cds_accounts_api URL included in the Client Registration Response or Clients API. The Account listing request responses are formatted as JSON objects and contain the following named values.",
@@ -1499,7 +1673,10 @@
           "description": "URL to the previous page of results"
         }
       },
-      "additionalProperties": false
+      "required": [
+        "next",
+        "previous"
+      ]
     }
   }
 }

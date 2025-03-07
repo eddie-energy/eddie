@@ -108,10 +108,14 @@ class CdsMasterDataTest {
                 .contains(expected);
     }
     private static CdsServer createCdsServer() {
-        return new CdsServer("http://localhost",
-                             "CDS Server",
-                             Set.of(EnergyType.ELECTRICITY),
-                             "client-id",
-                             "client-secret");
+        return new CdsServerBuilder().setBaseUri("http://localhost")
+                                     .setName("CDS Server")
+                                     .setCoverages(Set.of(EnergyType.ELECTRICITY))
+                                     .setAdminClientId("client-id")
+                                     .setAdminClientSecret("client-secret")
+                                     .setTokenEndpoint("http://localhost")
+                                     .setAuthorizationEndpoint(null)
+                                     .setParEndpoint(null)
+                                     .build();
     }
 }

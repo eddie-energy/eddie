@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":data-needs"))
     implementation(project(":region-connectors:shared"))
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.thymeleaf)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.webflux)
@@ -35,6 +36,8 @@ dependencies {
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.databind.nullable)
     implementation(libs.jakarta.annotation.api)
+
+    implementation(libs.nimbus.oidc)
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.reactor.test)
