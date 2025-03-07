@@ -9,10 +9,12 @@ See https://cds.utilityapi.com/en/
 The region connector needs a set of configuration values to be able to function correctly, how you provide these values
 depends on the way you deploy the region connector.
 
-| Configuration values                | Description                         |
-|-------------------------------------|-------------------------------------|
-| `region-connector.cds.enabled`      | Enables the region connector        |
-| `region-connector.cds.redirect-url` | The redirect url for the OAuth flow |
+| Configuration values                | Description                                                                                                                                                                                                                   |
+|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `region-connector.cds.enabled`      | Enables the region connector                                                                                                                                                                                                  |
+| `region-connector.cds.redirect-url` | The redirect url for the OAuth flow. The redirect url will be used when new CDS servers are registered. *Should not be changed after oauth clients have been created!*                                                        |
+| `region-connector.cds.client-name`  | The name that will be used for OAuth clients when a new CDS server is registered.                                                                                                                                             |
+| `region-connector.cds.par.enabled`  | Either `true` or `false` defaults to `false`, if enabled experimental pushed authorization requests are used to send the authorization request to the CDS server. Currently, PAR is not supported by the sandbox environment. |
 
 ### .properties file
 
@@ -21,6 +23,8 @@ Example configuration for an `application.properties` file:
 ```properties
 region-connector.cds.enabled=true
 region-connector.cds.redirect.url=${eddie.public.url}/region-connectors/cds/callback
+region-connector.cds.client-name=EDDIE
+region-connector.cds.par.enabled=false
 ```
 
 ### Environment variables
@@ -36,4 +40,22 @@ Example configuration for dotenv file:
 ```dotenv
 REGION_CONNECTOR_CDS_ENABLED=true
 REGION_CONNECTOR_CDS_REDIRECT_URL=${EDDIE_PUBLIC_URL}/region-connectors/cds/callback
+REGION_CONNECTOR_CDS_CLIENT_NAME=EDDIE
+REGION_CONNECTOR_CDS_PAR_ENABLED=false
+```
+
+## Register new CDS Server
+
+A new CDS server can only be registered by the eligible party.
+The region connector provides a REST API to register a new CDS server.
+Registering the same CDS server twice will not have any effects and will not create new OAuth credentials.
+
+```http request
+### Register a new CDS server
+POST http://localhost:8080/region-connectors/cds/register
+Content-Type: application/json
+
+{
+  "cdsServerUri": "{{cds_server_url}}"
+}
 ```
