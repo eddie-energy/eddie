@@ -1,5 +1,10 @@
 <script lang="ts" setup>
-import { getPermissions, getStatusMessages, type StatusMessage, terminatePermission } from '@/api'
+import {
+  getPermissionsPaginated,
+  getStatusMessages,
+  type StatusMessage,
+  terminatePermission
+} from '@/api'
 import {
   Button,
   Column,
@@ -16,11 +21,35 @@ import { ref } from 'vue'
 
 import { countryFlag, formatCountry } from '@/util/countries'
 
-const permissions = await getPermissions()
-
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
 const expandedRows = ref({})
 const rowExpansions = ref<{ [key: string]: StatusMessage[] }>({})
+
+const permissions = ref<StatusMessage[]>([])
+const totalRecords = ref(0)
+const rowOptions = [50, 100, 250, 500]
+const rows = rowOptions[0]
+let loadedPage = 0
+
+async function fetchPermissions(page: number = 0, size: number = 500) {
+  try {
+    const response = await getPermissionsPaginated(page, size)
+    permissions.value.push(...response.content)
+    totalRecords.value = response.page.totalElements
+    loadedPage++
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Failed to fetch permissions',
+      detail: `The request to fetch additional permissions has failed`,
+      life: 3000
+    })
+  }
+}
+
+function loadMorePermissions() {
+  fetchPermissions(loadedPage)
+}
 
 function formatDate(date: string) {
   return new Intl.DateTimeFormat('en-GB', {
@@ -86,6 +115,8 @@ function confirmTermination(permissionId: string) {
     }
   })
 }
+
+fetchPermissions()
 </script>
 
 <template>
@@ -95,8 +126,8 @@ function confirmTermination(permissionId: string) {
     v-model:expanded-rows="expandedRows"
     @row-expand="onRowExpand"
     paginator
-    :rows="10"
-    :rows-per-page-options="[10, 20, 50, 100]"
+    :rows
+    :rows-per-page-options="rowOptions"
     v-model:filters="filters"
     :global-filter-fields="[
       'country',
@@ -117,6 +148,13 @@ function confirmTermination(permissionId: string) {
         </InputIcon>
         <InputText v-model="filters.global.value" placeholder="Keyword Search" />
       </IconField>
+    </template>
+
+    <template #paginatorstart>
+      <p>
+        Loaded <b>{{ permissions?.length }}</b> out of {{ totalRecords }} permissions.
+        <a v-if="permissions.length < totalRecords" @click="loadMorePermissions()">Load more...</a>
+      </p>
     </template>
 
     <Column expander />
@@ -193,5 +231,9 @@ input {
   text-overflow: ellipsis;
   max-width: 10ch;
   overflow: hidden;
+}
+
+a:hover {
+  cursor: pointer;
 }
 </style>

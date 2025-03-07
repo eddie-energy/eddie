@@ -7,12 +7,16 @@ import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConnector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -36,9 +40,16 @@ public class HomeController {
     @GetMapping("/statusMessages")
     public ResponseEntity<List<StatusMessageDTO>> statusMessagesList() {
         return ResponseEntity.ok(this.statusMessageRepository.findLatestStatusMessageForAllPermissions()
-                                                             .stream()
-                                                             .map(HomeController::dtoFromStatusMessage)
-                                                             .toList());
+                        .stream()
+                        .map(HomeController::dtoFromStatusMessage)
+                        .toList());
+    }
+
+    @GetMapping(value = "/statusMessages", params = {"page", "size"})
+    public ResponseEntity<PagedModel<StatusMessageDTO>> statusMessagesPaginated(@RequestParam(defaultValue = "0") int page,
+                                                                                @RequestParam(defaultValue = "500") int size) {
+        return ResponseEntity.ok(new PagedModel<>(this.statusMessageRepository.findLatestStatusMessageForPaginatedPermissions(PageRequest.of(page, size))
+                .map(HomeController::dtoFromStatusMessage)));
     }
 
     @GetMapping("/statusMessages/{permissionId}")

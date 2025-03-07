@@ -10,6 +10,16 @@ import {
   TERMINATION_API_URL
 } from '@/config'
 
+export type PageModel<Type> = {
+  content: Type[]
+  page: {
+    size: number
+    number: number
+    totalElements: number
+    totalPages: 1
+  }
+}
+
 export type StatusMessage = {
   permissionId: string
   regionConnectorId: string
@@ -78,6 +88,10 @@ export type RegionConnectorSupportedDataNeeds = {
 
 export async function getPermissions(): Promise<StatusMessage[]> {
   return await fetch(PERMISSIONS_API_URL).then((res) => res.json())
+}
+
+export async function getPermissionsPaginated(page: number, size: number): Promise<PageModel<StatusMessage>> {
+  return await fetch(`${PERMISSIONS_API_URL}?page=${page}&size=${size}`).then((res) => res.json())
 }
 
 export async function getStatusMessages(permissionId: string): Promise<StatusMessage[]> {
