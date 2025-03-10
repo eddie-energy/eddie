@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeedInterface;
+import energy.eddie.dataneeds.needs.aiida.AiidaDirection;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDefaults;
@@ -45,6 +46,11 @@ public class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @JsonProperty
     private final String policyLink;
 
+    @Column(nullable = false, name = "direction")
+    @JsonProperty
+    @Enumerated(EnumType.STRING)
+    private final AiidaDirection direction;
+
     @Column(nullable = false, name = "transmission_schedule")
     @Convert(converter = CronExpressionConverter.class)
     @JsonProperty
@@ -80,6 +86,7 @@ public class AiidaLocalDataNeed implements AiidaDataNeedInterface {
         this.name = "";
         this.purpose = "";
         this.policyLink = "";
+        this.direction = AiidaDirection.SUBSCRIBE;
         this.transmissionSchedule = CronExpression.parse(CronExpressionDefaults.MINUTELY.expression());
         this.schemas = Set.of();
         this.asset = AiidaAsset.CONNECTION_AGREEMENT_POINT;
@@ -92,6 +99,7 @@ public class AiidaLocalDataNeed implements AiidaDataNeedInterface {
         this.name = details.dataNeed().name();
         this.purpose = details.dataNeed().purpose();
         this.policyLink = details.dataNeed().policyLink();
+        this.direction = details.dataNeed().direction();
         this.transmissionSchedule = details.dataNeed().transmissionSchedule();
         this.schemas = details.dataNeed().schemas();
         this.asset = details.dataNeed().asset();
@@ -100,6 +108,11 @@ public class AiidaLocalDataNeed implements AiidaDataNeedInterface {
 
     public String name() {
         return name;
+    }
+
+    @Override
+    public AiidaDirection direction() {
+        return direction;
     }
 
     @Override

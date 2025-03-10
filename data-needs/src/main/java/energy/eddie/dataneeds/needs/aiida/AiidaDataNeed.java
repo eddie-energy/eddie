@@ -21,6 +21,12 @@ import java.util.UUID;
 public class AiidaDataNeed extends TimeframedDataNeed implements AiidaDataNeedInterface {
     public static final String DISCRIMINATOR_VALUE = "aiida";
 
+    @Column(name = "direction", nullable = false)
+    @JsonProperty(required = true)
+    @Schema(description = "The direction of the data flow ('SUBSCRIBE', 'PUBLISH')")
+    @Enumerated(EnumType.STRING)
+    private AiidaDirection direction;
+
     @Column(name = "transmission_schedule", nullable = false)
     @Convert(converter = CronExpressionConverter.class)
     @JsonProperty(required = true)
@@ -60,6 +66,11 @@ public class AiidaDataNeed extends TimeframedDataNeed implements AiidaDataNeedIn
 
     @SuppressWarnings("NullAway.Init")
     protected AiidaDataNeed() {
+    }
+
+    @Override
+    public AiidaDirection direction() {
+        return direction;
     }
 
     @Override
