@@ -61,7 +61,7 @@ public class DataApiService implements AutoCloseable, CommonPollingService<EsPer
 
     private void tryGetConsumptionKwh(MeteringDataRequest request, EsPermissionRequest permissionRequest) {
         dataApi.getConsumptionKwh(request)
-                .map(IntermediateMeteringData::fromMeteringData)
+                .flatMap(IntermediateMeteringData::fromMeteringData)
                 .flatMap(result -> new MeteringDataFilter(result, permissionRequest).filter())
                 .map(result -> new IdentifiableMeteringData(permissionRequest, result))
                 .doOnError(e -> retryOrRevoke(request, permissionRequest, e))
