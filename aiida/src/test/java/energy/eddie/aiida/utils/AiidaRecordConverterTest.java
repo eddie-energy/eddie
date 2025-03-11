@@ -1,7 +1,7 @@
 package energy.eddie.aiida.utils;
 
 import energy.eddie.aiida.dtos.AiidaRecordStreamingDto;
-import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
@@ -27,7 +27,7 @@ class AiidaRecordConverterTest {
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     @Mock
-    private AiidaLocalDataNeed mockDataNeed;
+    private InboundAiidaLocalDataNeed mockDataNeed;
     @Mock
     private Permission mockPermission;
 

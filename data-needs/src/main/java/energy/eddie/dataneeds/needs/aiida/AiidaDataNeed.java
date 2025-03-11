@@ -18,15 +18,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "aiida_data_need", schema = "data_needs")
 @SuppressWarnings("NullAway")
-public class AiidaDataNeed extends TimeframedDataNeed implements AiidaDataNeedInterface {
-    public static final String DISCRIMINATOR_VALUE = "aiida";
-
-    @Column(name = "direction", nullable = false)
-    @JsonProperty(required = true)
-    @Schema(description = "The direction of the data flow ('SUBSCRIBE', 'PUBLISH')")
-    @Enumerated(EnumType.STRING)
-    private AiidaDirection direction;
-
+public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaDataNeedInterface {
     @Column(name = "transmission_schedule", nullable = false)
     @Convert(converter = CronExpressionConverter.class)
     @JsonProperty(required = true)
@@ -59,19 +51,6 @@ public class AiidaDataNeed extends TimeframedDataNeed implements AiidaDataNeedIn
             schema = "data_needs")
     @JsonProperty
     private Set<String> dataTags;
-
-    public AiidaDataNeed(Set<String> dataTags) {
-        this.dataTags = dataTags;
-    }
-
-    @SuppressWarnings("NullAway.Init")
-    protected AiidaDataNeed() {
-    }
-
-    @Override
-    public AiidaDirection direction() {
-        return direction;
-    }
 
     @Override
     public AiidaAsset asset() {

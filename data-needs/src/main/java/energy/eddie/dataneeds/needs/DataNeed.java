@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -27,7 +28,8 @@ import java.util.UUID;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = AccountingPointDataNeed.class, name = AccountingPointDataNeed.DISCRIMINATOR_VALUE),
         @JsonSubTypes.Type(value = ValidatedHistoricalDataDataNeed.class, name = ValidatedHistoricalDataDataNeed.DISCRIMINATOR_VALUE),
-        @JsonSubTypes.Type(value = AiidaDataNeed.class, name = AiidaDataNeed.DISCRIMINATOR_VALUE)
+        @JsonSubTypes.Type(value = InboundAiidaDataNeed.class, name = InboundAiidaDataNeed.DISCRIMINATOR_VALUE),
+        @JsonSubTypes.Type(value = OutboundAiidaDataNeed.class, name = OutboundAiidaDataNeed.DISCRIMINATOR_VALUE)
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class DataNeed implements DataNeedInterface {

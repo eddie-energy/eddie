@@ -3,7 +3,7 @@ package energy.eddie.aiida.streamers;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
-import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -50,7 +50,7 @@ class StreamerManagerTest {
     private Permission mockPermission;
     private StreamerManager manager;
     @Mock
-    private AiidaLocalDataNeed mockDataNeed;
+    private InboundAiidaLocalDataNeed mockDataNeed;
     @Mock
     private AiidaStreamer mockAiidaStreamer;
     @Mock

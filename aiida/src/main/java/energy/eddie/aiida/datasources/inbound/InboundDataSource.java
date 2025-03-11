@@ -1,4 +1,4 @@
-package energy.eddie.aiida.datasources.ep;
+package energy.eddie.aiida.datasources.inbound;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -18,22 +18,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
-public class EligiblePartyAdapter extends AiidaMqttDataSource {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EligiblePartyAdapter.class);
+public class InboundDataSource extends AiidaMqttDataSource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(InboundDataSource.class);
     private final ObjectMapper mapper;
 
     /**
-     * Creates the datasource for the Eligible Party adapter. It connects to the specified MQTT broker and expects
+     * Creates the datasource for the inbound data. It connects to the specified MQTT broker and expects
      * that the adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be
      * assigned a Unix timestamp of 0.
      *
-     * @param dataSourceId The unique identifier (UUID) of this data source.
+     * @param permissionId The unique identifier (UUID) for the permission of this data source.
      * @param userId       The ID of the user who owns this data source.
      * @param mqttConfig   Configuration detailing the MQTT broker to connect to and options to use.
      * @param mapper       {@link ObjectMapper} that is used to deserialize the JSON messages.
      */
-    public EligiblePartyAdapter(UUID dataSourceId, UUID userId, MqttConfig mqttConfig, ObjectMapper mapper) {
-        super(dataSourceId, userId, "ExternalAdapter", mqttConfig, LOGGER);
+    public InboundDataSource(UUID permissionId, UUID userId, MqttConfig mqttConfig, ObjectMapper mapper) {
+        super(permissionId, userId, "EligiblePartyAdapter", mqttConfig, LOGGER);
         SimpleModule module = new SimpleModule();
         mapper.registerModule(module);
         this.mapper = mapper;
@@ -51,7 +51,7 @@ public class EligiblePartyAdapter extends AiidaMqttDataSource {
         LOGGER.trace("Topic {} new message: {}", topic, message);
 
         try {
-            var json = mapper.readValue(message.getPayload(), EligiblePartyAdapterJson.class);
+            var json = mapper.readValue(message.getPayload(), InboundDataSourceJson.class);
 
             var value = String.valueOf(json.value());
             var aiidaRecord = new AiidaRecordValue(json.code(),
@@ -79,8 +79,8 @@ public class EligiblePartyAdapter extends AiidaMqttDataSource {
     public void deliveryComplete(IMqttToken token) throws UnsupportedOperationException {
         LOGGER.warn(
                 "Got deliveryComplete notification, but {} mustn't publish any MQTT messages but just listen. Token was {}",
-                EligiblePartyAdapter.class.getName(),
+                InboundDataSource.class.getName(),
                 token);
-        throw new UnsupportedOperationException("The " + EligiblePartyAdapter.class.getName() + " mustn't publish any MQTT messages");
+        throw new UnsupportedOperationException("The " + InboundDataSource.class.getName() + " mustn't publish any MQTT messages");
     }
 }

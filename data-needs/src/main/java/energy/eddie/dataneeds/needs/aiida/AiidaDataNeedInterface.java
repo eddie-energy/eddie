@@ -7,13 +7,6 @@ import java.util.UUID;
 
 public interface AiidaDataNeedInterface {
     /**
-     * Returns the direction of the data
-     *
-     * @see AiidaDirection
-     */
-    AiidaDirection direction();
-
-    /**
      * Returns the kind of asset the data is retrieved from
      *
      * @see AiidaAsset

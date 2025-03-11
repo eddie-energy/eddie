@@ -3,14 +3,13 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.errors.*;
-import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
-import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.models.permission.*;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -318,7 +317,13 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         if (aiidaLocalDataNeed.isPresent()) {
             permission.setDataNeed(aiidaLocalDataNeed.get());
         } else {
-            permission.setDataNeed(new AiidaLocalDataNeed(details));
+            switch (details.dataNeed().type()) {
+                case InboundAiidaDataNeed.DISCRIMINATOR_VALUE ->
+                        permission.setDataNeed(new InboundAiidaLocalDataNeed(details));
+                case OutboundAiidaDataNeed.DISCRIMINATOR_VALUE ->
+                        permission.setDataNeed(new OutboundAiidaLocalDataNeed(details));
+                default -> markPermissionAsUnfulfillable(permission);
+            }
         }
 
         if (!isPermissionFulfillable(permission)) {
@@ -334,9 +339,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @return Always true until GH-1040 is properly implemented.
      */
     private boolean isPermissionFulfillable(Permission permission) {
+        // TODO: Implement proper check for permission fulfillment --> GH-1040
         var dataNeed = permission.dataNeed();
-        return dataNeed != null && dataNeed.type()
-                                           .equals(energy.eddie.dataneeds.needs.aiida.AiidaDataNeed.DISCRIMINATOR_VALUE);
+        return dataNeed != null;
     }
 
     private void terminationRequestReceived(UUID permissionId) {

@@ -60,7 +60,7 @@ public class PermissionRequestController {
     public ResponseEntity<Object> updatePermissionRequest(
             @PathVariable String permissionId,
             @Valid @RequestBody PermissionUpdateDto updateDto
-    ) throws PermissionNotFoundException, CredentialsAlreadyExistException, PermissionStateTransitionException {
+    ) throws PermissionNotFoundException, CredentialsAlreadyExistException, PermissionStateTransitionException, DataNeedNotFoundException {
         var aiidaId = updateDto.aiidaId();
 
         switch (updateDto.operation()) {

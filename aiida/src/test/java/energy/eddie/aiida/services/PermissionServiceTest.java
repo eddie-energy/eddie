@@ -2,7 +2,7 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.errors.*;
-import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
@@ -42,7 +42,6 @@ import java.util.stream.Stream;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
 import static energy.eddie.aiida.models.permission.PermissionStatus.*;
-import static energy.eddie.dataneeds.needs.aiida.AiidaDataNeed.DISCRIMINATOR_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -74,7 +73,7 @@ class PermissionServiceTest {
     @Mock
     private AiidaDataNeed mockDataNeed;
     @Mock
-    private AiidaLocalDataNeed mockAiidaDataNeed;
+    private InboundAiidaLocalDataNeed mockAiidaDataNeed;
     @Mock
     private AuthService mockAuthService;
     @Mock
@@ -198,7 +197,7 @@ class PermissionServiceTest {
         assertEquals(expectedEnd, permissionWithDetails.expirationTime());
 
         // also check for data need fields
-        AiidaLocalDataNeed dataNeed = permissionWithDetails.dataNeed();
+        InboundAiidaLocalDataNeed dataNeed = permissionWithDetails.dataNeed();
         assertNotNull(dataNeed);
         assertEquals(dataNeedId, dataNeed.dataNeedId());
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
@@ -246,7 +245,7 @@ class PermissionServiceTest {
         assertEquals(expectedEnd, permissionWithDetails.expirationTime());
 
         // also check for data need fields
-        AiidaLocalDataNeed dataNeed = permissionWithDetails.dataNeed();
+        InboundAiidaLocalDataNeed dataNeed = permissionWithDetails.dataNeed();
         assertNotNull(dataNeed);
         assertEquals(dataNeedId, dataNeed.dataNeedId());
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());

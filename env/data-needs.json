@@ -32,18 +32,18 @@
     "maxGranularity": "P1D"
   },
   {
-    "type": "aiida",
+    "type": "outbound-aiida",
     "id": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
-    "name": "FUTURE_NEAR_REALTIME_DATA",
+    "name": "FUTURE_NEAR_REALTIME_DATA_OUTBOUND",
     "description": "Near realtime consumption data from the smart meter",
     "purpose": "purpose",
     "policyLink": "https://example.com/toc",
     "duration": {
-      "type": "absoluteDuration",
-      "start": "2024-04-01",
-      "end": "2024-04-05"
+      "type": "relativeDuration",
+      "start": "P0D",
+      "end": "P10D"
     },
-    "transmissionSchedule":"*/5 * * * * *",
+    "transmissionSchedule": "*/5 * * * * *",
     "schemas": [
       "SMART-METER-P1-RAW"
     ],
@@ -52,6 +52,25 @@
       "1-0:1.8.0",
       "1-0:1.7.0"
     ]
+  },
+  {
+    "type": "inbound-aiida",
+    "id": "6dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
+    "name": "FUTURE_NEAR_REALTIME_DATA_INBOUND",
+    "description": "Near realtime consumption data from the smart meter",
+    "purpose": "purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "P0D",
+      "end": "P10D"
+    },
+    "transmissionSchedule": "*/5 * * * * *",
+    "schemas": [
+      "SMART-METER-P1-RAW"
+    ],
+    "asset": "CONNECTION-AGREEMENT-POINT",
+    "dataTags": []
   },
   {
     "type": "validated",
