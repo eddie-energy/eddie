@@ -39,7 +39,7 @@ public class StreamerFactory {
             FailedToSendRepository failedToSendRepository
     ) throws MqttException {
         var mqttFilePersistenceDirectory = "mqtt-persistence/{eddieId}/{permissionId}";
-        var mqttConfig = requireNonNull(permission.mqttStreamingConfig());
+        var mqttConfig = requireNonNull(permission.permissionMqttConfig());
         var client = MqttFactory.getMqttAsyncClient(mqttConfig.serverUri(),
                                                     mqttConfig.username(),
                                                     new MqttDefaultFilePersistence(new UriTemplate(

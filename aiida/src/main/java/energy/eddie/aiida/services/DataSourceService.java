@@ -19,7 +19,7 @@ import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.MQTTSecretGenerator;
 import energy.eddie.aiida.models.datasource.MqttDataSource;
 import energy.eddie.aiida.repositories.DataSourceRepository;
-import energy.eddie.aiida.utils.MqttConfig;
+import energy.eddie.aiida.datasources.DataSourceMqttConfig;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -75,10 +75,12 @@ public class DataSourceService {
 
         if (dataSource instanceof MqttDataSource mqttDataSource) {
             final String mqttServerUri = mqttConfiguration.host();
-            final String mqttUsername = addDataSource.name() + "-username-" + MQTTSecretGenerator.generate();
-            final String mqttPassword = addDataSource.name() + "-password-" + MQTTSecretGenerator.generate();
+            final String mqttUsername = MQTTSecretGenerator.generate();
+            final String mqttPassword = MQTTSecretGenerator.generate();
 
-            final String mqttSubscribeTopic = dataSourceType == DataSourceType.MICRO_TELEINFO_V3 ? addDataSource.mqttSubscribeTopic() + "/" + addDataSource.meteringId() : "aiida/" + addDataSource.name() + "/" + MQTTSecretGenerator.generate();
+            final String mqttSubscribeTopic = dataSourceType == DataSourceType.MICRO_TELEINFO_V3
+                    ? addDataSource.mqttSubscribeTopic() + "/" + addDataSource.meteringId()
+                    : "aiida/" + MQTTSecretGenerator.generate();
 
             mqttDataSource.setMqttServerUri(mqttServerUri);
             mqttDataSource.setMqttUsername(mqttUsername);
@@ -132,9 +134,10 @@ public class DataSourceService {
         repository.save(dataSource);
     }
 
-    public DataSource createOrUpdate(DataSourceDto dataSourceDto) throws InvalidUserException {
-        DataSource dataSource = (dataSourceDto.id() == null) ? createNewDataSource(dataSourceDto) : repository.findById(
-                dataSourceDto.id()).orElse(null);
+    private DataSource createOrUpdate(DataSourceDto dataSourceDto) throws InvalidUserException {
+        DataSource dataSource = (dataSourceDto.id() == null)
+                ? createNewDataSource(dataSourceDto)
+                : repository.findById(dataSourceDto.id()).orElse(null);
 
         if (dataSource == null) {
             dataSource = createNewDataSource(dataSourceDto);
@@ -165,7 +168,7 @@ public class DataSourceService {
         return dataSource;
     }
 
-    Optional<AiidaDataSource> findAiidaDataSource(UUID dataSourceId) {
+    private Optional<AiidaDataSource> findAiidaDataSource(UUID dataSourceId) {
         return aiidaDataSources.stream().filter(ds -> ds.id().equals(dataSourceId)).findFirst();
     }
 
@@ -203,12 +206,12 @@ public class DataSourceService {
         }
 
         var mqttDataSource = (MqttDataSource) dataSource;
-        var mqttBuildConfig = new MqttConfig.MqttConfigBuilder(mqttDataSource.getMqttServerUri(),
-                                                               mqttDataSource.getMqttSubscribeTopic());
+        var mqttBuildConfig = new DataSourceMqttConfig.MqttConfigBuilder(mqttDataSource.getMqttServerUri(),
+                                                                         mqttDataSource.getMqttSubscribeTopic());
         mqttBuildConfig.setUsername(mqttDataSource.getMqttUsername());
         mqttBuildConfig.setPassword(mqttDataSource.getMqttPassword());
 
-        var mqttConfig = new MqttConfig(mqttBuildConfig);
+        var mqttConfig = new DataSourceMqttConfig(mqttBuildConfig);
 
         return switch (dataSourceType) {
             case SMART_GATEWAYS_ADAPTER ->

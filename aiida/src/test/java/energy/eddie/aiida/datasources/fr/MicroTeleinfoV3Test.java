@@ -3,7 +3,7 @@ package energy.eddie.aiida.datasources.fr;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.utils.MqttConfig;
+import energy.eddie.aiida.datasources.DataSourceMqttConfig;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.TestUtils;
 import nl.altindag.log.LogCaptor;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 class MicroTeleinfoV3Test {
     private static final LogCaptor logCaptor = LogCaptor.forClass(MicroTeleinfoV3.class);
     private MicroTeleinfoV3 adapter;
-    private MqttConfig config;
+    private DataSourceMqttConfig config;
     private ObjectMapper mapper;
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -41,7 +41,7 @@ class MicroTeleinfoV3Test {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data").build();
+        config = new DataSourceMqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data").build();
         mapper = new AiidaConfiguration().objectMapper();
         adapter = new MicroTeleinfoV3(dataSourceId, userId, config, mapper);
     }
@@ -116,9 +116,9 @@ class MicroTeleinfoV3Test {
 
     @Test
     void givenUsernameAndPassword_isUsedByAdapter() {
-        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data").setUsername("User")
-                                                                                          .setPassword("Pass")
-                                                                                          .build();
+        config = new DataSourceMqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data").setUsername("User")
+                                                                                                    .setPassword("Pass")
+                                                                                                    .build();
         config = spy(config);
         adapter = new MicroTeleinfoV3(dataSourceId, userId, config, mapper);
 

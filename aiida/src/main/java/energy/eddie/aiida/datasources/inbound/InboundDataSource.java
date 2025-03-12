@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import energy.eddie.aiida.datasources.AiidaMqttDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.utils.MqttConfig;
+import energy.eddie.aiida.datasources.DataSourceMqttConfig;
 import energy.eddie.aiida.utils.ObisCode;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
@@ -27,13 +27,18 @@ public class InboundDataSource extends AiidaMqttDataSource {
      * that the adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be
      * assigned a Unix timestamp of 0.
      *
-     * @param permissionId The unique identifier (UUID) for the permission of this data source.
-     * @param userId       The ID of the user who owns this data source.
-     * @param mqttConfig   Configuration detailing the MQTT broker to connect to and options to use.
-     * @param mapper       {@link ObjectMapper} that is used to deserialize the JSON messages.
+     * @param permissionId         The unique identifier (UUID) for the permission of this data source.
+     * @param userId               The ID of the user who owns this data source.
+     * @param dataSourceMqttConfig Configuration detailing the MQTT broker to connect to and options to use.
+     * @param mapper               {@link ObjectMapper} that is used to deserialize the JSON messages.
      */
-    public InboundDataSource(UUID permissionId, UUID userId, MqttConfig mqttConfig, ObjectMapper mapper) {
-        super(permissionId, userId, "EligiblePartyAdapter", mqttConfig, LOGGER);
+    public InboundDataSource(
+            UUID permissionId,
+            UUID userId,
+            DataSourceMqttConfig dataSourceMqttConfig,
+            ObjectMapper mapper
+    ) {
+        super(permissionId, userId, "InboundDataSource", dataSourceMqttConfig, LOGGER);
         SimpleModule module = new SimpleModule();
         mapper.registerModule(module);
         this.mapper = mapper;

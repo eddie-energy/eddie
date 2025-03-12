@@ -1,11 +1,11 @@
 package energy.eddie.aiida.utils;
 
-import energy.eddie.aiida.utils.MqttConfig.MqttConfigBuilder;
+import energy.eddie.aiida.datasources.DataSourceMqttConfig.MqttConfigBuilder;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MqttConfigTest {
+class DataSourceMqttConfigTest {
     @Test
     void givenInvalidKeepAlive_throws() {
         var builder = new MqttConfigBuilder("localhost:9092", "subscribeTopic");

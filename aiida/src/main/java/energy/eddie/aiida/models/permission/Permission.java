@@ -63,7 +63,7 @@ public class Permission {
     @PrimaryKeyJoinColumn
     @JsonIgnore
     @Nullable
-    private MqttStreamingConfig mqttStreamingConfig;
+    private PermissionMqttConfig permissionMqttConfig;
     @Column(nullable = false)
     @JsonIgnore
     private String handshakeUrl;
@@ -173,8 +173,8 @@ public class Permission {
     /**
      * Only available if status is {@link PermissionStatus#FETCHED_MQTT_CREDENTIALS} or a later status.
      */
-    public @Nullable MqttStreamingConfig mqttStreamingConfig() {
-        return mqttStreamingConfig;
+    public @Nullable PermissionMqttConfig permissionMqttConfig() {
+        return permissionMqttConfig;
     }
 
     public String handshakeUrl() {
@@ -231,8 +231,8 @@ public class Permission {
         this.connectionId = requireNonNull(connectionId);
     }
 
-    public void setMqttStreamingConfig(MqttStreamingConfig mqttStreamingConfig) {
-        this.mqttStreamingConfig = requireNonNull(mqttStreamingConfig);
+    public void setPermissionMqttConfig(PermissionMqttConfig permissionMqttConfig) {
+        this.permissionMqttConfig = requireNonNull(permissionMqttConfig);
     }
 
     public void setDataNeed(AiidaLocalDataNeed dataNeed) {

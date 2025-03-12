@@ -367,9 +367,9 @@ class PermissionServiceTest {
         verify(mockPermission).setStatus(ACCEPTED);
         verify(mockPermission).setStatus(FETCHED_MQTT_CREDENTIALS);
         verify(mockPermission).setGrantTime(fixedInstant);
-        verify(mockPermission).setMqttStreamingConfig(assertArg(conf -> assertAll(() -> assertEquals("dataTopic",
-                                                                                                     conf.dataTopic()),
-                                                                                  () -> assertEquals(permissionId,
+        verify(mockPermission).setPermissionMqttConfig(assertArg(conf -> assertAll(() -> assertEquals("dataTopic",
+                                                                                                      conf.dataTopic()),
+                                                                                   () -> assertEquals(permissionId,
                                                                                                      conf.permissionId()))));
         verify(mockRepository, times(2)).save(any());
         verify(mockPermissionScheduler).scheduleOrStart(any());

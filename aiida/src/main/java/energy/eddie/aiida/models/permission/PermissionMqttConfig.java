@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "mqtt_streaming_config")
-public class MqttStreamingConfig {
+public class PermissionMqttConfig {
     @Id
     @Column(name = "permission_id", nullable = false)
     private UUID permissionId;
@@ -28,10 +28,10 @@ public class MqttStreamingConfig {
     private String terminationTopic;
 
     @SuppressWarnings("NullAway.Init") // required by JPA
-    protected MqttStreamingConfig() {
+    protected PermissionMqttConfig() {
     }
 
-    public MqttStreamingConfig(UUID permissionId, MqttDto mqttDto) {
+    public PermissionMqttConfig(UUID permissionId, MqttDto mqttDto) {
         this.permissionId = permissionId;
         this.username = mqttDto.username();
         this.password = mqttDto.password();

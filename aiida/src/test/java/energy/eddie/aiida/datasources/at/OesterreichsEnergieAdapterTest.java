@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.datasources.AiidaDataSource;
-import energy.eddie.aiida.utils.MqttConfig;
+import energy.eddie.aiida.datasources.DataSourceMqttConfig;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.UUID;
 
-import static energy.eddie.aiida.utils.MqttConfig.MqttConfigBuilder;
+import static energy.eddie.aiida.datasources.DataSourceMqttConfig.MqttConfigBuilder;
 import static energy.eddie.aiida.utils.ObisCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,7 +36,7 @@ class OesterreichsEnergieAdapterTest {
     private static final LogCaptor logCaptor = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
     private static final LogCaptor logCaptorAiidaDataSource = LogCaptor.forClass(AiidaDataSource.class);
     private OesterreichsEnergieAdapter adapter;
-    private MqttConfig config;
+    private DataSourceMqttConfig config;
     private ObjectMapper mapper;
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");

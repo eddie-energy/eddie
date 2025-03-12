@@ -1,6 +1,6 @@
 package energy.eddie.aiida.datasources.sga;
 
-import energy.eddie.aiida.utils.MqttConfig;
+import energy.eddie.aiida.datasources.DataSourceMqttConfig;
 import energy.eddie.aiida.utils.MqttFactory;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
@@ -83,7 +83,7 @@ class SmartGatewaysAdapterTest {
             -0.061
             0.002""";
     private SmartGatewaysAdapter adapter;
-    private MqttConfig config;
+    private DataSourceMqttConfig config;
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
 
@@ -91,7 +91,7 @@ class SmartGatewaysAdapterTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "sga/data").build();
+        config = new DataSourceMqttConfig.MqttConfigBuilder("tcp://localhost:1883", "sga/data").build();
         adapter = new SmartGatewaysAdapter(dataSourceId, userId, config);
     }
 
@@ -165,9 +165,9 @@ class SmartGatewaysAdapterTest {
 
     @Test
     void givenUsernameAndPassword_isUsedByAdapter() {
-        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "sga/data").setUsername("User")
-                                                                                     .setPassword("Pass")
-                                                                                     .build();
+        config = new DataSourceMqttConfig.MqttConfigBuilder("tcp://localhost:1883", "sga/data").setUsername("User")
+                                                                                               .setPassword("Pass")
+                                                                                               .build();
         config = spy(config);
         adapter = new SmartGatewaysAdapter(dataSourceId, userId, config);
 

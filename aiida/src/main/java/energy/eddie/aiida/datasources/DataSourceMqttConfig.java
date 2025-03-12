@@ -1,9 +1,10 @@
-package energy.eddie.aiida.utils;
+package energy.eddie.aiida.datasources;
 
+import energy.eddie.aiida.models.permission.PermissionMqttConfig;
 import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 
-public class MqttConfig {
+public class DataSourceMqttConfig {
     public static final Integer DEFAULT_KEEP_ALIVE_INTERVAL = 60;
     private String serverURI;
     private String subscribeTopic;
@@ -17,10 +18,10 @@ public class MqttConfig {
 
     // Must only be constructed by builder
     @SuppressWarnings({"NullAway.Init", "unused"})
-    private MqttConfig() {
+    private DataSourceMqttConfig() {
     }
 
-    public MqttConfig(MqttConfigBuilder builder) {
+    public DataSourceMqttConfig(MqttConfigBuilder builder) {
         this.serverURI = builder.serverURI;
         this.subscribeTopic = builder.subscribeTopic;
         this.cleanStart = builder.cleanStart;
@@ -65,14 +66,14 @@ public class MqttConfig {
         private final String subscribeTopic;
         private Boolean cleanStart = false;
         private Boolean automaticReconnect = true;
-        private Integer keepAliveInterval = MqttConfig.DEFAULT_KEEP_ALIVE_INTERVAL;
+        private Integer keepAliveInterval = DataSourceMqttConfig.DEFAULT_KEEP_ALIVE_INTERVAL;
         @Nullable
         private String username = null;
         @Nullable
         private String password = null;
 
         /**
-         * Creates a new builder for a {@link MqttConfig} with the required properties.
+         * Creates a new builder for a {@link DataSourceMqttConfig} with the required properties.
          *
          * @param serverURI      URI of the server to connect to.
          * @param subscribeTopic Topic to which should be subscribed.
@@ -80,6 +81,13 @@ public class MqttConfig {
         public MqttConfigBuilder(String serverURI, String subscribeTopic) {
             this.serverURI = serverURI;
             this.subscribeTopic = subscribeTopic;
+        }
+
+        public MqttConfigBuilder(PermissionMqttConfig permissionMqttConfig) {
+            this.serverURI = permissionMqttConfig.serverUri();
+            this.subscribeTopic = permissionMqttConfig.dataTopic();
+            this.username = permissionMqttConfig.username();
+            this.password = permissionMqttConfig.password();
         }
 
         /**
@@ -140,16 +148,16 @@ public class MqttConfig {
         }
 
         /**
-         * Builds a new {@link MqttConfig} with the supplied values and uses default values if none have been specified.
+         * Builds a new {@link DataSourceMqttConfig} with the supplied values and uses default values if none have been specified.
          *
          * @return MqttConfig with the specified values.
          * @throws IllegalArgumentException If a username has been specified, but no password.
          */
-        public MqttConfig build() throws IllegalArgumentException {
+        public DataSourceMqttConfig build() throws IllegalArgumentException {
             if (username != null && password == null)
                 throw new IllegalArgumentException("When supplying a username, a password has to be supplied as well");
 
-            return new MqttConfig(this);
+            return new DataSourceMqttConfig(this);
         }
     }
 }

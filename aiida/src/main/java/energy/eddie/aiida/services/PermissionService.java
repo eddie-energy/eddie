@@ -1,8 +1,10 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
+import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.errors.*;
+import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.permission.*;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -37,6 +39,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private final PermissionScheduler permissionScheduler;
     private final AuthService authService;
     private final AiidaLocalDataNeedService aiidaLocalDataNeedService;
+    private final DataSourceService dataSourceService;
 
     @Autowired
     public PermissionService(
@@ -46,7 +49,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             HandshakeService handshakeService,
             PermissionScheduler permissionScheduler,
             AuthService authService,
-            AiidaLocalDataNeedService aiidaLocalDataNeedService
+            AiidaLocalDataNeedService aiidaLocalDataNeedService,
+            DataSourceService dataSourceService
     ) {
         this.repository = repository;
         this.clock = clock;
@@ -55,6 +59,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         this.permissionScheduler = permissionScheduler;
         this.authService = authService;
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
+        this.dataSourceService = dataSourceService;
 
         streamerManager.terminationRequestsFlux().subscribe(this::terminationRequestReceived);
     }
@@ -103,6 +108,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                                          REVOKED,
                                                          permission.permissionId(),
                                                          permission.eddieId());
+        // TODO: delete data source
         streamerManager.stopStreamer(revokedMessage);
 
         return permission;
@@ -226,9 +232,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             throw new DetailFetchingFailedException(permissionId);
         }
 
-        var mqttStreamingConfig = new MqttStreamingConfig(permissionId, mqttDto);
+        var mqttStreamingConfig = new PermissionMqttConfig(permissionId, mqttDto);
 
-        permission.setMqttStreamingConfig(mqttStreamingConfig);
+        permission.setPermissionMqttConfig(mqttStreamingConfig);
         permission.setStatus(FETCHED_MQTT_CREDENTIALS);
         permission = repository.save(permission);
 
@@ -317,13 +323,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         if (aiidaLocalDataNeed.isPresent()) {
             permission.setDataNeed(aiidaLocalDataNeed.get());
         } else {
-            switch (details.dataNeed().type()) {
-                case InboundAiidaDataNeed.DISCRIMINATOR_VALUE ->
-                        permission.setDataNeed(new InboundAiidaLocalDataNeed(details));
-                case OutboundAiidaDataNeed.DISCRIMINATOR_VALUE ->
-                        permission.setDataNeed(new OutboundAiidaLocalDataNeed(details));
-                default -> markPermissionAsUnfulfillable(permission);
-            }
+            createNewLocalDataNeed(permission, details);
         }
 
         if (!isPermissionFulfillable(permission)) {
@@ -331,6 +331,22 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         }
 
         return repository.save(permission);
+    }
+
+    private void createNewLocalDataNeed(
+            Permission permission,
+            PermissionDetailsDto details
+    ) throws PermissionUnfulfillableException {
+        if(details.dataNeed() == null) {
+            markPermissionAsUnfulfillable(permission);
+        } else if (details.dataNeed().type().equals(InboundAiidaDataNeed.DISCRIMINATOR_VALUE)) {
+            // TODO: create data source
+            permission.setDataNeed(new InboundAiidaLocalDataNeed(details));
+        } else if(details.dataNeed().type().equals(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE)) {
+            permission.setDataNeed(new OutboundAiidaLocalDataNeed(details));
+        } else {
+            markPermissionAsUnfulfillable(permission);
+        }
     }
 
     /**
@@ -371,6 +387,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                                             TERMINATED,
                                                             permission.permissionId(),
                                                             permission.eddieId());
+        // TODO: delete data source
         streamerManager.stopStreamer(terminatedMessage);
     }
 

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import energy.eddie.aiida.datasources.AiidaMqttDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.utils.MqttConfig;
+import energy.eddie.aiida.datasources.DataSourceMqttConfig;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -36,12 +36,12 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
      *
      * @param dataSourceId The unique identifier (UUID) of this data source.
      * @param userId       The ID of the user who owns this data source.
-     * @param mqttConfig   Configuration detailing the MQTT broker to connect to and options to use.
+     * @param dataSourceMqttConfig   Configuration detailing the MQTT broker to connect to and options to use.
      * @param mapper       {@link ObjectMapper} that is used to deserialize the JSON messages. A
      *                     {@link MicroTeleinfoV3ValueDeserializer} will be registered to this mapper.
      */
-    public MicroTeleinfoV3(UUID dataSourceId, UUID userId, MqttConfig mqttConfig, ObjectMapper mapper) {
-        super(dataSourceId, userId, DATASOURCE_NAME, mqttConfig, LOGGER);
+    public MicroTeleinfoV3(UUID dataSourceId, UUID userId, DataSourceMqttConfig dataSourceMqttConfig, ObjectMapper mapper) {
+        super(dataSourceId, userId, DATASOURCE_NAME, dataSourceMqttConfig, LOGGER);
 
         SimpleModule module = new SimpleModule();
         module.addDeserializer(MicroTeleinfoV3Json.TeleinfoDataField.class, new MicroTeleinfoV3ValueDeserializer(null));
@@ -49,7 +49,7 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
         this.mapper = mapper;
 
         healthSink.asFlux().subscribe(this::setHealthState);
-        this.healthTopic = mqttConfig.subscribeTopic().replaceFirst("/.*", HEALTH_TOPIC);
+        this.healthTopic = dataSourceMqttConfig.subscribeTopic().replaceFirst("/.*", HEALTH_TOPIC);
     }
 
     /**

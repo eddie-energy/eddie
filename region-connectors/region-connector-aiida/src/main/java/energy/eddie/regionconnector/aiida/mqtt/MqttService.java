@@ -106,20 +106,18 @@ public class MqttService implements AutoCloseable {
                                 getTopicForPermission(mqttUser.permissionId(), TopicType.STATUS),
                                 getTopicForPermission(mqttUser.permissionId(), TopicType.TERMINATION));
 
-        var mqttAction = dataNeed instanceof InboundAiidaDataNeed ? MqttAction.SUBSCRIBE : MqttAction.PUBLISH;
-
         var dataAcl = new MqttAcl(mqttUser.username(),
-                                  mqttAction,
+                                  dataNeed instanceof InboundAiidaDataNeed ? MqttAction.SUBSCRIBE : MqttAction.PUBLISH,
                                   MqttAclType.ALLOW,
                                   topics.publishTopic());
 
         var statusAcl = new MqttAcl(mqttUser.username(),
-                                    mqttAction,
+                                    MqttAction.PUBLISH,
                                     MqttAclType.ALLOW,
                                     topics.statusMessageTopic());
 
         var terminationAcl = new MqttAcl(mqttUser.username(),
-                                         mqttAction.getComplementaryAction(),
+                                         MqttAction.SUBSCRIBE,
                                          MqttAclType.ALLOW,
                                          topics.terminationTopic());
 

@@ -2,7 +2,10 @@ package energy.eddie.aiida.streamers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.aggregator.Aggregator;
+import energy.eddie.aiida.datasources.DataSourceMqttConfig;
+import energy.eddie.aiida.datasources.inbound.InboundDataSource;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
+import energy.eddie.aiida.models.permission.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
@@ -29,6 +32,7 @@ public class StreamerManager implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamerManager.class);
     private final ObjectMapper mapper;
     private final Map<UUID, AiidaStreamer> streamers;
+    private final Map<UUID, InboundDataSource> inboundDataSources;
     private final Aggregator aggregator;
     private final Sinks.Many<UUID> terminationRequests;
     private final FailedToSendRepository failedToSendRepository;
@@ -44,6 +48,7 @@ public class StreamerManager implements AutoCloseable {
         this.failedToSendRepository = failedToSendRepository;
 
         streamers = new HashMap<>();
+        inboundDataSources = new HashMap<>();
         terminationRequests = Sinks.many().unicast().onBackpressureBuffer();
     }
 
@@ -62,7 +67,7 @@ public class StreamerManager implements AutoCloseable {
             throw new IllegalStateException(
                     "An AiidaStreamer for EDDIE framework '%s' with permission '%s' has already been created.".formatted(
                             permission.eddieId(),
-                            permission.permissionId()));
+                            id));
         }
 
         var dataNeed = Objects.requireNonNull(permission.dataNeed());
@@ -70,6 +75,15 @@ public class StreamerManager implements AutoCloseable {
         var transmissionSchedule = Objects.requireNonNull(dataNeed.transmissionSchedule());
         var permissionExpirationTime = Objects.requireNonNull(permission.expirationTime());
         var userId = Objects.requireNonNull(permission.userId());
+
+        if (dataNeed instanceof InboundAiidaLocalDataNeed) {
+            var dataSourceMqttConfigBuilder = new DataSourceMqttConfig.MqttConfigBuilder(
+                    Objects.requireNonNull(permission.permissionMqttConfig())
+            );
+            var inboundDataSource = new InboundDataSource(id, userId, dataSourceMqttConfigBuilder.build(), mapper);
+            aggregator.addNewAiidaDataSource(inboundDataSource);
+            inboundDataSources.put(id, inboundDataSource);
+        }
 
         Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(allowedDataTags,
                                                                   permissionExpirationTime,
@@ -114,9 +128,14 @@ public class StreamerManager implements AutoCloseable {
     public void stopStreamer(ConnectionStatusMessage message) {
         var id = message.permissionId();
         AiidaStreamer streamer = streamers.get(id);
+        InboundDataSource inboundDataSource = inboundDataSources.get(id);
 
         if (streamer == null)
             throw new IllegalArgumentException("No streamer for permissionId '%s' exists.".formatted(id));
+
+        if (inboundDataSource != null) {
+            aggregator.removeAiidaDataSource(inboundDataSource);
+        }
 
         streamer.closeTerminally(message);
     }
@@ -130,6 +149,9 @@ public class StreamerManager implements AutoCloseable {
         LOGGER.info("Closing all {} streamers", streamers.size());
         for (var entry : streamers.entrySet()) {
             entry.getValue().close();
+        }
+        for (var entry : inboundDataSources.entrySet()) {
+            aggregator.removeAiidaDataSource(entry.getValue());
         }
 
         terminationRequests.tryEmitComplete();

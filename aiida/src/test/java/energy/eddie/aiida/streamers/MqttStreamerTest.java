@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.FailedToSendEntity;
-import energy.eddie.aiida.models.permission.MqttStreamingConfig;
+import energy.eddie.aiida.models.permission.PermissionMqttConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
@@ -81,7 +81,7 @@ class MqttStreamerTest {
     private ObjectMapper mockMapper;
     @Mock
     private ConnectionStatusMessage mockStatusMessage;
-    private MqttStreamingConfig mqttStreamingConfig;
+    private PermissionMqttConfig permissionMqttConfig;
     private MqttStreamer streamer;
 
     @BeforeEach
@@ -93,13 +93,13 @@ class MqttStreamerTest {
                                   EXPECTED_STATUS_TOPIC,
                                   EXPECTED_TERMINATION_TOPIC);
 
-        mqttStreamingConfig = new MqttStreamingConfig(permissionId, mqttDto);
+        permissionMqttConfig = new PermissionMqttConfig(permissionId, mqttDto);
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
 
         streamer = new MqttStreamer(new Permission(),
                                     recordPublisher.flux(),
                                     terminationSink,
-                                    mqttStreamingConfig,
+                                    permissionMqttConfig,
                                     mockClient,
                                     mockMapper,
                                     mockRepository);
@@ -126,9 +126,9 @@ class MqttStreamerTest {
 
         // Then
         verify(mockClient).connect(argThat(options -> options.getUserName()
-                                                             .equals(mqttStreamingConfig.username()) && !options.isCleanStart() && options.isAutomaticReconnect() && new String(
+                                                             .equals(permissionMqttConfig.username()) && !options.isCleanStart() && options.isAutomaticReconnect() && new String(
                 options.getPassword(),
-                StandardCharsets.UTF_8).equals(mqttStreamingConfig.password())));
+                StandardCharsets.UTF_8).equals(permissionMqttConfig.password())));
     }
 
     @Test

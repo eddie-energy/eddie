@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.FailedToSendEntity;
-import energy.eddie.aiida.models.permission.MqttStreamingConfig;
+import energy.eddie.aiida.models.permission.PermissionMqttConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
@@ -29,14 +29,14 @@ import java.util.UUID;
 
 public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttStreamer.class);
-    private final Permission permission;
-    private final MqttStreamingConfig streamingConfig;
-    private final MqttAsyncClient client;
-    private final ObjectMapper mapper;
-    private final FailedToSendRepository failedToSendRepository;
-    private boolean isBeingTerminated = false;
+    protected final Permission permission;
+    protected final PermissionMqttConfig streamingConfig;
+    protected final MqttAsyncClient client;
+    protected final ObjectMapper mapper;
+    protected final FailedToSendRepository failedToSendRepository;
+    protected boolean isBeingTerminated = false;
     @Nullable
-    private Disposable subscription;
+    protected Disposable subscription;
 
     /**
      * Creates a new MqttStreamer and initialized the client callback.
@@ -53,7 +53,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             Permission permission,
             Flux<AiidaRecord> recordFlux,
             Sinks.One<UUID> terminationRequestSink,
-            MqttStreamingConfig streamingConfig,
+            PermissionMqttConfig streamingConfig,
             MqttAsyncClient client,
             ObjectMapper mapper,
             FailedToSendRepository failedToSendRepository
