@@ -7,7 +7,6 @@ import energy.eddie.aiida.models.datasource.DataSourceType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
-import java.time.Duration;
 import java.util.UUID;
 
 
@@ -16,17 +15,17 @@ import java.util.UUID;
 @SuppressWarnings("NullAway")
 public class SimulationDataSource extends DataSource {
     @JsonProperty
-    private Duration simulationPeriod;
+    private Integer simulationPeriod;
 
     @SuppressWarnings("NullAway")
     protected SimulationDataSource() {}
 
     public SimulationDataSource(DataSourceDto dto, UUID userId) {
         super(dto, userId);
-        this.simulationPeriod = Duration.ofSeconds(dto.simulationPeriod());
+        this.simulationPeriod = dto.simulationPeriod();
     }
 
-    public Duration simulationPeriod() {
+    public Integer simulationPeriod() {
         return simulationPeriod;
     }
 }

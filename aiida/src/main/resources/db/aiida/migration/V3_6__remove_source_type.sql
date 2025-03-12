@@ -1,0 +1,1 @@
+ALTER TABLE data_source DROP COLUMN source_type;

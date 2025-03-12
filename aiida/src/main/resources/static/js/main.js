@@ -623,12 +623,8 @@ function updateDataSourceFields(type) {
   let dataTypeFields = "";
   if (type === "SIMULATION") {
     dataTypeFields += `<br /><sl-input name="simulationPeriod" label="Simulation Period" type="number" required></sl-input>`;
-  } else {
-    dataTypeFields += `<br /><sl-input name="mqttTopic" label="MQTT Topic" required></sl-input>`;
-
-    if (type === "MICRO_TELEINFO") {
-      dataTypeFields += `<br /><sl-input name="meteringID" label="MeteringID" required></sl-input>`;
-    }
+  } else if (type === "MICRO_TELEINFO_V3") {
+    dataTypeFields += `<br /><sl-input name="meteringID" label="MeteringID" required></sl-input>`;
   }
 
   dataSourceFields.innerHTML = commonFields + dataTypeFields;
@@ -653,14 +649,11 @@ function openEditDataSourceDialog(dataSourceId) {
       );
 
       Promise.all([
-        fetch(`${DATASOURCES_BASE_URL}/types`).then((response) =>
-          response.json()
-        ),
         fetch(`${DATASOURCES_BASE_URL}/assets`).then((response) =>
           response.json()
         ),
       ])
-        .then(([types, assets]) => {
+        .then(([assets]) => {
           let editFields = /* HTML */ `
             <sl-input
               name="name"
@@ -682,20 +675,7 @@ function openEditDataSourceDialog(dataSourceId) {
                 )
                 .join("")}
             </sl-select>
-            <br />
-            <sl-select
-              id="type-select"
-              name="dataSourceType"
-              label="Type"
-              required
-            >
-              ${types
-                .map(
-                  (type) =>
-                    `<sl-option value="${type.identifier}">${type.name}</sl-option>`
-                )
-                .join("")}
-            </sl-select>
+            <input name="dataSourceType" value="${dataSource.dataSourceType}" type="hidden"/>
           `;
 
           if (dataSource.dataSourceType === "SIMULATION") {
@@ -709,60 +689,22 @@ function openEditDataSourceDialog(dataSourceId) {
                 required
               ></sl-input>
             `;
-          } else {
+          } else if (dataSource.dataSourceType === "MICRO_TELEINFO_V3") {
             editFields += /* HTML */ `
               <br />
               <sl-input
-                name="mqttServerUri"
-                label="MQTT Server URI"
-                value="${dataSource.mqttServerUri}"
+                name="meteringId"
+                label="Metering ID"
+                value="${dataSource.meteringId}"
                 required
-              ></sl-input>
-              <br />
-              <sl-input
-                name="mqttTopic"
-                label="MQTT Topic"
-                value="${dataSource.mqttSubscribeTopic}"
-                required
-              ></sl-input>
-              <br />
-              <sl-input
-                name="mqttUsername"
-                label="MQTT Username"
-                value="${dataSource.mqttUsername}"
-                required
-              ></sl-input>
-              <br />
-              <sl-input
-                name="mqttPassword"
-                label="MQTT Password"
-                value="${dataSource.mqttPassword}"
-                required
-                type="password"
-                password-toggle
               ></sl-input>
             `;
-
-            if (dataSource.dataSourceType === "TELEINFO") {
-              editFields += /* HTML */ `
-                <br />
-                <sl-input
-                  name="meteringId"
-                  label="Metering ID"
-                  value="${dataSource.meteringId}"
-                  required
-                ></sl-input>
-              `;
-            }
           }
 
           editDataSourceFields.innerHTML = editFields;
 
           const assetSelect = document.getElementById("asset-select");
-          const typeSelect = document.getElementById("type-select");
-
           assetSelect.value = dataSource.asset;
-          typeSelect.value = dataSource.dataSourceType;
 
           document
             .getElementById("edit-data-source-form")
@@ -804,9 +746,7 @@ document
         10
       );
     } else {
-      newDataSource.mqttSubscribeTopic = formData.get("mqttTopic");
-
-      if (dataSourceType === "MICRO_TELEINFO") {
+      if (dataSourceType === "MICRO_TELEINFO_V3") {
         newDataSource.meteringId = formData.get("meteringID");
       }
     }
@@ -843,11 +783,7 @@ document
       name: formData.get("name"),
       enabled: formData.get("enabled") === "on",
       asset: document.getElementById("asset-select").value,
-      dataSourceType: document.getElementById("type-select").value,
-      mqttServerUri: formData.get("mqttServerUri"),
-      mqttSubscribeTopic: formData.get("mqttTopic"),
-      mqttUsername: formData.get("mqttUsername"),
-      mqttPassword: formData.get("mqttPassword"),
+      dataSourceType: formData.get("dataSourceType"),
       meteringId: formData.get("meteringID"),
     };
 

@@ -31,9 +31,9 @@ public class DataSourceFactory {
     }
 
     public static DataSource createFromDto(DataSourceDto dto, UUID userId, DataSource currentDataSource) {
-        String mqttServerUri = null;
-        String mqttUsername = null;
-        String mqttPassword = null;
+        var mqttServerUri = "";
+        var mqttUsername = "";
+        var mqttPassword = "";
 
         if (currentDataSource instanceof MqttDataSource mqttDataSource) {
             mqttServerUri = mqttDataSource.mqttServerUri();

@@ -1,23 +1,19 @@
 package energy.eddie.aiida.models.datasource;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
 
 public enum DataSourceType {
-    OESTERREICHS_ENERGIE(Identifiers.OESTERREICHS_ENERGIE, "Österreichs Energie Adapter", Set.of("AT")),
-    MICRO_TELEINFO_V3(Identifiers.MICRO_TELEINFO_V3, "Micro Teleinfo v3", Set.of("FR")),
-    SMART_GATEWAYS(Identifiers.SMART_GATEWAYS, "Smart Gateways Adapter", Set.of("NL", "BE", "CH")),
-    SIMULATION(Identifiers.SIMULATION, "Simulation", Collections.emptySet());
+    OESTERREICHS_ENERGIE(Identifiers.OESTERREICHS_ENERGIE, "Österreichs Energie Adapter"),
+    MICRO_TELEINFO_V3(Identifiers.MICRO_TELEINFO_V3, "Micro Teleinfo v3"),
+    SMART_GATEWAYS(Identifiers.SMART_GATEWAYS, "Smart Gateways Adapter"),
+    SIMULATION(Identifiers.SIMULATION, "Simulation");
 
-    private final Set<String> countries;
     private final String identifier;
     private final String name;
 
-    DataSourceType(String identifier, String name, Set<String> countries) {
+    DataSourceType(String identifier, String name) {
         this.identifier = identifier;
         this.name = name;
-        this.countries = Set.copyOf(countries);
     }
 
     public static DataSourceType fromIdentifier(String identifier) {
@@ -25,10 +21,6 @@ public enum DataSourceType {
                      .filter(type -> type.identifier().equals(identifier))
                      .findFirst()
                      .orElseThrow();
-    }
-
-    public Set<String> countries() {
-        return countries;
     }
 
     public String identifier() {

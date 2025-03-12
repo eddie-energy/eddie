@@ -13,6 +13,7 @@ import java.util.UUID;
 public abstract class DataSource {
     @Id
     @SuppressWarnings({"unused", "NullAway"})
+    @JsonProperty
     @GeneratedValue(strategy = GenerationType.UUID)
     protected UUID id;
     @Schema(description = "UUID of the user that owns the permission.")
@@ -38,6 +39,7 @@ public abstract class DataSource {
         this.asset = AiidaAsset.forValue(dto.asset());
         this.name = dto.name();
         this.enabled = dto.enabled();
+        this.dataSourceType = DataSourceType.fromIdentifier(dto.dataSourceType());
     }
 
     public UUID id() {

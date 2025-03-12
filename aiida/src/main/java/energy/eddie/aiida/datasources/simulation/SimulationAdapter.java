@@ -14,6 +14,7 @@ import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nullable;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -52,7 +53,7 @@ public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
 
         LOGGER.info(
                 "Created new SimulationDataSource that will publish random values every {} seconds for obis codes {}",
-                dataSource.simulationPeriod().toSeconds(),
+                dataSource.simulationPeriod(),
                 obisCodes);
     }
 
@@ -69,7 +70,7 @@ public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
     public Flux<AiidaRecord> start() {
         LOGGER.info("Starting {}", dataSource().name());
 
-        periodicFlux = Flux.interval(dataSource().simulationPeriod())
+        periodicFlux = Flux.interval(Duration.ofSeconds(dataSource().simulationPeriod()))
                            .subscribeOn(Schedulers.parallel())
                            .subscribe(unused -> emitRandomAiidaRecords());
 

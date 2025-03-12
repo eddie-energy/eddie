@@ -33,7 +33,7 @@ public abstract class MqttDataSource extends DataSource {
         this.mqttUsername = mqttUsername;
         this.mqttPassword = mqttPassword;
 
-        this.mqttSubscribeTopic = "aiida/" + MqttSecretGenerator.generate();
+        this.mqttSubscribeTopic = "aiida/" + id();
     }
 
     public String mqttServerUri() {
