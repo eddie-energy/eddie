@@ -6,6 +6,10 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Optional;
+
+import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.oldestDateTime;
 
 @Entity
 @Table(name = "permission_request", schema = "cds")
@@ -31,6 +35,10 @@ public class CdsPermissionRequest implements PermissionRequest {
     @Column(name = "state")
     @SuppressWarnings("unused")
     private final String state;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @MapKeyJoinColumn(name = "permission_id", referencedColumnName = "permission_id")
+    @CollectionTable(name = "last_meter_readings", joinColumns = @JoinColumn(name = "permission_id"), schema = "cds")
+    private final Map<String, ZonedDateTime> lastMeterReadings = Map.of();
 
 
     @SuppressWarnings("java:S107")
@@ -107,5 +115,13 @@ public class CdsPermissionRequest implements PermissionRequest {
     @Override
     public LocalDate end() {
         return dataEnd;
+    }
+
+    public Optional<ZonedDateTime> oldestMeterReading() {
+        return oldestDateTime(lastMeterReadings.values());
+    }
+
+    public Map<String, ZonedDateTime> lastMeterReadings() {
+        return lastMeterReadings;
     }
 }
