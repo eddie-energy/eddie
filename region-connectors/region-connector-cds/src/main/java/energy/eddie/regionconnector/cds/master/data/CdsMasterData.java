@@ -46,7 +46,7 @@ public class CdsMasterData implements MasterData {
     }
 
     private static PermissionAdministrator toPermissionAdministrator(CdsServer server) {
-        return new PermissionAdministrator("US",
+        return new PermissionAdministrator("us",
                                            server.name(),
                                            server.displayName(),
                                            server.idAsString(),
@@ -56,7 +56,7 @@ public class CdsMasterData implements MasterData {
 
     private static MeteredDataAdministrator toMeteredDataAdministrator(CdsServer server) {
         var website = server.baseUri();
-        return new MeteredDataAdministrator("US",
+        return new MeteredDataAdministrator("us",
                                             server.name(),
                                             server.idAsString(),
                                             website,
