@@ -49,7 +49,8 @@ class PermissionRequestServiceTest {
                 now,
                 today,
                 today,
-                "state"
+                "state",
+                "redirectUri"
         );
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(pr));
 

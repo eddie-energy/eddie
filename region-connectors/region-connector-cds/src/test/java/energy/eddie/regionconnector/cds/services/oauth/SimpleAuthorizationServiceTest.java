@@ -50,5 +50,6 @@ class SimpleAuthorizationServiceTest {
         verify(outbox).commit(sentToPaEvent.capture());
         var event = sentToPaEvent.getValue();
         assertFalse(event.isPushedAuthorizationRequest());
+        assertEquals(redirectUri.toString(), event.redirectUri());
     }
 }
