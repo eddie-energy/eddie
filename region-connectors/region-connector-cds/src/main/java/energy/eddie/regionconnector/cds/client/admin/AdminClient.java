@@ -91,8 +91,7 @@ public class AdminClient {
                         .headers(setBearerToken(token))
                         .bodyValue(request)
                         .retrieve()
-                        .bodyToMono(RetrievingIndividualClients200Response.class)
-                        .doOnSuccess(body -> LOGGER.info("Modified client {}", body));
+                        .bodyToMono(RetrievingIndividualClients200Response.class);
     }
 
     private Flux<ClientEndpoint200Response> expandedClients(CredentialsWithoutRefreshToken token, URI next) {
