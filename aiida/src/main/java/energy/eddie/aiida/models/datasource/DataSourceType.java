@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.Set;
 
 public enum DataSourceType {
-    SMART_METER_ADAPTER("SMART_METER_ADAPTER", "Smart Meter Adapter", Set.of("AT")),
-    MICRO_TELEINFO_V3("MICRO_TELEINFO", "Micro Teleinfo v3", Set.of("FR")),
-    SMART_GATEWAYS_ADAPTER("SMART_GATEWAYS_ADAPTER", "Smart Gateways Adapter", Set.of("NL", "BE", "CH")),
-    SIMULATION("SIMULATION", "Simulation", Collections.emptySet());
+    OESTERREICHS_ENERGIE(Identifiers.OESTERREICHS_ENERGIE, "Österreichs Energie Adapter", Set.of("AT")),
+    MICRO_TELEINFO_V3(Identifiers.MICRO_TELEINFO_V3, "Micro Teleinfo v3", Set.of("FR")),
+    SMART_GATEWAYS(Identifiers.SMART_GATEWAYS, "Smart Gateways Adapter", Set.of("NL", "BE", "CH")),
+    SIMULATION(Identifiers.SIMULATION, "Simulation", Collections.emptySet());
 
     private final Set<String> countries;
     private final String identifier;
@@ -37,5 +37,12 @@ public enum DataSourceType {
 
     public String dataSourceName() {
         return name;
+    }
+
+    public static class Identifiers {
+        public static final String OESTERREICHS_ENERGIE = "OESTERREICHS_ENERGIE";
+        public static final String MICRO_TELEINFO_V3 = "MICRO_TELEINFO_V3";
+        public static final String SMART_GATEWAYS = "SMART_GATEWAYS";
+        public static final String SIMULATION = "SIMULATION";
     }
 }

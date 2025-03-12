@@ -10,13 +10,13 @@ import jakarta.annotation.Nullable;
 
 import java.io.IOException;
 
-public class MicroTeleinfoV3ValueDeserializer extends StdDeserializer<MicroTeleinfoV3Json.TeleinfoDataField> {
-    public MicroTeleinfoV3ValueDeserializer(@Nullable Class<?> vc) {
+public class MicroTeleinfoV3AdapterValueDeserializer extends StdDeserializer<MicroTeleinfoV3AdapterJson.TeleinfoDataField> {
+    public MicroTeleinfoV3AdapterValueDeserializer(@Nullable Class<?> vc) {
         super(vc);
     }
 
     @Override
-    public MicroTeleinfoV3Json.TeleinfoDataField deserialize(
+    public MicroTeleinfoV3AdapterJson.TeleinfoDataField deserialize(
             JsonParser jp,
             DeserializationContext context
     ) throws IOException {
@@ -29,7 +29,7 @@ public class MicroTeleinfoV3ValueDeserializer extends StdDeserializer<MicroTelei
         UnitOfMeasurement unit = determineUnit(jp.currentName());
         ObisCode obisCode = determineObisCode(jp.currentName());
 
-        return new MicroTeleinfoV3Json.TeleinfoDataField(raw, value, unit, obisCode);
+        return new MicroTeleinfoV3AdapterJson.TeleinfoDataField(raw, value, unit, obisCode);
     }
 
     private UnitOfMeasurement determineUnit(String fieldName) {

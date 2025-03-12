@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SimulationDataSourceTest {
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-    private SimulationDataSourceAdapter simulator;
+    private SimulationAdapter simulator;
 
     @Test
     void testConstructorWithoutNameParameter() {
@@ -23,7 +23,7 @@ class SimulationDataSourceTest {
         Duration period = Duration.ofSeconds(1);
 
         // when
-        simulator = new SimulationDataSourceAdapter(dataSourceId, userId, "simulation", period);
+        simulator = new SimulationAdapter(dataSourceId, userId, "simulation", period);
 
         // then
         assertEquals("simulation", simulator.name());
@@ -34,7 +34,7 @@ class SimulationDataSourceTest {
     void verify_bundleOfFourValuesIsGeneratedPerPeriod_andCloseEmitsCompleteOnFlux() {
         Duration period = Duration.ofSeconds(1);
 
-        simulator = new SimulationDataSourceAdapter(dataSourceId, userId, "Test Simulator", period);
+        simulator = new SimulationAdapter(dataSourceId, userId, "Test Simulator", period);
 
         StepVerifier.withVirtualTime(() -> simulator.start())
                     .expectSubscription()
@@ -57,7 +57,7 @@ class SimulationDataSourceTest {
      */
     @Test
     void verify_close_immediatelyEmitsCompleteOnFlux() {
-        simulator = new SimulationDataSourceAdapter(dataSourceId, userId, "Test Simulator", Duration.ofSeconds(200));
+        simulator = new SimulationAdapter(dataSourceId, userId, "Test Simulator", Duration.ofSeconds(200));
 
         var stepVerifier = StepVerifier.create(simulator.start()).expectComplete().log().verifyLater();
 
@@ -68,7 +68,7 @@ class SimulationDataSourceTest {
 
     @Test
     void testHealth() {
-        simulator = new SimulationDataSourceAdapter(dataSourceId, userId, "Test Simulator", Duration.ofSeconds(200));
+        simulator = new SimulationAdapter(dataSourceId, userId, "Test Simulator", Duration.ofSeconds(200));
         assertEquals(Status.UP, simulator.health().getStatus());
     }
 }

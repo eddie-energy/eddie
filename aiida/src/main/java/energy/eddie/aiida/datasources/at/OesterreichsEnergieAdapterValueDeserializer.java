@@ -8,13 +8,13 @@ import jakarta.annotation.Nullable;
 
 import java.io.IOException;
 
-public class OesterreichsEnergieAdapterValueDeserializer extends StdDeserializer<OesterreichAdapterJson.AdapterValue> {
+public class OesterreichsEnergieAdapterValueDeserializer extends StdDeserializer<OesterreichsEnergieAdapterJson.AdapterValue> {
     public OesterreichsEnergieAdapterValueDeserializer(@Nullable Class<?> vc) {
         super(vc);
     }
 
     @Override
-    public OesterreichAdapterJson.AdapterValue deserialize(JsonParser jp, DeserializationContext context) throws IOException {
+    public OesterreichsEnergieAdapterJson.AdapterValue deserialize(JsonParser jp, DeserializationContext context) throws IOException {
         JsonNode node = jp.getCodec().readTree(jp);
 
         // use value either as Integer or String
@@ -28,6 +28,6 @@ public class OesterreichsEnergieAdapterValueDeserializer extends StdDeserializer
                 ? timeNode.longValue()
                 : 0;
 
-        return new OesterreichAdapterJson.AdapterValue(value, time);
+        return new OesterreichsEnergieAdapterJson.AdapterValue(value, time);
     }
 }

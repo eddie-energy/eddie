@@ -1,8 +1,7 @@
 package energy.eddie.aiida.datasources.sga;
 
-import energy.eddie.aiida.datasources.AiidaMqttDataSource;
+import energy.eddie.aiida.datasources.MqttDataSourceAdapter;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
@@ -13,10 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
-public class SmartGatewaysAdapter extends AiidaMqttDataSource {
-    private static final String DATASOURCE_NAME = "SmartGatewaysAdapter";
+public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SmartGatewaysAdapter.class);
     private static final String DSMR_TARIFF_LOW = "0001";
 
@@ -25,12 +22,10 @@ public class SmartGatewaysAdapter extends AiidaMqttDataSource {
      * adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be assigned a
      * Unix timestamp of 0.
      *
-     * @param dataSourceId The unique identifier (UUID) of this data source.
-     * @param userId       The ID of the user who owns this data source.
-     * @param mqttConfig   Configuration detailing the MQTT broker to connect to and options to use.
+     * @param dataSource The entity of the data source.
      */
-    public SmartGatewaysAdapter(UUID dataSourceId, UUID userId, MqttConfig mqttConfig) {
-        super(dataSourceId, userId, DATASOURCE_NAME, mqttConfig, LOGGER);
+    public SmartGatewaysAdapter(SmartGatewaysDataSource dataSource) {
+        super(dataSource, LOGGER);
     }
 
     @Override
@@ -40,10 +35,10 @@ public class SmartGatewaysAdapter extends AiidaMqttDataSource {
             var adapterMessage = SmartGatewaysAdapterValueDeserializer.deserialize(message.getPayload());
             List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
 
-            SmartGatewaysMessageField powerCurrentlyDelivered = adapterMessage.powerCurrentlyDelivered();
-            SmartGatewaysMessageField powerCurrentlyReturned = adapterMessage.powerCurrentlyReturned();
-            SmartGatewaysMessageField electricityDelivered;
-            SmartGatewaysMessageField electricityReturned;
+            SmartGatewaysAdapterMessageField powerCurrentlyDelivered = adapterMessage.powerCurrentlyDelivered();
+            SmartGatewaysAdapterMessageField powerCurrentlyReturned = adapterMessage.powerCurrentlyReturned();
+            SmartGatewaysAdapterMessageField electricityDelivered;
+            SmartGatewaysAdapterMessageField electricityReturned;
 
             if (Objects.equals(adapterMessage.electricityTariff().value(), DSMR_TARIFF_LOW)) {
                 electricityDelivered = adapterMessage.electricityDeliveredTariff1();
@@ -81,7 +76,7 @@ public class SmartGatewaysAdapter extends AiidaMqttDataSource {
         throw new UnsupportedOperationException("The " + SmartGatewaysAdapter.class.getName() + " mustn't publish any MQTT messages");
     }
 
-    private void addAiidaRecordValue(List<AiidaRecordValue> aiidaRecordValues, SmartGatewaysMessageField recordValue) {
+    private void addAiidaRecordValue(List<AiidaRecordValue> aiidaRecordValues, SmartGatewaysAdapterMessageField recordValue) {
         aiidaRecordValues.add(new AiidaRecordValue(recordValue.rawTag(),
                                                    recordValue.obisCode(),
                                                    String.valueOf(recordValue.value()),

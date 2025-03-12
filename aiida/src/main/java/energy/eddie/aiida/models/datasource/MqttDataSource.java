@@ -1,54 +1,54 @@
 package energy.eddie.aiida.models.datasource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.DiscriminatorValue;
+import energy.eddie.aiida.dtos.DataSourceDto;
 import jakarta.persistence.Entity;
 
+import java.util.UUID;
+
 @Entity
-@DiscriminatorValue("MQTT")
 @SuppressWarnings("NullAway")
 public abstract class MqttDataSource extends DataSource {
     @JsonProperty
-    private String mqttServerUri;
+    protected String mqttServerUri;
     @JsonProperty
-    private String mqttSubscribeTopic;
+    protected String mqttSubscribeTopic;
     @JsonProperty
-    private String mqttUsername;
+    protected String mqttUsername;
     @JsonProperty
-    private String mqttPassword;
+    protected String mqttPassword;
 
-    protected MqttDataSource() {
+    @SuppressWarnings("NullAway")
+    protected MqttDataSource() {}
+
+    protected MqttDataSource(
+            DataSourceDto dto,
+            UUID userId,
+            String mqttServerUri,
+            String mqttUsername,
+            String mqttPassword
+    ) {
+        super(dto, userId);
+        this.mqttServerUri = mqttServerUri;
+        this.mqttUsername = mqttUsername;
+        this.mqttPassword = mqttPassword;
+
+        this.mqttSubscribeTopic = "aiida/" + MqttSecretGenerator.generate();
     }
 
-    public String getMqttServerUri() {
+    public String mqttServerUri() {
         return mqttServerUri;
     }
 
-    public void setMqttServerUri(String mqttServerUri) {
-        this.mqttServerUri = mqttServerUri;
-    }
-
-    public String getMqttSubscribeTopic() {
+    public String mqttSubscribeTopic() {
         return mqttSubscribeTopic;
     }
 
-    public void setMqttSubscribeTopic(String mqttSubscribeTopic) {
-        this.mqttSubscribeTopic = mqttSubscribeTopic;
-    }
-
-    public String getMqttUsername() {
+    public String mqttUsername() {
         return mqttUsername;
     }
 
-    public void setMqttUsername(String mqttUsername) {
-        this.mqttUsername = mqttUsername;
-    }
-
-    public String getMqttPassword() {
+    public String mqttPassword() {
         return mqttPassword;
-    }
-
-    public void setMqttPassword(String mqttPassword) {
-        this.mqttPassword = mqttPassword;
     }
 }

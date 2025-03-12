@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * Also tests that authentication works with username/password
  */
 @Testcontainers
-class OesterreichsAdapterIntegrationTest {
+class OesterreichsDataSourceAdapterIntegrationTest {
     private static final LogCaptor logCaptor = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
     public static Network network = Network.newNetwork();
     @Container

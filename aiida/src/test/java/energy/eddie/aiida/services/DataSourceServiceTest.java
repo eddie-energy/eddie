@@ -2,8 +2,8 @@ package energy.eddie.aiida.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.aggregator.Aggregator;
-import energy.eddie.aiida.config.MQTTConfiguration;
-import energy.eddie.aiida.datasources.AiidaDataSource;
+import energy.eddie.aiida.config.MqttConfiguration;
+import energy.eddie.aiida.datasources.DataSourceAdapter;
 import energy.eddie.aiida.datasources.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.datasources.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.datasources.sga.SmartGatewaysDataSource;
@@ -30,7 +30,7 @@ class DataSourceServiceTest {
     private DataSourceRepository repository;
     private Aggregator aggregator;
     private AuthService authService;
-    private MQTTConfiguration mqttConfiguration;
+    private MqttConfiguration mqttConfiguration;
     private ObjectMapper objectMapper;
     private DataSourceService dataSourceService;
     private UUID userId;
@@ -45,7 +45,7 @@ class DataSourceServiceTest {
         repository = mock(DataSourceRepository.class);
         aggregator = mock(Aggregator.class);
         authService = mock(AuthService.class);
-        mqttConfiguration = mock(MQTTConfiguration.class);
+        mqttConfiguration = mock(MqttConfiguration.class);
         objectMapper = mock(ObjectMapper.class);
         userId = UUID.randomUUID();
         dataSourceService = spy(new DataSourceService(repository, aggregator, authService, mqttConfiguration, objectMapper));
@@ -96,12 +96,12 @@ class DataSourceServiceTest {
         dataSourceService.addDataSource(smartGatewaysDataSourceDto);
 
         verify(repository, times(1)).save(any());
-        verify(aggregator, times(1)).addNewAiidaDataSource(any());
+        verify(aggregator, times(1)).addNewDataSourceAdapter(any());
     }
 
     @Test
     void shouldDeleteDataSource() {
-        doNothing().when(aggregator).addNewAiidaDataSource(any());
+        doNothing().when(aggregator).addNewDataSourceAdapter(any());
         dataSourceService.deleteDataSource(dataSourceId);
 
         verify(repository, times(1)).deleteById(dataSourceId);
@@ -141,7 +141,7 @@ class DataSourceServiceTest {
 
 
     @Test
-    void shouldLoadDataSourcesOnStartup() {
+    void shouldStartDataSourcesOnStartup() {
         UUID dataSourceId1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
         UUID dataSourceId2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
         UUID dataSourceId3 = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -167,8 +167,8 @@ class DataSourceServiceTest {
 
         new DataSourceService(repository, aggregator, authService, mqttConfiguration, objectMapper);
 
-        verify(aggregator, times(2)).addNewAiidaDataSource(any());
-        verify(aggregator, never()).addNewAiidaDataSource(argThat(ds -> ds.id().equals(dataSourceId2)));
+        verify(aggregator, times(2)).addNewDataSourceAdapter(any());
+        verify(aggregator, never()).addNewDataSourceAdapter(argThat(ds -> ds.id().equals(dataSourceId2)));
         verify(repository, times(2)).findAll();
     }
 
@@ -179,7 +179,7 @@ class DataSourceServiceTest {
         microTeleinfoV3DataSource.setDataSourceType(DataSourceType.MICRO_TELEINFO_V3);
         microTeleinfoV3DataSource.setMqttSubscribeTopic("mqttTopic");
         microTeleinfoV3DataSource.setEnabled(false);
-        var mockAiidaDataSource = mock(AiidaDataSource.class);
+        var mockAiidaDataSource = mock(DataSourceAdapter.class);
 
         when(repository.findById(dataSourceId)).thenReturn(Optional.of(microTeleinfoV3DataSource));
         doReturn(Optional.of(mockAiidaDataSource)).when(dataSourceService).findAiidaDataSource(dataSourceId);
@@ -187,7 +187,7 @@ class DataSourceServiceTest {
         dataSourceService.updateEnabledState(dataSourceId, true);
 
         verify(repository, times(1)).save(argThat(DataSource::isEnabled));
-        verify(aggregator, times(1)).addNewAiidaDataSource(any());
+        verify(aggregator, times(1)).addNewDataSourceAdapter(any());
 
         dataSourceService.updateEnabledState(dataSourceId, false);
 

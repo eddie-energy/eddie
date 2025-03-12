@@ -3,7 +3,7 @@ package energy.eddie.aiida.datasources.at;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.datasources.AiidaDataSource;
+import energy.eddie.aiida.datasources.DataSourceAdapter;
 import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.TestUtils;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.*;
 
 class OesterreichsEnergieAdapterTest {
     private static final LogCaptor logCaptor = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
-    private static final LogCaptor logCaptorAiidaDataSource = LogCaptor.forClass(AiidaDataSource.class);
+    private static final LogCaptor logCaptorAiidaDataSource = LogCaptor.forClass(DataSourceAdapter.class);
     private OesterreichsEnergieAdapter adapter;
     private MqttConfig config;
     private ObjectMapper mapper;

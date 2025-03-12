@@ -15,7 +15,7 @@ import java.util.Map;
  * @param name       Name as entered during the smart meter adapter setup.
  * @param smaTime    Indicates the time of the smart meter <b>adapter</b>.
  */
-public record OesterreichAdapterJson(
+public record OesterreichsEnergieAdapterJson(
         // this map is serialized as flattened map by using @JsonAnySetter and @JsonAnyGetter
         @JsonIgnore
         Map<String, AdapterValue> energyData,
@@ -25,7 +25,7 @@ public record OesterreichAdapterJson(
         String name,
         @JsonProperty("sma_time")
         Double smaTime) {
-    public OesterreichAdapterJson {
+    public OesterreichsEnergieAdapterJson {
         energyData = new HashMap<>();
     }
 

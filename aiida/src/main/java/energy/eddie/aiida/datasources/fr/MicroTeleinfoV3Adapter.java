@@ -2,10 +2,9 @@ package energy.eddie.aiida.datasources.fr;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import energy.eddie.aiida.datasources.AiidaMqttDataSource;
+import energy.eddie.aiida.datasources.MqttDataSourceAdapter;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -19,37 +18,34 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-public class MicroTeleinfoV3 extends AiidaMqttDataSource {
-    private static final String DATASOURCE_NAME = "MicroTeleinfoV3";
-    private static final Logger LOGGER = LoggerFactory.getLogger(MicroTeleinfoV3.class);
+public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV3DataSource> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MicroTeleinfoV3Adapter.class);
     private static final String HEALTH_TOPIC = "/status";
     private final String healthTopic;
     private final ObjectMapper mapper;
-    private Health healthState = Health.down().withDetail(DATASOURCE_NAME, "Initial value").build();
+    private Health healthState = Health.down().withDetail(dataSource.id().toString(), "Initial value").build();
 
     /**
      * Creates the datasource for the Micro Teleinfo V3. It connects to the specified MQTT broker and expects that the
      * adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be assigned a
      * Unix timestamp of 0.
      *
-     * @param dataSourceId The unique identifier (UUID) of this data source.
-     * @param userId       The ID of the user who owns this data source.
-     * @param mqttConfig   Configuration detailing the MQTT broker to connect to and options to use.
-     * @param mapper       {@link ObjectMapper} that is used to deserialize the JSON messages. A
-     *                     {@link MicroTeleinfoV3ValueDeserializer} will be registered to this mapper.
+     * @param dataSource The entity of the data source.
+     * @param mapper     {@link ObjectMapper} that is used to deserialize the JSON messages. A
+     *                   {@link MicroTeleinfoV3AdapterValueDeserializer} will be registered to this mapper.
      */
-    public MicroTeleinfoV3(UUID dataSourceId, UUID userId, MqttConfig mqttConfig, ObjectMapper mapper) {
-        super(dataSourceId, userId, DATASOURCE_NAME, mqttConfig, LOGGER);
+    public MicroTeleinfoV3Adapter(MicroTeleinfoV3DataSource dataSource, ObjectMapper mapper) {
+        super(dataSource, LOGGER);
 
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(MicroTeleinfoV3Json.TeleinfoDataField.class, new MicroTeleinfoV3ValueDeserializer(null));
+        module.addDeserializer(MicroTeleinfoV3AdapterJson.TeleinfoDataField.class,
+                               new MicroTeleinfoV3AdapterValueDeserializer(null));
         mapper.registerModule(module);
         this.mapper = mapper;
 
         healthSink.asFlux().subscribe(this::setHealthState);
-        this.healthTopic = mqttConfig.subscribeTopic().replaceFirst("/.*", HEALTH_TOPIC);
+        this.healthTopic = dataSource.mqttSubscribeTopic().replaceFirst("/.*", HEALTH_TOPIC);
     }
 
     /**
@@ -72,7 +68,7 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
             }
         } else {
             try {
-                var json = mapper.readValue(message.getPayload(), MicroTeleinfoV3Json.class);
+                var json = mapper.readValue(message.getPayload(), MicroTeleinfoV3AdapterJson.class);
 
                 // TODO: Rework with GH-1209 to support other kinds of data supplied by MicroTeleinfoV3
                 List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
@@ -113,9 +109,9 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
     public void deliveryComplete(IMqttToken token) throws UnsupportedOperationException {
         LOGGER.warn(
                 "Got deliveryComplete notification, but {} mustn't publish any MQTT messages but just listen. Token was {}",
-                MicroTeleinfoV3.class.getName(),
+                MicroTeleinfoV3Adapter.class.getName(),
                 token);
-        throw new UnsupportedOperationException("The " + MicroTeleinfoV3.class.getName() + " mustn't publish any MQTT messages");
+        throw new UnsupportedOperationException("The " + MicroTeleinfoV3Adapter.class.getName() + " mustn't publish any MQTT messages");
     }
 
     @Override
@@ -155,7 +151,8 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
             healthSink.tryEmitNext(Health.up().build());
         } else if (status.equals(Status.DOWN) && !healthState.getStatus().equals(Status.DOWN)) {
             healthSink.tryEmitNext(Health.down()
-                                         .withDetail(DATASOURCE_NAME, "The datasource is not working properly.")
+                                         .withDetail(dataSource().id().toString(),
+                                                     "The datasource is not working properly.")
                                          .build());
         }
     }

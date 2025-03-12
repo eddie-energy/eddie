@@ -1,6 +1,6 @@
 package energy.eddie.aiida.datasources.simulation;
 
-import energy.eddie.aiida.datasources.AiidaDataSource;
+import energy.eddie.aiida.datasources.DataSourceAdapter;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.ObisCode;
@@ -14,25 +14,19 @@ import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nullable;
 import java.security.SecureRandom;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 
 import static energy.eddie.aiida.utils.ObisCode.*;
 
-public class SimulationDataSourceAdapter extends AiidaDataSource {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimulationDataSourceAdapter.class);
+public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimulationAdapter.class);
     private final Random random;
     private final List<ObisCode> obisCodes;
-    private final Duration simulationPeriod;
     @Nullable
     private Disposable periodicFlux;
 
-    public SimulationDataSourceAdapter(UUID id, UUID userId, Duration simulationPeriod) {
-        this(id, userId, "SimulationDataSource", simulationPeriod);
-    }
 
     /**
      * Creates a new SimulationDataSource with the given name.
@@ -45,14 +39,10 @@ public class SimulationDataSourceAdapter extends AiidaDataSource {
      * <li>1-0:2.7.0</li>
      * </ul>
      *
-     * @param dataSourceId     The unique identifier (UUID) of this data source.
-     * @param userId           The ID of the user who owns this data source.
-     * @param name             Display name of this datasource.
-     * @param simulationPeriod Duration to wait until new random records should be created.
+     * @param dataSource     The unique identifier (UUID) of this data source.
      */
-    public SimulationDataSourceAdapter(UUID dataSourceId, UUID userId, String name, Duration simulationPeriod) {
-        super(dataSourceId, userId, name);
-        this.simulationPeriod = simulationPeriod;
+    public SimulationAdapter(SimulationDataSource dataSource) {
+        super(dataSource);
 
         random = new SecureRandom();
         obisCodes = List.of(POSITIVE_ACTIVE_ENERGY,
@@ -62,7 +52,7 @@ public class SimulationDataSourceAdapter extends AiidaDataSource {
 
         LOGGER.info(
                 "Created new SimulationDataSource that will publish random values every {} seconds for obis codes {}",
-                simulationPeriod.toSeconds(),
+                dataSource.simulationPeriod().toSeconds(),
                 obisCodes);
     }
 
@@ -77,9 +67,9 @@ public class SimulationDataSourceAdapter extends AiidaDataSource {
      */
     @Override
     public Flux<AiidaRecord> start() {
-        LOGGER.info("Starting {}", name());
+        LOGGER.info("Starting {}", dataSource().name());
 
-        periodicFlux = Flux.interval(simulationPeriod)
+        periodicFlux = Flux.interval(dataSource().simulationPeriod())
                            .subscribeOn(Schedulers.parallel())
                            .subscribe(unused -> emitRandomAiidaRecords());
 
@@ -93,7 +83,7 @@ public class SimulationDataSourceAdapter extends AiidaDataSource {
      */
     @Override
     public void close() {
-        LOGGER.info("Closing {}", name());
+        LOGGER.info("Closing {}", dataSource().name());
 
         if (periodicFlux != null) {
             periodicFlux.dispose();

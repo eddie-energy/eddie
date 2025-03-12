@@ -29,9 +29,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-class MicroTeleinfoV3Test {
-    private static final LogCaptor logCaptor = LogCaptor.forClass(MicroTeleinfoV3.class);
-    private MicroTeleinfoV3 adapter;
+class MicroTeleinfoV3AdapterTest {
+    private static final LogCaptor logCaptor = LogCaptor.forClass(MicroTeleinfoV3Adapter.class);
+    private MicroTeleinfoV3Adapter adapter;
     private MqttConfig config;
     private ObjectMapper mapper;
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -43,7 +43,7 @@ class MicroTeleinfoV3Test {
 
         config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data").build();
         mapper = new AiidaConfiguration().objectMapper();
-        adapter = new MicroTeleinfoV3(dataSourceId, userId, config, mapper);
+        adapter = new MicroTeleinfoV3Adapter(dataSourceId, userId, config, mapper);
     }
 
     @AfterEach
@@ -85,7 +85,7 @@ class MicroTeleinfoV3Test {
 
     @Test
     void verify_errorsDuringClose_areLogged() throws MqttException {
-        try (LogCaptor captor = LogCaptor.forClass(MicroTeleinfoV3.class)) {
+        try (LogCaptor captor = LogCaptor.forClass(MicroTeleinfoV3Adapter.class)) {
             try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
                 var mockClient = mock(MqttAsyncClient.class);
                 mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
@@ -120,7 +120,7 @@ class MicroTeleinfoV3Test {
                                                                                           .setPassword("Pass")
                                                                                           .build();
         config = spy(config);
-        adapter = new MicroTeleinfoV3(dataSourceId, userId, config, mapper);
+        adapter = new MicroTeleinfoV3Adapter(dataSourceId, userId, config, mapper);
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);

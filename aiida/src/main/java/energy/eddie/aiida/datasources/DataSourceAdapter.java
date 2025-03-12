@@ -1,5 +1,6 @@
 package energy.eddie.aiida.datasources;
 
+import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValidator;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
@@ -12,27 +13,20 @@ import reactor.core.publisher.Sinks;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
-public abstract class AiidaDataSource implements AutoCloseable, HealthIndicator {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AiidaDataSource.class);
+public abstract class DataSourceAdapter<T extends DataSource> implements AutoCloseable, HealthIndicator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceAdapter.class);
     protected final Sinks.Many<AiidaRecord> recordSink;
     protected final Sinks.Many<Health> healthSink;
-    private final UUID id;
-    private final UUID userId;
-    private final String name;
+    protected final T dataSource;
 
     /**
-     * Creates a new {@code AiidaDataSource} with the specified display name.
+     * Creates a new {@code DataSourceAdapter} with the specified display name.
      *
-     * @param id     The unique identifier (UUID) of this data source.
-     * @param userId The ID of the user who owns this data source.
-     * @param name   Display name of this new datasource.
+     * @param dataSource The entity of the data source.
      */
-    protected AiidaDataSource(UUID id, UUID userId, String name) {
-        this.id = id;
-        this.userId = userId;
-        this.name = name;
+    protected DataSourceAdapter(T dataSource) {
+        this.dataSource = dataSource;
         recordSink = Sinks.many().unicast().onBackpressureBuffer();
         healthSink = Sinks.many().unicast().onBackpressureBuffer();
     }
@@ -52,7 +46,7 @@ public abstract class AiidaDataSource implements AutoCloseable, HealthIndicator 
     public synchronized void emitAiidaRecord(String asset, List<AiidaRecordValue> aiidaRecordValues) {
         Instant timestamp = Instant.now();
 
-        var aiidaRecord = new AiidaRecord(timestamp, asset, userId, id, aiidaRecordValues);
+        var aiidaRecord = new AiidaRecord(timestamp, asset, dataSource.userId(), dataSource.id(), aiidaRecordValues);
         var invalidTags = AiidaRecordValidator.checkInvalidDataTags(aiidaRecord);
 
         if (!invalidTags.isEmpty()) {
@@ -73,21 +67,7 @@ public abstract class AiidaDataSource implements AutoCloseable, HealthIndicator 
     @Override
     public abstract void close();
 
-    /**
-     * Returns the display name for this datasource.
-     *
-     * @return Display name of this datasource.
-     */
-    public String name() {
-        return name;
-    }
-
-    /**
-     * Returns the internal ID of the datasource
-     *
-     * @return Internal ID of the datasource
-     */
-    public UUID id() {
-        return id;
+    public T dataSource() {
+        return dataSource;
     }
 }

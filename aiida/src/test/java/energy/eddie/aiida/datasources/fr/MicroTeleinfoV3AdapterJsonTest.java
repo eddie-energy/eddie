@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class MicroTeleinfoV3JsonTest {
+class MicroTeleinfoV3AdapterJsonTest {
     /**
      * Checks that the Jackson annotations are correct and every field of the JSON is deserialized as expected.
      */
@@ -17,8 +17,8 @@ class MicroTeleinfoV3JsonTest {
         ObjectMapper mapper = new AiidaConfiguration().objectMapper();
 
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(MicroTeleinfoV3Json.TeleinfoDataField.class,
-                               new MicroTeleinfoV3ValueDeserializer(null));
+        module.addDeserializer(MicroTeleinfoV3AdapterJson.TeleinfoDataField.class,
+                               new MicroTeleinfoV3AdapterValueDeserializer(null));
         mapper.registerModule(module);
 
 
@@ -68,7 +68,7 @@ class MicroTeleinfoV3JsonTest {
                 
                 """;
 
-        var json = mapper.readValue(str, MicroTeleinfoV3Json.class);
+        var json = mapper.readValue(str, MicroTeleinfoV3AdapterJson.class);
 
         assertEquals("000000", json.motdetat().raw());
         assertEquals("12345678901", json.adco().raw());

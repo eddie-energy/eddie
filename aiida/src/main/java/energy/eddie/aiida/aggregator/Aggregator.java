@@ -1,6 +1,7 @@
 package energy.eddie.aiida.aggregator;
 
-import energy.eddie.aiida.datasources.AiidaDataSource;
+import energy.eddie.aiida.datasources.DataSourceAdapter;
+import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 @Component
 public class Aggregator implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Aggregator.class);
-    private final List<AiidaDataSource> sources;
+    private final List<DataSourceAdapter<? extends DataSource>> dataSourceAdapters;
     private final Sinks.Many<AiidaRecord> combinedSink;
     private final AiidaRecordRepository repository;
     private final HealthContributorRegistry healthContributorRegistry;
@@ -32,7 +33,7 @@ public class Aggregator implements AutoCloseable {
         this.repository = repository;
         this.healthContributorRegistry = healthContributorRegistry;
 
-        sources = new ArrayList<>();
+        dataSourceAdapters = new ArrayList<>();
         combinedSink = Sinks.many().multicast().directAllOrNothing();
 
         combinedSink.asFlux()
@@ -43,31 +44,33 @@ public class Aggregator implements AutoCloseable {
     }
 
     /**
-     * Adds a new {@link AiidaDataSource} to this aggregator and will subscribe to the Flux returned by
-     * {@link AiidaDataSource#start()}.
+     * Adds a new {@link DataSourceAdapter} to this aggregator and will subscribe to the Flux returned by
+     * {@link DataSourceAdapter#start()}.
      *
-     * @param dataSource The new datasource to add. No check is made if this is a duplicate.
+     * @param dataSourceAdapter The new data source adapter to add. No check is made if this is a duplicate.
      */
-    public void addNewAiidaDataSource(AiidaDataSource dataSource) {
+    public void addNewDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
+        var dataSource = dataSourceAdapter.dataSource();
         LOGGER.info("Will add datasource {} with ID {} to aggregator", dataSource.name(), dataSource.id());
 
-        healthContributorRegistry.registerContributor(dataSource.id() + "_" + dataSource.name(), dataSource);
-        sources.add(dataSource);
-        dataSource.start()
-                  .subscribe(this::publishRecordToCombinedFlux, throwable -> handleError(throwable, dataSource));
+        healthContributorRegistry.registerContributor(dataSource.id() + "_" + dataSource.name(), dataSourceAdapter);
+        dataSourceAdapters.add(dataSourceAdapter);
+        dataSourceAdapter.start()
+                  .subscribe(this::publishRecordToCombinedFlux, throwable -> handleError(throwable, dataSourceAdapter));
     }
 
     /**
-     * Removes a {@link AiidaDataSource} from this aggregator and will close the datasource.
+     * Removes a {@link DataSourceAdapter} from this aggregator and will close the datasource.
      *
-     * @param dataSource The datasource to remove.
+     * @param dataSourceAdapter The datasource adapter to remove.
      */
-    public void removeAiidaDataSource(AiidaDataSource dataSource) {
+    public void removeAiidaDataSource(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
+        var dataSource = dataSourceAdapter.dataSource();
         LOGGER.info("Will remove datasource {} with ID {} from aggregator", dataSource.name(), dataSource.id());
 
         healthContributorRegistry.unregisterContributor(dataSource.id() + "_" + dataSource.name());
-        sources.remove(dataSource);
-        dataSource.close();
+        dataSourceAdapters.remove(dataSourceAdapter);
+        dataSourceAdapter.close();
     }
 
     /**
@@ -111,16 +114,16 @@ public class Aggregator implements AutoCloseable {
     }
 
     /**
-     * Closes all {@link AiidaDataSource}s and emits a complete signal for all the Flux returned by
+     * Closes all {@link DataSourceAdapter}s and emits a complete signal for all the Flux returned by
      */
     @Override
     public void close() {
         // ignore if complete signal can't be emitted successfully
         combinedSink.tryEmitComplete();
 
-        LOGGER.info("Closing all {} datasources", sources.size());
-        for (AiidaDataSource source : sources) {
-            source.close();
+        LOGGER.info("Closing all {} datasources", dataSourceAdapters.size());
+        for (var dataSourceAdapter : dataSourceAdapters) {
+            dataSourceAdapter.close();
         }
     }
 
@@ -144,9 +147,9 @@ public class Aggregator implements AutoCloseable {
         }
     }
 
-    private void handleError(Throwable throwable, AiidaDataSource dataSource) {
+    private void handleError(Throwable throwable, DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
         // TODO: GH-1304 do we try to restart the affected datasource or only notify user?
-        LOGGER.error("Error from datasource {}", dataSource.name(), throwable);
+        LOGGER.error("Error from datasource {}", dataSourceAdapter.dataSource().name(), throwable);
     }
 
     private boolean isValidAiidaRecord(AiidaRecord aiidaRecord, Instant expirationTime, UUID userId) {

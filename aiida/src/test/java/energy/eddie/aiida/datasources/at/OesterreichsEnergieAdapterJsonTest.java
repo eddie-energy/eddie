@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class OesterreichAdapterJsonTest {
+class OesterreichsEnergieAdapterJsonTest {
     /**
      * Checks that the Jackson annotations are correct and every field of the JSON is deserialized as expected.
      */
@@ -18,13 +18,13 @@ class OesterreichAdapterJsonTest {
         ObjectMapper mapper = new AiidaConfiguration().objectMapper();
 
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(OesterreichAdapterJson.AdapterValue.class, new OesterreichsEnergieAdapterValueDeserializer(null));
+        module.addDeserializer(OesterreichsEnergieAdapterJson.AdapterValue.class, new OesterreichsEnergieAdapterValueDeserializer(null));
         mapper.registerModule(module);
 
 
         String str = "{\"0-0:96.1.0\":{\"value\":\"90296857\"},\"1-0:1.8.0\":{\"value\":83402,\"time\":1697622940},\"1-0:1.7.0\":{\"value\":43,\"time\":1697622940},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2360.4}";
 
-        var json = mapper.readValue(str, OesterreichAdapterJson.class);
+        var json = mapper.readValue(str, OesterreichsEnergieAdapterJson.class);
 
         assertEquals("v1", json.apiVersion());
         assertEquals("90296857", json.name());

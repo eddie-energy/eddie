@@ -18,16 +18,16 @@ import energy.eddie.aiida.utils.ObisCode;
  * @param papp     Apparent power in unit VA (S (in VA), rounded up to the nearest ten)
  * @param hhphc    Peak hours Off-peak hours
  */
-public record MicroTeleinfoV3Json(@JsonProperty("MOTDETAT") TeleinfoDataField motdetat,
-                                  @JsonProperty("ADCO") TeleinfoDataField adco,
-                                  @JsonProperty("OPTARIF") TeleinfoDataField optarif,
-                                  @JsonProperty("ISOUSC") TeleinfoDataField isousc,
-                                  @JsonProperty("BASE") TeleinfoDataField base,
-                                  @JsonProperty("PTEC") TeleinfoDataField ptec,
-                                  @JsonProperty("IINST") TeleinfoDataField iinst,
-                                  @JsonProperty("IMAX") TeleinfoDataField imax,
-                                  @JsonProperty("PAPP") TeleinfoDataField papp,
-                                  @JsonProperty("HHPHC") TeleinfoDataField hhphc) {
+public record MicroTeleinfoV3AdapterJson(@JsonProperty("MOTDETAT") TeleinfoDataField motdetat,
+                                         @JsonProperty("ADCO") TeleinfoDataField adco,
+                                         @JsonProperty("OPTARIF") TeleinfoDataField optarif,
+                                         @JsonProperty("ISOUSC") TeleinfoDataField isousc,
+                                         @JsonProperty("BASE") TeleinfoDataField base,
+                                         @JsonProperty("PTEC") TeleinfoDataField ptec,
+                                         @JsonProperty("IINST") TeleinfoDataField iinst,
+                                         @JsonProperty("IMAX") TeleinfoDataField imax,
+                                         @JsonProperty("PAPP") TeleinfoDataField papp,
+                                         @JsonProperty("HHPHC") TeleinfoDataField hhphc) {
     public record TeleinfoDataField(String raw, @JsonProperty("value") Object value,
                                     UnitOfMeasurement unitOfMeasurement, ObisCode mappedObisCode) {}
 }

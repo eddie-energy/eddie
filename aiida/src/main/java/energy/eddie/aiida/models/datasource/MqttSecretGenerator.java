@@ -2,12 +2,12 @@ package energy.eddie.aiida.models.datasource;
 
 import java.security.SecureRandom;
 
-public class MQTTSecretGenerator {
+public class MqttSecretGenerator {
     private static final String BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final int LENGTH = 10;
 
-    private MQTTSecretGenerator() {
+    private MqttSecretGenerator() {
         throw new IllegalStateException("Utility class");
     }
 

@@ -2,10 +2,9 @@ package energy.eddie.aiida.datasources.at;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import energy.eddie.aiida.datasources.AiidaMqttDataSource;
+import energy.eddie.aiida.datasources.MqttDataSourceAdapter;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.utils.MqttConfig;
 import energy.eddie.aiida.utils.ObisCode;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
@@ -17,9 +16,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-public class OesterreichsEnergieAdapter extends AiidaMqttDataSource {
+public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<OesterreichsEnergieDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(OesterreichsEnergieAdapter.class);
     private final ObjectMapper mapper;
 
@@ -28,16 +26,14 @@ public class OesterreichsEnergieAdapter extends AiidaMqttDataSource {
      * that the adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be
      * assigned a Unix timestamp of 0.
      *
-     * @param dataSourceId The unique identifier (UUID) of this data source.
-     * @param userId       The ID of the user who owns this data source.
-     * @param mqttConfig   Configuration detailing the MQTT broker to connect to and options to use.
-     * @param mapper       {@link ObjectMapper} that is used to deserialize the JSON messages. A
-     *                     {@link OesterreichsEnergieAdapterValueDeserializer} will be registered to this mapper.
+     * @param dataSource The entity of the data source.
+     * @param mapper     {@link ObjectMapper} that is used to deserialize the JSON messages. A
+     *                   {@link OesterreichsEnergieAdapterValueDeserializer} will be registered to this mapper.
      */
-    public OesterreichsEnergieAdapter(UUID dataSourceId, UUID userId, MqttConfig mqttConfig, ObjectMapper mapper) {
-        super(dataSourceId, userId, "OesterreichsEnergieAdapter", mqttConfig, LOGGER);
+    public OesterreichsEnergieAdapter(OesterreichsEnergieDataSource dataSource, ObjectMapper mapper) {
+        super(dataSource, LOGGER);
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(OesterreichAdapterJson.AdapterValue.class,
+        module.addDeserializer(OesterreichsEnergieAdapterJson.AdapterValue.class,
                                new OesterreichsEnergieAdapterValueDeserializer(null));
         mapper.registerModule(module);
         this.mapper = mapper;
@@ -55,7 +51,7 @@ public class OesterreichsEnergieAdapter extends AiidaMqttDataSource {
         LOGGER.trace("Topic {} new message: {}", topic, message);
 
         try {
-            var json = mapper.readValue(message.getPayload(), OesterreichAdapterJson.class);
+            var json = mapper.readValue(message.getPayload(), OesterreichsEnergieAdapterJson.class);
 
             List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
             for (var entry : json.energyData().entrySet()) {

@@ -1,6 +1,7 @@
 package energy.eddie.aiida.models.datasource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -8,87 +9,62 @@ import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "source_type", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorColumn(name = "data_source_type", discriminatorType = DiscriminatorType.STRING)
 public abstract class DataSource {
     @Id
     @SuppressWarnings({"unused", "NullAway"})
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    protected UUID id;
     @Schema(description = "UUID of the user that owns the permission.")
-    private UUID userId;
+    protected UUID userId;
     @JsonProperty
     @Enumerated(EnumType.STRING)
-    private DataSourceType dataSourceType;
+    protected AiidaAsset asset;
+    @JsonProperty
+    protected String name;
+    @JsonProperty
+    protected boolean enabled;
     @JsonProperty
     @Enumerated(EnumType.STRING)
-    private AiidaAsset asset;
-    @JsonProperty
-    private String name;
-    @JsonProperty
-    private boolean enabled;
-    @JsonProperty
-    @Column(name = "source_type", insertable = false, updatable = false)
-    private String sourceType;
+    @Column(name = "data_source_type", insertable = false, updatable = false)
+    protected DataSourceType dataSourceType;
 
     @SuppressWarnings("NullAway")
-    protected DataSource() {
-    }
+    protected DataSource() {}
 
-    @SuppressWarnings("NullAway")
-    protected DataSource(String name, boolean enabled, UUID userId, AiidaAsset asset, DataSourceType dataSourceType) {
-        this.name = name;
-        this.enabled = enabled;
+    protected DataSource(DataSourceDto dto, UUID userId) {
+        this.id = dto.id();
         this.userId = userId;
-        this.asset = asset;
-        this.dataSourceType = dataSourceType;
+        this.asset = AiidaAsset.forValue(dto.asset());
+        this.name = dto.name();
+        this.enabled = dto.enabled();
     }
 
-    public UUID getId() {
+    public UUID id() {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public UUID getUserId() {
+    public UUID userId() {
         return userId;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
-
-    public AiidaAsset getAsset() {
+    public AiidaAsset asset() {
         return asset;
     }
 
-    public void setAsset(AiidaAsset asset) {
-        this.asset = asset;
-    }
-
-    public DataSourceType getDataSourceType() {
-        return dataSourceType;
-    }
-
-    public void setDataSourceType(DataSourceType dataSourceType) {
-        this.dataSourceType = dataSourceType;
-    }
-
-    public String getName() {
+    public String name() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isEnabled() {
+    public boolean enabled() {
         return enabled;
     }
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public DataSourceType dataSourceType() {
+        return dataSourceType;
     }
 }
