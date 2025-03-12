@@ -215,9 +215,10 @@ class CallbackServiceTest {
                                               .build();
         when(cdsServerRepository.getReferenceById(1L))
                 .thenReturn(cdsServer);
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
         var credentials = new CredentialsWithRefreshToken("accessToken",
                                                           "refreshToken",
-                                                          ZonedDateTime.now(ZoneOffset.UTC));
+                                                          now);
         when(oAuthService.retrieveAccessToken("code", cdsServer))
                 .thenReturn(credentials);
         var callback = new Callback("code", null, "state");
@@ -232,7 +233,10 @@ class CallbackServiceTest {
                 () -> assertEquals("dnid", accepted.dataNeedId())
         );
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.ACCEPTED, event.status())));
-        verify(credentialsRepository).save(any());
+        verify(credentialsRepository).save(assertArg(creds -> assertAll(
+                () -> assertEquals("accessToken", creds.accessToken()),
+                () -> assertEquals("refreshToken", creds.refreshToken())
+        )));
     }
 
     @Test
