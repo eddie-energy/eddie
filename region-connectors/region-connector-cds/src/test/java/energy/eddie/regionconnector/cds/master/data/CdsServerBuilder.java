@@ -14,6 +14,7 @@ public class CdsServerBuilder {
     private String authorizationEndpoint;
     private String parEndpoint;
     private String clientsEndpoint;
+    private String usageSegmentsEndpoint;
     private String customerDataClientId;
     private String customerDataClientSecret;
     private Long id = null;
@@ -59,6 +60,11 @@ public class CdsServerBuilder {
         return this;
     }
 
+    public CdsServerBuilder setUsageSegmentsEndpoint(String usageSegmentsEndpoint) {
+        this.usageSegmentsEndpoint = usageSegmentsEndpoint;
+        return this;
+    }
+
     public CdsServerBuilder setId(Long id) {
         this.id = id;
         return this;
@@ -96,7 +102,8 @@ public class CdsServerBuilder {
                         authorizationEndpoint,
                         parEndpoint,
                         clientsEndpoint,
-                        credentialsEndpoint
+                        credentialsEndpoint,
+                        usageSegmentsEndpoint
                 ),
                 customerDataClientId,
                 customerDataClientSecret

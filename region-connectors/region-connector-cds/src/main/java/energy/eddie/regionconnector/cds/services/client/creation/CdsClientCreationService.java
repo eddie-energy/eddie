@@ -132,7 +132,8 @@ public class CdsClientCreationService {
                         oauthMetadata.getAuthorizationEndpoint().toString(),
                         oauthMetadata.getPushedAuthorizationRequestEndpoint().toString(),
                         oauthMetadata.getCdsClientsApi().toString(),
-                        oauthMetadata.getCdsCredentialsApi().toString()
+                        oauthMetadata.getCdsCredentialsApi().toString(),
+                        oauthMetadata.getCdsCustomerdataUsagesegmentsApi().toString()
                 )
         );
         var temporaryAdminClient = adminClientFactory.getTemporaryAdminClient(cdsServer);

@@ -19,18 +19,23 @@ public class CdsEndpoints {
     private final String clientsEndpoint;
     @Column(name = "credentials_endpoint", nullable = false)
     private final String credentialsEndpoint;
+    @Column(name = "usage_point_endpoint", nullable = false)
+    private final String usagePointEndpoint;
 
     public CdsEndpoints(
             String tokenEndpoint,
             String authorizationEndpoint,
             String pushedAuthorizationRequestEndpoint,
-            String clientsEndpoint, String credentialsEndpoint
+            String clientsEndpoint,
+            String credentialsEndpoint,
+            String usagePointEndpoint
     ) {
         this.tokenEndpoint = tokenEndpoint;
         this.authorizationEndpoint = authorizationEndpoint;
         this.pushedAuthorizationRequestEndpoint = pushedAuthorizationRequestEndpoint;
         this.clientsEndpoint = clientsEndpoint;
         this.credentialsEndpoint = credentialsEndpoint;
+        this.usagePointEndpoint = usagePointEndpoint;
     }
 
     protected CdsEndpoints() {
@@ -39,6 +44,7 @@ public class CdsEndpoints {
         pushedAuthorizationRequestEndpoint = null;
         clientsEndpoint = null;
         credentialsEndpoint = null;
+        usagePointEndpoint = null;
     }
 
     public URI tokenEndpoint() {
@@ -59,5 +65,9 @@ public class CdsEndpoints {
 
     public URI credentialsEndpoint() {
         return URI.create(credentialsEndpoint);
+    }
+
+    public URI usagePointEndpoint() {
+        return URI.create(usagePointEndpoint);
     }
 }
