@@ -2,12 +2,53 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Connect Marketplace</title>
+  <title>Marketplace Management</title>
   <link rel="stylesheet" th:href="@{/css/index.css}" />
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/themes/light.css"
+  />
+  <script
+    type="module"
+    src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/shoelace-autoloader.js"
+  ></script>
+
+  <script>
+    const federatorUrl = 'http://localhost:9090/api/certificates';
+
+    window.onload = function () {
+      document.getElementById("federator-url").textContent = `${federatorUrl}`;
+    };
+
+    function requestNewCertificate() {
+      fetch('http://localhost:6060/request-certificate', {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      }).then(response => {
+        return response.text();
+      })
+        .then(certificateResponse => {
+          document.getElementById("csrSigningResult").innerText = "Signed Certificate from Federator:\n" + certificateResponse
+        });
+    }
+  </script>
 </head>
 <body>
 
 <h1>AIIDA - Marketplace Management</h1>
+
+<h2>Create Certificate for AIIDA</h2>
+
+<div>
+  <strong>Federator URL:</strong>
+  <div id="federator-url"></div>
+
+  <sl-button type="submit" variant="primary" onclick="requestNewCertificate()">Create CSR and send for Signing</sl-button>
+  <p id="csrSigningResult"></p>
+</div>
 
 </body>
 </html>
