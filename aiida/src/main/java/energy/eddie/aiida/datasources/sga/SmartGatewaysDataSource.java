@@ -1,6 +1,7 @@
 package energy.eddie.aiida.datasources.sga;
 
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.MqttDataSource;
 import jakarta.persistence.DiscriminatorValue;
@@ -14,13 +15,7 @@ public class SmartGatewaysDataSource extends MqttDataSource {
     @SuppressWarnings("NullAway")
     protected SmartGatewaysDataSource() {}
 
-    public SmartGatewaysDataSource(
-            DataSourceDto dto,
-            UUID userId,
-            String mqttServerUri,
-            String mqttUsername,
-            String mqttPassword
-    ) {
-        super(dto, userId, mqttServerUri, mqttUsername, mqttPassword);
+    public SmartGatewaysDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
+        super(dto, userId, dataSourceMqttDto);
     }
 }

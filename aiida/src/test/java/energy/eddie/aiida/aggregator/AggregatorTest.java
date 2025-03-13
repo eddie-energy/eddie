@@ -1,10 +1,14 @@
 package energy.eddie.aiida.aggregator;
 
 import energy.eddie.aiida.datasources.DataSourceAdapter;
+import energy.eddie.aiida.datasources.simulation.SimulationDataSource;
+import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.utils.TestUtils;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,12 +39,29 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AggregatorTest {
-    private static final LogCaptor logCaptor = LogCaptor.forClass(Aggregator.class);
-    private static final String DATASOURCE_NAME1 = "TestDataSource1";
-    private static final String DATASOURCE_NAME2 = "TestDataSource2";
-    private static final UUID dataSourceId1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID dataSourceId2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID userId1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56607");
+    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(Aggregator.class);
+    private static final String DATASOURCE_NAME_1 = "test-1";
+    private static final UUID DATA_SOURCE_ID_1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID DATA_SOURCE_ID_2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID USER_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56607");
+    private static final SimulationDataSource DATA_SOURCE_1 = new SimulationDataSource(new DataSourceDto(
+            DATA_SOURCE_ID_1,
+            DataSourceType.Identifiers.SIMULATION,
+            AiidaAsset.SUBMETER.asset(),
+            DATASOURCE_NAME_1,
+            true,
+            null,
+            null,
+            null), USER_ID);
+    private static final SimulationDataSource DATA_SOURCE_2 = new SimulationDataSource(new DataSourceDto(
+            DATA_SOURCE_ID_2,
+            DataSourceType.Identifiers.SIMULATION,
+            AiidaAsset.SUBMETER.asset(),
+            "test-2",
+            true,
+            null,
+            null,
+            null), USER_ID);
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
     private Aggregator aggregator;
     private Set<String> wantedCodes;
@@ -63,13 +84,13 @@ class AggregatorTest {
         var instant = Instant.now().plusSeconds(600);
 
         wantedCodes = Set.of("1-0:1.8.0", "1-0:2.8.0");
-        unwanted1 = new AiidaRecord(instant, "Test", userId1, dataSourceId1, List.of(
+        unwanted1 = new AiidaRecord(instant, "Test", USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:1.7.0", POSITIVE_ACTIVE_INSTANTANEOUS_POWER, "10", KWH, "10", KWH)));
-        unwanted2 = new AiidaRecord(instant, "Test", userId1, dataSourceId1, List.of(
+        unwanted2 = new AiidaRecord(instant, "Test", USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KW, "10", KW)));
-        unwanted3 = new AiidaRecord(instant, "Test", userId1, dataSourceId1, List.of(
+        unwanted3 = new AiidaRecord(instant, "Test", USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:2.8.0", NEGATIVE_ACTIVE_ENERGY, "60", KWH, "10", KWH)));
-        wanted1 = new AiidaRecord(instant, "Test", userId1, dataSourceId1, List.of(
+        wanted1 = new AiidaRecord(instant, "Test", USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KW, "10", KW)));
         expiration = Instant.now().plusSeconds(300_000);
         transmissionSchedule = CronExpression.parse("* * * * * *");
@@ -79,69 +100,64 @@ class AggregatorTest {
 
     @AfterEach
     void tearDown() {
-        logCaptor.clearLogs();
+        LOG_CAPTOR.clearLogs();
     }
 
     @Test
     void givenNewDataSource_addNewDataSource_subscribesToFluxAndCallsStart() {
-        var mockDataSource = mock(DataSourceAdapter.class);
-        when(mockDataSource.start()).thenReturn(mockFlux);
+        var mockAdapter = mock(DataSourceAdapter.class);
+        when(mockAdapter.dataSource()).thenReturn(DATA_SOURCE_1);
+        when(mockAdapter.start()).thenReturn(mockFlux);
 
-        aggregator.addNewDataSourceAdapter(mockDataSource);
+        aggregator.addNewDataSourceAdapter(mockAdapter);
 
-        verify(mockDataSource).start();
+        verify(mockAdapter).start();
     }
 
     @Test
     void verify_close_callsCloseOnAllDataSources() {
-        var mockDataSource1 = mock(DataSourceAdapter.class);
-        when(mockDataSource1.id()).thenReturn(dataSourceId1);
-        when(mockDataSource1.name()).thenReturn(DATASOURCE_NAME1);
-        when(mockDataSource1.start()).thenReturn(Flux.empty());
-        var mockDataSource2 = mock(DataSourceAdapter.class);
-        when(mockDataSource2.id()).thenReturn(dataSourceId2);
-        when(mockDataSource2.name()).thenReturn(DATASOURCE_NAME2);
-        when(mockDataSource2.start()).thenReturn(Flux.empty());
+        var mockAdapter1 = mock(DataSourceAdapter.class);
+        when(mockAdapter1.dataSource()).thenReturn(DATA_SOURCE_1);
+        when(mockAdapter1.start()).thenReturn(Flux.empty());
+        var mockAdapter2 = mock(DataSourceAdapter.class);
+        when(mockAdapter2.dataSource()).thenReturn(DATA_SOURCE_2);
+        when(mockAdapter2.start()).thenReturn(Flux.empty());
 
 
-        aggregator.addNewDataSourceAdapter(mockDataSource1);
-        aggregator.addNewDataSourceAdapter(mockDataSource2);
+        aggregator.addNewDataSourceAdapter(mockAdapter1);
+        aggregator.addNewDataSourceAdapter(mockAdapter2);
 
         aggregator.close();
 
-        verify(mockDataSource1).close();
-        verify(mockDataSource2).close();
+        verify(mockAdapter1).close();
+        verify(mockAdapter2).close();
     }
 
     @Test
     @Disabled("Disable till better aggregation method: GH-1307")
     void getFilteredFlux_filtersFluxFromDataSources() {
         var instant = Instant.now().plusSeconds(600);
-        wanted1 = new AiidaRecord(instant, "Test", userId1, dataSourceId2, List.of(
+        wanted1 = new AiidaRecord(instant, "Test", USER_ID, DATA_SOURCE_ID_2, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KW, "10", KW)));
-        unwanted2 = new AiidaRecord(instant, "Test", userId1, dataSourceId2, List.of(
+        unwanted2 = new AiidaRecord(instant, "Test", USER_ID, DATA_SOURCE_ID_2, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KW, "10", KW)));
 
         TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
         TestPublisher<AiidaRecord> publisher2 = TestPublisher.create();
-        var mockDataSource1 = mock(DataSourceAdapter.class);
-        when(mockDataSource1.id()).thenReturn(dataSourceId1);
-        when(mockDataSource1.id()).thenReturn(userId1);
-        when(mockDataSource1.name()).thenReturn(DATASOURCE_NAME1);
-        when(mockDataSource1.start()).thenReturn(publisher1.flux());
-        var mockDataSource2 = mock(DataSourceAdapter.class);
-        when(mockDataSource2.id()).thenReturn(dataSourceId2);
-        when(mockDataSource2.id()).thenReturn(userId1);
-        when(mockDataSource2.name()).thenReturn(DATASOURCE_NAME2);
-        when(mockDataSource2.start()).thenReturn(publisher2.flux());
+        var mockAdapter1 = mock(DataSourceAdapter.class);
+        when(mockAdapter1.dataSource()).thenReturn(DATA_SOURCE_1);
+        when(mockAdapter1.start()).thenReturn(publisher1.flux());
+        var mockAdapter2 = mock(DataSourceAdapter.class);
+        when(mockAdapter2.dataSource()).thenReturn(DATA_SOURCE_2);
+        when(mockAdapter2.start()).thenReturn(publisher2.flux());
 
-        aggregator.addNewDataSourceAdapter(mockDataSource1);
-        aggregator.addNewDataSourceAdapter(mockDataSource2);
+        aggregator.addNewDataSourceAdapter(mockAdapter1);
+        aggregator.addNewDataSourceAdapter(mockAdapter2);
 
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
                                                                                    expiration,
                                                                                    transmissionSchedule,
-                                                                                   userId1))
+                                                                                   USER_ID))
                                                 .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
                                                         aiidaRecord,
                                                         unwanted3.aiidaRecordValues().getFirst()))
@@ -165,17 +181,16 @@ class AggregatorTest {
     @Disabled("Disable till better aggregation method: GH-1307")
     void getFilteredFlux_doesNotReturnDataPublishedBeforeSubscribed() throws InterruptedException {
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
-        var mockDataSource = mock(DataSourceAdapter.class);
-        when(mockDataSource.id()).thenReturn(dataSourceId1);
-        when(mockDataSource.name()).thenReturn(DATASOURCE_NAME1);
-        when(mockDataSource.start()).thenReturn(publisher.flux());
+        var mockAdapter = mock(DataSourceAdapter.class);
+        when(mockAdapter.dataSource()).thenReturn(DATA_SOURCE_1);
+        when(mockAdapter.start()).thenReturn(publisher.flux());
 
-        aggregator.addNewDataSourceAdapter(mockDataSource);
+        aggregator.addNewDataSourceAdapter(mockAdapter);
 
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
                                                                                    expiration,
                                                                                    transmissionSchedule,
-                                                                                   userId1))
+                                                                                   USER_ID))
                                                 .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
                                                         aiidaRecord,
                                                         wanted1.aiidaRecordValues().getFirst()))
@@ -195,10 +210,11 @@ class AggregatorTest {
     @Test
     void getFilteredFlux_bufferRecordsByCron() {
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
-        var mockDataSource = mock(DataSourceAdapter.class);
-        when(mockDataSource.start()).thenReturn(publisher.flux());
+        var mockAdapter = mock(DataSourceAdapter.class);
+        when(mockAdapter.dataSource()).thenReturn(DATA_SOURCE_1);
+        when(mockAdapter.start()).thenReturn(publisher.flux());
 
-        var unwantedBeforeCron = new AiidaRecord(Instant.now().minusSeconds(10), "Test", userId1, dataSourceId1,
+        var unwantedBeforeCron = new AiidaRecord(Instant.now().minusSeconds(10), "Test", USER_ID, DATA_SOURCE_ID_1,
                                                  List.of(new AiidaRecordValue("1-0:1.8.0",
                                                                               POSITIVE_ACTIVE_ENERGY,
                                                                               "50",
@@ -206,12 +222,12 @@ class AggregatorTest {
                                                                               "10",
                                                                               KW)));
 
-        aggregator.addNewDataSourceAdapter(mockDataSource);
+        aggregator.addNewDataSourceAdapter(mockAdapter);
 
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
                                                                                    expiration,
                                                                                    transmissionSchedule,
-                                                                                   userId1))
+                                                                                   USER_ID))
                                                 .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
                                                         aiidaRecord,
                                                         wanted1.aiidaRecordValues().getFirst()))
@@ -228,21 +244,18 @@ class AggregatorTest {
     @Test
     void givenAiidaRecordFromDatasource_isSavedInDatabase() {
         TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
-        var mockDataSource1 = mock(DataSourceAdapter.class);
-        when(mockDataSource1.id()).thenReturn(dataSourceId1);
-        when(mockDataSource1.name()).thenReturn(DATASOURCE_NAME1);
-        when(mockDataSource1.start()).thenReturn(publisher1.flux());
+        var mockAdapter1 = mock(DataSourceAdapter.class);
+        when(mockAdapter1.dataSource()).thenReturn(DATA_SOURCE_1);
+        when(mockAdapter1.start()).thenReturn(publisher1.flux());
 
 
         TestPublisher<AiidaRecord> publisher2 = TestPublisher.create();
-        var mockDataSource2 = mock(DataSourceAdapter.class);
-        when(mockDataSource2.id()).thenReturn(dataSourceId2);
-        when(mockDataSource2.name()).thenReturn(DATASOURCE_NAME2);
-        when(mockDataSource2.start()).thenReturn(publisher2.flux());
+        var mockAdapter2 = mock(DataSourceAdapter.class);
+        when(mockAdapter2.dataSource()).thenReturn(DATA_SOURCE_2);
+        when(mockAdapter2.start()).thenReturn(publisher2.flux());
 
-
-        aggregator.addNewDataSourceAdapter(mockDataSource1);
-        aggregator.addNewDataSourceAdapter(mockDataSource2);
+        aggregator.addNewDataSourceAdapter(mockAdapter1);
+        aggregator.addNewDataSourceAdapter(mockAdapter2);
 
         publisher1.next(wanted1);
         publisher1.complete();
@@ -264,15 +277,14 @@ class AggregatorTest {
     @Disabled("Disable till better aggregation method: GH-1307")
     void givenDataWithTimestampAfterFluxFilterTime_fluxDoesNotPublish() {
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
-        var mockDataSource = mock(DataSourceAdapter.class);
-        when(mockDataSource.id()).thenReturn(dataSourceId1);
-        when(mockDataSource.name()).thenReturn(DATASOURCE_NAME1);
-        when(mockDataSource.start()).thenReturn(publisher.flux());
+        var mockAdapter = mock(DataSourceAdapter.class);
+        when(mockAdapter.dataSource()).thenReturn(DATA_SOURCE_1);
+        when(mockAdapter.start()).thenReturn(publisher.flux());
 
         var atExpirationTime = new AiidaRecord(expiration,
                                                "Test",
-                                               userId1,
-                                               dataSourceId1,
+                                               USER_ID,
+                                               DATA_SOURCE_ID_1,
                                                List.of(new AiidaRecordValue("1-0:1.7.0",
                                                                             POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
                                                                             "111",
@@ -281,8 +293,8 @@ class AggregatorTest {
                                                                             KWH)));
         var afterExpirationTime = new AiidaRecord(expiration.plusSeconds(10),
                                                   "Test",
-                                                  userId1,
-                                                  dataSourceId1,
+                                                  USER_ID,
+                                                  DATA_SOURCE_ID_1,
                                                   List.of(new AiidaRecordValue("1-0:2.7.0",
                                                                                NEGATIVE_ACTIVE_INSTANTANEOUS_POWER,
                                                                                "111",
@@ -290,9 +302,9 @@ class AggregatorTest {
                                                                                "10",
                                                                                KWH)));
 
-        aggregator.addNewDataSourceAdapter(mockDataSource);
+        aggregator.addNewDataSourceAdapter(mockAdapter);
 
-        StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration, transmissionSchedule, userId1))
+        StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration, transmissionSchedule, USER_ID))
                     .then(() -> {
                         publisher.next(wanted1);
                         publisher.next(unwanted1);
@@ -312,32 +324,31 @@ class AggregatorTest {
         var stepVerifier1 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 1"),
                                                                            expiration,
                                                                            transmissionSchedule,
-                                                                           userId1))
+                                                                           USER_ID))
                                         .expectComplete()
                                         .verifyLater();
 
         var stepVerifier2 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 2"),
                                                                            expiration,
                                                                            transmissionSchedule,
-                                                                           userId1))
+                                                                           USER_ID))
                                         .expectComplete()
                                         .verifyLater();
 
         var stepVerifier3 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 1"),
                                                                            expiration,
                                                                            transmissionSchedule,
-                                                                           userId1))
+                                                                           USER_ID))
                                         .expectComplete()
                                         .verifyLater();
 
 
-        var mockDataSource = mock(DataSourceAdapter.class);
-        when(mockDataSource.id()).thenReturn(dataSourceId1);
-        when(mockDataSource.name()).thenReturn(DATASOURCE_NAME1);
-        when(mockDataSource.start()).thenReturn(Flux.empty());
+        var mockAdapter = mock(DataSourceAdapter.class);
+        when(mockAdapter.dataSource()).thenReturn(DATA_SOURCE_1);
+        when(mockAdapter.start()).thenReturn(Flux.empty());
 
 
-        aggregator.addNewDataSourceAdapter(mockDataSource);
+        aggregator.addNewDataSourceAdapter(mockAdapter);
         aggregator.close();
 
         stepVerifier1.verify(Duration.ofSeconds(2));
@@ -349,18 +360,17 @@ class AggregatorTest {
     void givenErrorFromDataSource_errorIsLoggedWithDataSourceName() {
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
 
-        var mockDataSource = mock(DataSourceAdapter.class);
-        when(mockDataSource.id()).thenReturn(dataSourceId1);
-        when(mockDataSource.name()).thenReturn(DATASOURCE_NAME1);
-        when(mockDataSource.start()).thenReturn(publisher.flux());
+        var mockAdapter = mock(DataSourceAdapter.class);
+        when(mockAdapter.dataSource()).thenReturn(DATA_SOURCE_1);
+        when(mockAdapter.start()).thenReturn(publisher.flux());
 
 
-        aggregator.addNewDataSourceAdapter(mockDataSource);
+        aggregator.addNewDataSourceAdapter(mockAdapter);
 
         publisher.error(new IOException("My expected exception"));
 
-        TestUtils.verifyErrorLogStartsWith("Error from datasource %s".formatted(DATASOURCE_NAME1),
-                                           logCaptor,
+        TestUtils.verifyErrorLogStartsWith("Error from datasource %s".formatted(DATASOURCE_NAME_1),
+                                           LOG_CAPTOR,
                                            IOException.class);
     }
 

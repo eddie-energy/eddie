@@ -21,7 +21,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
     protected final T dataSource;
 
     /**
-     * Creates a new {@code DataSourceAdapter} with the specified display name.
+     * Creates a new {@code DataSourceAdapter} with the specified data source entity.
      *
      * @param dataSource The entity of the data source.
      */

@@ -69,4 +69,8 @@ public abstract class DataSource {
     public DataSourceType dataSourceType() {
         return dataSourceType;
     }
+
+    public DataSourceDto toDto() {
+        return new DataSourceDto(id, dataSourceType.identifier(), asset.asset(), name, enabled, null, null, null);
+    }
 }

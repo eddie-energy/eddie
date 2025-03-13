@@ -147,6 +147,7 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
 
     private MqttConnectionOptions createConnectOptions() {
         MqttConnectionOptions options = new MqttConnectionOptions();
+
         options.setCleanStart(false);
         options.setAutomaticReconnect(true);
         options.setKeepAliveInterval(KEEP_ALIVE_INTERVAL);

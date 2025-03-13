@@ -64,7 +64,7 @@ public class Aggregator implements AutoCloseable {
      *
      * @param dataSourceAdapter The datasource adapter to remove.
      */
-    public void removeAiidaDataSource(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
+    public void removeDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
         var dataSource = dataSourceAdapter.dataSource();
         LOGGER.info("Will remove datasource {} with ID {} from aggregator", dataSource.name(), dataSource.id());
 

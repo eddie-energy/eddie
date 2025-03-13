@@ -6,6 +6,7 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.datasources.DataSourceAdapter;
 import energy.eddie.aiida.datasources.DataSourceAdapterFactory;
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.models.datasource.*;
 import energy.eddie.aiida.repositories.DataSourceRepository;
@@ -57,10 +58,14 @@ public class DataSourceService {
 
     public void addDataSource(DataSourceDto dto) throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
-        var mqttServerUri = mqttConfiguration.host();
-        var mqttUsername = MqttSecretGenerator.generate();
-        var mqttPassword = MqttSecretGenerator.generate();
-        var dataSource = DataSourceFactory.createFromDto(dto, currentUserId, mqttServerUri, mqttUsername, mqttPassword);
+
+        var mqttSettingsDto = new DataSourceMqttDto(
+                mqttConfiguration.host(),
+                "aiida/" + currentUserId + "/" + UUID.randomUUID(),
+                MqttSecretGenerator.generate(),
+                MqttSecretGenerator.generate()
+        );
+        var dataSource = DataSourceFactory.createFromDto(dto, currentUserId, mqttSettingsDto);
 
         repository.save(dataSource);
         startDataSource(dataSource);
@@ -108,7 +113,7 @@ public class DataSourceService {
         repository.save(dataSource);
     }
 
-    private Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(UUID dataSourceId) {
+    public Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(UUID dataSourceId) {
         return dataSourceAdapters.stream()
                                  .filter(adapter -> adapter.dataSource().id().equals(dataSourceId))
                                  .findFirst();
@@ -132,7 +137,7 @@ public class DataSourceService {
     }
 
     private void closeDataSource(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
-        aggregator.removeAiidaDataSource(dataSourceAdapter);
+        aggregator.removeDataSourceAdapter(dataSourceAdapter);
         dataSourceAdapters.remove(dataSourceAdapter);
     }
 

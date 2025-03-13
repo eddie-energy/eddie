@@ -16,10 +16,10 @@ public class DataSourceAdapterFactory {
 
     public static DataSourceAdapter<? extends DataSource> create(DataSource dataSource, ObjectMapper objectMapper) {
         return switch (dataSource.dataSourceType()) {
-            case OESTERREICHS_ENERGIE ->
+            case SMART_METER_ADAPTER ->
                     new OesterreichsEnergieAdapter((OesterreichsEnergieDataSource) dataSource, objectMapper);
-            case MICRO_TELEINFO_V3 -> new MicroTeleinfoV3Adapter((MicroTeleinfoV3DataSource) dataSource, objectMapper);
-            case SMART_GATEWAYS -> new SmartGatewaysAdapter((SmartGatewaysDataSource) dataSource);
+            case MICRO_TELEINFO -> new MicroTeleinfoV3Adapter((MicroTeleinfoV3DataSource) dataSource, objectMapper);
+            case SMART_GATEWAYS_ADAPTER -> new SmartGatewaysAdapter((SmartGatewaysDataSource) dataSource);
             case SIMULATION -> new SimulationAdapter((SimulationDataSource) dataSource);
         };
     }

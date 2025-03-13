@@ -28,4 +28,18 @@ public class SimulationDataSource extends DataSource {
     public Integer simulationPeriod() {
         return simulationPeriod;
     }
+
+    @Override
+    public DataSourceDto toDto() {
+        return new DataSourceDto(
+                id,
+                dataSourceType.identifier(),
+                asset.asset(),
+                name,
+                enabled,
+                null,
+                simulationPeriod,
+                null
+        );
+    }
 }

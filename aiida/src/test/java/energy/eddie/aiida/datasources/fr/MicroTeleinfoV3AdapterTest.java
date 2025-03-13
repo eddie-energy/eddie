@@ -3,9 +3,12 @@ package energy.eddie.aiida.datasources.fr;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.utils.MqttConfig;
+import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.TestUtils;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
@@ -30,25 +33,38 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class MicroTeleinfoV3AdapterTest {
-    private static final LogCaptor logCaptor = LogCaptor.forClass(MicroTeleinfoV3Adapter.class);
+    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(MicroTeleinfoV3Adapter.class);
+    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final MicroTeleinfoV3DataSource DATA_SOURCE = new MicroTeleinfoV3DataSource(
+            new DataSourceDto(DATA_SOURCE_ID,
+                              DataSourceType.Identifiers.MICRO_TELEINFO,
+                              AiidaAsset.SUBMETER.asset(),
+                              "teleinfo",
+                              true,
+                              "FR123456789123",
+                              null,
+                              null),
+            USER_ID,
+            new DataSourceMqttDto("tcp://localhost:1883",
+                                  "aiida/test",
+                                  "user",
+                                  "password")
+    );
     private MicroTeleinfoV3Adapter adapter;
-    private MqttConfig config;
     private ObjectMapper mapper;
-    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data").build();
         mapper = new AiidaConfiguration().objectMapper();
-        adapter = new MicroTeleinfoV3Adapter(dataSourceId, userId, config, mapper);
+        adapter = new MicroTeleinfoV3Adapter(DATA_SOURCE, mapper);
     }
 
     @AfterEach
     void tearDown() {
-        logCaptor.clearLogs();
+        LOG_CAPTOR.clearLogs();
     }
 
     @Test
@@ -115,12 +131,9 @@ class MicroTeleinfoV3AdapterTest {
     }
 
     @Test
-    void givenUsernameAndPassword_isUsedByAdapter() {
-        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "teleinfo/data").setUsername("User")
-                                                                                          .setPassword("Pass")
-                                                                                          .build();
-        config = spy(config);
-        adapter = new MicroTeleinfoV3Adapter(dataSourceId, userId, config, mapper);
+    void verify_usernameAndPassword_isUsedByAdapter() {
+        var spiedDataSource = spy(DATA_SOURCE);
+        adapter = new MicroTeleinfoV3Adapter(spiedDataSource, mapper);
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
@@ -129,8 +142,8 @@ class MicroTeleinfoV3AdapterTest {
 
             adapter.start().subscribe();
 
-            verify(config, atLeastOnce()).username();
-            verify(config, atLeastOnce()).password();
+            verify(spiedDataSource, atLeastOnce()).mqttUsername();
+            verify(spiedDataSource, atLeastOnce()).mqttPassword();
         }
     }
 
@@ -235,9 +248,9 @@ class MicroTeleinfoV3AdapterTest {
 
             adapter.start().subscribe();
 
-            adapter.connectComplete(false, config.serverURI());
+            adapter.connectComplete(false, DATA_SOURCE.mqttServerUri());
 
-            verify(mockClient).subscribe(config.subscribeTopic(), 2);
+            verify(mockClient).subscribe(DATA_SOURCE.mqttSubscribeTopic(), 2);
         }
     }
 
@@ -247,11 +260,11 @@ class MicroTeleinfoV3AdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
-            when(mockClient.subscribe(config.subscribeTopic(), 2)).thenThrow(new MqttException(998877));
+            when(mockClient.subscribe(DATA_SOURCE.mqttSubscribeTopic(), 2)).thenThrow(new MqttException(998877));
 
             StepVerifier.create(adapter.start())
                         .expectSubscription()
-                        .then(() -> adapter.connectComplete(false, config.serverURI()))
+                        .then(() -> adapter.connectComplete(false, DATA_SOURCE.mqttServerUri()))
                         .expectError()
                         .verify();
         }
@@ -273,11 +286,13 @@ class MicroTeleinfoV3AdapterTest {
                                                 .expectComplete()
                                                 .verifyLater();
 
-        adapter.messageArrived(config.subscribeTopic(), new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
-        adapter.messageArrived(config.subscribeTopic(), new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
+        adapter.messageArrived(DATA_SOURCE.mqttSubscribeTopic(),
+                               new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
+        adapter.messageArrived(DATA_SOURCE.mqttSubscribeTopic(),
+                               new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
-                invalidJson), logCaptor, JsonMappingException.class);
+                invalidJson), LOG_CAPTOR, JsonMappingException.class);
 
         stepVerifier.verify(Duration.ofSeconds(2));
     }
@@ -285,6 +300,6 @@ class MicroTeleinfoV3AdapterTest {
     @Test
     void givenConnectionLost_warningIsLogged() {
         adapter.disconnected(new MqttDisconnectResponse(new MqttException(998877)));
-        assertThat(logCaptor.getWarnLogs()).contains("Disconnected from MQTT broker");
+        assertThat(LOG_CAPTOR.getWarnLogs()).contains("Disconnected from MQTT broker");
     }
 }

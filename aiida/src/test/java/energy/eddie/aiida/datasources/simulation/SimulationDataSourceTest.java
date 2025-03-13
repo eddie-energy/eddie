@@ -1,5 +1,8 @@
 package energy.eddie.aiida.datasources.simulation;
 
+import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,28 +16,35 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class SimulationDataSourceTest {
-    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final SimulationDataSource DATA_SOURCE = new SimulationDataSource(
+            new DataSourceDto(DATA_SOURCE_ID,
+                              DataSourceType.Identifiers.SIMULATION,
+                              AiidaAsset.SUBMETER.asset(),
+                              "simulation",
+                              true,
+                              null,
+                              1,
+                              null),
+            USER_ID
+    );
     private SimulationAdapter simulator;
 
     @Test
     void testConstructorWithoutNameParameter() {
-        // given
-        Duration period = Duration.ofSeconds(1);
-
-        // when
-        simulator = new SimulationAdapter(dataSourceId, userId, "simulation", period);
+        // given, when
+        simulator = new SimulationAdapter(DATA_SOURCE);
 
         // then
-        assertEquals("simulation", simulator.name());
-        assertEquals(dataSourceId, simulator.id());
+        assertEquals("simulation", simulator.dataSource().name());
+        assertEquals(DATA_SOURCE_ID, simulator.dataSource().id());
     }
 
     @Test
     void verify_bundleOfFourValuesIsGeneratedPerPeriod_andCloseEmitsCompleteOnFlux() {
-        Duration period = Duration.ofSeconds(1);
-
-        simulator = new SimulationAdapter(dataSourceId, userId, "Test Simulator", period);
+        simulator = new SimulationAdapter(DATA_SOURCE);
+        var period = Duration.ofSeconds(DATA_SOURCE.simulationPeriod());
 
         StepVerifier.withVirtualTime(() -> simulator.start())
                     .expectSubscription()
@@ -46,8 +56,8 @@ class SimulationDataSourceTest {
                     .expectComplete()
                     .verify(Duration.ofSeconds(1));
 
-        assertEquals("Test Simulator", simulator.name());
-        assertEquals(dataSourceId, simulator.id());
+        assertEquals("simulation", simulator.dataSource().name());
+        assertEquals(DATA_SOURCE_ID, simulator.dataSource().id());
     }
 
 
@@ -57,7 +67,7 @@ class SimulationDataSourceTest {
      */
     @Test
     void verify_close_immediatelyEmitsCompleteOnFlux() {
-        simulator = new SimulationAdapter(dataSourceId, userId, "Test Simulator", Duration.ofSeconds(200));
+        simulator = new SimulationAdapter(DATA_SOURCE);
 
         var stepVerifier = StepVerifier.create(simulator.start()).expectComplete().log().verifyLater();
 
@@ -68,7 +78,7 @@ class SimulationDataSourceTest {
 
     @Test
     void testHealth() {
-        simulator = new SimulationAdapter(dataSourceId, userId, "Test Simulator", Duration.ofSeconds(200));
+        simulator = new SimulationAdapter(DATA_SOURCE);
         assertEquals(Status.UP, simulator.health().getStatus());
     }
 }

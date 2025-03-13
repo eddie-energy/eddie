@@ -1,7 +1,10 @@
 package energy.eddie.aiida.datasources.sga;
 
-import energy.eddie.aiida.utils.MqttConfig;
+import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.utils.MqttFactory;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -82,17 +85,30 @@ class SmartGatewaysAdapterTest {
             736.650
             -0.061
             0.002""";
+    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final SmartGatewaysDataSource DATA_SOURCE = new SmartGatewaysDataSource(
+            new DataSourceDto(DATA_SOURCE_ID,
+                              DataSourceType.Identifiers.SMART_GATEWAYS,
+                              AiidaAsset.SUBMETER.asset(),
+                              "sma",
+                              true,
+                              null,
+                              null,
+                              null),
+            USER_ID,
+            new DataSourceMqttDto("tcp://localhost:1883",
+                                  "aiida/test",
+                                  "user",
+                                  "password")
+    );
     private SmartGatewaysAdapter adapter;
-    private MqttConfig config;
-    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "sga/data").build();
-        adapter = new SmartGatewaysAdapter(dataSourceId, userId, config);
+        adapter = new SmartGatewaysAdapter(DATA_SOURCE);
     }
 
     @AfterEach
@@ -164,12 +180,9 @@ class SmartGatewaysAdapterTest {
     }
 
     @Test
-    void givenUsernameAndPassword_isUsedByAdapter() {
-        config = new MqttConfig.MqttConfigBuilder("tcp://localhost:1883", "sga/data").setUsername("User")
-                                                                                     .setPassword("Pass")
-                                                                                     .build();
-        config = spy(config);
-        adapter = new SmartGatewaysAdapter(dataSourceId, userId, config);
+    void verify_usernameAndPassword_isUsedByAdapter() {
+        var spiedDataSource = spy(DATA_SOURCE);
+        adapter = new SmartGatewaysAdapter(spiedDataSource);
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
@@ -178,8 +191,8 @@ class SmartGatewaysAdapterTest {
 
             adapter.start().subscribe();
 
-            verify(config, atLeastOnce()).username();
-            verify(config, atLeastOnce()).password();
+            verify(spiedDataSource, atLeastOnce()).mqttUsername();
+            verify(spiedDataSource, atLeastOnce()).mqttPassword();
         }
     }
 

@@ -1,8 +1,11 @@
 package energy.eddie.aiida.web;
 
+import energy.eddie.aiida.datasources.simulation.SimulationDataSource;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.services.DataSourceService;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +29,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(DataSourceController.class)
 class DataSourceControllerTest {
-    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final SimulationDataSource DATA_SOURCE = new SimulationDataSource(
+            new DataSourceDto(DATA_SOURCE_ID,
+                              DataSourceType.Identifiers.SIMULATION,
+                              AiidaAsset.SUBMETER.asset(),
+                              "simulation",
+                              true,
+                              null,
+                              1,
+                              null),
+            USER_ID
+    );
 
     @Autowired
     private MockMvc mockMvc;
@@ -56,7 +71,7 @@ class DataSourceControllerTest {
     @Test
     @WithMockUser
     void getAllDataSources_shouldReturnListOfDataSources() throws Exception {
-        List<DataSource> dataSources = List.of(new DataSource() {});
+        List<DataSource> dataSources = List.of(DATA_SOURCE);
 
         when(service.getDataSources()).thenReturn(dataSources);
 
@@ -96,13 +111,13 @@ class DataSourceControllerTest {
     @Test
     @WithMockUser
     void deleteDataSource_shouldReturn200() throws Exception {
-        doNothing().when(service).deleteDataSource(dataSourceId);
+        doNothing().when(service).deleteDataSource(DATA_SOURCE_ID);
 
         mockMvc.perform(delete("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .with(csrf()))
                .andExpect(status().isOk());
 
-        verify(service, times(1)).deleteDataSource(dataSourceId);
+        verify(service, times(1)).deleteDataSource(DATA_SOURCE_ID);
     }
 
     @Test
@@ -120,7 +135,7 @@ class DataSourceControllerTest {
     @Test
     @WithMockUser
     void updateEnabledState_shouldReturn200() throws Exception {
-        doNothing().when(service).updateEnabledState(dataSourceId, true);
+        doNothing().when(service).updateEnabledState(DATA_SOURCE_ID, true);
 
         mockMvc.perform(patch("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606/enabled")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -128,26 +143,25 @@ class DataSourceControllerTest {
                                 .with(csrf()))
                .andExpect(status().isOk());
 
-        verify(service, times(1)).updateEnabledState(dataSourceId, true);
+        verify(service, times(1)).updateEnabledState(DATA_SOURCE_ID, true);
     }
 
     @Test
     @WithMockUser
     void getDataSourceById_shouldReturnDataSource() throws Exception {
-        DataSource mockDataSource = new DataSource() {};
-        when(service.getDataSourceById(dataSourceId)).thenReturn(Optional.of(mockDataSource));
+        when(service.getDataSourceById(DATA_SOURCE_ID)).thenReturn(Optional.of(DATA_SOURCE));
 
         mockMvc.perform(get("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
 
-        verify(service, times(1)).getDataSourceById(dataSourceId);
+        verify(service, times(1)).getDataSourceById(DATA_SOURCE_ID);
     }
 
     @Test
     @WithMockUser
     void getDataSourceById_shouldReturn404IfNotFound() throws Exception {
-        when(service.getDataSourceById(dataSourceId)).thenReturn(Optional.empty());
+        when(service.getDataSourceById(DATA_SOURCE_ID)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .accept(MediaType.APPLICATION_JSON))

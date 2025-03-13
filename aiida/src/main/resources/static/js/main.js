@@ -146,7 +146,7 @@ function handlePermissionFormSubmit(event) {
 aiidaCodeInput.addEventListener("sl-input", () => {
   try {
     // reset validity
-    aiidaCodeInput.setCustomValidity("")
+    aiidaCodeInput.setCustomValidity("");
     // check if input can be parsed into the correct format
     // noinspection JSUnusedLocalSymbols
     const { eddieId, permissionId, serviceName, handshakeUrl, accessToken } =
@@ -423,15 +423,15 @@ function renderDataSources() {
               `
             : /* HTML */ `
                 <dt>MQTT Server URI:</dt>
-                <dd>${dataSource.mqttServerUri}</dd>
+                <dd>${dataSource.mqttSettings.serverUri}</dd>
                 <dt>MQTT Topic:</dt>
-                <dd>${dataSource.mqttSubscribeTopic}</dd>
+                <dd>${dataSource.mqttSettings.subscribeTopic}</dd>
                 <dt>MQTT Username:</dt>
-                <dd>${dataSource.mqttUsername}</dd>
+                <dd>${dataSource.mqttSettings.username}</dd>
                 <dt>MQTT Password:</dt>
                 <dd>
                   <span hidden id="mqtt-password">
-                    ${dataSource.mqttPassword}
+                    ${dataSource.mqttSettings.password}
                   </span>
                   <span>********</span>
                   <sl-icon
@@ -442,8 +442,8 @@ function renderDataSources() {
                 </dd>
               `;
 
-        if (dataSource.dataSourceType === "Micro Teleinfo v3") {
-          dataSourceTypeDetails += `<p><strong>Metering ID:</strong> ${dataSource.meteringId}</p>`;
+        if (dataSource.dataSourceType === "MICRO_TELEINFO") {
+          dataSourceTypeDetails += `<dt>Metering ID:</dt> <dd>${dataSource.meteringId}</dd>`;
         }
 
         template.innerHTML = /* HTML */ `
@@ -480,14 +480,16 @@ function renderDataSources() {
       const passwordSpan = document.getElementById("mqtt-password");
       const toggleIcon = document.getElementById("toggle-mqtt-password");
 
-      toggleIcon.addEventListener("click", () => {
-        passwordSpan.toggleAttribute("hidden");
-        if (passwordSpan.hasAttribute("hidden")) {
-          toggleIcon.setAttribute("name", "eye");
-        } else {
-          toggleIcon.setAttribute("name", "eye-slash");
-        }
-      });
+      if(toggleIcon) {
+        toggleIcon.addEventListener("click", () => {
+          passwordSpan.toggleAttribute("hidden");
+          if (passwordSpan.hasAttribute("hidden")) {
+            toggleIcon.setAttribute("name", "eye");
+          } else {
+            toggleIcon.setAttribute("name", "eye-slash");
+          }
+        });
+      }
 
       document.querySelectorAll(".delete-button").forEach((button) => {
         button.addEventListener("click", (event) => {
@@ -556,6 +558,21 @@ function updateEnabledState(dataSourceId, enabled) {
 }
 
 function openAddDataSourceDialog() {
+  const form = document.getElementById("add-data-source-form");
+
+  form.innerHTML = /* HTML */ `
+        <sl-input name="name" label="Name" required></sl-input>
+        <br />
+        <sl-checkbox name="enabled" checked>Enabled</sl-checkbox>
+        <br />
+        <br />
+        <sl-select id="asset-type" label="Asset Type"></sl-select>
+        <br />
+        <sl-select id="data-source-type" name="dataSourceType" label="Data Source Type" required>
+        </sl-select>
+        <br />
+        <div id="data-source-fields"></div>`;
+
   const dialog = document.getElementById("add-data-source-dialog");
   const dataSourceSelect = document.getElementById("data-source-type");
   const assetSelect = document.getElementById("asset-type");
@@ -613,21 +630,15 @@ function openAddDataSourceDialog() {
 
 function updateDataSourceFields(type) {
   const dataSourceFields = document.getElementById("data-source-fields");
-  const commonFields = /* HTML */ `
-    <sl-input name="name" label="Name" required></sl-input>
-    <br />
-    <sl-checkbox name="enabled" checked>Enabled</sl-checkbox>
-    <br />
-  `;
 
   let dataTypeFields = "";
   if (type === "SIMULATION") {
     dataTypeFields += `<br /><sl-input name="simulationPeriod" label="Simulation Period" type="number" required></sl-input>`;
-  } else if (type === "MICRO_TELEINFO_V3") {
+  } else if (type === "MICRO_TELEINFO") {
     dataTypeFields += `<br /><sl-input name="meteringID" label="MeteringID" required></sl-input>`;
   }
 
-  dataSourceFields.innerHTML = commonFields + dataTypeFields;
+  dataSourceFields.innerHTML = dataTypeFields;
 }
 
 function closeAddDataSourceDialog() {
@@ -675,7 +686,11 @@ function openEditDataSourceDialog(dataSourceId) {
                 )
                 .join("")}
             </sl-select>
-            <input name="dataSourceType" value="${dataSource.dataSourceType}" type="hidden"/>
+            <input
+              name="dataSourceType"
+              value="${dataSource.dataSourceType}"
+              type="hidden"
+            />
           `;
 
           if (dataSource.dataSourceType === "SIMULATION") {
@@ -689,11 +704,11 @@ function openEditDataSourceDialog(dataSourceId) {
                 required
               ></sl-input>
             `;
-          } else if (dataSource.dataSourceType === "MICRO_TELEINFO_V3") {
+          } else if (dataSource.dataSourceType === "MICRO_TELEINFO") {
             editFields += /* HTML */ `
               <br />
               <sl-input
-                name="meteringId"
+                name="meteringID"
                 label="Metering ID"
                 value="${dataSource.meteringId}"
                 required
@@ -746,7 +761,7 @@ document
         10
       );
     } else {
-      if (dataSourceType === "MICRO_TELEINFO_V3") {
+      if (dataSourceType === "MICRO_TELEINFO") {
         newDataSource.meteringId = formData.get("meteringID");
       }
     }

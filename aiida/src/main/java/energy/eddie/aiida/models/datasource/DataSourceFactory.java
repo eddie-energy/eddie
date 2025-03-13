@@ -5,42 +5,36 @@ import energy.eddie.aiida.datasources.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.datasources.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.datasources.simulation.SimulationDataSource;
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceMqttDto;
 
 import java.util.UUID;
 
 public class DataSourceFactory {
     private DataSourceFactory() {}
 
-    public static DataSource createFromDto(
-            DataSourceDto dto,
-            UUID userId,
-            String mqttServerUri,
-            String mqttUsername,
-            String mqttPassword
-    ) {
+    public static DataSource createFromDto(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
         var dataSourceType = DataSourceType.fromIdentifier(dto.dataSourceType());
 
         return switch (dataSourceType) {
-            case OESTERREICHS_ENERGIE ->
-                    new OesterreichsEnergieDataSource(dto, userId, mqttServerUri, mqttUsername, mqttPassword);
-            case MICRO_TELEINFO_V3 ->
-                    new MicroTeleinfoV3DataSource(dto, userId, mqttServerUri, mqttUsername, mqttPassword);
-            case SMART_GATEWAYS -> new SmartGatewaysDataSource(dto, userId, mqttServerUri, mqttUsername, mqttPassword);
+            case SMART_METER_ADAPTER -> new OesterreichsEnergieDataSource(dto, userId, dataSourceMqttDto);
+            case MICRO_TELEINFO -> new MicroTeleinfoV3DataSource(dto, userId, dataSourceMqttDto);
+            case SMART_GATEWAYS_ADAPTER -> new SmartGatewaysDataSource(dto, userId, dataSourceMqttDto);
             case SIMULATION -> new SimulationDataSource(dto, userId);
         };
     }
 
     public static DataSource createFromDto(DataSourceDto dto, UUID userId, DataSource currentDataSource) {
-        var mqttServerUri = "";
-        var mqttUsername = "";
-        var mqttPassword = "";
+        var mqttSettingsDto = new DataSourceMqttDto();
 
         if (currentDataSource instanceof MqttDataSource mqttDataSource) {
-            mqttServerUri = mqttDataSource.mqttServerUri();
-            mqttUsername = mqttDataSource.mqttUsername();
-            mqttPassword = mqttDataSource.mqttPassword();
+            mqttSettingsDto = new DataSourceMqttDto(
+                    mqttDataSource.mqttServerUri(),
+                    mqttDataSource.mqttSubscribeTopic(),
+                    mqttDataSource.mqttUsername(),
+                    mqttDataSource.mqttPassword()
+            );
         }
 
-        return createFromDto(dto, userId, mqttServerUri, mqttUsername, mqttPassword);
+        return createFromDto(dto, userId, mqttSettingsDto);
     }
 }

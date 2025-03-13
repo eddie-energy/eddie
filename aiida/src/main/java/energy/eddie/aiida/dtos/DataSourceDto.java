@@ -1,6 +1,7 @@
 package energy.eddie.aiida.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.annotation.Nullable;
 
 import java.util.UUID;
 
@@ -10,6 +11,7 @@ public record DataSourceDto(
         @JsonProperty String asset,
         @JsonProperty String name,
         @JsonProperty boolean enabled,
-        @JsonProperty String meteringId,
-        @JsonProperty Integer simulationPeriod
-) {}
+        @Nullable @JsonProperty String meteringId,
+        @Nullable @JsonProperty Integer simulationPeriod,
+        @Nullable @JsonProperty DataSourceMqttDto mqttSettings
+) { }

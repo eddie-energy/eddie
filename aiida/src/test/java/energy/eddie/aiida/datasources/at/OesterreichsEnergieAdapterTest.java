@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.datasources.DataSourceAdapter;
-import energy.eddie.aiida.utils.MqttConfig;
+import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -24,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.UUID;
 
-import static energy.eddie.aiida.utils.MqttConfig.MqttConfigBuilder;
 import static energy.eddie.aiida.utils.ObisCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,28 +34,41 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class OesterreichsEnergieAdapterTest {
-    private static final LogCaptor logCaptor = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
-    private static final LogCaptor logCaptorAiidaDataSource = LogCaptor.forClass(DataSourceAdapter.class);
+    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
+    private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
+    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final OesterreichsEnergieDataSource DATA_SOURCE = new OesterreichsEnergieDataSource(
+            new DataSourceDto(DATA_SOURCE_ID,
+                              DataSourceType.Identifiers.SMART_METER_ADAPTER,
+                              AiidaAsset.SUBMETER.asset(),
+                              "sma",
+                              true,
+                              null,
+                              null,
+                              null),
+            USER_ID,
+            new DataSourceMqttDto("tcp://localhost:1883",
+                                  "aiida/test",
+                                  "user",
+                                  "password")
+    );
     private OesterreichsEnergieAdapter adapter;
-    private MqttConfig config;
     private ObjectMapper mapper;
-    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        config = new MqttConfigBuilder("tcp://localhost:1883", "MyTestTopic").build();
         mapper = new AiidaConfiguration().objectMapper();
-        adapter = new OesterreichsEnergieAdapter(dataSourceId, userId, config, mapper);
+        adapter = new OesterreichsEnergieAdapter(DATA_SOURCE, mapper);
 
-        logCaptorAiidaDataSource.setLogLevelToDebug();
+        LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 
     @AfterEach
     void tearDown() {
-        logCaptor.clearLogs();
+        LOG_CAPTOR.clearLogs();
     }
 
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
@@ -139,12 +153,9 @@ class OesterreichsEnergieAdapterTest {
     }
 
     @Test
-    void givenUsernameAndPassword_isUsedByAdapter() {
-        config = new MqttConfigBuilder("tcp://localhost:1883", "MyTestTopic").setUsername("User")
-                                                                             .setPassword("Pass")
-                                                                             .build();
-        config = spy(config);
-        adapter = new OesterreichsEnergieAdapter(dataSourceId, userId, config, mapper);
+    void verify_usernameAndPassword_isUsedByAdapter() {
+        var spiedDataSource = spy(DATA_SOURCE);
+        adapter = new OesterreichsEnergieAdapter(spiedDataSource, mapper);
 
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
@@ -153,8 +164,8 @@ class OesterreichsEnergieAdapterTest {
 
             adapter.start().subscribe();
 
-            verify(config, atLeastOnce()).username();
-            verify(config, atLeastOnce()).password();
+            verify(spiedDataSource, atLeastOnce()).mqttUsername();
+            verify(spiedDataSource, atLeastOnce()).mqttPassword();
         }
     }
 
@@ -235,9 +246,9 @@ class OesterreichsEnergieAdapterTest {
 
             adapter.start().subscribe();
 
-            adapter.connectComplete(false, config.serverURI());
+            adapter.connectComplete(false, DATA_SOURCE.mqttServerUri());
 
-            verify(mockClient).subscribe(config.subscribeTopic(), 2);
+            verify(mockClient).subscribe(DATA_SOURCE.mqttSubscribeTopic(), 2);
         }
     }
 
@@ -247,11 +258,11 @@ class OesterreichsEnergieAdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
-            when(mockClient.subscribe(config.subscribeTopic(), 2)).thenThrow(new MqttException(998877));
+            when(mockClient.subscribe(DATA_SOURCE.mqttSubscribeTopic(), 2)).thenThrow(new MqttException(998877));
 
             StepVerifier.create(adapter.start())
                         .expectSubscription()
-                        .then(() -> adapter.connectComplete(false, config.serverURI()))
+                        .then(() -> adapter.connectComplete(false, DATA_SOURCE.mqttServerUri()))
                         .expectError()
                         .verify();
         }
@@ -271,11 +282,13 @@ class OesterreichsEnergieAdapterTest {
                                                 .expectComplete()
                                                 .verifyLater();
 
-        adapter.messageArrived(config.subscribeTopic(), new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
-        adapter.messageArrived(config.subscribeTopic(), new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
+        adapter.messageArrived(DATA_SOURCE.mqttSubscribeTopic(),
+                               new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
+        adapter.messageArrived(DATA_SOURCE.mqttSubscribeTopic(),
+                               new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
-                invalidJson), logCaptor, JsonMappingException.class);
+                invalidJson), LOG_CAPTOR, JsonMappingException.class);
 
         stepVerifier.verify();
     }
@@ -290,7 +303,7 @@ class OesterreichsEnergieAdapterTest {
         var json = "{\"1-0:1.8.0\":{\"value\":83622,\"time\":1698218800},\"UNKNOWN-OBIS-CODE\":{\"value\":0,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":83854.3}";
 
         StepVerifier.create(adapter.start())
-                    .then(() -> adapter.messageArrived(config.subscribeTopic(),
+                    .then(() -> adapter.messageArrived(DATA_SOURCE.mqttSubscribeTopic(),
                                                        new MqttMessage(json.getBytes(StandardCharsets.UTF_8))))
                     .expectNextMatches(received -> received.aiidaRecordValues()
                                                            .stream()
@@ -300,12 +313,12 @@ class OesterreichsEnergieAdapterTest {
                     .expectComplete()
                     .verify();
 
-        assertThat(logCaptorAiidaDataSource.getDebugLogs()).contains("Found unknown OBIS-CODES from " + AiidaAsset.CONNECTION_AGREEMENT_POINT + ": [UNKNOWN-OBIS-CODE]");
+        assertThat(LOG_CAPTOR_ADAPTER.getDebugLogs()).contains("Found unknown OBIS-CODES from " + AiidaAsset.CONNECTION_AGREEMENT_POINT + ": [UNKNOWN-OBIS-CODE]");
     }
 
     @Test
     void givenConnectionLost_warningIsLogged() {
         adapter.disconnected(new MqttDisconnectResponse(new MqttException(998877)));
-        assertThat(logCaptor.getWarnLogs()).contains("Disconnected from MQTT broker");
+        assertThat(LOG_CAPTOR.getWarnLogs()).contains("Disconnected from MQTT broker");
     }
 }
