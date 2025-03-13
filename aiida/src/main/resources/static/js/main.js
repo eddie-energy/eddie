@@ -480,14 +480,10 @@ function renderDataSources() {
       const passwordSpan = document.getElementById("mqtt-password");
       const toggleIcon = document.getElementById("toggle-mqtt-password");
 
-      if(toggleIcon) {
+      if (toggleIcon) {
         toggleIcon.addEventListener("click", () => {
-          passwordSpan.toggleAttribute("hidden");
-          if (passwordSpan.hasAttribute("hidden")) {
-            toggleIcon.setAttribute("name", "eye");
-          } else {
-            toggleIcon.setAttribute("name", "eye-slash");
-          }
+          const present = passwordSpan.toggleAttribute("hidden");
+          toggleIcon.setAttribute("name", present ? "eye" : "eye-slash");
         });
       }
 
@@ -560,18 +556,26 @@ function updateEnabledState(dataSourceId, enabled) {
 function openAddDataSourceDialog() {
   const form = document.getElementById("add-data-source-form");
 
-  form.innerHTML = /* HTML */ `
-        <sl-input name="name" label="Name" required></sl-input>
-        <br />
-        <sl-checkbox name="enabled" checked>Enabled</sl-checkbox>
-        <br />
-        <br />
-        <sl-select id="asset-type" label="Asset Type"></sl-select>
-        <br />
-        <sl-select id="data-source-type" name="dataSourceType" label="Data Source Type" required>
-        </sl-select>
-        <br />
-        <div id="data-source-fields"></div>`;
+  form.innerHTML = /* HTML */ ` <sl-input
+      name="name"
+      label="Name"
+      required
+    ></sl-input>
+    <br />
+    <sl-checkbox name="enabled" checked>Enabled</sl-checkbox>
+    <br />
+    <br />
+    <sl-select id="asset-type" label="Asset Type"></sl-select>
+    <br />
+    <sl-select
+      id="data-source-type"
+      name="dataSourceType"
+      label="Data Source Type"
+      required
+    >
+    </sl-select>
+    <br />
+    <div id="data-source-fields"></div>`;
 
   const dialog = document.getElementById("add-data-source-dialog");
   const dataSourceSelect = document.getElementById("data-source-type");

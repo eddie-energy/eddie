@@ -3,8 +3,7 @@ package energy.eddie.aiida.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.datasources.DataSourceAdapter;
-import energy.eddie.aiida.datasources.DataSourceAdapterFactory;
+import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
@@ -65,7 +64,7 @@ public class DataSourceService {
                 MqttSecretGenerator.generate(),
                 MqttSecretGenerator.generate()
         );
-        var dataSource = DataSourceFactory.createFromDto(dto, currentUserId, mqttSettingsDto);
+        var dataSource = DataSource.createFromDto(dto, currentUserId, mqttSettingsDto);
 
         repository.save(dataSource);
         startDataSource(dataSource);
@@ -87,7 +86,7 @@ public class DataSourceService {
                                           ));
 
         var currentUserId = authService.getCurrentUserId();
-        var dataSource = DataSourceFactory.createFromDto(dto, currentUserId, currentDataSource);
+        var dataSource = DataSource.createFromDto(dto, currentUserId, currentDataSource);
 
         boolean wasEnabled = dataSource.enabled();
 
@@ -128,7 +127,7 @@ public class DataSourceService {
     }
 
     private void startDataSource(DataSource dataSource) {
-        var dataSourceAdapter = DataSourceAdapterFactory.create(dataSource, objectMapper);
+        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper);
         dataSourceAdapters.add(dataSourceAdapter);
 
         if (dataSource.enabled()) {

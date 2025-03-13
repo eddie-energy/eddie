@@ -3,13 +3,12 @@ package energy.eddie.aiida.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.datasources.DataSourceAdapter;
-import energy.eddie.aiida.datasources.at.OesterreichsEnergieDataSource;
+import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
+import energy.eddie.aiida.models.datasource.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.datasource.DataSourceFactory;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -39,7 +38,7 @@ class DataSourceServiceTest {
     }
 
     DataSource createNewDataSource(UUID id, DataSourceType type) {
-        return DataSourceFactory.createFromDto(
+        return DataSource.createFromDto(
                 createNewDataSourceDto(id, type, "Test", true),
                 userId,
                 new DataSourceMqttDto("tcp://localhost:1883", "aiida/test", "user", "pw")

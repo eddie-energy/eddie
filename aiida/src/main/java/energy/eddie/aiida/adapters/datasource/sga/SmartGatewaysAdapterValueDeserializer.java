@@ -1,0 +1,107 @@
+package energy.eddie.aiida.adapters.datasource.sga;
+
+import energy.eddie.aiida.models.record.UnitOfMeasurement;
+import energy.eddie.aiida.utils.ObisCode;
+
+import java.nio.charset.StandardCharsets;
+
+public class SmartGatewaysAdapterValueDeserializer {
+    protected SmartGatewaysAdapterValueDeserializer() {}
+
+    public static SmartGatewaysAdapterMessage deserialize(
+            byte[] message
+    ) {
+        String[] lines = new String(message, StandardCharsets.UTF_8).split("\\r?\\n", -1);
+
+        return new SmartGatewaysAdapterMessage(
+                new SmartGatewaysAdapterMessageField("electricityEquipmentId",
+                                                     lines[0],
+                                                     UnitOfMeasurement.NONE,
+                                                     ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("gasEquipmentId", lines[1], UnitOfMeasurement.NONE, ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("electricityTariff", lines[2], UnitOfMeasurement.NONE, ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("electricityDeliveredTariff1",
+                                                     lines[3],
+                                                     UnitOfMeasurement.KWH,
+                                                     ObisCode.POSITIVE_ACTIVE_ENERGY),
+                new SmartGatewaysAdapterMessageField("electricityReturnedTariff1",
+                                                     lines[4],
+                                                     UnitOfMeasurement.KWH,
+                                                     ObisCode.NEGATIVE_ACTIVE_ENERGY),
+                new SmartGatewaysAdapterMessageField("electricityDeliveredTariff2",
+                                                     lines[5],
+                                                     UnitOfMeasurement.KWH,
+                                                     ObisCode.POSITIVE_ACTIVE_ENERGY),
+                new SmartGatewaysAdapterMessageField("electricityReturnedTariff2",
+                                                     lines[6],
+                                                     UnitOfMeasurement.KWH,
+                                                     ObisCode.NEGATIVE_ACTIVE_ENERGY),
+                new SmartGatewaysAdapterMessageField("reactiveEnergyDeliveredTariff1",
+                                                     lines[7],
+                                                     UnitOfMeasurement.KW,
+                                                     ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER),
+                new SmartGatewaysAdapterMessageField("reactiveEnergyReturnedTariff1",
+                                                     lines[8],
+                                                     UnitOfMeasurement.KW,
+                                                     ObisCode.NEGATIVE_REACTIVE_INSTANTANEOUS_POWER),
+                new SmartGatewaysAdapterMessageField("reactiveEnergyDeliveredTariff2",
+                                                     lines[9],
+                                                     UnitOfMeasurement.KW,
+                                                     ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER),
+                new SmartGatewaysAdapterMessageField("reactiveEnergyReturnedTariff2",
+                                                     lines[10],
+                                                     UnitOfMeasurement.KW,
+                                                     ObisCode.NEGATIVE_REACTIVE_INSTANTANEOUS_POWER),
+                new SmartGatewaysAdapterMessageField("powerCurrentlyDelivered",
+                                                     lines[11],
+                                                     UnitOfMeasurement.KW,
+                                                     ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER),
+                new SmartGatewaysAdapterMessageField("powerCurrentlyReturned",
+                                                     lines[12],
+                                                     UnitOfMeasurement.KW,
+                                                     ObisCode.NEGATIVE_ACTIVE_INSTANTANEOUS_POWER),
+                new SmartGatewaysAdapterMessageField("phaseCurrentlyDeliveredL1",
+                                                     lines[13],
+                                                     UnitOfMeasurement.KWH,
+                                                     ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("phaseCurrentlyDeliveredL2",
+                                                     lines[14],
+                                                     UnitOfMeasurement.KWH,
+                                                     ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("phaseCurrentlyDeliveredL3",
+                                                     lines[15],
+                                                     UnitOfMeasurement.KWH,
+                                                     ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("phaseCurrentlyReturnedL1",
+                                                     lines[16],
+                                                     UnitOfMeasurement.KWH,
+                                                     ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("phaseCurrentlyReturnedL2",
+                                                     lines[17],
+                                                     UnitOfMeasurement.KWH,
+                                                     ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("phaseCurrentlyReturnedL3",
+                                                     lines[18],
+                                                     UnitOfMeasurement.KWH,
+                                                     ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("phaseVoltageL1", lines[19], UnitOfMeasurement.VOLT, ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("phaseVoltageL2", lines[20], UnitOfMeasurement.VOLT, ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("phaseVoltageL3", lines[21], UnitOfMeasurement.VOLT, ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("phasePowerCurrentL1",
+                                                     lines[22],
+                                                     UnitOfMeasurement.AMPERE,
+                                                     ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("phasePowerCurrentL2",
+                                                     lines[23],
+                                                     UnitOfMeasurement.AMPERE,
+                                                     ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("phasePowerCurrentL3",
+                                                     lines[24],
+                                                     UnitOfMeasurement.AMPERE,
+                                                     ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("gasDelivered", lines[25], UnitOfMeasurement.KWH, ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("PowerDeliveredHour", lines[26], UnitOfMeasurement.KWH, ObisCode.UNKNOWN),
+                new SmartGatewaysAdapterMessageField("GasDeliveredHour", lines[27], UnitOfMeasurement.KWH, ObisCode.UNKNOWN)
+        );
+    }
+}

@@ -36,5 +36,7 @@ public enum DataSourceType {
         public static final String MICRO_TELEINFO = "MICRO_TELEINFO";
         public static final String SMART_GATEWAYS = "SMART_GATEWAYS_ADAPTER";
         public static final String SIMULATION = "SIMULATION";
+
+        private Identifiers() {}
     }
 }

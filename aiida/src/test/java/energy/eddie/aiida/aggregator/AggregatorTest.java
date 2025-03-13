@@ -1,7 +1,7 @@
 package energy.eddie.aiida.aggregator;
 
-import energy.eddie.aiida.datasources.DataSourceAdapter;
-import energy.eddie.aiida.datasources.simulation.SimulationDataSource;
+import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
+import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.record.AiidaRecord;

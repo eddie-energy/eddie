@@ -2,6 +2,11 @@ package energy.eddie.aiida.models.datasource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.at.OesterreichsEnergieDataSource;
+import energy.eddie.aiida.models.datasource.fr.MicroTeleinfoV3DataSource;
+import energy.eddie.aiida.models.datasource.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -40,6 +45,32 @@ public abstract class DataSource {
         this.name = dto.name();
         this.enabled = dto.enabled();
         this.dataSourceType = DataSourceType.fromIdentifier(dto.dataSourceType());
+    }
+
+    public static DataSource createFromDto(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
+        var dataSourceType = DataSourceType.fromIdentifier(dto.dataSourceType());
+
+        return switch (dataSourceType) {
+            case SMART_METER_ADAPTER -> new OesterreichsEnergieDataSource(dto, userId, dataSourceMqttDto);
+            case MICRO_TELEINFO -> new MicroTeleinfoV3DataSource(dto, userId, dataSourceMqttDto);
+            case SMART_GATEWAYS_ADAPTER -> new SmartGatewaysDataSource(dto, userId, dataSourceMqttDto);
+            case SIMULATION -> new SimulationDataSource(dto, userId);
+        };
+    }
+
+    public static DataSource createFromDto(DataSourceDto dto, UUID userId, DataSource currentDataSource) {
+        var mqttSettingsDto = new DataSourceMqttDto();
+
+        if (currentDataSource instanceof MqttDataSource mqttDataSource) {
+            mqttSettingsDto = new DataSourceMqttDto(
+                    mqttDataSource.mqttServerUri(),
+                    mqttDataSource.mqttSubscribeTopic(),
+                    mqttDataSource.mqttUsername(),
+                    mqttDataSource.mqttPassword()
+            );
+        }
+
+        return createFromDto(dto, userId, mqttSettingsDto);
     }
 
     public UUID id() {
