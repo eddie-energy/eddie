@@ -69,7 +69,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   accepted() {
-    fetch(`${this.REQUEST_URL}/${this.permissionId}/accepted`, {
+    fetch(`${this.requestUrl}/${this.permissionId}/accepted`, {
       method: "PATCH",
       headers: {
         Authorization: "Bearer " + this.accessToken,
@@ -85,7 +85,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   rejected() {
-    fetch(`${this.REQUEST_URL}/${this.permissionId}/rejected`, {
+    fetch(`${this.requestUrl}/${this.permissionId}/rejected`, {
       method: "PATCH",
       headers: {
         Authorization: "Bearer " + this.accessToken,

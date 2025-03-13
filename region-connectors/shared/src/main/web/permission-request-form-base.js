@@ -8,50 +8,50 @@ const TERMINAL_STATES = [
   "MALFORMED",
 ];
 
+/**
+ * URL of the core service inferred from the import URL. Used as a fallback if no core-url attribute is provided.
+ * @type {string}
+ */
+const CORE_URL = new URL(import.meta.url).href.split("/region-connectors")[0];
+
+/**
+ * Base URL of the current script inferred from the import URL. Used as a fallback if no core-url attribute is provided.
+ * @type {string}
+ */
+const BASE_URL = new URL(import.meta.url).href
+  .replace("ce.js", "")
+  .slice(0, -1);
+
 class PermissionRequestFormBase extends LitElement {
-  constructor() {
-    super();
-
-    /**
-     * URL of the core service inferred from the import URL.
-     * @type {string}
-     */
-    this.CORE_URL = new URL(import.meta.url).href.split("/region-connectors")[0];
-
-    /**
-     * Base URL of the current script inferred from the import URL.
-     * @type {string}
-     */
-    this.BASE_URL = new URL(import.meta.url).href
-      .replace("ce.js", "")
-      .slice(0, -1);
-
-    /**
-     * Endpoint for sending permission requests inferred from the base URL.
-     * @type {string}
-     */
-    this.REQUEST_URL = undefined;
-
-    /**
-     * Endpoint for subscribing to the status of a permission request.
-     * @type {string}
-     */
-    this.REQUEST_STATUS_URL = undefined;
-  }
-
-  static properties = {
-    coreUrl: { attribute: "core-url", type: String },
-    baseUrl: { attribute: "base-url", type: String },
-  };
+  /**
+   * URL of the EDDIE core service APIs.
+   * @type {string}
+   */
+  coreUrl;
+  /**
+   * Base URL of the region connector APIs.
+   * @type {string}
+   */
+  baseUrl;
+  /**
+   * Endpoint for sending permission requests inferred from the base URL.
+   * @type {string}
+   */
+  requestUrl;
+  /**
+   * Endpoint for subscribing to the status of a permission request.
+   * @type {string}
+   */
+  requestStatusUrl;
 
   connectedCallback() {
     super.connectedCallback();
 
-    this.CORE_URL = this.getAttribute("core-url");
-    this.BASE_URL = this.getAttribute("base-url");
+    this.coreUrl = this.getAttribute("core-url") ?? CORE_URL;
+    this.baseUrl = this.getAttribute("base-url") ?? BASE_URL;
 
-    this.REQUEST_URL = this.BASE_URL + "/permission-request";
-    this.REQUEST_STATUS_URL = this.CORE_URL + "/api/connection-status-messages";
+    this.requestUrl = this.baseUrl + "/permission-request";
+    this.requestStatusUrl = this.coreUrl + "/request-status";
   }
 
   /**
@@ -134,7 +134,7 @@ class PermissionRequestFormBase extends LitElement {
    * @throws {Error} If the request fails or the response has a status code outside the 2xx range.
    */
   async createPermissionRequest(payload, options = {}) {
-    const response = await fetch(this.REQUEST_URL, {
+    const response = await fetch(this.requestUrl, {
       body: JSON.stringify(payload),
       method: "POST",
       headers: {
@@ -155,7 +155,7 @@ class PermissionRequestFormBase extends LitElement {
         });
 
         const { permissionId } = data;
-        this.pollRequestStatus(`${this.REQUEST_STATUS_URL}/${permissionId}`);
+        this.pollRequestStatus(`${this.requestStatusUrl}/${permissionId}`);
       }
 
       return data;
