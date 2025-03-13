@@ -82,4 +82,9 @@ public class HomeController {
     public String account() {
         return "redirect:" + keycloakConfiguration.accountUri();
     }
+
+    @GetMapping("/marketplace-management")
+    public String openMarketplaceManagementPage() {
+        return "marketplace-management";
+    }
 }

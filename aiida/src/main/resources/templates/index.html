@@ -57,6 +57,11 @@
           Installer
         </sl-button>
 
+        <sl-button variant="primary" outline th:href="@{/marketplace-management}">
+          <sl-icon slot="prefix" name="shop"></sl-icon>
+          Marketplace Management
+        </sl-button>
+
         <form method="post" th:action="@{/logout}">
           <input type="hidden"
                  th:name="${_csrf.parameterName}"
