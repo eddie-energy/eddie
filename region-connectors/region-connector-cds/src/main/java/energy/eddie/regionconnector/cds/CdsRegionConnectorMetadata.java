@@ -5,18 +5,23 @@ import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import org.springframework.stereotype.Component;
 
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class CdsRegionConnectorMetadata implements RegionConnectorMetadata {
-
     public static final String REGION_CONNECTOR_ID = "cds";
+    private final CdsServerRepository repository;
+
+    public CdsRegionConnectorMetadata(CdsServerRepository repository) {this.repository = repository;}
 
     @Override
     public String id() {
@@ -25,12 +30,17 @@ public class CdsRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<String> countryCodes() {
-        return List.of("US", "CA");
+        var servers = repository.findAll();
+        Set<String> countries = new HashSet<>();
+        for (var server : servers) {
+            countries.addAll(server.countryCodes());
+        }
+        return countries.stream().toList();
     }
 
     @Override
     public String countryCode() {
-        return "US/CA";
+        return String.join("/", countryCodes());
     }
 
     @Override
@@ -60,7 +70,12 @@ public class CdsRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<EnergyType> supportedEnergyTypes() {
-        return Arrays.asList(EnergyType.values());
+        var servers = repository.findAll();
+        Set<EnergyType> energyTypes = new HashSet<>();
+        for (var server : servers) {
+            energyTypes.addAll(server.energyTypes());
+        }
+        return energyTypes.stream().toList();
     }
 
     @Override
