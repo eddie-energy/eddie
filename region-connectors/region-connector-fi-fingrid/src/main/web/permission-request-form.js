@@ -25,7 +25,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
     jumpOffUrl: { attribute: "jump-off-url" },
-    baseUrl: { attribute: "base-url" }, // might be beneficial to read this now separate from the form base
+    baseUrl: { attribute: "base-url" },
     customerIdentification: { attribute: "customer-identification" },
     _isValidated: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },

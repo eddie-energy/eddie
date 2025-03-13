@@ -11,7 +11,7 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
-    baseUrl: { attribute: "base-url" }, // might be beneficial to read this now separate from the form base
+    baseUrl: { attribute: "base-url" },
     _scenarios: { type: Array },
     _permissionId: { type: String },
   };
