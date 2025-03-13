@@ -3,6 +3,7 @@ package energy.eddie.aiida.models.record;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import jakarta.persistence.*;
 
 import java.time.Instant;
@@ -22,7 +23,8 @@ public class AiidaRecord {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX", timezone = "UTC")
     protected Instant timestamp;
     @JsonProperty
-    protected String asset;
+    @Enumerated(EnumType.STRING)
+    protected AiidaAsset asset;
     @JsonProperty
     protected UUID userId;
     @JsonProperty
@@ -33,7 +35,7 @@ public class AiidaRecord {
 
     public AiidaRecord(
             Instant timestamp,
-            String asset,
+            AiidaAsset asset,
             UUID userId,
             UUID dataSourceId,
             List<AiidaRecordValue> aiidaRecordValues
@@ -73,7 +75,7 @@ public class AiidaRecord {
         this.aiidaRecordValues = aiidaRecordValues;
     }
 
-    public String asset() {
+    public AiidaAsset asset() {
         return asset;
     }
 

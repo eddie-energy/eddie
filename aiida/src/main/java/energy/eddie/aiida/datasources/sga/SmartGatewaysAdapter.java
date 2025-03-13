@@ -2,7 +2,6 @@ package energy.eddie.aiida.datasources.sga;
 
 import energy.eddie.aiida.datasources.MqttDataSourceAdapter;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
@@ -53,7 +52,7 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
             addAiidaRecordValue(aiidaRecordValues, powerCurrentlyDelivered);
             addAiidaRecordValue(aiidaRecordValues, powerCurrentlyReturned);
 
-            emitAiidaRecord(AiidaAsset.CONNECTION_AGREEMENT_POINT.toString(), aiidaRecordValues);
+            emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (Exception e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
                          new String(message.getPayload(), StandardCharsets.UTF_8),

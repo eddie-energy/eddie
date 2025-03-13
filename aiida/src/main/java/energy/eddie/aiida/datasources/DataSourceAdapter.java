@@ -4,6 +4,7 @@ import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValidator;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.health.Health;
@@ -43,7 +44,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
      *
      * @param aiidaRecordValues Values for the new aiida record
      */
-    public synchronized void emitAiidaRecord(String asset, List<AiidaRecordValue> aiidaRecordValues) {
+    public synchronized void emitAiidaRecord(AiidaAsset asset, List<AiidaRecordValue> aiidaRecordValues) {
         Instant timestamp = Instant.now();
 
         var aiidaRecord = new AiidaRecord(timestamp, asset, dataSource.userId(), dataSource.id(), aiidaRecordValues);

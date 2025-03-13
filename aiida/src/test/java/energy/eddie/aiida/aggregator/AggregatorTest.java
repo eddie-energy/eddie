@@ -64,10 +64,12 @@ class AggregatorTest {
             null), USER_ID);
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
     private Aggregator aggregator;
+    private AiidaAsset wantedAsset;
     private Set<String> wantedCodes;
     private AiidaRecord unwanted1;
     private AiidaRecord unwanted2;
     private AiidaRecord unwanted3;
+    private AiidaRecord unwanted4;
     private AiidaRecord wanted1;
     private Instant expiration;
     private CronExpression transmissionSchedule;
@@ -83,14 +85,17 @@ class AggregatorTest {
         // add 10 minutes to the current time, as only records after the next scheduled cron timestamp are processed
         var instant = Instant.now().plusSeconds(600);
 
+        wantedAsset = AiidaAsset.SUBMETER;
         wantedCodes = Set.of("1-0:1.8.0", "1-0:2.8.0");
-        unwanted1 = new AiidaRecord(instant, "Test", USER_ID, DATA_SOURCE_ID_1, List.of(
+        unwanted1 = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:1.7.0", POSITIVE_ACTIVE_INSTANTANEOUS_POWER, "10", KWH, "10", KWH)));
-        unwanted2 = new AiidaRecord(instant, "Test", USER_ID, DATA_SOURCE_ID_1, List.of(
+        unwanted2 = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KW, "10", KW)));
-        unwanted3 = new AiidaRecord(instant, "Test", USER_ID, DATA_SOURCE_ID_1, List.of(
+        unwanted3 = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:2.8.0", NEGATIVE_ACTIVE_ENERGY, "60", KWH, "10", KWH)));
-        wanted1 = new AiidaRecord(instant, "Test", USER_ID, DATA_SOURCE_ID_1, List.of(
+        unwanted4 = new AiidaRecord(instant, AiidaAsset.CONTROLLABLE_UNIT, USER_ID, DATA_SOURCE_ID_1, List.of(
+                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KW, "10", KW)));
+        wanted1 = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KW, "10", KW)));
         expiration = Instant.now().plusSeconds(300_000);
         transmissionSchedule = CronExpression.parse("* * * * * *");
@@ -137,9 +142,9 @@ class AggregatorTest {
     @Disabled("Disable till better aggregation method: GH-1307")
     void getFilteredFlux_filtersFluxFromDataSources() {
         var instant = Instant.now().plusSeconds(600);
-        wanted1 = new AiidaRecord(instant, "Test", USER_ID, DATA_SOURCE_ID_2, List.of(
+        wanted1 = new AiidaRecord(instant, AiidaAsset.SUBMETER, USER_ID, DATA_SOURCE_ID_2, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KW, "10", KW)));
-        unwanted2 = new AiidaRecord(instant, "Test", USER_ID, DATA_SOURCE_ID_2, List.of(
+        unwanted2 = new AiidaRecord(instant, AiidaAsset.SUBMETER, USER_ID, DATA_SOURCE_ID_2, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KW, "10", KW)));
 
         TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
@@ -155,6 +160,7 @@ class AggregatorTest {
         aggregator.addNewDataSourceAdapter(mockAdapter2);
 
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
+                                                                                   wantedAsset,
                                                                                    expiration,
                                                                                    transmissionSchedule,
                                                                                    USER_ID))
@@ -167,6 +173,7 @@ class AggregatorTest {
 
         // must not matter which datasource publishes the data
         publisher1.next(unwanted3);
+        publisher1.next(unwanted4);
         publisher2.next(wanted1);
         publisher2.next(unwanted1);
 
@@ -174,7 +181,7 @@ class AggregatorTest {
     }
 
     /**
-     * Tests that the Flux returned by {@link Aggregator#getFilteredFlux(Set, Instant, CronExpression, UUID)} only returns
+     * Tests that the Flux returned by {@link Aggregator#getFilteredFlux(Set, AiidaAsset, Instant, CronExpression, UUID)} only returns
      * {@link AiidaRecord}s that have been published after the returned Flux has been created.
      */
     @Test
@@ -188,6 +195,7 @@ class AggregatorTest {
         aggregator.addNewDataSourceAdapter(mockAdapter);
 
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
+                                                                                   wantedAsset,
                                                                                    expiration,
                                                                                    transmissionSchedule,
                                                                                    USER_ID))
@@ -214,7 +222,7 @@ class AggregatorTest {
         when(mockAdapter.dataSource()).thenReturn(DATA_SOURCE_1);
         when(mockAdapter.start()).thenReturn(publisher.flux());
 
-        var unwantedBeforeCron = new AiidaRecord(Instant.now().minusSeconds(10), "Test", USER_ID, DATA_SOURCE_ID_1,
+        var unwantedBeforeCron = new AiidaRecord(Instant.now().minusSeconds(10), wantedAsset, USER_ID, DATA_SOURCE_ID_1,
                                                  List.of(new AiidaRecordValue("1-0:1.8.0",
                                                                               POSITIVE_ACTIVE_ENERGY,
                                                                               "50",
@@ -225,6 +233,7 @@ class AggregatorTest {
         aggregator.addNewDataSourceAdapter(mockAdapter);
 
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
+                                                                                   wantedAsset,
                                                                                    expiration,
                                                                                    transmissionSchedule,
                                                                                    USER_ID))
@@ -282,7 +291,7 @@ class AggregatorTest {
         when(mockAdapter.start()).thenReturn(publisher.flux());
 
         var atExpirationTime = new AiidaRecord(expiration,
-                                               "Test",
+                                               wantedAsset,
                                                USER_ID,
                                                DATA_SOURCE_ID_1,
                                                List.of(new AiidaRecordValue("1-0:1.7.0",
@@ -292,7 +301,7 @@ class AggregatorTest {
                                                                             "10",
                                                                             KWH)));
         var afterExpirationTime = new AiidaRecord(expiration.plusSeconds(10),
-                                                  "Test",
+                                                  wantedAsset,
                                                   USER_ID,
                                                   DATA_SOURCE_ID_1,
                                                   List.of(new AiidaRecordValue("1-0:2.7.0",
@@ -304,7 +313,7 @@ class AggregatorTest {
 
         aggregator.addNewDataSourceAdapter(mockAdapter);
 
-        StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, expiration, transmissionSchedule, USER_ID))
+        StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, wantedAsset, expiration, transmissionSchedule, USER_ID))
                     .then(() -> {
                         publisher.next(wanted1);
                         publisher.next(unwanted1);
@@ -322,6 +331,7 @@ class AggregatorTest {
     @Test
     void verify_close_emitsCompleteSignalForFilteredFlux() {
         var stepVerifier1 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 1"),
+                                                                           wantedAsset,
                                                                            expiration,
                                                                            transmissionSchedule,
                                                                            USER_ID))
@@ -329,6 +339,7 @@ class AggregatorTest {
                                         .verifyLater();
 
         var stepVerifier2 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 2"),
+                                                                           wantedAsset,
                                                                            expiration,
                                                                            transmissionSchedule,
                                                                            USER_ID))
@@ -336,6 +347,7 @@ class AggregatorTest {
                                         .verifyLater();
 
         var stepVerifier3 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 1"),
+                                                                           wantedAsset,
                                                                            expiration,
                                                                            transmissionSchedule,
                                                                            USER_ID))

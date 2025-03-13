@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import energy.eddie.aiida.datasources.MqttDataSourceAdapter;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
@@ -90,7 +89,7 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
                                                            baseValue,
                                                            base.unitOfMeasurement()));
 
-                emitAiidaRecord(AiidaAsset.CONNECTION_AGREEMENT_POINT.toString(), aiidaRecordValues);
+                emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
             } catch (IOException e) {
                 LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
                              new String(message.getPayload(), StandardCharsets.UTF_8),

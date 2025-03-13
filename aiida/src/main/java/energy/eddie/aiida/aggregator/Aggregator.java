@@ -5,6 +5,7 @@ import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.health.HealthContributorRegistry;
@@ -56,7 +57,8 @@ public class Aggregator implements AutoCloseable {
         healthContributorRegistry.registerContributor(dataSource.id() + "_" + dataSource.name(), dataSourceAdapter);
         dataSourceAdapters.add(dataSourceAdapter);
         dataSourceAdapter.start()
-                  .subscribe(this::publishRecordToCombinedFlux, throwable -> handleError(throwable, dataSourceAdapter));
+                         .subscribe(this::publishRecordToCombinedFlux,
+                                    throwable -> handleError(throwable, dataSourceAdapter));
     }
 
     /**
@@ -80,6 +82,7 @@ public class Aggregator implements AutoCloseable {
      * Additionally, the records are buffered and aggregated by the {@link CronExpression} {@code transmissionSchedule}.
      *
      * @param allowedDataTags          Tags which should be included in the returned Flux.
+     * @param allowedAsset             The asset that should be included in the returned Flux.
      * @param permissionExpirationTime Instant when the permission expires.
      * @param transmissionSchedule     The schedule at which the data should be transmitted.
      * @param userId                   The user id of the permission creator.
@@ -89,6 +92,7 @@ public class Aggregator implements AutoCloseable {
      */
     public Flux<AiidaRecord> getFilteredFlux(
             Set<String> allowedDataTags,
+            AiidaAsset allowedAsset,
             Instant permissionExpirationTime,
             CronExpression transmissionSchedule,
             UUID userId
@@ -107,7 +111,10 @@ public class Aggregator implements AutoCloseable {
         });
 
         return flux.map(AiidaRecord::new)
-                   .filter(aiidaRecord -> isValidAiidaRecord(aiidaRecord, permissionExpirationTime, userId))
+                   .filter(aiidaRecord -> isValidAiidaRecord(aiidaRecord,
+                                                             allowedAsset,
+                                                             permissionExpirationTime,
+                                                             userId))
                    .map(aiidaRecord -> filterAllowedDataTags(aiidaRecord, allowedDataTags))
                    .buffer(cronSink.asFlux())
                    .flatMapIterable(this::aggregateRecords);
@@ -152,10 +159,20 @@ public class Aggregator implements AutoCloseable {
         LOGGER.error("Error from datasource {}", dataSourceAdapter.dataSource().name(), throwable);
     }
 
-    private boolean isValidAiidaRecord(AiidaRecord aiidaRecord, Instant expirationTime, UUID userId) {
-        return areAiidaRecordValuesValid(aiidaRecord.aiidaRecordValues()) &&
+    private boolean isValidAiidaRecord(
+            AiidaRecord aiidaRecord,
+            AiidaAsset allowedAsset,
+            Instant expirationTime,
+            UUID userId
+    ) {
+        return isAllowedAsset(aiidaRecord, allowedAsset) &&
+               areAiidaRecordValuesValid(aiidaRecord.aiidaRecordValues()) &&
                isBeforeExpiration(aiidaRecord, expirationTime) &&
                doesAiidaRecordBelongToCurrentUser(aiidaRecord, userId);
+    }
+
+    private boolean isAllowedAsset(AiidaRecord aiidaRecord, AiidaAsset allowedAsset) {
+        return aiidaRecord.asset() == allowedAsset;
     }
 
     private boolean areAiidaRecordValuesValid(List<AiidaRecordValue> aiidaRecordValues) {
