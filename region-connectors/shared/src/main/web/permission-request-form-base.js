@@ -15,7 +15,7 @@ const TERMINAL_STATES = [
 const CORE_URL = new URL(import.meta.url).href.split("/region-connectors")[0];
 
 /**
- * Base URL of the current script inferred from the import URL. Used as a fallback if no core-url attribute is provided.
+ * Base URL of the current script inferred from the import URL. Used as a fallback if no base-url attribute is provided.
  * @type {string}
  */
 const BASE_URL = new URL(import.meta.url).href
@@ -51,7 +51,7 @@ class PermissionRequestFormBase extends LitElement {
     this.baseUrl = this.getAttribute("base-url") ?? BASE_URL;
 
     this.requestUrl = this.baseUrl + "/permission-request";
-    this.requestStatusUrl = this.coreUrl + "/request-status";
+    this.requestStatusUrl = this.coreUrl + "/api/connection-status-messages";
   }
 
   /**
