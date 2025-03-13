@@ -11,7 +11,9 @@ import java.util.UUID;
 @SuppressWarnings("NullAway")
 public abstract class MqttDataSource extends DataSource {
     @JsonProperty
-    protected String mqttServerUri;
+    protected String mqttInternalHost;
+    @JsonProperty
+    protected String mqttExternalHost;
     @JsonProperty
     protected String mqttSubscribeTopic;
     @JsonProperty
@@ -24,7 +26,8 @@ public abstract class MqttDataSource extends DataSource {
 
     protected MqttDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
         super(dto, userId);
-        this.mqttServerUri = dataSourceMqttDto.serverUri();
+        this.mqttInternalHost = dataSourceMqttDto.internalHost();
+        this.mqttExternalHost = dataSourceMqttDto.externalHost();
         this.mqttSubscribeTopic = dataSourceMqttDto.subscribeTopic();
         this.mqttUsername = dataSourceMqttDto.username();
         this.mqttPassword = dataSourceMqttDto.password();
@@ -32,15 +35,20 @@ public abstract class MqttDataSource extends DataSource {
 
     @Override
     public DataSource mergeWithDto(DataSourceDto dto, UUID userId) {
-        var mqttSettingsDto = new DataSourceMqttDto(mqttServerUri(),
+        var mqttSettingsDto = new DataSourceMqttDto(mqttInternalHost(),
+                                                    mqttExternalHost(),
                                                     mqttSubscribeTopic(),
                                                     mqttUsername(),
                                                     mqttPassword());
         return createFromDto(dto, userId, mqttSettingsDto);
     }
 
-    public String mqttServerUri() {
-        return mqttServerUri;
+    public String mqttInternalHost() {
+        return mqttInternalHost;
+    }
+
+    public String mqttExternalHost() {
+        return mqttExternalHost;
     }
 
     public String mqttSubscribeTopic() {
@@ -70,6 +78,6 @@ public abstract class MqttDataSource extends DataSource {
     }
 
     public DataSourceMqttDto toMqttDto() {
-        return new DataSourceMqttDto(mqttServerUri, mqttSubscribeTopic, mqttUsername, mqttPassword);
+        return new DataSourceMqttDto(mqttInternalHost, mqttExternalHost, mqttSubscribeTopic, mqttUsername, mqttPassword);
     }
 }

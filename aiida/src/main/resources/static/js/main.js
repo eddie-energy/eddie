@@ -423,7 +423,7 @@ function renderDataSources() {
               `
             : /* HTML */ `
                 <dt>MQTT Server URI:</dt>
-                <dd>${dataSource.mqttSettings.serverUri}</dd>
+                <dd>${dataSource.mqttSettings.externalHost}</dd>
                 <dt>MQTT Topic:</dt>
                 <dd>${dataSource.mqttSettings.subscribeTopic}</dd>
                 <dt>MQTT Username:</dt>

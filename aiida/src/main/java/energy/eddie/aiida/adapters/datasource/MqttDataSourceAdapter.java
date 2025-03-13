@@ -47,12 +47,12 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
         try {
             // persistence is only required when publishing messages with QOS 1 or 2
             var clientId = UUID.randomUUID();
-            asyncClient = MqttFactory.getMqttAsyncClient(dataSource().mqttServerUri(), clientId.toString(), null);
+            asyncClient = MqttFactory.getMqttAsyncClient(dataSource().mqttInternalHost(), clientId.toString(), null);
             asyncClient.setCallback(this);
 
             MqttConnectionOptions connectOptions = createConnectOptions();
 
-            logger.info("Connecting to broker {}", dataSource().mqttServerUri());
+            logger.info("Connecting to broker {}", dataSource().mqttInternalHost());
 
             asyncClient.connect(connectOptions);
         } catch (MqttException ex) {

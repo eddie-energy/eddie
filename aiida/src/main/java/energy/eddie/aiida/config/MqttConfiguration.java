@@ -3,14 +3,11 @@ package energy.eddie.aiida.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "aiida.mqtt")
-public class MqttConfiguration {
-    private final String host;
+public record MqttConfiguration(
+        String adminUsername,
+        String adminPassword,
+        String internalHost,
+        String externalHost
+) { }
 
-    public MqttConfiguration(String host) {
-        this.host = host;
-    }
-
-    public String host() {
-        return host;
-    }
-}
+// TODO: rename to MqttConfiguration and store external host in db

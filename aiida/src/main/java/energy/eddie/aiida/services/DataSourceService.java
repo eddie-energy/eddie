@@ -59,7 +59,8 @@ public class DataSourceService {
         var currentUserId = authService.getCurrentUserId();
 
         var mqttSettingsDto = new DataSourceMqttDto(
-                mqttConfiguration.host(),
+                mqttConfiguration.internalHost(),
+                mqttConfiguration.externalHost(),
                 "aiida/" + currentUserId + "/" + UUID.randomUUID(),
                 MqttSecretGenerator.generate(),
                 MqttSecretGenerator.generate()
