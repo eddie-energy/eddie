@@ -25,22 +25,19 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
     jumpOffUrl: { attribute: "jump-off-url" },
+    baseUrl: { attribute: "base-url" }, // might be beneficial to read this now separate from the form base
     customerIdentification: { attribute: "customer-identification" },
     _isValidated: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
     _isVerifying: { type: Boolean },
   };
 
-  constructor() {
-    super();
-
-    this._organisationInformation = fetch(
-      `${this.BASE_URL}/organisation-information`
-    ).then((response) => response.json());
-  }
-
   connectedCallback() {
     super.connectedCallback();
+
+    this._organisationInformation = fetch(
+      `${this.baseUrl}/organisation-information`
+    ).then((response) => response.json());
 
     this.addEventListener("eddie-request-validated", () => {
       this._isValidated = true;

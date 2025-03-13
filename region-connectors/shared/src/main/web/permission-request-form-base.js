@@ -30,12 +30,27 @@ class PermissionRequestFormBase extends LitElement {
      * Endpoint for sending permission requests inferred from the base URL.
      * @type {string}
      */
-    this.REQUEST_URL = this.BASE_URL + "/permission-request";
+    this.REQUEST_URL = undefined;
 
     /**
      * Endpoint for subscribing to the status of a permission request.
      * @type {string}
      */
+    this.REQUEST_STATUS_URL = undefined;
+  }
+
+  static properties = {
+    coreUrl: { attribute: "core-url", type: String },
+    baseUrl: { attribute: "base-url", type: String },
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.CORE_URL = this.getAttribute("core-url");
+    this.BASE_URL = this.getAttribute("base-url");
+
+    this.REQUEST_URL = this.BASE_URL + "/permission-request";
     this.REQUEST_STATUS_URL = this.CORE_URL + "/api/connection-status-messages";
   }
 

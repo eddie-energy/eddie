@@ -11,6 +11,7 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
+    baseUrl: { attribute: "base-url" }, // might be beneficial to read this now separate from the form base
     _scenarios: { type: Array },
     _permissionId: { type: String },
   };
@@ -35,7 +36,7 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
 
   connectedCallback() {
     super.connectedCallback();
-    fetch(`${baseUrl}/scenarios`, {
+    fetch(`${this.baseUrl}/scenarios`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -50,7 +51,7 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
     event.preventDefault();
     const formData = new FormData(event.target);
     const response = await fetch(
-      `${baseUrl}/scenarios/${formData.get("scenario").replaceAll("-", " ")}/run`,
+      `${this.baseUrl}/scenarios/${formData.get("scenario").replaceAll("-", " ")}/run`,
       {
         method: "POST",
         headers: {
@@ -79,7 +80,7 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
   }
 
   render() {
-    const targetUrl = `${baseUrl}/simulation.html?connectionId=${this.connectionId}&dataNeedId=${this.dataNeedId}`;
+    const targetUrl = `${this.baseUrl}/simulation.html?connectionId=${this.connectionId}&dataNeedId=${this.dataNeedId}`;
 
     return html`
       <div>

@@ -313,6 +313,8 @@ class EddieConnectButton extends LitElement {
     }
 
     const element = document.createElement(customElementName);
+    element.setAttribute("core-url", CORE_URL);
+    element.setAttribute("base-url", `${CORE_URL}/region-connectors/${regionConnector}`);
     element.setAttribute("connection-id", this.connectionId);
     element.setAttribute("data-need-id", this.dataNeedId);
     element.setAttribute("country-code", country);
