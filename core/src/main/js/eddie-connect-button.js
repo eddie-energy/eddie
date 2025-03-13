@@ -290,6 +290,9 @@ class EddieConnectButton extends LitElement {
     const { country, name, companyId, regionConnector, jumpOffUrl } =
       this._selectedPermissionAdministrator;
 
+    const baseUrl = `${CORE_URL}/region-connectors/${regionConnector}`;
+    const elementUrl = `${baseUrl}/ce.js`;
+
     console.debug(`Loading region connector element for ${regionConnector}`);
 
     const customElementName = regionConnector + "-pa-ce";
@@ -297,10 +300,7 @@ class EddieConnectButton extends LitElement {
     if (!customElements.get(customElementName)) {
       // loaded module needs to have the custom element class as its default export
       try {
-        const module = await import(
-          /* @vite-ignore */
-          `${CORE_URL}/region-connectors/${regionConnector}/ce.js`
-        );
+        const module = await import(/* @vite-ignore */ elementUrl);
         customElements.define(customElementName, module.default);
       } catch (error) {
         // If multiple EDDIE button are preconfigured with the same region
@@ -314,7 +314,7 @@ class EddieConnectButton extends LitElement {
 
     const element = document.createElement(customElementName);
     element.setAttribute("core-url", CORE_URL);
-    element.setAttribute("base-url", `${CORE_URL}/region-connectors/${regionConnector}`);
+    element.setAttribute("base-url", baseUrl);
     element.setAttribute("connection-id", this.connectionId);
     element.setAttribute("data-need-id", this.dataNeedId);
     element.setAttribute("country-code", country);
