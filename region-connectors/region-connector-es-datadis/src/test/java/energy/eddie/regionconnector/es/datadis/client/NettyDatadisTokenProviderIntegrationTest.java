@@ -32,6 +32,7 @@ class NettyDatadisTokenProviderIntegrationTest {
     }
 
     @Test
+    @Disabled("Until datadis renews their SSL certificate")
     void getToken_withInvalidCredentials_returnsError() {
         ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(

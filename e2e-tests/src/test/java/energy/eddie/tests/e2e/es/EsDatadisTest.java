@@ -4,12 +4,14 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 import energy.eddie.tests.e2e.E2eTestSetup;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 class EsDatadisTest extends E2eTestSetup {
     @Test
+    @Disabled("Until datadis renews their SSL certificate")
     void givenInvalidNif_showsNifDoesNotExist() {
         this.navigateToRegionConnector("LAST_3_MONTHS_HOURLY_MEASUREMENTS_PER_DAY", "Spain", null);
 

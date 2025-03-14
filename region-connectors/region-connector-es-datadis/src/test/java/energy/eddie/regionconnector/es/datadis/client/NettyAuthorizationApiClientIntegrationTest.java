@@ -43,6 +43,7 @@ class NettyAuthorizationApiClientIntegrationTest {
     }
 
     @Test
+    @Disabled("Until datadis renews their SSL certificate")
     void postAuthorizationRequest_withInvalidToken_returnsError() {
         NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
                 HttpClient.create(),
