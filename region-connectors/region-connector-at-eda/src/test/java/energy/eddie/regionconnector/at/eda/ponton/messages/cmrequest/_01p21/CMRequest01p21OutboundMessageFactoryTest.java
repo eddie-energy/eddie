@@ -1,0 +1,43 @@
+package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21;
+
+import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactoryTest;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class CMRequest01p21OutboundMessageFactoryTest extends CMRequestOutboundMessageFactoryTest {
+
+
+    @Override
+    protected CMRequestOutboundMessageFactory factory() {
+        return new CMRequest01p21OutboundMessageFactory(marshaller);
+    }
+
+    @Test
+    void isActive_on_06_04_2025_returnsFalse() {
+        // given
+        var factory = new CMRequest01p21OutboundMessageFactory(marshaller);
+
+        // when
+        var active = factory.isActive(LocalDate.of(2025, 4, 6));
+
+        // then
+        assertFalse(active);
+    }
+
+    @Test
+    void isActive_on_07_04_2025_returnsTrue() {
+        // given
+        var factory = new CMRequest01p21OutboundMessageFactory(marshaller);
+
+        // when
+        var active = factory.isActive(LocalDate.of(2025, 4, 7));
+
+        // then
+        assertTrue(active);
+    }
+}

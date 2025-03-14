@@ -1,10 +1,9 @@
-package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p20;
+package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21;
 
 import de.ponton.xp.adapter.api.domainvalues.*;
 import de.ponton.xp.adapter.api.messages.OutboundMessage;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
-import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21.CMRequest01p21OutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
@@ -19,14 +18,14 @@ import static energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p
 
 @Component
 @SuppressWarnings("DuplicatedCode")
-public class CMRequest01p20OutboundMessageFactory implements CMRequestOutboundMessageFactory {
+public class CMRequest01p21OutboundMessageFactory implements CMRequestOutboundMessageFactory {
     /**
      * The active from date of the message. The message is active from this date.
-     * <p>From <a href="https://www.ebutilities.at/schemas/161">ebutilities</a>
+     * <p>From <a href="https://www.ebutilities.at/schemas/231">ebutilities</a>
      */
-    private static final LocalDate ACTIVE_FROM = LocalDate.of(2024, 4, 8);
+    public static final LocalDate ACTIVE_FROM = LocalDate.of(2025, 4, 7);
     private static final MessageType MESSAGETYPE = new MessageType.MessageTypeBuilder()
-            .setSchemaSet(new SchemaSet("CM_REQ_ONL_01.20"))
+            .setSchemaSet(new SchemaSet("CM_REQ_ONL_01.21"))
             .setVersion(new MessageTypeVersion(SCHEMA_VERSION))
             .setName(new MessageTypeName(MessageCodes.Request.CODE))
             .setMimeType(new MimeType(
@@ -35,13 +34,13 @@ public class CMRequest01p20OutboundMessageFactory implements CMRequestOutboundMe
 
     private final Jaxb2Marshaller marshaller;
 
-    public CMRequest01p20OutboundMessageFactory(Jaxb2Marshaller marshaller) {
+    public CMRequest01p21OutboundMessageFactory(Jaxb2Marshaller marshaller) {
         this.marshaller = marshaller;
     }
 
     @Override
     public OutboundMessage createOutboundMessage(CCMORequest ccmoRequest) {
-        var request = new CMRequest01p20(ccmoRequest).cmRequest();
+        var request = new CMRequest01p21(ccmoRequest).cmRequest();
         var outputStream = new ByteArrayOutputStream();
         var result = new StreamResult(outputStream);
         marshaller.marshal(request, result);
@@ -64,6 +63,6 @@ public class CMRequest01p20OutboundMessageFactory implements CMRequestOutboundMe
 
     @Override
     public boolean isActive(LocalDate date) {
-        return !ACTIVE_FROM.isAfter(date) && date.isBefore(CMRequest01p21OutboundMessageFactory.ACTIVE_FROM);
+        return !date.isBefore(ACTIVE_FROM);
     }
 }

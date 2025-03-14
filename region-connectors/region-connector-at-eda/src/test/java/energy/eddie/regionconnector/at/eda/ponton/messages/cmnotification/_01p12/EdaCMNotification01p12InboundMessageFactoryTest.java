@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.ponton.messages.cmnotification._01p11;
+package energy.eddie.regionconnector.at.eda.ponton.messages.cmnotification._01p12;
 
 import energy.eddie.regionconnector.at.eda.dto.ResponseData;
 import energy.eddie.regionconnector.at.eda.ponton.messages.MarshallerConfig;
@@ -21,12 +21,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = MarshallerConfig.class)
-class EdaCMNotification01p11InboundMessageFactoryTest {
+class EdaCMNotification01p12InboundMessageFactoryTest {
 
     @Autowired
     private Jaxb2Marshaller marshaller;
 
-    public static Stream<Arguments> activeDates() {
+    public static Stream<Arguments> inactiveDates() {
         return Stream.of(
                 Arguments.of(LocalDate.of(2023, 1, 7)),
                 Arguments.of(LocalDate.of(2024, 2, 7)),
@@ -34,7 +34,7 @@ class EdaCMNotification01p11InboundMessageFactoryTest {
         );
     }
 
-    public static Stream<Arguments> inactiveDates() {
+    public static Stream<Arguments> activeDates() {
         return Stream.of(
                 Arguments.of(LocalDate.of(2025, 4, 7)),
                 Arguments.of(LocalDate.of(2026, 6, 8)),
@@ -52,7 +52,7 @@ class EdaCMNotification01p11InboundMessageFactoryTest {
             int responseCode
     ) throws IOException {
         // Given
-        var factory = new EdaCMNotification01p11InboundMessageFactory(marshaller);
+        var factory = new EdaCMNotification01p12InboundMessageFactory(marshaller);
 
         // When
         var notification = factory.parseInputStream(inputStream);
@@ -75,7 +75,7 @@ class EdaCMNotification01p11InboundMessageFactoryTest {
     @MethodSource("activeDates")
     void isActive_returnsTrue(LocalDate date) {
         // Given
-        var factory = new EdaCMNotification01p11InboundMessageFactory(marshaller);
+        var factory = new EdaCMNotification01p12InboundMessageFactory(marshaller);
 
         // When
         var active = factory.isActive(date);
@@ -88,7 +88,7 @@ class EdaCMNotification01p11InboundMessageFactoryTest {
     @MethodSource("inactiveDates")
     void isActive_returnsFalse(LocalDate date) {
         // Given
-        var factory = new EdaCMNotification01p11InboundMessageFactory(marshaller);
+        var factory = new EdaCMNotification01p12InboundMessageFactory(marshaller);
 
         // When
         var active = factory.isActive(date);
@@ -98,10 +98,10 @@ class EdaCMNotification01p11InboundMessageFactoryTest {
     }
 
     private static Stream<Arguments> inputStreams() {
-        ClassLoader classLoader = EdaCMNotification01p11InboundMessageFactoryTest.class.getClassLoader();
-        var answer = classLoader.getResourceAsStream("xsd/cmnotification/_01p11/answer_ccmo.xml");
-        var rejected = classLoader.getResourceAsStream("xsd/cmnotification/_01p11/rejected_ccmo.xml");
-        var accepted = classLoader.getResourceAsStream("xsd/cmnotification/_01p11/accepted_ccmo.xml");
+        ClassLoader classLoader = EdaCMNotification01p12InboundMessageFactory.class.getClassLoader();
+        var answer = classLoader.getResourceAsStream("xsd/cmnotification/_01p12/answer_ccmo.xml");
+        var rejected = classLoader.getResourceAsStream("xsd/cmnotification/_01p12/rejected_ccmo.xml");
+        var accepted = classLoader.getResourceAsStream("xsd/cmnotification/_01p12/accepted_ccmo.xml");
 
         return Stream.of(
                 Arguments.of(answer, "BI2AWUO2", "EPXXXXXXT1712068829927", null, 99),
