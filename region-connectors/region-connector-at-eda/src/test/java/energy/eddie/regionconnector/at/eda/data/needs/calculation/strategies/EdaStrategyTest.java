@@ -7,6 +7,7 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
+import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21.CMRequest01p21OutboundMessageFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,6 +32,79 @@ class EdaStrategyTest {
     private TimeframedDataNeed timeframedDataNeed;
     @Mock
     private AccountingPointDataNeed accountingPointDataNeed;
+
+    @ParameterizedTest(name = "{1}")
+    @MethodSource("unsupportedDataNeedDurations")
+    void energyDataTimeframe_throwsIfDateExceedMaxPast(DataNeedDuration duration, String message) {
+        // Given
+        when(timeframedDataNeed.duration()).thenReturn(duration);
+        EdaStrategy edaStrategy = new EdaStrategy();
+
+        // When & Then
+        assertThrows(UnsupportedDataNeedException.class, () -> edaStrategy.energyDataTimeframe(timeframedDataNeed,
+                                                                                               ZonedDateTime.now(
+                                                                                                       ZoneOffset.UTC)));
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    @Test
+    void energyDataTimeframe_doesNotThrowOnPastToFutureAfterNewProcessDate() throws UnsupportedDataNeedException {
+        // Given
+        LocalDate now = LocalDate.now(AT_ZONE_ID);
+        LocalDate startDate = now.minusMonths(1);
+        LocalDate endDate = now.plusMonths(1);
+        var duration = new AbsoluteDuration(startDate, endDate);
+        when(timeframedDataNeed.duration()).thenReturn(duration);
+        EdaStrategy edaStrategy = new EdaStrategy();
+
+        // When
+        var timeFrame = edaStrategy.energyDataTimeframe(
+                timeframedDataNeed,
+                CMRequest01p21OutboundMessageFactory.ACTIVE_FROM.atStartOfDay(AT_ZONE_ID)
+        );
+
+        assertAll(
+                () -> assertNotNull(timeFrame),
+                () -> assertEquals(startDate, timeFrame.start()),
+                () -> assertEquals(endDate, timeFrame.end())
+        );
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    @ParameterizedTest(name = "{1}")
+    @MethodSource("supportedDataNeedDuration")
+    void energyDataTimeframe_doesNotThrowIfDateWithinMaxPast(
+            DataNeedDuration duration,
+            String message,
+            LocalDate expectedStart,
+            LocalDate expectedEnd
+    ) throws UnsupportedDataNeedException {
+        // Given
+        when(timeframedDataNeed.duration()).thenReturn(duration);
+        EdaStrategy edaStrategy = new EdaStrategy();
+
+        // When
+        var timeFrame = edaStrategy.energyDataTimeframe(timeframedDataNeed, ZonedDateTime.now(ZoneOffset.UTC));
+
+        // Then
+        assertAll(
+                () -> assertNotNull(timeFrame),
+                () -> assertEquals(expectedStart, timeFrame.start()),
+                () -> assertEquals(expectedEnd, timeFrame.end())
+        );
+    }
+
+    @Test
+    void energyDataTimeframe_returnsNullIfAccountingPointDataNeed() throws UnsupportedDataNeedException {
+        // Given
+        EdaStrategy edaStrategy = new EdaStrategy();
+
+        // When
+        var timeFrame = edaStrategy.energyDataTimeframe(accountingPointDataNeed, ZonedDateTime.now(ZoneOffset.UTC));
+
+        // Then
+        assertNull(timeFrame);
+    }
 
     private static Stream<Arguments> unsupportedDataNeedDurations() {
         LocalDate now = LocalDate.now(AT_ZONE_ID);
@@ -73,54 +147,5 @@ class EdaStrategyTest {
                 Arguments.of(new AbsoluteDuration(now, now.plusYears(2)),
                              "Today to 2 years in the future", now, now.plusYears(2))
         );
-    }
-
-    @ParameterizedTest(name = "{1}")
-    @MethodSource("unsupportedDataNeedDurations")
-    void energyDataTimeframe_throwsIfDateExceedMaxPast(DataNeedDuration duration, String message) {
-        // Given
-        when(timeframedDataNeed.duration()).thenReturn(duration);
-        EdaStrategy edaStrategy = new EdaStrategy();
-
-        // When & Then
-        assertThrows(UnsupportedDataNeedException.class, () -> edaStrategy.energyDataTimeframe(timeframedDataNeed,
-                                                                                               ZonedDateTime.now(
-                                                                                                       ZoneOffset.UTC)));
-    }
-
-    @SuppressWarnings("DataFlowIssue")
-    @ParameterizedTest(name = "{1}")
-    @MethodSource("supportedDataNeedDuration")
-    void energyDataTimeframe_doesNotThrowIfDateWithinMaxPast(
-            DataNeedDuration duration,
-            String message,
-            LocalDate expectedStart,
-            LocalDate expectedEnd
-    ) throws UnsupportedDataNeedException {
-        // Given
-        when(timeframedDataNeed.duration()).thenReturn(duration);
-        EdaStrategy edaStrategy = new EdaStrategy();
-
-        // When
-        var timeFrame = edaStrategy.energyDataTimeframe(timeframedDataNeed, ZonedDateTime.now(ZoneOffset.UTC));
-
-        // Then
-        assertAll(
-                () -> assertNotNull(timeFrame),
-                () -> assertEquals(expectedStart, timeFrame.start()),
-                () -> assertEquals(expectedEnd, timeFrame.end())
-        );
-    }
-
-    @Test
-    void energyDataTimeframe_returnsNullIfAccountingPointDataNeed() throws UnsupportedDataNeedException {
-        // Given
-        EdaStrategy edaStrategy = new EdaStrategy();
-
-        // When
-        var timeFrame = edaStrategy.energyDataTimeframe(accountingPointDataNeed, ZonedDateTime.now(ZoneOffset.UTC));
-
-        // Then
-        assertNull(timeFrame);
     }
 }

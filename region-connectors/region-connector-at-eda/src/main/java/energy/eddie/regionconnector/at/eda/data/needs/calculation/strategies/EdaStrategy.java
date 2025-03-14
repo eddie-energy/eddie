@@ -7,6 +7,7 @@ import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.utils.DataNeedWrapper;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
+import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21.CMRequest01p21OutboundMessageFactory;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.EnergyDataTimeframeStrategy;
 import jakarta.annotation.Nullable;
 
@@ -40,9 +41,13 @@ public class EdaStrategy implements EnergyDataTimeframeStrategy {
                 EdaRegionConnectorMetadata.PERIOD_LATEST_END
         );
 
-        if (!isCompletelyInThePastOrInTheFuture(wrapper, now)) {
-            throw new UnsupportedDataNeedException(dataNeed.id(),
-                                                   "Data need must be completely in the past or in the future");
+        if (now.isBefore(CMRequest01p21OutboundMessageFactory.ACTIVE_FROM) &&
+            !isCompletelyInThePastOrInTheFuture(wrapper, now)) {
+            // GH-1322 Remove this with the new process active on 07.04.2025
+            throw new UnsupportedDataNeedException(
+                    dataNeed.id(),
+                    "Data need must be completely in the past or in the future"
+            );
         }
 
         return new Timeframe(wrapper.calculatedStart(), wrapper.calculatedEnd());
