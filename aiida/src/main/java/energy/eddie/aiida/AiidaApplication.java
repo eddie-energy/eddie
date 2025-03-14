@@ -1,6 +1,7 @@
 package energy.eddie.aiida;
 
 import energy.eddie.aiida.config.InstallerConfiguration;
+import energy.eddie.aiida.config.KeyStoreConfiguration;
 import energy.eddie.aiida.config.KeycloakConfiguration;
 import energy.eddie.aiida.config.MQTTConfiguration;
 import org.springframework.boot.SpringApplication;
@@ -8,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties({InstallerConfiguration.class, KeycloakConfiguration.class, MQTTConfiguration.class})
+@EnableConfigurationProperties({InstallerConfiguration.class, KeycloakConfiguration.class, MQTTConfiguration.class, KeyStoreConfiguration.class})
 public class AiidaApplication {
 
     public static void main(String[] args) {

@@ -32,6 +32,9 @@ spring:
             redirect-uri: ${AIIDA_EXTERNAL_HOST:http://localhost:8080}/login/oauth2/code/keycloak
             scope: openid
             provider: keycloak
+  keystore:
+    path: ${KEYSTORE_PATH:keystore.p12}
+    password: ${KEYSTORE_PASSWORD}:REPLACE_ME
 
 aiida:
   installer:
