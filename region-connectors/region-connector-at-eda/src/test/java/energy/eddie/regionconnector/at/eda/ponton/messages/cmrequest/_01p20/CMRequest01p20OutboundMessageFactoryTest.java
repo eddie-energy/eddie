@@ -12,6 +12,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CMRequest01p20OutboundMessageFactoryTest extends CMRequestOutboundMessageFactoryTest {
 
 
+    @Override
+    protected CMRequestOutboundMessageFactory factory() {
+        return new CMRequest01p20OutboundMessageFactory(marshaller);
+    }
+
     @Test
     void isActive_on_07_04_2024_returnsFalse() {
         // given
@@ -36,8 +41,27 @@ class CMRequest01p20OutboundMessageFactoryTest extends CMRequestOutboundMessageF
         assertTrue(active);
     }
 
-    @Override
-    protected CMRequestOutboundMessageFactory factory() {
-        return new CMRequest01p20OutboundMessageFactory(marshaller);
+    @Test
+    void isActive_on_07_04_2025_returnsFalse() {
+        // given
+        var factory = new CMRequest01p20OutboundMessageFactory(marshaller);
+
+        // when
+        var active = factory.isActive(LocalDate.of(2025, 4, 7));
+
+        // then
+        assertFalse(active);
+    }
+
+    @Test
+    void isActive_on_06_04_2025_returnsTrue() {
+        // given
+        var factory = new CMRequest01p20OutboundMessageFactory(marshaller);
+
+        // when
+        var active = factory.isActive(LocalDate.of(2025, 4, 6));
+
+        // then
+        assertTrue(active);
     }
 }
