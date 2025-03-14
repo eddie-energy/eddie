@@ -25,22 +25,19 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
     jumpOffUrl: { attribute: "jump-off-url" },
+    baseUrl: { attribute: "base-url" },
     customerIdentification: { attribute: "customer-identification" },
     _isValidated: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
     _isVerifying: { type: Boolean },
   };
 
-  constructor() {
-    super();
-
-    this._organisationInformation = fetch(
-      `${this.BASE_URL}/organisation-information`
-    ).then((response) => response.json());
-  }
-
   connectedCallback() {
     super.connectedCallback();
+
+    this._organisationInformation = fetch(
+      `${this.baseUrl}/organisation-information`
+    ).then((response) => response.json());
 
     this.addEventListener("eddie-request-validated", () => {
       this._isValidated = true;
@@ -72,7 +69,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   accepted() {
-    fetch(`${this.REQUEST_URL}/${this.permissionId}/accepted`, {
+    fetch(`${this.requestUrl}/${this.permissionId}/accepted`, {
       method: "PATCH",
       headers: {
         Authorization: "Bearer " + this.accessToken,
@@ -88,7 +85,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   rejected() {
-    fetch(`${this.REQUEST_URL}/${this.permissionId}/rejected`, {
+    fetch(`${this.requestUrl}/${this.permissionId}/rejected`, {
       method: "PATCH",
       headers: {
         Authorization: "Bearer " + this.accessToken,
