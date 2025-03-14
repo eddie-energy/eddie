@@ -91,7 +91,7 @@ public class MicroTeleinfoV3 extends AiidaMqttDataSource {
                                                            base.mappedObisCode(),
                                                            baseValue,
                                                            base.unitOfMeasurement(),
-                                                           pappValue,
+                                                           baseValue,
                                                            base.unitOfMeasurement()));
 
                 emitAiidaRecord(AiidaAsset.CONNECTION_AGREEMENT_POINT.toString(), aiidaRecordValues);
