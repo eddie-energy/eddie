@@ -51,7 +51,8 @@ public class PushedAuthorizationService implements AuthorizationService {
                 outbox.commit(new SentToPaEvent(permissionId,
                                                 expiresAt,
                                                 state,
-                                                OAuthRequestType.PUSHED_AUTHORIZATION_REQUEST));
+                                                OAuthRequestType.PUSHED_AUTHORIZATION_REQUEST,
+                                                redirectUri.toString()));
                 yield redirectUri;
             }
         };

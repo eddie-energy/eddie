@@ -22,9 +22,11 @@ public class ProviderConfig {
     @Bean
     public ConnectionStatusMessageProvider connectionStatusMessageProvider(
             EventBus eventBus,
-            CdsPermissionRequestRepository repository
+            CdsPermissionRequestRepository repository,
+            ObjectMapper objectMapper
     ) {
-        return new ConnectionStatusMessageHandler<>(eventBus, repository, pr -> "");
+        var redirectUriJsonNode = new RedirectUriJsonNode(objectMapper);
+        return new ConnectionStatusMessageHandler<>(eventBus, repository, pr -> "", redirectUriJsonNode);
     }
 
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")

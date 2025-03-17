@@ -20,6 +20,9 @@ public class SentToPaEvent extends PersistablePermissionEvent   {
     @Column(name = "oauth_request_type")
     @Enumerated(EnumType.STRING)
     private final OAuthRequestType oAuthRequestType;
+    @Column(name = "redirect_uri")
+    @Nullable
+    private final String redirectUri;
 
     public SentToPaEvent(
             String permissionId,
@@ -31,6 +34,21 @@ public class SentToPaEvent extends PersistablePermissionEvent   {
         this.authExpiresAt = authExpiresAt;
         this.state = state;
         this.oAuthRequestType = oAuthRequestType;
+        this.redirectUri = null;
+    }
+
+    public SentToPaEvent(
+            String permissionId,
+            @Nullable ZonedDateTime authExpiresAt,
+            String state,
+            OAuthRequestType oAuthRequestType,
+            @Nullable String redirectUri
+    ) {
+        super(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        this.authExpiresAt = authExpiresAt;
+        this.state = state;
+        this.oAuthRequestType = oAuthRequestType;
+        this.redirectUri = redirectUri;
     }
 
     @SuppressWarnings("NullAway")
@@ -39,10 +57,7 @@ public class SentToPaEvent extends PersistablePermissionEvent   {
         authExpiresAt = null;
         state = null;
         oAuthRequestType = null;
-    }
-
-    public ZonedDateTime authExpiresAt() {
-        return authExpiresAt;
+        redirectUri = null;
     }
 
     public String state() {
@@ -51,5 +66,10 @@ public class SentToPaEvent extends PersistablePermissionEvent   {
 
     public boolean isPushedAuthorizationRequest() {
         return oAuthRequestType == OAuthRequestType.PUSHED_AUTHORIZATION_REQUEST;
+    }
+
+    @Nullable
+    public String redirectUri() {
+        return redirectUri;
     }
 }
