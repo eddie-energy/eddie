@@ -1,7 +1,6 @@
 package energy.eddie.aiida.adapters.datasource.fr;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.models.datasource.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
@@ -38,10 +37,6 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
     public MicroTeleinfoV3Adapter(MicroTeleinfoV3DataSource dataSource, ObjectMapper mapper) {
         super(dataSource, LOGGER);
 
-        SimpleModule module = new SimpleModule();
-        module.addDeserializer(MicroTeleinfoV3AdapterJson.TeleinfoDataField.class,
-                               new MicroTeleinfoV3AdapterValueDeserializer(null));
-        mapper.registerModule(module);
         this.mapper = mapper;
 
         healthSink.asFlux().subscribe(this::setHealthState);

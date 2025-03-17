@@ -1,7 +1,6 @@
 package energy.eddie.aiida.adapters.datasource.at;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.models.datasource.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
@@ -32,10 +31,6 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
      */
     public OesterreichsEnergieAdapter(OesterreichsEnergieDataSource dataSource, ObjectMapper mapper) {
         super(dataSource, LOGGER);
-        SimpleModule module = new SimpleModule();
-        module.addDeserializer(OesterreichsEnergieAdapterJson.AdapterValue.class,
-                               new OesterreichsEnergieAdapterValueDeserializer(null));
-        mapper.registerModule(module);
         this.mapper = mapper;
     }
 
