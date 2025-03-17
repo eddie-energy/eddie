@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.cds.services.oauth;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
+import energy.eddie.regionconnector.cds.permission.events.AcceptedEvent;
 import energy.eddie.regionconnector.cds.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
 import energy.eddie.regionconnector.cds.persistence.CdsPermissionRequestRepository;
@@ -93,9 +94,9 @@ public class CallbackService {
         var cdsServer = cdsServerRepository.getReferenceById(cdsServerId);
         var result = oAuthService.retrieveAccessToken(code, cdsServer);
         return switch (result) {
-            case CredentialsWithRefreshToken(String refreshToken, String accessToken, ZonedDateTime expiresAt) -> {
+            case CredentialsWithRefreshToken(String accessToken, String refreshToken, ZonedDateTime expiresAt) -> {
                 credentialsRepository.save(new OAuthCredentials(permissionId, refreshToken, accessToken, expiresAt));
-                outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
+                outbox.commit(new AcceptedEvent(permissionId));
                 yield new AcceptedResult(permissionId, pr.dataNeedId());
             }
             case InvalidTokenResult ignored -> {
@@ -104,7 +105,7 @@ public class CallbackService {
             }
             case CredentialsWithoutRefreshToken(String accessToken, ZonedDateTime expiresAt) -> {
                 credentialsRepository.save(new OAuthCredentials(permissionId, null, accessToken, expiresAt));
-                outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
+                outbox.commit(new AcceptedEvent(permissionId));
                 yield new AcceptedResult(permissionId, pr.dataNeedId());
             }
         };

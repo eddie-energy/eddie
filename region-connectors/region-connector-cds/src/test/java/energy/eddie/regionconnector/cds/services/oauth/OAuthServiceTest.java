@@ -4,6 +4,7 @@ import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
+import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
 import energy.eddie.regionconnector.cds.services.oauth.client.registration.RegistrationResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.SuccessfulParResponse;
@@ -210,6 +211,48 @@ class OAuthServiceTest {
                 () -> assertEquals("accessToken", creds.accessToken()),
                 () -> assertThat(creds.expiresAt()).isCloseTo(expiresAt, within(5, ChronoUnit.SECONDS))
         );
+    }
+
+    @Test
+    void testRetrieveAccessToken_withOAuthCredentials_returnsCredentials() {
+        // Given
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .addHeader("Content-Type", "application/json")
+                        .setBody("""
+                                         {
+                                           "token_type": "Bearer",
+                                           "access_token": "accessToken",
+                                           "expires_in": 90
+                                         }
+                                         """)
+        );
+        var credentials = new OAuthCredentials("pid", "refreshToken", null, null);
+
+        // When
+        var res = oAuthService.retrieveAccessToken(cdsServer, credentials);
+
+        // Then
+        var creds = assertInstanceOf(CredentialsWithoutRefreshToken.class, res);
+        var expiresAt = ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(90);
+        assertAll(
+                () -> assertEquals("accessToken", creds.accessToken()),
+                () -> assertThat(creds.expiresAt()).isCloseTo(expiresAt, within(5, ChronoUnit.SECONDS))
+        );
+    }
+
+
+    @Test
+    void testRetrieveAccessToken_withoutRefreshToken_returnsInvalidTokenResult() {
+        // Given
+        var credentials = new OAuthCredentials("pid", null, "accessToken", ZonedDateTime.now(ZoneOffset.UTC));
+
+        // When
+        var res = oAuthService.retrieveAccessToken(cdsServer, credentials);
+
+        // Then
+        assertInstanceOf(InvalidTokenResult.class, res);
     }
 
     @Test

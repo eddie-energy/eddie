@@ -56,6 +56,9 @@ Content-Type: application/json
 GET {{credentials_endpoint}}?client_ids={{customer_client_id}}
 Authorization: Bearer {{$auth.token("cds")}}
 
+### GET usage segments
+GET https://s-1cd67f6d.cds.utilityapi.com/api/customerdata/v1/usage-segments/?after=20241211&before=20250310
+Authorization: Bearer {{access_token}}
 
 ###
 GET {{cds_server}}/oauth/authorize/?
@@ -65,4 +68,3 @@ GET {{cds_server}}/oauth/authorize/?
     state={{$random.alphabetic(10)}}&
     response_type=code
 Cookie: sessionid=7zl5hfj4uo3xfshn9kcu7acyojpv9t5i
-Cookie: ph_phc_366Gtl3TyowmezKhliDsaTAFlRGUYADuDLMdtDh5iH2_posthog='{"distinct_id":"0194da76-d67a-78da-96c2-83a6bc2c0f8c","$sesid":[1739435212376,"0194fe6a-fe58-7cf9-adab-fdf30dabd78c",1739435212376],"$initial_person_info":{"r":"$direct","u":"https://utilityapi.com/docs"}}'

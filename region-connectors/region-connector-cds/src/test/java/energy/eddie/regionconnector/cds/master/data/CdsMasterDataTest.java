@@ -29,7 +29,7 @@ class CdsMasterDataTest {
         // Given
         when(repository.findAll())
                 .thenReturn(List.of(createCdsServer()));
-        var expected = new PermissionAdministrator("US",
+        var expected = new PermissionAdministrator("us",
                                                    "CDS Server",
                                                    "CDS Server - http://localhost",
                                                    "null",
@@ -50,7 +50,7 @@ class CdsMasterDataTest {
         // Given
         when(repository.findById(1L))
                 .thenReturn(Optional.of(createCdsServer()));
-        var expected = new PermissionAdministrator("US",
+        var expected = new PermissionAdministrator("us",
                                                    "CDS Server",
                                                    "CDS Server - http://localhost",
                                                    "null",
@@ -71,7 +71,7 @@ class CdsMasterDataTest {
         // Given
         when(repository.findAll())
                 .thenReturn(List.of(createCdsServer()));
-        var expected = new MeteredDataAdministrator("US",
+        var expected = new MeteredDataAdministrator("us",
                                                     "CDS Server",
                                                     "null",
                                                     "http://localhost",
@@ -92,7 +92,7 @@ class CdsMasterDataTest {
         // Given
         when(repository.findById(1L))
                 .thenReturn(Optional.of(createCdsServer()));
-        var expected = new MeteredDataAdministrator("US",
+        var expected = new MeteredDataAdministrator("us",
                                                     "CDS Server",
                                                     "null",
                                                     "http://localhost",

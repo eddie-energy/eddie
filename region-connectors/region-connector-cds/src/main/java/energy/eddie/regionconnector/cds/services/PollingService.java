@@ -1,0 +1,87 @@
+package energy.eddie.regionconnector.cds.services;
+
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientFactory;
+import energy.eddie.regionconnector.cds.exceptions.NoTokenException;
+import energy.eddie.regionconnector.cds.permission.events.SimpleEvent;
+import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
+import energy.eddie.regionconnector.cds.providers.IdentifiableDataStreams;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
+import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
+
+@Service
+public class PollingService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
+    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final CustomerDataClientFactory factory;
+    private final IdentifiableDataStreams streams;
+    private final Outbox outbox;
+
+    public PollingService(
+            DataNeedCalculationService<DataNeed> calculationService,
+            CustomerDataClientFactory factory,
+            IdentifiableDataStreams streams,
+            Outbox outbox
+    ) {
+        this.calculationService = calculationService;
+        this.factory = factory;
+        this.streams = streams;
+        this.outbox = outbox;
+    }
+
+    public void poll(CdsPermissionRequest permissionRequest) {
+        var permissionId = permissionRequest.permissionId();
+        LOGGER.info("Checking if permission request {} is active and needs validated historical data polled",
+                    permissionId);
+        if (permissionRequest.start().isAfter(LocalDate.now(ZoneOffset.UTC))) {
+            LOGGER.info("Permission request {} is not active yet", permissionId);
+            return;
+        }
+        var dataNeedId = permissionRequest.dataNeedId();
+        var dataNeed = calculationService.calculate(dataNeedId, permissionRequest.created());
+        switch (dataNeed) {
+            case ValidatedHistoricalDataDataNeedResult ignored -> retrieveValidatedHistoricalData(permissionRequest);
+            default -> LOGGER.info(
+                    "Permission request {} with data need {} does not need polling for validated historical data",
+                    permissionId,
+                    dataNeedId
+            );
+        }
+    }
+
+    public void retrieveValidatedHistoricalData(CdsPermissionRequest pr) {
+        var permissionId = pr.permissionId();
+        LOGGER.info("Polling validated historical data for permission request {}", permissionId);
+        var start = pr.oldestMeterReading().orElseGet(() -> pr.start().atStartOfDay(ZoneOffset.UTC));
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var prEnd = endOfDay(pr.end(), ZoneOffset.UTC);
+        var end = prEnd.isBefore(now) ? prEnd : now;
+        factory.get(pr)
+               .usagePoints(pr, end, start)
+               .doOnError(this::isRevocationException, err -> revoke(permissionId, err))
+               .subscribe(res -> streams.publish(pr, res));
+    }
+
+    private boolean isRevocationException(Throwable e) {
+        return e instanceof WebClientResponseException.Unauthorized || e instanceof NoTokenException;
+    }
+
+    private void revoke(String permissionId, Throwable e) {
+        LOGGER.atWarn()
+              .addArgument(permissionId)
+              .log("Revoking permission request {} because of exception while requesting validated historical data", e);
+        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REVOKED));
+    }
+}

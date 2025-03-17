@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 @Entity(name = "CdsOAuthCredentials")
 @Table(name = "oauth_credentials", schema = "cds")
@@ -18,13 +19,13 @@ public class OAuthCredentials {
     private final String permissionId;
     @Column(name = "refresh_token")
     @Nullable
-    private final String refreshToken;
+    private String refreshToken;
     @Column(name = "access_token", columnDefinition = "text")
     @Nullable
-    private final String accessToken;
+    private String accessToken;
     @Column(name = "expires_at")
     @Nullable
-    private final ZonedDateTime expiresAt;
+    private ZonedDateTime expiresAt;
 
     public OAuthCredentials(
             String permissionId,
@@ -46,6 +47,10 @@ public class OAuthCredentials {
         expiresAt = null;
     }
 
+    public String permissionId() {
+        return permissionId;
+    }
+
     @Nullable
     public String refreshToken() {
         return refreshToken;
@@ -62,5 +67,37 @@ public class OAuthCredentials {
 
     public boolean isValid() {
         return isValid(ZonedDateTime.now(ZoneOffset.UTC));
+    }
+
+    public OAuthCredentials updateAccessToken(String accessToken, ZonedDateTime expiresAt) {
+        this.accessToken = accessToken;
+        this.expiresAt = expiresAt;
+        return this;
+    }
+
+    public OAuthCredentials updateAllTokens(String refreshToken, String accessToken, ZonedDateTime expiresAt) {
+        this.refreshToken = refreshToken;
+        this.accessToken = accessToken;
+        this.expiresAt = expiresAt;
+        return this;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(permissionId);
+        result = 31 * result + Objects.hashCode(refreshToken);
+        result = 31 * result + Objects.hashCode(accessToken);
+        result = 31 * result + Objects.hashCode(expiresAt);
+        return result;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (!(o instanceof OAuthCredentials that)) return false;
+
+        return Objects.equals(permissionId, that.permissionId)
+               && Objects.equals(refreshToken, that.refreshToken)
+               && Objects.equals(accessToken, that.accessToken)
+               && Objects.equals(expiresAt, that.expiresAt);
     }
 }

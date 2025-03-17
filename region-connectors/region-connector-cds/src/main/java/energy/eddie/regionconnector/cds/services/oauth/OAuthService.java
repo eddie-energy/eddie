@@ -7,9 +7,11 @@ import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.client.*;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
+import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
 import energy.eddie.regionconnector.cds.services.oauth.client.registration.RegistrationResponse;
 import energy.eddie.regionconnector.cds.services.oauth.code.AuthorizationCodeResult;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
@@ -164,7 +166,7 @@ public class OAuthService {
     }
 
     /**
-     * Retrieves an admin client for a CDS server to get access to admin APIs
+     * Retrieves an admin client access token for a CDS server to get access to admin APIs
      *
      * @param cdsServer the cds server that is used
      * @return the result of the token request
@@ -179,6 +181,31 @@ public class OAuthService {
 
         var tokenEndpoint = cdsServer.endpoints().tokenEndpoint();
         var request = new TokenRequest(tokenEndpoint, clientAuth, clientGrant, scope);
+        return sendAccessTokenRequest(request);
+    }
+
+
+    /**
+     * Retrieves an access token for a specific user for a CDS server to get access to the customerdata APIs
+     *
+     * @param cdsServer   the cds server that is used
+     * @param credentials the credentials of the user
+     * @return the result of the token request
+     */
+    public TokenResult retrieveAccessToken(CdsServer cdsServer, OAuthCredentials credentials) {
+        if (credentials.refreshToken() == null) {
+            LOGGER.info("No refresh token found for permission request {}", credentials.permissionId());
+            return new InvalidTokenResult();
+        }
+        var refreshToken = new RefreshToken(credentials.refreshToken());
+        AuthorizationGrant refreshTokenGrant = new RefreshTokenGrant(refreshToken);
+
+        var clientID = new ClientID(cdsServer.customerDataClientId());
+        var clientSecret = new Secret(cdsServer.customerDataClientSecret());
+        ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
+
+        var tokenEndpoint = cdsServer.endpoints().tokenEndpoint();
+        var request = new TokenRequest(tokenEndpoint, clientAuth, refreshTokenGrant);
         return sendAccessTokenRequest(request);
     }
 

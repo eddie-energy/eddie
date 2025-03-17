@@ -195,6 +195,42 @@
         "jwks_uri": {
           "type": "string",
           "format": "uri"
+        },
+        "cds_customerdata_accounts_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_aggregations_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_billsections_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_billstatements_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_eacs_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_meterdevices_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_servicecontracts_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_servicepoints_api": {
+          "type": "string",
+          "format": "uri"
+        },
+        "cds_customerdata_usagesegments_api": {
+          "type": "string",
+          "format": "uri"
         }
       },
       "required": [
@@ -207,7 +243,16 @@
         "code_challenge_methods_supported",
         "introspection_endpoint",
         "issuer",
-        "authorization_endpoint"
+        "authorization_endpoint",
+        "cds_customerdata_accounts_api",
+        "cds_customerdata_aggregations_api",
+        "cds_customerdata_billsections_api",
+        "cds_customerdata_billstatements_api",
+        "cds_customerdata_eacs_api",
+        "cds_customerdata_meterdevices_api",
+        "cds_customerdata_servicecontracts_api",
+        "cds_customerdata_servicepoints_api",
+        "cds_customerdata_usagesegments_api"
       ],
       "if": {
         "not": {
@@ -1537,6 +1582,9 @@
             "type": "string",
             "description": "The formats of the values, presented in the order in which the values are presented.",
             "enum": [
+              "kwh_net",
+              "kwh_fwd",
+              "kwh_rev",
               "usage_kwh",
               "usage_fwd_kwh",
               "usage_rev_kwh",
