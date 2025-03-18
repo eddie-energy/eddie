@@ -6,11 +6,11 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.cds.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.cds.exceptions.UnknownPermissionAdministratorException;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
+import energy.eddie.regionconnector.cds.master.data.Coverage;
 import energy.eddie.regionconnector.cds.permission.events.CreatedEvent;
 import energy.eddie.regionconnector.cds.permission.events.MalformedEvent;
 import energy.eddie.regionconnector.cds.permission.events.ValidatedEvent;
@@ -42,7 +42,7 @@ class PermissionRequestCreationServiceTest {
     @Mock
     private Outbox outbox;
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private CdsServerCalculationService calculationService;
     @Mock
     private AuthorizationService authorizationService;
     @InjectMocks
@@ -75,7 +75,7 @@ class PermissionRequestCreationServiceTest {
         // Given
         var cdsServer = getCdsServer();
         when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
-        when(calculationService.calculate(eq("dnid"), any()))
+        when(calculationService.calculate(eq("dnid"), eq(cdsServer), any()))
                 .thenReturn(new DataNeedNotFoundResult());
         var creation = new PermissionRequestForCreation(0L, "dnid", "cid");
 
@@ -92,7 +92,7 @@ class PermissionRequestCreationServiceTest {
         var cdsServer = getCdsServer();
         when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
         var today = LocalDate.now(ZoneOffset.UTC);
-        when(calculationService.calculate(eq("dnid"), any()))
+        when(calculationService.calculate(eq("dnid"), eq(cdsServer), any()))
                 .thenReturn(new AccountingPointDataNeedResult(new Timeframe(today, today)));
         var creation = new PermissionRequestForCreation(0L, "dnid", "cid");
 
@@ -109,7 +109,7 @@ class PermissionRequestCreationServiceTest {
         // Given
         var cdsServer = getCdsServer();
         when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
-        when(calculationService.calculate(eq("dnid"), any()))
+        when(calculationService.calculate(eq("dnid"), eq(cdsServer), any()))
                 .thenReturn(new DataNeedNotSupportedResult("Not supported"));
         var creation = new PermissionRequestForCreation(0L, "dnid", "cid");
 
@@ -127,7 +127,7 @@ class PermissionRequestCreationServiceTest {
         when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
         var today = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(today, today);
-        when(calculationService.calculate(eq("dnid"), any()))
+        when(calculationService.calculate(eq("dnid"), eq(cdsServer), any()))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                       timeframe,
                                                                       timeframe));
@@ -156,7 +156,7 @@ class PermissionRequestCreationServiceTest {
     private static CdsServer getCdsServer() {
         return new CdsServerBuilder().setBaseUri("http://localhost")
                                      .setName("CDS Server")
-                                     .setCoverages(Set.of(EnergyType.ELECTRICITY))
+                                     .setCoverages(Set.of(new Coverage(EnergyType.ELECTRICITY, "us")))
                                      .setAdminClientId("client-id")
                                      .setAdminClientSecret("client-secret")
                                      .setTokenEndpoint("http://localhost")

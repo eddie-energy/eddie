@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.cds.exceptions.CoverageNotSupportedException
 import energy.eddie.regionconnector.cds.exceptions.OAuthNotSupportedException;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
+import energy.eddie.regionconnector.cds.master.data.Coverage;
 import energy.eddie.regionconnector.cds.openapi.model.*;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import energy.eddie.regionconnector.cds.services.client.creation.responses.CreatedCdsClientResponse;
@@ -106,6 +107,7 @@ class CdsClientCreationServiceTest {
                 List.of(
                         new Coverages200ResponseAllOfCoverageEntriesInner()
                                 .commodityTypes(Arrays.asList(Coverages200ResponseAllOfCoverageEntriesInner.CommodityTypesEnum.values()))
+                                .country("us")
                 )
         );
         when(metadataCollection.metadata(baseUri))
@@ -136,10 +138,14 @@ class CdsClientCreationServiceTest {
 
         // Then
         assertThat(res).isInstanceOf(CreatedCdsClientResponse.class);
+        var expectedCoverages = Set.of(
+                new Coverage(EnergyType.ELECTRICITY, "us"),
+                new Coverage(EnergyType.NATURAL_GAS, "us")
+        );
         verify(repository).save(assertArg(cds -> assertAll(
                 () -> assertEquals(baseUrl, cds.baseUri()),
                 () -> assertEquals("CDS Server", cds.name()),
-                () -> assertEquals(Set.of(EnergyType.ELECTRICITY, EnergyType.NATURAL_GAS), cds.coverages()),
+                () -> assertEquals(expectedCoverages, cds.coverages()),
                 () -> assertEquals("client-id", cds.adminClientId()),
                 () -> assertEquals("client-secret", cds.adminClientSecret())
         )));
@@ -170,6 +176,7 @@ class CdsClientCreationServiceTest {
                 List.of(
                         new Coverages200ResponseAllOfCoverageEntriesInner()
                                 .commodityTypes(Arrays.asList(Coverages200ResponseAllOfCoverageEntriesInner.CommodityTypesEnum.values()))
+                                .country("us")
                 )
         );
         when(metadataCollection.metadata(baseUri))

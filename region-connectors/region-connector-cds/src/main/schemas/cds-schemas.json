@@ -1092,6 +1092,11 @@
           ],
           "description": "The abbreviation for the entity being covered by the coverage entry (e.g. “DG&E”). This field is to assist Clients in parsing coverage for entities that are commonly known by their abbreviated names (e.g. “DG&E” rather than “Demo Gas & Electric”). If no abbreviation is available for the entity being covered, this value is null."
         },
+        "country": {
+          "type": "string",
+          "pattern": "[A-Za-z]{2}",
+          "description": "An ISO 3166 country code. The country that has jurisdiction over the Coverage Entity. If multiple countries have jurisdiction over a piece of coverage, Servers MUST have multiple Coverage Entries, one for each country having jurisdiction."
+        },
         "name": {
           "type": "string",
           "description": "A human readable name for the coverage area or category (e.g. “Upstate New York electric territory”)."
@@ -1164,7 +1169,7 @@
         },
         "map_content_type": {
           "type": "string",
-          "description": "Content-Type format of the map_resource"
+          "description": "Content-Type format of the map_resource, is a valid mime type according to rfc6838"
         },
         "geojson_resource": {
           "type": "string",

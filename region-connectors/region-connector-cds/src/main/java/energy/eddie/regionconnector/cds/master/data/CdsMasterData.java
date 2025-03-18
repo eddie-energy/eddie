@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.cds.CdsRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
@@ -20,47 +21,57 @@ public class CdsMasterData implements MasterData {
     @Override
     public List<PermissionAdministrator> permissionAdministrators() {
         return repository.findAll()
-                .stream()
-                .map(CdsMasterData::toPermissionAdministrator)
-                .toList();
+                         .stream()
+                         .flatMap(CdsMasterData::toPermissionAdministrators)
+                         .toList();
     }
 
     @Override
     public Optional<PermissionAdministrator> getPermissionAdministrator(String id) {
         return repository.findById(Long.parseLong(id))
-                .map(CdsMasterData::toPermissionAdministrator);
+                         .map(CdsMasterData::toPermissionAdministrators)
+                         .flatMap(Stream::findFirst);
     }
 
     @Override
     public List<MeteredDataAdministrator> meteredDataAdministrators() {
         return repository.findAll()
-                .stream()
-                .map(CdsMasterData::toMeteredDataAdministrator)
-                .toList();
+                         .stream()
+                         .flatMap(CdsMasterData::toMeteredDataAdministrator)
+                         .toList();
     }
 
     @Override
     public Optional<MeteredDataAdministrator> getMeteredDataAdministrator(String id) {
         return repository.findById(Long.parseLong(id))
-                .map(CdsMasterData::toMeteredDataAdministrator);
+                         .map(CdsMasterData::toMeteredDataAdministrator)
+                         .flatMap(Stream::findFirst);
     }
 
-    private static PermissionAdministrator toPermissionAdministrator(CdsServer server) {
-        return new PermissionAdministrator("us",
-                                           server.name(),
-                                           server.displayName(),
-                                           server.idAsString(),
-                                           server.baseUri(),
-                                           REGION_CONNECTOR_ID);
+    private static Stream<PermissionAdministrator> toPermissionAdministrators(CdsServer server) {
+        return server.countryCodes()
+                .stream()
+                .map(countryCode ->
+                             new PermissionAdministrator(countryCode,
+                                                         server.name(),
+                                                         server.displayName(),
+                                                         server.idAsString(),
+                                                         server.baseUri(),
+                                                         REGION_CONNECTOR_ID)
+                );
     }
 
-    private static MeteredDataAdministrator toMeteredDataAdministrator(CdsServer server) {
+    private static Stream<MeteredDataAdministrator> toMeteredDataAdministrator(CdsServer server) {
         var website = server.baseUri();
-        return new MeteredDataAdministrator("us",
-                                            server.name(),
-                                            server.idAsString(),
-                                            website,
-                                            website,
-                                            server.idAsString());
+        return server.countryCodes()
+                .stream()
+                .map(countryCode ->
+                             new MeteredDataAdministrator(countryCode,
+                                                          server.name(),
+                                                          server.idAsString(),
+                                                          website,
+                                                          website,
+                                                          server.idAsString())
+                );
     }
 }

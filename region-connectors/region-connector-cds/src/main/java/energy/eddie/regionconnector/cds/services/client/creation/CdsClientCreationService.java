@@ -124,7 +124,7 @@ public class CdsClientCreationService {
         var cdsServer = new CdsServer(
                 cdsBaseUri,
                 carbonDataSpec.getName(),
-                coverageTypes.toEnergyTypes(),
+                coverageTypes.toCoverages(),
                 credentials.clientId(),
                 credentials.clientSecret(),
                 new CdsEndpoints(

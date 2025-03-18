@@ -1,13 +1,11 @@
 package energy.eddie.regionconnector.cds.master.data;
 
-import energy.eddie.api.agnostic.data.needs.EnergyType;
-
 import java.util.Set;
 
 public class CdsServerBuilder {
     private String baseUri;
     private String name;
-    private Set<EnergyType> coverages;
+    private Set<Coverage> coverages;
     private String clientId;
     private String clientSecret;
     private String tokenEndpoint;
@@ -30,7 +28,7 @@ public class CdsServerBuilder {
         return this;
     }
 
-    public CdsServerBuilder setCoverages(Set<EnergyType> coverages) {
+    public CdsServerBuilder setCoverages(Set<Coverage> coverages) {
         this.coverages = coverages;
         return this;
     }
