@@ -6,6 +6,8 @@ import energy.eddie.regionconnector.cds.permission.requests.CdsDataSourceInforma
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 
+import java.time.ZonedDateTime;
+
 @Entity(name = "CdsCreatedEvent")
 @SuppressWarnings({"NullAway", "unused"})
 public class CreatedEvent extends PersistablePermissionEvent {
@@ -16,6 +18,19 @@ public class CreatedEvent extends PersistablePermissionEvent {
 
     public CreatedEvent(String permissionId, String connectionId, String dataNeedId, long cdsServerId) {
         super(permissionId, PermissionProcessStatus.CREATED);
+        this.connectionId = connectionId;
+        this.dataNeedId = dataNeedId;
+        this.dataSourceInformation = new CdsDataSourceInformation(cdsServerId);
+    }
+
+    public CreatedEvent(
+            String permissionId,
+            String connectionId,
+            String dataNeedId,
+            long cdsServerId,
+            ZonedDateTime created
+    ) {
+        super(permissionId, PermissionProcessStatus.CREATED, created);
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
         this.dataSourceInformation = new CdsDataSourceInformation(cdsServerId);
@@ -32,7 +47,7 @@ public class CreatedEvent extends PersistablePermissionEvent {
     }
 
     public String connectionId() {
-         return connectionId;
+        return connectionId;
     }
 
     public String dataNeedId() {
