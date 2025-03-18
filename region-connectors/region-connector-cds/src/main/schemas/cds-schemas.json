@@ -1474,6 +1474,298 @@
         "account_contacts"
       ]
     },
+    "ServiceContracts": {
+      "type": "object",
+      "allOf": [
+        {
+          "properties": {
+            "service_contracts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ServiceContract"
+              }
+            }
+          },
+          "required": [
+            "service_contracts"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Page"
+        }
+      ]
+    },
+    "ServiceContract": {
+      "type": "object",
+      "properties": {
+        "cds_servicecontract_id": {
+          "type": "string",
+          "description": "The Server’s unique identifier for this Service Contract object.",
+          "minLength": 1
+        },
+        "cds_created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Server created this Service Contract object."
+        },
+        "cds_modified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Server last modified this Service Contract object."
+        },
+        "cds_account_id": {
+          "type": "string",
+          "description": "The Account to which this Service Contract belongs.",
+          "minLength": 1
+        },
+        "account_number": {
+          "type": "string",
+          "description": "The Account’s account_number duplicated to this Service Contract.",
+          "minLength": 1
+        },
+        "contract_number": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The identifier that a Customer sees on their bill or online user interface. Null if not available."
+        },
+        "contract_address": {
+          "type": "string" ,
+          "description": "The address that a Customer sees on their bill or online user interface, if available."
+        },
+        "contract_status": {
+          "type": "string",
+          "description": "The current status of the Service Contract."
+        },
+        "contract_type": {
+          "type": "string",
+          "description": "The type of agreement that this Service Contract represents."
+        },
+        "contract_entity": {
+          "type": "string",
+          "description": "With which entity the Customer has agreement for this Service Contract."
+        },
+        "contract_start": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "When the agreement that this Service Contract represents started."
+        },
+        "contract_end": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "When the agreement that this Service Contract represents ended. Null if ongoing."
+        },
+        "service_type": {
+          "type": "string",
+          "description": "The type of utility or other service that this Service Contract provides."
+        },
+        "service_class": {
+          "type": "string",
+          "description": "The class of service for which this Service Contract is categorized."
+        },
+        "rateplan_code": {
+          "type": "string",
+          "description": "A unique code for the current rate plan or tariff on which costs for this Service Contract are calculated.",
+          "minLength": 1
+        },
+        "rateplan_name": {
+          "type": "string",
+          "description": "The name that a Customer sees on their bill or online user interface as the rate plan or tariff that applies to this Service Contract.",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "cds_servicecontract_id",
+        "cds_created",
+        "cds_modified",
+        "cds_account_id",
+        "account_number",
+        "contract_number",
+        "contract_status",
+        "contract_type",
+        "contract_entity",
+        "service_type",
+        "service_class",
+        "rateplan_code",
+        "rateplan_name"
+      ]
+    },
+    "ServicePoints": {
+      "type": "object",
+      "allOf": [
+        {
+          "properties": {
+            "service_points": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ServicePoint"
+              }
+            }
+          },
+          "required": [
+            "service_points"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Page"
+        }
+      ]
+    },
+    "ServicePoint": {
+      "type": "object",
+      "properties": {
+        "cds_servicepoint_id": {
+          "type": "string",
+          "description": "The Server’s unique identifier for this Service Point object.",
+          "minLength": 1
+        },
+        "cds_created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Server created this Service Point object."
+        },
+        "cds_modified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Server last modified this Service Point object."
+        },
+        "servicepoint_number": {
+          "type": ["string", "null"],
+          "description": "The identifier that a Customer sees on their bill or online user interface. Null if not available."
+        },
+        "servicepoint_type": {
+          "type": "string",
+          "description": "The type of service point that this Service Point represents."
+        },
+        "servicepoint_address": {
+          "type": ["string", "null"],
+          "description": "The address that a Customer sees on their bill or online user interface, if available. Null if not available."
+        },
+        "latitude": {
+          "type": ["number", "null"],
+          "description": "The latitude of the Service Point. Null if not available."
+        },
+        "longitude": {
+          "type": ["number", "null"],
+          "description": "The longitude of the Service Point. Null if not available."
+        },
+        "current_servicecontracts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The list of Service Contract unique identifiers currently providing service to this Service Point."
+        },
+        "previous_servicecontracts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The list of Service Contract unique identifiers that have previously provided service to this Service Point."
+        },
+        "premise_number": {
+          "type": ["string", "null"],
+          "description": "The premise identifier a Customer sees on their bill or online interface. Null if not available."
+        },
+        "premise_type": {
+          "type": ["string", "null"],
+          "description": "The premise type a Customer sees on their bill or online interface. Null if not available."
+        }
+      },
+      "required": [
+        "cds_servicepoint_id",
+        "cds_created",
+        "cds_modified",
+        "servicepoint_number",
+        "servicepoint_type",
+        "servicepoint_address",
+        "latitude",
+        "longitude",
+        "current_servicecontracts",
+        "previous_servicecontracts",
+        "premise_number",
+        "premise_type"
+      ]
+    },
+    "MeterDevices": {
+      "type": "object",
+      "allOf": [
+        {
+          "properties": {
+            "meter_devices": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/MeterDevice"
+              }
+            }
+          },
+          "required": [
+            "meter_devices"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Page"
+        }
+      ]
+    },
+    "MeterDevice": {
+      "type": "object",
+      "properties": {
+        "cds_meterdevice_id": {
+          "type": "string",
+          "description": "The Server’s unique identifier for this Meter Device object.",
+          "minLength": 1
+        },
+        "cds_created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Server created this Meter Device object."
+        },
+        "cds_modified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Server last modified this Meter Device object."
+        },
+        "meter_number": {
+          "type": ["string", "null"],
+          "description": "The identifier that a Customer sees on their bill, online user interface, or on the face of their physical meter. Null if not available."
+        },
+        "meter_type": {
+          "type": "string",
+          "description": "The type of metering device that this Meter Device represents."
+        },
+        "current_servicepoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The list of Service Point unique identifiers where this Meter Device is currently installed or associated."
+        },
+        "previous_servicepoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The list of Service Point unique identifiers where this Meter Device was previously installed or associated."
+        }
+      },
+      "required": [
+        "cds_meterdevice_id",
+        "cds_created",
+        "cds_modified",
+        "meter_number",
+        "meter_type",
+        "current_servicepoints",
+        "previous_servicepoints"
+      ]
+    },
     "UsageSegments": {
       "type": "object",
       "allOf": [
