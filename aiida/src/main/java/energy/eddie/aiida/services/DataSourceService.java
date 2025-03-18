@@ -41,8 +41,14 @@ public class DataSourceService {
         this.authService = authService;
         this.mqttConfiguration = mqttConfiguration;
         this.objectMapper = objectMapper;
+    }
 
-        startDataSources();
+    public void startDataSources() {
+        var dataSources = repository.findAll();
+
+        for (var dataSource : dataSources) {
+            startDataSource(dataSource);
+        }
     }
 
     public Optional<DataSource> getDataSourceById(UUID dataSourceId) {
@@ -117,15 +123,6 @@ public class DataSourceService {
         return dataSourceAdapters.stream()
                                  .filter(adapter -> adapter.dataSource().id().equals(dataSourceId))
                                  .findFirst();
-    }
-
-    private void startDataSources() {
-        // TODO: start, when controller is ready
-        var dataSources = repository.findAll();
-
-        for (var dataSource : dataSources) {
-            startDataSource(dataSource);
-        }
     }
 
     private void startDataSource(DataSource dataSource) {

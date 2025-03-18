@@ -9,5 +9,3 @@ public record MqttConfiguration(
         String internalHost,
         String externalHost
 ) { }
-
-// TODO: rename to MqttConfiguration and store external host in db
