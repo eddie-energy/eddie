@@ -61,7 +61,7 @@ public class DataSourceService {
         var mqttSettingsDto = new DataSourceMqttDto(
                 mqttConfiguration.internalHost(),
                 mqttConfiguration.externalHost(),
-                "aiida/" + currentUserId + "/" + UUID.randomUUID(),
+                "aiida/" + MqttSecretGenerator.generate(),
                 MqttSecretGenerator.generate(),
                 MqttSecretGenerator.generate()
         );
@@ -120,6 +120,7 @@ public class DataSourceService {
     }
 
     private void startDataSources() {
+        // TODO: start, when controller is ready
         var dataSources = repository.findAll();
 
         for (var dataSource : dataSources) {

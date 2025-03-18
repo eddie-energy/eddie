@@ -37,6 +37,8 @@ aiida:
   installer:
     host: http://aiida-installer:8010
   mqtt:
+    admin-username: ${MQTT_ADMIN_USERNAME}
+    admin-password: ${MQTT_ADMIN_PASSWORD}
     internal-host: ${MQTT_INTERNAL_HOST:tcp://localhost:1884}
     external-host: ${MQTT_EXTERNAL_HOST:tcp://localhost:1884}
   keycloak:
