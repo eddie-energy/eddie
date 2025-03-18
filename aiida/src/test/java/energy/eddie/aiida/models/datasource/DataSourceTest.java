@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 class DataSourceTest {
     private static final DataSourceMqttDto MQTT_DTO = new DataSourceMqttDto("tcp://localhost:1883",
+                                                                            "tcp://localhost:1883",
                                                                             "aiida/test",
                                                                             "user",
                                                                             "pw");

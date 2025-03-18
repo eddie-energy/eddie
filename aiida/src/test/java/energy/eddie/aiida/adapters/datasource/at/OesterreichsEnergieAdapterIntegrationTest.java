@@ -90,6 +90,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
                                   null),
                 USER_ID,
                 new DataSourceMqttDto(serverURI,
+                                      serverURI,
                                       "aiida/test",
                                       USERNAME,
                                       PASSWORD)

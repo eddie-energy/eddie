@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class MqttAuthService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttAuthService.class);
-    private static final String CLUSTER_NODE_LIST_TOPIC_PREFIX = "$SYS/brokers/";
+    private static final String SYS_BROKER_NODE_TOPIC_PREFIX = "$SYS/brokers/";
 
     private final MqttConfiguration mqttConfiguration;
     private final MqttDataSourceRepository mqttDataSourceRepository;
@@ -22,7 +22,7 @@ public class MqttAuthService {
     }
 
     public boolean authenticate(String username, String password) {
-        LOGGER.debug("Authenticating user {}", username);
+        LOGGER.debug("Authenticating user");
         if(isAdmin(username, password)) {
             return true;
         }
@@ -32,12 +32,12 @@ public class MqttAuthService {
     }
 
     public boolean isAdmin(String username, String password) {
-        LOGGER.debug("Checking admin user {}", username);
+        LOGGER.debug("Checking admin user");
         return username.equals(mqttConfiguration.adminUsername()) && password.equals(mqttConfiguration.adminPassword());
     }
 
     public boolean isAuthorized(String username, String password, MqttAction mqttAction, String topic) {
-        LOGGER.debug("Checking authorized user {}, action {}, topic {}", username, mqttAction, topic);
+        LOGGER.debug("Checking authorized user for action {}", mqttAction);
         if(isAdmin(username, password)) {
             return true;
         }
@@ -47,7 +47,7 @@ public class MqttAuthService {
     }
 
     private boolean isAuthorizedForTopic(MqttDataSource dataSource, String topic) {
-        return dataSource.mqttSubscribeTopic().equals(topic) || topic.startsWith(CLUSTER_NODE_LIST_TOPIC_PREFIX);
+        return dataSource.mqttSubscribeTopic().equals(topic) || topic.startsWith(SYS_BROKER_NODE_TOPIC_PREFIX);
     }
 
     private MqttDataSource getDataSourceForUsernameAndPassword(String username, String password) {
