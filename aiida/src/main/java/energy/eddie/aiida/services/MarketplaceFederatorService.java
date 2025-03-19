@@ -1,6 +1,10 @@
 package energy.eddie.aiida.services;
 
+import energy.eddie.aiida.config.MarketplaceConfiguration;
+import energy.eddie.aiida.errors.FailedToCreateAiidaFederatorConnectionMessage;
 import energy.eddie.aiida.errors.FailedToCreateCSRException;
+import energy.eddie.aiida.errors.FailedToGetCertificateException;
+import energy.eddie.aiida.errors.KeyStoreServiceException;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -13,8 +17,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+import org.bouncycastle.util.io.pem.PemObject;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -23,114 +26,179 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
 public class MarketplaceFederatorService {
     private static final int RSA_KEY_LENGTH = 2048;
-    private static final String FEDERATOR_URL = "http://localhost:9090/api/certificates";
     private static final String BC_PROVIDER = "BC";
-
     private final WebClient webClient;
     private final KeyStoreService keyStoreService;
+    private final UUID aiidaId;
 
-    public MarketplaceFederatorService(WebClient.Builder webClientBuilder, KeyStoreService keyStoreService) {
+    public MarketplaceFederatorService(
+            WebClient.Builder webClientBuilder,
+            KeyStoreService keyStoreService,
+            MarketplaceConfiguration marketplaceConfiguration,
+            ApplicationInformationService applicationInformationService
+    ) {
         Security.addProvider(new BouncyCastleProvider());
-        this.webClient = webClientBuilder.baseUrl(FEDERATOR_URL).build();
         this.keyStoreService = keyStoreService;
+        this.webClient = webClientBuilder.baseUrl(marketplaceConfiguration.getMarketplaceFederatorUrl()).build();
+        this.aiidaId = applicationInformationService.applicationInformation().aiidaId();
     }
 
-    public X509Certificate getRootCACertificate() throws IOException, CertificateException {
-        String pemCert = webClient.get()
-                                  .uri("/ca")
-                                  .retrieve()
-                                  .bodyToMono(String.class)
-                                  .block();
-
-        return parseCertificate(pemCert);
+    public X509Certificate getRootCACertificate() throws FailedToGetCertificateException {
+        try {
+            String pemCert = webClient.get()
+                                      .uri("/ca")
+                                      .retrieve()
+                                      .bodyToMono(String.class)
+                                      .block();
+            return parsePemToCertificate(pemCert);
+        } catch (IOException | CertificateException e) {
+            throw new FailedToGetCertificateException("Failed to fetch Root CA Certificate from Federator: " + e);
+        }
     }
 
-    public UUID getFederatorAiidaId() throws FailedToCreateCSRException {
-        return UUID.randomUUID();
+    public String requestAiidaFederatorCertificate() throws FailedToCreateCSRException {
+        try {
+            if (keyStoreService.getCertificate() != null) {
+                return convertCertificateToPem(keyStoreService.getCertificate());
+            } else {
+                var keyPair = generateKeyPair();
+                var csr = createCSR(keyPair);
+                var signedCertificatePem = sendCSRForSigning(convertCSRToPem(csr));
+                var signedCertificate = parsePemToCertificate(signedCertificatePem);
+
+                verifyCertificate(signedCertificate, keyPair);
+                keyStoreService.saveKeyPairAndCertificate(keyPair.getPrivate(), signedCertificate);
+
+                return signedCertificatePem;
+            }
+        } catch (KeyStoreServiceException | IOException | CertificateException e) {
+            throw new FailedToCreateCSRException("Failed to create CSR", e);
+        }
     }
 
-    public String generateAndRequestCertificate() throws NoSuchAlgorithmException, OperatorCreationException, NoSuchProviderException, CertificateException, IOException {
-        var keyPair = generateKeyPair();
-        var csr = createCSR(getFederatorAiidaId(), keyPair);
-        var signedCertificatePem = sendCertificateForSigning(getCSRPem(csr));
-
-        keyStoreService.saveKeyPairAndCertificate(keyPair.getPrivate(), parseCertificate(signedCertificatePem));
-        return signedCertificatePem;
+    public String createAiidaFederatorConnectionMessage() throws FailedToCreateAiidaFederatorConnectionMessage {
+        var message = "federatorAiidaId: " + aiidaId;
+        try {
+            return signMessage(message, keyStoreService.getKeyPair().getPrivate());
+        } catch (KeyStoreServiceException e) {
+            throw new FailedToCreateAiidaFederatorConnectionMessage("Failed load Private Key", e);
+        }
     }
 
-    private KeyPair generateKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", BC_PROVIDER);
-        keyPairGenerator.initialize(RSA_KEY_LENGTH);
-        return keyPairGenerator.generateKeyPair();
+    private String signMessage(
+            String message,
+            PrivateKey privateKey
+    ) throws FailedToCreateAiidaFederatorConnectionMessage {
+        try {
+            Signature signature = Signature.getInstance("SHA256withRSA", BC_PROVIDER);
+            signature.initSign(privateKey);
+            signature.update(message.getBytes(StandardCharsets.UTF_8));
+
+            byte[] signedData = signature.sign();
+            return convertByteArrayToPem(signedData);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException |
+                 IOException e) {
+            throw new FailedToCreateAiidaFederatorConnectionMessage("Failed to sign connection message", e);
+        }
     }
 
-    private PKCS10CertificationRequest createCSR(
-            UUID federatorAiidaId,
+    private void verifyCertificate(
+            X509Certificate certificate,
             KeyPair keyPair
-    ) throws OperatorCreationException {
-        X500Name subject = new X500NameBuilder(BCStyle.INSTANCE)
-                .addRDN(BCStyle.CN, federatorAiidaId.toString())
-                .addRDN(BCStyle.O, "EDDIE")
-                .addRDN(BCStyle.OU, "AIIDA")
-                .build();
+    ) throws FailedToCreateCSRException {
+        try {
+            var rootCACertificate = getRootCACertificate();
+            certificate.verify(rootCACertificate.getPublicKey());
 
-        ContentSigner signer = new JcaContentSignerBuilder("SHA256withRSA")
-                .setProvider(BC_PROVIDER) // BouncyCastle
-                .build(keyPair.getPrivate());
+            if (!keyPair.getPublic().equals(certificate.getPublicKey())) {
+                throw new IllegalArgumentException("Wrong Public Key. This key does not match the public key of AIIDA.");
+            }
 
-        return new JcaPKCS10CertificationRequestBuilder(subject, keyPair.getPublic()).build(signer);
+            Date now = new Date();
+            certificate.checkValidity(now);
+        } catch (FailedToGetCertificateException | CertificateException | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException | SignatureException e) {
+            throw new FailedToCreateCSRException("Error while verifying certificate", e);
+        }
     }
 
-    private String getCSRPem(PKCS10CertificationRequest csr) {
+    private KeyPair generateKeyPair() throws FailedToCreateCSRException {
         try {
-            StringWriter writer = new StringWriter();
-            JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", BC_PROVIDER);
+            keyPairGenerator.initialize(RSA_KEY_LENGTH);
+            return keyPairGenerator.generateKeyPair();
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new FailedToCreateCSRException("Error while creating Keypair", e);
+        }
+    }
+
+    private PKCS10CertificationRequest createCSR(KeyPair keyPair) throws FailedToCreateCSRException {
+        try {
+            X500Name subject = new X500NameBuilder(BCStyle.INSTANCE)
+                    .addRDN(BCStyle.CN, aiidaId.toString())
+                    .addRDN(BCStyle.O, "EDDIE")
+                    .addRDN(BCStyle.OU, "AIIDA")
+                    .build();
+
+            ContentSigner signer = new JcaContentSignerBuilder("SHA256withRSA")
+                    .setProvider(BC_PROVIDER) // BouncyCastle
+                    .build(keyPair.getPrivate());
+
+            return new JcaPKCS10CertificationRequestBuilder(subject, keyPair.getPublic()).build(signer);
+        } catch (OperatorCreationException e) {
+            throw new FailedToCreateCSRException("Failed to create CSR", e);
+        }
+    }
+
+    private String sendCSRForSigning(String csrPem) {
+        return webClient.post()
+                 .uri("/request")
+                 .contentType(MediaType.TEXT_PLAIN)
+                 .bodyValue(csrPem)
+                 .retrieve()
+                 .bodyToMono(String.class)
+                 .block();
+    }
+
+    private String convertCSRToPem(PKCS10CertificationRequest csr) throws IOException {
+        StringWriter writer = new StringWriter();
+        try (JcaPEMWriter pemWriter = new JcaPEMWriter(writer)) {
             pemWriter.writeObject(csr);
-            pemWriter.close();
-
-            return writer.toString();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
+        return writer.toString();
     }
 
-    private String sendCertificateForSigning(String csrPem) {
-        try {
-            String signedCertificatePem = webClient.post()
-                                                   .uri("/request")
-                                                   .contentType(MediaType.TEXT_PLAIN)
-                                                   .bodyValue(csrPem)
-                                                   .retrieve().onStatus(HttpStatusCode::isError, response ->
-                            response.bodyToMono(String.class)
-                                    .flatMap(errorMessage -> {
-                                        if (response.statusCode() == HttpStatus.CONFLICT) {
-                                            throw new FailedToCreateCSRException(errorMessage);
-                                        }
-                                        throw new RuntimeException("Unexpected error: " + errorMessage);
-                                    })
-                    )
-                                                   .bodyToMono(String.class)
-                                                   .block();
-
-            return signedCertificatePem;
-        } catch (Exception e) {
-            throw new RuntimeException("Error while sending CSR to Federator for signing", e);
+    private String convertCertificateToPem(X509Certificate certificate) throws IOException {
+        StringWriter writer = new StringWriter();
+        try (JcaPEMWriter pemWriter = new JcaPEMWriter(writer)) {
+            pemWriter.writeObject(certificate);
         }
+        return writer.toString();
     }
 
-    private X509Certificate parseCertificate(String pemCert) throws IOException, CertificateException {
-        PEMParser pemParser = new PEMParser(new StringReader(pemCert));
-        X509CertificateHolder certificateHolder = (X509CertificateHolder) pemParser.readObject();
-        return (X509Certificate) CertificateFactory.getInstance("X.509")
-                                                   .generateCertificate(new ByteArrayInputStream(certificateHolder.getEncoded()));
+    private String convertByteArrayToPem(byte[] message) throws IOException {
+        StringWriter writer = new StringWriter();
+        try (JcaPEMWriter pemWriter = new JcaPEMWriter(writer)) {
+            pemWriter.writeObject(new PemObject("SIGNATURE", message));
+        }
+        return writer.toString();
+    }
+
+    private X509Certificate parsePemToCertificate(String pemCert) throws IOException, CertificateException {
+        try (PEMParser pemParser = new PEMParser(new StringReader(pemCert))) {
+            X509CertificateHolder certificateHolder = (X509CertificateHolder) pemParser.readObject();
+            return (X509Certificate) CertificateFactory.getInstance("X.509")
+                                                       .generateCertificate(new ByteArrayInputStream(certificateHolder.getEncoded()));
+        }
     }
 }
