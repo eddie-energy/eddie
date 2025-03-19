@@ -14,41 +14,90 @@
     src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/shoelace-autoloader.js"
   ></script>
 
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
   <script>
-    const federatorUrl = 'http://localhost:9090/api/certificates';
-
-    window.onload = function () {
-      document.getElementById("federator-url").textContent = `${federatorUrl}`;
-    };
-
-    function requestNewCertificate() {
+    function connectToMarketplaceFederator() {
       fetch('http://localhost:6060/request-certificate', {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         }
       }).then(response => {
+        if (!response.ok) {
+          throw new Error("Failed to retrieve certificate: " + response.status);
+        }
         return response.text();
       })
-        .then(certificateResponse => {
-          document.getElementById("csrSigningResult").innerText = "Signed Certificate from Federator:\n" + certificateResponse
+        .then(certificate => {
+          fetch('http://localhost:6060/create-connection-message', {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            }
+          }).then(response => {
+            if (!response.ok) {
+              throw new Error("Failed to create connection message to federator: " + response.status);
+            }
+            return response.text();
+          }).then(signedConnectionMessage => {
+            const qrData = {
+              signedConnectionMessage: signedConnectionMessage,
+              aiidaCertificate: certificate,
+            };
+
+            document.getElementById("qrInfoMessage").innerText = "Scan for Connecting Aiida to Marketplace User."
+            document.getElementById("qrWarningMessage").innerText = "Handle QR Code with care and do not pass on to unauthorized parties!"
+            document.getElementById("qrWarningMessage").classList.add("text-warning");
+            generateQRCode(qrData);
+          });
+        })
+        .catch(error => {
+          console.error(error);
+          document.getElementById("qrInfoMessage").innerText = "Error occurred: " + error.message;
+          document.getElementById("qrWarningMessage").innerText = "";
         });
-    }
+    };
+
+    function generateQRCode(qrData) {
+      const qrCodeElement = document.getElementById("qr-code");
+
+      QRCode.toCanvas(qrCodeElement, JSON.stringify(qrData), function(error) {
+        if (error) {
+          console.error(error);
+        } else {
+          console.log("QR Code generated!");
+          console.log(qrData);
+        }
+      });
+    };
+
   </script>
 </head>
 <body>
 
 <h1>AIIDA - Marketplace Management</h1>
 
-<h2>Create Certificate for AIIDA</h2>
+<h2>Create Certificate and connect AIIDA to Marketplace Federator</h2>
 
 <div>
-  <strong>Federator URL:</strong>
-  <div id="federator-url"></div>
-
-  <sl-button type="submit" variant="primary" onclick="requestNewCertificate()">Create CSR and send for Signing</sl-button>
-  <p id="csrSigningResult"></p>
+  <sl-button type="submit" variant="primary" onclick="connectToMarketplaceFederator()">Connect AIIDA to Marketplace Federator</sl-button>
+  <p id="qrInfoMessage"></p>
+  <p id="qrWarningMessage"></p>
+  <canvas id="qr-code"></canvas>
 </div>
 
 </body>
 </html>
+
+<style>
+    .text-warning {
+        color: red;
+        font-weight: bold;
+        background-color: #ffe6e6;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid red;
+        display: inline-block;
+    }
+</style>

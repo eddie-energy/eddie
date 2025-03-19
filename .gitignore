@@ -143,3 +143,4 @@ application-local.properties
 
 # IntelliJ HTTP Client environment secrets
 *.private.env.json
+aiida/keystore.p12

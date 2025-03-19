@@ -1,72 +1,75 @@
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.config.KeyStoreConfiguration;
+import energy.eddie.aiida.config.MarketplaceConfiguration;
+import energy.eddie.aiida.errors.KeyStoreServiceException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.*;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 @Service
 public class KeyStoreService {
     private static final String KEYSTORE_TYPE = "PKCS12";
-    private static final String PROVIDER = "BC";
-    private static final String ALIAS = "federator-aiida-key";
-    private final KeyStoreConfiguration keyStoreConfiguration;
+    private static final String BC_PROVIDER = "BC";
+    private static final String KEY_ALIAS = "federator-aiida-key";
+    private final MarketplaceConfiguration marketplaceConfiguration;
 
     static {
         Security.addProvider(new BouncyCastleProvider());
     }
 
-    public KeyStoreService(KeyStoreConfiguration keyStoreConfiguration) {this.keyStoreConfiguration = keyStoreConfiguration;}
+    public KeyStoreService(MarketplaceConfiguration marketplaceConfiguration) {this.marketplaceConfiguration = marketplaceConfiguration;}
 
-    public void saveKeyPairAndCertificate(PrivateKey privateKey, X509Certificate certificate) {
+    public void saveKeyPairAndCertificate(PrivateKey privateKey, X509Certificate certificate) throws KeyStoreServiceException {
         try {
             var keyStore = loadOrCreateKeyStore();
-            keyStore.setKeyEntry(ALIAS, privateKey, keyStoreConfiguration.getPassword(), new Certificate[]{certificate});
-            try (FileOutputStream fos = new FileOutputStream(keyStoreConfiguration.getPath())) {
-                keyStore.store(fos, keyStoreConfiguration.getPassword());
+            keyStore.setKeyEntry(KEY_ALIAS, privateKey, marketplaceConfiguration.getKeystorePassword(), new Certificate[]{certificate});
+            try (FileOutputStream fos = new FileOutputStream(marketplaceConfiguration.getKeystorePath())) {
+                keyStore.store(fos, marketplaceConfiguration.getKeystorePassword());
             }
-        } catch (Exception e) {
-            throw new RuntimeException("Error while saving to KeyStore", e);
+        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
+            throw new KeyStoreServiceException("Error while saving key pair and certificate to key store", e);
         }
     }
 
-    public KeyPair getKeyPair() {
+    public KeyPair getKeyPair() throws KeyStoreServiceException {
         try {
             var keyStore = loadOrCreateKeyStore();
-            PrivateKey privateKey = (PrivateKey) keyStore.getKey(ALIAS, keyStoreConfiguration.getPassword());
-            PublicKey publicKey = keyStore.getCertificate(ALIAS).getPublicKey();
+            var privateKey = (PrivateKey) keyStore.getKey(KEY_ALIAS, marketplaceConfiguration.getKeystorePassword());
+            var publicKey = keyStore.getCertificate(KEY_ALIAS).getPublicKey();
 
             return new KeyPair(publicKey, privateKey);
-        } catch (Exception e) {
-            throw new RuntimeException("Error while loading Keypair", e);
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
+            throw new KeyStoreServiceException("Error while getting key pair from key store", e);
         }
     }
 
-    public X509Certificate getCertificate() {
+    public X509Certificate getCertificate() throws KeyStoreServiceException {
         try {
-            return (X509Certificate) loadOrCreateKeyStore().getCertificate(ALIAS);
-        } catch (Exception e) {
-            throw new RuntimeException("Error while loading Certificate", e);
+            return (X509Certificate) loadOrCreateKeyStore().getCertificate(KEY_ALIAS);
+        } catch (KeyStoreException e) {
+            throw new KeyStoreServiceException("Error while getting certificate from key store", e);
         }
     }
 
-    private KeyStore loadOrCreateKeyStore() {
+    private KeyStore loadOrCreateKeyStore() throws KeyStoreServiceException {
         try {
-            KeyStore keyStore = KeyStore.getInstance(KEYSTORE_TYPE, PROVIDER);
-            try (var fis = new FileInputStream(keyStoreConfiguration.getPath())) {
-                keyStore.load(fis, keyStoreConfiguration.getPassword());
-            } catch (Exception e) {
-                keyStore.load(null, keyStoreConfiguration.getPassword());
+            var keyStore = KeyStore.getInstance(KEYSTORE_TYPE, BC_PROVIDER);
+            try (var fis = new FileInputStream(marketplaceConfiguration.getKeystorePath())) {
+                keyStore.load(fis, marketplaceConfiguration.getKeystorePassword());
+            } catch (IOException e) {
+                keyStore.load(null, marketplaceConfiguration.getKeystorePassword());
             }
-
             return keyStore;
-        } catch (Exception e) {
-            throw new RuntimeException("Error loading KeyStore", e);
+        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException |
+                 NoSuchProviderException e) {
+            throw new KeyStoreServiceException("Error while loading key store from storage", e);
         }
     }
 }
