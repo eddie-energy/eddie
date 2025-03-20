@@ -43,7 +43,7 @@ public class HealthIndicatorCreator {
 
     public void register(CdsServer cdsServer) {
         var contributor = new CdsServerHealthIndicator(cdsPublicApis, cdsServer);
-        var oldComposite = registry.getContributor(COMPOSITE_NAME);
+        var oldComposite = registry.unregisterContributor(COMPOSITE_NAME);
         Map<String, HealthContributor> map;
         if (!(oldComposite instanceof CompositeHealthContributor chc)) {
             map = new HashMap<>();

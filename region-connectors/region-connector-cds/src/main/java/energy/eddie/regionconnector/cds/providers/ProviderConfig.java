@@ -32,7 +32,7 @@ public class ProviderConfig {
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
     public JsonRawDataProvider jsonRawDataProvider(ObjectMapper objectMapper, IdentifiableDataStreams streams) {
-        return new JsonRawDataProvider(REGION_CONNECTOR_ID, objectMapper, streams.usageSegments());
+        return new JsonRawDataProvider(REGION_CONNECTOR_ID, objectMapper, streams.validatedHistoricalData());
     }
 
     @Bean

@@ -95,7 +95,7 @@ class PollingServiceTest {
 
         // Then
         verify(outbox, never()).commit(any());
-        verify(streams, never()).publish(any(), any());
+        verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -118,7 +118,7 @@ class PollingServiceTest {
 
         // Then
         verify(outbox, never()).commit(any());
-        verify(streams, never()).publish(any(), any());
+        verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
     }
 
     @ParameterizedTest
@@ -151,7 +151,7 @@ class PollingServiceTest {
 
         // Then
         verify(outbox, never()).commit(any());
-        verify(streams).publish(pr, List.of());
+        verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
     }
 
     @ParameterizedTest
@@ -177,6 +177,10 @@ class PollingServiceTest {
                 .thenReturn(calcResult);
         when(factory.get(pr))
                 .thenReturn(customerDataClient);
+        when(customerDataClient.accounts(pr)).thenReturn(Mono.error(exception));
+        when(customerDataClient.serviceContracts(pr)).thenReturn(Mono.error(exception));
+        when(customerDataClient.servicePoints(pr)).thenReturn(Mono.error(exception));
+        when(customerDataClient.meterDevices(pr)).thenReturn(Mono.error(exception));
         when(customerDataClient.usagePoints(pr, endOfDay(end, ZoneOffset.UTC), start.atStartOfDay(ZoneOffset.UTC)))
                 .thenReturn(Mono.error(exception));
 
@@ -188,7 +192,7 @@ class PollingServiceTest {
                 () -> assertEquals("pid", res.permissionId()),
                 () -> assertEquals(PermissionProcessStatus.REVOKED, res.status())
         )));
-        verify(streams, never()).publish(any(), any());
+        verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -221,6 +225,6 @@ class PollingServiceTest {
 
         // Then
         verify(outbox, never()).commit(any());
-        verify(streams, never()).publish(any(), any());
+        verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
     }
 }

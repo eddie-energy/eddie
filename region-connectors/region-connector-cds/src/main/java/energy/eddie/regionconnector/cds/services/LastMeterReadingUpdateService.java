@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.cds.services;
 
 import energy.eddie.regionconnector.cds.permission.events.InternalPollingEvent;
 import energy.eddie.regionconnector.cds.providers.IdentifiableDataStreams;
-import energy.eddie.regionconnector.cds.providers.IdentifiableUsageSegments;
+import energy.eddie.regionconnector.cds.providers.vhd.IdentifiableValidatedHistoricalData;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.springframework.stereotype.Service;
 
@@ -14,14 +14,14 @@ public class LastMeterReadingUpdateService {
 
     public LastMeterReadingUpdateService(IdentifiableDataStreams identifiableDataStreams, Outbox outbox) {
         this.outbox = outbox;
-        identifiableDataStreams.usageSegments()
+        identifiableDataStreams.validatedHistoricalData()
                                .subscribe(this::updateLastMeterReadings);
     }
 
-    private void updateLastMeterReadings(IdentifiableUsageSegments usageSegments) {
-        var old = usageSegments.permissionRequest().lastMeterReadings();
+    private void updateLastMeterReadings(IdentifiableValidatedHistoricalData identifiableData) {
+        var old = identifiableData.permissionRequest().lastMeterReadings();
         var lastMeterReadings = new HashMap<>(old);
-        for (var segment : usageSegments.payload()) {
+        for (var segment : identifiableData.payload().usageSegments()) {
             var end = segment.getSegmentEnd().toZonedDateTime();
             for (var meter : segment.getRelatedMeterdevices()) {
                 if (lastMeterReadings.containsKey(meter)) {
@@ -34,6 +34,6 @@ public class LastMeterReadingUpdateService {
                 }
             }
         }
-        outbox.commit(new InternalPollingEvent(usageSegments.permissionRequest().permissionId(), lastMeterReadings));
+        outbox.commit(new InternalPollingEvent(identifiableData.permissionRequest().permissionId(), lastMeterReadings));
     }
 }
