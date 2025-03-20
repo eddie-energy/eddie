@@ -20,6 +20,7 @@ public interface EsPermissionRequestRepository extends
         StalePermissionRequestRepository<DatadisPermissionRequest>,
         PermissionRequestRepository<EsPermissionRequest> {
 
+    @Override
     List<EsPermissionRequest> findByStatus(PermissionProcessStatus status);
 
     @Query(

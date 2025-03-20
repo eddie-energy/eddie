@@ -6,7 +6,6 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnector;
 import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnectorMetadata;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
@@ -16,12 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -30,21 +27,19 @@ import static org.mockito.Mockito.*;
 class FutureDataServiceTest {
     @Mock
     private DataNeedsService dataNeedsService;
+    @Spy
     @InjectMocks
     private PollingService pollingService;
     @Mock
     private FiPermissionRequestRepository repository;
     @Mock
-    FingridRegionConnectorMetadata metadata; // without this metadata, the region connector cannot be mocked correctly
-    @InjectMocks
-    FingridRegionConnector regionConnector;
+    FingridRegionConnectorMetadata metadata;
     private CommonFutureDataService<FingridPermissionRequest> futureDataService;
-    PollingService pollingServiceSpy;
 
     @BeforeEach
-    public void setup() {
-        pollingServiceSpy = spy(pollingService);
-        futureDataService = new CommonFutureDataService<>(pollingServiceSpy, repository, "0 0 17 * * *", regionConnector);
+    void setup() {
+        when(metadata.timeZone()).thenReturn(ZoneId.of("Europe/Helsinki"));
+        futureDataService = new CommonFutureDataService<>(pollingService, repository, "0 0 17 * * *", metadata);
     }
 
 
@@ -66,7 +61,7 @@ class FutureDataServiceTest {
         futureDataService.fetchMeterData();
 
         // Then
-        verify(pollingServiceSpy).pollTimeSeriesData(permissionRequest);
+        verify(pollingService).pollTimeSeriesData(permissionRequest);
     }
 
     @Test
@@ -79,7 +74,7 @@ class FutureDataServiceTest {
         futureDataService.fetchMeterData();
 
         // Then
-        verify(pollingServiceSpy, never()).pollTimeSeriesData(any());
+        verify(pollingService, never()).pollTimeSeriesData(any());
     }
 
     private static FingridPermissionRequest getPermissionRequest() {

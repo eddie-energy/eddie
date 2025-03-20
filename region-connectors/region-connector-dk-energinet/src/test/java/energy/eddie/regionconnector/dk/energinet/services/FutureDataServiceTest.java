@@ -7,7 +7,6 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
@@ -19,13 +18,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,21 +39,19 @@ class FutureDataServiceTest {
     private EnerginetCustomerApi energinetCustomerApi;
     @Mock
     private ObjectMapper objectMapper; //this is needed to mock the PollingService
+    @Spy
     @InjectMocks
     private PollingService pollingService;
     @Mock
     private DkPermissionRequestRepository repository;
     @Mock
-    EnerginetRegionConnectorMetadata metadata; // without this metadata, the region connector cannot be mocked correctly
-    @InjectMocks
-    EnerginetRegionConnector regionConnector;
+    private EnerginetRegionConnectorMetadata metadata;
     private CommonFutureDataService<DkEnerginetPermissionRequest> futureDataService;
-    private PollingService pollingServiceSpy;
 
     @BeforeEach
-    public void setup() {
-        pollingServiceSpy = spy(pollingService);
-        futureDataService = new CommonFutureDataService<>(pollingServiceSpy, repository, "0 0 17 * * *", regionConnector);
+    void setup() {
+        when(metadata.timeZone()).thenReturn(ZoneId.of("Europe/Copenhagen"));
+        futureDataService = new CommonFutureDataService<>(pollingService, repository, "0 0 17 * * *", metadata);
     }
 
     @Test
@@ -78,7 +73,7 @@ class FutureDataServiceTest {
         futureDataService.fetchMeterData();
 
         // Then
-        verify(pollingServiceSpy).pollTimeSeriesData(permissionRequest);
+        verify(pollingService).pollTimeSeriesData(permissionRequest);
     }
 
     @Test
@@ -91,7 +86,7 @@ class FutureDataServiceTest {
         futureDataService.fetchMeterData();
 
         // Then
-        verify(pollingServiceSpy, never()).pollTimeSeriesData(any());
+        verify(pollingService, never()).pollTimeSeriesData(any());
     }
 
     private static EnerginetPermissionRequest getPermissionRequest() {

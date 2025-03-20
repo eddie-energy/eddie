@@ -20,6 +20,7 @@ public interface NlPermissionRequestRepository extends
         StatusPermissionRequestRepository<NlPermissionRequest> {
     Optional<NlPermissionRequest> findByStateAndPermissionId(String state, String permissionId);
 
+    @Override
     List<NlPermissionRequest> findByStatus(PermissionProcessStatus status);
 
     boolean existsByPermissionIdAndStatus(String permissionId, PermissionProcessStatus status);

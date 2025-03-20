@@ -35,6 +35,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
@@ -173,6 +174,20 @@ public class MijnAansluitingBeanConfig {
                 cimConfig,
                 pr -> null,
                 NL_ZONE_ID
+        );
+    }
+
+    @Bean
+    public CommonFutureDataService<NlPermissionRequest> commonFutureDataService(
+            PollingService pollingService,
+            NlPermissionRequestRepository repository,
+            MijnAansluitingRegionConnector connector
+    ){
+        return new CommonFutureDataService<>(
+                pollingService,
+                repository,
+                "0 0 17 * * *",
+                connector.getMetadata()
         );
     }
 }

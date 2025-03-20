@@ -139,6 +139,6 @@ public class FingridPermissionRequest implements MeterReadingPermissionRequest {
 
     @Override
     public Optional<LocalDate> latestMeterReadingEndDate() {
-        return Optional.empty();
+        return latestMeterReading().map(ZonedDateTime::toLocalDate);
     }
 }

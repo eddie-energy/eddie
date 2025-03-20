@@ -35,6 +35,7 @@ public class PollingService implements CommonPollingService<FingridPermissionReq
         this.dataNeedsService = dataNeedsService;
     }
 
+    @Override
     public void pollTimeSeriesData(FingridPermissionRequest permissionRequest) {
         pollTimeSeriesData(permissionRequest, permissionRequest.granularity());
     }

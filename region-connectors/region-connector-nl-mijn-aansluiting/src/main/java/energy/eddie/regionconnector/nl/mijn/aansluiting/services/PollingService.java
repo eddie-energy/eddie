@@ -77,6 +77,7 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
                 .subscribe(this::consume);
     }
 
+    @Override
     public void pollTimeSeriesData(NlPermissionRequest permissionRequest) {
         String permissionId = permissionRequest.permissionId();
         var res = fetchAccessToken(permissionId, MijnAansluitingApi.CONTINUOUS_CONSENT_API);

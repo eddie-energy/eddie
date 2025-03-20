@@ -4,7 +4,6 @@ import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.agnostic.process.model.persistence.StatusPermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,17 +29,12 @@ class CommonFutureDataServiceTest {
     private StatusPermissionRequestRepository<MeterReadingPermissionRequest> repository;
     @Mock
     RegionConnectorMetadata metadata;
-    @Mock
-    private RegionConnector regionConnector;
-
     private CommonFutureDataService<MeterReadingPermissionRequest> service;
 
     @BeforeEach
-    public void setUp() {
-        String cronExpression = "0 0 17 * * *";
-        when(regionConnector.getMetadata()).thenReturn(metadata);
-        when(regionConnector.getMetadata().timeZone()).thenReturn(ZoneId.of("Europe/Brussels"));
-        service = new CommonFutureDataService<>(pollingService, repository, cronExpression, regionConnector);
+    void setUp() {
+        when(metadata.timeZone()).thenReturn(ZoneId.of("Europe/Brussels"));
+        service = new CommonFutureDataService<>(pollingService, repository, "0 0 17 * * *", metadata);
     }
 
     static MeterReadingPermissionRequest createPermissionRequest(LocalDate startDate,

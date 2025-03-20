@@ -20,6 +20,7 @@ public interface FrPermissionRequestRepository extends
         StalePermissionRequestRepository<EnedisPermissionRequest>,
         StatusPermissionRequestRepository<FrEnedisPermissionRequest> {
 
+    @Override
     List<FrEnedisPermissionRequest> findByStatus(PermissionProcessStatus status);
 
     @Query(

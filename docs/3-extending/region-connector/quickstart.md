@@ -1272,34 +1272,22 @@ That's everything needed to create a validated historical data market document.
 Implementing future data is rather easy once requesting validated historical data is implemented.
 This implementation periodically checks for new data for active permission requests.
 It uses a cron expression that should be configured for the region connector.
+To avoid redundant implementations for each region connector, a CommonFutureDataService was implemented. 
+To use it, just add a Bean to the region connectors spring configuration.
 
 ```java
-
-@Service
-public class FutureDataService {
-  private final Outbox outbox;
-  private final FooBarPermissionRequestRepository repo;
-  private final DataNeedsService dataNeedsService;
-
-  public FutureDataService(Outbox outbox, FooBarPermissionRequestRepository repo, DataNeedsService dataNeedsService) {
-    this.outbox = outbox;
-    this.repo = repo;
-    this.dataNeedsService = dataNeedsService;
-  }
-
-  @Scheduled(cron = "${region-connector.foo.bar.future.data.schedule}")
-  public void fetchFutureData() {
-    var prs = repo.findByStatus(PermissionProcessStatus.ACCEPTED);
-    for (var pr : prs) {
-      var dataNeed = dataNeedsService.getById(pr.dataNeedId());
-      var now = ZonedDateTime.now(ZoneOffset.UTC);
-      // skip inactive permission requests
-      if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed) || pr.start().isAfter(now)) {
-        continue;
-      }
-      outbox.commit(new StartPollingEvent(pr.permissionId()));
-    }
-  }
+@Bean
+public CommonFutureDataService<FooPermissionRequest> commonFutureDataService(
+        PollingService pollingService,
+        BarPermissionRequestRepository repository,
+        BazRegionConnector connector
+){
+  return new CommonFutureDataService<>(
+          pollingService,
+          repository,
+          "0 0 17 * * *",
+          connector.getMetadata()
+  );
 }
 ```
 

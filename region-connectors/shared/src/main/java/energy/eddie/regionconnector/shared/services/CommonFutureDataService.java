@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.shared.services;
 import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.agnostic.process.model.persistence.StatusPermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.api.v0.RegionConnectorMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -17,24 +17,23 @@ import java.util.TimeZone;
  */
 public class CommonFutureDataService<T extends MeterReadingPermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonFutureDataService.class);
-
     private final CommonPollingService<T> pollingService;
     private final StatusPermissionRequestRepository<T> repository;
-    private final RegionConnector regionConnector;
+    private final RegionConnectorMetadata metadata;
 
     public CommonFutureDataService(
             CommonPollingService<T> pollingService,
             StatusPermissionRequestRepository<T> repository,
             String cronExpression,
-            RegionConnector regionConnector
+            RegionConnectorMetadata metadata
     ) {
         this.pollingService = pollingService;
         this.repository = repository;
-        this.regionConnector = regionConnector;
+        this.metadata = metadata;
 
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
         taskScheduler.initialize();
-        taskScheduler.schedule(this::fetchMeterData, new CronTrigger(cronExpression, TimeZone.getTimeZone(regionConnector.getMetadata().timeZone())));
+        taskScheduler.schedule(this::fetchMeterData, new CronTrigger(cronExpression, TimeZone.getTimeZone(metadata.timeZone())));
     }
 
     /**
@@ -47,13 +46,13 @@ public class CommonFutureDataService<T extends MeterReadingPermissionRequest> {
         for (var activePermission : activePermissions) {
             if (pollingService.isActiveAndNeedsToBeFetched(activePermission)) {
                 LOGGER.atInfo()
-                        .addArgument(() -> regionConnector.getMetadata().id())
+                        .addArgument(metadata::id)
                         .addArgument(activePermission::permissionId)
                         .log("{}: Fetching energy data for permission request {}");
                 pollingService.pollTimeSeriesData(activePermission);
             } else {
                 LOGGER.atInfo()
-                        .addArgument(regionConnector.getMetadata().id())
+                        .addArgument(metadata::id)
                         .addArgument(activePermission::permissionId)
                         .log("{}: Cannot fetch validated historical data for permission request {}, since it's not the correct data need");
             }

@@ -7,7 +7,6 @@ import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnector;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
@@ -23,13 +22,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.repository.CrudRepository;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -45,19 +42,17 @@ class FutureDataServiceTest {
     private CrudRepository<OAuthTokenDetails, String>  crudRepository; //this is needed to mock the PollingService
     @Mock
     private OAuthManager oAuthManager;
+    @Spy
     @InjectMocks
     private PollingService pollingService;
     @Mock
-    private MijnAansluitingRegionConnectorMetadata metadata; // without this metadata, the region connector cannot be mocked correctly
-    @InjectMocks
-    private MijnAansluitingRegionConnector regionConnector;
+    private MijnAansluitingRegionConnectorMetadata metadata;
     private CommonFutureDataService<NlPermissionRequest> futureDataService;
-    private PollingService pollingServiceSpy;
 
     @BeforeEach
-    public void setup() {
-        pollingServiceSpy = spy(pollingService);
-        futureDataService = new CommonFutureDataService<>(pollingServiceSpy, repository, "0 0 17 * * *", regionConnector);
+    void setup() {
+        when(metadata.timeZone()).thenReturn(ZoneId.of("Europe/Amsterdam"));
+        futureDataService = new CommonFutureDataService<>(pollingService, repository, "0 0 17 * * *", metadata);
     }
 
     @Test
@@ -71,7 +66,7 @@ class FutureDataServiceTest {
         futureDataService.fetchMeterData();
 
         // Then
-        verify(pollingServiceSpy).pollTimeSeriesData(PERMISSION_REQUEST);
+        verify(pollingService).pollTimeSeriesData(PERMISSION_REQUEST);
     }
 
     @Test
@@ -84,6 +79,6 @@ class FutureDataServiceTest {
         futureDataService.fetchMeterData();
 
         // Then
-        verify(pollingServiceSpy, never()).pollTimeSeriesData(PERMISSION_REQUEST);
+        verify(pollingService, never()).pollTimeSeriesData(PERMISSION_REQUEST);
     }
 }

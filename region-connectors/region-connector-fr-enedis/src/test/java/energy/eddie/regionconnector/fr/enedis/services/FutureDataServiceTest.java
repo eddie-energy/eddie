@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.fr.enedis.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnector;
 import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisMeterReadingApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
@@ -18,9 +17,11 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -34,21 +35,19 @@ import static org.mockito.Mockito.*;
 class FutureDataServiceTest {
     @Mock
     private EnedisMeterReadingApi enedisApi; //this is needed to mock the PollingService
+    @Spy
     @InjectMocks
     private PollingService pollingService;
     @Mock
     private FrPermissionRequestRepository repository;
     @Mock
-    EnedisRegionConnectorMetadata metadata; // without this metadata, the region connector cannot be mocked correctly
-    @InjectMocks
-    EnedisRegionConnector regionConnector;
+    EnedisRegionConnectorMetadata metadata;
     private CommonFutureDataService<FrEnedisPermissionRequest> futureDataService;
-    private PollingService pollingServiceSpy;
 
     @BeforeEach
-    public void setup() {
-        pollingServiceSpy = spy(pollingService);
-        futureDataService = new CommonFutureDataService<>(pollingServiceSpy, repository, "0 0 17 * * *", regionConnector);
+    void setup() {
+        when(metadata.timeZone()).thenReturn(ZoneId.of("Europe/Paris"));
+        futureDataService = new CommonFutureDataService<>(pollingService, repository, "0 0 17 * * *", metadata);
     }
 
     static Stream<Arguments> activePermission_that_needsToBeFetched() {
@@ -112,7 +111,7 @@ class FutureDataServiceTest {
 
         // Then
         verify(repository).findByStatus(PermissionProcessStatus.ACCEPTED);
-        verifyNoMoreInteractions(pollingServiceSpy); // No interaction with pollingService should occur
+        verifyNoMoreInteractions(pollingService); // No interaction with pollingService should occur
     }
 
     @ParameterizedTest(name = "{1}")
@@ -130,7 +129,7 @@ class FutureDataServiceTest {
 
         // Then
         verify(repository).findByStatus(PermissionProcessStatus.ACCEPTED);
-        verify(pollingServiceSpy).pollTimeSeriesData(permissionRequest);
+        verify(pollingService).pollTimeSeriesData(permissionRequest);
     }
 
     @ParameterizedTest(name = "{1}")

@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.es.datadis.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.es.datadis.DatadisRegionConnector;
 import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
@@ -16,10 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -36,20 +37,17 @@ class FutureDataServiceTest {
     private DataApi dataApi;
     @Mock
     private EsPermissionRequestRepository repository;
+    @Spy
     @InjectMocks
     private DataApiService dataApiService;
     @Mock
-    DatadisRegionConnectorMetadata metadata; //this is needed to mock the region connector correctly
-    @InjectMocks
-    DatadisRegionConnector regionConnector;
+    DatadisRegionConnectorMetadata metadata;
     CommonFutureDataService<EsPermissionRequest> futureDataService;
-    private DataApiService dataApiServiceSpy;
 
     @BeforeEach
     void setUp() {
-        dataApiServiceSpy = spy(dataApiService);
-        futureDataService = new CommonFutureDataService<>(dataApiServiceSpy, repository, "0 0 17 * * *", regionConnector);
-
+        when(metadata.timeZone()).thenReturn(ZoneId.of("Europe/Madrid"));
+        futureDataService = new CommonFutureDataService<>(dataApiService, repository, "0 0 17 * * *", metadata);
     }
 
     @Test
@@ -68,11 +66,11 @@ class FutureDataServiceTest {
         futureDataService.fetchMeterData();
 
         // Then
-        verify(dataApiServiceSpy).pollTimeSeriesData(activePermissionRequest1);
-        verify(dataApiServiceSpy).pollTimeSeriesData(activePermissionRequest2);
+        verify(dataApiService).pollTimeSeriesData(activePermissionRequest1);
+        verify(dataApiService).pollTimeSeriesData(activePermissionRequest2);
     }
 
-    private static EsPermissionRequest acceptedPermissionRequest(
+    private static DatadisPermissionRequest acceptedPermissionRequest(
             LocalDate start, LocalDate end,
             LocalDate latestMeterReading
     ) {
@@ -110,10 +108,10 @@ class FutureDataServiceTest {
         futureDataService.fetchMeterData();
 
         // Then
-        verify(dataApiServiceSpy).isActiveAndNeedsToBeFetched(activePermissionRequest);
-        verify(dataApiServiceSpy).pollTimeSeriesData(activePermissionRequest);
-        verify(dataApiServiceSpy).fetchDataForPermissionRequest(activePermissionRequest, lastPulledMeterReading, yesterday);
-        verifyNoMoreInteractions(dataApiServiceSpy);
+        verify(dataApiService).isActiveAndNeedsToBeFetched(activePermissionRequest);
+        verify(dataApiService).pollTimeSeriesData(activePermissionRequest);
+        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, lastPulledMeterReading, yesterday);
+        verifyNoMoreInteractions(dataApiService);
     }
 
     @Test
@@ -130,9 +128,9 @@ class FutureDataServiceTest {
         futureDataService.fetchMeterData();
 
         // Then
-        verify(dataApiServiceSpy).isActiveAndNeedsToBeFetched(activePermissionRequest);
-        verify(dataApiServiceSpy).pollTimeSeriesData(activePermissionRequest);
-        verify(dataApiServiceSpy).fetchDataForPermissionRequest(activePermissionRequest, yesterday, yesterday);
-        verifyNoMoreInteractions(dataApiServiceSpy);
+        verify(dataApiService).isActiveAndNeedsToBeFetched(activePermissionRequest);
+        verify(dataApiService).pollTimeSeriesData(activePermissionRequest);
+        verify(dataApiService).fetchDataForPermissionRequest(activePermissionRequest, yesterday, yesterday);
+        verifyNoMoreInteractions(dataApiService);
     }
 }
