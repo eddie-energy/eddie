@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.cds.openapi.model.UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner.FormatEnum;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
+import energy.eddie.regionconnector.shared.cim.v0_82.CimUtils;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
@@ -57,7 +58,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         return envelopes;
     }
 
-    private static List<TimeSeriesComplexType> getTimeSeriesList(
+    private List<TimeSeriesComplexType> getTimeSeriesList(
             Account.Meter meter,
             Account.UsageSegment usageSegment,
             EsmpTimeInterval interval
@@ -66,6 +67,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         var resolution = getResolution(usageSegment);
         for (var entry : usageSegment.usageSegmentValues().entrySet()) {
             var format = entry.getKey();
+            var converter = new CimUnitConverter(format);
             var direction = getFlowDirection(format);
             var timeSeries = new TimeSeriesComplexType()
                     .withMRID(UUID.randomUUID().toString())
@@ -73,11 +75,11 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                     .withProduct(EnergyProductTypeList.ACTIVE_POWER)
                     .withFlowDirectionDirection(direction)
                     .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation(AggregateKind.SUM)
-                    .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED)
-                    .withEnergyMeasurementUnitName(UnitOfMeasureTypeList.KILOWATT_HOUR)
+                    .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(getCommodity(format))
+                    .withEnergyMeasurementUnitName(converter.unit())
                     .withMarketEvaluationPointMRID(
                             new MeasurementPointIDStringComplexType()
-                                    .withCodingScheme(CodingSchemeTypeList.USA_NATIONAL_CODING_SCHEME)
+                                    .withCodingScheme(getCodingScheme())
                                     .withValue(meter.meterNumber())
                     )
                     .withReasonList(
@@ -98,7 +100,9 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                                                     .withPointList(
                                                             new SeriesPeriodComplexType.PointList()
                                                                     .withPoints(
-                                                                            toPoints(usageSegment, entry.getValue())
+                                                                            toPoints(usageSegment,
+                                                                                     entry.getValue(),
+                                                                                     converter)
                                                                     )
                                                     )
                                     )
@@ -108,13 +112,30 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         return timeSeriesList;
     }
 
+    @Nullable
+    private CommodityKind getCommodity(FormatEnum format) {
+        return switch (format) {
+            case KWH_NET, KWH_FWD, KWH_REV, USAGE_KWH, USAGE_FWD_KWH, USAGE_REV_KWH, USAGE_NET_KWH, AGGREGATED_KWH,
+                 DEMAND_KW, SUPPLY_MIX -> CommodityKind.ELECTRICITYPRIMARYMETERED;
+            case WATER_M3, WATER_GAL, WATER_FT3 -> CommodityKind.POTABLEWATER;
+            case GAS_THERM, GAS_CCF, GAS_MCF, GAS_MMBTU -> CommodityKind.NATURALGAS;
+            case EACS -> null;
+        };
+    }
+
+    @Nullable
+    private CodingSchemeTypeList getCodingScheme() {
+        return CimUtils.getCodingSchemeVhd(permissionRequest.dataSourceInformation().countryCode());
+    }
+
     private static List<PointComplexType> toPoints(
             Account.UsageSegment usageSegment,
-            List<BigDecimal> values
+            List<BigDecimal> values,
+            CimUnitConverter converter
     ) {
         List<PointComplexType> points = new ArrayList<>();
         for (var i = 0; i < values.size(); i++) {
-            var value = values.get(i);
+            var value = converter.convert(values.get(i));
             var offset = usageSegment.interval().multiply(BigDecimal.valueOf(i)).longValue();
             var position = usageSegment.start().toInstant().plusSeconds(offset).getEpochSecond();
             var point = new PointComplexType()
@@ -153,7 +174,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         }
     }
 
-    private static ValidatedHistoricalDataMarketDocumentComplexType getVhd(Account account, EsmpDateTime created) {
+    private ValidatedHistoricalDataMarketDocumentComplexType getVhd(Account account, EsmpDateTime created) {
+        var codingScheme = getCodingScheme();
         return new ValidatedHistoricalDataMarketDocumentComplexType()
                 .withMRID(UUID.randomUUID().toString())
                 .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
@@ -164,11 +186,11 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                 .withProcessProcessType(ProcessTypeList.REALISED)
                 .withSenderMarketParticipantMRID(
                         new PartyIDStringComplexType()
-                                .withCodingScheme(CodingSchemeTypeList.USA_NATIONAL_CODING_SCHEME)
+                                .withCodingScheme(codingScheme)
                 )
                 .withReceiverMarketParticipantMRID(
                         new PartyIDStringComplexType()
-                                .withCodingScheme(CodingSchemeTypeList.USA_NATIONAL_CODING_SCHEME)
+                                .withCodingScheme(codingScheme)
                                 .withValue(account.cdsCustomerNumber())
                 );
     }

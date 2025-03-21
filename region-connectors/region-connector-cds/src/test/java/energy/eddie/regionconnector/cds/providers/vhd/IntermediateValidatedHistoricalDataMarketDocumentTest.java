@@ -23,9 +23,42 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
 
     static Stream<Arguments> testToVhds_returnsVhds() {
         return Stream.of(
-                Arguments.of(FormatEnum.KWH_FWD, BusinessTypeList.CONSUMPTION, DirectionTypeList.DOWN),
-                Arguments.of(FormatEnum.KWH_REV, BusinessTypeList.PRODUCTION, DirectionTypeList.UP),
-                Arguments.of(FormatEnum.KWH_NET, null, DirectionTypeList.UP_AND_DOWN)
+                Arguments.of(FormatEnum.KWH_FWD,
+                             BusinessTypeList.CONSUMPTION,
+                             DirectionTypeList.DOWN,
+                             CommodityKind.ELECTRICITYPRIMARYMETERED,
+                             UnitOfMeasureTypeList.KILOWATT_HOUR,
+                             BigDecimal.ONE),
+                Arguments.of(FormatEnum.KWH_REV,
+                             BusinessTypeList.PRODUCTION,
+                             DirectionTypeList.UP,
+                             CommodityKind.ELECTRICITYPRIMARYMETERED,
+                             UnitOfMeasureTypeList.KILOWATT_HOUR,
+                             BigDecimal.ONE),
+                Arguments.of(FormatEnum.KWH_NET,
+                             null,
+                             DirectionTypeList.UP_AND_DOWN,
+                             CommodityKind.ELECTRICITYPRIMARYMETERED,
+                             UnitOfMeasureTypeList.KILOWATT_HOUR,
+                             BigDecimal.ONE),
+                Arguments.of(FormatEnum.WATER_GAL,
+                             BusinessTypeList.CONSUMPTION,
+                             DirectionTypeList.DOWN,
+                             CommodityKind.POTABLEWATER,
+                             UnitOfMeasureTypeList.CUBIC_METRE,
+                             CimUnitConverter.GAL_TO_CUBIC_METRE),
+                Arguments.of(FormatEnum.GAS_CCF,
+                             BusinessTypeList.CONSUMPTION,
+                             DirectionTypeList.DOWN,
+                             CommodityKind.NATURALGAS,
+                             UnitOfMeasureTypeList.KILOWATT_HOUR,
+                             CimUnitConverter.CCF_TO_KWH),
+                Arguments.of(FormatEnum.EACS,
+                             BusinessTypeList.CONSUMPTION,
+                             DirectionTypeList.DOWN,
+                             null,
+                             null,
+                             BigDecimal.ONE)
         );
     }
 
@@ -33,7 +66,14 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     @MethodSource
     @SuppressWarnings("java:S5961")
         // The mapping requires that many asserts and splitting in multiple tests doesn't make sense
-    void testToVhds_returnsVhds(FormatEnum format, BusinessTypeList businessType, DirectionTypeList flowDirection) {
+    void testToVhds_returnsVhds(
+            FormatEnum format,
+            BusinessTypeList businessType,
+            DirectionTypeList flowDirection,
+            CommodityKind commodity,
+            UnitOfMeasureTypeList unit,
+            BigDecimal value
+    ) {
         // Given
         var now = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         var usageSegment = new Account.UsageSegment(
@@ -90,8 +130,8 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                     assertThat(t.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation())
                             .isEqualTo(AggregateKind.SUM);
                     assertThat(t.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity())
-                            .isEqualTo(CommodityKind.ELECTRICITYPRIMARYMETERED);
-                    assertThat(t.getEnergyMeasurementUnitName()).isEqualTo(UnitOfMeasureTypeList.KILOWATT_HOUR);
+                            .isEqualTo(commodity);
+                    assertThat(t.getEnergyMeasurementUnitName()).isEqualTo(unit);
                     assertThat(t.getMarketEvaluationPointMRID().getCodingScheme())
                             .isEqualTo(CodingSchemeTypeList.USA_NATIONAL_CODING_SCHEME);
                     assertThat(t.getMarketEvaluationPointMRID().getValue()).isEqualTo(meter.meterNumber());
@@ -115,7 +155,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 .singleElement()
                 .satisfies(p -> {
                     assertThat(p.getPosition()).isEqualTo("" + now.toInstant().getEpochSecond());
-                    assertThat(p.getEnergyQuantityQuantity()).isEqualTo(BigDecimal.ONE);
+                    assertThat(p.getEnergyQuantityQuantity()).isEqualTo(value);
                 });
     }
 
