@@ -3,7 +3,6 @@ package energy.eddie.aiida;
 import energy.eddie.aiida.config.InstallerConfiguration;
 import energy.eddie.aiida.config.KeycloakConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.services.DataSourceService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -13,7 +12,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 public class AiidaApplication {
 
     public static void main(String[] args) {
-        var context = SpringApplication.run(AiidaApplication.class, args);
-        context.getBean(DataSourceService.class).startDataSources();
+        SpringApplication.run(AiidaApplication.class, args);
     }
 }
