@@ -59,7 +59,7 @@ class MicroTeleinfoV3AdapterTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        mapper = new AiidaConfiguration().objectMapper();
+        mapper = new AiidaConfiguration().customObjectMapper().build();
         adapter = new MicroTeleinfoV3Adapter(DATA_SOURCE, mapper);
     }
 

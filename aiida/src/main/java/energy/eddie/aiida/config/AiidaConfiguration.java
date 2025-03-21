@@ -1,6 +1,5 @@
 package energy.eddie.aiida.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
@@ -12,6 +11,7 @@ import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3AdapterValueDese
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -36,33 +36,19 @@ public class AiidaConfiguration {
      */
     @Bean
     @Primary
-    public ObjectMapper objectMapper() {
-        var objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-
-        var hibernateModule = new Hibernate6Module();
-        // Jackson should automatically query any lazy loaded fields before serialization
-        hibernateModule.enable(Hibernate6Module.Feature.FORCE_LAZY_LOADING);
-        // needed so that JsonTypeInformation for data need is deserialized
-        hibernateModule.disable(Hibernate6Module.Feature.USE_TRANSIENT_ANNOTATION);
-        objectMapper.registerModule(hibernateModule);
-
-        var oesterreichsEnergieAdapterModule = new SimpleModule();
-        oesterreichsEnergieAdapterModule.addDeserializer(OesterreichsEnergieAdapterJson.AdapterValue.class,
-                               new OesterreichsEnergieAdapterValueDeserializer(null));
-        objectMapper.registerModule(oesterreichsEnergieAdapterModule);
-
-        var microTeleinfoModule = new SimpleModule();
-        microTeleinfoModule.addDeserializer(MicroTeleinfoV3AdapterJson.TeleinfoDataField.class,
-                               new MicroTeleinfoV3AdapterValueDeserializer(null));
-        objectMapper.registerModule(microTeleinfoModule);
-
-        var jtm = new JavaTimeModule();
-        objectMapper.registerModule(jtm);
-        // setting this to false means timestamps are formatted according to ISO and not formatted in epoch millis any more
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-
-        return objectMapper;
+    public Jackson2ObjectMapperBuilder customObjectMapper() {
+        return new Jackson2ObjectMapperBuilder()
+                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .failOnUnknownProperties(true)
+                .modules(
+                        new JavaTimeModule(),
+                        new Hibernate6Module().enable(Hibernate6Module.Feature.FORCE_LAZY_LOADING)
+                                              .disable(Hibernate6Module.Feature.USE_TRANSIENT_ANNOTATION),
+                        new SimpleModule().addDeserializer(OesterreichsEnergieAdapterJson.AdapterValue.class,
+                                                           new OesterreichsEnergieAdapterValueDeserializer(null)),
+                        new SimpleModule().addDeserializer(MicroTeleinfoV3AdapterJson.TeleinfoDataField.class,
+                                                           new MicroTeleinfoV3AdapterValueDeserializer(null))
+                );
     }
 
     /**

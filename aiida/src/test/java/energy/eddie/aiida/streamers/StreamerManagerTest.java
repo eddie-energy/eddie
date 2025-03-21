@@ -59,7 +59,7 @@ class StreamerManagerTest {
 
     @BeforeEach
     void setUp() {
-        var mapper = new AiidaConfiguration().objectMapper();
+        var mapper = new AiidaConfiguration().customObjectMapper().build();
         manager = new StreamerManager(mapper, aggregatorMock, mockRepository);
     }
 

@@ -86,7 +86,7 @@ public class DataSourceService {
                                           ));
 
         var currentUserId = authService.getCurrentUserId();
-        var dataSource = DataSource.createFromDto(dto, currentUserId, currentDataSource);
+        var dataSource = currentDataSource.mergeWithDto(dto, currentUserId);
 
         boolean wasEnabled = dataSource.enabled();
 

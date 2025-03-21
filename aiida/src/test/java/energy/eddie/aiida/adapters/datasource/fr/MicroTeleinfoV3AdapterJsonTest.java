@@ -14,7 +14,7 @@ class MicroTeleinfoV3AdapterJsonTest {
      */
     @Test
     void verify_isProperlyDeserialized() throws JsonProcessingException {
-        ObjectMapper mapper = new AiidaConfiguration().objectMapper();
+        ObjectMapper mapper = new AiidaConfiguration().customObjectMapper().build();
 
         SimpleModule module = new SimpleModule();
         module.addDeserializer(MicroTeleinfoV3AdapterJson.TeleinfoDataField.class,

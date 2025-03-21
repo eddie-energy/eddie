@@ -61,7 +61,7 @@ class OesterreichsEnergieAdapterTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        mapper = new AiidaConfiguration().objectMapper();
+        mapper = new AiidaConfiguration().customObjectMapper().build();
         adapter = new OesterreichsEnergieAdapter(DATA_SOURCE, mapper);
 
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();

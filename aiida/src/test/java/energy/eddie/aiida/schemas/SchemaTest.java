@@ -56,7 +56,7 @@ class SchemaTest {
 
     @BeforeEach
     void setUp() {
-        objectMapper = new AiidaConfiguration().objectMapper();
+        objectMapper = new AiidaConfiguration().customObjectMapper().build();
     }
 
     @Test

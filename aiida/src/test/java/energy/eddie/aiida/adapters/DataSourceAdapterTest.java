@@ -33,7 +33,7 @@ class DataSourceAdapterTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new AiidaConfiguration().objectMapper();
+        mapper = new AiidaConfiguration().customObjectMapper().build();
     }
 
     @Test

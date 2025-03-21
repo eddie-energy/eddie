@@ -58,19 +58,8 @@ public abstract class DataSource {
         };
     }
 
-    public static DataSource createFromDto(DataSourceDto dto, UUID userId, DataSource currentDataSource) {
-        var mqttSettingsDto = new DataSourceMqttDto();
-
-        if (currentDataSource instanceof MqttDataSource mqttDataSource) {
-            mqttSettingsDto = new DataSourceMqttDto(
-                    mqttDataSource.mqttServerUri(),
-                    mqttDataSource.mqttSubscribeTopic(),
-                    mqttDataSource.mqttUsername(),
-                    mqttDataSource.mqttPassword()
-            );
-        }
-
-        return createFromDto(dto, userId, mqttSettingsDto);
+    public DataSource mergeWithDto(DataSourceDto dto, UUID userId) {
+        return createFromDto(dto, userId, new DataSourceMqttDto());
     }
 
     public UUID id() {

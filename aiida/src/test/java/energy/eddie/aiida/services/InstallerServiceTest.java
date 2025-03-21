@@ -65,7 +65,7 @@ class InstallerServiceTest {
             }
             """;
 
-    private final ObjectMapper objectMapper = new AiidaConfiguration().objectMapper();
+    private final ObjectMapper objectMapper = new AiidaConfiguration().customObjectMapper().build();
 
     @Mock
     private InstallerConfiguration installerConfiguration;

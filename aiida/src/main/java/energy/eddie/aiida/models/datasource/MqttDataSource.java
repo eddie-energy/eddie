@@ -30,6 +30,15 @@ public abstract class MqttDataSource extends DataSource {
         this.mqttPassword = dataSourceMqttDto.password();
     }
 
+    @Override
+    public DataSource mergeWithDto(DataSourceDto dto, UUID userId) {
+        var mqttSettingsDto = new DataSourceMqttDto(mqttServerUri(),
+                                                    mqttSubscribeTopic(),
+                                                    mqttUsername(),
+                                                    mqttPassword());
+        return createFromDto(dto, userId, mqttSettingsDto);
+    }
+
     public String mqttServerUri() {
         return mqttServerUri;
     }

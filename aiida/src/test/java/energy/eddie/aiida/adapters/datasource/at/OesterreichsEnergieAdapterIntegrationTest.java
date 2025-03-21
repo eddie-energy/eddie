@@ -70,7 +70,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
     @BeforeEach
     void setUp() throws IOException {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
-        mapper = new AiidaConfiguration().objectMapper();
+        mapper = new AiidaConfiguration().customObjectMapper().build();
 
         var toxiproxyClient = new ToxiproxyClient(toxiproxy.getHost(), toxiproxy.getControlPort());
         proxy = toxiproxyClient.createProxy("mqtt", "0.0.0.0:8666", "mqtt:1883");
