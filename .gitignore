@@ -103,6 +103,7 @@ build
 .idea
 !.idea/prettier.xml
 !.idea/vcs.xml
+!.idea/externalDependencies.xml
 
 ### jte template generated files ###
 **/jte-classes
