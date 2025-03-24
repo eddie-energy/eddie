@@ -15,8 +15,8 @@
             <xs:element name="cds_account_id" type="xs:string"/>
             <xs:element name="cds_created" type="xs:dateTime"/>
             <xs:element name="cds_modified" type="xs:dateTime"/>
-            <xs:element name="cds_account_parent" type="xs:string" minOccurs="0"/>
-            <xs:element name="customer_number" type="xs:string" minOccurs="0"/>
+            <xs:element name="cds_account_parent" type="xs:string" nillable="true"/>
+            <xs:element name="customer_number" type="xs:string" nillable="true"/>
             <xs:element name="account_number" type="xs:string"/>
             <xs:element name="account_name" type="xs:string" minOccurs="0"/>
             <xs:element name="account_address" type="xs:string" minOccurs="0"/>
@@ -37,7 +37,7 @@
         <xs:complexContent>
             <xs:extension base="Page">
                 <xs:sequence>
-                    <xs:element name="accounts" type="Account" minOccurs="1" maxOccurs="unbounded"/>
+                    <xs:element name="accounts" type="Account" minOccurs="0" maxOccurs="unbounded"/>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -58,11 +58,34 @@
             <xs:element name="segment_start" type="xs:dateTime"/>
             <xs:element name="segment_end" type="xs:dateTime"/>
             <xs:element name="interval" type="xs:decimal"/>
-            <xs:element name="format" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
-            <xs:element name="values" minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="format" minOccurs="1" maxOccurs="unbounded">
+                <xs:simpleType>
+                    <xs:restriction xml:base="xs:string">
+                        <xs:enumeration value="kwh_net"/>
+                        <xs:enumeration value="kwh_fwd"/>
+                        <xs:enumeration value="kwh_rev"/>
+                        <xs:enumeration value="usage_kwh"/>
+                        <xs:enumeration value="usage_fwd_kwh"/>
+                        <xs:enumeration value="usage_rev_kwh"/>
+                        <xs:enumeration value="usage_net_kwh"/>
+                        <xs:enumeration value="aggregated_kwh"/>
+                        <xs:enumeration value="demand_kw"/>
+                        <xs:enumeration value="water_m3"/>
+                        <xs:enumeration value="water_gal"/>
+                        <xs:enumeration value="water_ft3"/>
+                        <xs:enumeration value="gas_therm"/>
+                        <xs:enumeration value="gas_ccf"/>
+                        <xs:enumeration value="gas_mcf"/>
+                        <xs:enumeration value="gas_mmbtu"/>
+                        <xs:enumeration value="supply_mix"/>
+                        <xs:enumeration value="eacs"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="values" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="value_set" type="xs:decimal" minOccurs="1" maxOccurs="unbounded"/>
+                        <xs:element name="value_set" type="xs:decimal" minOccurs="0" maxOccurs="unbounded"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -74,7 +97,36 @@
         <xs:complexContent>
             <xs:extension base="Page">
                 <xs:sequence>
-                    <xs:element name="usage_segments" type="UsageSegment" minOccurs="1" maxOccurs="unbounded"/>
+                    <xs:element name="usage_segments" type="UsageSegment" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- ServicePoint -->
+    <xs:complexType name="ServicePoint">
+        <xs:sequence>
+            <xs:element name="cds_servicepoint_id" type="xs:string"/>
+            <xs:element name="cds_created" type="xs:dateTime"/>
+            <xs:element name="cds_modified" type="xs:dateTime"/>
+            <xs:element name="servicepoint_number" type="xs:string" nillable="true"/>
+            <xs:element name="servicepoint_type" type="xs:string"/>
+            <xs:element name="servicepoint_address" type="xs:string" nillable="true"/>
+            <xs:element name="latitude" type="xs:decimal" nillable="true"/>
+            <xs:element name="longitude" type="xs:decimal" nillable="true"/>
+            <xs:element name="current_servicecontracts" type="xs:string" maxOccurs="unbounded"/>
+            <xs:element name="previous_servicecontracts" type="xs:string" maxOccurs="unbounded"/>
+            <xs:element name="premise_number" type="xs:string" nillable="true"/>
+            <xs:element name="premise_type" type="xs:string" nillable="true"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ServicePoint Wrapper Type -->
+    <xs:complexType name="ServicePoints">
+        <xs:complexContent>
+            <xs:extension base="Page">
+                <xs:sequence>
+                    <xs:element name="service_points" type="UsageSegment" minOccurs="0" maxOccurs="unbounded"/>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>

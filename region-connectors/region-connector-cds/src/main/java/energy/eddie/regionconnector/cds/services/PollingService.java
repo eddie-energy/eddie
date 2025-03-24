@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -68,10 +69,17 @@ public class PollingService {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         var prEnd = endOfDay(pr.end(), ZoneOffset.UTC);
         var end = prEnd.isBefore(now) ? prEnd : now;
-        factory.get(pr)
-               .usagePoints(pr, end, start)
-               .doOnError(this::isRevocationException, err -> revoke(permissionId, err))
-               .subscribe(res -> streams.publish(pr, res));
+        var client = factory.get(pr);
+        Mono.zip(
+                    client.accounts(pr),
+                    client.serviceContracts(pr),
+                    client.servicePoints(pr),
+                    client.meterDevices(pr),
+                    client.usagePoints(pr, end, start)
+            )
+            .doOnError(this::isRevocationException, err -> revoke(permissionId, err))
+            .subscribe(res -> streams.publish(pr, res.getT1(), res.getT2(), res.getT3(), res.getT4(), res.getT5()
+            ));
     }
 
     private boolean isRevocationException(Throwable e) {

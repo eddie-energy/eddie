@@ -58,7 +58,7 @@ class HealthIndicatorCreatorTest {
     void testRegister_reregistersHealthContributor() {
         // Given
         var cdsServer = new CdsServerBuilder().setId(1L).setName("cds server").build();
-        when(registry.getContributor("region-connector-cds"))
+        when(registry.unregisterContributor("region-connector-cds"))
                 .thenReturn(CompositeHealthContributor.fromMap(Map.of("test", new PingHealthIndicator())));
 
         // When
@@ -74,7 +74,7 @@ class HealthIndicatorCreatorTest {
     void testRegister_registersHealthContributor() {
         // Given
         var cdsServer = new CdsServerBuilder().setId(1L).setName("cds server").build();
-        when(registry.getContributor("region-connector-cds"))
+        when(registry.unregisterContributor("region-connector-cds"))
                 .thenReturn(null);
 
         // When

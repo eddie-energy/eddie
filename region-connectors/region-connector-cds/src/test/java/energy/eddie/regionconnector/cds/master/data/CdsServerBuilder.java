@@ -17,6 +17,10 @@ public class CdsServerBuilder {
     private String customerDataClientSecret;
     private Long id = null;
     private String credentialsEndpoint;
+    private String accountsEndpoint;
+    private String serviceContractsEndpoint;
+    private String servicePointsEndpoint;
+    private String meterDevicesEndpoint;
 
     public CdsServerBuilder setBaseUri(String baseUri) {
         this.baseUri = baseUri;
@@ -77,6 +81,27 @@ public class CdsServerBuilder {
         this.credentialsEndpoint = credentialsEndpoint;
         return this;
     }
+
+    public CdsServerBuilder setAccountsEndpoint(String accountsEndpoint) {
+        this.accountsEndpoint = accountsEndpoint;
+        return this;
+    }
+
+    public CdsServerBuilder setServiceContractsEndpoint(String serviceContractsEndpoint) {
+        this.serviceContractsEndpoint = serviceContractsEndpoint;
+        return this;
+    }
+
+    public CdsServerBuilder setServicePointsEndpoint(String servicePointsEndpoint) {
+        this.servicePointsEndpoint = servicePointsEndpoint;
+        return this;
+    }
+
+    public CdsServerBuilder setMeterDeviceEndpoint(String meterDeviceEndpoint) {
+        this.meterDevicesEndpoint = meterDeviceEndpoint;
+        return this;
+    }
+
     public CdsServerBuilder setCustomerDataClientId(String customerDataClientId) {
         this.customerDataClientId = customerDataClientId;
         return this;
@@ -101,7 +126,11 @@ public class CdsServerBuilder {
                         parEndpoint,
                         clientsEndpoint,
                         credentialsEndpoint,
-                        usageSegmentsEndpoint
+                        usageSegmentsEndpoint,
+                        accountsEndpoint,
+                        serviceContractsEndpoint,
+                        servicePointsEndpoint,
+                        meterDevicesEndpoint
                 ),
                 customerDataClientId,
                 customerDataClientSecret

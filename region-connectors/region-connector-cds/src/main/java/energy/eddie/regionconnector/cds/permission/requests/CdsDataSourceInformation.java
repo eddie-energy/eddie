@@ -22,7 +22,7 @@ public class CdsDataSourceInformation implements DataSourceInformation {
 
     @Override
     public String countryCode() {
-        return "";
+        return "us";
     }
 
     @Override

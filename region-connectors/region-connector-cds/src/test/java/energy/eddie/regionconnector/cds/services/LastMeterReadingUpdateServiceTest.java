@@ -54,10 +54,10 @@ class LastMeterReadingUpdateServiceTest {
         );
 
         // When
-        streams.publish(pr, segments);
+        streams.publish(pr, List.of(), List.of(), List.of(), List.of(), segments);
 
         // Then
-        StepVerifier.create(streams.usageSegments())
+        StepVerifier.create(streams.validatedHistoricalData())
                     .then(streams::close)
                     .verifyComplete();
         verify(outbox).commit(eventCaptor.capture());
