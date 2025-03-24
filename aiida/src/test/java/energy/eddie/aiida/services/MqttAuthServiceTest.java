@@ -1,13 +1,14 @@
 package energy.eddie.aiida.services;
 
+import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.errors.MqttUnauthorizedException;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.MqttAction;
 import energy.eddie.aiida.models.datasource.MqttDataSource;
 import energy.eddie.aiida.models.datasource.at.OesterreichsEnergieDataSource;
-import energy.eddie.aiida.repositories.MqttDataSourceRepository;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,10 +16,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
@@ -46,7 +48,9 @@ class MqttAuthServiceTest {
     private MqttConfiguration mqttConfiguration;
 
     @Mock
-    private MqttDataSourceRepository mqttDataSourceRepository;
+    private DataSourceService dataSourceService;
+
+    @Mock DataSourceAdapter<MqttDataSource> dataSourceAdapter;
 
     private MqttAuthService mqttAuthService;
 
@@ -55,64 +59,66 @@ class MqttAuthServiceTest {
         lenient().when(mqttConfiguration.adminUsername()).thenReturn("admin");
         lenient().when(mqttConfiguration.adminPassword()).thenReturn("admin");
 
-        lenient().when(mqttDataSourceRepository.findByMqttUsernameAndMqttPassword(any(), any())).thenReturn(null);
+        lenient().when(dataSourceService.findDataSourceAdapter(any(Predicate.class))).thenReturn(Optional.empty());
 
-        mqttAuthService = new MqttAuthService(mqttConfiguration, mqttDataSourceRepository);
+        lenient().when(dataSourceAdapter.dataSource()).thenReturn(DATA_SOURCE);
+
+        mqttAuthService = new MqttAuthService(mqttConfiguration, dataSourceService);
     }
 
     @Test
-    void authenticate_whenAdminUser_shouldReturnTrue() {
-        assertTrue(mqttAuthService.authenticate("admin", "admin"));
+    void authenticate_whenAdminUser_shouldNotThrow() {
+        assertDoesNotThrow(() -> mqttAuthService.isAuthenticatedOrThrow("admin", "admin"));
     }
 
     @Test
-    void authenticate_whenNormalUser_shouldReturnTrue() {
-        when(mqttDataSourceRepository.findByMqttUsernameAndMqttPassword("user", "password")).thenReturn(DATA_SOURCE);
+    void authenticate_whenNormalUser_shouldNotThrow() {
+        when(dataSourceService.findDataSourceAdapter(any(Predicate.class))).thenReturn(Optional.of(dataSourceAdapter));
 
-        assertTrue(mqttAuthService.authenticate("user", "password"));
+        assertDoesNotThrow(() -> mqttAuthService.isAuthenticatedOrThrow("user", "password"));
     }
 
     @Test
-    void authenticate_whenInvalidUser_shouldReturnFalse() {
-        assertFalse(mqttAuthService.authenticate("invalid", "invalid"));
+    void authenticate_whenInvalidUser_shouldThrow() {
+        assertThrows(MqttUnauthorizedException.class, () -> mqttAuthService.isAuthenticatedOrThrow("invalid", "invalid"));
     }
 
     @Test
-    void isAdmin_whenAdminUser_shouldReturnTrue() {
-        assertTrue(mqttAuthService.isAdmin("admin", "admin"));
+    void isAdmin_whenAdminUser_shouldNotThrow() {
+        assertDoesNotThrow(() -> mqttAuthService.isAdminOrThrow("admin", "admin"));
     }
 
     @Test
-    void isAdmin_whenNormalUser_shouldReturnFalse() {
-        assertFalse(mqttAuthService.isAdmin("user", "password"));
+    void isAdmin_whenNormalUser_shouldThrow() {
+        assertThrows(MqttUnauthorizedException.class, () -> mqttAuthService.isAdminOrThrow("user", "password"));
     }
 
     @Test
     void isAuthorized_whenAdminUser() {
-        assertTrue(mqttAuthService.isAuthorized("admin", "admin", MqttAction.SUBSCRIBE, "$SYS/brokers/connected"));
-        assertTrue(mqttAuthService.isAuthorized("admin", "admin", MqttAction.PUBLISH, "$SYS/brokers/connected"));
-        assertTrue(mqttAuthService.isAuthorized("admin", "admin", MqttAction.SUBSCRIBE, "aiida/test"));
-        assertTrue(mqttAuthService.isAuthorized("admin", "admin", MqttAction.PUBLISH, "aiida/test"));
-        assertTrue(mqttAuthService.isAuthorized("admin", "admin", MqttAction.PUBLISH, "some/random/topic"));
+        assertDoesNotThrow(() -> mqttAuthService.isAuthorizedOrThrow("admin", "admin", MqttAction.SUBSCRIBE, "$SYS/brokers/connected"));
+        assertDoesNotThrow(() -> mqttAuthService.isAuthorizedOrThrow("admin", "admin", MqttAction.PUBLISH, "$SYS/brokers/connected"));
+        assertDoesNotThrow(() -> mqttAuthService.isAuthorizedOrThrow("admin", "admin", MqttAction.SUBSCRIBE, "aiida/test"));
+        assertDoesNotThrow(() -> mqttAuthService.isAuthorizedOrThrow("admin", "admin", MqttAction.PUBLISH, "aiida/test"));
+        assertDoesNotThrow(() -> mqttAuthService.isAuthorizedOrThrow("admin", "admin", MqttAction.PUBLISH, "some/random/topic"));
     }
 
     @Test
     void isAuthorized_whenNormalUser() {
-        when(mqttDataSourceRepository.findByMqttUsernameAndMqttPassword("user", "password")).thenReturn(DATA_SOURCE);
+        when(dataSourceService.findDataSourceAdapter(any(Predicate.class))).thenReturn(Optional.of(dataSourceAdapter));
 
-        assertTrue(mqttAuthService.isAuthorized("user", "password", MqttAction.SUBSCRIBE, "$SYS/brokers/connected"));
-        assertTrue(mqttAuthService.isAuthorized("user", "password", MqttAction.PUBLISH, "$SYS/brokers/connected"));
-        assertTrue(mqttAuthService.isAuthorized("user", "password", MqttAction.SUBSCRIBE, "aiida/test"));
-        assertTrue(mqttAuthService.isAuthorized("user", "password", MqttAction.PUBLISH, "aiida/test"));
-        assertFalse(mqttAuthService.isAuthorized("user", "password", MqttAction.SUBSCRIBE, "some/random/topic"));
+        assertDoesNotThrow(() -> mqttAuthService.isAuthorizedOrThrow("user", "password", MqttAction.SUBSCRIBE, "$SYS/brokers/connected"));
+        assertDoesNotThrow(() -> mqttAuthService.isAuthorizedOrThrow("user", "password", MqttAction.PUBLISH, "$SYS/brokers/connected"));
+        assertDoesNotThrow(() -> mqttAuthService.isAuthorizedOrThrow("user", "password", MqttAction.SUBSCRIBE, "aiida/test"));
+        assertDoesNotThrow(() -> mqttAuthService.isAuthorizedOrThrow("user", "password", MqttAction.PUBLISH, "aiida/test"));
+        assertThrows(MqttUnauthorizedException.class, () -> mqttAuthService.isAuthorizedOrThrow("user", "password", MqttAction.SUBSCRIBE, "some/random/topic"));
     }
 
     @Test
     void isAuthorized_whenInvalidUser() {
-        assertFalse(mqttAuthService.isAuthorized("invalid", "invalid", MqttAction.SUBSCRIBE, "$SYS/brokers/connected"));
-        assertFalse(mqttAuthService.isAuthorized("invalid", "invalid", MqttAction.PUBLISH, "$SYS/brokers/connected"));
-        assertFalse(mqttAuthService.isAuthorized("invalid", "invalid", MqttAction.SUBSCRIBE, "aiida/test"));
-        assertFalse(mqttAuthService.isAuthorized("invalid", "invalid", MqttAction.PUBLISH, "aiida/test"));
-        assertFalse(mqttAuthService.isAuthorized("invalid", "invalid", MqttAction.SUBSCRIBE, "some/random/topic"));
+        assertThrows(MqttUnauthorizedException.class, () -> mqttAuthService.isAuthorizedOrThrow("invalid", "invalid", MqttAction.SUBSCRIBE, "$SYS/brokers/connected"));
+        assertThrows(MqttUnauthorizedException.class, () -> mqttAuthService.isAuthorizedOrThrow("invalid", "invalid", MqttAction.PUBLISH, "$SYS/brokers/connected"));
+        assertThrows(MqttUnauthorizedException.class, () -> mqttAuthService.isAuthorizedOrThrow("invalid", "invalid", MqttAction.SUBSCRIBE, "aiida/test"));
+        assertThrows(MqttUnauthorizedException.class, () -> mqttAuthService.isAuthorizedOrThrow("invalid", "invalid", MqttAction.PUBLISH, "aiida/test"));
+        assertThrows(MqttUnauthorizedException.class, () -> mqttAuthService.isAuthorizedOrThrow("invalid", "invalid", MqttAction.SUBSCRIBE, "some/random/topic"));
     }
 }

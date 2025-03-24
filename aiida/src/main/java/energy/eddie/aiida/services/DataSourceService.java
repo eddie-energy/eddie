@@ -18,6 +18,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 @Service
 public class DataSourceService {
@@ -123,8 +124,12 @@ public class DataSourceService {
     }
 
     public Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(UUID dataSourceId) {
+        return findDataSourceAdapter(adapter -> adapter.dataSource().id().equals(dataSourceId));
+    }
+
+    public Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(Predicate<DataSourceAdapter<? extends DataSource>> predicate) {
         return dataSourceAdapters.stream()
-                                 .filter(adapter -> adapter.dataSource().id().equals(dataSourceId))
+                                 .filter(predicate)
                                  .findFirst();
     }
 

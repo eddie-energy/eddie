@@ -1,6 +1,7 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.config.OAuth2SecurityConfiguration;
+import energy.eddie.aiida.errors.MqttUnauthorizedException;
 import energy.eddie.aiida.models.datasource.MqttAction;
 import energy.eddie.aiida.services.MqttAuthService;
 import org.junit.jupiter.api.Test;
@@ -30,26 +31,26 @@ class MqttAuthControllerTest {
 
     @Test
     void authenticated_shouldReturnOk() throws Exception {
-        when(service.authenticate(anyString(), anyString())).thenReturn(true);
+        doNothing().when(service).isAuthenticatedOrThrow("admin", "admin");
 
         mockMvc.perform(post("/mqtt-auth/auth")
                                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                                 .content("username=user&password=pass"))
                .andExpect(status().isOk());
 
-        verify(service).authenticate("user", "pass");
+        verify(service).isAuthenticatedOrThrow("user", "pass");
     }
 
     @Test
     void authenticated_shouldReturnUnauthorized() throws Exception {
-        when(service.authenticate(anyString(), anyString())).thenReturn(false);
+        doThrow(new MqttUnauthorizedException("unauthorized")).when(service).isAuthenticatedOrThrow("user", "pass");
 
         mockMvc.perform(post("/mqtt-auth/auth")
                                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                                 .content("username=user&password=pass"))
                .andExpect(status().isUnauthorized());
 
-        verify(service).authenticate("user", "pass");
+        verify(service).isAuthenticatedOrThrow("user", "pass");
     }
 
     @Test
@@ -62,49 +63,49 @@ class MqttAuthControllerTest {
 
     @Test
     void superuser_shouldReturnOk() throws Exception {
-        when(service.isAdmin(anyString(), anyString())).thenReturn(true);
+        doNothing().when(service).isAuthenticatedOrThrow("admin", "admin");
 
         mockMvc.perform(post("/mqtt-auth/superuser")
                                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                                 .content("username=user&password=pass"))
                .andExpect(status().isOk());
 
-        verify(service).isAdmin("user", "pass");
+        verify(service).isAdminOrThrow("user", "pass");
     }
 
     @Test
     void superuser_shouldReturnUnauthorized() throws Exception {
-        when(service.isAdmin(anyString(), anyString())).thenReturn(false);
+        doThrow(new MqttUnauthorizedException("unauthorized")).when(service).isAdminOrThrow("user", "pass");
 
         mockMvc.perform(post("/mqtt-auth/superuser")
                                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                                 .content("username=user&password=pass"))
                .andExpect(status().isUnauthorized());
 
-        verify(service).isAdmin("user", "pass");
+        verify(service).isAdminOrThrow("user", "pass");
     }
 
     @Test
     void acl_shouldReturnOk() throws Exception {
-        when(service.isAuthorized(anyString(), anyString(), any(), anyString())).thenReturn(true);
+        doNothing().when(service).isAuthenticatedOrThrow("admin", "admin");
 
         mockMvc.perform(post("/mqtt-auth/acl")
                                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                                 .content("username=user&password=pass&action=2&topic=topic"))
                .andExpect(status().isOk());
 
-        verify(service).isAuthorized("user", "pass", MqttAction.PUBLISH, "topic");
+        verify(service).isAuthorizedOrThrow("user", "pass", MqttAction.PUBLISH, "topic");
     }
 
     @Test
     void acl_shouldReturnUnauthorized() throws Exception {
-        when(service.isAuthorized(anyString(), anyString(), any(), anyString())).thenReturn(false);
+        doThrow(new MqttUnauthorizedException("unauthorized")).when(service).isAuthorizedOrThrow("user", "pass", MqttAction.SUBSCRIBE, "topic");
 
         mockMvc.perform(post("/mqtt-auth/acl")
                                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                                 .content("username=user&password=pass&action=1&topic=topic"))
                .andExpect(status().isUnauthorized());
 
-        verify(service).isAuthorized("user", "pass", MqttAction.SUBSCRIBE, "topic");
+        verify(service).isAuthorizedOrThrow("user", "pass", MqttAction.SUBSCRIBE, "topic");
     }
 }
