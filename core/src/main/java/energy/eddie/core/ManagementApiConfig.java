@@ -84,7 +84,8 @@ public class ManagementApiConfig {
             var requestURI = httpRequest.getRequestURI();
             var isRequestOnManagementUrl = requestURI.startsWith(CoreSpringConfig.DATA_NEEDS_URL_MAPPING_PREFIX + managementUrlPrefix)
                                            || requestURI.startsWith("/" + ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH)
-                                           || requestURI.startsWith(managementUrlPrefix);
+                                           || requestURI.startsWith(managementUrlPrefix)
+                                           || requestURI.matches("/region-connectors/[\\w\\-]+%s/.*".formatted(managementUrlPrefix));
             IEF_LOGGER.debug("{} requested on port {}, managementPort: {}, managementUrl: {}",
                              requestURI,
                              request.getLocalPort(),
