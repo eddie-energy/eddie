@@ -2,18 +2,14 @@ package energy.eddie.regionconnector.cds.services;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientErrorHandler;
 import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientFactory;
-import energy.eddie.regionconnector.cds.exceptions.NoTokenException;
-import energy.eddie.regionconnector.cds.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
 import energy.eddie.regionconnector.cds.providers.IdentifiableDataStreams;
-import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
@@ -28,18 +24,18 @@ public class PollingService {
     private final DataNeedCalculationService<DataNeed> calculationService;
     private final CustomerDataClientFactory factory;
     private final IdentifiableDataStreams streams;
-    private final Outbox outbox;
+    private final CustomerDataClientErrorHandler errorHandler;
 
     public PollingService(
             DataNeedCalculationService<DataNeed> calculationService,
             CustomerDataClientFactory factory,
             IdentifiableDataStreams streams,
-            Outbox outbox
+            CustomerDataClientErrorHandler errorHandler
     ) {
         this.calculationService = calculationService;
         this.factory = factory;
         this.streams = streams;
-        this.outbox = outbox;
+        this.errorHandler = errorHandler;
     }
 
     public void poll(CdsPermissionRequest permissionRequest) {
@@ -77,19 +73,9 @@ public class PollingService {
                     client.meterDevices(pr),
                     client.usagePoints(pr, end, start)
             )
-            .doOnError(this::isRevocationException, err -> revoke(permissionId, err))
-            .subscribe(res -> streams.publish(pr, res.getT1(), res.getT2(), res.getT3(), res.getT4(), res.getT5()
+            .doOnError(errorHandler, errorHandler.thenRevoke(pr))
+            .subscribe(res -> streams.publish(
+                    pr, res.getT1(), res.getT2(), res.getT3(), res.getT4(), res.getT5()
             ));
-    }
-
-    private boolean isRevocationException(Throwable e) {
-        return e instanceof WebClientResponseException.Unauthorized || e instanceof NoTokenException;
-    }
-
-    private void revoke(String permissionId, Throwable e) {
-        LOGGER.atWarn()
-              .addArgument(permissionId)
-              .log("Revoking permission request {} because of exception while requesting validated historical data", e);
-        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REVOKED));
     }
 }
