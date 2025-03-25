@@ -13,9 +13,12 @@ import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 @Service
 public class DataSourceService {
@@ -41,8 +44,15 @@ public class DataSourceService {
         this.authService = authService;
         this.mqttConfiguration = mqttConfiguration;
         this.objectMapper = objectMapper;
+    }
 
-        startDataSources();
+    @EventListener(ContextRefreshedEvent.class)
+    public void startDataSources() {
+        var dataSources = repository.findAll();
+
+        for (var dataSource : dataSources) {
+            startDataSource(dataSource);
+        }
     }
 
     public Optional<DataSource> getDataSourceById(UUID dataSourceId) {
@@ -59,8 +69,9 @@ public class DataSourceService {
         var currentUserId = authService.getCurrentUserId();
 
         var mqttSettingsDto = new DataSourceMqttDto(
-                mqttConfiguration.host(),
-                "aiida/" + currentUserId + "/" + UUID.randomUUID(),
+                mqttConfiguration.internalHost(),
+                mqttConfiguration.externalHost(),
+                "aiida/" + MqttSecretGenerator.generate(),
                 MqttSecretGenerator.generate(),
                 MqttSecretGenerator.generate()
         );
@@ -113,17 +124,13 @@ public class DataSourceService {
     }
 
     public Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(UUID dataSourceId) {
-        return dataSourceAdapters.stream()
-                                 .filter(adapter -> adapter.dataSource().id().equals(dataSourceId))
-                                 .findFirst();
+        return findDataSourceAdapter(adapter -> adapter.dataSource().id().equals(dataSourceId));
     }
 
-    private void startDataSources() {
-        var dataSources = repository.findAll();
-
-        for (var dataSource : dataSources) {
-            startDataSource(dataSource);
-        }
+    public Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(Predicate<DataSourceAdapter<? extends DataSource>> predicate) {
+        return dataSourceAdapters.stream()
+                                 .filter(predicate)
+                                 .findFirst();
     }
 
     private void startDataSource(DataSource dataSource) {

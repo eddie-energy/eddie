@@ -99,6 +99,7 @@ class SmartGatewaysAdapterTest {
                               null),
             USER_ID,
             new DataSourceMqttDto("tcp://localhost:1883",
+                                  "tcp://localhost:1883",
                                   "aiida/test",
                                   "user",
                                   "password")

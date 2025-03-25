@@ -41,7 +41,7 @@ class DataSourceServiceTest {
         return DataSource.createFromDto(
                 createNewDataSourceDto(id, type, "Test", true),
                 userId,
-                new DataSourceMqttDto("tcp://localhost:1883", "aiida/test", "user", "pw")
+                new DataSourceMqttDto("tcp://localhost:1883","tcp://localhost:1883","aiida/test", "user", "pw")
         );
     }
 
@@ -84,7 +84,7 @@ class DataSourceServiceTest {
     @Test
     void shouldAddNewDataSource() throws InvalidUserException {
         when(authService.getCurrentUserId()).thenReturn(userId);
-        when(mqttConfiguration.host()).thenReturn("mqtt://test-broker");
+        when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
 
         dataSourceService.addDataSource(createNewDataSourceDto(DATA_SOURCE_ID,
                                                                DataSourceType.SMART_GATEWAYS_ADAPTER,
@@ -93,6 +93,20 @@ class DataSourceServiceTest {
 
         verify(repository, times(1)).save(any());
         verify(aggregator, times(1)).addNewDataSourceAdapter(any());
+    }
+
+    @Test
+    void shouldNotAddNewDataSource() throws InvalidUserException {
+        when(authService.getCurrentUserId()).thenReturn(userId);
+        when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
+
+        dataSourceService.addDataSource(createNewDataSourceDto(DATA_SOURCE_ID,
+                                                               DataSourceType.SMART_GATEWAYS_ADAPTER,
+                                                               "Test",
+                                                               false));
+
+        verify(repository, times(1)).save(any());
+        verify(aggregator, never()).addNewDataSourceAdapter(any());
     }
 
     @Test
@@ -125,7 +139,7 @@ class DataSourceServiceTest {
 
 
     @Test
-    void shouldStartDataSourcesOnStartup() {
+    void shouldAddDataSourcesOnStartDataSources() {
         UUID dataSourceId1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
         UUID dataSourceId2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
         UUID dataSourceId3 = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -142,11 +156,11 @@ class DataSourceServiceTest {
                                                       microTeleinfoV3DataSource,
                                                       simulationDataSource));
 
-        new DataSourceService(repository, aggregator, authService, mqttConfiguration, objectMapper);
+        var service = new DataSourceService(repository, aggregator, authService, mqttConfiguration, objectMapper);
+        service.startDataSources();
 
         verify(aggregator, times(2)).addNewDataSourceAdapter(any());
         verify(aggregator, never()).addNewDataSourceAdapter(argThat(ds -> ds.dataSource().id().equals(dataSourceId2)));
-        verify(repository, times(2)).findAll();
     }
 
     @Test

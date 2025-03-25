@@ -50,6 +50,7 @@ class OesterreichsEnergieAdapterTest {
                               null),
             USER_ID,
             new DataSourceMqttDto("tcp://localhost:1883",
+                                  "tcp://localhost:1883",
                                   "aiida/test",
                                   "user",
                                   "password")
@@ -247,7 +248,7 @@ class OesterreichsEnergieAdapterTest {
 
             adapter.start().subscribe();
 
-            adapter.connectComplete(false, DATA_SOURCE.mqttServerUri());
+            adapter.connectComplete(false, DATA_SOURCE.mqttInternalHost());
 
             verify(mockClient).subscribe(DATA_SOURCE.mqttSubscribeTopic(), 2);
         }
@@ -263,7 +264,7 @@ class OesterreichsEnergieAdapterTest {
 
             StepVerifier.create(adapter.start())
                         .expectSubscription()
-                        .then(() -> adapter.connectComplete(false, DATA_SOURCE.mqttServerUri()))
+                        .then(() -> adapter.connectComplete(false, DATA_SOURCE.mqttInternalHost()))
                         .expectError()
                         .verify();
         }

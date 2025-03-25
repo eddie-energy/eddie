@@ -14,5 +14,4 @@ public class AiidaApplication {
     public static void main(String[] args) {
         SpringApplication.run(AiidaApplication.class, args);
     }
-
 }

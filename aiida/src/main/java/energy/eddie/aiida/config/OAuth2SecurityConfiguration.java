@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2Clien
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientPropertiesMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
@@ -35,7 +34,10 @@ public class OAuth2SecurityConfiguration {
             CorsConfigurationSource corsConfigurationSource
     ) throws Exception {
         return http
-                .csrf(Customizer.withDefaults())
+                .csrf(csrf ->
+                              csrf.ignoringRequestMatchers("/webhook/event")
+                                  .ignoringRequestMatchers("/mqtt-auth/**")
+                )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .oauth2Login(oauth2 -> oauth2.loginPage("/login"))
                 .logout(logout -> {
@@ -46,6 +48,7 @@ public class OAuth2SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/login",
+                                "/mqtt-auth/**",
                                 "/actuator/health/**",
                                 "/application-information",
                                 "/img/aiida.svg",
