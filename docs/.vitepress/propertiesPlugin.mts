@@ -16,12 +16,7 @@ export function propertiesPlugin(md: MarkdownIt) {
 
     const propertiesContent = token.content.trim();
 
-    const envContent = propertiesContent.replace(
-      /^([^=]+)=(.*)$/gm,
-      (_, key, value) =>
-        key.toUpperCase().replace(/[^A-Z0-9]/g, "_") + "=" + value
-    );
-
+    const envContent = propertiesToEnv(propertiesContent);
     const yamlContent = propertiesToYaml(propertiesContent);
 
     const markdownContent = `
@@ -42,15 +37,43 @@ ${envContent}
   };
 }
 
+function propertiesToEnv(properties: string) {
+  return properties
+    .split("\n")
+    .map((line) => {
+      // Keep empty lines and comments
+      if (line.trim() === "" || line.startsWith("#")) return line;
+      // Make key uppercase and replace non-alphanumeric characters with underscores
+      const [key, value] = line.split(/=(.*)/);
+      return `${key.toUpperCase().replace(/[^A-Z0-9]/g, "_")}=${value}`;
+    })
+    .join("\n");
+}
+
 type Tree = {
   [key: string]: string | Tree;
 };
 
 function propertiesToYaml(properties: string) {
   const obj: Tree = {};
+  let commentCount = 0;
+  let emptyCount = 0;
 
-  properties.split("\n").forEach((line) => {
-    const [key, value] = line.split("=");
+  const lines = properties.split("\n");
+  for (const line of lines) {
+    if (line.trim() === "") {
+      obj["empty" + emptyCount] = null;
+      emptyCount++;
+      continue;
+    }
+    // Save comments
+    if (line.startsWith("#")) {
+      obj["comment" + commentCount] = line;
+      commentCount++;
+      continue;
+    }
+
+    const [key, value] = line.split(/=(.*)/);
 
     const parts = key.split(".");
     let current = obj;
@@ -66,7 +89,7 @@ function propertiesToYaml(properties: string) {
 
     // Assign final value
     current[parts[parts.length - 1]] = value;
-  });
+  }
 
   return objectToYaml(obj);
 }
@@ -76,11 +99,22 @@ function objectToYaml(obj: Tree, level = 0) {
   const indent = "  ".repeat(level);
 
   for (const key in obj) {
+    if (key.startsWith("empty")) {
+      yamlString += `\n`;
+      continue;
+    }
+
+    if (key.startsWith("comment")) {
+      yamlString += `${obj[key]}\n`;
+      continue;
+    }
+
     if (typeof obj[key] === "string") {
       yamlString += `${indent}${key}: ${obj[key]}\n`;
-    } else {
-      yamlString += `${indent}${key}:\n${objectToYaml(obj[key], level + 1)}`;
+      continue;
     }
+
+    yamlString += `${indent}${key}:\n${objectToYaml(obj[key], level + 1)}`;
   }
 
   return yamlString;
