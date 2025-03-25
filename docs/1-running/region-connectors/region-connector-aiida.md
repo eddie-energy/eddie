@@ -42,33 +42,18 @@ ACLs and authentication ensure that only the permitted AIIDA instance may publis
 | `region-connector.aiida.mqtt.username`   | (Optional) Username to use when connecting to the MQTT broker (if not supplied, no username is used).                                                                                                                                                                                                                                                                                                                         |
 | `region-connector.aiida.mqtt.password`   | (Optional) Password to use when connecting to the MQTT broker (if not supplied, no password is used).                                                                                                                                                                                                                                                                                                                         |
 
-### .properties file
+The region connector can be configured using Spring properties or environment variables.
+When using environment variables, the configuration values need to be converted in the following way:
 
-Example configuration for an `application.properties` file:
+- Replace all non-alphanumeric characters with an underscore (`_`)
+- Optionally convert all letters to upper case
 
-```properties
+```properties :spring
 region-connector.aiida.customer.id=my-unique-id
 region-connector.aiida.bcrypt.strength=14
 region-connector.aiida.mqtt.server.uri=tcp://localhost:1883
 region-connector.aiida.mqtt.username=testAccount
 region-connector.aiida.mqtt.password=superSafe
-```
-
-### Environment variables
-
-When using environment variables, the configuration values need to be converted in the following way:
-
-* Replace all non-alphanumeric characters with an underscore (`_`)
-* Optionally convert all letters to upper case
-
-Example configuration for dotenv file:
-
-```dotenv
-REGION_CONNECTOR_AIIDA_CUSTOMER_ID=my-unique-id
-REGION_CONNECTOR_AIIDA_BCRYPT_STRENGTH=14
-REGION_CONNECTOR_AIIDA_MQTT_SERVER_URI=tcp://localhost:1883
-REGION_CONNECTOR_AIIDA_MQTT_USERNAME=testAccount
-REGION_CONNECTOR_AIIDA_MQTT_PASSWORD=superSafe
 ```
 
 ## Running the Region Connector via EDDIE

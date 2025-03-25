@@ -34,11 +34,13 @@ depends on the way you deploy the region connector.
 | `region-connector.at.eda.ponton.messenger.username`        | Username that can be used to retrieve a JWT Token from the PontonXP Messengers authentication endpoint. This is needed in order to use some of the authentication protected REST API endpoints. The given user must not be additionally secured by 2FA.                                                                                                                                                |
 | `region-connector.at.eda.ponton.messenger.password`        | Password for the above username. Needed to retrieve a JWT Token from the PontonXP Messengers authentication endpoint. This is needed in order to use some of the authentication protected REST API endpoints.                                                                                                                                                                                          |
 
-### .properties file
+The region connector can be configured using Spring properties or environment variables.
+When using environment variables, the configuration values need to be converted in the following way:
 
-Example configuration for an `application.properties` file:
+- Replace all non-alphanumeric characters with an underscore (`_`)
+- Optionally convert all letters to upper case
 
-```properties
+```properties :spring
 region-connector.at.eda.eligibleparty.id=EP123456
 region-connector.at.eda.retry=0 0 */1 * * *
 region-connector.at.eda.ponton.messenger.adapter.id=Eddie
@@ -49,28 +51,6 @@ region-connector.at.eda.ponton.messenger.api.endpoint=pontonxp.messenger.com/api
 region-connector.at.eda.ponton.messenger.folder=/opt/pontonxp
 region-connector.at.eda.ponton.messenger.username=username
 region-connector.at.eda.ponton.messenger.password=password
-```
-
-### Environment variables
-
-When using environment variables, the configuration values need to be converted in the following way:
-
-* Replace all non-alphanumeric characters with an underscore (`_`)
-* Optionally convert all letters to upper case
-
-Example configuration for dotenv file:
-
-```dotenv
-REGION_CONNECTOR_AT_EDA_ELIGIBLEPARTY_ID=EP123456
-REGION_CONNECTOR_AT_EDA_RETRY=0 0 */1 * * *
-REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_ADAPTER_ID=Eddie
-REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_ADAPTER_VERSION=1.0.0
-REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_HOSTNAME=pontonxp.messenger.com
-REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_PORT=2600
-REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_API_ENDPOINT=pontonxp.messenger.com/api
-REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_FOLDER=/opt/pontonxp
-REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_USERNAME=username
-REGION_CONNECTOR_AT_EDA_PONTON_MESSENGER_PASSWORD=password
 ```
 
 ## Running the Region Connector via EDDIE

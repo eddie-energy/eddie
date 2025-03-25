@@ -17,34 +17,18 @@ depends on the way you deploy the region connector.
 | `region-connector.cds.par.enabled`  | Either `true` or `false` defaults to `false`, if enabled experimental pushed authorization requests are used to send the authorization request to the CDS server. Currently, PAR is not supported by the sandbox environment.                                                                                                                                   |
 | `region-connector.cds.retry`        | The interval in which messages are sent to the CDS server again, after it failed the first time. There are two types of messages: Creating the permission request at the PA's side, which only works if `region-connector.cds.par.enabled=true`, and terminating permission requests, which works all the time. Uses Spring Cron syntax. Default is every hour. |
 
-### .properties file
+The region connector can be configured using Spring properties or environment variables.
+When using environment variables, the configuration values need to be converted in the following way:
 
-Example configuration for an `application.properties` file:
+- Replace all non-alphanumeric characters with an underscore (`_`)
+- Optionally convert all letters to upper case
 
-```properties
+```properties :spring
 region-connector.cds.enabled=true
 region-connector.cds.redirect.url=${eddie.public.url}/region-connectors/cds/callback
 region-connector.cds.client-name=EDDIE
 region-connector.cds.par.enabled=false
 region-connector.cds.retry=0 0 * * * *
-```
-
-### Environment variables
-
-When using environment variables, the configuration values need to be converted in the following way:
-
-* Replace all non-alphanumeric characters, **except the hyphen** (`-`), with an underscore (`_`)
-* Delete all hyphens (`-`)
-* Optionally convert all letters to upper case
-
-Example configuration for dotenv file:
-
-```dotenv
-REGION_CONNECTOR_CDS_ENABLED=true
-REGION_CONNECTOR_CDS_REDIRECT_URL=${EDDIE_PUBLIC_URL}/region-connectors/cds/callback
-REGION_CONNECTOR_CDS_CLIENT_NAME=EDDIE
-REGION_CONNECTOR_CDS_PAR_ENABLED=false
-REGION_CONNECTOR_CDS_RETRY=0 0 * * * *
 ```
 
 ## Register new CDS Server

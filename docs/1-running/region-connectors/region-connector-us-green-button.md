@@ -47,11 +47,13 @@ depends on the way you deploy the region connector.
 | `region-connector.us.green.button.termination.retry`         | When termination of permission requests with the green button API should be retried. Uses Spring cron syntax. Default is hourly                                                |
 | `region-connector.us.green.button.polling`                   | Optional configuration variable that sets the time when the region-connector should poll future validated historical data. Uses Spring CRON syntax. Default is `0 0 17 * * *`. |
 
-### .properties file
+The region connector can be configured using Spring properties or environment variables.
+When using environment variables, the configuration values need to be converted in the following way:
 
-Example configuration for an `application.properties` file:
+- Replace all non-alphanumeric characters with an underscore (`_`)
+- Optionally convert all letters to upper case
 
-```properties
+```properties :spring
 region-connector.us.green.button.basepath=https://utilityapi.com/
 region-connector.us.green.button.redirect.url=https://your-eddie-instance.example/region-connectors/us-green-button/authorization-callback
 region-connector.us.green.button.webhook.secret=REPLACE_ME
@@ -59,26 +61,6 @@ region-connector.us.green.button.client-ids.REPLACE_ME=REPLACE_ME
 region-connector.us.green.button.client-secrets.REPLACE_ME=REPLACE_ME
 region-connector.us.green.button.tokens.REPLACE_ME=REPLACE_ME
 region-connector.us.green.button.polling=0 0 17 * * *
-```
-
-### Environment variables
-
-When using environment variables, the configuration values need to be converted in the following way:
-
-* Replace all non-alphanumeric characters, **except the hyphen** (`-`), with an underscore (`_`)
-* Delete all hyphens (`-`)
-* Optionally convert all letters to upper case
-
-Example configuration for dotenv file:
-
-```dotenv
-REGIONCONNECTOR_US_GREEN_BUTTON_BASEPATH=https://utilityapi.com/
-REGIONCONNECTOR_US_GREEN_BUTTON_REDIRECTURI=https://your-eddie-instance.example/region-connectors/us-green-button/authorization-callback
-REGIONCONNECTOR_US_GREEN_BUTTON_WEBHOOK_SECRET=REPLACE_ME
-REGIONCONNECTOR_US_GREEN_BUTTON_CLIENTIDS_REPLACEME=REPLACE_ME
-REGIONCONNECTOR_US_GREEN_BUTTON_CLIENTSECRETS_REPLACEME=REPLACE_ME
-REGIONCONNECTOR_US_GREEN_BUTTON_TOKENS_REPLACEME=REPLACE_ME
-REGIONCONNECTOR_US_GREEN_BUTTON_POLLING=0 0 17 * * *
 ```
 
 ## Running the Region Connector via EDDIE
