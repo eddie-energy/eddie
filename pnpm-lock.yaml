@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 importers:
 
   .:
@@ -101,19 +97,22 @@ importers:
     devDependencies:
       '@shikijs/vitepress-twoslash':
         specifier: ^1.24.0
-        version: 1.24.0(typescript@5.7.3)
+        version: 1.24.0(typescript@5.4.2)
+      '@types/markdown-it':
+        specifier: ^14.1.2
+        version: 14.1.2
       mermaid:
         specifier: ^11.4.0
         version: 11.4.0
       vitepress:
         specifier: ^1.4.2
-        version: 1.4.2(@algolia/client-search@5.20.3)(search-insights@2.17.3)(typescript@5.7.3)
+        version: 1.4.2(@algolia/client-search@5.20.3)(search-insights@2.17.3)(typescript@5.4.2)
       vitepress-plugin-mermaid:
         specifier: ^2.0.17
         version: 2.0.17(mermaid@11.4.0)(vitepress@1.4.2)
       vue:
         specifier: ^3.5.12
-        version: 3.5.12(typescript@5.7.3)
+        version: 3.5.12(typescript@5.4.2)
 
   region-connectors/region-connector-aiida:
     dependencies:
@@ -1331,12 +1330,12 @@ packages:
       shiki: 1.22.2
     dev: true
 
-  /@shikijs/twoslash@1.24.0(typescript@5.7.3):
+  /@shikijs/twoslash@1.24.0(typescript@5.4.2):
     resolution: {integrity: sha512-ELyIoD54dFDlb4eGt5sy54WhFeJ39N1hR9W7ADwHWn3XH7cOPjj320EPCh2t76fIoLb0auD46tVLQVVMn93qsA==}
     dependencies:
       '@shikijs/core': 1.24.0
       '@shikijs/types': 1.24.0
-      twoslash: 0.2.12(typescript@5.7.3)
+      twoslash: 0.2.12(typescript@5.4.2)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -1356,18 +1355,18 @@ packages:
       '@types/hast': 3.0.4
     dev: true
 
-  /@shikijs/vitepress-twoslash@1.24.0(typescript@5.7.3):
+  /@shikijs/vitepress-twoslash@1.24.0(typescript@5.4.2):
     resolution: {integrity: sha512-uqAzAHZkg0yzOtVxA3H+xz+tNgFO2f328EfKOIeX98HgI7V1YNm/a+uUqiVuTYY03N9nBMJbdrCHcw7HIc/C3A==}
     dependencies:
-      '@shikijs/twoslash': 1.24.0(typescript@5.7.3)
+      '@shikijs/twoslash': 1.24.0(typescript@5.4.2)
       floating-vue: 5.2.2(vue@3.5.13)
       mdast-util-from-markdown: 2.0.2
       mdast-util-gfm: 3.0.0
       mdast-util-to-hast: 13.2.0
       shiki: 1.24.0
-      twoslash: 0.2.12(typescript@5.7.3)
-      twoslash-vue: 0.2.12(typescript@5.7.3)
-      vue: 3.5.13(typescript@5.7.3)
+      twoslash: 0.2.12(typescript@5.4.2)
+      twoslash-vue: 0.2.12(typescript@5.4.2)
+      vue: 3.5.13(typescript@5.4.2)
     transitivePeerDependencies:
       - '@nuxt/kit'
       - supports-color
@@ -1756,13 +1755,13 @@ packages:
       eslint-visitor-keys: 3.4.3
     dev: true
 
-  /@typescript/vfs@1.6.0(typescript@5.7.3):
+  /@typescript/vfs@1.6.0(typescript@5.4.2):
     resolution: {integrity: sha512-hvJUjNVeBMp77qPINuUvYXj4FyWeeMMKZkxEATEU3hqBAQ7qdTBCUFT7Sp0Zu0faeEtFf+ldXxMEDr/bk73ISg==}
     peerDependencies:
       typescript: '*'
     dependencies:
       debug: 4.3.7
-      typescript: 5.7.3
+      typescript: 5.4.2
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -1790,7 +1789,7 @@ packages:
       vue: ^3.2.25
     dependencies:
       vite: 5.4.10(@types/node@20.14.5)
-      vue: 3.5.13(typescript@5.7.3)
+      vue: 3.5.13(typescript@5.4.2)
     dev: true
 
   /@volar/language-core@2.4.11:
@@ -1953,7 +1952,7 @@ packages:
       - supports-color
     dev: true
 
-  /@vue/language-core@2.1.10(typescript@5.7.3):
+  /@vue/language-core@2.1.10(typescript@5.4.2):
     resolution: {integrity: sha512-DAI289d0K3AB5TUG3xDp9OuQ71CnrujQwJrQnfuZDwo6eGNf0UoRlPuaVNO+Zrn65PC3j0oB2i7mNmVPggeGeQ==}
     peerDependencies:
       typescript: '*'
@@ -1969,7 +1968,7 @@ packages:
       minimatch: 9.0.5
       muggle-string: 0.4.1
       path-browserify: 1.0.1
-      typescript: 5.7.3
+      typescript: 5.4.2
     dev: true
 
   /@vue/language-core@2.2.4(typescript@5.4.2):
@@ -2048,7 +2047,7 @@ packages:
     dependencies:
       '@vue/compiler-ssr': 3.5.13
       '@vue/shared': 3.5.13
-      vue: 3.5.13(typescript@5.7.3)
+      vue: 3.5.13(typescript@5.4.2)
     dev: true
 
   /@vue/shared@3.5.12:
@@ -3043,7 +3042,7 @@ packages:
         optional: true
     dependencies:
       '@floating-ui/dom': 1.1.1
-      vue: 3.5.13(typescript@5.7.3)
+      vue: 3.5.13(typescript@5.4.2)
       vue-resize: 2.0.0-alpha.1(vue@3.5.13)
     dev: true
 
@@ -4286,27 +4285,27 @@ packages:
     resolution: {integrity: sha512-5qZLXVYfZ9ABdjqbvPc4RWMr7PrpPaaDSeaYY55vl/w1j6H6kzsWK/urAEIXlzYlyrFmyz1UbwIt+AA0ck+wbg==}
     dev: true
 
-  /twoslash-vue@0.2.12(typescript@5.7.3):
+  /twoslash-vue@0.2.12(typescript@5.4.2):
     resolution: {integrity: sha512-kxH60DLn2QBcN2wjqxgMDkyRgmPXsytv7fJIlsyFMDPSkm1/lMrI/UMrNAshNaRHcI+hv8x3h/WBgcvlb2RNAQ==}
     peerDependencies:
       typescript: '*'
     dependencies:
-      '@vue/language-core': 2.1.10(typescript@5.7.3)
-      twoslash: 0.2.12(typescript@5.7.3)
+      '@vue/language-core': 2.1.10(typescript@5.4.2)
+      twoslash: 0.2.12(typescript@5.4.2)
       twoslash-protocol: 0.2.12
-      typescript: 5.7.3
+      typescript: 5.4.2
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /twoslash@0.2.12(typescript@5.7.3):
+  /twoslash@0.2.12(typescript@5.4.2):
     resolution: {integrity: sha512-tEHPASMqi7kqwfJbkk7hc/4EhlrKCSLcur+TcvYki3vhIfaRMXnXjaYFgXpoZRbT6GdprD4tGuVBEmTpUgLBsw==}
     peerDependencies:
       typescript: '*'
     dependencies:
-      '@typescript/vfs': 1.6.0(typescript@5.7.3)
+      '@typescript/vfs': 1.6.0(typescript@5.4.2)
       twoslash-protocol: 0.2.12
-      typescript: 5.7.3
+      typescript: 5.4.2
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -4327,12 +4326,6 @@ packages:
     resolution: {integrity: sha512-+2/g0Fds1ERlP6JsakQQDXjZdZMM+rqpamFZJEKh4kwTIn3iDkgKtby0CeNd5ATNZ4Ry1ax15TMx0W2V+miizQ==}
     engines: {node: '>=14.17'}
     hasBin: true
-
-  /typescript@5.7.3:
-    resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-    dev: true
 
   /ufo@1.5.4:
     resolution: {integrity: sha512-UsUk3byDzKd04EyoZ7U4DOlxQaD14JUKQl6/P7wiX4FNvUfm3XL246n9W5AmqwW5RSFJ27NAuM0iLscAOYUiGQ==}
@@ -4484,12 +4477,12 @@ packages:
       vitepress: ^1.0.0 || ^1.0.0-alpha
     dependencies:
       mermaid: 11.4.0
-      vitepress: 1.4.2(@algolia/client-search@5.20.3)(search-insights@2.17.3)(typescript@5.7.3)
+      vitepress: 1.4.2(@algolia/client-search@5.20.3)(search-insights@2.17.3)(typescript@5.4.2)
     optionalDependencies:
       '@mermaid-js/mermaid-mindmap': 9.3.0
     dev: true
 
-  /vitepress@1.4.2(@algolia/client-search@5.20.3)(search-insights@2.17.3)(typescript@5.7.3):
+  /vitepress@1.4.2(@algolia/client-search@5.20.3)(search-insights@2.17.3)(typescript@5.4.2):
     resolution: {integrity: sha512-10v92Lqx0N4r7YC3cQLBvu+gRS2rHviE7vgdKiwlupUGfSWkyiQDqYccxM5iPStDGSi1Brnec1lf+lmhaQcZXw==}
     hasBin: true
     peerDependencies:
@@ -4517,7 +4510,7 @@ packages:
       minisearch: 7.1.0
       shiki: 1.22.2
       vite: 5.4.10(@types/node@20.14.5)
-      vue: 3.5.13(typescript@5.7.3)
+      vue: 3.5.13(typescript@5.4.2)
     transitivePeerDependencies:
       - '@algolia/client-search'
       - '@types/node'
@@ -4594,7 +4587,7 @@ packages:
       '@vue/composition-api':
         optional: true
     dependencies:
-      vue: 3.5.13(typescript@5.7.3)
+      vue: 3.5.13(typescript@5.4.2)
     dev: true
 
   /vue-eslint-parser@9.4.3(eslint@8.57.0):
@@ -4620,7 +4613,7 @@ packages:
     peerDependencies:
       vue: ^3.0.0
     dependencies:
-      vue: 3.5.13(typescript@5.7.3)
+      vue: 3.5.13(typescript@5.4.2)
     dev: true
 
   /vue-router@4.3.3(vue@3.5.12):
@@ -4658,23 +4651,7 @@ packages:
       '@vue/shared': 3.5.12
       typescript: 5.4.2
 
-  /vue@3.5.12(typescript@5.7.3):
-    resolution: {integrity: sha512-CLVZtXtn2ItBIi/zHZ0Sg1Xkb7+PU32bJJ8Bmy7ts3jxXTcbfsEfBivFYYWz1Hur+lalqGAh65Coin0r+HRUfg==}
-    peerDependencies:
-      typescript: '*'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      '@vue/compiler-dom': 3.5.12
-      '@vue/compiler-sfc': 3.5.12
-      '@vue/runtime-dom': 3.5.12
-      '@vue/server-renderer': 3.5.12(vue@3.5.12)
-      '@vue/shared': 3.5.12
-      typescript: 5.7.3
-    dev: true
-
-  /vue@3.5.13(typescript@5.7.3):
+  /vue@3.5.13(typescript@5.4.2):
     resolution: {integrity: sha512-wmeiSMxkZCSc+PM2w2VRsOYAZC8GdipNFRTsLSfodVqI9mbejKeXEGr8SckuLnrQPGe3oJN5c3K0vpoU9q/wCQ==}
     peerDependencies:
       typescript: '*'
@@ -4687,7 +4664,7 @@ packages:
       '@vue/runtime-dom': 3.5.13
       '@vue/server-renderer': 3.5.13(vue@3.5.13)
       '@vue/shared': 3.5.13
-      typescript: 5.7.3
+      typescript: 5.4.2
     dev: true
 
   /which@2.0.2:
@@ -4720,3 +4697,7 @@ packages:
   /zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
     dev: true
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
