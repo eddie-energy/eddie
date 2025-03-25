@@ -103,6 +103,7 @@ build
 .idea
 !.idea/prettier.xml
 !.idea/vcs.xml
+!.idea/externalDependencies.xml
 
 ### jte template generated files ###
 **/jte-classes
@@ -112,10 +113,6 @@ build
 
 ### Node ###
 node_modules/
-
-# Ignore regionconnector property files
-regionconnector-at.properties
-regionconnector-fr-enedis.properties
 
 # ignore ponton authentification file
 id.dat
