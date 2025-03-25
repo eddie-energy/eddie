@@ -5,6 +5,7 @@ import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest
 import energy.eddie.regionconnector.cds.providers.vhd.IdentifiableValidatedHistoricalData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
@@ -18,9 +19,25 @@ public class IdentifiableDataStreams implements AutoCloseable {
     private final Sinks.Many<IdentifiableValidatedHistoricalData> validatedHistoricalDataSink = Sinks.many()
                                                                                                      .multicast()
                                                                                                      .onBackpressureBuffer();
+    private final Flux<IdentifiableValidatedHistoricalData> flux;
+
+    @Autowired
+    public IdentifiableDataStreams(
+            DataNeedMapper dataNeedMapper,
+            EmptyDataFilter emptyDataFilter
+    ) {
+        this.flux = validatedHistoricalDataSink.asFlux()
+                                               .map(dataNeedMapper)
+                                               .filter(emptyDataFilter)
+                                               .share();
+    }
+
+    public IdentifiableDataStreams() {
+        this.flux = validatedHistoricalDataSink.asFlux();
+    }
 
     public Flux<IdentifiableValidatedHistoricalData> validatedHistoricalData() {
-        return validatedHistoricalDataSink.asFlux();
+        return flux;
     }
 
     @Override
