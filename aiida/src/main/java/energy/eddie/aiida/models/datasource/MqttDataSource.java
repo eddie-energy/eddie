@@ -1,54 +1,83 @@
 package energy.eddie.aiida.models.datasource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.DiscriminatorValue;
+import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import jakarta.persistence.Entity;
 
+import java.util.UUID;
+
 @Entity
-@DiscriminatorValue("MQTT")
 @SuppressWarnings("NullAway")
 public abstract class MqttDataSource extends DataSource {
     @JsonProperty
-    private String mqttServerUri;
+    protected String mqttInternalHost;
     @JsonProperty
-    private String mqttSubscribeTopic;
+    protected String mqttExternalHost;
     @JsonProperty
-    private String mqttUsername;
+    protected String mqttSubscribeTopic;
     @JsonProperty
-    private String mqttPassword;
+    protected String mqttUsername;
+    @JsonProperty
+    protected String mqttPassword;
 
-    protected MqttDataSource() {
+    @SuppressWarnings("NullAway")
+    protected MqttDataSource() {}
+
+    protected MqttDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
+        super(dto, userId);
+        this.mqttInternalHost = dataSourceMqttDto.internalHost();
+        this.mqttExternalHost = dataSourceMqttDto.externalHost();
+        this.mqttSubscribeTopic = dataSourceMqttDto.subscribeTopic();
+        this.mqttUsername = dataSourceMqttDto.username();
+        this.mqttPassword = dataSourceMqttDto.password();
     }
 
-    public String getMqttServerUri() {
-        return mqttServerUri;
+    @Override
+    public DataSource mergeWithDto(DataSourceDto dto, UUID userId) {
+        var mqttSettingsDto = new DataSourceMqttDto(mqttInternalHost(),
+                                                    mqttExternalHost(),
+                                                    mqttSubscribeTopic(),
+                                                    mqttUsername(),
+                                                    mqttPassword());
+        return createFromDto(dto, userId, mqttSettingsDto);
     }
 
-    public void setMqttServerUri(String mqttServerUri) {
-        this.mqttServerUri = mqttServerUri;
+    public String mqttInternalHost() {
+        return mqttInternalHost;
     }
 
-    public String getMqttSubscribeTopic() {
+    public String mqttExternalHost() {
+        return mqttExternalHost;
+    }
+
+    public String mqttSubscribeTopic() {
         return mqttSubscribeTopic;
     }
 
-    public void setMqttSubscribeTopic(String mqttSubscribeTopic) {
-        this.mqttSubscribeTopic = mqttSubscribeTopic;
-    }
-
-    public String getMqttUsername() {
+    public String mqttUsername() {
         return mqttUsername;
     }
 
-    public void setMqttUsername(String mqttUsername) {
-        this.mqttUsername = mqttUsername;
-    }
-
-    public String getMqttPassword() {
+    public String mqttPassword() {
         return mqttPassword;
     }
 
-    public void setMqttPassword(String mqttPassword) {
-        this.mqttPassword = mqttPassword;
+    @Override
+    public DataSourceDto toDto() {
+        return new DataSourceDto(
+                id,
+                dataSourceType.identifier(),
+                asset.asset(),
+                name,
+                enabled,
+                null,
+                null,
+                toMqttDto()
+        );
+    }
+
+    public DataSourceMqttDto toMqttDto() {
+        return new DataSourceMqttDto(mqttInternalHost, mqttExternalHost, mqttSubscribeTopic, mqttUsername, mqttPassword);
     }
 }

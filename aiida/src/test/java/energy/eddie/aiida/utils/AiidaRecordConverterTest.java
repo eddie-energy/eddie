@@ -5,6 +5,7 @@ import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -35,7 +36,7 @@ class AiidaRecordConverterTest {
     void givenIntegerAiidaRecord_returnsDtoWithFieldsSet() {
         // Given
         Instant timestamp = Instant.now();
-        var aiidaRecord = new AiidaRecord(timestamp, "Test", userId, dataSourceId,  List.of(
+        var aiidaRecord = new AiidaRecord(timestamp, AiidaAsset.SUBMETER, userId, dataSourceId, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "23", KW, "10", KW)));
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.permissionId()).thenReturn(permissionId);
@@ -58,7 +59,7 @@ class AiidaRecordConverterTest {
     void givenStringAiidaRecord_returnsDtoWithFieldsSet() {
         // Given
         Instant timestamp = Instant.now();
-        var aiidaRecord = new AiidaRecord(timestamp, "Test", userId, dataSourceId, List.of(
+        var aiidaRecord = new AiidaRecord(timestamp, AiidaAsset.SUBMETER, userId, dataSourceId, List.of(
                 new AiidaRecordValue("0-0:C.1.0", METER_SERIAL, "Hello!", NONE, "10", NONE)));
 
         when(mockPermission.connectionId()).thenReturn("connectionId");

@@ -67,11 +67,13 @@ public class StreamerManager implements AutoCloseable {
 
         var dataNeed = Objects.requireNonNull(permission.dataNeed());
         var allowedDataTags = Objects.requireNonNull(dataNeed.dataTags());
+        var allowedAsset = Objects.requireNonNull(dataNeed.asset());
         var transmissionSchedule = Objects.requireNonNull(dataNeed.transmissionSchedule());
         var permissionExpirationTime = Objects.requireNonNull(permission.expirationTime());
         var userId = Objects.requireNonNull(permission.userId());
 
         Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(allowedDataTags,
+                                                                  allowedAsset,
                                                                   permissionExpirationTime,
                                                                   transmissionSchedule,
                                                                   userId);

@@ -6,6 +6,7 @@ import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,20 +59,21 @@ class StreamerManagerTest {
 
     @BeforeEach
     void setUp() {
-        var mapper = new AiidaConfiguration().objectMapper();
+        var mapper = new AiidaConfiguration().customObjectMapper().build();
         manager = new StreamerManager(mapper, aggregatorMock, mockRepository);
     }
 
     @Test
     void givenSamePermissionTwice_createNewStreamer_throws() {
         // Given
-        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.eddieId()).thenReturn(eddieId);
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockPermission.userId()).thenReturn(userId);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
+        when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any()))
@@ -89,12 +91,13 @@ class StreamerManagerTest {
     @Test
     void givenPermission_createStreamer_callsConnect() throws MqttException {
         // Given
-        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockPermission.userId()).thenReturn(userId);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
+        when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any()))
@@ -133,14 +136,15 @@ class StreamerManagerTest {
 
     @Test
     void verify_close_closesAllStreamers() throws MqttException {
-        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(),  any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
+        when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(mockPermission.userId()).thenReturn(userId);
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
-        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any())).thenReturn(Flux.empty());
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any()))
                      .thenReturn(mockAiidaStreamer);

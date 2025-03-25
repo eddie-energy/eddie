@@ -2,33 +2,23 @@ package energy.eddie.aiida.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.aggregator.Aggregator;
-import energy.eddie.aiida.config.MQTTConfiguration;
-import energy.eddie.aiida.datasources.AiidaDataSource;
-import energy.eddie.aiida.datasources.at.OesterreichsEnergieAdapter;
-import energy.eddie.aiida.datasources.at.OesterreichsEnergieDataSource;
-import energy.eddie.aiida.datasources.fr.MicroTeleinfoV3;
-import energy.eddie.aiida.datasources.fr.MicroTeleinfoV3DataSource;
-import energy.eddie.aiida.datasources.sga.SmartGatewaysAdapter;
-import energy.eddie.aiida.datasources.sga.SmartGatewaysDataSource;
-import energy.eddie.aiida.datasources.simulation.SimulationDataSource;
-import energy.eddie.aiida.datasources.simulation.SimulationDataSourceAdapter;
+import energy.eddie.aiida.config.MqttConfiguration;
+import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
-import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.datasource.DataSourceType;
-import energy.eddie.aiida.models.datasource.MQTTSecretGenerator;
-import energy.eddie.aiida.models.datasource.MqttDataSource;
+import energy.eddie.aiida.models.datasource.*;
 import energy.eddie.aiida.repositories.DataSourceRepository;
-import energy.eddie.aiida.utils.MqttConfig;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.*;
+import java.util.function.Predicate;
 
 @Service
 public class DataSourceService {
@@ -37,8 +27,8 @@ public class DataSourceService {
     private final DataSourceRepository repository;
     private final Aggregator aggregator;
     private final AuthService authService;
-    private final Set<AiidaDataSource> aiidaDataSources = new HashSet<>();
-    private final MQTTConfiguration mqttConfiguration;
+    private final Set<DataSourceAdapter<? extends DataSource>> dataSourceAdapters = new HashSet<>();
+    private final MqttConfiguration mqttConfiguration;
     private final ObjectMapper objectMapper;
 
     @Autowired
@@ -46,7 +36,7 @@ public class DataSourceService {
             DataSourceRepository repository,
             Aggregator aggregator,
             AuthService authService,
-            MQTTConfiguration mqttConfiguration,
+            MqttConfiguration mqttConfiguration,
             ObjectMapper objectMapper
     ) {
         this.repository = repository;
@@ -54,8 +44,15 @@ public class DataSourceService {
         this.authService = authService;
         this.mqttConfiguration = mqttConfiguration;
         this.objectMapper = objectMapper;
+    }
 
-        loadDataSources();
+    @EventListener(ContextRefreshedEvent.class)
+    public void startDataSources() {
+        var dataSources = repository.findAll();
+
+        for (var dataSource : dataSources) {
+            startDataSource(dataSource);
+        }
     }
 
     public Optional<DataSource> getDataSourceById(UUID dataSourceId) {
@@ -68,203 +65,100 @@ public class DataSourceService {
         return repository.findByUserId(currentUserId);
     }
 
-    public void addDataSource(DataSourceDto addDataSource) throws InvalidUserException {
+    public void addDataSource(DataSourceDto dto) throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
-        var dataSourceType = DataSourceType.fromIdentifier(addDataSource.dataSourceType());
-        final DataSource dataSource = createOrUpdate(addDataSource);
 
-        if (dataSource instanceof MqttDataSource mqttDataSource) {
-            final String mqttServerUri = mqttConfiguration.host();
-            final String mqttUsername = addDataSource.name() + "-username-" + MQTTSecretGenerator.generate();
-            final String mqttPassword = addDataSource.name() + "-password-" + MQTTSecretGenerator.generate();
+        var mqttSettingsDto = new DataSourceMqttDto(
+                mqttConfiguration.internalHost(),
+                mqttConfiguration.externalHost(),
+                "aiida/" + MqttSecretGenerator.generate(),
+                MqttSecretGenerator.generate(),
+                MqttSecretGenerator.generate()
+        );
+        var dataSource = DataSource.createFromDto(dto, currentUserId, mqttSettingsDto);
 
-            final String mqttSubscribeTopic = dataSourceType == DataSourceType.MICRO_TELEINFO_V3 ? addDataSource.mqttSubscribeTopic() + "/" + addDataSource.meteringId() : "aiida/" + addDataSource.name() + "/" + MQTTSecretGenerator.generate();
-
-            mqttDataSource.setMqttServerUri(mqttServerUri);
-            mqttDataSource.setMqttUsername(mqttUsername);
-            mqttDataSource.setMqttPassword(mqttPassword);
-            mqttDataSource.setMqttSubscribeTopic(mqttSubscribeTopic);
-
-            if (dataSourceType == DataSourceType.MICRO_TELEINFO_V3) {
-                ((MicroTeleinfoV3DataSource) mqttDataSource).setMeteringId(addDataSource.meteringId());
-            }
-        }
-
-        dataSource.setUserId(currentUserId);
         repository.save(dataSource);
-
         startDataSource(dataSource);
     }
 
     public void deleteDataSource(UUID dataSourceId) {
-        findAiidaDataSource(dataSourceId).ifPresentOrElse(this::closeDataSource,
-                                                          () -> LOGGER.warn(
-                                                                  "AiidaDataSource for data source ID {} not found in aiidaDataSources.",
-                                                                  dataSourceId));
+        findDataSourceAdapter(dataSourceId).ifPresentOrElse(
+                this::closeDataSource,
+                () -> LOGGER.warn("Data Source Adapter for data source ID {} not found.", dataSourceId)
+        );
 
         repository.deleteById(dataSourceId);
     }
 
-    public DataSource updateDataSource(DataSourceDto updateDataSource) throws InvalidUserException {
-        var dataSource = createOrUpdate(updateDataSource);
+    public DataSource updateDataSource(DataSourceDto dto) throws InvalidUserException, EntityNotFoundException {
+        var currentDataSource = repository.findById(dto.id())
+                                          .orElseThrow(() -> new EntityNotFoundException(
+                                                  "Datasource not found with ID: " + dto.id()
+                                          ));
+
         var currentUserId = authService.getCurrentUserId();
-        dataSource.setUserId(currentUserId);
+        var dataSource = currentDataSource.mergeWithDto(dto, currentUserId);
 
-        boolean wasEnabled = dataSource.isEnabled();
+        boolean wasEnabled = dataSource.enabled();
 
-        findAiidaDataSource(dataSource.getId()).ifPresentOrElse(ds -> updateAiidaDataSourceState(ds,
-                                                                                                 dataSource,
-                                                                                                 wasEnabled),
-                                                                () -> startDataSource(dataSource));
+        findDataSourceAdapter(dataSource.id()).ifPresentOrElse(
+                adapter -> updateDataSourceAdapterState(adapter, dataSource, wasEnabled),
+                () -> startDataSource(dataSource)
+        );
 
         return repository.save(dataSource);
     }
 
-    public void updateEnabledState(UUID dataSourceId, boolean enabled) {
+    public void updateEnabledState(UUID dataSourceId, boolean enabled) throws EntityNotFoundException {
         DataSource dataSource = repository.findById(dataSourceId)
                                           .orElseThrow(() -> new EntityNotFoundException(
                                                   "Datasource not found with ID: " + dataSourceId));
 
-        findAiidaDataSource(dataSourceId).ifPresentOrElse(ds -> updateAiidaDataSourceState(ds, dataSource, enabled),
-                                                          () -> startDataSource(dataSource));
+        findDataSourceAdapter(dataSourceId).ifPresentOrElse(
+                adapter -> updateDataSourceAdapterState(adapter, dataSource, enabled),
+                () -> startDataSource(dataSource)
+        );
 
         dataSource.setEnabled(enabled);
         repository.save(dataSource);
     }
 
-    public DataSource createOrUpdate(DataSourceDto dataSourceDto) throws InvalidUserException {
-        DataSource dataSource = (dataSourceDto.id() == null) ? createNewDataSource(dataSourceDto) : repository.findById(
-                dataSourceDto.id()).orElse(null);
-
-        if (dataSource == null) {
-            dataSource = createNewDataSource(dataSourceDto);
-        }
-
-        final DataSourceType dataSourceType = DataSourceType.fromIdentifier(dataSourceDto.dataSourceType());
-        dataSource.setName(dataSourceDto.name());
-        dataSource.setEnabled(dataSourceDto.enabled());
-        dataSource.setAsset(AiidaAsset.forValue(dataSourceDto.asset()));
-        dataSource.setDataSourceType(dataSourceType);
-
-        switch (dataSource) {
-            case SimulationDataSource simDataSource ->
-                    simDataSource.setSimulationPeriod(dataSourceDto.simulationPeriod());
-            case MqttDataSource mqttDataSource -> {
-                mqttDataSource.setMqttServerUri(dataSourceDto.mqttServerUri());
-                mqttDataSource.setMqttUsername(dataSourceDto.mqttUsername());
-                mqttDataSource.setMqttPassword(dataSourceDto.mqttPassword());
-                mqttDataSource.setMqttSubscribeTopic(dataSourceDto.mqttSubscribeTopic());
-
-                if (mqttDataSource instanceof MicroTeleinfoV3DataSource microTeleinfoDataSource) {
-                    microTeleinfoDataSource.setMeteringId(dataSourceDto.meteringId());
-                }
-            }
-            default -> LOGGER.error("Failed to create data source: {}", dataSourceType);
-        }
-
-        return dataSource;
+    public Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(UUID dataSourceId) {
+        return findDataSourceAdapter(adapter -> adapter.dataSource().id().equals(dataSourceId));
     }
 
-    Optional<AiidaDataSource> findAiidaDataSource(UUID dataSourceId) {
-        return aiidaDataSources.stream().filter(ds -> ds.id().equals(dataSourceId)).findFirst();
-    }
-
-    private void loadDataSources() {
-        var dataSources = repository.findAll();
-
-        for (var dataSource : dataSources) {
-            startDataSource(dataSource);
-        }
-    }
-
-    private void closeDataSource(AiidaDataSource aiidaDataSource) {
-        aggregator.removeAiidaDataSource(aiidaDataSource);
-        aiidaDataSources.remove(aiidaDataSource);
+    public Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(Predicate<DataSourceAdapter<? extends DataSource>> predicate) {
+        return dataSourceAdapters.stream()
+                                 .filter(predicate)
+                                 .findFirst();
     }
 
     private void startDataSource(DataSource dataSource) {
-        var newAiidaDataSource = transformDataSource(dataSource);
-        aiidaDataSources.add(newAiidaDataSource);
+        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper);
+        dataSourceAdapters.add(dataSourceAdapter);
 
-        if (dataSource.isEnabled()) {
-            aggregator.addNewAiidaDataSource(newAiidaDataSource);
+        if (dataSource.enabled()) {
+            aggregator.addNewDataSourceAdapter(dataSourceAdapter);
         }
     }
 
-    private AiidaDataSource transformDataSource(DataSource dataSource) {
-        var dataSourceType = dataSource.getDataSourceType();
-
-        if (dataSourceType == DataSourceType.SIMULATION) {
-            var simDataSource = (SimulationDataSource) dataSource;
-            var simulationPeriod = simDataSource.getSimulationPeriod() == null ? 5 : simDataSource.getSimulationPeriod();
-            return new SimulationDataSourceAdapter(dataSource.getId(),
-                                                   dataSource.getUserId(),
-                                                   Duration.ofSeconds(simulationPeriod));
-        }
-
-        var mqttDataSource = (MqttDataSource) dataSource;
-        var mqttBuildConfig = new MqttConfig.MqttConfigBuilder(mqttDataSource.getMqttServerUri(),
-                                                               mqttDataSource.getMqttSubscribeTopic());
-        mqttBuildConfig.setUsername(mqttDataSource.getMqttUsername());
-        mqttBuildConfig.setPassword(mqttDataSource.getMqttPassword());
-
-        var mqttConfig = new MqttConfig(mqttBuildConfig);
-
-        return switch (dataSourceType) {
-            case SMART_GATEWAYS_ADAPTER ->
-                    new SmartGatewaysAdapter(dataSource.getId(), dataSource.getUserId(), mqttConfig);
-            case MICRO_TELEINFO_V3 ->
-                    new MicroTeleinfoV3(dataSource.getId(), dataSource.getUserId(), mqttConfig, objectMapper);
-            case SMART_METER_ADAPTER -> new OesterreichsEnergieAdapter(dataSource.getId(),
-                                                                       dataSource.getUserId(),
-                                                                       mqttConfig,
-                                                                       objectMapper);
-            default -> {
-                LOGGER.error("Unknown data source type: {}", dataSourceType);
-                throw new IllegalArgumentException("Unknown data source type: " + dataSourceType);
-            }
-        };
+    private void closeDataSource(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
+        aggregator.removeDataSourceAdapter(dataSourceAdapter);
+        dataSourceAdapters.remove(dataSourceAdapter);
     }
 
-    private DataSource createNewDataSource(DataSourceDto dataSourceDto) throws InvalidUserException {
-        final DataSourceType dataSourceType = DataSourceType.fromIdentifier(dataSourceDto.dataSourceType());
-
-        if (dataSourceType == DataSourceType.SIMULATION) {
-            return new SimulationDataSource(dataSourceDto.name(),
-                                            dataSourceDto.enabled(),
-                                            authService.getCurrentUserId(),
-                                            AiidaAsset.forValue(dataSourceDto.asset()),
-                                            dataSourceType,
-                                            dataSourceDto.simulationPeriod());
-        } else {
-            final MqttDataSource mqttDataSource = switch (dataSourceType) {
-                case SMART_GATEWAYS_ADAPTER -> new SmartGatewaysDataSource();
-                case SMART_METER_ADAPTER -> new OesterreichsEnergieDataSource();
-                case MICRO_TELEINFO_V3 -> new MicroTeleinfoV3DataSource();
-                default -> throw new IllegalArgumentException("Unknown data source type: " + dataSourceType);
-            };
-
-            mqttDataSource.setMqttServerUri(dataSourceDto.mqttServerUri());
-            mqttDataSource.setMqttUsername(dataSourceDto.mqttUsername());
-            mqttDataSource.setMqttPassword(dataSourceDto.mqttPassword());
-            mqttDataSource.setMqttSubscribeTopic(dataSourceDto.mqttSubscribeTopic());
-
-            if (mqttDataSource instanceof MicroTeleinfoV3DataSource microTeleinfoDataSource) {
-                microTeleinfoDataSource.setMeteringId(dataSourceDto.meteringId());
-            }
-
-            return mqttDataSource;
-        }
-    }
-
-    private void updateAiidaDataSourceState(AiidaDataSource aiidaDataSource, DataSource dataSource, boolean enabled) {
-        if (!enabled && dataSource.isEnabled()) {
-            closeDataSource(aiidaDataSource);
-        } else if (enabled && !dataSource.isEnabled()) {
+    private void updateDataSourceAdapterState(
+            DataSourceAdapter<? extends DataSource> dataSourceAdapter,
+            DataSource dataSource,
+            boolean enabled
+    ) {
+        if (!enabled && dataSource.enabled()) {
+            closeDataSource(dataSourceAdapter);
+        } else if (enabled && !dataSource.enabled()) {
             dataSource.setEnabled(true);
             startDataSource(dataSource);
-        } else if (enabled && dataSource.isEnabled()) {
-            closeDataSource(aiidaDataSource);
+        } else if (enabled && dataSource.enabled()) {
+            closeDataSource(dataSourceAdapter);
             startDataSource(dataSource);
         }
     }

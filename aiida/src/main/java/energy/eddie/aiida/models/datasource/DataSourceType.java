@@ -1,23 +1,19 @@
 package energy.eddie.aiida.models.datasource;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
 
 public enum DataSourceType {
-    SMART_METER_ADAPTER("SMART_METER_ADAPTER", "Smart Meter Adapter", Set.of("AT")),
-    MICRO_TELEINFO_V3("MICRO_TELEINFO", "Micro Teleinfo v3", Set.of("FR")),
-    SMART_GATEWAYS_ADAPTER("SMART_GATEWAYS_ADAPTER", "Smart Gateways Adapter", Set.of("NL", "BE", "CH")),
-    SIMULATION("SIMULATION", "Simulation", Collections.emptySet());
+    SMART_METER_ADAPTER(Identifiers.SMART_METER_ADAPTER, "Österreichs Energie Adapter"),
+    MICRO_TELEINFO(Identifiers.MICRO_TELEINFO, "Micro Teleinfo v3"),
+    SMART_GATEWAYS_ADAPTER(Identifiers.SMART_GATEWAYS, "Smart Gateways Adapter"),
+    SIMULATION(Identifiers.SIMULATION, "Simulation");
 
-    private final Set<String> countries;
     private final String identifier;
     private final String name;
 
-    DataSourceType(String identifier, String name, Set<String> countries) {
+    DataSourceType(String identifier, String name) {
         this.identifier = identifier;
         this.name = name;
-        this.countries = Set.copyOf(countries);
     }
 
     public static DataSourceType fromIdentifier(String identifier) {
@@ -27,15 +23,20 @@ public enum DataSourceType {
                      .orElseThrow();
     }
 
-    public Set<String> countries() {
-        return countries;
-    }
-
     public String identifier() {
         return identifier;
     }
 
     public String dataSourceName() {
         return name;
+    }
+
+    public static class Identifiers {
+        public static final String SMART_METER_ADAPTER = "SMART_METER_ADAPTER";
+        public static final String MICRO_TELEINFO = "MICRO_TELEINFO";
+        public static final String SMART_GATEWAYS = "SMART_GATEWAYS_ADAPTER";
+        public static final String SIMULATION = "SIMULATION";
+
+        private Identifiers() {}
     }
 }

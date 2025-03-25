@@ -95,18 +95,24 @@ The source code and instructions can be found within the [keycloak eddie theme f
 Several configurations can be applied through environment variables or the _application.properties_ file.
 When using Docker, most of these properties should be configured in the [.env](docker/.env) file.
 
-| Property                   | Description                                                                                                                           |
-|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| AIIDA_EXTERNAL_HOST        | Network-accessible host of the AIIDA instance                                                                                         |
-| AIIDA_CORS_ALLOWED_ORIGINS | The origins that are allowed to communicate with AIIDA (necessary for deployments with reverse proxies)                               |
-| AIIDA_KEYCLOAK_ACCOUNT_URI | Specifies the URI to which users are redirected for account settings. By default, this points to Keycloak's account management page.  |
-| SPRING_DATASOURCE_USERNAME | Username to authenticate to the TimescaleDB                                                                                           |
-| SPRING_DATASOURCE_PASSWORD | Password to authenticate to the TimescaleDB                                                                                           |
-| KEYCLOAK_INTERNAL_HOST     | Internal network host of the Keycloak instance (e.g. inside Docker network)                                                           |
-| KEYCLOAK_EXTERNAL_HOST     | Network-accessible host of the Keycloak instance                                                                                      |
-| KEYCLOAK_REALM             | Name of the Keycloak realm                                                                                                            |
-| KEYCLOAK_CLIENT            | Name of the Keycloak client                                                                                                           |
-| KEYCLOAK_CLIENT_SECRET     | The client secret for the Keycloak client                                                                                             |
+| Property                   | Description                                                                                                                          |
+|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| AIIDA_EXTERNAL_HOST        | Network-accessible host of the AIIDA instance                                                                                        |
+| AIIDA_CORS_ALLOWED_ORIGINS | The origins that are allowed to communicate with AIIDA (necessary for deployments with reverse proxies)                              |
+| AIIDA_KEYCLOAK_ACCOUNT_URI | Specifies the URI to which users are redirected for account settings. By default, this points to Keycloak's account management page. |
+| SPRING_DATASOURCE_USERNAME | Username to authenticate to the TimescaleDB                                                                                          |
+| SPRING_DATASOURCE_PASSWORD | Password to authenticate to the TimescaleDB                                                                                          |
+| KEYCLOAK_INTERNAL_HOST     | Internal network host of the Keycloak instance (e.g. inside Docker network)                                                          |
+| KEYCLOAK_EXTERNAL_HOST     | Network-accessible host of the Keycloak instance                                                                                     |
+| KEYCLOAK_REALM             | Name of the Keycloak realm                                                                                                           |
+| KEYCLOAK_CLIENT            | Name of the Keycloak client                                                                                                          |
+| KEYCLOAK_CLIENT_SECRET     | The client secret for the Keycloak client                                                                                            |
+| KEYCLOAK_ADMIN_USERNAME    | Username of the Keycloak admin                                                                                                       |
+| KEYCLOAK_ADMIN_PASSWORD    | Password of the Keycloak admin                                                                                                       |
+| MQTT_EXTERNAL_HOST         | Network-accessible host of the MQTT broker                                                                                           |
+| MQTT_INTERNAL_HOST         | Internal network host of the MQTT broker (e.g. inside Docker network)                                                                |
+| MQTT_ADMIN_USERNAME        | Username of the MQTT superuser                                                                                                       |
+| MQTT_ADMIN_PASSWORD        | Password of the MQTT superuser                                                                                                       |
 
 ### Reverse Proxy Deployment
 If you are running an AIIDA instance behind a reverse proxy (e.g. nginx) to make it accessible everywhere, it is necessary to add the origin of the AIIDA instance to the allowed origins.
