@@ -5,14 +5,13 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.DataNeedNotSupportedResult;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClient;
+import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientErrorHandler;
 import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientFactory;
 import energy.eddie.regionconnector.cds.exceptions.NoTokenException;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
 import energy.eddie.regionconnector.cds.providers.IdentifiableDataStreams;
-import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,8 +32,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -49,7 +46,7 @@ class PollingServiceTest {
     @Mock
     private CustomerDataClient customerDataClient;
     @Mock
-    private Outbox outbox;
+    private CustomerDataClientErrorHandler handler;
     @InjectMocks
     private PollingService pollingService;
 
@@ -94,7 +91,7 @@ class PollingServiceTest {
         pollingService.poll(pr);
 
         // Then
-        verify(outbox, never()).commit(any());
+        verify(handler, never()).revoke(any(), any());
         verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
     }
 
@@ -117,7 +114,7 @@ class PollingServiceTest {
         pollingService.poll(pr);
 
         // Then
-        verify(outbox, never()).commit(any());
+        verify(handler, never()).revoke(any(), any());
         verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
     }
 
@@ -145,12 +142,13 @@ class PollingServiceTest {
                 .thenReturn(customerDataClient);
         when(customerDataClient.usagePoints(eq(pr), any(), eq(start.atStartOfDay(ZoneOffset.UTC))))
                 .thenReturn(Mono.just(List.of()));
-
+        when(handler.test(any())).thenCallRealMethod();
+        when(handler.thenRevoke(any())).thenCallRealMethod();
         // When
         pollingService.poll(pr);
 
         // Then
-        verify(outbox, never()).commit(any());
+        verify(handler, never()).revoke(any(), any());
         verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
     }
 
@@ -183,15 +181,14 @@ class PollingServiceTest {
         when(customerDataClient.meterDevices(pr)).thenReturn(Mono.error(exception));
         when(customerDataClient.usagePoints(pr, endOfDay(end, ZoneOffset.UTC), start.atStartOfDay(ZoneOffset.UTC)))
                 .thenReturn(Mono.error(exception));
+        when(handler.thenRevoke(any())).thenCallRealMethod();
+        when(handler.test(any())).thenCallRealMethod();
 
         // When
         pollingService.poll(pr);
 
         // Then
-        verify(outbox).commit(assertArg(res -> assertAll(
-                () -> assertEquals("pid", res.permissionId()),
-                () -> assertEquals(PermissionProcessStatus.REVOKED, res.status())
-        )));
+        verify(handler).revoke(any(), any());
         verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
     }
 
@@ -219,12 +216,14 @@ class PollingServiceTest {
                 .thenReturn(customerDataClient);
         when(customerDataClient.usagePoints(pr, endOfDay(end, ZoneOffset.UTC), start.atStartOfDay(ZoneOffset.UTC)))
                 .thenReturn(Mono.error(new RuntimeException()));
+        when(handler.test(any())).thenCallRealMethod();
+        when(handler.thenRevoke(any())).thenCallRealMethod();
 
         // When
         pollingService.poll(pr);
 
         // Then
-        verify(outbox, never()).commit(any());
+        verify(handler, never()).revoke(any(), any());
         verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
     }
 }
