@@ -49,13 +49,14 @@ REGION_CONNECTOR_CDS_RETRY=0 0 * * * *
 
 ## Register new CDS Server
 
-A new CDS server can only be registered by the eligible party.
 The region connector provides a REST API to register a new CDS server.
+A new CDS server can only be registered by the eligible party.
+Therefore, the endpoint is only available via the management port.
 Registering the same CDS server twice will not have any effects and will not create new OAuth credentials.
 
 ```http request
 ### Register a new CDS server
-POST http://localhost:8080/region-connectors/cds/register
+POST http://localhost:${eddie.management.server.port}/region-connectors/cds/${eddie.management.server.urlprefix}/register
 Content-Type: application/json
 
 {

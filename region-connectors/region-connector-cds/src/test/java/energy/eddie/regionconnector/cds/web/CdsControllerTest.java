@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = CdsController.class)
+@WebMvcTest(controllers = CdsController.class, properties = "eddie.management.server.urlprefix=")
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class CdsControllerTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
