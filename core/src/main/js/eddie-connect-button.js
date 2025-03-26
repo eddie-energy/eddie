@@ -348,9 +348,12 @@ class EddieConnectButton extends LitElement {
    */
   getEnabledCountries() {
     return [
-      ...new Set(this._enabledConnectors.flatMap((rc) => rc.countryCodes)),
+      ...new Set(
+        this._enabledConnectors
+          .flatMap((rc) => rc.countryCodes)
+          .map((countryCode) => countryCode.toLowerCase())
+      ),
     ]
-      .map((countryCode) => countryCode.toLowerCase())
       .filter((country) =>
         new Set(this._permissionAdministrators.map((pa) => pa.country)).has(
           country
