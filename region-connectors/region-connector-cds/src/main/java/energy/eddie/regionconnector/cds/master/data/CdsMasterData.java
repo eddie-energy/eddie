@@ -7,6 +7,7 @@ import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -52,7 +53,7 @@ public class CdsMasterData implements MasterData {
         return server.countryCodes()
                 .stream()
                 .map(countryCode ->
-                             new PermissionAdministrator(countryCode,
+                             new PermissionAdministrator(countryCode.toUpperCase(Locale.ROOT),
                                                          server.name(),
                                                          server.displayName(),
                                                          server.idAsString(),
@@ -66,7 +67,7 @@ public class CdsMasterData implements MasterData {
         return server.countryCodes()
                 .stream()
                 .map(countryCode ->
-                             new MeteredDataAdministrator(countryCode,
+                             new MeteredDataAdministrator(countryCode.toUpperCase(Locale.ROOT),
                                                           server.name(),
                                                           server.idAsString(),
                                                           website,

@@ -29,7 +29,7 @@ class CdsMasterDataTest {
         // Given
         when(repository.findAll())
                 .thenReturn(List.of(createCdsServer()));
-        var expected = new PermissionAdministrator("us",
+        var expected = new PermissionAdministrator("US",
                                                    "CDS Server",
                                                    "CDS Server - http://localhost",
                                                    "null",
@@ -50,7 +50,7 @@ class CdsMasterDataTest {
         // Given
         when(repository.findById(1L))
                 .thenReturn(Optional.of(createCdsServer()));
-        var expected = new PermissionAdministrator("us",
+        var expected = new PermissionAdministrator("US",
                                                    "CDS Server",
                                                    "CDS Server - http://localhost",
                                                    "null",
@@ -71,7 +71,7 @@ class CdsMasterDataTest {
         // Given
         when(repository.findAll())
                 .thenReturn(List.of(createCdsServer()));
-        var expected = new MeteredDataAdministrator("us",
+        var expected = new MeteredDataAdministrator("US",
                                                     "CDS Server",
                                                     "null",
                                                     "http://localhost",
@@ -92,7 +92,7 @@ class CdsMasterDataTest {
         // Given
         when(repository.findById(1L))
                 .thenReturn(Optional.of(createCdsServer()));
-        var expected = new MeteredDataAdministrator("us",
+        var expected = new MeteredDataAdministrator("US",
                                                     "CDS Server",
                                                     "null",
                                                     "http://localhost",
@@ -110,7 +110,7 @@ class CdsMasterDataTest {
     private static CdsServer createCdsServer() {
         return new CdsServerBuilder().setBaseUri("http://localhost")
                                      .setName("CDS Server")
-                                     .setCoverages(Set.of(new Coverage(EnergyType.ELECTRICITY, "us")))
+                                     .setCoverages(Set.of(new Coverage(EnergyType.ELECTRICITY, "US")))
                                      .setAdminClientId("client-id")
                                      .setAdminClientSecret("client-secret")
                                      .setTokenEndpoint("http://localhost")
