@@ -81,6 +81,10 @@ export default withMermaid(
                   text: "Green Button (USA)",
                   link: "1-running/region-connectors/region-connector-us-green-button.md",
                 },
+                {
+                  text: "CDS",
+                  link: "1-running/region-connectors/region-connector-cds.md",
+                },
               ],
             },
             {
@@ -196,5 +200,5 @@ export default withMermaid(
         { icon: "github", link: "https://github.com/eddie-energy/eddie" },
       ],
     },
-  })
+  }),
 );
