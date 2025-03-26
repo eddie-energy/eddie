@@ -224,12 +224,12 @@ public class OAuthService {
         } catch (IOException | ParseException e) {
             return new RevocationResult.InvalidRevocationRequest(e.getMessage());
         }
-        if(response.indicatesSuccess()) {
+        if (response.indicatesSuccess()) {
             return new RevocationResult.SuccessfulRevocation();
         }
         var error = response.toErrorResponse();
         var errorObject = error.getErrorObject();
-        if( errorObject.getHTTPStatusCode() == HttpStatus.SERVICE_UNAVAILABLE.value()) {
+        if (errorObject.getHTTPStatusCode() == HttpStatus.SERVICE_UNAVAILABLE.value()) {
             return new RevocationResult.ServiceUnavailable();
         }
         return new RevocationResult.InvalidRevocationRequest(errorObject.getCode());

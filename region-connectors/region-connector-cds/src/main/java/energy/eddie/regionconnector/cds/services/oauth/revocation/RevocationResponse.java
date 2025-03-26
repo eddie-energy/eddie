@@ -10,10 +10,11 @@ public abstract class RevocationResponse implements Response {
     protected RevocationResponse(HTTPResponse httpResponse) {this.httpResponse = httpResponse;}
 
     public static RevocationResponse parse(HTTPResponse httpResponse) throws ParseException {
-        if (httpResponse.getStatusCode() == HTTPResponse.SC_OK)
+        if (httpResponse.getStatusCode() == HTTPResponse.SC_OK) {
             return RevocationSuccessResponse.parse(httpResponse);
-        else
+        } else {
             return RevocationErrorResponse.parse(httpResponse);
+        }
     }
 
     @Override
