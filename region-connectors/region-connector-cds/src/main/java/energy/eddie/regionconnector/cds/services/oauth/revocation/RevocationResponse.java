@@ -18,11 +18,6 @@ public abstract class RevocationResponse implements Response {
     }
 
     @Override
-    public boolean indicatesSuccess() {
-        return this instanceof RevocationSuccessResponse;
-    }
-
-    @Override
     public HTTPResponse toHTTPResponse() {
         return httpResponse;
     }

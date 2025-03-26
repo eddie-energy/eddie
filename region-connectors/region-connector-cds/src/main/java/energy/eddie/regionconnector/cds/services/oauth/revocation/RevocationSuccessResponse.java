@@ -10,4 +10,9 @@ public class RevocationSuccessResponse extends RevocationResponse {
         httpResponse.ensureStatusCode(200);
         return new RevocationSuccessResponse(httpResponse);
     }
+
+    @Override
+    public boolean indicatesSuccess() {
+        return true;
+    }
 }

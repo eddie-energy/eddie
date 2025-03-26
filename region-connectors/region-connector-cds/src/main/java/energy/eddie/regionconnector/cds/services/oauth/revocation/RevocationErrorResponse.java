@@ -20,4 +20,9 @@ public class RevocationErrorResponse extends RevocationResponse {
     public ErrorObject getErrorObject() {
         return errorObject;
     }
+
+    @Override
+    public boolean indicatesSuccess() {
+        return false;
+    }
 }
