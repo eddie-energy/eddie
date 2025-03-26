@@ -4,6 +4,8 @@ import energy.eddie.regionconnector.cds.openapi.model.*;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
 import energy.eddie.regionconnector.cds.providers.IdentifiableDataStreams;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
@@ -12,6 +14,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
+@ExtendWith(MockitoExtension.class)
 class CdsValidatedHistoricalDataMarketDocumentProviderTest {
 
     @Test

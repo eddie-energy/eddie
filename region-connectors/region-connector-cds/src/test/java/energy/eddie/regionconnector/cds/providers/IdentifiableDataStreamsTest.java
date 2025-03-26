@@ -2,22 +2,25 @@ package energy.eddie.regionconnector.cds.providers;
 
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 class IdentifiableDataStreamsTest {
 
     @SuppressWarnings("resource")
     @Test
     void testPublish_publishesUsageSegments() {
         // Given
+        var streams = new IdentifiableDataStreams();
         var pr = new CdsPermissionRequestBuilder()
                 .setPermissionId("pid")
                 .build();
-        var streams = new IdentifiableDataStreams();
 
         // When
         streams.publish(pr, List.of(), List.of(), List.of(), List.of(), List.of());
