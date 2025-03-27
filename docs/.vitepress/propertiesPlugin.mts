@@ -14,7 +14,7 @@ export function propertiesPlugin(md: MarkdownIt) {
       return originalFence(...args);
     }
 
-    const propertiesContent = token.content.trim();
+    const propertiesContent = trimLines(token.content);
 
     const envContent = propertiesToEnv(propertiesContent);
     const yamlContent = propertiesToYaml(propertiesContent);
@@ -37,12 +37,19 @@ ${envContent}
   };
 }
 
+function trimLines(content: string) {
+  return content
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n");
+}
+
 function propertiesToEnv(properties: string) {
   return properties
     .split("\n")
     .map((line) => {
       // Keep empty lines and comments
-      if (line.trim() === "" || line.startsWith("#")) return line;
+      if (line === "" || line.startsWith("#")) return line;
       // Make key uppercase and replace non-alphanumeric characters with underscores
       const [key, value] = line.split(/=(.*)/);
       return `${key.toUpperCase().replace(/[^A-Z0-9]/g, "_")}=${value}`;
@@ -61,7 +68,7 @@ function propertiesToYaml(properties: string) {
 
   const lines = properties.split("\n");
   for (const line of lines) {
-    if (line.trim() === "") {
+    if (line === "") {
       obj["empty" + emptyCount] = null;
       emptyCount++;
       continue;
