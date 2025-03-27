@@ -310,8 +310,8 @@ class EddieConnectButton extends LitElement {
         const module = await import(/* @vite-ignore */ elementUrl);
         customElements.define(customElementName, module.default);
       } catch (error) {
-        // If multiple EDDIE button are preconfigured with the same region
-        // connector, they may define its custom element at the same time.
+        // If multiple EDDIE buttons are preconfigured with the same region connector,
+        // they may define its custom element at the same time.
         // This will cause an error, but it can be safely ignored.
         if (!customElements.get(customElementName)) {
           throw new Error(error);
