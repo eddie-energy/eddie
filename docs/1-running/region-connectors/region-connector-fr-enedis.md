@@ -35,31 +35,17 @@ depends on the way you deploy the region connector.
 | `region-connector.fr.enedis.client.secret` | Secret key of the application you want to switch to production. Can be found under "_Mes applications_".    |
 | `region-connector.fr.enedis.polling`       | Configures when future data should be polled. Uses spring Cron syntax. The default is 17 o'clock every day. |
 
-### .properties file
+The region connector can be configured using Spring properties or environment variables.
+When using environment variables, the configuration values need to be converted in the following way:
 
-Example configuration for an `application.properties` file:
+- Replace all non-alphanumeric characters with an underscore (`_`)
+- Optionally convert all letters to upper case
 
-```properties
+```properties :spring
 region-connector.fr.enedis.basepath=https://gw.ext.prod.api.enedis.fr
 region-connector.fr.enedis.client.id=a5d5ce56-2bca-123d-1ccd-46a28f1ac132
 region-connector.fr.enedis.client.secret=11d145d8-25a6-55c1-b6af-04ac332211b1
 region-connector.fr.enedis.polling=0 0 17 * * *
-```
-
-### Environment variables
-
-When using environment variables, the configuration values need to be converted in the following way:
-
-* Replace all non-alphanumeric characters with an underscore (`_`)
-* Optionally convert all letters to upper case
-
-Example configuration for dotenv file:
-
-```dotenv
-REGION_CONNECTOR_FR_ENEDIS_BASEPATH=https://gw.ext.prod.api.enedis.fr
-REGION_CONNECTOR_FR_ENEDIS_CLIENT_ID=a5d5ce56-2bca-123d-1ccd-46a28f1ac132
-REGION_CONNECTOR_FR_ENEDIS_CLIENT_SECRET=11d145d8-25a6-55c1-b6af-04ac332211b1
-REGION_CONNECTOR_FR_ENEDIS_POLLING='0 0 17 * * *'
 ```
 
 ## Running the Region Connector via EDDIE
