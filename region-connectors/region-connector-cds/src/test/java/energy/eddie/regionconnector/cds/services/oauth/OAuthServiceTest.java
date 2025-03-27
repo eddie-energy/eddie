@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.cds.services.oauth.client.registration.Regis
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.SuccessfulParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.UnableToSendPar;
+import energy.eddie.regionconnector.cds.services.oauth.revocation.RevocationResult;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithRefreshToken;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithoutRefreshToken;
 import energy.eddie.regionconnector.cds.services.oauth.token.InvalidTokenResult;
@@ -385,5 +386,81 @@ class OAuthServiceTest {
         // Then
         var registrationError = assertInstanceOf(RegistrationResponse.RegistrationError.class, res);
         assertEquals("Was not able to parse response", registrationError.description());
+    }
+
+    @Test
+    void testRevokeToken_revokesToken() {
+        // Given
+        var revocationUri = URI.create(cdsServer.baseUri());
+        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200));
+
+        // When
+        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+
+        // Then
+        assertInstanceOf(RevocationResult.SuccessfulRevocation.class, res);
+    }
+
+    @Test
+    void testRevokeToken_withError_returnsInvalidRevocationRequest() {
+        // Given
+        var revocationUri = URI.create(cdsServer.baseUri());
+        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
+        mockWebServer.enqueue(new MockResponse()
+                                      .setResponseCode(400)
+                                      .setBody("{\"error\": \"bla\"}"));
+
+        // When
+        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+
+        // Then
+        assertInstanceOf(RevocationResult.InvalidRevocationRequest.class, res);
+    }
+
+    @Test
+    void testRevokeToken_withServiceUnavailable_returnsServiceUnavailable() {
+        // Given
+        var revocationUri = URI.create(cdsServer.baseUri());
+        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
+        mockWebServer.enqueue(new MockResponse()
+                                      .setResponseCode(503));
+
+        // When
+        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+
+        // Then
+        assertInstanceOf(RevocationResult.ServiceUnavailable.class, res);
+    }
+    @Test
+    void testRevokeToken_withInvalidResponse_returnsInvalidRevocationRequest() {
+        // Given
+        //noinspection JsonStandardCompliance
+        mockWebServer.enqueue(new MockResponse()
+                                      .setResponseCode(400)
+                                      .setBody("INVALID RESPONSE")
+                                      .addHeader("Content-Type", "application/json"));
+        var revocationUri = URI.create(cdsServer.baseUri());
+        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
+
+        // When
+        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+
+        // Then
+        assertInstanceOf(RevocationResult.InvalidRevocationRequest.class, res);
+    }
+
+    @Test
+    void testRevokeToken_withInvalidHttpResponse_returnsInvalidRevocationRequest() {
+        // Given
+        mockWebServer.enqueue(new MockResponse().setStatus("INVALID STATUS LINE"));
+        var revocationUri = URI.create(cdsServer.baseUri());
+        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
+
+        // When
+        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+
+        // Then
+        assertInstanceOf(RevocationResult.InvalidRevocationRequest.class, res);
     }
 }
