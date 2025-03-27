@@ -504,20 +504,7 @@ class EddieConnectButton extends LitElement {
     }
 
     if (this.isAiida()) {
-      if (!this._enabledConnectors.some((rc) => rc.id === "aiida")) {
-        throw new Error(
-          `Data need with id ${this.dataNeedId} is an AIIDA data need, but AIIDA is not enabled.`
-        );
-      }
-
-      if (!this._supportedConnectors.includes("aiida")) {
-        throw new Error(
-          `AIIDA does not support the data need with id ${this.dataNeedId}.`
-        );
-      }
-
-      this._selectedPermissionAdministrator =
-        SPECIAL_PERMISSION_ADMINISTRATORS.AIIDA;
+      this.configureAiida();
     }
 
     if (
@@ -530,6 +517,23 @@ class EddieConnectButton extends LitElement {
 
   isAiida() {
     return this._dataNeedAttributes?.type === "aiida";
+  }
+
+  configureAiida() {
+    if (!this._enabledConnectors.some((rc) => rc.id === "aiida")) {
+      throw new Error(
+        `Data need with id ${this.dataNeedId} is an AIIDA data need, but AIIDA is not enabled.`
+      );
+    }
+
+    if (!this._supportedConnectors.includes("aiida")) {
+      throw new Error(
+        `AIIDA does not support the data need with id ${this.dataNeedId}.`
+      );
+    }
+
+    this._selectedPermissionAdministrator =
+      SPECIAL_PERMISSION_ADMINISTRATORS.AIIDA;
   }
 
   handleDialogShow(event) {
