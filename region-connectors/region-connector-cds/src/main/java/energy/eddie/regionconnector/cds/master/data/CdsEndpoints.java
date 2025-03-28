@@ -29,6 +29,8 @@ public class CdsEndpoints {
     private final String servicePointsEndpoint;
     @Column(name = "meter_device_endpoint", nullable = false)
     private final String meterDeviceEndpoint;
+    @Column(name = "bill_section_endpoint", nullable = false)
+    private final String billSectionEndpoint;
 
     @SuppressWarnings("java:S107")
     public CdsEndpoints(
@@ -41,7 +43,7 @@ public class CdsEndpoints {
             String accountsEndpoint,
             String serviceContractsEndpoint,
             String servicePointsEndpoint,
-            String meterDeviceEndpoint
+            String meterDeviceEndpoint, String billSectionEndpoint
     ) {
         this.tokenEndpoint = tokenEndpoint;
         this.authorizationEndpoint = authorizationEndpoint;
@@ -53,6 +55,7 @@ public class CdsEndpoints {
         this.serviceContractsEndpoint = serviceContractsEndpoint;
         this.servicePointsEndpoint = servicePointsEndpoint;
         this.meterDeviceEndpoint = meterDeviceEndpoint;
+        this.billSectionEndpoint = billSectionEndpoint;
     }
 
     protected CdsEndpoints() {
@@ -66,6 +69,7 @@ public class CdsEndpoints {
         serviceContractsEndpoint = null;
         servicePointsEndpoint = null;
         meterDeviceEndpoint = null;
+        billSectionEndpoint = null;
     }
 
     public URI tokenEndpoint() {
@@ -106,5 +110,9 @@ public class CdsEndpoints {
 
     public URI meterDeviceEndpoint() {
         return URI.create(meterDeviceEndpoint);
+    }
+
+    public URI billSectionEndpoint() {
+        return URI.create(billSectionEndpoint);
     }
 }
