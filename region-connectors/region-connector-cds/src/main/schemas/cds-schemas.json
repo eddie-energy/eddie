@@ -1531,7 +1531,7 @@
           "description": "The identifier that a Customer sees on their bill or online user interface. Null if not available."
         },
         "contract_address": {
-          "type": "string" ,
+          "type": "string",
           "description": "The address that a Customer sees on their bill or online user interface, if available."
         },
         "contract_status": {
@@ -1637,7 +1637,10 @@
           "description": "When the Server last modified this Service Point object."
         },
         "servicepoint_number": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The identifier that a Customer sees on their bill or online user interface. Null if not available."
         },
         "servicepoint_type": {
@@ -1645,15 +1648,24 @@
           "description": "The type of service point that this Service Point represents."
         },
         "servicepoint_address": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The address that a Customer sees on their bill or online user interface, if available. Null if not available."
         },
         "latitude": {
-          "type": ["number", "null"],
+          "type": [
+            "number",
+            "null"
+          ],
           "description": "The latitude of the Service Point. Null if not available."
         },
         "longitude": {
-          "type": ["number", "null"],
+          "type": [
+            "number",
+            "null"
+          ],
           "description": "The longitude of the Service Point. Null if not available."
         },
         "current_servicecontracts": {
@@ -1671,11 +1683,17 @@
           "description": "The list of Service Contract unique identifiers that have previously provided service to this Service Point."
         },
         "premise_number": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The premise identifier a Customer sees on their bill or online interface. Null if not available."
         },
         "premise_type": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The premise type a Customer sees on their bill or online interface. Null if not available."
         }
       },
@@ -1734,7 +1752,10 @@
           "description": "When the Server last modified this Meter Device object."
         },
         "meter_number": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The identifier that a Customer sees on their bill, online user interface, or on the face of their physical meter. Null if not available."
         },
         "meter_type": {
@@ -1764,6 +1785,302 @@
         "meter_type",
         "current_servicepoints",
         "previous_servicepoints"
+      ]
+    },
+    "BillSections": {
+      "type": "object",
+      "allOf": [
+        {
+          "properties": {
+            "bill_sections": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/BillSection"
+              }
+            }
+          },
+          "required": [
+            "bill_sections"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Page"
+        }
+      ]
+    },
+    "BillSection": {
+      "type": "object",
+      "properties": {
+        "cds_billsection_id": {
+          "type": "string",
+          "description": "The Server’s unique identifier for this Bill Section object."
+        },
+        "cds_created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Server created this Bill Section object."
+        },
+        "cds_modified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the Server last modified this Bill Section object."
+        },
+        "cds_billstatement_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The Bill Statement for which this Bill Section was issued. If the Client is not authorized to see the related Bill Statement, this value is null."
+        },
+        "cds_account_id": {
+          "type": "string",
+          "description": "The Account for which this Bill Section was issued."
+        },
+        "account_number": {
+          "type": "string",
+          "description": "The Account’s account_number at the time that this Bill Section was issued."
+        },
+        "section_type": {
+          "type": "string",
+          "description": "The type of bill section that this Bill Section represents."
+        },
+        "start_date": {
+          "type": "string",
+          "format": "date",
+          "description": "The start date of services provided for which this Bill Section covers."
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date",
+          "description": "The end date of services provided for which this Bill Section covers."
+        },
+        "currency": {
+          "type": "string",
+          "description": "The ISO 4217 currency code for this Bill Section’s charge values."
+        },
+        "distribution_entity": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "entity": {
+              "type": "string"
+            },
+            "cds_servicecontract_id": {
+              "type": "string"
+            },
+            "contract_number": {
+              "type": "string"
+            },
+            "rateplan_code": {
+              "type": "string"
+            },
+            "rateplan_name": {
+              "type": "string"
+            },
+            "program_participations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "program_type": {
+                    "type": "string"
+                  },
+                  "program_id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "program_id",
+                  "program_type",
+                  "name"
+                ]
+              }
+            }
+          },
+          "required": [
+            "type",
+            "entity",
+            "cds_servicecontract_id",
+            "contract_number",
+            "rateplan_code",
+            "rateplan_name",
+            "program_participations"
+          ],
+          "description": "The details for the utility or other entity providing distribution for the services that this Bill Section covers. If the services provided that are covered by this Bill Section do not have distribution, this value is null."
+        },
+        "load_serving_entity": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "type": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true,
+          "description": "The details for the utility or other entity providing distribution for the services that this Bill Section covers. If the services provided that are covered by this Bill Section do not have a supply or retailer component, this value is null. If the load serving entity is the same as the distributor, the Load Serving Entity type value MUST be distributor and no other fields are populated in the Load Serving Entity object."
+        },
+        "related_servicecontracts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The list of Service Contract unique identifiers to which this Bill Section is applicable. This list MUST only include identifiers that the Client is authorized to see as scoped by their requesting access_token."
+        },
+        "related_servicepoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The list of Service Point unique identifiers to which this Bill Section is applicable. This list MUST only include identifiers that the Client is authorized to see as scoped by their requesting access_token."
+        },
+        "related_meterdevices": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The list of Meter Device unique identifiers to which this Bill Section is applicable. This list MUST only include identifiers that the Client is authorized to see as scoped by their requesting access_token."
+        },
+        "related_billsections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The list of other Bill Section unique identifiers that were issued alongside this Bill Section, where those Bill Sections represent another set of charges covering the same Service Contract. This list MUST only include identifiers that the Client is authorized to see as scoped by their requesting access_token."
+        },
+        "line_items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "item_type": {
+                "type": "string"
+              },
+              "for": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "end": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "cost": {
+                "type": "number"
+              },
+              "value": {
+                "type": "number"
+              },
+              "rate": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true,
+            "required": [
+              "item_type",
+              "for",
+              "name",
+              "cost"
+            ]
+          },
+          "description": "A list of the Bill Section Line Item objects that denote the individual charges listed on the Customer-facing bill statement section represented by this Bill Section."
+        },
+        "energy_summary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "summary_type": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "cds_meterdevice_id": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "end": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "start_reading": {
+                "type": "number"
+              },
+              "end_reading": {
+                "type": "number"
+              },
+              "multiplier": {
+                "type": "number"
+              },
+              "adjustment": {
+                "type": "number"
+              },
+              "value": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string"
+              },
+              "tier_level": {
+              },
+              "tou_bucket": {
+              }
+            },
+            "additionalProperties": true,
+            "required": [
+              "summary_type",
+              "start",
+              "end",
+              "value",
+              "unit"
+            ]
+          },
+          "description": "A list of the Bill Section Energy Summary objects that detail the service’s energy usage and other values on the Customer-facing bill statement section represented by this Bill Section."
+        }
+      },
+      "required": [
+        "cds_billsection_id",
+        "cds_created",
+        "cds_modified",
+        "cds_billstatement_id",
+        "cds_account_id",
+        "account_number",
+        "section_type",
+        "start_date",
+        "end_date",
+        "currency",
+        "distribution_entity",
+        "load_serving_entity",
+        "related_servicecontracts",
+        "related_servicepoints",
+        "related_meterdevices",
+        "related_billsections",
+        "line_items",
+        "energy_summary"
       ]
     },
     "UsageSegments": {

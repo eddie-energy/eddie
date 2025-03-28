@@ -499,6 +499,73 @@ paths:
             application/json:
               schema:
                 $ref: "cds-schemas.json/#/$defs/MeterDevices"
+  /api/billsections:
+    get:
+      operationId: Bill Section Endpoint
+      externalDocs:
+        url: https://daniel-utilityapi.github.io/Customer-Data/specs/cdsc-wg3-01/#bill-sections-api
+      description: |
+        This specification requires Servers provide a set of APIs allowing Clients to retrieve a Customer’s and Server’s Meter Device details for which they are authorized to access.
+        These APIs are authenticated using a Bearer access_token granted that provisions access for a scope that allows access to the Meter Devices API.
+      tags:
+        - Customer Data
+      security:
+        - oauth:
+            - cds_usage_basic
+            - cds_usage_detailed
+      parameters:
+        - name: cds_billsection_ids
+          in: query
+          description: A space-separated list of cds_billsection_id values for which the Servers MUST filter the Bill Sections.
+          schema:
+            type: string
+        - name: before
+          in: query
+          description: An ISO8601 date for which the Server MUST filter the Bill Section start_date to values that are on or before this date.
+          schema:
+            type: string
+            format: date
+        - name: after
+          in: query
+          description: An ISO8601 date for which the Server MUST filter the Bill Section end_date to values that are on or after this date.
+          schema:
+            type: string
+            format: date
+        - name: cds_billstatement_ids
+          in: query
+          description: A space-separated list of cds_billstatement_id values for which the Servers MUST filter the Bill Sections.
+          schema:
+            type: string
+        - name: cds_account_ids
+          in: query
+          description: A space-separated list of cds_account_id values for which the Servers MUST filter the Bill Sections.
+          schema:
+            type: string
+        - name: account_numbers
+          in: query
+          description: A space-separated list of account_number values for which the Servers MUST filter the Bill Sections.
+          schema:
+            type: string
+        - name: cds_servicecontract_ids
+          in: query
+          description: A space-separated list of related_servicecontracts values for which the Servers MUST filter the Bill Sections.
+          schema:
+            type: string
+        - name: contract_numbers
+          in: query
+          description: A space-separated list of related_servicecontracts listed Service Contract contract_number values for which the Servers MUST filter the Bill Sections.
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            Clients may request to list Bill Section objects that they have access to by making an HTTPS GET request, authenticated with a valid Bearer access_token that is scoped to provide access to a set of Bill Sections, to the cds_billsection_api URL included in the Client Registration Response or Clients API.
+            The Bill Section listing request responses are formatted as JSON objects and contain the following named values.
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/BillSections"
+
   /api/usagesegments:
     get:
       operationId: Usage Segment Endpoint
