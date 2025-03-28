@@ -15,8 +15,6 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.data.needs.calculation.strategies.EdaStrategy;
-import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
-import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.at.eda.ponton.NoOpEdaAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
@@ -27,9 +25,6 @@ import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactor
 import energy.eddie.regionconnector.at.eda.ponton.messenger.MessengerMonitor;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnection;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.WebClientMessengerHealth;
-import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.ValidatedHistoricalDataMarketDocumentDirector;
-import energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
-import energy.eddie.regionconnector.at.eda.provider.v0_82.EdaValidatedHistoricalDataEnvelopeProvider;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableMasterDataService;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
@@ -50,12 +45,12 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.util.List;
 
-import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.*;
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.TRANSMISSION_CYCLE;
 import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.ELIGIBLE_PARTY_ID_KEY;
 import static energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration.*;
 
@@ -90,16 +85,6 @@ public class AtEdaBeanConfig {
             @Value("${" + ELIGIBLE_PARTY_ID_KEY + "}") String eligiblePartyId
     ) {
         return new PlainAtConfiguration(eligiblePartyId);
-    }
-
-    @Bean
-    public Flux<IdentifiableConsumptionRecord> consumptionRecordStream(EdaAdapter edaAdapter) {
-        return edaAdapter.getConsumptionRecordStream();
-    }
-
-    @Bean
-    public Flux<IdentifiableMasterData> masterDataStream(EdaAdapter edaAdapter) {
-        return edaAdapter.getMasterDataStream();
     }
 
     @Bean
@@ -138,20 +123,6 @@ public class AtEdaBeanConfig {
     @Profile("no-ponton")
     public EdaAdapter noOpEdaAdapter() {
         return new NoOpEdaAdapter();
-    }
-
-    @Bean
-    public EdaValidatedHistoricalDataEnvelopeProvider consumptionRecordProcessor(
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration commonInformationModelConfiguration,
-            Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux
-    ) {
-        return new EdaValidatedHistoricalDataEnvelopeProvider(
-                new ValidatedHistoricalDataMarketDocumentDirector(
-                        commonInformationModelConfiguration,
-                        new ValidatedHistoricalDataMarketDocumentBuilderFactory()
-                ),
-                identifiableConsumptionRecordFlux
-        );
     }
 
     @Bean
