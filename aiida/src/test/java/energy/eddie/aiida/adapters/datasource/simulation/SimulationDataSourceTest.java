@@ -27,6 +27,7 @@ class SimulationDataSourceTest {
                               true,
                               null,
                               1,
+                              null,
                               null),
             USER_ID
     );
@@ -45,7 +46,7 @@ class SimulationDataSourceTest {
     @Test
     void verify_bundleOfFourValuesIsGeneratedPerPeriod_andCloseEmitsCompleteOnFlux() {
         simulator = new SimulationAdapter(DATA_SOURCE);
-        var period = Duration.ofSeconds(DATA_SOURCE.simulationPeriod());
+        var period = Duration.ofSeconds(DATA_SOURCE.pollingInterval());
 
         StepVerifier.withVirtualTime(() -> simulator.start())
                     .expectSubscription()

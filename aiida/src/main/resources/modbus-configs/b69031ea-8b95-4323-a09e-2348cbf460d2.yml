@@ -1,0 +1,158 @@
+modbus:
+  devices:
+    - id: "inverter-1"
+      name: "Inverter ABC"
+      port: 1502
+      unitId: 1
+      intervals:
+        read:
+          default: 5000
+          min: 1000
+      sources:
+        - category: "inverter"
+          id: "inverter-1"
+          datapoints:
+            - id: "status"
+              register: 10
+              registerType: "holding"
+              valueType: "uint16"
+              length: 1
+              endian: "big"
+              access: "read"
+              translations:
+                "1": "ON"
+                "2": "STANDBY"
+                "3": "FAULT"
+                "default": "UNKNOWN"
+            - id: "firmware_version"
+              register: 11
+              registerType: "holding"
+              valueType: "string"
+              length: 5
+              endian: "big"
+              access: "read"
+            - id: "start_command"
+              register: 0
+              registerType: "coil"
+              valueType: "boolean"
+              access: "readwrite"
+            - id: "stop_command"
+              register: 1
+              registerType: "coil"
+              valueType: "boolean"
+              access: "write"
+
+        - category: "battery"
+          id: "battery-1"
+          datapoints:
+            - id: "state_of_charge_lit"
+              register: 20
+              registerType: "holding"
+              valueType: "float32"
+              length: 2
+              endian: "little"
+              # transform: "(@self / 105 + (265 * 2))"
+              access: "read"
+            - id: "state_of_charge_big"
+              register: 22
+              registerType: "holding"
+              valueType: "float32"
+              length: 2
+              endian: "big"
+              transform: "(@self / 100)"
+              access: "read"
+            - id: "charging_power"
+              register: 24
+              registerType: "holding"
+              valueType: "int32"
+              length: 2
+              endian: "big"
+              # transform: "(@self / (@self / 2))"
+              access: "read"
+            - id: "force_charge"
+              register: 5
+              registerType: "coil"
+              valueType: "boolean"
+              access: "readwrite"
+            - id: "discharge_enable"
+              register: 6
+              registerType: "coil"
+              valueType: "boolean"
+              access: "readwrite"
+
+        - category: "electricity_meter"
+          id: "electricity_meter-1"
+          datapoints:
+            - id: "voltage_l1"
+              register: 20
+              registerType: "input"
+              valueType: "float32"
+              length: 2
+              endian: "little"
+              access: "readwrite"
+            - id: "voltage_l2"
+              register: 22
+              registerType: "input"
+              valueType: "float32"
+              length: 2
+              endian: "big"
+              access: "readwrite"
+            - id: "voltage_l3"
+              register: 24
+              registerType: "input"
+              valueType: "float32"
+              length: 2
+              endian: "big"
+              access: "read"
+            - id: "current_l1"
+              register: 26
+              registerType: "input"
+              valueType: "float32"
+              length: 2
+              endian: "little"
+              access: "read"
+            - id: "current_l2"
+              register: 28
+              registerType: "input"
+              valueType: "float32"
+              length: 2
+              endian: "big"
+              access: "read"
+            - id: "current_l3"
+              register: 30
+              registerType: "input"
+              valueType: "float32"
+              length: 2
+              endian: "big"
+              access: "read"
+            - id: "breaker_closed"
+              register: 10
+              registerType: "discrete"
+              valueType: "boolean"
+              access: "read"
+            - id: "grid_sync"
+              register: 11
+              registerType: "discrete"
+              valueType: "boolean"
+              access: "read"
+            - id: "power_total"
+              virtual: true
+              source: [ "voltage_l1", "current_l1", "voltage_l2", "current_l2", "voltage_l3", "current_l3" ]
+              transform: "(@voltage_l1 * @current_l1) + (@voltage_l2 * @current_l2) + (@voltage_l3 * @current_l3)"
+              access: "read"
+            - id: "power_total_soc"
+              virtual: true
+              source: [ "power_total", "battery-1::state_of_charge_lit" ]
+              transform: "@power_total + @battery-1::state_of_charge_lit"
+              access: "read"
+            - id: "is_error"
+              virtual: true
+              source: [ "power_total", "battery-1::state_of_charge_lit" ]
+              transform: "(@power_total + @battery-1::state_of_charge_lit) > 3000"
+              access: "read"
+            - id: "error_code"
+              virtual: true
+              source: [ "power_total", "battery-1::state_of_charge_lit" ]
+              transform: "(@power_total + @battery-1::state_of_charge_lit) < 8000 ? 'low_error' : (@power_total + @battery-1::state_of_charge_lit) < 8750 ? 'medium_error' : 'high_error'"
+              access: "read"
+

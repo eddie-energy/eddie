@@ -58,6 +58,9 @@ google-jib = "3.4.0"
 
 testcontainers = "1.20.4"
 
+j2mod = "3.2.1"
+mvel2 = "2.5.2.Final"
+
 [libraries]
 # Static analysis
 errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorpronecore" }
@@ -170,6 +173,8 @@ flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", versio
 hakky-logcaptor = { module = "io.github.hakky54:logcaptor", version.ref = "hakky-logcaptor" }
 eclipse-paho-mqttv5-client = { module = "org.eclipse.paho:org.eclipse.paho.mqttv5.client", version.ref = "paho-mqtt-client" }
 jackson-hibernate6 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-hibernate6", version.ref = "jackson" }
+j2mod = { module = "com.ghgande:j2mod", version.ref = "j2mod" }
+mvel2 = { module = "org.mvel:mvel2", version.ref = "mvel2" }
 
 # Security
 nimbus-oidc = { module = "com.nimbusds:oauth2-oidc-sdk", version.ref = "nimbus" }

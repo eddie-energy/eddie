@@ -25,7 +25,7 @@ class DataSourceAdapterTest {
 
     DataSource createNewDataSource(DataSourceType type) {
         return DataSource.createFromDto(
-                new DataSourceDto(ID, type.identifier(), AiidaAsset.SUBMETER.asset(), "test", true, "", 1, null),
+                new DataSourceDto(ID, type.identifier(), AiidaAsset.SUBMETER.asset(), "test", true, "", 1, null, null),
                 ID,
                 new DataSourceMqttDto("tcp://localhost:1883","tcp://localhost:1883", "aiida/test", "user", "pw")
         );

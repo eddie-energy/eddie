@@ -5,6 +5,7 @@ import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.models.datasource.*;
@@ -68,17 +69,31 @@ public class DataSourceService {
     public void addDataSource(DataSourceDto dto) throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
 
-        var mqttSettingsDto = new DataSourceMqttDto(
-                mqttConfiguration.internalHost(),
-                mqttConfiguration.externalHost(),
-                "aiida/" + MqttSecretGenerator.generate(),
-                MqttSecretGenerator.generate(),
-                MqttSecretGenerator.generate()
-        );
-        var dataSource = DataSource.createFromDto(dto, currentUserId, mqttSettingsDto);
-
-        repository.save(dataSource);
-        startDataSource(dataSource);
+        if (dto.dataSourceType().equals(DataSourceType.MODBUS.identifier())) {
+            var modbusSettings = dto.modbusSettings();
+            if (modbusSettings != null) {
+                var modbusSettingsDto = new DataSourceModbusDto(
+                        modbusSettings.modbusIp(),
+                        modbusSettings.modbusVendor(),
+                        modbusSettings.modbusModel(),
+                        modbusSettings.modbusDevice()
+                );
+                var dataSource = DataSource.createFromDto(dto, currentUserId, modbusSettingsDto);
+                repository.save(dataSource);
+                startDataSource(dataSource);
+            }
+        } else {
+            var mqttSettingsDto = new DataSourceMqttDto(
+                    mqttConfiguration.internalHost(),
+                    mqttConfiguration.externalHost(),
+                    "aiida/" + MqttSecretGenerator.generate(),
+                    MqttSecretGenerator.generate(),
+                    MqttSecretGenerator.generate()
+            );
+            var dataSource = DataSource.createFromDto(dto, currentUserId, mqttSettingsDto);
+            repository.save(dataSource);
+            startDataSource(dataSource);
+        }
     }
 
     public void deleteDataSource(UUID dataSourceId) {

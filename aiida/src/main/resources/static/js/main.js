@@ -414,14 +414,37 @@ function renderDataSources() {
 
       dataSources.forEach((dataSource) => {
         const template = document.createElement("template");
+        if (dataSource.dataSourceType === "SIMULATION") {
+            renderSimulationDataSource(template, dataSource, dataSourceList);
+        } else if (dataSource.dataSourceType === "MODBUS") {
+            renderModbusDataSource(template, dataSource, dataSourceList);
+        } else {
+            renderMqttDataSource(template, dataSource, dataSourceList);
+        }
+      });
 
-        let dataSourceTypeDetails =
-          dataSource.dataSourceType === "SIMULATION"
-            ? /* HTML */ `
+      function renderModbusDataSource(template, dataSource, dataSourceList) {
+          let dataSourceTypeDetails = `
+                <dt>Polling Interval:</dt>
+                <dd>${dataSource.simulationPeriod} seconds</dd>
+                <dt>Modbus IP:</dt>
+                <dd>${dataSource.modbusSettings.modbusIp}</dd>
+              `
+
+          appendDataSourceToChild(dataSource, template, dataSourceTypeDetails, dataSourceList);
+      }
+
+      function renderSimulationDataSource(template, dataSource, dataSourceList) {
+          let dataSourceTypeDetails = /* HTML */ `
                 <dt>Simulation Period:</dt>
                 <dd>${dataSource.simulationPeriod} seconds</dd>
-              `
-            : /* HTML */ `
+              `;
+
+          appendDataSourceToChild(dataSource, template, dataSourceTypeDetails, dataSourceList);
+      }
+
+      function renderMqttDataSource(template, dataSource, dataSourceList) {
+          let dataSourceTypeDetails = /* HTML */ `
                 <dt>MQTT Server URI:</dt>
                 <dd>${dataSource.mqttSettings.externalHost}</dd>
                 <dt>MQTT Topic:</dt>
@@ -442,11 +465,15 @@ function renderDataSources() {
                 </dd>
               `;
 
-        if (dataSource.dataSourceType === "MICRO_TELEINFO") {
-          dataSourceTypeDetails += `<dt>Metering ID:</dt> <dd>${dataSource.meteringId}</dd>`;
-        }
+          if (dataSource.dataSourceType === "MICRO_TELEINFO") {
+              dataSourceTypeDetails += `<dt>Metering ID:</dt> <dd>${dataSource.meteringId}</dd>`;
+          }
 
-        template.innerHTML = /* HTML */ `
+          appendDataSourceToChild(dataSource, template, dataSourceTypeDetails, dataSourceList);
+      }
+
+      function appendDataSourceToChild(dataSource, template, dataSourceTypeDetails, dataSourceList) {
+          template.innerHTML = /* HTML */ `
           <sl-card>
             <h3>${dataSource.name}</h3>
 
@@ -474,8 +501,8 @@ function renderDataSources() {
           </sl-card>
         `;
 
-        dataSourceList.appendChild(template.content);
-      });
+          dataSourceList.appendChild(template.content);
+      }
 
       const passwordSpan = document.getElementById("mqtt-password");
       const toggleIcon = document.getElementById("toggle-mqtt-password");
@@ -643,6 +670,10 @@ function updateDataSourceFields(type) {
   }
 
   dataSourceFields.innerHTML = dataTypeFields;
+
+  if (type === "MODBUS") {
+    createModbusFields(dataSourceFields)
+  }
 }
 
 function closeAddDataSourceDialog() {
@@ -718,6 +749,16 @@ function openEditDataSourceDialog(dataSourceId) {
                 required
               ></sl-input>
             `;
+          } else if (dataSource.dataSourceType === "MODBUS") {
+            editFields += /* HTML */ `
+              <br />
+              <sl-input
+                name="modbusIp"
+                label="Local IP Address"
+                value="${dataSource.modbusSettings.modbusIp}"
+                required
+              ></sl-input>
+            `;
           }
 
           editDataSourceFields.innerHTML = editFields;
@@ -744,6 +785,160 @@ function closeEditDataSourceDialog() {
   document.getElementById("edit-data-source-dialog").hide();
 }
 
+function createModbusFields(dataSourceFields) {
+    //const dataSourceFields = document.getElementById("data-source-fields");
+    dataSourceFields.innerHTML = "";
+
+    const ipInput = document.createElement("sl-input");
+    ipInput.id = "modbus-ip";
+    ipInput.name = "modbusIp";
+    ipInput.label = "Local IP Address";
+    ipInput.placeholder = "e.g. 192.168.x.x / localhost";
+    ipInput.required = true;
+    ipInput.helpText = "Enter a private local IP address (e.g. 192.168.x.x)";
+
+    function isValidIPv4(value) {
+        if (value === 'localhost') return true;
+        const ipRegex = /^((25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)(\.)){3}(25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)$/;
+        return ipRegex.test(value);
+    }
+
+    // Optional: Validation helper on blur
+    ipInput.addEventListener("sl-blur", (event) => {
+        if (!isValidIPv4(event.target.value)) {
+            ipInput.setCustomValidity("Please enter a valid IP address.");
+        } else {
+            ipInput.setCustomValidity("");
+        }
+        ipInput.reportValidity();
+    });
+
+    dataSourceFields.appendChild(ipInput);
+    dataSourceFields.appendChild(document.createElement("br"));
+
+    // Vendor select
+    const vendorSelect = document.createElement("sl-select");
+    vendorSelect.id = "modbus-vendor-list";
+    vendorSelect.name = "modbusVendor";
+    vendorSelect.label = "Vendor";
+    vendorSelect.placeholder = "Select a vendor...";
+    vendorSelect.required = true;
+
+    dataSourceFields.appendChild(vendorSelect); // Append BEFORE working with it
+    dataSourceFields.appendChild(document.createElement("br"));
+
+    // Model select
+    const modelSelect = document.createElement("sl-select");
+    modelSelect.id = "modbus-model-list";
+    modelSelect.name = "modbusModel";
+    modelSelect.label = "Model";
+    modelSelect.placeholder = "Select a model...";
+    modelSelect.required = true;
+    modelSelect.disabled = true;
+
+    dataSourceFields.appendChild(modelSelect);
+    dataSourceFields.appendChild(document.createElement("br"));
+
+    // Model select
+    const deviceSelect = document.createElement("sl-select");
+    deviceSelect.id = "modbus-device-list";
+    deviceSelect.name = "modbusDevice";
+    deviceSelect.label = "Device";
+    deviceSelect.placeholder = "Select a device...";
+    deviceSelect.required = true;
+    deviceSelect.disabled = true;
+
+    dataSourceFields.appendChild(deviceSelect);
+
+    handleFetchVendors();
+
+    function handleFetchVendors() {
+        fetch("/datasources/modbus/vendors")
+            .then((res) => res.json())
+            .then((vendors) => {
+                vendors.forEach((vendor) => {
+                    const option = document.createElement("sl-option");
+                    option.value = vendor.id;
+                    option.textContent = vendor.name;
+                    vendorSelect.appendChild(option);
+                });
+
+                // 💡 Wait for Shoelace to hydrate the element
+                vendorSelect.updateComplete.then(() => {
+                    vendorSelect.addEventListener("sl-change", (event) => {
+                        const selectedValue = event.target.value;
+                        const selectedOption = vendorSelect.selectedOptions[0];
+                        const vendorName = selectedOption?.textContent ?? "(none)";
+
+                        console.log("🔥 Selected via sl-change:", selectedValue, vendorName);
+                        handleFetchModels(selectedValue);
+                    });
+                });
+            })
+            .catch((error) => {
+                console.error("Failed to fetch vendors:", error);
+            });
+    }
+
+    function handleFetchModels(vendorId) {
+        fetch(`/datasources/modbus/vendors/${vendorId}/models`)
+            .then((res) => res.json())
+            .then((models) => {
+                modelSelect.disabled = false;
+                //modelSelect.innerHTML = "";
+                models.forEach((model) => {
+                    const option = document.createElement("sl-option");
+                    option.value = model.id;
+                    option.textContent = model.name;
+                    modelSelect.appendChild(option);
+                });
+
+                // 💡 Wait for Shoelace to hydrate the element
+                modelSelect.updateComplete.then(() => {
+                    modelSelect.addEventListener("sl-change", (event) => {
+                        const selectedValue = event.target.value;
+                        const selectedOption = modelSelect.selectedOptions[0];
+                        const modelName = selectedOption?.textContent ?? "(none)";
+
+                        console.log("🔥 Selected via sl-change:", selectedValue, modelName);
+                        handleFetchDevices(selectedValue);
+                    });
+                });
+            })
+            .catch((error) => {
+                console.error("Failed to fetch models:", error);
+            });
+    }
+
+    function handleFetchDevices(modelId) {
+        fetch(`/datasources/modbus/models/${modelId}/devices`)
+            .then((res) => res.json())
+            .then((devices) => {
+                deviceSelect.disabled = false;
+                devices.forEach((device) => {
+                    const option = document.createElement("sl-option");
+                    option.value = device.id;
+                    option.textContent = device.name;
+                    deviceSelect.appendChild(option);
+                });
+
+                // 💡 Wait for Shoelace to hydrate the element
+                deviceSelect.updateComplete.then(() => {
+                    deviceSelect.addEventListener("sl-change", (event) => {
+                        const selectedValue = event.target.value;
+                        const selectedOption = deviceSelect.selectedOptions[0];
+                        const deviceName = selectedOption?.textContent ?? "(none)";
+
+                        console.log("🔥 Selected via sl-change:", selectedValue, deviceName);
+                    });
+                });
+            })
+            .catch((error) => {
+                console.error("Failed to fetch devices:", error);
+            });
+    }
+}
+
 document
   .getElementById("add-data-source-form")
   .addEventListener("submit", (event) => {
@@ -767,6 +962,13 @@ document
     } else {
       if (dataSourceType === "MICRO_TELEINFO") {
         newDataSource.meteringId = formData.get("meteringID");
+      } else if (dataSourceType === "MODBUS") {
+        newDataSource.modbusSettings = {
+            modbusIp: formData.get("modbusIp"),
+            modbusVendor: formData.get("modbusVendor"),
+            modbusModel: formData.get("modbusModel"),
+            modbusDevice: formData.get("modbusDevice"),
+        }
       }
     }
 
@@ -811,6 +1013,12 @@ document
         formData.get("simulationPeriod"),
         10
       );
+    }
+
+    if (formData.has("modbusIp")) {
+        updatedDataSource.modbusSettings = {
+            modbusIp: formData.get("modbusIp"),
+        }
     }
 
     fetch(`${DATASOURCES_BASE_URL}/${dataSourceId}`, {

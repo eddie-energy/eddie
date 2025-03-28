@@ -52,6 +52,7 @@ class AggregatorTest {
             true,
             null,
             null,
+            null,
             null), USER_ID);
     private static final SimulationDataSource DATA_SOURCE_2 = new SimulationDataSource(new DataSourceDto(
             DATA_SOURCE_ID_2,
@@ -59,6 +60,7 @@ class AggregatorTest {
             AiidaAsset.SUBMETER.asset(),
             "test-2",
             true,
+            null,
             null,
             null,
             null), USER_ID);

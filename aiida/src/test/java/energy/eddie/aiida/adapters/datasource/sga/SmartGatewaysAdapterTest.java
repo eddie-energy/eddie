@@ -96,6 +96,7 @@ class SmartGatewaysAdapterTest {
                               true,
                               null,
                               null,
+                              null,
                               null),
             USER_ID,
             new DataSourceMqttDto("tcp://localhost:1883",

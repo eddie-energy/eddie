@@ -13,5 +13,6 @@ public record DataSourceDto(
         @JsonProperty boolean enabled,
         @Nullable @JsonProperty String meteringId,
         @Nullable @JsonProperty Integer simulationPeriod,
-        @Nullable @JsonProperty DataSourceMqttDto mqttSettings
+        @Nullable @JsonProperty DataSourceMqttDto mqttSettings,
+        @Nullable @JsonProperty DataSourceModbusDto modbusSettings
 ) { }

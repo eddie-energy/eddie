@@ -53,7 +53,7 @@ public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
 
         LOGGER.info(
                 "Created new SimulationDataSource that will publish random values every {} seconds for obis codes {}",
-                dataSource.simulationPeriod(),
+                dataSource.pollingInterval(),
                 obisCodes);
     }
 
@@ -70,7 +70,7 @@ public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
     public Flux<AiidaRecord> start() {
         LOGGER.info("Starting {}", dataSource().name());
 
-        periodicFlux = Flux.interval(Duration.ofSeconds(dataSource().simulationPeriod()))
+        periodicFlux = Flux.interval(Duration.ofSeconds(dataSource().pollingInterval()))
                            .subscribeOn(Schedulers.parallel())
                            .subscribe(unused -> emitRandomAiidaRecords());
 

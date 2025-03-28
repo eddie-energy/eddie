@@ -45,6 +45,7 @@ class MicroTeleinfoV3AdapterTest {
                               true,
                               "FR123456789123",
                               null,
+                              null,
                               null),
             USER_ID,
             new DataSourceMqttDto("tcp://localhost:1883",

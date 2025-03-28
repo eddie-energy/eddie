@@ -41,7 +41,8 @@ public class MicroTeleinfoV3DataSource extends MqttDataSource {
                 enabled,
                 meteringId,
                 null,
-                toMqttDto()
+                toMqttDto(),
+                null
         );
     }
 }

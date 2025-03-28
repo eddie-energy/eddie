@@ -22,7 +22,7 @@ class DataSourceTest {
     private static final UUID ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
 
     DataSourceDto createNewDataSourceDto(DataSourceType type) {
-        return new DataSourceDto(ID, type.identifier(), AiidaAsset.SUBMETER.asset(), "test", true, "", 1, null);
+        return new DataSourceDto(ID, type.identifier(), AiidaAsset.SUBMETER.asset(), "test", true, "", 1, null, null);
     }
 
     @Test

@@ -34,7 +34,7 @@ class DataSourceServiceTest {
     private UUID userId;
 
     DataSourceDto createNewDataSourceDto(UUID id, DataSourceType type, String name, boolean enabled) {
-        return new DataSourceDto(id, type.identifier(), AiidaAsset.SUBMETER.asset(), name, enabled, "", 1, null);
+        return new DataSourceDto(id, type.identifier(), AiidaAsset.SUBMETER.asset(), name, enabled, "", 1, null, null);
     }
 
     DataSource createNewDataSource(UUID id, DataSourceType type) {

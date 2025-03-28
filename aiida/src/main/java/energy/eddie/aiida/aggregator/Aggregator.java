@@ -191,7 +191,7 @@ public class Aggregator implements AutoCloseable {
         if (!allowedDataTags.isEmpty()) {
             var filteredValues = aiidaRecord.aiidaRecordValues()
                                             .stream()
-                                            .filter(value -> allowedDataTags.contains(value.dataTag().toString()))
+                                            .filter(value -> allowedDataTags.contains(value.getTag()))
                                             .toList();
             aiidaRecord.setAiidaRecordValues(filteredValues);
         }

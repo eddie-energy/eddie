@@ -35,6 +35,7 @@ class MqttAuthServiceTest {
                               true,
                               null,
                               null,
+                              null,
                               null),
             UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606"),
             new DataSourceMqttDto("tcp://localhost:1883",

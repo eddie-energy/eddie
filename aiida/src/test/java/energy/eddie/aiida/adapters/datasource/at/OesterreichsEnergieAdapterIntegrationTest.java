@@ -87,6 +87,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
                                   true,
                                   null,
                                   null,
+                                  null,
                                   null),
                 USER_ID,
                 new DataSourceMqttDto(serverURI,
