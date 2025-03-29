@@ -7,6 +7,7 @@ import jakarta.annotation.Nullable;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 class CoverageTypes {
@@ -21,7 +22,7 @@ class CoverageTypes {
             for (var commodityTypesEnum : commodityTypes) {
                 var energyType = of(commodityTypesEnum);
                 if (energyType != null) {
-                    set.add(new Coverage(energyType, coverage.getCountry()));
+                    set.add(new Coverage(energyType, coverage.getCountry().toUpperCase(Locale.ROOT)));
                 }
             }
         }

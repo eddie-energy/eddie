@@ -21,10 +21,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener("eddie-request-status", (event) => {
-      const { additionalInformation } = event.detail;
-      if (additionalInformation && !this._redirectUri) {
-        this._redirectUri = additionalInformation.redirectUri;
-      }
+      this._redirectUri ??= event.detail.additionalInformation?.redirectUri;
     });
   }
 
@@ -38,9 +35,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     };
     this.createPermissionRequest(payload)
       .catch((error) => this.error(error))
-      .then((data) => {
-        this._redirectUri = data.redirectUri;
-        window.open(this._redirectUri);
+      .then(({ redirectUri }) => {
+        if (redirectUri) {
+          this.redirectUri = redirectUri;
+          window.open(this._redirectUri);
+        }
       });
   }
 
@@ -58,7 +57,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
                 type="submit"
                 variant="primary"
                 ?disabled="${this._redirectUri}"
-                >Create
+              >
+                Create
               </sl-button>
             </form>
           </div>
