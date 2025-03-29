@@ -37,4 +37,16 @@ public class DateTimeUtils {
         }
         return Optional.ofNullable(oldest);
     }
+
+    /**
+     * Checks if left is before or equal to right.
+     * Read as {@code left <= right}
+     *
+     * @param left  left-hand operand
+     * @param right right-hand operand
+     * @return true if left is before or equals to right, otherwise false
+     */
+    public static boolean isBeforeOrEquals(LocalDate left, LocalDate right) {
+        return left.isBefore(right) || left.isEqual(right);
+    }
 }

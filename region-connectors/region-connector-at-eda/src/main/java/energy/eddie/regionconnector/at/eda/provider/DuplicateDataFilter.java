@@ -7,10 +7,11 @@ import energy.eddie.regionconnector.at.eda.persistence.MeterReadingTimeframeRepo
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
+
+import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.isBeforeOrEquals;
 
 @Component
 @ConditionalOnProperty(name = "region-connector.at.eda.consumption.records.remove.duplicates.enabled", havingValue = "true")
@@ -39,12 +40,7 @@ public class DuplicateDataFilter implements UnaryOperator<IdentifiableConsumptio
     }
 
     private boolean isContained(IdentifiableConsumptionRecord request, MeterReadingTimeframe reading) {
-        return isBeforeOrEquals(reading.start(),
-                                request.meterReadingStartDate()) && isBeforeOrEquals(request.meterReadingEndDate(),
-                                                                                     reading.end());
-    }
-
-    private boolean isBeforeOrEquals(LocalDate left, LocalDate right) {
-        return left.isBefore(right) || left.isEqual(right);
+        return isBeforeOrEquals(reading.start(), request.meterReadingStartDate())
+               && isBeforeOrEquals(request.meterReadingEndDate(), reading.end());
     }
 }

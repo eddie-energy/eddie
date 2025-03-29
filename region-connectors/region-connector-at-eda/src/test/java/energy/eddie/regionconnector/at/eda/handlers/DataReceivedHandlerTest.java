@@ -5,6 +5,8 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.DataReceivedEvent;
+import energy.eddie.regionconnector.at.eda.permission.request.projections.MeterReadingTimeframe;
+import energy.eddie.regionconnector.at.eda.persistence.MeterReadingTimeframeRepository;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
@@ -20,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -31,6 +34,8 @@ class DataReceivedHandlerTest {
     private FulfillmentService fulfillmentService;
     @Mock
     private AtPermissionRequestRepository repository;
+    @Mock
+    private MeterReadingTimeframeRepository timeframeRepository;
     @InjectMocks
     @SuppressWarnings("unused")
     private DataReceivedHandler handler;
@@ -42,7 +47,8 @@ class DataReceivedHandlerTest {
         LocalDate permissionRequestEnd = LocalDate.now(ZoneOffset.UTC).minusDays(1);
         LocalDate meteringDataEnd = permissionRequestEnd.plusDays(1);
         AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd);
-        when(fulfillmentService.isPermissionRequestFulfilledByDate(any(), any())).thenCallRealMethod();
+        when(timeframeRepository.findAllByPermissionId("pid"))
+                .thenReturn(List.of(new MeterReadingTimeframe(1L, "pid", permissionRequestEnd, meteringDataEnd)));
         when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
 
         // When
@@ -59,7 +65,8 @@ class DataReceivedHandlerTest {
         LocalDate permissionRequestEnd = LocalDate.now(ZoneOffset.UTC);
         AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd);
         when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
-        when(fulfillmentService.isPermissionRequestFulfilledByDate(any(), any())).thenCallRealMethod();
+        when(timeframeRepository.findAllByPermissionId("pid"))
+                .thenReturn(List.of(new MeterReadingTimeframe(1L, "pid", permissionRequestEnd, permissionRequestEnd)));
 
         // When
         eventBus.emit(new DataReceivedEvent("pid",
@@ -78,7 +85,28 @@ class DataReceivedHandlerTest {
         LocalDate meteringDataEnd = permissionRequestEnd.minusDays(1);
         AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd);
         when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
-        when(fulfillmentService.isPermissionRequestFulfilledByDate(any(), any())).thenCallRealMethod();
+        when(timeframeRepository.findAllByPermissionId("pid"))
+                .thenReturn(List.of(new MeterReadingTimeframe(1L, "pid", permissionRequestEnd, meteringDataEnd)));
+
+        // When
+        eventBus.emit(new DataReceivedEvent("pid", PermissionProcessStatus.ACCEPTED, meteringDataEnd, meteringDataEnd));
+
+        // Then
+        verify(fulfillmentService, never()).tryFulfillPermissionRequest(any());
+    }
+
+    @Test
+    void service_doesNotCallFulfill_whenThereIsNotOneContinuousTimeframe() {
+        // Given
+        LocalDate permissionRequestEnd = LocalDate.now(ZoneOffset.UTC);
+        LocalDate meteringDataEnd = permissionRequestEnd.plusDays(1);
+        AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd);
+        when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
+        when(timeframeRepository.findAllByPermissionId("pid"))
+                .thenReturn(List.of(
+                        new MeterReadingTimeframe(1L, "pid", permissionRequestEnd, meteringDataEnd),
+                        new MeterReadingTimeframe(1L, "pid", permissionRequestEnd, meteringDataEnd)
+                ));
 
         // When
         eventBus.emit(new DataReceivedEvent("pid", PermissionProcessStatus.ACCEPTED, meteringDataEnd, meteringDataEnd));
@@ -110,7 +138,7 @@ class DataReceivedHandlerTest {
                 "convId",
                 "mid",
                 "dsoId",
-                null,
+                meteringDataEnd,
                 meteringDataEnd,
                 AllowedGranularity.PT15M,
                 PermissionProcessStatus.ACCEPTED,
