@@ -15,7 +15,7 @@ class IdentifiableDataStreamsTest {
 
     @SuppressWarnings("resource")
     @Test
-    void testPublish_publishesUsageSegments() {
+    void testPublishValidatedHistoricalData_publishes() {
         // Given
         var streams = new IdentifiableDataStreams();
         var pr = new CdsPermissionRequestBuilder()
@@ -23,7 +23,7 @@ class IdentifiableDataStreamsTest {
                 .build();
 
         // When
-        streams.publish(pr, List.of(), List.of(), List.of(), List.of(), List.of());
+        streams.publishValidatedHistoricalData(pr, List.of(), List.of(), List.of(), List.of(), List.of());
 
         // Then
         StepVerifier.create(streams.validatedHistoricalData())
@@ -32,6 +32,31 @@ class IdentifiableDataStreamsTest {
                             () -> assertEquals(List.of(), res.payload().usageSegments()),
                             () -> assertSame(pr, res.permissionRequest())
                     ))
+                    .verifyComplete();
+    }
+
+    @Test
+    @SuppressWarnings("resource")
+    void testPublishAccountingPointData_publishes() {
+        // Given
+        var streams = new IdentifiableDataStreams();
+        var pr = new CdsPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .build();
+
+        // When
+        StepVerifier.create(streams.accountingPointData())
+                    .then(() ->
+                                  streams.publishAccountingPointData(pr,
+                                                                     List.of(),
+                                                                     List.of(),
+                                                                     List.of(),
+                                                                     List.of(),
+                                                                     List.of())
+                    )
+                    .then(streams::close)
+                    // Then
+                    .assertNext(res -> assertSame(pr, res.permissionRequest()))
                     .verifyComplete();
     }
 }

@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.cds.dtos.PermissionRequestForCreation;
@@ -13,6 +14,7 @@ import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
 import energy.eddie.regionconnector.cds.master.data.Coverage;
 import energy.eddie.regionconnector.cds.permission.events.CreatedEvent;
 import energy.eddie.regionconnector.cds.permission.events.MalformedEvent;
+import energy.eddie.regionconnector.cds.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.cds.permission.events.ValidatedEvent;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import energy.eddie.regionconnector.cds.services.oauth.AuthorizationService;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -87,21 +90,33 @@ class PermissionRequestCreationServiceTest {
     }
 
     @Test
-    void testCreatePermissionRequest_withAccountingPointDataNeed_throws() {
+    void testCreatePermissionRequest_withAccountingPointDataNeed_emitsValidated() throws DataNeedNotFoundException, UnknownPermissionAdministratorException, UnsupportedDataNeedException {
         // Given
         var cdsServer = getCdsServer();
         when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
         var today = LocalDate.now(ZoneOffset.UTC);
+        var timeframe = new Timeframe(today, today);
         when(calculationService.calculate(eq("dnid"), eq(cdsServer), any()))
-                .thenReturn(new AccountingPointDataNeedResult(new Timeframe(today, today)));
+                .thenReturn(new AccountingPointDataNeedResult(timeframe));
+        var uri = URI.create("urn:example:bwc4JK-ESC0w8acc191e-Y1LTC2");
+        when(authorizationService.createOAuthRequest(eq(cdsServer), anyString()))
+                .thenReturn(uri);
         var creation = new PermissionRequestForCreation(0L, "dnid", "cid");
 
-        // When & Then
-        assertThrows(UnsupportedDataNeedException.class, () -> service.createPermissionRequest(creation));
+        // When
+        var res = service.createPermissionRequest(creation);
+
+        // Then
+        assertAll(
+                () -> assertEquals(uri, res.redirectUri()),
+                () -> assertNotNull(res.permissionId())
+        );
         verify(outbox, times(2)).commit(eventCaptor.capture());
-        var malformedEvent = assertInstanceOf(MalformedEvent.class, eventCaptor.getValue());
-        assertEquals(List.of(new AttributeError("dataNeedId", "Accounting point data need not supported")),
-                     malformedEvent.errors());
+        var event = assertInstanceOf(SimpleEvent.class, eventCaptor.getAllValues().get(1));
+        assertThat(event)
+                .isInstanceOf(SimpleEvent.class)
+                .extracting(SimpleEvent::status)
+                .isEqualTo(PermissionProcessStatus.VALIDATED);
     }
 
     @Test

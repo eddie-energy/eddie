@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.cds.services;
 
+import energy.eddie.api.agnostic.data.needs.AccountingPointDataNeedResult;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.dataneeds.needs.DataNeed;
@@ -40,16 +41,11 @@ public class PollingService {
 
     public void poll(CdsPermissionRequest permissionRequest) {
         var permissionId = permissionRequest.permissionId();
-        LOGGER.info("Checking if permission request {} is active and needs validated historical data polled",
-                    permissionId);
-        if (permissionRequest.start().isAfter(LocalDate.now(ZoneOffset.UTC))) {
-            LOGGER.info("Permission request {} is not active yet", permissionId);
-            return;
-        }
         var dataNeedId = permissionRequest.dataNeedId();
         var dataNeed = calculationService.calculate(dataNeedId, permissionRequest.created());
         switch (dataNeed) {
             case ValidatedHistoricalDataDataNeedResult ignored -> retrieveValidatedHistoricalData(permissionRequest);
+            case AccountingPointDataNeedResult ignored -> retrieveAccountPointData(permissionRequest);
             default -> LOGGER.info(
                     "Permission request {} with data need {} does not need polling for validated historical data",
                     permissionId,
@@ -60,6 +56,12 @@ public class PollingService {
 
     public void retrieveValidatedHistoricalData(CdsPermissionRequest pr) {
         var permissionId = pr.permissionId();
+        LOGGER.info("Checking if permission request {} is active and needs validated historical data polled",
+                    permissionId);
+        if (pr.start().isAfter(LocalDate.now(ZoneOffset.UTC))) {
+            LOGGER.info("Permission request {} is not active yet", permissionId);
+            return;
+        }
         LOGGER.info("Polling validated historical data for permission request {}", permissionId);
         var start = pr.oldestMeterReading().orElseGet(() -> pr.start().atStartOfDay(ZoneOffset.UTC));
         var now = ZonedDateTime.now(ZoneOffset.UTC);
@@ -74,7 +76,24 @@ public class PollingService {
                     client.usagePoints(pr, end, start)
             )
             .doOnError(errorHandler, errorHandler.thenRevoke(pr))
-            .subscribe(res -> streams.publish(
+            .subscribe(res -> streams.publishValidatedHistoricalData(
+                    pr, res.getT1(), res.getT2(), res.getT3(), res.getT4(), res.getT5()
+            ));
+    }
+
+    private void retrieveAccountPointData(CdsPermissionRequest pr) {
+        var permissionId = pr.permissionId();
+        LOGGER.info("Polling accounting point data for permission request {}", permissionId);
+        var client = factory.get(pr);
+        Mono.zip(
+                    client.accounts(pr),
+                    client.serviceContracts(pr),
+                    client.servicePoints(pr),
+                    client.meterDevices(pr),
+                    client.billSections(pr)
+            )
+            .doOnError(errorHandler, errorHandler.thenRevoke(pr))
+            .subscribe(res -> streams.publishAccountingPointData(
                     pr, res.getT1(), res.getT2(), res.getT3(), res.getT4(), res.getT5()
             ));
     }

@@ -34,7 +34,10 @@ public class ProviderConfig {
     @Bean
     @OnRawDataMessagesEnabled
     public JsonRawDataProvider jsonRawDataProvider(ObjectMapper objectMapper, IdentifiableDataStreams streams) {
-        return new JsonRawDataProvider(REGION_CONNECTOR_ID, objectMapper, streams.validatedHistoricalData());
+        return new JsonRawDataProvider(REGION_CONNECTOR_ID,
+                                       objectMapper,
+                                       streams.validatedHistoricalData(),
+                                       streams.accountingPointData());
     }
 
     @Bean
