@@ -10,9 +10,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
+
 @Component
 public class DataReceivedHandler implements EventHandler<DataReceivedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataReceivedHandler.class);
+    private static final Set<PermissionProcessStatus> STATUSES_AFTER_ACCEPTED = Collections.unmodifiableSet(EnumSet.of(
+            PermissionProcessStatus.TERMINATED,
+            PermissionProcessStatus.REVOKED,
+            PermissionProcessStatus.FULFILLED,
+            PermissionProcessStatus.INVALID,
+            PermissionProcessStatus.MALFORMED,
+            PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION,
+            PermissionProcessStatus.FAILED_TO_TERMINATE,
+            PermissionProcessStatus.EXTERNALLY_TERMINATED));
     private final FulfillmentService fulfillmentService;
     private final AtPermissionRequestRepository repository;
 
@@ -28,7 +41,7 @@ public class DataReceivedHandler implements EventHandler<DataReceivedEvent> {
 
     @Override
     public void accept(DataReceivedEvent event) {
-        if (isTerminalState(event.status())) {
+        if (isStatusAfterAccepted(event.status())) {
             return;
         }
         var pr = repository.getByPermissionId(event.permissionId());
@@ -46,14 +59,7 @@ public class DataReceivedHandler implements EventHandler<DataReceivedEvent> {
         }
     }
 
-    private boolean isTerminalState(PermissionProcessStatus status) {
-        return status == PermissionProcessStatus.TERMINATED
-               || status == PermissionProcessStatus.REVOKED
-               || status == PermissionProcessStatus.FULFILLED
-               || status == PermissionProcessStatus.INVALID
-               || status == PermissionProcessStatus.MALFORMED
-               || status == PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION
-               || status == PermissionProcessStatus.FAILED_TO_TERMINATE
-               || status == PermissionProcessStatus.EXTERNALLY_TERMINATED;
+    private boolean isStatusAfterAccepted(PermissionProcessStatus status) {
+        return STATUSES_AFTER_ACCEPTED.contains(status);
     }
 }

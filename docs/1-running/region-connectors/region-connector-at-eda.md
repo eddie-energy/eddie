@@ -52,7 +52,7 @@ region-connector.at.eda.ponton.messenger.api.endpoint=pontonxp.messenger.com/api
 region-connector.at.eda.ponton.messenger.folder=/opt/pontonxp
 region-connector.at.eda.ponton.messenger.username=username
 region-connector.at.eda.ponton.messenger.password=password
-region-connector.at.eda.consumption.records.remove.duplicates.enabled=true
+region-connector.at.eda.consumption.records.remove.duplicates.enabled=false
 ```
 
 ## Running the Region Connector via EDDIE
