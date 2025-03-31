@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.at.eda.provider.v0_82;
 
 import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
-import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
+import energy.eddie.regionconnector.at.eda.provider.IdentifiableStreams;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -15,12 +15,12 @@ public class EdaAccountingPointEnvelopeProvider implements AccountingPointEnvelo
     private final Flux<AccountingPointEnvelope> apFlux;
 
     public EdaAccountingPointEnvelopeProvider(
-            Flux<IdentifiableMasterData> identifiableMasterDataFlux,
+            IdentifiableStreams streams,
             IntermediateAccountingPointMarketDocumentFactory factory
     ) {
-        this.apFlux = identifiableMasterDataFlux
-                .map(factory::create)
-                .map(IntermediateAccountingPointMarketDocument::accountingPointEnvelope);
+        this.apFlux = streams.masterDataStream()
+                             .map(factory::create)
+                             .map(IntermediateAccountingPointMarketDocument::accountingPointEnvelope);
     }
 
     @Override

@@ -4,9 +4,11 @@ import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
+import energy.eddie.regionconnector.at.eda.provider.IdentifiableStreams;
 import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.oxm.XmlMappingException;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
@@ -23,7 +25,16 @@ public class EdaRawDataProvider implements RawDataProvider {
     private final Jaxb2Marshaller marshaller;
     private final Flux<RawDataMessage> rawDataStream;
 
-    public EdaRawDataProvider(
+    @Autowired
+    public EdaRawDataProvider(Jaxb2Marshaller marshaller, IdentifiableStreams streams) {
+        this(
+                marshaller,
+                streams.consumptionRecordStream(),
+                streams.masterDataStream()
+        );
+    }
+
+    EdaRawDataProvider(
             Jaxb2Marshaller marshaller,
             Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux,
             Flux<IdentifiableMasterData> identifiableMasterDataFlux
@@ -34,6 +45,16 @@ public class EdaRawDataProvider implements RawDataProvider {
                 identifiableConsumptionRecordFlux.flatMap(this::mapToRawDataMessage),
                 identifiableMasterDataFlux.flatMap(this::mapToRawDataMessage)
         );
+    }
+
+    @Override
+    public Flux<RawDataMessage> getRawDataStream() {
+        return rawDataStream;
+    }
+
+    @Override
+    public void close() {
+        // Nothing to clean up, flux is closed when the underlying flux is closed
     }
 
     private Flux<RawDataMessage> mapToRawDataMessage(IdentifiableConsumptionRecord identifiableConsumptionRecord) {
@@ -63,15 +84,5 @@ public class EdaRawDataProvider implements RawDataProvider {
         var permissionRequest = identifiableMasterData.permissionRequest();
         var msg = new RawDataMessage(permissionRequest, rawXml);
         return Mono.just(msg);
-    }
-
-    @Override
-    public Flux<RawDataMessage> getRawDataStream() {
-        return rawDataStream;
-    }
-
-    @Override
-    public void close() {
-        // Nothing to clean up, flux is closed when the underlying flux is closed
     }
 }
