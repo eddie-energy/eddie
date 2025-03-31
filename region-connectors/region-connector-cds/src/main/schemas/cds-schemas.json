@@ -1184,6 +1184,7 @@
         "entity_name",
         "entity_abbreviation",
         "name",
+        "country",
         "type",
         "role",
         "infrastructure_types",

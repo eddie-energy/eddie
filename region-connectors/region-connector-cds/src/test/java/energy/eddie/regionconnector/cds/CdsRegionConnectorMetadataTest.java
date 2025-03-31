@@ -44,7 +44,7 @@ class CdsRegionConnectorMetadataTest {
 
         // When
         var res = metadata.countryCodes();
-        assertThat(res).containsExactlyInAnyOrder("us", "ca", "at");
+        assertThat(res).containsExactlyInAnyOrder("US", "CA", "AT");
     }
 
     @Test
