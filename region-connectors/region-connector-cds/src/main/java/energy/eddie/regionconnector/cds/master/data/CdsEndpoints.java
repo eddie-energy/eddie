@@ -43,7 +43,8 @@ public class CdsEndpoints {
             String accountsEndpoint,
             String serviceContractsEndpoint,
             String servicePointsEndpoint,
-            String meterDeviceEndpoint, String billSectionEndpoint
+            String meterDeviceEndpoint,
+            String billSectionEndpoint
     ) {
         this.tokenEndpoint = tokenEndpoint;
         this.authorizationEndpoint = authorizationEndpoint;
