@@ -247,7 +247,14 @@ class EddieConnectButton extends LitElement {
     this.addRequestStatusHandlers();
     this.addViewChangeHandlers();
 
-    this.reset(); // Initial configuration
+    // Configure fields that do not depend on public properties
+    (async () => {
+      this._enabledConnectors = await getRegionConnectorMetadata();
+      this._permissionAdministrators = await getPermissionAdministrators();
+    })().then(() => {
+      this._enabledCountries = this.getEnabledCountries();
+      this.reset(); // Start initial configuration
+    });
   }
 
   updated(_changedProperties) {
@@ -303,8 +310,8 @@ class EddieConnectButton extends LitElement {
         const module = await import(/* @vite-ignore */ elementUrl);
         customElements.define(customElementName, module.default);
       } catch (error) {
-        // If multiple EDDIE button are preconfigured with the same region
-        // connector, they may define its custom element at the same time.
+        // If multiple EDDIE buttons are preconfigured with the same region connector,
+        // they may define its custom element at the same time.
         // This will cause an error, but it can be safely ignored.
         if (!customElements.get(customElementName)) {
           throw new Error(error);
@@ -464,8 +471,6 @@ class EddieConnectButton extends LitElement {
       return; // No more configuration needed
     }
 
-    this._enabledConnectors = await getRegionConnectorMetadata();
-
     if (this._enabledConnectors.length === 0) {
       throw new Error("No enabled region connectors.");
     }
@@ -477,8 +482,6 @@ class EddieConnectButton extends LitElement {
     if (this._supportedConnectors.length === 0) {
       throw new Error("No region connector supports the data need.");
     }
-
-    this._permissionAdministrators = await getPermissionAdministrators();
 
     this._supportedPermissionAdministrators =
       this._permissionAdministrators.filter((pa) =>
@@ -504,20 +507,7 @@ class EddieConnectButton extends LitElement {
     }
 
     if (this.isAiida()) {
-      if (!this._enabledConnectors.some((rc) => rc.id === "aiida")) {
-        throw new Error(
-          `Data need with id ${this.dataNeedId} is an AIIDA data need, but AIIDA is not enabled.`
-        );
-      }
-
-      if (!this._supportedConnectors.includes("aiida")) {
-        throw new Error(
-          `AIIDA does not support the data need with id ${this.dataNeedId}.`
-        );
-      }
-
-      this._selectedPermissionAdministrator =
-        SPECIAL_PERMISSION_ADMINISTRATORS.AIIDA;
+      this.configureAiida();
     }
 
     if (
@@ -526,12 +516,27 @@ class EddieConnectButton extends LitElement {
     ) {
       this.loadPermissionAdministratorFromLocalStorage();
     }
-
-    this._enabledCountries = this.getEnabledCountries();
   }
 
   isAiida() {
     return this._dataNeedAttributes?.type === "aiida";
+  }
+
+  configureAiida() {
+    if (!this._enabledConnectors.some((rc) => rc.id === "aiida")) {
+      throw new Error(
+        `Data need with id ${this.dataNeedId} is an AIIDA data need, but AIIDA is not enabled.`
+      );
+    }
+
+    if (!this._supportedConnectors.includes("aiida")) {
+      throw new Error(
+        `AIIDA does not support the data need with id ${this.dataNeedId}.`
+      );
+    }
+
+    this._selectedPermissionAdministrator =
+      SPECIAL_PERMISSION_ADMINISTRATORS.AIIDA;
   }
 
   handleDialogShow(event) {
