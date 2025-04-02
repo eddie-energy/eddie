@@ -31,7 +31,7 @@ public final class Endpoints {
     }
 
     /**
-     * CIM compliant endpoints.
+     * CIM compliant v0.82 endpoints.
      */
     @SuppressWarnings("java:S101") // Used to determine between CIM versions
     public static final class V0_82 {
@@ -59,5 +59,20 @@ public final class Endpoints {
         private V0_82() {
             // Utility Class
         }
+    }
+
+    /**
+     * CIM v0.91.08 compliant endpoints.
+     */
+    @SuppressWarnings("java:S101") // Used to determine between CIM versions
+    public static final class V0_91_08 {
+
+        /**
+         * Endpoint for CIM retransmission requests.
+         * Used to receive messages from the eligible party.
+         */
+        public static final String RETRANSMISSIONS = "retransmissions";
+
+        private V0_91_08() {}
     }
 }

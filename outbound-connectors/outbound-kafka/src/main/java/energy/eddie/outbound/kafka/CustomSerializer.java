@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnveloppe;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
@@ -27,6 +28,7 @@ class CustomSerializer implements Serializer<Object> {
             case RawDataMessage rawDataMessage -> serializeRawDataMessage(rawDataMessage);
             case AccountingPointEnvelope accountingPointMarketDocument ->
                     serializeAccountingPointEnvelope(accountingPointMarketDocument);
+            case RTREnveloppe rtrEnvelope -> serializeRtrEnvelope(rtrEnvelope);
             case null -> new byte[0];
             default -> throw new UnsupportedOperationException("Unsupported object type: " + data.getClass());
         };
@@ -35,6 +37,14 @@ class CustomSerializer implements Serializer<Object> {
     @Override
     public void close() {
         stringSerializer.close();
+    }
+
+    private byte[] serializeRtrEnvelope(RTREnveloppe rtrEnvelope) {
+        try {
+            return serde.serialize(rtrEnvelope);
+        } catch (SerializationException e) {
+            throw new RtrEnvelopeSerializationException(e);
+        }
     }
 
     private byte[] serializeConnectionStatusMessage(ConnectionStatusMessage data) {
@@ -104,6 +114,12 @@ class CustomSerializer implements Serializer<Object> {
 
     public static class RawDataMessageSerializationException extends RuntimeException {
         public RawDataMessageSerializationException(Throwable cause) {
+            super(cause);
+        }
+    }
+
+    public static class RtrEnvelopeSerializationException extends RuntimeException {
+        public RtrEnvelopeSerializationException(Throwable cause) {
             super(cause);
         }
     }
