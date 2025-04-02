@@ -125,8 +125,8 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
                     "-extension", "-Xfluent-api", "-Xannotate"
                 )
             })
-            logger.log(LogLevel.INFO, execution.standardOutput.asText.get())
-            logger.log(LogLevel.WARN, execution.standardError.asText.get())
+            logger.log(LogLevel.LIFECYCLE, execution.standardOutput.asText.get())
+            logger.log(LogLevel.LIFECYCLE, execution.standardError.asText.get())
         }
     }
 }
