@@ -12,7 +12,8 @@ public class AmqpSetup {
             Endpoints.V0_82.PERMISSION_MARKET_DOCUMENTS,
             Endpoints.V0_82.VALIDATED_HISTORICAL_DATA,
             Endpoints.V0_82.ACCOUNTING_POINT_MARKET_DOCUMENTS,
-            Endpoints.V0_82.TERMINATIONS
+            Endpoints.V0_82.TERMINATIONS,
+            Endpoints.V0_91_08.RETRANSMISSIONS
     );
     private final Connection connection;
 
