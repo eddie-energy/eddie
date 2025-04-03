@@ -1,11 +1,8 @@
 package energy.eddie.outbound.shared.testing;
 
-import org.xml.sax.SAXException;
-
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 
@@ -15,14 +12,18 @@ public class XmlValidator {
         // Utility Class
     }
 
+    @SuppressWarnings({"CallToPrintStackTrace", "java:S4507"})
+    // Only used during testing
     public static boolean validateXMLSchema(URL xsdPath, String xml) {
         try {
             var factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "file");
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             var schema = factory.newSchema(xsdPath);
             var validator = schema.newValidator();
             validator.validate(new StreamSource(new StringReader(xml)));
-        } catch (IOException | SAXException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -42,6 +43,13 @@ public class XmlValidator {
     public static boolean validateValidatedHistoricalMarketDocument(String xml) {
         var xsd = XmlValidator.class.getResource(
                 "/cim/xsd/v0_82/vhd/ValidatedHistoricalData_MarketDocument_2024-06-21T12.10.53.xsd"
+        );
+        return validateXMLSchema(xsd, xml);
+    }
+
+    public static boolean validateRtrEnvelope(String xml) {
+        var xsd = XmlValidator.class.getResource(
+                "/cim/xsd/v0_91_08/retransmission/RedistributionTransactionRequest Document_Annotated.xsd"
         );
         return validateXMLSchema(xsd, xml);
     }
