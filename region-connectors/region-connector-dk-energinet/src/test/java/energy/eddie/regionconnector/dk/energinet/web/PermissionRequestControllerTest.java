@@ -8,15 +8,10 @@ import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.dataneeds.web.DataNeedsAdvice;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetDataSourceInformation;
-import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionEventRepository;
-import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
-import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
-import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.services.InvalidRefreshTokenException;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionCreationService;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
@@ -34,7 +29,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.util.UriTemplate;
-import reactor.core.publisher.Flux;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -58,21 +52,6 @@ class PermissionRequestControllerTest {
     private PermissionRequestService service;
     @MockitoBean
     private PermissionCreationService creationService;
-    @MockitoBean
-    @SuppressWarnings("unused")
-    private DkPermissionRequestRepository repository;
-    @MockitoBean
-    @SuppressWarnings("unused")
-    private DkPermissionEventRepository eventRepository;
-    @MockitoBean
-    @SuppressWarnings("unused")
-    private Flux<IdentifiableApiResponse> unusedIdentifiableApiResponseFlux;
-    @MockitoBean
-    @SuppressWarnings("unused")
-    private Flux<IdentifiableAccountingPointDetails> unusedIdentifiableMeteringPointDetailsFlux;
-    @MockitoBean
-    @SuppressWarnings("unused")
-    private DataNeedsService dataNeedsService;
     @Autowired
     private ObjectMapper mapper;
 

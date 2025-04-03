@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
+import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
@@ -15,7 +15,7 @@ import reactor.test.StepVerifier;
 import java.util.Arrays;
 
 class NettySupplyApiClientIntegrationTest {
-    private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
+    private final ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
 
     SupplyApi supplyApi = new NettySupplyApiClient(
             HttpClient.create(),

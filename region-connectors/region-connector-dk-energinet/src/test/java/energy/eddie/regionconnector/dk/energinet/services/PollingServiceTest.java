@@ -5,7 +5,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
+import energy.eddie.regionconnector.dk.energinet.EnerginetBeanConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalGranularityEvent;
@@ -51,7 +51,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PollingServiceTest {
-    private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
+    private final ObjectMapper mapper = new EnerginetBeanConfig().objectMapper();
     @Mock
     private EnerginetCustomerApi customerApi;
     @Mock

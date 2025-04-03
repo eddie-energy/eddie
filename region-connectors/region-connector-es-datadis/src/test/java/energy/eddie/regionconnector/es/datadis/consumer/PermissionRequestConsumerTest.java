@@ -5,8 +5,8 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.ContractDetailsProvider;
+import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
-import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
 import energy.eddie.regionconnector.es.datadis.SupplyProvider;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
@@ -59,7 +59,7 @@ class PermissionRequestConsumerTest {
     @Mock
     private ValidatedHistoricalDataDataNeed validatedHistoricalDataDataNeed;
     @Spy
-    private Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink = new DatadisSpringConfig().identifiableAccountingPointDataSink();
+    private Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink = new DatadisBeanConfig().identifiableAccountingPointDataSink();
 
 
     @Test

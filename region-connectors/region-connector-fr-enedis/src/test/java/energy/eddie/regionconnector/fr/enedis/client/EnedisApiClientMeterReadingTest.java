@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.fr.enedis.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.fr.enedis.FrEnedisSpringConfig;
+import energy.eddie.regionconnector.fr.enedis.EnedisBeanConfig;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.mock;
 class EnedisApiClientMeterReadingTest {
     private static MockWebServer mockBackEnd;
     private static WebClient webClient;
-    private final ObjectMapper objectMapper = new FrEnedisSpringConfig().objectMapper();
+    private final ObjectMapper objectMapper = new EnedisBeanConfig().objectMapper();
 
     @BeforeEach
     void setUp() throws IOException {
@@ -34,12 +34,12 @@ class EnedisApiClientMeterReadingTest {
         mockBackEnd.start();
         String basePath = "http://localhost:" + mockBackEnd.getPort();
         webClient = WebClient.builder()
-                             .baseUrl(basePath)
-                             .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs()
-                                                                                   .jackson2JsonDecoder(new Jackson2JsonDecoder(
-                                                                                           objectMapper,
-                                                                                           MediaType.APPLICATION_JSON)))
-                             .build();
+                .baseUrl(basePath)
+                .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs()
+                        .jackson2JsonDecoder(new Jackson2JsonDecoder(
+                                objectMapper,
+                                MediaType.APPLICATION_JSON)))
+                .build();
     }
 
     @Test
@@ -54,20 +54,23 @@ class EnedisApiClientMeterReadingTest {
         LocalDate start = LocalDate.of(2024, 2, 26);
         LocalDate end = LocalDate.of(2024, 2, 27);
 
-        // When & Then
-        enedisApi.getConsumptionMeterReading(usagePointId, start, end, Granularity.PT30M)
-                 .as(StepVerifier::create)
-                 .assertNext(consumption -> {
-                     // The API for some reason returns 47 readings instead of 48
-                     assertEquals(47, consumption.intervalReadings().size());
-                     assertEquals(usagePointId, consumption.usagePointId());
-                     assertEquals(start, consumption.start());
-                     assertEquals(end, consumption.end());
-                     assertEquals(Granularity.PT30M.toString(),
-                                  consumption.intervalReadings().getFirst().intervalLength().get());
-                 })
-                 .expectComplete()
-                 .verify(Duration.ofSeconds(5));
+        // When
+        var res = enedisApi.getConsumptionMeterReading(usagePointId, start, end, Granularity.PT30M);
+
+        // Then
+
+        StepVerifier.create(res)
+                .assertNext(consumption -> {
+                    // The API for some reason returns 47 readings instead of 48
+                    assertEquals(47, consumption.intervalReadings().size());
+                    assertEquals(usagePointId, consumption.usagePointId());
+                    assertEquals(start, consumption.start());
+                    assertEquals(end, consumption.end());
+                    assertEquals(Granularity.PT30M.toString(),
+                            consumption.intervalReadings().getFirst().intervalLength().get());
+                })
+                .expectComplete()
+                .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -83,16 +86,16 @@ class EnedisApiClientMeterReadingTest {
         LocalDate end = LocalDate.of(2024, 2, 8);
         // When & Then
         enedisApi.getConsumptionMeterReading(usagePointId, start, end, Granularity.P1D)
-                 .as(StepVerifier::create)
-                 .assertNext(consumption -> {
-                     assertEquals(7, consumption.intervalReadings().size());
-                     assertEquals(usagePointId, consumption.usagePointId());
-                     assertEquals(start, consumption.start());
-                     assertEquals(end, consumption.end());
-                     assertEquals(Granularity.P1D.toString(), consumption.readingType().measuringPeriod().get());
-                 })
-                 .expectComplete()
-                 .verify(Duration.ofSeconds(5));
+                .as(StepVerifier::create)
+                .assertNext(consumption -> {
+                    assertEquals(7, consumption.intervalReadings().size());
+                    assertEquals(usagePointId, consumption.usagePointId());
+                    assertEquals(start, consumption.start());
+                    assertEquals(end, consumption.end());
+                    assertEquals(Granularity.P1D.toString(), consumption.readingType().measuringPeriod().get());
+                })
+                .expectComplete()
+                .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -109,18 +112,18 @@ class EnedisApiClientMeterReadingTest {
 
         // When & Then
         enedisApi.getProductionMeterReading(usagePointId, start, end, Granularity.PT30M)
-                 .as(StepVerifier::create)
-                 .assertNext(consumption -> {
-                     // The API for some reason returns 47 readings instead of 48
-                     assertEquals(47, consumption.intervalReadings().size());
-                     assertEquals(usagePointId, consumption.usagePointId());
-                     assertEquals(start, consumption.start());
-                     assertEquals(end, consumption.end());
-                     assertEquals(Granularity.PT30M.toString(),
-                                  consumption.intervalReadings().getFirst().intervalLength().get());
-                 })
-                 .expectComplete()
-                 .verify(Duration.ofSeconds(5));
+                .as(StepVerifier::create)
+                .assertNext(consumption -> {
+                    // The API for some reason returns 47 readings instead of 48
+                    assertEquals(47, consumption.intervalReadings().size());
+                    assertEquals(usagePointId, consumption.usagePointId());
+                    assertEquals(start, consumption.start());
+                    assertEquals(end, consumption.end());
+                    assertEquals(Granularity.PT30M.toString(),
+                            consumption.intervalReadings().getFirst().intervalLength().get());
+                })
+                .expectComplete()
+                .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -136,16 +139,16 @@ class EnedisApiClientMeterReadingTest {
         LocalDate end = LocalDate.of(2024, 2, 8);
         // When & Then
         enedisApi.getProductionMeterReading(usagePointId, start, end, Granularity.P1D)
-                 .as(StepVerifier::create)
-                 .assertNext(consumption -> {
-                     assertEquals(7, consumption.intervalReadings().size());
-                     assertEquals(usagePointId, consumption.usagePointId());
-                     assertEquals(start, consumption.start());
-                     assertEquals(end, consumption.end());
-                     assertEquals(Granularity.P1D.toString(), consumption.readingType().measuringPeriod().get());
-                 })
-                 .expectComplete()
-                 .verify(Duration.ofSeconds(5));
+                .as(StepVerifier::create)
+                .assertNext(consumption -> {
+                    assertEquals(7, consumption.intervalReadings().size());
+                    assertEquals(usagePointId, consumption.usagePointId());
+                    assertEquals(start, consumption.start());
+                    assertEquals(end, consumption.end());
+                    assertEquals(Granularity.P1D.toString(), consumption.readingType().measuringPeriod().get());
+                })
+                .expectComplete()
+                .verify(Duration.ofSeconds(5));
     }
 
 
@@ -158,9 +161,9 @@ class EnedisApiClientMeterReadingTest {
 
         // When & Then
         enedisApi.getConsumptionMeterReading("usagePointId", LocalDate.now(ZoneOffset.UTC),
-                                             LocalDate.now(ZoneOffset.UTC), Granularity.PT15M)
-                 .as(StepVerifier::create)
-                 .expectError(IllegalArgumentException.class)
-                 .verify(Duration.ofSeconds(5));
+                        LocalDate.now(ZoneOffset.UTC), Granularity.PT15M)
+                .as(StepVerifier::create)
+                .expectError(IllegalArgumentException.class)
+                .verify(Duration.ofSeconds(5));
     }
 }

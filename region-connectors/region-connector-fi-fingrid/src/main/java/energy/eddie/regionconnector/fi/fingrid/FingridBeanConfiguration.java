@@ -17,6 +17,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.P
 import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientSsl;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
@@ -92,12 +93,13 @@ public class FingridBeanConfiguration {
     public CommonFutureDataService<FingridPermissionRequest> commonFutureDataService(
             PollingService pollingService,
             FiPermissionRequestRepository repository,
+            @Value("${region-connector.fi.fingrid.polling:0 0 17 * * *}") String cronExpr,
             FingridRegionConnector connector
     ){
         return new CommonFutureDataService<>(
                 pollingService,
                 repository,
-                "0 0 17 * * *",
+                cronExpr,
                 connector.getMetadata()
         );
     }

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.providers.agnostic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
+import energy.eddie.regionconnector.dk.energinet.EnerginetBeanConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SuppressWarnings("DataFlowIssue")
 class IdentifiableApiResponseTest {
     static MyEnergyDataMarketDocumentResponse response;
-    private static final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
+    private static final ObjectMapper mapper = new EnerginetBeanConfig().objectMapper();
 
     @BeforeAll
     static void setUp() throws IOException {
