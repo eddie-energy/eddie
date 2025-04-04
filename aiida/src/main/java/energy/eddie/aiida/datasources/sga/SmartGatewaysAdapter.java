@@ -35,7 +35,7 @@ public class SmartGatewaysAdapter extends AiidaMqttDataSource {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        LOGGER.trace("Topic {} new message: {}", topic, message);
+        LOGGER.error("SGA: Topic {} new message: {}", topic, message);
         try {
             var adapterMessage = SmartGatewaysAdapterValueDeserializer.deserialize(message.getPayload());
             List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();

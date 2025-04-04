@@ -1,0 +1,50 @@
+.meter {
+    display: block;
+    width: 2
+    73px;
+    height: 170px;
+    margin: 0 auto;
+}
+
+.meter-bg {
+    stroke-width: 27;
+    stroke-dasharray: 157 157;
+    stroke-dashoffset: 157;
+    stroke: rgba(255, 255, 255, 0.15);
+    fill: none;
+}
+
+.meter-active {
+    stroke-width: 28;
+    stroke: #f44336;
+    fill: none;
+    transition: all 0.2s ease;
+    stroke-dasharray: 31.4 282.6;
+    stroke-dashoffset: 157;
+}
+
+.meter-clock {
+    transform: rotate(-90deg);
+    transform-origin: 137px 146px;
+    fill: #212121;
+    transition: transform 0.2s ease;
+}
+
+.meter-circle {
+    fill: #212121;
+}
+
+[id^="cpu-percents"],
+[id^="memory-percents"] {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    margin-top: 0.5rem;
+    color: black;
+    text-align: center;
+}
+
+.service-status {
+    margin: 0.5rem 1rem;
+    font-weight: bold;
+}

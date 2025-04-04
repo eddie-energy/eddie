@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="permissions-base-url" th:content="@{/permissions}" />
     <meta name="datasources-base-url" th:content="@{/datasources}" />
+    <meta name="monitoring-base-url" th:content="@{/monitoring}" />
     <meta name="csrf-token" th:content="${_csrf.token}" />
     <meta name="csrf-header" th:content="${_csrf.headerName}" />
 
@@ -16,6 +17,7 @@
       href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/themes/light.css"
     />
     <link rel="stylesheet" th:href="@{/css/index.css}" />
+    <link rel="stylesheet" th:href="@{/css/monitoring.css}" />
     <script
       type="module"
       src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/shoelace-autoloader.js"
@@ -150,6 +152,10 @@
     <div id="data-source-list" class="data-sources"></div>
 
     <script th:src="@{/js/main.js}" type="module"></script>
+    <script th:src="@{/js/monitoring.js}" type="module"></script>
     <script th:src="@{/js/qr-code-scanner.js}" type="module"></script>
+
+    <h2>Monitoring</h2>
+    <div id="metrics-container" class="metrics-container"></div>
   </body>
 </html>

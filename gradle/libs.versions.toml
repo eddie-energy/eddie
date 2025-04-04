@@ -47,6 +47,7 @@ paho-mqtt-client = "1.2.5"
 nimbus = "11.10.1"
 bouncycastle = "1.78"
 keycloak = "25.0.3"
+micrometer = "1.12.3"
 
 swagger-annotations = "2.2.22"
 openapi-generator = "7.11.0"
@@ -170,6 +171,7 @@ flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", versio
 hakky-logcaptor = { module = "io.github.hakky54:logcaptor", version.ref = "hakky-logcaptor" }
 eclipse-paho-mqttv5-client = { module = "org.eclipse.paho:org.eclipse.paho.mqttv5.client", version.ref = "paho-mqtt-client" }
 jackson-hibernate6 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-hibernate6", version.ref = "jackson" }
+micrometer-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 
 # Security
 nimbus-oidc = { module = "com.nimbusds:oauth2-oidc-sdk", version.ref = "nimbus" }

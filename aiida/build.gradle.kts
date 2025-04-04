@@ -39,6 +39,7 @@ dependencies {
 
     implementation(libs.reactor.core)
     implementation(libs.eclipse.paho.mqttv5.client)
+    implementation(libs.micrometer.prometheus)
     // enable Jackson support to fetch Hibernate lazy loaded properties when serializing
     implementation(libs.jackson.hibernate6)
 
