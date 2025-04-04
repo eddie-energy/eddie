@@ -18,26 +18,32 @@
 
   <script>
     function connectToMarketplaceFederator() {
-      fetch('http://localhost:6060/request-certificate', {
+      let baseUrl = 'http://localhost:6060';
+
+      fetch(`${baseUrl}/request-certificate`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         }
-      }).then(response => {
+      }).then(async response => {
         if (!response.ok) {
-          throw new Error("Failed to retrieve certificate: " + response.status);
+          return response.text().then(text => {
+            throw new Error("Failed to retrieve certificate! " + " STATUS " + response.status + " Message:" + text);
+          })
         }
         return response.text();
       })
         .then(certificate => {
-          fetch('http://localhost:6060/create-connection-message', {
+          fetch(`${baseUrl}/create-connection-message`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
             }
           }).then(response => {
             if (!response.ok) {
-              throw new Error("Failed to create connection message to federator: " + response.status);
+              return response.text().then(text => {
+                throw new Error("Failed to create connection message to federator! " + " STATUS: " + response.status + " Message:" + text);
+              })
             }
             return response.text();
           }).then(signedConnectionMessage => {
@@ -57,7 +63,7 @@
           document.getElementById("qrInfoMessage").innerText = "Error occurred: " + error.message;
           document.getElementById("qrWarningMessage").innerText = "";
         });
-    };
+    }
 
     function generateQRCode(qrData) {
       const qrCodeElement = document.getElementById("qr-code");
@@ -70,7 +76,15 @@
           console.log(qrData);
         }
       });
-    };
+    }
+
+    function checkResponse (response) {
+      if (!response.ok) {
+        const errors = data.map((error) => error.message).join("\n");
+        console.log(errors);
+        return Promise.reject(new Error(errors));
+      }
+    }
 
   </script>
 </head>

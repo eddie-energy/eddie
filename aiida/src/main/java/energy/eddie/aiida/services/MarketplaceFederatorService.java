@@ -5,6 +5,7 @@ import energy.eddie.aiida.errors.FailedToCreateAiidaFederatorConnectionMessage;
 import energy.eddie.aiida.errors.FailedToCreateCSRException;
 import energy.eddie.aiida.errors.FailedToGetCertificateException;
 import energy.eddie.aiida.errors.KeyStoreServiceException;
+import energy.eddie.api.agnostic.EddieApiError;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -18,6 +19,8 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -67,7 +70,7 @@ public class MarketplaceFederatorService {
         }
     }
 
-    public String requestAiidaFederatorCertificate() throws FailedToCreateCSRException {
+    public String requestAiidaFederatorCertificate() throws FailedToCreateCSRException, FailedToGetCertificateException {
         try {
             if (keyStoreService.getCertificate() != null) {
                 return convertCertificateToPem(keyStoreService.getCertificate());
@@ -83,7 +86,7 @@ public class MarketplaceFederatorService {
                 return signedCertificatePem;
             }
         } catch (KeyStoreServiceException | IOException | CertificateException e) {
-            throw new FailedToCreateCSRException("Failed to create CSR", e);
+            throw new FailedToGetCertificateException("Failed to get Certificate for Aiida: " + e);
         }
     }
 
@@ -160,14 +163,24 @@ public class MarketplaceFederatorService {
         }
     }
 
-    private String sendCSRForSigning(String csrPem) {
-        return webClient.post()
-                 .uri("/request")
-                 .contentType(MediaType.TEXT_PLAIN)
-                 .bodyValue(csrPem)
-                 .retrieve()
-                 .bodyToMono(String.class)
-                 .block();
+    private String sendCSRForSigning(String csrPem) throws FailedToGetCertificateException {
+        try {
+            return webClient.post()
+                            .uri("/request")
+                            .contentType(MediaType.TEXT_PLAIN)
+                            .bodyValue(csrPem)
+                            .retrieve()
+                            .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(String.class)
+                                    .flatMap(error -> {
+                                        System.out.println(error);
+                                        return reactor.core.publisher.Mono.error(new RuntimeException(error));
+                                    })
+                            )
+                            .bodyToMono(String.class)
+                            .block();
+        } catch (Exception e) {
+            throw new FailedToGetCertificateException("Error while sending CSR to Federator: " + e.getMessage());
+        }
     }
 
     private String convertCSRToPem(PKCS10CertificationRequest csr) throws IOException {

@@ -2,6 +2,7 @@ package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.errors.FailedToCreateAiidaFederatorConnectionMessage;
 import energy.eddie.aiida.errors.FailedToCreateCSRException;
+import energy.eddie.aiida.errors.FailedToGetCertificateException;
 import energy.eddie.aiida.services.MarketplaceFederatorService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,21 +19,13 @@ public class MarketplaceFederatorController {
 
     @CrossOrigin(origins = "http://localhost:63342")
     @GetMapping("/request-certificate")
-    public ResponseEntity<String> requestCertificate() {
-        try {
-            return ResponseEntity.ok(marketplaceFederatorService.requestAiidaFederatorCertificate());
-        } catch (FailedToCreateCSRException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create CSR: " + e.getMessage());
-        }
+    public ResponseEntity<String> requestCertificate() throws FailedToGetCertificateException, FailedToCreateCSRException {
+        return ResponseEntity.ok(marketplaceFederatorService.requestAiidaFederatorCertificate());
     }
 
     @CrossOrigin(origins = "http://localhost:63342")
     @GetMapping("/create-connection-message")
-    public ResponseEntity<String> createConnectionMessage() {
-        try {
-            return ResponseEntity.ok(marketplaceFederatorService.createAiidaFederatorConnectionMessage());
-        }  catch (FailedToCreateAiidaFederatorConnectionMessage e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create Aiida to Federator connection message: " + e.getMessage());
-        }
+    public ResponseEntity<String> createConnectionMessage() throws FailedToCreateAiidaFederatorConnectionMessage {
+        return ResponseEntity.ok(marketplaceFederatorService.createAiidaFederatorConnectionMessage());
     }
 }
