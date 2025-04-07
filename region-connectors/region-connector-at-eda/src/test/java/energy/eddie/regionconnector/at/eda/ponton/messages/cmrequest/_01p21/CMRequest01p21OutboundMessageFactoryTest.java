@@ -1,13 +1,21 @@
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21;
 
+import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactoryTest;
+import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
+import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
+import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CMRequest01p21OutboundMessageFactoryTest extends CMRequestOutboundMessageFactoryTest {
 
@@ -39,5 +47,29 @@ class CMRequest01p21OutboundMessageFactoryTest extends CMRequestOutboundMessageF
 
         // then
         assertTrue(active);
+    }
+
+    @Test
+    void isMessageType_01p21() {
+        // Given
+        var factory = new CMRequest01p21OutboundMessageFactory(marshaller);
+        var ccmoRequest = new CCMORequest(new DsoIdAndMeteringPoint("dso", null),
+                                          new CCMOTimeFrame(LocalDate.now(ZoneOffset.UTC), null),
+                                          "cmReqId",
+                                          "messageId",
+                                          RequestDataType.METERING_DATA,
+                                          AllowedGranularity.PT15M,
+                                          AllowedTransmissionCycle.D,
+                                          new PlainAtConfiguration("ep-id"),
+                                          ZonedDateTime.now(ZoneOffset.UTC));
+
+        // When
+        var res = factory.outboundMetaData(ccmoRequest);
+
+        // Then
+        assertAll(
+                () -> assertEquals("CM_REQ_ONL_01.30", res.getMessageType().getSchemaSet().getValue()),
+                () -> assertEquals("01.30", res.getMessageType().getVersion().getValue())
+        );
     }
 }

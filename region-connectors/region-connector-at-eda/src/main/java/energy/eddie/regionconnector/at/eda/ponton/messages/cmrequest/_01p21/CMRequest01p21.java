@@ -22,7 +22,7 @@ public record CMRequest01p21(
         CCMORequest ccmoRequest
 ) {
 
-    public static final String SCHEMA_VERSION = "01.21";
+    public static final String SCHEMA_VERSION_01P21 = "01.21";
 
     public CMRequest cmRequest() {
         return new CMRequest()
@@ -36,7 +36,7 @@ public record CMRequest01p21(
                 .withSector(Sector.ELECTRICITY.value())
                 .withDocumentMode(DocumentMode.PROD)
                 .withDuplicate(false)
-                .withSchemaVersion(SCHEMA_VERSION)
+                .withSchemaVersion(SCHEMA_VERSION_01P21)
                 .withRoutingHeader(new RoutingHeader()
                                            .withSender(toRoutingAddress(ccmoRequest.eligiblePartyId()))
                                            .withReceiver(toRoutingAddress(ccmoRequest.dsoId()))
