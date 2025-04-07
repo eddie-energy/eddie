@@ -71,7 +71,7 @@ public record CMRequest01p21(
 
     private ReqType makeReqType(CCMORequest ccmoRequest) {
         return new ReqType()
-                .withReqDatType(ccmoRequest.requestDataType().toString(ccmoRequest.timeframe()))
+                .withReqDatType(ccmoRequest.requestDataType().toString())
                 .withMeteringIntervall(meteringIntervall(ccmoRequest))
                 .withTransmissionCycle(transmissionCycle(ccmoRequest))
                 .withDateFrom(DateTimeConverter.dateTimeToXml(ccmoRequest.start().atStartOfDay(AT_ZONE_ID)))
