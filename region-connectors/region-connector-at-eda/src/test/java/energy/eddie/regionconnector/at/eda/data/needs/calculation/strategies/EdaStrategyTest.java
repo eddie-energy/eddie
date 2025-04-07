@@ -36,16 +36,13 @@ class EdaStrategyTest {
     @ParameterizedTest(name = "{1}")
     @MethodSource("unsupportedDataNeedDurations")
     void energyDataTimeframe_throwsIfDateExceedMaxPast(DataNeedDuration duration, String message) {
-        // GH-1322 Some of the tests will fail after 07.04.2025
-        
         // Given
         when(timeframedDataNeed.duration()).thenReturn(duration);
         EdaStrategy edaStrategy = new EdaStrategy();
 
         // When & Then
-        assertThrows(UnsupportedDataNeedException.class, () -> edaStrategy.energyDataTimeframe(timeframedDataNeed,
-                                                                                               ZonedDateTime.now(
-                                                                                                       ZoneOffset.UTC)));
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> edaStrategy.energyDataTimeframe(timeframedDataNeed, ZonedDateTime.now(ZoneOffset.UTC)));
     }
 
     @SuppressWarnings("DataFlowIssue")
@@ -120,14 +117,7 @@ class EdaStrategyTest {
                                               EdaRegionConnectorMetadata.PERIOD_LATEST_END.plusMonths(1)),
                              "Relative exceeds max future"),
                 Arguments.of(new AbsoluteDuration(now.plusMonths(1), now.plusYears(5)),
-                             "Absolut exceeds max future"),
-                // GH-1322 This test will fail after 07.04.2025
-                Arguments.of(relativeDuration(EdaRegionConnectorMetadata.PERIOD_EARLIEST_START.plusMonths(1),
-                                              EdaRegionConnectorMetadata.PERIOD_LATEST_END.minusMonths(1)),
-                             "Relative from past to future"),
-                // GH-1322 This test will fail after 07.04.2025
-                Arguments.of(new AbsoluteDuration(now.minusMonths(1), now.plusMonths(1)),
-                             "Absolut from past to future")
+                             "Absolut exceeds max future")
         );
     }
 
