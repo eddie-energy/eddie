@@ -155,7 +155,7 @@ public class CdsServer {
     public Set<String> countryCodes() {
         Set<String> countries = new HashSet<>();
         for (var coverage : coverages()) {
-            countries.add(coverage.countryCode().toUpperCase(Locale.ROOT));
+            countries.add(coverage.countryCode().toLowerCase(Locale.ROOT));
         }
         return countries;
     }
