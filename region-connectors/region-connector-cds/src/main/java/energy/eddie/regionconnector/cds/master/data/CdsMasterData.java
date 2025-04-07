@@ -53,7 +53,7 @@ public class CdsMasterData implements MasterData {
         return server.countryCodes()
                 .stream()
                 .map(countryCode ->
-                             new PermissionAdministrator(countryCode.toUpperCase(Locale.ROOT),
+                             new PermissionAdministrator(countryCode.toLowerCase(Locale.ROOT),
                                                          server.name(),
                                                          server.displayName(),
                                                          server.idAsString(),
@@ -67,7 +67,7 @@ public class CdsMasterData implements MasterData {
         return server.countryCodes()
                 .stream()
                 .map(countryCode ->
-                             new MeteredDataAdministrator(countryCode.toUpperCase(Locale.ROOT),
+                             new MeteredDataAdministrator(countryCode.toLowerCase(Locale.ROOT),
                                                           server.name(),
                                                           server.idAsString(),
                                                           website,
