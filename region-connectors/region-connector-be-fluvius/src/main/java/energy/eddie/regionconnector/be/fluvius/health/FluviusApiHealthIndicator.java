@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.be.fluvius.health;
 
-import energy.eddie.regionconnector.be.fluvius.clients.FluviusApiClient;
+import energy.eddie.regionconnector.be.fluvius.client.FluviusApiClient;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;

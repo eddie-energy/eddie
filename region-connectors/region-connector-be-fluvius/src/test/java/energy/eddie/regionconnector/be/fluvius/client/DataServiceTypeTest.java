@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.be.fluvius.clients;
+package energy.eddie.regionconnector.be.fluvius.client;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
