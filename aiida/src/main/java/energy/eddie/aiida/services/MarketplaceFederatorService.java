@@ -1,11 +1,13 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.config.MarketplaceConfiguration;
-import energy.eddie.aiida.errors.FailedToCreateAiidaFederatorConnectionMessage;
+import energy.eddie.aiida.errors.FailedToCreateAiidaFederatorConnectionJwt;
 import energy.eddie.aiida.errors.FailedToCreateCSRException;
 import energy.eddie.aiida.errors.FailedToGetCertificateException;
 import energy.eddie.aiida.errors.KeyStoreServiceException;
-import energy.eddie.api.agnostic.EddieApiError;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -18,8 +20,6 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -31,9 +31,11 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
@@ -90,29 +92,18 @@ public class MarketplaceFederatorService {
         }
     }
 
-    public String createAiidaFederatorConnectionMessage() throws FailedToCreateAiidaFederatorConnectionMessage {
-        var message = "federatorAiidaId: " + aiidaId;
+    public String createAiidaFederatorConnectionJwt() throws FailedToCreateAiidaFederatorConnectionJwt {
         try {
-            return signMessage(message, keyStoreService.getKeyPair().getPrivate());
-        } catch (KeyStoreServiceException e) {
-            throw new FailedToCreateAiidaFederatorConnectionMessage("Failed load Private Key", e);
-        }
-    }
+            var certificate = keyStoreService.getCertificate();
+            var privateKey = keyStoreService.getKeyPair().getPrivate();
 
-    private String signMessage(
-            String message,
-            PrivateKey privateKey
-    ) throws FailedToCreateAiidaFederatorConnectionMessage {
-        try {
-            Signature signature = Signature.getInstance("SHA256withRSA", BC_PROVIDER);
-            signature.initSign(privateKey);
-            signature.update(message.getBytes(StandardCharsets.UTF_8));
-
-            byte[] signedData = signature.sign();
-            return convertByteArrayToPem(signedData);
-        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException |
-                 IOException e) {
-            throw new FailedToCreateAiidaFederatorConnectionMessage("Failed to sign connection message", e);
+            return Jwts.builder()
+                             .subject(aiidaId.toString())
+                             .claim("certificate", Base64.getEncoder().encodeToString(certificate.getEncoded()))
+                             .signWith(privateKey)
+                             .compact();
+        } catch (KeyStoreServiceException | CertificateEncodingException | JwtException e) {
+            throw new FailedToCreateAiidaFederatorConnectionJwt("Failed create Aiida Connection Jwt: ", e);
         }
     }
 
@@ -130,7 +121,8 @@ public class MarketplaceFederatorService {
 
             Date now = new Date();
             certificate.checkValidity(now);
-        } catch (FailedToGetCertificateException | CertificateException | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException | SignatureException e) {
+        } catch (FailedToGetCertificateException | CertificateException | NoSuchAlgorithmException |
+                 InvalidKeyException | NoSuchProviderException | SignatureException e) {
             throw new FailedToCreateCSRException("Error while verifying certificate", e);
         }
     }
@@ -171,10 +163,12 @@ public class MarketplaceFederatorService {
                             .bodyValue(csrPem)
                             .retrieve()
                             .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(String.class)
-                                    .flatMap(error -> {
-                                        System.out.println(error);
-                                        return reactor.core.publisher.Mono.error(new RuntimeException(error));
-                                    })
+                                                                                   .flatMap(error -> {
+                                                                                       System.out.println(error);
+                                                                                       return reactor.core.publisher.Mono.error(
+                                                                                               new RuntimeException(
+                                                                                                       error));
+                                                                                   })
                             )
                             .bodyToMono(String.class)
                             .block();
@@ -195,14 +189,6 @@ public class MarketplaceFederatorService {
         StringWriter writer = new StringWriter();
         try (JcaPEMWriter pemWriter = new JcaPEMWriter(writer)) {
             pemWriter.writeObject(certificate);
-        }
-        return writer.toString();
-    }
-
-    private String convertByteArrayToPem(byte[] message) throws IOException {
-        StringWriter writer = new StringWriter();
-        try (JcaPEMWriter pemWriter = new JcaPEMWriter(writer)) {
-            pemWriter.writeObject(new PemObject("SIGNATURE", message));
         }
         return writer.toString();
     }

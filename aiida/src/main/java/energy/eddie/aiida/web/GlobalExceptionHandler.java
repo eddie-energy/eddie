@@ -125,19 +125,25 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = {FailedToGetCertificateException.class})
-    protected ResponseEntity<Map<String, List<EddieApiError>>> handleFailedToGetCertificateException(FailedToGetCertificateException exception) {
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleFailedToGetCertificateException(
+            FailedToGetCertificateException exception
+    ) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
     @ExceptionHandler(value = {FailedToCreateCSRException.class})
-    protected ResponseEntity<Map<String, List<EddieApiError>>> handleFailedToCreateCSRException(FailedToCreateCSRException exception) {
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleFailedToCreateCSRException(
+            FailedToCreateCSRException exception
+    ) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
-    @ExceptionHandler(value = {FailedToCreateAiidaFederatorConnectionMessage.class})
-    protected ResponseEntity<Map<String, List<EddieApiError>>> handleFailedToCreateAiidaFederatorConnectionMessage(FailedToCreateAiidaFederatorConnectionMessage exception) {
+    @ExceptionHandler(value = {FailedToCreateAiidaFederatorConnectionJwt.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleFailedToCreateAiidaFederatorConnectionJwt(
+            FailedToCreateAiidaFederatorConnectionJwt exception
+    ) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }

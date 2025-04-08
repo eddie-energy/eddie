@@ -47,6 +47,7 @@ paho-mqtt-client = "1.2.5"
 nimbus = "11.10.1"
 bouncycastle = "1.78"
 keycloak = "25.0.3"
+jjwt = "0.12.6"
 
 swagger-annotations = "2.2.22"
 openapi-generator = "7.11.0"
@@ -185,6 +186,11 @@ jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-ap
 # dependencies e2e-tests
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj-core" }
 playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
+
+# JWT handling
+jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 
 [bundles]
 

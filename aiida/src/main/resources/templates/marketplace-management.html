@@ -17,52 +17,38 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
   <script>
-    function connectToMarketplaceFederator() {
-      let baseUrl = 'http://localhost:6060';
+    async function connectToMarketplaceFederator() {
+      let baseUrl = "http://localhost:6060";
 
-      fetch(`${baseUrl}/request-certificate`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      }).then(async response => {
-        if (!response.ok) {
-          return response.text().then(text => {
-            throw new Error("Failed to retrieve certificate! " + " STATUS " + response.status + " Message:" + text);
-          })
-        }
-        return response.text();
-      })
-        .then(certificate => {
-          fetch(`${baseUrl}/create-connection-message`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            }
-          }).then(response => {
-            if (!response.ok) {
-              return response.text().then(text => {
-                throw new Error("Failed to create connection message to federator! " + " STATUS: " + response.status + " Message:" + text);
-              })
-            }
-            return response.text();
-          }).then(signedConnectionMessage => {
-            const qrData = {
-              signedConnectionMessage: signedConnectionMessage,
-              aiidaCertificate: certificate,
-            };
-
-            document.getElementById("qrInfoMessage").innerText = "Scan for Connecting Aiida to Marketplace User."
-            document.getElementById("qrWarningMessage").innerText = "Handle QR Code with care and do not pass on to unauthorized parties!"
-            document.getElementById("qrWarningMessage").classList.add("text-warning");
-            generateQRCode(qrData);
-          });
-        })
-        .catch(error => {
-          console.error(error);
-          document.getElementById("qrInfoMessage").innerText = "Error occurred: " + error.message;
-          document.getElementById("qrWarningMessage").innerText = "";
+      try {
+        const csrResponse = await fetch(`${baseUrl}/request-certificate`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
+
+        const certificate = await checkResponse(csrResponse);
+
+        const jwtResponse = await fetch(`${baseUrl}/create-connection-jwt`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const signedConnectionJwt = await checkResponse(jwtResponse);
+
+        document.getElementById("qrInfoMessage").innerText = "Scan for Connecting Aiida to Marketplace User.";
+        document.getElementById("qrWarningMessage").innerText = "Handle QR Code with care and do not pass on to unauthorized parties!";
+        document.getElementById("qrWarningMessage").classList.add("text-warning");
+        generateQRCode(signedConnectionJwt);
+
+      } catch (error) {
+        console.error(error);
+        document.getElementById("qrInfoMessage").innerText = "Error occurred: " + error.message;
+        document.getElementById("qrWarningMessage").innerText = "";
+      }
     }
 
     function generateQRCode(qrData) {
@@ -78,14 +64,20 @@
       });
     }
 
-    function checkResponse (response) {
+    async function checkResponse(response) {
       if (!response.ok) {
-        const errors = data.map((error) => error.message).join("\n");
-        console.log(errors);
-        return Promise.reject(new Error(errors));
-      }
-    }
+        let data;
+        try {
+          data = await response.json();
+        } catch (error) {
+        }
 
+        const errors = data.errors.map((error) => error.message).join("\n");
+        console.log(errors);
+        return Promise.reject(new Error("Failed to retrieve certificate! " + "\nSTATUS " + response.status + "\nError messages:\n" + errors));
+      }
+      return response.text();
+    }
   </script>
 </head>
 <body>

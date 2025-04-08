@@ -44,5 +44,5 @@ aiida:
 
 marketplace:
   federatorUrl: http://localhost:9090/api/certificates
-  keystorePath: ${KEYSTORE_PATH:keystore.p12}
+  keystorePath: ${KEYSTORE_PATH:aiida/src/main/resources/keystore.p12}
   keystorePassword: ${KEYSTORE_PASSWORD}:REPLACE_ME
