@@ -16,7 +16,6 @@ public class DeviceConfigWrapper {
         this.modbus = modbus;
     }
 
-    @Nullable
     public List<ModbusDevice> getDevices() {
         return modbus != null ? modbus.getDevices() : List.of();
     }
@@ -25,9 +24,8 @@ public class DeviceConfigWrapper {
         @Nullable
         private List<ModbusDevice> devices;
 
-        @Nullable
         public List<ModbusDevice> getDevices() {
-            return devices;
+            return devices != null ? devices : List.of();
         }
     }
 }
