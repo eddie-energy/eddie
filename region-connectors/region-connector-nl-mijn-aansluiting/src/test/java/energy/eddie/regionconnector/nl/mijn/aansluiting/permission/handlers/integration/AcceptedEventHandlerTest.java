@@ -57,7 +57,7 @@ class AcceptedEventHandlerTest {
         eventBus.emit(new NlInternalPollingEvent());
 
         // Then
-        verify(pollingService, never()).fetchConsumptionData(any());
+        verify(pollingService, never()).pollTimeSeriesData(any());
     }
 
     @Test
@@ -82,7 +82,7 @@ class AcceptedEventHandlerTest {
         eventBus.emit(new NlSimpleEvent("pid", PermissionProcessStatus.ACCEPTED));
 
         // Then
-        verify(pollingService).fetchConsumptionData(pr);
+        verify(pollingService).pollTimeSeriesData(pr);
     }
 
     @Test
@@ -132,6 +132,6 @@ class AcceptedEventHandlerTest {
         eventBus.emit(new NlSimpleEvent("pid", PermissionProcessStatus.ACCEPTED));
 
         // Then
-        verify(pollingService, never()).fetchConsumptionData(any());
+        verify(pollingService, never()).pollTimeSeriesData(any());
     }
 }

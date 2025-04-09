@@ -3,12 +3,9 @@ package energy.eddie.regionconnector.fr.enedis.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.CimTestConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepository;
-import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
@@ -46,15 +43,6 @@ class PermissionRequestControllerTest {
     private ObjectMapper mapper;
     @MockitoBean
     private PermissionRequestService permissionRequestService;
-    @MockitoBean
-    @SuppressWarnings("unused")
-    private FrPermissionRequestRepository unusedRepository;
-    @MockitoBean
-    @SuppressWarnings("unused")
-    private FrPermissionEventRepository permissionEventRepository;
-    @SuppressWarnings("unused")
-    @MockitoBean
-    private DataNeedsService dataNeedsService;
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {

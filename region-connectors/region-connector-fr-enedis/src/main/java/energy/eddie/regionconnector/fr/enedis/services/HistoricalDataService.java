@@ -22,7 +22,6 @@ public class HistoricalDataService {
     @Async
     public void fetchHistoricalMeterReadings(FrEnedisPermissionRequest permissionRequest) {
         LocalDate permissionStart = permissionRequest.start();
-        LocalDate permissionEnd = permissionRequest.end();
 
         LocalDate now = LocalDate.now(ZONE_ID_FR);
         String permissionId = permissionRequest.permissionId();
@@ -31,7 +30,6 @@ public class HistoricalDataService {
             return;
         }
 
-        var end = now.isAfter(permissionEnd) ? permissionEnd.plusDays(1) : now;
-        pollingService.fetchMeterReadings(permissionRequest, permissionStart, end);
+        pollingService.pollTimeSeriesData(permissionRequest);
     }
 }

@@ -87,6 +87,7 @@ region-connector.nl.mijn.aansluiting.issuer-url=https://example.com
 region-connector.nl.mijn.aansluiting.client-id=client-id
 region-connector.nl.mijn.aansluiting.scope=24_maanden_dagstanden
 region-connector.nl.mijn.aansluiting.redirect-url=https://example.com/callback
+region-connector.nl.mijn.aansluiting.polling=0 0 17 * * *
 ```
 
 ## Running the Region Connector via EDDIE

@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.fi.fingrid.permission.request;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.DataSourceInformation;
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fi.fingrid.permission.FingridDataSourceInformation;
 import jakarta.annotation.Nullable;
@@ -15,7 +15,7 @@ import java.util.Optional;
 @Entity
 @Table(schema = "fi_fingrid", name = "permission_request")
 @SuppressWarnings({"NullAway", "unused"})
-public class FingridPermissionRequest implements PermissionRequest {
+public class FingridPermissionRequest implements MeterReadingPermissionRequest {
     @Id
     @Column(length = 36)
     private final String permissionId;
@@ -135,5 +135,10 @@ public class FingridPermissionRequest implements PermissionRequest {
 
     public Optional<ZonedDateTime> latestMeterReading() {
         return Optional.ofNullable(latestMeterReading);
+    }
+
+    @Override
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return latestMeterReading().map(ZonedDateTime::toLocalDate);
     }
 }

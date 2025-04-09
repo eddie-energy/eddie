@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
+import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
@@ -52,7 +53,7 @@ public class AccountingPointDataService {
         return retryable;
     }
 
-    public void fetchAccountingPointData(FrEnedisPermissionRequest request, String usagePointId) {
+    public void fetchAccountingPointData(MeterReadingPermissionRequest request, String usagePointId) {
         LOGGER.atInfo()
               .addArgument(request::permissionId)
               .log("Fetching accounting point data for permissionId '{}'");
@@ -65,9 +66,9 @@ public class AccountingPointDataService {
         Mono.zip(contractMono, addressMono, identityMono, contactMono)
             .subscribe(
                     tuple -> handleAccountingPointData(
-                            request,
+                            (FrEnedisPermissionRequest) request,
                             new IdentifiableAccountingPointData(
-                                    request, tuple.getT1(), tuple.getT2(), tuple.getT3(), tuple.getT4()
+                                    (FrEnedisPermissionRequest) request, tuple.getT1(), tuple.getT2(), tuple.getT3(), tuple.getT4()
                             )
                     ),
                     e -> handleError(request.permissionId(), e)

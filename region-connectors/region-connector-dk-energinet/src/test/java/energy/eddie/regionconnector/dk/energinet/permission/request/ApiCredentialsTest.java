@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
+import energy.eddie.regionconnector.dk.energinet.EnerginetBeanConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,7 +29,7 @@ class ApiCredentialsTest {
         );
     }
 
-    private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
+    private final ObjectMapper mapper = new EnerginetBeanConfig().objectMapper();
 
     @Test
     void refreshToken_returnsAccessTokenIfValid() {

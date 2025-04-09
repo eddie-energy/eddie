@@ -8,13 +8,16 @@ import energy.eddie.regionconnector.fi.fingrid.config.FingridConfiguration;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionEventRepository;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
+import energy.eddie.regionconnector.fi.fingrid.services.PollingService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientSsl;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
@@ -84,5 +87,20 @@ public class FingridBeanConfiguration {
             EventBus eventBus
     ) {
         return new ConnectionStatusMessageHandler<>(eventBus, fiPermissionRequestRepository, pr -> "");
+    }
+
+    @Bean
+    public CommonFutureDataService<FingridPermissionRequest> commonFutureDataService(
+            PollingService pollingService,
+            FiPermissionRequestRepository repository,
+            @Value("${region-connector.fi.fingrid.polling:0 0 17 * * *}") String cronExpr,
+            FingridRegionConnector connector
+    ){
+        return new CommonFutureDataService<>(
+                pollingService,
+                repository,
+                cronExpr,
+                connector.getMetadata()
+        );
     }
 }

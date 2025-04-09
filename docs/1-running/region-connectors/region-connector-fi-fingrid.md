@@ -36,6 +36,7 @@ When using environment variables, the configuration values need to be converted 
 region-connector.fi.fingrid.organisation-user=0000000000000.THP
 region-connector.fi.fingrid.organisation-name=Organisation Name
 region-connector.fi.fingrid.api-url=https://dh-fingrid-cert01-b2b.azurewebsites.net/rest/FGR/
+region-connector.fi.fingrid.polling=0 0 17 * * *
 spring.ssl.bundle.jks.fingrid.keystore.location=/path/to/keystore.jks
 spring.ssl.bundle.jks.fingrid.keystore.password=password
 spring.ssl.bundle.jks.fingrid.keystore.type=JKS

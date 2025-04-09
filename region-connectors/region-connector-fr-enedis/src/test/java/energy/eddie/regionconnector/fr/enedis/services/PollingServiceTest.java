@@ -70,7 +70,7 @@ class PollingServiceTest {
                                                                         UsagePointType.CONSUMPTION);
 
         // When
-        pollingService.fetchMeterReadings(request, start, end);
+        pollingService.pollTimeSeriesData(request);
 
         // Then
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
@@ -109,7 +109,7 @@ class PollingServiceTest {
                                                                         UsagePointType.CONSUMPTION);
 
         // When
-        pollingService.fetchMeterReadings(request, start, end);
+        pollingService.pollTimeSeriesData(request);
 
         // Then
         verify(outbox, never()).commit(any());
@@ -160,7 +160,7 @@ class PollingServiceTest {
         VirtualTimeScheduler.getOrSet(); // yes, this is necessary
 
         // When
-        pollingService.fetchMeterReadings(request, start, end);
+        pollingService.pollTimeSeriesData(request);
 
         // Then
         StepVerifier.withVirtualTime(sink::asFlux)
@@ -200,7 +200,7 @@ class PollingServiceTest {
 
         // When
         assertThrows(IllegalStateException.class,
-                     () -> pollingService.fetchMeterReadings(request, start, end));
+                     () -> pollingService.pollTimeSeriesData(request));
         verifyNoInteractions(enedisApi);
 
         // Clean-Up
@@ -236,7 +236,7 @@ class PollingServiceTest {
                 .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));
 
         // When
-        pollingService.fetchMeterReadings(request, start, end);
+        pollingService.pollTimeSeriesData(request);
 
         // Then
         StepVerifier.create(sink.asFlux())
@@ -277,7 +277,7 @@ class PollingServiceTest {
                 .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));
 
         // When
-        pollingService.fetchMeterReadings(request, start, end);
+        pollingService.pollTimeSeriesData(request);
 
         // Then
         StepVerifier.create(sink.asFlux())
@@ -320,7 +320,7 @@ class PollingServiceTest {
                 .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));
 
         // When
-        pollingService.fetchMeterReadings(request, start, end);
+        pollingService.pollTimeSeriesData(request);
 
         // Then
         StepVerifier.create(sink.asFlux())

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
+import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
@@ -16,7 +16,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 
 class NettyDataApiClientIntegrationTest {
-    private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
+    private final ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
 
     DataApi dataApi = new NettyDataApiClient(
             HttpClient.create(),

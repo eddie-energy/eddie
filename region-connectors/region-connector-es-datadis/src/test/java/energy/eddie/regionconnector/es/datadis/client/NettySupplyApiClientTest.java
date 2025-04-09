@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.es.datadis.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
+import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
@@ -30,7 +30,7 @@ class NettySupplyApiClientTest {
     private static MockWebServer mockBackEnd;
     private static String basePath;
     private static DatadisConfig config;
-    private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
+    private final ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
 
     @BeforeAll
     static void setUp() throws IOException {

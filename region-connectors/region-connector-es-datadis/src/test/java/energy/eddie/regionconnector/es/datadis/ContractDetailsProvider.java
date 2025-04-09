@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class ContractDetailsProvider {
-    public static final ObjectMapper objectMapper = new DatadisSpringConfig().objectMapper();
+    public static final ObjectMapper objectMapper = new DatadisBeanConfig().objectMapper();
 
     public static List<ContractDetails> loadContractDetails() throws IOException {
         try (InputStream is = ContractDetailsProvider.class.getClassLoader()

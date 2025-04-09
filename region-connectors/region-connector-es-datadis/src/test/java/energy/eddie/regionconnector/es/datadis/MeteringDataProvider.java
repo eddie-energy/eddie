@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.util.List;
 
 public class MeteringDataProvider {
-    public static final ObjectMapper objectMapper = new DatadisSpringConfig().objectMapper();
+    public static final ObjectMapper objectMapper = new DatadisBeanConfig().objectMapper();
 
     public static List<MeteringData> loadMeteringData() throws IOException {
         try (InputStream is = MeteringDataProvider.class.getClassLoader().getResourceAsStream("consumptionKWh.json")) {

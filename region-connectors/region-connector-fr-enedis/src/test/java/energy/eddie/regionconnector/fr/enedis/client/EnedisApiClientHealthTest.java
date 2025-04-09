@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.fr.enedis.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.HealthState;
-import energy.eddie.regionconnector.fr.enedis.FrEnedisSpringConfig;
+import energy.eddie.regionconnector.fr.enedis.EnedisBeanConfig;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.mock;
 class EnedisApiClientHealthTest {
     private static MockWebServer mockBackEnd;
     private static WebClient webClient;
-    private final ObjectMapper objectMapper = new FrEnedisSpringConfig().objectMapper();
+    private final ObjectMapper objectMapper = new EnedisBeanConfig().objectMapper();
 
     @BeforeEach
     void setUp() throws IOException {

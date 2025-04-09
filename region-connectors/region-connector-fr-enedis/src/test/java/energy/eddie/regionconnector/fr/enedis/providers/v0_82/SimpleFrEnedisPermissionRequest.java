@@ -24,4 +24,5 @@ public record SimpleFrEnedisPermissionRequest(
         LocalDate start,
         LocalDate end
 ) implements FrEnedisPermissionRequest {
+
 }
