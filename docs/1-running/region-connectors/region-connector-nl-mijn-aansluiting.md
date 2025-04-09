@@ -67,11 +67,13 @@ depends on the way you deploy the region connector.
 | `spring.ssl.bundle.jks.nl.key.password`                     | Password to access the key in the keystore                                                                                                                                      |
 | `spring.ssl.bundle.jks.nl.keystore.type`                    | The keystore type. Should always be set to `JKS`                                                                                                                                |
 
-### .properties file
+The region connector can be configured using Spring properties or environment variables.
+When using environment variables, the configuration values need to be converted in the following way:
 
-Example configuration for an `application.properties` file:
+- Replace all non-alphanumeric characters with an underscore (`_`)
+- Optionally convert all letters to upper case
 
-```properties
+```properties :spring
 # Key Store Config
 spring.ssl.bundle.jks.nl.keystore.location=./mijn-aansluiting.jks
 spring.ssl.bundle.jks.nl.keystore.password=password
@@ -85,31 +87,7 @@ region-connector.nl.mijn.aansluiting.issuer-url=https://example.com
 region-connector.nl.mijn.aansluiting.client-id=client-id
 region-connector.nl.mijn.aansluiting.scope=24_maanden_dagstanden
 region-connector.nl.mijn.aansluiting.redirect-url=https://example.com/callback
-```
-
-### Environment variables
-
-When using environment variables, the configuration values need to be converted in the following way:
-
-* Replace all non-alphanumeric characters with an underscore (`_`)
-* Optionally convert all letters to upper case
-
-Example configuration for dotenv file:
-
-```dotenv
-# Key Store Config
-SPRING_SSL_BUNDLE_JKS_NL_KEYSTORE_LOCATION=./mijn-aansluiting_jks
-SPRING_SSL_BUNDLE_JKS_NL_KEYSTORE_PASSWORD=password
-SPRING_SSL_BUNDLE_JKS_NL_KEYSTORE_TYPE=JKS
-SPRING_SSL_BUNDLE_JKS_NL_KEY_ALIAS=mijn-aansluiting
-SPRING_SSL_BUNDLE_JKS_NL_KEY_PASSWORD=password
-
-# Other configuration
-REGION_CONNECTOR_NL_MIJN_AANSLUITING_KEY_ID=id
-REGION_CONNECTOR_NL_MIJN_AANSLUITING_ISSUER_URL=https://example.com
-REGION_CONNECTOR_NL_MIJN_AANSLUITING_CLIENT_ID=client-id
-REGION_CONNECTOR_NL_MIJN_AANSLUITING_SCOPE=24_maanden_dagstanden
-REGION_CONNECTOR_NL_MIJN_AANSLUITING_REDIRECT_URL=https://example.com/callback
+region-connector.nl.mijn.aansluiting.polling=0 0 17 * * *
 ```
 
 ## Running the Region Connector via EDDIE

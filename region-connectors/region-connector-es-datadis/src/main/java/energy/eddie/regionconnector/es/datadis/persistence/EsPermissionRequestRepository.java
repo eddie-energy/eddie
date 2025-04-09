@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis.persistence;
 
 import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.StatusPermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
@@ -14,10 +15,12 @@ import java.util.List;
 
 @Repository
 public interface EsPermissionRequestRepository extends
-        PermissionRequestRepository<EsPermissionRequest>,
         JpaRepository<DatadisPermissionRequest, String>,
-        StalePermissionRequestRepository<DatadisPermissionRequest> {
+        StatusPermissionRequestRepository<EsPermissionRequest>,
+        StalePermissionRequestRepository<DatadisPermissionRequest>,
+        PermissionRequestRepository<EsPermissionRequest> {
 
+    @Override
     List<EsPermissionRequest> findByStatus(PermissionProcessStatus status);
 
     @Query(

@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.cds.services;
+package energy.eddie.regionconnector.cds.tasks;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.cds.permission.events.SimpleEvent;
@@ -9,19 +9,18 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @ConditionalOnProperty(name = "region-connector.cds.par.enabled", havingValue = "true")
-public class RetryService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RetryService.class);
+public class RetrySendingTask {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RetrySendingTask.class);
     private final Outbox outbox;
     private final CdsPermissionRequestRepository repository;
     private final AuthorizationService authorizationService;
     private final CdsServerRepository serverRepository;
 
-    public RetryService(
+    public RetrySendingTask(
             Outbox outbox,
             CdsPermissionRequestRepository repository,
             AuthorizationService authorizationService,
@@ -33,7 +32,7 @@ public class RetryService {
         this.serverRepository = serverRepository;
     }
 
-    @Scheduled(cron = "${region-connector.cds.retry:0 0 * * * *}")
+    @RetrySending
     public void retry() {
         var permissionRequests = repository.findByStatus(PermissionProcessStatus.UNABLE_TO_SEND);
         for (var permissionRequest : permissionRequests) {

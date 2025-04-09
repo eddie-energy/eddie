@@ -54,7 +54,7 @@ class LastMeterReadingUpdateServiceTest {
         );
 
         // When
-        streams.publish(pr, List.of(), List.of(), List.of(), List.of(), segments);
+        streams.publishValidatedHistoricalData(pr, List.of(), List.of(), List.of(), List.of(), segments);
 
         // Then
         StepVerifier.create(streams.validatedHistoricalData())

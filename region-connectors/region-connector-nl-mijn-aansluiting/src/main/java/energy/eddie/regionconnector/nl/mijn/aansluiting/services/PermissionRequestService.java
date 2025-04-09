@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.services;
 
 import com.nimbusds.oauth2.sdk.ParseException;
-import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;

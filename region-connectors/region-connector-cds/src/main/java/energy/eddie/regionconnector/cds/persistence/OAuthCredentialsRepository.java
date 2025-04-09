@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OAuthCredentialsRepository extends CrudRepository<OAuthCredentials, String> {
     OAuthCredentials getOAuthCredentialByPermissionId(String permissionId);
+
+    void deleteByPermissionId(String permissionId);
 }

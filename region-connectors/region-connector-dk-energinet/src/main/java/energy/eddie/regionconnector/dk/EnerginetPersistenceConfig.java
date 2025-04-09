@@ -7,5 +7,4 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories
 @EntityScan
 @Configuration
-public class EnerginetPersistenceConfig {
-}
+public class EnerginetPersistenceConfig {}

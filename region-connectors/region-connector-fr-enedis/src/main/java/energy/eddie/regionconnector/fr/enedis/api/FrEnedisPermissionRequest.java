@@ -5,7 +5,6 @@ import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 
 public interface FrEnedisPermissionRequest extends MeterReadingPermissionRequest {
     String usagePointId();
-
     Granularity granularity();
 
     UsagePointType usagePointType();

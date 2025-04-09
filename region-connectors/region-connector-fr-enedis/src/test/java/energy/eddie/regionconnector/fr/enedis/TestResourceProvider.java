@@ -21,7 +21,7 @@ public class TestResourceProvider {
 
     public static final String ADDRESS = "address.json";
 
-    private static final ObjectMapper objectMapper = new FrEnedisSpringConfig().objectMapper();
+    private static final ObjectMapper objectMapper = new EnedisBeanConfig().objectMapper();
 
     public static MeterReading readMeterReadingFromFile(String resource) throws IOException {
         try (InputStream is = TestResourceProvider.class.getClassLoader().getResourceAsStream(resource)) {

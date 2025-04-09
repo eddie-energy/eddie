@@ -4,9 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.CimTestConfiguration;
-import energy.eddie.regionconnector.es.datadis.DatadisSpringConfig;
+import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.health.DatadisApiHealthIndicator;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisDataSourceInformation;
@@ -38,8 +37,8 @@ import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -51,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SuppressWarnings("unused")
 @Import(CimTestConfiguration.class)
 class PermissionControllerTest {
-    private final ObjectMapper mapper = new DatadisSpringConfig().objectMapper();
+    private final ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
@@ -62,9 +61,6 @@ class PermissionControllerTest {
     private EsPermissionEventRepository unusedPermissionEventRepository;
     @MockitoBean
     private DatadisApiHealthIndicator healthIndicator;
-    @SuppressWarnings("unused")
-    @MockitoBean
-    private DataNeedsService dataNeedsService;
 
     @Test
     void permissionStatus_permissionExists_returnsOk() throws Exception {

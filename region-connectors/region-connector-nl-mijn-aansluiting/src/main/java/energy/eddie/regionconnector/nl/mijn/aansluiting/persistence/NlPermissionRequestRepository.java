@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.nl.mijn.aansluiting.persistence;
 
 import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.StatusPermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
@@ -15,9 +16,11 @@ import java.util.Optional;
 public interface NlPermissionRequestRepository extends
         JpaRepository<MijnAansluitingPermissionRequest, String>,
         PermissionRequestRepository<NlPermissionRequest>,
-        StalePermissionRequestRepository<MijnAansluitingPermissionRequest> {
+        StalePermissionRequestRepository<MijnAansluitingPermissionRequest>,
+        StatusPermissionRequestRepository<NlPermissionRequest> {
     Optional<NlPermissionRequest> findByStateAndPermissionId(String state, String permissionId);
 
+    @Override
     List<NlPermissionRequest> findByStatus(PermissionProcessStatus status);
 
     boolean existsByPermissionIdAndStatus(String permissionId, PermissionProcessStatus status);

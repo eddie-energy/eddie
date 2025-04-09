@@ -40,7 +40,7 @@ class HistoricalDataServiceTest {
         historicalDataService.fetchAvailableHistoricalData(permissionRequest);
 
         // Then
-        verify(dataApiService).fetchDataForPermissionRequest(permissionRequest, start, end.plusDays(1));
+        verify(dataApiService).pollTimeSeriesData(permissionRequest);
     }
 
     @ParameterizedTest(name = "{2}")
@@ -76,9 +76,7 @@ class HistoricalDataServiceTest {
         historicalDataService.fetchAvailableHistoricalData(permissionRequest);
 
         // Then
-        verify(dataApiService).fetchDataForPermissionRequest(permissionRequest,
-                                                             start,
-                                                             LocalDate.now(ZONE_ID_SPAIN).minusDays(1));
+        verify(dataApiService).pollTimeSeriesData(permissionRequest);
     }
 
     private static Stream<Arguments> pastTimeRanges() {

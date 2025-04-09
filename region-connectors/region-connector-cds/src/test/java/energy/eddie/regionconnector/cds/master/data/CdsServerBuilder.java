@@ -21,6 +21,7 @@ public class CdsServerBuilder {
     private String serviceContractsEndpoint;
     private String servicePointsEndpoint;
     private String meterDevicesEndpoint;
+    private String billSectionEndpoint;
 
     public CdsServerBuilder setBaseUri(String baseUri) {
         this.baseUri = baseUri;
@@ -102,6 +103,11 @@ public class CdsServerBuilder {
         return this;
     }
 
+    public CdsServerBuilder setBillSectionEndpoint(String billSectionEndpoint) {
+        this.billSectionEndpoint = billSectionEndpoint;
+        return this;
+    }
+
     public CdsServerBuilder setCustomerDataClientId(String customerDataClientId) {
         this.customerDataClientId = customerDataClientId;
         return this;
@@ -130,7 +136,8 @@ public class CdsServerBuilder {
                         accountsEndpoint,
                         serviceContractsEndpoint,
                         servicePointsEndpoint,
-                        meterDevicesEndpoint
+                        meterDevicesEndpoint,
+                        billSectionEndpoint
                 ),
                 customerDataClientId,
                 customerDataClientSecret

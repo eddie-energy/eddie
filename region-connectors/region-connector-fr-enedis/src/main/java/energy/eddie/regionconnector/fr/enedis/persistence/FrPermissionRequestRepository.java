@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.fr.enedis.persistence;
 
 import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
+import energy.eddie.api.agnostic.process.model.persistence.StatusPermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
@@ -14,11 +15,13 @@ import java.util.List;
 
 @Repository
 public interface FrPermissionRequestRepository extends
-        PermissionRequestRepository<FrEnedisPermissionRequest>,
         CrudRepository<EnedisPermissionRequest, String>,
-        StalePermissionRequestRepository<EnedisPermissionRequest> {
+        PermissionRequestRepository<FrEnedisPermissionRequest>,
+        StalePermissionRequestRepository<EnedisPermissionRequest>,
+        StatusPermissionRequestRepository<FrEnedisPermissionRequest> {
 
-    List<FrEnedisPermissionRequest> findAllByStatus(PermissionProcessStatus status);
+    @Override
+    List<FrEnedisPermissionRequest> findByStatus(PermissionProcessStatus status);
 
     @Query(
             value = "SELECT permission_id, connection_id, permission_start, permission_end, data_need_id, status, granularity, usage_point_id, latest_meter_reading_end_date, created, usage_point_type " +

@@ -59,7 +59,7 @@ public class AcceptedEventHandler implements EventHandler<PermissionEvent> {
             LOGGER.atInfo()
                   .addArgument(request::permissionId)
                   .log("Fetching data for accepted permission request {}");
-            pollingService.fetchConsumptionData(request);
+            pollingService.pollTimeSeriesData(request);
         }
     }
 }

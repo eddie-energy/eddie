@@ -1,14 +1,31 @@
 package energy.eddie.regionconnector.cds;
 
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.regionconnector.cds.permission.events.SimpleEvent;
+import energy.eddie.regionconnector.cds.persistence.CdsPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CdsRegionConnector implements RegionConnector {
-   private final CdsRegionConnectorMetadata metadata;
+    private static final Logger LOGGER = LoggerFactory.getLogger(CdsRegionConnector.class);
+    private final CdsRegionConnectorMetadata metadata;
+    private final Outbox outbox;
+    private final CdsPermissionRequestRepository repository;
 
-    public CdsRegionConnector(CdsRegionConnectorMetadata metadata) {this.metadata = metadata;}
+    public CdsRegionConnector(
+            CdsRegionConnectorMetadata metadata,
+            Outbox outbox,
+            CdsPermissionRequestRepository repository
+    ) {
+        this.metadata = metadata;
+        this.outbox = outbox;
+        this.repository = repository;
+    }
 
     @Override
     public RegionConnectorMetadata getMetadata() {
@@ -17,6 +34,18 @@ public class CdsRegionConnector implements RegionConnector {
 
     @Override
     public void terminatePermission(String permissionId) {
-        // No-Op
+        var pr = repository.findByPermissionId(permissionId);
+        if (pr.isEmpty()) {
+            LOGGER.info("Permission request {} not found", permissionId);
+            return;
+        }
+        var permissionRequest = pr.get();
+        if(permissionRequest.status() != PermissionProcessStatus.ACCEPTED) {
+            LOGGER.info("Permission request {} not accepted", permissionId);
+            return;
+        }
+        LOGGER.info("Terminating permission request {}", permissionId);
+        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.TERMINATED));
+        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
     }
 }

@@ -1,10 +1,7 @@
 package energy.eddie.regionconnector.cds.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.DataNeedNotSupportedResult;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
-import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClient;
 import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientErrorHandler;
@@ -58,7 +55,7 @@ class PollingServiceTest {
         );
     }
 
-    static Stream<Arguments> testPoll_forRevokedPermissionRequest_emitsUsageSegments() {
+    static Stream<Arguments> exceptionSupplier() {
         return Stream.of(
                 Arguments.of(WebClientResponseException.create(HttpStatus.UNAUTHORIZED,
                                                                "status",
@@ -92,7 +89,7 @@ class PollingServiceTest {
 
         // Then
         verify(handler, never()).revoke(any(), any());
-        verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
+        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -109,13 +106,17 @@ class PollingServiceTest {
                 .setDataNeedId("dnid")
                 .setCreated(now)
                 .build();
+        when(calculationService.calculate("dnid", now))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
+                                                                      new Timeframe(start, end),
+                                                                      new Timeframe(start, end)));
 
         // When
         pollingService.poll(pr);
 
         // Then
         verify(handler, never()).revoke(any(), any());
-        verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
+        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any(), any());
     }
 
     @ParameterizedTest
@@ -142,19 +143,22 @@ class PollingServiceTest {
                 .thenReturn(customerDataClient);
         when(customerDataClient.usagePoints(eq(pr), any(), eq(start.atStartOfDay(ZoneOffset.UTC))))
                 .thenReturn(Mono.just(List.of()));
-        when(handler.test(any())).thenCallRealMethod();
+        when(customerDataClient.accounts(pr)).thenReturn(Mono.just(List.of()));
+        when(customerDataClient.serviceContracts(pr)).thenReturn(Mono.just(List.of()));
+        when(customerDataClient.servicePoints(pr)).thenReturn(Mono.just(List.of()));
+        when(customerDataClient.meterDevices(pr)).thenReturn(Mono.just(List.of()));
         when(handler.thenRevoke(any())).thenCallRealMethod();
         // When
         pollingService.poll(pr);
 
         // Then
         verify(handler, never()).revoke(any(), any());
-        verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
+        verify(streams).publishValidatedHistoricalData(any(), any(), any(), any(), any(), any());
     }
 
     @ParameterizedTest
-    @MethodSource
-    void testPoll_forRevokedPermissionRequest_emitsUsageSegments(Exception exception) {
+    @MethodSource("exceptionSupplier")
+    void testPoll_forRevokedPermissionRequest_doesNothing(Exception exception) {
         // Given
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         var today = LocalDate.now(ZoneOffset.UTC);
@@ -189,7 +193,7 @@ class PollingServiceTest {
 
         // Then
         verify(handler).revoke(any(), any());
-        verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
+        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -212,8 +216,7 @@ class PollingServiceTest {
                                                                    new Timeframe(start, end));
         when(calculationService.calculate("dnid", now))
                 .thenReturn(calcResult);
-        when(factory.get(pr))
-                .thenReturn(customerDataClient);
+        when(factory.get(pr)).thenReturn(customerDataClient);
         when(customerDataClient.usagePoints(pr, endOfDay(end, ZoneOffset.UTC), start.atStartOfDay(ZoneOffset.UTC)))
                 .thenReturn(Mono.error(new RuntimeException()));
         when(handler.test(any())).thenCallRealMethod();
@@ -224,6 +227,69 @@ class PollingServiceTest {
 
         // Then
         verify(handler, never()).revoke(any(), any());
-        verify(streams, never()).publish(any(), any(), any(), any(), any(), any());
+        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any(), any());
+    }
+
+    @ParameterizedTest
+    @MethodSource("exceptionSupplier")
+    void testPoll_forRevokedPermissionRequest_forAccountingPointData_doesNothing(Exception exception) {
+        // Given
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var today = LocalDate.now(ZoneOffset.UTC);
+        var start = today.minusWeeks(1);
+        var end = today.minusDays(1);
+        var pr = new CdsPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setDataStart(start)
+                .setDataEnd(end)
+                .setDataNeedId("dnid")
+                .setCreated(now)
+                .setCdsServer(1)
+                .build();
+        var calcResult = new AccountingPointDataNeedResult(new Timeframe(start, end));
+        when(calculationService.calculate("dnid", now)).thenReturn(calcResult);
+        when(factory.get(pr)).thenReturn(customerDataClient);
+        when(customerDataClient.accounts(pr)).thenReturn(Mono.error(exception));
+        when(customerDataClient.serviceContracts(pr)).thenReturn(Mono.error(exception));
+        when(customerDataClient.servicePoints(pr)).thenReturn(Mono.error(exception));
+        when(customerDataClient.meterDevices(pr)).thenReturn(Mono.error(exception));
+        when(customerDataClient.billSections(pr)).thenReturn(Mono.error(exception));
+        when(handler.thenRevoke(any())).thenCallRealMethod();
+        when(handler.test(any())).thenCallRealMethod();
+
+        // When
+        pollingService.poll(pr);
+
+        // Then
+        verify(handler).revoke(any(), any());
+        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void testPoll_forAccountingPointPermissionRequest_emitsData() {
+        // Given
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var today = LocalDate.now(ZoneOffset.UTC);
+        var pr = new CdsPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setDataNeedId("dnid")
+                .setCreated(now)
+                .setCdsServer(1)
+                .build();
+        var calcResult = new AccountingPointDataNeedResult(new Timeframe(today, today));
+        when(calculationService.calculate("dnid", now)).thenReturn(calcResult);
+        when(factory.get(pr)).thenReturn(customerDataClient);
+        when(customerDataClient.accounts(pr)).thenReturn(Mono.just(List.of()));
+        when(customerDataClient.serviceContracts(pr)).thenReturn(Mono.just(List.of()));
+        when(customerDataClient.servicePoints(pr)).thenReturn(Mono.just(List.of()));
+        when(customerDataClient.meterDevices(pr)).thenReturn(Mono.just(List.of()));
+        when(customerDataClient.billSections(pr)).thenReturn(Mono.just(List.of()));
+        when(handler.thenRevoke(any())).thenCallRealMethod();
+        // When
+        pollingService.poll(pr);
+
+        // Then
+        verify(handler, never()).revoke(any(), any());
+        verify(streams).publishAccountingPointData(any(), any(), any(), any(), any(), any());
     }
 }

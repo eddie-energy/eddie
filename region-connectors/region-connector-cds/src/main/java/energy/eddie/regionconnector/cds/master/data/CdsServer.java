@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
@@ -154,7 +155,7 @@ public class CdsServer {
     public Set<String> countryCodes() {
         Set<String> countries = new HashSet<>();
         for (var coverage : coverages()) {
-            countries.add(coverage.countryCode());
+            countries.add(coverage.countryCode().toLowerCase(Locale.ROOT));
         }
         return countries;
     }

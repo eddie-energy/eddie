@@ -107,6 +107,7 @@ class CdsClientCreationServiceTest {
                         .cdsCustomerdataServicecontractsApi(baseUri)
                         .cdsCustomerdataServicepointsApi(baseUri)
                         .cdsCustomerdataMeterdevicesApi(baseUri)
+                        .cdsCustomerdataBillsectionsApi(baseUri)
                         .pushedAuthorizationRequestEndpoint(baseUri),
                 List.of(
                         new Coverages200ResponseAllOfCoverageEntriesInner()
@@ -180,6 +181,7 @@ class CdsClientCreationServiceTest {
                         .cdsCustomerdataServicepointsApi(baseUri)
                         .cdsCustomerdataMeterdevicesApi(baseUri)
                         .cdsCustomerdataUsagesegmentsApi(baseUri)
+                        .cdsCustomerdataBillsectionsApi(baseUri)
                         .pushedAuthorizationRequestEndpoint(baseUri),
                 List.of(
                         new Coverages200ResponseAllOfCoverageEntriesInner()

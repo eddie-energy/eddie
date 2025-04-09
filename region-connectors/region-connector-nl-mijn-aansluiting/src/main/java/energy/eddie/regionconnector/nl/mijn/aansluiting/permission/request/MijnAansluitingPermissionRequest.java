@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 @Entity
 @Table(schema = "nl_mijn_aansluiting", name = "permission_request")
@@ -122,5 +123,10 @@ public class MijnAansluitingPermissionRequest implements NlPermissionRequest {
     @Override
     public Map<String, ZonedDateTime> lastMeterReadings() {
         return lastMeterReadings;
+    }
+
+    @Override
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return Optional.ofNullable(end);
     }
 }

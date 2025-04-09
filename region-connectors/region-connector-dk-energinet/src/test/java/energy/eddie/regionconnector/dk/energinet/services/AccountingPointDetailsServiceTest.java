@@ -3,8 +3,8 @@ package energy.eddie.regionconnector.dk.energinet.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.DkEnerginetSpringConfig;
 import energy.eddie.regionconnector.dk.energinet.DtoLoader;
+import energy.eddie.regionconnector.dk.energinet.EnerginetBeanConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AccountingPointDetailsServiceTest {
-    private final ObjectMapper mapper = new DkEnerginetSpringConfig().objectMapper();
+    private final ObjectMapper mapper = new EnerginetBeanConfig().objectMapper();
     private final String refreshToken = "token";
     @Mock
     private EnerginetCustomerApi customerApi;

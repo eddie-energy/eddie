@@ -193,12 +193,35 @@ public class Config {
 }
 ```
 
+## `CommonFutureDataService`
+
+The `CommonFutureDataService` can be used to query [FutureData](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/services/CommonFutureDataService.html).
+It uses the provided cron expression and the region connectors timezone to schedule polling intervals. It requires a `PollingService` that implements `CommonPollingService` to poll data and a `PermissionRequestRepository` to find all active permission requests.
+```java
+@Configuration
+public class Config{
+  @Bean
+  public CommonFutureDataService<FooPermissionRequest> commonFutureDataService(
+          PollingService pollingService,
+          BarPermissionRequestRepository repository,
+          BazRegionConnector connector
+  ){
+    return new CommonFutureDataService<>(
+            pollingService,
+            repository,
+            "0 0 17 * * *",
+            connector.getMetadata()
+    );
+  }
+}
+```
+
 ## Authorization Callback Template
 
 The [authorization callback template](https://github.com/eddie-energy/eddie/blob/main/region-connectors/shared/src/main/resources/templates/authorization-callback.html) is used for OAUTH callbacks or similar.
 When a final customer accepts or rejects a permission request, they might be redirected back to EDDIE via a given callback URI.
 To inform them about the state of their permission request the thymeleaf template can be used.
-The template takes threee attributes:
+The template takes three attributes:
 
 - `status`: can either be `OK`, `ERROR`, or `DENIED`.
   First, when the permission request was accepted, second when there was an invalid response from the PA, and third if it was denied.

@@ -33,6 +33,18 @@ class EdaStrategyTest {
     @Mock
     private AccountingPointDataNeed accountingPointDataNeed;
 
+    @ParameterizedTest(name = "{1}")
+    @MethodSource("unsupportedDataNeedDurations")
+    void energyDataTimeframe_throwsIfDateExceedMaxPast(DataNeedDuration duration, String message) {
+        // Given
+        when(timeframedDataNeed.duration()).thenReturn(duration);
+        EdaStrategy edaStrategy = new EdaStrategy();
+
+        // When & Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> edaStrategy.energyDataTimeframe(timeframedDataNeed, ZonedDateTime.now(ZoneOffset.UTC)));
+    }
+
     @SuppressWarnings("DataFlowIssue")
     @Test
     void energyDataTimeframe_doesNotThrowOnPastToFutureAfterNewProcessDate() throws UnsupportedDataNeedException {
@@ -91,6 +103,22 @@ class EdaStrategyTest {
 
         // Then
         assertNull(timeFrame);
+    }
+
+    private static Stream<Arguments> unsupportedDataNeedDurations() {
+        LocalDate now = LocalDate.now(AT_ZONE_ID);
+        return Stream.of(
+                Arguments.of(relativeDuration(EdaRegionConnectorMetadata.PERIOD_EARLIEST_START.minusMonths(1),
+                                              EdaRegionConnectorMetadata.PERIOD_EARLIEST_START.plusMonths(1)),
+                             "Relative exceeds max past"),
+                Arguments.of(new AbsoluteDuration(now.minusYears(5), now.minusMonths(1)),
+                             "Absolut exceeds max past"),
+                Arguments.of(relativeDuration(EdaRegionConnectorMetadata.PERIOD_LATEST_END,
+                                              EdaRegionConnectorMetadata.PERIOD_LATEST_END.plusMonths(1)),
+                             "Relative exceeds max future"),
+                Arguments.of(new AbsoluteDuration(now.plusMonths(1), now.plusYears(5)),
+                             "Absolut exceeds max future")
+        );
     }
 
     private static RelativeDuration relativeDuration(Period start, Period end) {

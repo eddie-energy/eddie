@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.cds.services;
+package energy.eddie.regionconnector.cds.tasks;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class RetryServiceTest {
+class RetrySendingTaskTest {
     @Mock
     private Outbox outbox;
     @Mock
@@ -31,7 +31,7 @@ class RetryServiceTest {
     @Mock
     private CdsServerRepository cdsServerRepository;
     @InjectMocks
-    private RetryService retryService;
+    private RetrySendingTask retrySendingTask;
 
     @Test
     void testRetry_retriesSendingPermissionRequests() {
@@ -48,7 +48,7 @@ class RetryServiceTest {
                 .thenReturn(server);
 
         // When
-        retryService.retry();
+        retrySendingTask.retry();
 
         // Then
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.VALIDATED, event.status())));

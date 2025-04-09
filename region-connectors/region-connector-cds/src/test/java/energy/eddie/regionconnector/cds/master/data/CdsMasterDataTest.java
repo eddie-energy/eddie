@@ -110,7 +110,7 @@ class CdsMasterDataTest {
     private static CdsServer createCdsServer() {
         return new CdsServerBuilder().setBaseUri("http://localhost")
                                      .setName("CDS Server")
-                                     .setCoverages(Set.of(new Coverage(EnergyType.ELECTRICITY, "us")))
+                                     .setCoverages(Set.of(new Coverage(EnergyType.ELECTRICITY, "US")))
                                      .setAdminClientId("client-id")
                                      .setAdminClientSecret("client-secret")
                                      .setTokenEndpoint("http://localhost")

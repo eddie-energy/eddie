@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.util.List;
 
 public class SupplyProvider {
-    public static final ObjectMapper objectMapper = new DatadisSpringConfig().objectMapper();
+    public static final ObjectMapper objectMapper = new DatadisBeanConfig().objectMapper();
 
     public static List<Supply> loadSupply() throws IOException {
         try (InputStream is = SupplyProvider.class.getClassLoader()

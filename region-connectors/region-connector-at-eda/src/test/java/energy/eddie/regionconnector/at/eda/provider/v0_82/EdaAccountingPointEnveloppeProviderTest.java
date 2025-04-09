@@ -6,14 +6,20 @@ import energy.eddie.regionconnector.at.eda.EdaResourceLoader;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
+import energy.eddie.regionconnector.at.eda.provider.IdentifiableStreams;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class EdaAccountingPointEnvelopeProviderTest {
+    @Mock
+    private IdentifiableStreams streams;
 
     @Test
     void mapsIncomingIdentifiableMasterDataToAccountingPointMarketDocument() throws Exception {
@@ -34,8 +40,9 @@ class EdaAccountingPointEnvelopeProviderTest {
         );
 
         Sinks.Many<IdentifiableMasterData> identifiableMasterDataSink = Sinks.many().unicast().onBackpressureBuffer();
+        when(streams.masterDataStream()).thenReturn(identifiableMasterDataSink.asFlux());
         var edaEddieAccountingPointMarketDocumentProvider = new EdaAccountingPointEnvelopeProvider(
-                identifiableMasterDataSink.asFlux(),
+                streams,
                 factory
         );
 

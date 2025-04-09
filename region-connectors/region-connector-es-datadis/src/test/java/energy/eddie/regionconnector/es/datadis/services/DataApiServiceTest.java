@@ -86,9 +86,9 @@ class DataApiServiceTest {
         var expectedMeteringDataRequest = MeteringDataRequest.fromPermissionRequest(permissionRequest, start, end);
 
         var dataApiService = new DataApiService(dataApi,
-                                                meteringDataSink,
-                                                meterReadingPermissionUpdateAndFulfillmentService,
-                                                outbox);
+                meteringDataSink,
+                meterReadingPermissionUpdateAndFulfillmentService,
+                outbox);
 
         // When
         dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);

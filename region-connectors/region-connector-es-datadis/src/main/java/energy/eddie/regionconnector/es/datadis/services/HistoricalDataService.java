@@ -4,7 +4,6 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
@@ -27,11 +26,6 @@ public class HistoricalDataService {
             return;
         }
 
-        LocalDate end = Optional.of(permissionRequest.end())
-                                .filter(permissionRequestEnd -> !permissionRequestEnd.isAfter(now))
-                                .map(permissionRequestEnd -> permissionRequestEnd.plusDays(1))
-                                .orElse(now.minusDays(1));
-
-        dataApiService.fetchDataForPermissionRequest(permissionRequest, start, end);
+        dataApiService.pollTimeSeriesData(permissionRequest);
     }
 }
