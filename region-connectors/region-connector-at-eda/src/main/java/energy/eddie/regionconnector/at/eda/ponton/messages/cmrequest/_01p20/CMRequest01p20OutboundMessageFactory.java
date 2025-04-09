@@ -4,6 +4,7 @@ import de.ponton.xp.adapter.api.domainvalues.*;
 import de.ponton.xp.adapter.api.messages.OutboundMessage;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21.CMRequest01p21OutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
@@ -63,6 +64,6 @@ public class CMRequest01p20OutboundMessageFactory implements CMRequestOutboundMe
 
     @Override
     public boolean isActive(LocalDate date) {
-        return !ACTIVE_FROM.isAfter(date);
+        return !ACTIVE_FROM.isAfter(date) && date.isBefore(CMRequest01p21OutboundMessageFactory.ACTIVE_FROM);
     }
 }

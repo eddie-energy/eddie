@@ -4,10 +4,12 @@ import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
+import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
 import energy.eddie.regionconnector.cds.services.oauth.client.registration.RegistrationResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.SuccessfulParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.UnableToSendPar;
+import energy.eddie.regionconnector.cds.services.oauth.revocation.RevocationResult;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithRefreshToken;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithoutRefreshToken;
 import energy.eddie.regionconnector.cds.services.oauth.token.InvalidTokenResult;
@@ -213,6 +215,48 @@ class OAuthServiceTest {
     }
 
     @Test
+    void testRetrieveAccessToken_withOAuthCredentials_returnsCredentials() {
+        // Given
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .addHeader("Content-Type", "application/json")
+                        .setBody("""
+                                         {
+                                           "token_type": "Bearer",
+                                           "access_token": "accessToken",
+                                           "expires_in": 90
+                                         }
+                                         """)
+        );
+        var credentials = new OAuthCredentials("pid", "refreshToken", null, null);
+
+        // When
+        var res = oAuthService.retrieveAccessToken(cdsServer, credentials);
+
+        // Then
+        var creds = assertInstanceOf(CredentialsWithoutRefreshToken.class, res);
+        var expiresAt = ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(90);
+        assertAll(
+                () -> assertEquals("accessToken", creds.accessToken()),
+                () -> assertThat(creds.expiresAt()).isCloseTo(expiresAt, within(5, ChronoUnit.SECONDS))
+        );
+    }
+
+
+    @Test
+    void testRetrieveAccessToken_withoutRefreshToken_returnsInvalidTokenResult() {
+        // Given
+        var credentials = new OAuthCredentials("pid", null, "accessToken", ZonedDateTime.now(ZoneOffset.UTC));
+
+        // When
+        var res = oAuthService.retrieveAccessToken(cdsServer, credentials);
+
+        // Then
+        assertInstanceOf(InvalidTokenResult.class, res);
+    }
+
+    @Test
     void testCreateAuthorizationUri_returnsCorrectUri() {
         // Given
         var scopes = List.of(Scopes.USAGE_DETAILED_SCOPE);
@@ -342,5 +386,81 @@ class OAuthServiceTest {
         // Then
         var registrationError = assertInstanceOf(RegistrationResponse.RegistrationError.class, res);
         assertEquals("Was not able to parse response", registrationError.description());
+    }
+
+    @Test
+    void testRevokeToken_revokesToken() {
+        // Given
+        var revocationUri = URI.create(cdsServer.baseUri());
+        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200));
+
+        // When
+        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+
+        // Then
+        assertInstanceOf(RevocationResult.SuccessfulRevocation.class, res);
+    }
+
+    @Test
+    void testRevokeToken_withError_returnsInvalidRevocationRequest() {
+        // Given
+        var revocationUri = URI.create(cdsServer.baseUri());
+        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
+        mockWebServer.enqueue(new MockResponse()
+                                      .setResponseCode(400)
+                                      .setBody("{\"error\": \"bla\"}"));
+
+        // When
+        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+
+        // Then
+        assertInstanceOf(RevocationResult.InvalidRevocationRequest.class, res);
+    }
+
+    @Test
+    void testRevokeToken_withServiceUnavailable_returnsServiceUnavailable() {
+        // Given
+        var revocationUri = URI.create(cdsServer.baseUri());
+        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
+        mockWebServer.enqueue(new MockResponse()
+                                      .setResponseCode(503));
+
+        // When
+        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+
+        // Then
+        assertInstanceOf(RevocationResult.ServiceUnavailable.class, res);
+    }
+    @Test
+    void testRevokeToken_withInvalidResponse_returnsInvalidRevocationRequest() {
+        // Given
+        //noinspection JsonStandardCompliance
+        mockWebServer.enqueue(new MockResponse()
+                                      .setResponseCode(400)
+                                      .setBody("INVALID RESPONSE")
+                                      .addHeader("Content-Type", "application/json"));
+        var revocationUri = URI.create(cdsServer.baseUri());
+        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
+
+        // When
+        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+
+        // Then
+        assertInstanceOf(RevocationResult.InvalidRevocationRequest.class, res);
+    }
+
+    @Test
+    void testRevokeToken_withInvalidHttpResponse_returnsInvalidRevocationRequest() {
+        // Given
+        mockWebServer.enqueue(new MockResponse().setStatus("INVALID STATUS LINE"));
+        var revocationUri = URI.create(cdsServer.baseUri());
+        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
+
+        // When
+        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+
+        // Then
+        assertInstanceOf(RevocationResult.InvalidRevocationRequest.class, res);
     }
 }

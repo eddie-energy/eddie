@@ -51,7 +51,7 @@ public class DataSourceController {
         return Arrays.stream(DataSourceType.values())
                      .map(dataSourceType -> new DataSourceTypeDto(dataSourceType.identifier(),
                                                                   dataSourceType.dataSourceName()))
-                                              .toList();
+                     .toList();
     }
 
     @Operation(summary = "Get all assets", description = "Retrieve all assets.",
@@ -64,7 +64,7 @@ public class DataSourceController {
     public List<AiidaAssetDto> getAssets() {
         return Arrays.stream(AiidaAsset.values())
                      .map(aiidaAsset -> new AiidaAssetDto(aiidaAsset.asset()))
-                                           .toList();
+                     .toList();
     }
 
     @Operation(summary = "Get all datasources", description = "Retrieve all datasources.",
@@ -74,10 +74,14 @@ public class DataSourceController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSource.class))))
     })
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<DataSource>> getAllDataSources() throws InvalidUserException {
-        List<DataSource> datasources = service.getDataSources();
+    public ResponseEntity<List<DataSourceDto>> getAllDataSources() throws InvalidUserException {
+        var dataSources = service.getDataSources();
 
-        return ResponseEntity.ok(datasources);
+        return ResponseEntity.ok(
+                dataSources.stream()
+                           .map(DataSource::toDto)
+                           .toList()
+        );
     }
 
     @Operation(summary = "Add a new datasource", description = "Add a new datasource.",
@@ -131,7 +135,10 @@ public class DataSourceController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PatchMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> updateDataSource(@PathVariable("id") UUID dataSourceId, @RequestBody DataSourceDto dataSource) throws InvalidUserException {
+    public ResponseEntity<Void> updateDataSource(
+            @PathVariable("id") UUID dataSourceId,
+            @RequestBody DataSourceDto dataSource
+    ) throws InvalidUserException {
         LOGGER.info("Updating datasource with ID: {} - {}", dataSourceId, dataSource);
 
         service.updateDataSource(dataSource);
@@ -148,11 +155,11 @@ public class DataSourceController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping("/{id}")
-    public ResponseEntity<DataSource> getDataSourceById(@PathVariable("id") UUID dataSourceId) {
+    public ResponseEntity<DataSourceDto> getDataSourceById(@PathVariable("id") UUID dataSourceId) {
         LOGGER.info("Fetching datasource with ID: {}", dataSourceId);
 
         return service.getDataSourceById(dataSourceId)
-                      .map(ResponseEntity::ok)
+                      .map(dataSource -> ResponseEntity.ok(dataSource.toDto()))
                       .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -170,7 +177,8 @@ public class DataSourceController {
     @PatchMapping(value = "{id}/enabled", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateEnabledState(
             @PathVariable("id") UUID dataSourceId,
-            @RequestBody Boolean enabled) {
+            @RequestBody Boolean enabled
+    ) {
         LOGGER.info("Updating enabled state of datasource with ID: {} - {}", dataSourceId, enabled);
 
         service.updateEnabledState(dataSourceId, enabled);

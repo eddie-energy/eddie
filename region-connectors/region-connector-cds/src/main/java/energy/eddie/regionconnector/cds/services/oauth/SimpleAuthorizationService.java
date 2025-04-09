@@ -25,7 +25,11 @@ public class SimpleAuthorizationService implements AuthorizationService {
     @Override
     public URI createOAuthRequest(CdsServer cdsServer, String permissionId) {
         var res = oAuthService.createAuthorizationUri(cdsServer, List.of(Scopes.CUSTOMER_DATA_SCOPE));
-        outbox.commit(new SentToPaEvent(permissionId, null, res.state(), OAuthRequestType.IMPLICIT_GRANT_TYPE));
+        outbox.commit(new SentToPaEvent(permissionId,
+                                        null,
+                                        res.state(),
+                                        OAuthRequestType.IMPLICIT_GRANT_TYPE,
+                                        res.redirectUri().toString()));
         return res.redirectUri();
     }
 }

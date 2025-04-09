@@ -1,23 +1,26 @@
 package energy.eddie.regionconnector.cds.master.data;
 
-import energy.eddie.api.agnostic.data.needs.EnergyType;
-
 import java.util.Set;
 
 public class CdsServerBuilder {
     private String baseUri;
     private String name;
-    private Set<EnergyType> coverages;
+    private Set<Coverage> coverages;
     private String clientId;
     private String clientSecret;
     private String tokenEndpoint;
     private String authorizationEndpoint;
     private String parEndpoint;
     private String clientsEndpoint;
+    private String usageSegmentsEndpoint;
     private String customerDataClientId;
     private String customerDataClientSecret;
     private Long id = null;
     private String credentialsEndpoint;
+    private String accountsEndpoint;
+    private String serviceContractsEndpoint;
+    private String servicePointsEndpoint;
+    private String meterDevicesEndpoint;
 
     public CdsServerBuilder setBaseUri(String baseUri) {
         this.baseUri = baseUri;
@@ -29,7 +32,7 @@ public class CdsServerBuilder {
         return this;
     }
 
-    public CdsServerBuilder setCoverages(Set<EnergyType> coverages) {
+    public CdsServerBuilder setCoverages(Set<Coverage> coverages) {
         this.coverages = coverages;
         return this;
     }
@@ -59,6 +62,11 @@ public class CdsServerBuilder {
         return this;
     }
 
+    public CdsServerBuilder setUsageSegmentsEndpoint(String usageSegmentsEndpoint) {
+        this.usageSegmentsEndpoint = usageSegmentsEndpoint;
+        return this;
+    }
+
     public CdsServerBuilder setId(Long id) {
         this.id = id;
         return this;
@@ -73,6 +81,27 @@ public class CdsServerBuilder {
         this.credentialsEndpoint = credentialsEndpoint;
         return this;
     }
+
+    public CdsServerBuilder setAccountsEndpoint(String accountsEndpoint) {
+        this.accountsEndpoint = accountsEndpoint;
+        return this;
+    }
+
+    public CdsServerBuilder setServiceContractsEndpoint(String serviceContractsEndpoint) {
+        this.serviceContractsEndpoint = serviceContractsEndpoint;
+        return this;
+    }
+
+    public CdsServerBuilder setServicePointsEndpoint(String servicePointsEndpoint) {
+        this.servicePointsEndpoint = servicePointsEndpoint;
+        return this;
+    }
+
+    public CdsServerBuilder setMeterDeviceEndpoint(String meterDeviceEndpoint) {
+        this.meterDevicesEndpoint = meterDeviceEndpoint;
+        return this;
+    }
+
     public CdsServerBuilder setCustomerDataClientId(String customerDataClientId) {
         this.customerDataClientId = customerDataClientId;
         return this;
@@ -96,7 +125,12 @@ public class CdsServerBuilder {
                         authorizationEndpoint,
                         parEndpoint,
                         clientsEndpoint,
-                        credentialsEndpoint
+                        credentialsEndpoint,
+                        usageSegmentsEndpoint,
+                        accountsEndpoint,
+                        serviceContractsEndpoint,
+                        servicePointsEndpoint,
+                        meterDevicesEndpoint
                 ),
                 customerDataClientId,
                 customerDataClientSecret

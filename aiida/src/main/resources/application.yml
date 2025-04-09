@@ -37,7 +37,10 @@ aiida:
   installer:
     host: http://aiida-installer:8010
   mqtt:
-    host: ${MQTT_EXTERNAL_HOST:tcp://localhost:1884}
+    admin-username: ${MQTT_ADMIN_USERNAME}
+    admin-password: ${MQTT_ADMIN_PASSWORD}
+    internal-host: ${MQTT_INTERNAL_HOST:tcp://localhost:1884}
+    external-host: ${MQTT_EXTERNAL_HOST:tcp://localhost:1884}
   keycloak:
     account-uri: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/account
     end-session-uri: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/logout

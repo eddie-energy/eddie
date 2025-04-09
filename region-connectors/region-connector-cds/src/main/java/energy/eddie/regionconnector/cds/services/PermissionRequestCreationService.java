@@ -1,10 +1,12 @@
 package energy.eddie.regionconnector.cds.services;
 
-import energy.eddie.api.agnostic.data.needs.*;
+import energy.eddie.api.agnostic.data.needs.AccountingPointDataNeedResult;
+import energy.eddie.api.agnostic.data.needs.DataNeedNotFoundResult;
+import energy.eddie.api.agnostic.data.needs.DataNeedNotSupportedResult;
+import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.cds.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.cds.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.cds.exceptions.UnknownPermissionAdministratorException;
@@ -29,12 +31,12 @@ public class PermissionRequestCreationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestCreationService.class);
     private final CdsServerRepository cdsServerRepository;
     private final Outbox outbox;
-    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final CdsServerCalculationService calculationService;
     private final AuthorizationService authorizationService;
 
     public PermissionRequestCreationService(
             CdsServerRepository cdsServerRepository, Outbox outbox,
-            DataNeedCalculationService<DataNeed> calculationService,
+            CdsServerCalculationService calculationService,
             AuthorizationService authorizationService
     ) {
         this.cdsServerRepository = cdsServerRepository;
@@ -60,7 +62,7 @@ public class PermissionRequestCreationService {
                                              new AttributeError("cdsId", "Unknown permission administrator")));
             throw new UnknownPermissionAdministratorException(cdsServerId);
         }
-        var calc = calculationService.calculate(dataNeedId, createdEvent.eventCreated());
+        var calc = calculationService.calculate(dataNeedId, cdsServer.get(), createdEvent.eventCreated());
         var dataNeedCalc = switch (calc) {
             case DataNeedNotFoundResult ignored -> {
                 LOGGER.info("Data need {} not found", dataNeedId);

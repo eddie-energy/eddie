@@ -123,4 +123,10 @@ public class GlobalExceptionHandler {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(exception.httpStatus()).body(errors);
     }
+
+    @ExceptionHandler(value = {MqttUnauthorizedException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleInstallerException(MqttUnauthorizedException exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errors);
+    }
 }

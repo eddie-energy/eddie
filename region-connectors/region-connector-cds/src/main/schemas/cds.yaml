@@ -307,6 +307,198 @@ paths:
               schema:
                 $ref: "cds-schemas.json/#/$defs/Accounts"
 
+  /api/servicecontracts:
+    get:
+      operationId: Service Contract Endpoint
+      externalDocs:
+        url: https://daniel-utilityapi.github.io/Customer-Data/specs/cdsc-wg3-01/#service-contracts-api
+      description: |
+        This specification requires Servers provide a set of APIs allowing Clients to retrieve a Customer’s Service Contract details for which they are authorized to access.
+        These APIs are authenticated using a Bearer access_token granted that provisions access for a scope that allows access to the Service Contracts API.
+      tags:
+        - Customer Data
+      security:
+        - oauth:
+            - cds_usage_basic
+            - cds_usage_detailed
+      parameters:
+        - name: cds_servicecontract_ids
+          in: query
+          description: "A space-separated list of cds_servicecontract_id values for filtering Service Contracts."
+          required: false
+          schema:
+            type: string
+
+        - name: account_numbers
+          in: query
+          description: "A space-separated list of account_number values for filtering Service Contracts."
+          required: false
+          schema:
+            type: string
+
+        - name: contract_numbers
+          in: query
+          description: "A space-separated list of contract_number values for filtering Service Contracts."
+          required: false
+          schema:
+            type: string
+
+        - name: service_types
+          in: query
+          description: "A space-separated list of service_type values for filtering Service Contracts."
+          required: false
+          schema:
+            type: string
+
+        - name: q
+          in: query
+          description: |
+            A search term to filter Service Contracts based on accessible fields that contain the term (case-insensitive). 
+            Fields searched:
+              - cds_servicecontract_id
+              - account_number
+              - contract_number
+              - contract_address
+              - rateplan_code
+              - rateplan_name
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            Clients may request to list Service Contract objects that they have access to by making an HTTPS GET request, authenticated with a valid Bearer access_token that is scoped to provide access to a set of Service Contracts, to the cds_servicecontracts_api URL included in the Client Registration Response or Clients API.
+            The Service Contract listing request responses are formatted as JSON objects and contain the following named values.
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/ServiceContracts"
+  /api/servicepoints:
+    get:
+      operationId: Service Point Endpoint
+      externalDocs:
+        url: https://daniel-utilityapi.github.io/Customer-Data/specs/cdsc-wg3-01/#service-points-api
+      description: |
+        This specification requires Servers provide a set of APIs allowing Clients to retrieve a Customer’s and Server’s Service Point details for which they are authorized to access.
+        These APIs are authenticated using a Bearer access_token granted that provisions access for a scope that allows access to the Service Points API.
+      tags:
+        - Customer Data
+      security:
+        - oauth:
+            - cds_usage_basic
+            - cds_usage_detailed
+      parameters:
+        - name: cds_servicepoint_ids
+          in: query
+          description: "A space-separated list of cds_servicepoint_id values for filtering Service Points."
+          required: false
+          schema:
+            type: string
+
+        - name: servicepoint_number
+          in: query
+          description: "A space-separated list of servicepoint_number values for filtering Service Points."
+          required: false
+          schema:
+            type: string
+
+        - name: current_servicecontracts
+          in: query
+          description: "A space-separated list of current_servicecontracts values for filtering the Meter Devices."
+          required: false
+          schema:
+            type: string
+
+        - name: previous_servicecontracts
+          in: query
+          description: "A space-separated list of previous_servicecontracts values for filtering the Meter Devices."
+          required: false
+          schema:
+            type: string
+
+        - name: q
+          in: query
+          description: |
+            A search term to filter Service Points based on accessible fields that contain the term (case-insensitive). 
+            Fields searched:
+              - cds_servicepoint_id
+              - servicepoint_address
+              - servicepoint_number
+              - premise_number
+              - property_number
+              - parcel_number
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/ServicePoints"
+
+  /api/meterdevices:
+    get:
+      operationId: Meter Device Endpoint
+      externalDocs:
+        url: https://daniel-utilityapi.github.io/Customer-Data/specs/cdsc-wg3-01/#meter-devices-api
+      description: |
+        This specification requires Servers provide a set of APIs allowing Clients to retrieve a Customer’s and Server’s Meter Device details for which they are authorized to access.
+        These APIs are authenticated using a Bearer access_token granted that provisions access for a scope that allows access to the Meter Devices API.
+      tags:
+        - Customer Data
+      security:
+        - oauth:
+            - cds_usage_basic
+            - cds_usage_detailed
+      parameters:
+        - name: cds_meterdevice_ids
+          in: query
+          description: "A space-separated list of cds_meterdevice_id values for filtering Meter Devices."
+          required: false
+          schema:
+            type: string
+
+        - name: meter_number
+          in: query
+          description: "A space-separated list of meter_number values for filtering Meter Devices."
+          required: false
+          schema:
+            type: string
+
+        - name: current_servicepoints
+          in: query
+          description: "A space-separated list of current_servicepoint values for filtering Meter Devices."
+          required: false
+          schema:
+            type: string
+
+        - name: previous_servicepoints
+          in: query
+          description: "A space-separated list of previous_servicepoints values for filtering Meter Devices."
+          required: false
+          schema:
+            type: string
+
+        - name: q
+          in: query
+          description: |
+            A search term to filter Meter Devices based on accessible fields that contain the term (case-insensitive). 
+            Fields searched:
+              - cds_meterdevice_id
+              - meter_number
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            Clients may request to list Meter Device objects that they have access to by making an HTTPS GET request, authenticated with a valid Bearer access_token that is scoped to provide access to a set of Meter Devices, to the cds_meterdevices_api URL included in the Client Registration Response or Clients API.
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/MeterDevices"
   /api/usagesegments:
     get:
       operationId: Usage Segment Endpoint

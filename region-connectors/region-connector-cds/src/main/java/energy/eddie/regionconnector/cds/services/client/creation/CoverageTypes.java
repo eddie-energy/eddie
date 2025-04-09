@@ -1,27 +1,32 @@
 package energy.eddie.regionconnector.cds.services.client.creation;
 
 import energy.eddie.api.agnostic.data.needs.EnergyType;
+import energy.eddie.regionconnector.cds.master.data.Coverage;
 import energy.eddie.regionconnector.cds.openapi.model.Coverages200ResponseAllOfCoverageEntriesInner;
 import jakarta.annotation.Nullable;
 
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class CoverageTypes {
+class CoverageTypes {
     private final List<Coverages200ResponseAllOfCoverageEntriesInner> coverages;
 
-    public CoverageTypes(List<Coverages200ResponseAllOfCoverageEntriesInner> coverages) {this.coverages = coverages;}
+    CoverageTypes(List<Coverages200ResponseAllOfCoverageEntriesInner> coverages) {this.coverages = coverages;}
 
-    public Set<EnergyType> toEnergyTypes() {
-        return coverages.stream()
-                        .map(Coverages200ResponseAllOfCoverageEntriesInner::getCommodityTypes)
-                        .flatMap(Collection::stream)
-                        .map(this::of)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toSet());
+    public Set<Coverage> toCoverages() {
+        Set<Coverage> set = new HashSet<>();
+        for (var coverage : coverages) {
+            var commodityTypes = coverage.getCommodityTypes();
+            for (var commodityTypesEnum : commodityTypes) {
+                var energyType = of(commodityTypesEnum);
+                if (energyType != null) {
+                    set.add(new Coverage(energyType, coverage.getCountry().toUpperCase(Locale.ROOT)));
+                }
+            }
+        }
+        return set;
     }
 
     @Nullable

@@ -80,5 +80,6 @@ class PushedAuthorizationServiceTest {
         verify(outbox).commit(sentToPaEvent.capture());
         var event = sentToPaEvent.getValue();
         assertTrue(event.isPushedAuthorizationRequest());
+        assertEquals(redirectUri.toString(), event.redirectUri());
     }
 }

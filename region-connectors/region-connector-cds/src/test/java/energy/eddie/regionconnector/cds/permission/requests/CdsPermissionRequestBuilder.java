@@ -15,6 +15,7 @@ public class CdsPermissionRequestBuilder {
     private LocalDate dataStart;
     private LocalDate dataEnd;
     private String state;
+    private String redirectUri;
 
     public CdsPermissionRequestBuilder setPermissionId(String permissionId) {
         this.permissionId = permissionId;
@@ -61,6 +62,11 @@ public class CdsPermissionRequestBuilder {
         return this;
     }
 
+    public CdsPermissionRequestBuilder setRedirectUri(String redirectUri) {
+        this.redirectUri = redirectUri;
+        return this;
+    }
+
     public CdsPermissionRequest build() {
         return new CdsPermissionRequest(permissionId,
                                         connectionId,
@@ -70,6 +76,7 @@ public class CdsPermissionRequestBuilder {
                                         created,
                                         dataStart,
                                         dataEnd,
-                                        state);
+                                        state,
+                                        redirectUri);
     }
 }

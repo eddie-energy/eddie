@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ManagementApiConfigInternalEndpointsFilterTest {
     @ParameterizedTest
-    @ValueSource(strings = {"/management", "/outbound-connectors", "/data-needs/management"})
+    @ValueSource(strings = {"/management", "/outbound-connectors", "/data-needs/management", "/region-connectors/any-region-connector/management/any/other"})
     void testDoFilter_forManagementPortOnManagementUrl_continuesFilterChain(String reqUri) throws ServletException, IOException {
         // Given
         var req = new MockHttpServletRequest();

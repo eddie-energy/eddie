@@ -7,21 +7,26 @@ import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.client.*;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
+import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
 import energy.eddie.regionconnector.cds.services.oauth.client.registration.RegistrationResponse;
 import energy.eddie.regionconnector.cds.services.oauth.code.AuthorizationCodeResult;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.ParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.SuccessfulParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.UnableToSendPar;
+import energy.eddie.regionconnector.cds.services.oauth.revocation.RevocationResponse;
+import energy.eddie.regionconnector.cds.services.oauth.revocation.RevocationResult;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithRefreshToken;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithoutRefreshToken;
 import energy.eddie.regionconnector.cds.services.oauth.token.InvalidTokenResult;
 import energy.eddie.regionconnector.cds.services.oauth.token.TokenResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -164,7 +169,7 @@ public class OAuthService {
     }
 
     /**
-     * Retrieves an admin client for a CDS server to get access to admin APIs
+     * Retrieves an admin client access token for a CDS server to get access to admin APIs
      *
      * @param cdsServer the cds server that is used
      * @return the result of the token request
@@ -180,6 +185,54 @@ public class OAuthService {
         var tokenEndpoint = cdsServer.endpoints().tokenEndpoint();
         var request = new TokenRequest(tokenEndpoint, clientAuth, clientGrant, scope);
         return sendAccessTokenRequest(request);
+    }
+
+
+    /**
+     * Retrieves an access token for a specific user for a CDS server to get access to the customerdata APIs
+     *
+     * @param cdsServer   the cds server that is used
+     * @param credentials the credentials of the user
+     * @return the result of the token request
+     */
+    public TokenResult retrieveAccessToken(CdsServer cdsServer, OAuthCredentials credentials) {
+        if (credentials.refreshToken() == null) {
+            LOGGER.info("No refresh token found for permission request {}", credentials.permissionId());
+            return new InvalidTokenResult();
+        }
+        var refreshToken = new RefreshToken(credentials.refreshToken());
+        AuthorizationGrant refreshTokenGrant = new RefreshTokenGrant(refreshToken);
+
+        var clientID = new ClientID(cdsServer.customerDataClientId());
+        var clientSecret = new Secret(cdsServer.customerDataClientSecret());
+        ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
+
+        var tokenEndpoint = cdsServer.endpoints().tokenEndpoint();
+        var request = new TokenRequest(tokenEndpoint, clientAuth, refreshTokenGrant);
+        return sendAccessTokenRequest(request);
+    }
+
+    public RevocationResult revokeToken(URI revocationUri, CdsServer cdsServer, OAuthCredentials credentials) {
+        var clientId = new ClientID(cdsServer.customerDataClientId());
+        var clientSecret = new Secret(cdsServer.customerDataClientSecret());
+        var clientCreds = new ClientSecretBasic(clientId, clientSecret);
+        var refreshToken = new RefreshToken(credentials.refreshToken());
+        var req = new TokenRevocationRequest(revocationUri, clientCreds, refreshToken);
+        RevocationResponse response;
+        try {
+            response = RevocationResponse.parse(req.toHTTPRequest().send());
+        } catch (IOException | ParseException e) {
+            return new RevocationResult.InvalidRevocationRequest(e.getMessage());
+        }
+        if (response.indicatesSuccess()) {
+            return new RevocationResult.SuccessfulRevocation();
+        }
+        var error = response.toErrorResponse();
+        var errorObject = error.getErrorObject();
+        if (errorObject.getHTTPStatusCode() == HttpStatus.SERVICE_UNAVAILABLE.value()) {
+            return new RevocationResult.ServiceUnavailable();
+        }
+        return new RevocationResult.InvalidRevocationRequest(errorObject.getCode());
     }
 
     private TokenResult sendAccessTokenRequest(TokenRequest request) {

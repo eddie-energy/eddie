@@ -35,8 +35,7 @@ services:
       - "8084:8083"
       - "8884:8883"
     volumes:
-      - ./nanomq/nanomq_pwd.conf:/etc/nanomq_pwd.conf
-      - ./nanomq/nanomq.conf:/etc/nanomq.conf
+      - ./nanomq.conf:/etc/nanomq.conf
 
   teleinfo2mqtt:
     depends_on:

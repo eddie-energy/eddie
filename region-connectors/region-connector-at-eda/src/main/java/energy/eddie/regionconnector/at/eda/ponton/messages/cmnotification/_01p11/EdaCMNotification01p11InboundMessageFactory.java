@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.at.eda.ponton.messages.cmnotification._01p1
 import at.ebutilities.schemata.customerconsent.cmnotification._01p11.CMNotification;
 import energy.eddie.regionconnector.at.eda.dto.EdaCMNotification;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmnotification.EdaCMNotificationInboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.cmnotification._01p12.EdaCMNotification01p12InboundMessageFactory;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,7 @@ public class EdaCMNotification01p11InboundMessageFactory implements EdaCMNotific
 
     @Override
     public boolean isActive(LocalDate date) {
-        return true;
+        return date.isBefore(EdaCMNotification01p12InboundMessageFactory.ACTIVE_FROM);
     }
 
     @Override

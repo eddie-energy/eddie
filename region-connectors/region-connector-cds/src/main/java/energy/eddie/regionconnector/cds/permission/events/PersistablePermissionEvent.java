@@ -32,6 +32,17 @@ public abstract class PersistablePermissionEvent implements PermissionEvent {
         this.status = status;
     }
 
+    protected PersistablePermissionEvent(
+            String permissionId,
+            PermissionProcessStatus status,
+            ZonedDateTime created
+    ) {
+        this.id = null;
+        this.permissionId = permissionId;
+        this.eventCreated = created;
+        this.status = status;
+    }
+
     protected PersistablePermissionEvent() {
         super();
         this.id = null;

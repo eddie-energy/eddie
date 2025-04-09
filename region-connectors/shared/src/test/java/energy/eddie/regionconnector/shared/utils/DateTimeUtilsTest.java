@@ -8,10 +8,8 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
-import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.oldestDateTime;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 class DateTimeUtilsTest {
     @Test
@@ -67,5 +65,43 @@ class DateTimeUtilsTest {
 
         // Then
         assertTrue(res.isEmpty());
+    }
+
+    @Test
+    void testIsBeforeOrEquals_forEqualDates_returnsTrue() {
+        // Given
+        var date = LocalDate.of(2025, 1, 1);
+
+        // When
+        var res = isBeforeOrEquals(date, date);
+
+        // Then
+        assertTrue(res);
+    }
+
+    @Test
+    void testIsBeforeOrEquals_whereLeftIsBeforeRight_returnsTrue() {
+        // Given
+        var left = LocalDate.of(2025, 1, 1);
+        var right = LocalDate.of(2025, 1, 2);
+
+        // When
+        var res = isBeforeOrEquals(left, right);
+
+        // Then
+        assertTrue(res);
+    }
+
+    @Test
+    void testIsBeforeOrEquals_whereLeftIsAfterRight_returnsTrue() {
+        // Given
+        var left = LocalDate.of(2025, 1, 2);
+        var right = LocalDate.of(2025, 1, 1);
+
+        // When
+        var res = isBeforeOrEquals(left, right);
+
+        // Then
+        assertFalse(res);
     }
 }

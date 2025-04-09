@@ -31,7 +31,7 @@ next:
 **DevOps**
 
 - Docker (Containerization)
-  - Compose (Multiple Containers)
+  - Compose (Multiple containers)
 - Kubernetes (Orchestration)
   - Helm (Deployment)
   - K3s (IOT/AIIDA)
@@ -42,3 +42,4 @@ next:
   - EMQX/NanoMQ (MQTT)
   - RabbitMQ (AMQP)
 - GitHub Actions (CI/CD)
+- SonarCloud (Static analysis)

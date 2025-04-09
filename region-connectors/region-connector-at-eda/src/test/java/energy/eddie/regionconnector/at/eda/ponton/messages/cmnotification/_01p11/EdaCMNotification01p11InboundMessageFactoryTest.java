@@ -26,24 +26,18 @@ class EdaCMNotification01p11InboundMessageFactoryTest {
     @Autowired
     private Jaxb2Marshaller marshaller;
 
-    private static Stream<Arguments> inputStreams() {
-        ClassLoader classLoader = EdaCMNotification01p11InboundMessageFactoryTest.class.getClassLoader();
-        var answer = classLoader.getResourceAsStream("xsd/cmnotification/_01p11/answer_ccmo.xml");
-        var rejected = classLoader.getResourceAsStream("xsd/cmnotification/_01p11/rejected_ccmo.xml");
-        var accepted = classLoader.getResourceAsStream("xsd/cmnotification/_01p11/accepted_ccmo.xml");
-
-        return Stream.of(
-                Arguments.of(answer, "BI2AWUO2", "EPXXXXXXT1712068829927", null, 99),
-                Arguments.of(rejected, "B2QG42ZU", "EPXXXXXXT1712065219565", null, 178),
-                Arguments.of(accepted, "BI2AWUO2", "EPXXXXXXT1712068829927", "ATXXXXXX20240402164046426BI2AWUO2", 175)
-        );
-    }
-
     public static Stream<Arguments> activeDates() {
         return Stream.of(
                 Arguments.of(LocalDate.of(2023, 1, 7)),
-                Arguments.of(LocalDate.of(2024, 4, 7)),
-                Arguments.of(LocalDate.of(2025, 6, 8)),
+                Arguments.of(LocalDate.of(2024, 2, 7)),
+                Arguments.of(LocalDate.of(2025, 4, 6))
+        );
+    }
+
+    public static Stream<Arguments> inactiveDates() {
+        return Stream.of(
+                Arguments.of(LocalDate.of(2025, 4, 7)),
+                Arguments.of(LocalDate.of(2026, 6, 8)),
                 Arguments.of(LocalDate.of(2028, 7, 9))
         );
     }
@@ -88,5 +82,31 @@ class EdaCMNotification01p11InboundMessageFactoryTest {
 
         // Then
         assertTrue(active);
+    }
+
+    @ParameterizedTest
+    @MethodSource("inactiveDates")
+    void isActive_returnsFalse(LocalDate date) {
+        // Given
+        var factory = new EdaCMNotification01p11InboundMessageFactory(marshaller);
+
+        // When
+        var active = factory.isActive(date);
+
+        // Then
+        assertFalse(active);
+    }
+
+    private static Stream<Arguments> inputStreams() {
+        ClassLoader classLoader = EdaCMNotification01p11InboundMessageFactoryTest.class.getClassLoader();
+        var answer = classLoader.getResourceAsStream("xsd/cmnotification/_01p11/answer_ccmo.xml");
+        var rejected = classLoader.getResourceAsStream("xsd/cmnotification/_01p11/rejected_ccmo.xml");
+        var accepted = classLoader.getResourceAsStream("xsd/cmnotification/_01p11/accepted_ccmo.xml");
+
+        return Stream.of(
+                Arguments.of(answer, "BI2AWUO2", "EPXXXXXXT1712068829927", null, 99),
+                Arguments.of(rejected, "B2QG42ZU", "EPXXXXXXT1712065219565", null, 178),
+                Arguments.of(accepted, "BI2AWUO2", "EPXXXXXXT1712068829927", "ATXXXXXX20240402164046426BI2AWUO2", 175)
+        );
     }
 }

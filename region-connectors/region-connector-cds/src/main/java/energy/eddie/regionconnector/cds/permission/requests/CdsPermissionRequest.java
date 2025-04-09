@@ -2,10 +2,15 @@ package energy.eddie.regionconnector.cds.permission.requests;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Optional;
+
+import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.oldestDateTime;
 
 @Entity
 @Table(name = "permission_request", schema = "cds")
@@ -31,6 +36,13 @@ public class CdsPermissionRequest implements PermissionRequest {
     @Column(name = "state")
     @SuppressWarnings("unused")
     private final String state;
+    @Column(name = "redirect_uri")
+    @Nullable
+    private final String redirectUri;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @MapKeyJoinColumn(name = "permission_id", referencedColumnName = "permission_id")
+    @CollectionTable(name = "last_meter_readings", joinColumns = @JoinColumn(name = "permission_id"), schema = "cds")
+    private final Map<String, ZonedDateTime> lastMeterReadings = Map.of();
 
 
     @SuppressWarnings("java:S107")
@@ -43,7 +55,8 @@ public class CdsPermissionRequest implements PermissionRequest {
             ZonedDateTime created,
             LocalDate dataStart,
             LocalDate dataEnd,
-            String state
+            String state,
+            @Nullable String redirectUri
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -54,6 +67,7 @@ public class CdsPermissionRequest implements PermissionRequest {
         this.dataEnd = dataEnd;
         dataSourceInformation = new CdsDataSourceInformation(cdsServer);
         this.state = state;
+        this.redirectUri = redirectUri;
     }
 
     @SuppressWarnings("NullAway")
@@ -67,6 +81,7 @@ public class CdsPermissionRequest implements PermissionRequest {
         dataStart = null;
         dataEnd = null;
         state = null;
+        redirectUri = null;
     }
 
     @Override
@@ -107,5 +122,17 @@ public class CdsPermissionRequest implements PermissionRequest {
     @Override
     public LocalDate end() {
         return dataEnd;
+    }
+
+    public Optional<String> redirectUri() {
+        return Optional.ofNullable(redirectUri);
+    }
+
+    public Optional<ZonedDateTime> oldestMeterReading() {
+        return oldestDateTime(lastMeterReadings.values());
+    }
+
+    public Map<String, ZonedDateTime> lastMeterReadings() {
+        return lastMeterReadings;
     }
 }

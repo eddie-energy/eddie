@@ -3,6 +3,8 @@ package energy.eddie.regionconnector.cds.master.data;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import jakarta.persistence.*;
 
+import java.util.HashSet;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
@@ -23,8 +25,7 @@ public class CdsServer {
             schema = "cds"
     )
     @Column(name = "energy_type")
-    @Enumerated(EnumType.STRING)
-    private final Set<EnergyType> coverages;
+    private final Set<Coverage> coverages;
     @Column(name = "admin_client_id", nullable = false)
     private final String adminClientId;
     @Column(name = "admin_client_secret", nullable = false)
@@ -40,7 +41,7 @@ public class CdsServer {
     public CdsServer(
             String baseUri,
             String name,
-            Set<EnergyType> coverages,
+            Set<Coverage> coverages,
             String adminClientId,
             String adminClientSecret,
             CdsEndpoints endpoints
@@ -53,7 +54,7 @@ public class CdsServer {
     public CdsServer(
             String baseUri,
             String name,
-            Set<EnergyType> coverages,
+            Set<Coverage> coverages,
             String adminClientId,
             String adminClientSecret,
             CdsEndpoints endpoints,
@@ -76,7 +77,7 @@ public class CdsServer {
             Long id,
             String baseUri,
             String name,
-            Set<EnergyType> coverages,
+            Set<Coverage> coverages,
             String adminClientId,
             String adminClientSecret,
             CdsEndpoints endpoints,
@@ -119,7 +120,7 @@ public class CdsServer {
         return "%s - %s".formatted(name, baseUri);
     }
 
-    public Set<EnergyType> coverages() {
+    public Set<Coverage> coverages() {
         return coverages;
     }
 
@@ -149,5 +150,21 @@ public class CdsServer {
 
     public String customerDataClientSecret() {
         return customerDataClientSecret;
+    }
+
+    public Set<String> countryCodes() {
+        Set<String> countries = new HashSet<>();
+        for (var coverage : coverages()) {
+            countries.add(coverage.countryCode().toUpperCase(Locale.ROOT));
+        }
+        return countries;
+    }
+
+    public Set<EnergyType> energyTypes() {
+        Set<EnergyType> energyTypes = new HashSet<>();
+        for (var coverage : coverages()) {
+            energyTypes.add(coverage.energyType());
+        }
+        return energyTypes;
     }
 }

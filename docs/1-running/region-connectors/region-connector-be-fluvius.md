@@ -29,11 +29,13 @@ depends on the way you deploy the region connector.
 | `spring.ssl.bundle.pem.fluvius.keystore.certificate` | Specify the public part of the certificate that was allowlisted by Fluvius.                                                                                      |
 | `spring.ssl.bundle.pem.fluvius.keystore.private-key` | Specify the private part of the certificate that was allowlisted by Fluvius.                                                                                     |
 
-### .properties file
+The region connector can be configured using Spring properties or environment variables.
+When using environment variables, the configuration values need to be converted in the following way:
 
-Example configuration for an `application.properties` file:
+- Replace all non-alphanumeric characters with an underscore (`_`)
+- Optionally convert all letters to upper case
 
-```properties
+```properties :spring
 region-connector.be.fluvius.base-url=REPLACE_ME
 region-connector.be.fluvius.oauth.token-url=https://login.microsoftonline.com/${region-connector.be.fluvius.oauth.tenant-id}/oauth2/V2.0/token
 region-connector.be.fluvius.oauth.client-id=REPLACE_ME
@@ -47,31 +49,6 @@ region-connector.be.fluvius.retry=0 0 * * * *
 region-connector.be.fluvius.check-acceptance=0 0 * * * *
 spring.ssl.bundle.pem.fluvius.keystore.certificate=/path/to/certificate.cer
 spring.ssl.bundle.pem.fluvius.keystore.private-key=/path/to/certificate.key
-```
-
-### Environment variables
-
-When using environment variables, the configuration values need to be converted in the following way:
-
-* Replace all non-alphanumeric characters with an underscore (`_`)
-* Optionally convert all letters to upper case
-
-Example configuration for dotenv file:
-
-```dotenv
-REGION_CONNECTOR_BE_FLUVIUS_BASE_URL=REPLACE_ME
-REGION_CONNECTOR_BE_FLUVIUS_OAUTH_TOKEN_URL=https://login.microsoftonline.com/${region-connector.be.fluvius.oauth.tenant-id}/oauth2/V2.0/token
-REGION_CONNECTOR_BE_FLUVIUS_OAUTH_CLIENT_ID=REPLACE_ME
-REGION_CONNECTOR_BE_FLUVIUS_OAUTH_TENANT_ID=REPLACE_ME
-REGION_CONNECTOR_BE_FLUVIUS_OAUTH_CLIENT_SECRET=REPLACE_ME
-REGION_CONNECTOR_BE_FLUVIUS_OAUTH_SCOPE=REPLACE_ME
-REGION_CONNECTOR_BE_FLUVIUS_SUBSCRIPTIONKEY=REPLACE_ME
-REGION_CONNECTOR_BE_FLUVIUS_CONTRACTnUMBER=REPLACE_ME
-REGION_CONNECTOR_BE_FLUVIUS_MOCK_MANDATES=false
-REGION_CONNECTOR_BE_FLUVIUS_RETRY=0 0 * * * *
-REGION_CONNECTOR_BE_FLUVIUS_CHECK_ACCEPTANCE=0 0 * * * *
-SPRING_SSL_BUNDLE_PEM_FLUVIUS_KEYSTORE_CERTIFICATE=/path/to/certificate.cer
-SPRING_SSL_BUNDLE_PEM_FLUVIUS_KEYSTORE_PRIVATE_KEY=/path/to/certificate.key
 ```
 
 ## Running the Region Connector via EDDIE

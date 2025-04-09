@@ -19,29 +19,16 @@ API endpoints are needed and already provided. Right now the customer API endpoi
 | `region-connector.dk.energinet.polling`                  | Configures when future data should be polled. Uses Cron syntax. The default is 17 o'clock every day.                        |
 | `region-connector.dk.energinet.retry`                    | Configures when unable-to-send permission requests should be resent. Uses Cron syntax. The default is 17 o'clock every day. |
 
-### .properties file
+The region connector can be configured using Spring properties or environment variables.
+When using environment variables, the configuration values need to be converted in the following way:
 
-Example configuration for an `application.properties` file:
+- Replace all non-alphanumeric characters with an underscore (`_`)
+- Optionally convert all letters to upper case
 
-```properties
+```properties :spring
 region-connector.dk.energinet.customer.client.basepath=https://api.eloverblik.dk/customerapi
 region-connector.dk.energinet.polling=0 0 17 * * *
 region-connector.dk.energinet.retry=0 0 17 * * *
-```
-
-### Environment variables
-
-When using environment variables, the configuration values need to be converted in the following way:
-
-* Replace all non-alphanumeric characters with an underscore (`_`)
-* Optionally convert all letters to upper case
-
-Example configuration for dotenv file:
-
-```dotenv
-REGION_CONNECTOR_DK_ENERGINET_CUSTOMER_CLIENT_BASEPATH=https://api.eloverblik.dk/customerapi
-REGION_CONNECTOR_DK_ENERGINET_POLLING=0 0 17 * * *
-REGION_CONNECTOR_DK_ENERGINET_RETRY=0 0 17 * * *
 ```
 
 ## Running the Region Connector via EDDIE

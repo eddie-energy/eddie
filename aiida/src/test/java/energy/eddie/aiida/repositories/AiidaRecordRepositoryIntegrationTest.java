@@ -3,6 +3,7 @@ package energy.eddie.aiida.repositories;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.UnitOfMeasurement;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -45,14 +46,14 @@ class AiidaRecordRepositoryIntegrationTest {
     @Test
     void givenIntegerAndStringRecord_valueIsDeserializedProperly() {
         Instant now = Instant.now();
-        AiidaRecord intRecord = new AiidaRecord(now, "Test", userId, dataSourceId, List.of(
+        AiidaRecord intRecord = new AiidaRecord(now, AiidaAsset.SUBMETER, userId, dataSourceId, List.of(
                 new AiidaRecordValue("1-0:1.8.0",
                                      POSITIVE_ACTIVE_ENERGY,
                                      "237",
                                      UnitOfMeasurement.KWH,
                                      "237",
                                      UnitOfMeasurement.KWH)));
-        AiidaRecord stringRecord = new AiidaRecord(now, "Test", userId, dataSourceId, List.of(
+        AiidaRecord stringRecord = new AiidaRecord(now, AiidaAsset.SUBMETER, userId, dataSourceId, List.of(
                 new AiidaRecordValue("0-0:C.1.0",
                                      METER_SERIAL,
                                      "Hello Test",

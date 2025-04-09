@@ -10,6 +10,7 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.api.agnostic.aiida.MqttDto;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -46,7 +47,7 @@ class MqttStreamerTest {
     private final TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
     private final Sinks.One<UUID> terminationSink = Sinks.one();
     private final AiidaRecord record1 = new AiidaRecord(Instant.now(),
-                                                        "Test",
+                                                        AiidaAsset.SUBMETER,
                                                         userId,
                                                         dataSourceId,
                                                         List.of(new AiidaRecordValue("1-0:1.8.0",
@@ -56,7 +57,7 @@ class MqttStreamerTest {
                                                                                      "10",
                                                                                      KWH)));
     private final AiidaRecord record2 = new AiidaRecord(Instant.now(),
-                                                        "Test",
+                                                        AiidaAsset.SUBMETER,
                                                         userId,
                                                         dataSourceId,
                                                         List.of(new AiidaRecordValue("1-0:2.8.0",
