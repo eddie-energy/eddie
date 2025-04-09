@@ -14,7 +14,6 @@ import java.time.ZoneOffset;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RequestDataTypeTest {
 
@@ -44,22 +43,6 @@ class RequestDataTypeTest {
     }
 
     @Test
-    void requestDataTypeToStringMeteringDataPast() {
-        // given
-        RequestDataType type = RequestDataType.METERING_DATA;
-        LocalDate start = LocalDate.of(2022, 1, 1);
-        LocalDate end = LocalDate.of(2022, 1, 2);
-        CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
-        String expectedValue = "HistoricalMeteringData";
-
-        // when
-        String actualValue = type.toString(timeFrame);
-
-        // then
-        assertEquals(expectedValue, actualValue);
-    }
-
-    @Test
     void requestDataTypeToStringMeteringDataFuture() {
         // given
         RequestDataType type = RequestDataType.METERING_DATA;
@@ -74,21 +57,6 @@ class RequestDataTypeTest {
 
         // then
         assertEquals(expectedValue, actualValue);
-    }
-
-    @Test
-    void requestDataTypeToStringMixed() {
-        // GH-1322 This test will fail after 07.04.2025
-
-        // given
-        RequestDataType type = RequestDataType.METERING_DATA;
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        LocalDate end = LocalDate.now(ZoneOffset.UTC).plusDays(10);
-        CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
-
-        // when
-        // then
-        assertThrows(IllegalArgumentException.class, () -> type.toString(timeFrame));
     }
 
     @Test
