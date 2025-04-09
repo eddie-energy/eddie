@@ -28,11 +28,16 @@ public class ModbusTcpClient {
     public ModbusTcpClient(String host, int port, int unitId) throws Exception {
         this.unitId = unitId;
         this.messageErrorCounter = 0;
-        InetAddress addr = InetAddress.getByName(host);
-        connection = new TCPMasterConnection(addr);
-        connection.setPort(port);
-        connection.connect();
+        connection = createConnection(host, port);
         LOGGER.info("Connected to Modbus TCP device at {}:{} with unitId {}", host, port, unitId);
+    }
+
+    protected TCPMasterConnection createConnection(String host, int port) throws Exception {
+        InetAddress addr = InetAddress.getByName(host);
+        TCPMasterConnection conn = new TCPMasterConnection(addr);
+        conn.setPort(port);
+        conn.connect();
+        return conn;
     }
 
     public Optional<Object> readHoldingRegister(ModbusDataPoint dp) {
