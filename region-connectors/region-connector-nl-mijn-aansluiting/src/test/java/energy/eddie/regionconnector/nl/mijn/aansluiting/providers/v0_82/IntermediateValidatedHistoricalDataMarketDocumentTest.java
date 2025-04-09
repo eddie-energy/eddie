@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,7 +55,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         // The CIM requires too many asserts
     void testToEddieValidatedHistoricalDataMarketDocuments_withValidObisCode() throws IOException {
         // Given
-        var json = mapper.loadTestJson("single_consumption_data.json");
+        var json = mapper.loadTestJson("single_consumption_data_multiple_meters.json");
         var identifiableMeteredData = new IdentifiableMeteredData(pr, json);
         var doc = new IntermediateValidatedHistoricalDataMarketDocument(cimConfig, config, identifiableMeteredData);
 
@@ -72,7 +73,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         );
         var vhd = eddieVHD.getValidatedHistoricalDataMarketDocument();
         assertAll(
-                () -> assertEquals("871690930000909597", vhd.getMRID()),
+                () -> assertNotNull(vhd.getMRID()),
                 () -> assertEquals(CommonInformationModelVersions.V0_82.version(), vhd.getRevisionNumber()),
                 () -> assertEquals(MessageTypeList.MEASUREMENT_VALUE_DOCUMENT, vhd.getType()),
                 () -> assertNotNull(vhd.getCreatedDateTime()),
@@ -86,49 +87,54 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                                    vhd.getReceiverMarketParticipantMRID().getValue()),
                 () -> assertEquals(CodingSchemeTypeList.NETHERLANDS_NATIONAL_CODING_SCHEME,
                                    vhd.getSenderMarketParticipantMRID().getCodingScheme()),
-                () -> assertEquals("Stichting Mijn Aansluiting", vhd.getSenderMarketParticipantMRID().getValue()),
+                () -> assertEquals("EDSN", vhd.getSenderMarketParticipantMRID().getValue()),
                 () -> assertEquals(1, vhd.getTimeSeriesList().getTimeSeries().size())
         );
         var timeseries = vhd.getTimeSeriesList().getTimeSeries().getFirst();
         assertAll(
-                () -> assertEquals("1.8.1", timeseries.getMRID()),
-                () -> assertEquals(BusinessTypeList.AGGREGATED_ENERGY_DATA, timeseries.getBusinessType()),
-                () -> assertEquals(EnergyProductTypeList.ACTIVE_ENERGY, timeseries.getProduct()),
-                () -> assertEquals(AccumulationKind.DELTADATA,
-                                   timeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAccumulate()),
+                () -> assertEquals("E0003000007083514", timeseries.getRegisteredResource().getMRID()),
+                () -> assertEquals(BusinessTypeList.CONSUMPTION, timeseries.getBusinessType()),
+                () -> assertEquals(EnergyProductTypeList.ACTIVE_POWER, timeseries.getProduct()),
                 () -> assertEquals(CommodityKind.ELECTRICITYPRIMARYMETERED,
                                    timeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
                 () -> assertEquals(CodingSchemeTypeList.NETHERLANDS_NATIONAL_CODING_SCHEME,
                                    timeseries.getMarketEvaluationPointMRID().getCodingScheme()),
-                () -> assertEquals("E0003000007083514", timeseries.getMarketEvaluationPointMRID().getValue()),
-                () -> assertEquals(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED,
-                                   timeseries.getReasonList().getReasons().getFirst().getCode()),
-                () -> assertEquals(DirectionTypeList.UP, timeseries.getFlowDirectionDirection()),
+                () -> assertEquals("871690930000909597", timeseries.getMarketEvaluationPointMRID().getValue()),
+                () -> assertEquals(DirectionTypeList.DOWN, timeseries.getFlowDirectionDirection()),
                 () -> assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR, timeseries.getEnergyMeasurementUnitName()),
                 () -> assertEquals(1, timeseries.getSeriesPeriodList().getSeriesPeriods().size())
         );
         var seriesPeriod = timeseries.getSeriesPeriodList().getSeriesPeriods().getFirst();
         assertAll(
-                () -> assertEquals("2023-04-30T22:00Z", seriesPeriod.getTimeInterval().getStart()),
+                () -> assertEquals("2023-04-29T22:00Z", seriesPeriod.getTimeInterval().getStart()),
                 () -> assertEquals("2023-05-02T22:00Z", seriesPeriod.getTimeInterval().getEnd()),
                 () -> assertEquals("P1D", seriesPeriod.getResolution()),
-                () -> assertEquals(3, seriesPeriod.getPointList().getPoints().size())
+                () -> assertEquals(4, seriesPeriod.getPointList().getPoints().size())
         );
         var points = seriesPeriod.getPointList().getPoints();
+        var first = points.getFirst();
         assertAll(
-                () -> assertEquals(BigDecimal.valueOf(9738.65), points.getFirst().getEnergyQuantityQuantity()),
-                () -> assertEquals("0", points.getFirst().getPosition()),
-                () -> assertEquals(QualityTypeList.ADJUSTED, points.getFirst().getEnergyQuantityQuality())
+                () -> assertEquals(BigDecimal.valueOf(9738.65), first.getEnergyQuantityQuantity()),
+                () -> assertEquals("2023-04-29T22:00Z", first.getPosition()),
+                () -> assertEquals(QualityTypeList.AS_PROVIDED, first.getEnergyQuantityQuality())
         );
+        var second = points.get(1);
         assertAll(
-                () -> assertEquals(BigDecimal.valueOf(9838.65), points.get(1).getEnergyQuantityQuantity()),
-                () -> assertEquals("1", points.get(1).getPosition()),
-                () -> assertEquals(QualityTypeList.ADJUSTED, points.get(1).getEnergyQuantityQuality())
+                () -> assertEquals(BigDecimal.valueOf(19577.30).setScale(2, RoundingMode.CEILING), second.getEnergyQuantityQuantity()),
+                () -> assertEquals("2023-04-30T22:00Z", second.getPosition()),
+                () -> assertEquals(QualityTypeList.AS_PROVIDED, second.getEnergyQuantityQuality())
         );
+        var third = points.get(2);
         assertAll(
-                () -> assertEquals(BigDecimal.valueOf(9948.65), points.get(2).getEnergyQuantityQuantity()),
-                () -> assertEquals("2", points.get(2).getPosition()),
-                () -> assertEquals(QualityTypeList.ADJUSTED, points.get(2).getEnergyQuantityQuality())
+                () -> assertEquals(BigDecimal.valueOf(19787.30).setScale(2, RoundingMode.CEILING), third.getEnergyQuantityQuantity()),
+                () -> assertEquals("2023-05-01T22:00Z", third.getPosition()),
+                () -> assertEquals(QualityTypeList.AS_PROVIDED, third.getEnergyQuantityQuality())
+        );
+        var fourth = points.get(3);
+        assertAll(
+                () -> assertEquals(BigDecimal.valueOf(9948.65), fourth.getEnergyQuantityQuantity()),
+                () -> assertEquals("2023-05-02T22:00Z", fourth.getPosition()),
+                () -> assertEquals(QualityTypeList.AS_PROVIDED, fourth.getEnergyQuantityQuality())
         );
     }
 
@@ -148,13 +154,13 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         assertEquals(1, vhd.getTimeSeriesList().getTimeSeries().size());
         var timeseries = vhd.getTimeSeriesList().getTimeSeries().getFirst();
         assertAll(
-                () -> assertEquals("2.8.1", timeseries.getMRID()),
-                () -> assertEquals(BusinessTypeList.CONSUMPTION, timeseries.getBusinessType()),
-                () -> assertNull(timeseries.getProduct()),
+                () -> assertEquals("G0003000007083514", timeseries.getRegisteredResource().getMRID()),
+                () -> assertEquals(BusinessTypeList.PRODUCTION, timeseries.getBusinessType()),
+                () -> assertEquals(EnergyProductTypeList.ACTIVE_POWER, timeseries.getProduct()),
                 () -> assertEquals(CommodityKind.NATURALGAS,
                                    timeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
-                () -> assertEquals("G0003000007083514", timeseries.getMarketEvaluationPointMRID().getValue()),
-                () -> assertEquals(DirectionTypeList.DOWN, timeseries.getFlowDirectionDirection())
+                () -> assertEquals("871690930000909597", timeseries.getMarketEvaluationPointMRID().getValue()),
+                () -> assertEquals(DirectionTypeList.UP, timeseries.getFlowDirectionDirection())
         );
     }
 
