@@ -85,6 +85,7 @@ region-connector.nl.mijn.aansluiting.issuer-url=https://example.com
 region-connector.nl.mijn.aansluiting.client-id=client-id
 region-connector.nl.mijn.aansluiting.scope=24_maanden_dagstanden
 region-connector.nl.mijn.aansluiting.redirect-url=https://example.com/callback
+region-connector.nl.mijn.aansluiting.polling=0 0 17 * * *
 ```
 
 ### Environment variables
@@ -110,6 +111,7 @@ REGION_CONNECTOR_NL_MIJN_AANSLUITING_ISSUER_URL=https://example.com
 REGION_CONNECTOR_NL_MIJN_AANSLUITING_CLIENT_ID=client-id
 REGION_CONNECTOR_NL_MIJN_AANSLUITING_SCOPE=24_maanden_dagstanden
 REGION_CONNECTOR_NL_MIJN_AANSLUITING_REDIRECT_URL=https://example.com/callback
+REGION_CONNECTOR_NL_MIJN_AANSLUITTING_POLLING=0 0 17 * * *
 ```
 
 ## Running the Region Connector via EDDIE
