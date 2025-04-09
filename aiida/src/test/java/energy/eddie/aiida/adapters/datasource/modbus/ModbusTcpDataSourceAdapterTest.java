@@ -130,6 +130,37 @@ class ModbusTcpDataSourceAdapterTest {
                 .thenCancel()
                 .verify();
     }
+
+    @Test
+    void testCloseDisposesResources() throws Exception {
+        // Create a testable subclass of ModbusTcpClient
+        class TestModbusTcpClient extends ModbusTcpClient {
+            boolean closed = false;
+
+            TestModbusTcpClient() throws Exception {
+                super("127.0.0.1", 1502, 1); // dummy values
+            }
+
+            @Override
+            public void close() {
+                closed = true;
+                super.close(); // optional
+            }
+        }
+
+        TestModbusTcpClient testClient = new TestModbusTcpClient();
+        modbusTcpDataSourceAdapter.setModbusClientHelper(testClient);
+
+        // Start the Flux stream to initialize periodicFlux
+        modbusTcpDataSourceAdapter.start();
+
+        // Close the adapter
+        modbusTcpDataSourceAdapter.close();
+
+        // Assert that the close method was indeed called
+        assertThat(testClient.closed).isTrue();
+    }
+
 }
 
 
