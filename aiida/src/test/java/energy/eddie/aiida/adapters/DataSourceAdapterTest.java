@@ -2,6 +2,7 @@ package energy.eddie.aiida.adapters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
+import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
 import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
@@ -82,5 +83,17 @@ class DataSourceAdapterTest {
 
         // Then
         assertInstanceOf(SimulationAdapter.class, adapter);
+    }
+
+    @Test
+    void givenModbus_returnsAdapter() {
+        // Given
+        var dataSource = createNewDataSource(DataSourceType.MODBUS);
+
+        // When
+        var adapter = DataSourceAdapter.create(dataSource, mapper);
+
+        // Then
+        assertInstanceOf(ModbusTcpDataSourceAdapter.class, adapter);
     }
 }
