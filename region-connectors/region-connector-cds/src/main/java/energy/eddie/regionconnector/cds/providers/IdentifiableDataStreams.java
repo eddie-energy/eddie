@@ -19,6 +19,9 @@ public class IdentifiableDataStreams implements AutoCloseable {
     private final Sinks.Many<IdentifiableValidatedHistoricalData> validatedHistoricalDataSink = Sinks.many()
                                                                                                      .multicast()
                                                                                                      .onBackpressureBuffer();
+    private final Sinks.Many<IdentifiableAccountingPointData> accountingPointDataSink = Sinks.many()
+                                                                                             .multicast()
+                                                                                             .onBackpressureBuffer();
     private final Flux<IdentifiableValidatedHistoricalData> flux;
 
     @Autowired
@@ -40,12 +43,17 @@ public class IdentifiableDataStreams implements AutoCloseable {
         return flux;
     }
 
+    public Flux<IdentifiableAccountingPointData> accountingPointData() {
+        return accountingPointDataSink.asFlux();
+    }
+
     @Override
     public void close() {
         validatedHistoricalDataSink.tryEmitComplete();
+        accountingPointDataSink.tryEmitComplete();
     }
 
-    public void publish(
+    public void publishValidatedHistoricalData(
             CdsPermissionRequest pr,
             List<AccountsEndpoint200ResponseAllOfAccountsInner> accounts,
             List<ServiceContractEndpoint200ResponseAllOfServiceContractsInner> serviceContracts,
@@ -65,5 +73,27 @@ public class IdentifiableDataStreams implements AutoCloseable {
                                                                 usageSegments)
         );
         validatedHistoricalDataSink.tryEmitNext(id);
+    }
+
+    public void publishAccountingPointData(
+            CdsPermissionRequest pr,
+            List<AccountsEndpoint200ResponseAllOfAccountsInner> accounts,
+            List<ServiceContractEndpoint200ResponseAllOfServiceContractsInner> serviceContracts,
+            List<ServicePointEndpoint200ResponseAllOfServicePointsInner> servicePoints,
+            List<MeterDeviceEndpoint200ResponseAllOfMeterDevicesInner> meterDevices,
+            List<BillSectionEndpoint200ResponseAllOfBillSectionsInner> billSections
+    ) {
+        LOGGER.atInfo()
+              .addArgument(pr::permissionId)
+              .log("Publishing data related to accounting point data for permission request {}");
+        var id = new IdentifiableAccountingPointData(
+                pr,
+                new IdentifiableAccountingPointData.Payload(accounts,
+                                                            serviceContracts,
+                                                            servicePoints,
+                                                            meterDevices,
+                                                            billSections)
+        );
+        accountingPointDataSink.tryEmitNext(id);
     }
 }

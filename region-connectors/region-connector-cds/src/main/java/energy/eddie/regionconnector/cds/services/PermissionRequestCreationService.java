@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.data.needs.DataNeedNotFoundResult;
 import energy.eddie.api.agnostic.data.needs.DataNeedNotSupportedResult;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.cds.dtos.CreatedPermissionRequest;
@@ -12,6 +13,7 @@ import energy.eddie.regionconnector.cds.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.cds.exceptions.UnknownPermissionAdministratorException;
 import energy.eddie.regionconnector.cds.permission.events.CreatedEvent;
 import energy.eddie.regionconnector.cds.permission.events.MalformedEvent;
+import energy.eddie.regionconnector.cds.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.cds.permission.events.ValidatedEvent;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import energy.eddie.regionconnector.cds.services.oauth.AuthorizationService;
@@ -26,7 +28,6 @@ import static energy.eddie.regionconnector.cds.CdsRegionConnectorMetadata.REGION
 
 @Service
 public class PermissionRequestCreationService {
-    public static final String AP_UNSUPPORTED_MESSAGE = "Accounting point data need not supported";
     public static final String DATA_NEED_FIELD = "dataNeedId";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestCreationService.class);
     private final CdsServerRepository cdsServerRepository;
@@ -63,7 +64,7 @@ public class PermissionRequestCreationService {
             throw new UnknownPermissionAdministratorException(cdsServerId);
         }
         var calc = calculationService.calculate(dataNeedId, cdsServer.get(), createdEvent.eventCreated());
-        var dataNeedCalc = switch (calc) {
+        switch (calc) {
             case DataNeedNotFoundResult ignored -> {
                 LOGGER.info("Data need {} not found", dataNeedId);
                 outbox.commit(new MalformedEvent(permissionId,
@@ -74,18 +75,14 @@ public class PermissionRequestCreationService {
                 LOGGER.info("Data need {} not supported '{}'", dataNeedId, message);
                 throw unsupportedDataNeed(permissionId, message, dataNeedId);
             }
-            case AccountingPointDataNeedResult ignored -> {
-                LOGGER.info("Permission request {} malformed because accounting point data need {} is not supported",
-                            permissionId,
-                            dataNeedId);
-                throw unsupportedDataNeed(permissionId, AP_UNSUPPORTED_MESSAGE, dataNeedId);
-            }
-            case ValidatedHistoricalDataDataNeedResult vhdResult -> vhdResult;
-        };
-        outbox.commit(new ValidatedEvent(permissionId,
-                                         dataNeedCalc.granularities().getFirst(),
-                                         dataNeedCalc.energyTimeframe().start(),
-                                         dataNeedCalc.energyTimeframe().end()));
+            case AccountingPointDataNeedResult ignored ->
+                    outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.VALIDATED));
+            case ValidatedHistoricalDataDataNeedResult vhdResult -> outbox
+                    .commit(new ValidatedEvent(permissionId,
+                                               vhdResult.granularities().getFirst(),
+                                               vhdResult.energyTimeframe().start(),
+                                               vhdResult.energyTimeframe().end()));
+        }
         var uri = authorizationService.createOAuthRequest(cdsServer.get(), permissionId);
         return new CreatedPermissionRequest(permissionId, uri);
     }

@@ -57,7 +57,7 @@ class CdsValidatedHistoricalDataMarketDocumentProviderTest {
 
         // When
         StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
-                    .then(() -> streams.publish(
+                    .then(() -> streams.publishValidatedHistoricalData(
                             pr,
                             List.of(account),
                             List.of(serviceContract),
