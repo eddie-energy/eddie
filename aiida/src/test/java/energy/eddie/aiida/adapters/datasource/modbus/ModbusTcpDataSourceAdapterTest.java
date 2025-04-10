@@ -133,33 +133,17 @@ class ModbusTcpDataSourceAdapterTest {
 
     @Test
     void testCloseDisposesResources() throws Exception {
-        // Create a testable subclass of ModbusTcpClient
-        class TestModbusTcpClient extends ModbusTcpClient {
-            boolean closed = false;
+        // Spy on an instance, bypassing real TCP logic
+        ModbusTcpClient spyClient = Mockito.mock(ModbusTcpClient.class);
 
-            TestModbusTcpClient() throws Exception {
-                super("127.0.0.1", 1502, 1); // dummy values
-            }
-
-            @Override
-            public void close() {
-                closed = true;
-                super.close(); // optional
-            }
-        }
-
-        TestModbusTcpClient testClient = new TestModbusTcpClient();
-        modbusTcpDataSourceAdapter.setModbusClientHelper(testClient);
-
-        // Start the Flux stream to initialize periodicFlux
+        modbusTcpDataSourceAdapter.setModbusClientHelper(spyClient);
         modbusTcpDataSourceAdapter.start();
-
-        // Close the adapter
         modbusTcpDataSourceAdapter.close();
 
-        // Assert that the close method was indeed called
-        assertThat(testClient.closed).isTrue();
+        Mockito.verify(spyClient).close(); // ✅ verify cleanup
     }
+
+
 
 }
 
