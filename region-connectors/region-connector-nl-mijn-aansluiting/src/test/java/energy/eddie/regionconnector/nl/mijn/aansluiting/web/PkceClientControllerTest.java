@@ -51,10 +51,27 @@ class PkceClientControllerTest {
 
     public static Stream<Arguments> testCallback_returnsAnswer_onPermissionStatus() {
         return Stream.of(
-                Arguments.of(PermissionProcessStatus.ACCEPTED, "Access Granted. You can close this tab now."),
+                Arguments.of(PermissionProcessStatus.ACCEPTED,
+                             "Access granted. You can close this tab now."),
                 Arguments.of(PermissionProcessStatus.REJECTED,
-                             "Permission Request rejected. You can close this tab now."),
-                Arguments.of(PermissionProcessStatus.INVALID, "Unable to complete request. You can close this tab now.")
+                             "Access rejected. You can close this tab now."),
+                Arguments.of(PermissionProcessStatus.INVALID,
+                             "Invalid answer. Please contact the service provider."),
+                Arguments.of(PermissionProcessStatus.UNABLE_TO_SEND,
+                             "Permission request could not be sent to permission administrator. Please contact the service provider.")
+        );
+    }
+
+    public static Stream<Arguments> testCallback_onError_includesErrorMessage() {
+        return Stream.of(
+                Arguments.of(PermissionProcessStatus.INVALID, """
+                        Invalid answer. Please contact the service provider.
+                        Answer included an error.
+                        error: description"""),
+                Arguments.of(PermissionProcessStatus.UNABLE_TO_SEND, """
+                        Permission request could not be sent to permission administrator. Please contact the service provider.
+                        Answer included an error.
+                        error: description""")
         );
     }
 
@@ -115,15 +132,33 @@ class PkceClientControllerTest {
     @Test
     void testCallback_onEmptyQueryString_isInvalid() throws Exception {
         // Given
-        when(service.receiveResponse(any(), any()))
-                .thenReturn(PermissionProcessStatus.ACCEPTED);
-
         // When
         mockMvc.perform(get("/oauth2/code/mijn-aansluiting")
                                 .cookie(new Cookie("EDDIE-SESSION-ID", "pid")))
                // Then
+               .andExpect(status().isBadRequest())
+               .andExpect(content().string("Invalid answer. Please contact the service provider."));
+    }
+
+
+    @ParameterizedTest
+    @MethodSource
+    void testCallback_onError_includesErrorMessage(
+            PermissionProcessStatus status,
+            String message
+    ) throws Exception {
+        // Given
+        when(service.receiveResponse(any(), any()))
+                .thenReturn(status);
+
+        // When
+        mockMvc.perform(get("/oauth2/code/mijn-aansluiting")
+                                .queryParam("error", "error")
+                                .queryParam("error_description", "description")
+                                .cookie(new Cookie("EDDIE-SESSION-ID", "pid")))
+               // Then
                .andExpect(status().isOk())
-               .andExpect(content().string("Invalid Answer. You can close this tab now."));
+               .andExpect(content().string(message));
     }
 
     @ParameterizedTest
@@ -143,5 +178,20 @@ class PkceClientControllerTest {
                // Then
                .andExpect(status().isOk())
                .andExpect(content().string(message));
+    }
+
+    @Test
+    void testCallback_returnsNotImplemented_onUnexpectedPermissionStatus() throws Exception {
+        // Given
+        when(service.receiveResponse(any(), any()))
+                .thenReturn(PermissionProcessStatus.CREATED);
+
+        // When
+        mockMvc.perform(get("/oauth2/code/mijn-aansluiting")
+                                .queryParam("code", "asdf")
+                                .cookie(new Cookie("EDDIE-SESSION-ID", "pid")))
+               // Then
+               .andExpect(status().isNotImplemented())
+               .andExpect(content().string("Response lead to unexpected status: CREATED"));
     }
 }

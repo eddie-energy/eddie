@@ -28,7 +28,7 @@ class NlMijnAansluitingTest extends E2eTestSetup {
         callbackPage.evaluate("document.location = document.URL.replace('https://eddie.projekte.fh-hagenberg.at/region-connectors/nl-edsn/authorization-callback','%s/region-connectors/nl-mijn-aansluiting/oauth2/code/mijn-aansluiting');".formatted(BASE_URL));
 
         // Check if success message is shown on redirect page
-        assertThat(callbackPage.getByText("Access Granted. You can close this tab now.")).isVisible();
+        assertThat(callbackPage.getByText("Access granted. You can close this tab now.")).isVisible();
 
         // Check if button shows the correct page
         assertThat(page.getByText("Permission granted")).isVisible();
@@ -44,7 +44,7 @@ class NlMijnAansluitingTest extends E2eTestSetup {
         });
 
         callbackPage.evaluate("document.location = document.URL.replace('https://eddie.projekte.fh-hagenberg.at/region-connectors/nl-edsn/authorization-callback','%s/region-connectors/nl-mijn-aansluiting/oauth2/code/mijn-aansluiting');".formatted(BASE_URL));
-        assertThat(callbackPage.getByText("Unable to complete request. You can close this tab now.")).isVisible();
+        assertThat(callbackPage.getByText("Invalid answer. Please contact the service provider.")).isVisible();
 
         assertThat(page.getByText("Request was declined as invalid")).isVisible();
     }
