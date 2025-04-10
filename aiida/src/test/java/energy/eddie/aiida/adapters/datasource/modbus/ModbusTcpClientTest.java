@@ -3,7 +3,9 @@ package energy.eddie.aiida.adapters.datasource.modbus;
 import com.ghgande.j2mod.modbus.io.ModbusTCPTransaction;
 import com.ghgande.j2mod.modbus.msg.*;
 import com.ghgande.j2mod.modbus.net.TCPMasterConnection;
+import com.ghgande.j2mod.modbus.procimg.InputRegister;
 import com.ghgande.j2mod.modbus.procimg.Register;
+import com.ghgande.j2mod.modbus.procimg.SimpleInputRegister;
 import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import energy.eddie.aiida.models.modbus.Endian;
 import energy.eddie.aiida.models.modbus.ModbusDataPoint;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.*;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,25 +23,12 @@ import static org.mockito.Mockito.*;
 class ModbusTcpClientTest {
 
     private ModbusTcpClient client;
-
-    static class TestableModbusTcpClient extends ModbusTcpClient {
-        private final TCPMasterConnection injectedConnection;
-
-        public TestableModbusTcpClient(TCPMasterConnection injectedConnection, int unitId) throws Exception {
-            super("127.0.0.1", 502, unitId);
-            this.injectedConnection = injectedConnection;
-        }
-
-        @Override
-        protected TCPMasterConnection createConnection(String host, int port) {
-            return injectedConnection;
-        }
-    }
+    private TCPMasterConnection mockConnection;
 
     @BeforeEach
-    void setUp() throws Exception {
-        TCPMasterConnection mockConnection = mock(TCPMasterConnection.class);
-        client = new TestableModbusTcpClient(mockConnection, 1);
+    void setUp() {
+        mockConnection = mock(TCPMasterConnection.class);
+        client = new ModbusTcpClient(mockConnection, 1);
     }
 
     @Test
@@ -126,6 +116,98 @@ class ModbusTcpClientTest {
             Optional<Object> result = client.readDiscreteInput(dp);
             assertTrue(result.isPresent());
             assertEquals(false, result.get());
+        }
+    }
+
+    @Test
+    void testClose() {
+        when(mockConnection.isConnected()).thenReturn(true);
+        client.close();
+        verify(mockConnection).close();
+    }
+
+    @Test
+    void testReconnect() throws Exception {
+        when(mockConnection.isConnected()).thenReturn(true, false);
+        client.reconnect();
+        verify(mockConnection).close();
+        verify(mockConnection).connect();
+    }
+
+    @Test
+    void testHandleErrorAndReconnectAfterThreshold() throws Exception {
+        when(mockConnection.getAddress()).thenReturn(null);
+        when(mockConnection.getPort()).thenReturn(502);
+        for (int i = 0; i < 16; i++) {
+            client.readHoldingRegister(new ModbusDataPoint("test", 0, RegisterType.HOLDING, 1, "uint16", Endian.LITTLE, false, null, null, null, null));
+        }
+        // Reconnect should be triggered once after threshold
+        verify(mockConnection, atLeastOnce()).connect();
+    }
+
+    @Test
+    void testParse_uint16() {
+        ModbusDataPoint dp = new ModbusDataPoint("val", 0, RegisterType.HOLDING, 1, "uint16", Endian.BIG, false, null, null, null, null);
+        Optional<Object> result = client.readHoldingRegister(dp);
+        assertTrue(result.isEmpty()); // because transaction is not mocked
+    }
+
+    @Test
+    void testParse_int16() {
+        InputRegister[] regs = {new SimpleInputRegister((short) -1234)};
+        ModbusDataPoint dp = new ModbusDataPoint("val", 0, RegisterType.HOLDING, 1, "int16", Endian.BIG, false, null, null, null, null);
+        Optional<Object> val = callParseRegisterResponse(regs, dp);
+        assertEquals((short) -1234, val.orElse(0));
+    }
+
+    @Test
+    void testParse_int32() {
+        int value = 0x12345678;
+        InputRegister[] regs = {
+                new SimpleInputRegister((short) (value >> 16)),
+                new SimpleInputRegister((short) (value & 0xFFFF))
+        };
+        ModbusDataPoint dp = new ModbusDataPoint("val", 0, RegisterType.HOLDING, 2, "int32", Endian.BIG, false, null, null, null, null);
+        Optional<Object> result = callParseRegisterResponse(regs, dp);
+        assertEquals(value, result.orElse(0));
+    }
+
+    @Test
+    void testParse_float32() {
+        float f = 3.14f;
+        int bits = Float.floatToIntBits(f);
+        InputRegister[] regs = {
+                new SimpleInputRegister((short) (bits & 0xFFFF)),
+                new SimpleInputRegister((short) ((bits >> 16) & 0xFFFF))
+        };
+        ModbusDataPoint dp = new ModbusDataPoint("val", 0, RegisterType.HOLDING, 2, "float32", Endian.LITTLE, false, null, null, null, null);
+        Optional<Object> result = callParseRegisterResponse(regs, dp);
+        assert result.orElse(0.0) instanceof Float;
+        assertEquals(f, (Float) result.orElse(0.0), 0.0001);
+    }
+
+    @Test
+    void testParse_string() {
+        String original = "test";
+        byte[] bytes = original.getBytes(StandardCharsets.UTF_8);
+        InputRegister[] regs = new InputRegister[bytes.length / 2 + 1];
+        for (int i = 0; i < regs.length; i++) {
+            short hi = (i * 2 + 1 < bytes.length) ? (short) (bytes[i * 2 + 1] & 0xFF) : 0;
+            short lo = (i * 2 < bytes.length) ? (short) (bytes[i * 2] & 0xFF) : 0;
+            regs[i] = new SimpleInputRegister((short) ((hi << 8) | lo));
+        }
+        ModbusDataPoint dp = new ModbusDataPoint("val", 0, RegisterType.HOLDING, regs.length, "string", Endian.LITTLE, false, null, null, null, null);
+        Optional<Object> result = callParseRegisterResponse(regs, dp);
+        assertEquals("test", result.orElse(0));
+    }
+
+    private Optional<Object> callParseRegisterResponse(InputRegister[] regs, ModbusDataPoint dp) {
+        try {
+            var method = ModbusTcpClient.class.getDeclaredMethod("parseRegisterResponse", InputRegister[].class, ModbusDataPoint.class);
+            method.setAccessible(true);
+            return (Optional<Object>) method.invoke(client, regs, dp);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

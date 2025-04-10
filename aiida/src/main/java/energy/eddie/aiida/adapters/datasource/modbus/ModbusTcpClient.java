@@ -32,6 +32,13 @@ public class ModbusTcpClient {
         LOGGER.info("Connected to Modbus TCP device at {}:{} with unitId {}", host, port, unitId);
     }
 
+    protected ModbusTcpClient(TCPMasterConnection connection, int unitId) {
+        this.connection = connection;
+        this.unitId = unitId;
+        this.messageErrorCounter = 0;
+    }
+
+
     protected TCPMasterConnection createConnection(String host, int port) throws Exception {
         InetAddress addr = InetAddress.getByName(host);
         TCPMasterConnection conn = new TCPMasterConnection(addr);
