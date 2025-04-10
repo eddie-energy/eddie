@@ -1,9 +1,11 @@
 package energy.eddie.aiida.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
+import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.models.datasource.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
@@ -14,6 +16,7 @@ import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +27,10 @@ import static org.mockito.Mockito.*;
 
 class DataSourceServiceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+
+    private static final UUID VENDOR_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private static final UUID MODEL_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
+    private static final UUID DEVICE_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
 
     private DataSourceRepository repository;
     private Aggregator aggregator;
@@ -94,6 +101,40 @@ class DataSourceServiceTest {
         verify(repository, times(1)).save(any());
         verify(aggregator, times(1)).addNewDataSourceAdapter(any());
     }
+
+    @Test
+    void shouldAddModbusDataSource() throws InvalidUserException {
+        try (MockedStatic<ModbusDeviceService> mockedStatic = mockStatic(ModbusDeviceService.class)) {
+            mockedStatic.when(() -> ModbusDeviceService.loadConfig(any()))
+                    .thenReturn(ModbusDeviceTestHelper.setupModbusDevice());
+            when(authService.getCurrentUserId()).thenReturn(userId);
+
+            var modbusSettings = new DataSourceModbusDto(
+                    "192.168.1.100",
+                    VENDOR_ID,
+                    MODEL_ID,
+                    DEVICE_ID
+            );
+
+            var dto = new DataSourceDto(
+                    DATA_SOURCE_ID,
+                    DataSourceType.MODBUS.identifier(),
+                    AiidaAsset.SUBMETER.asset(),
+                    "Modbus DS",
+                    true,
+                    "",
+                    1,
+                    null,
+                    modbusSettings
+            );
+
+            dataSourceService.addDataSource(dto);
+
+            verify(repository, times(1)).save(any());
+            verify(aggregator, times(1)).addNewDataSourceAdapter(any());
+        }
+    }
+
 
     @Test
     void shouldNotAddNewDataSource() throws InvalidUserException {
