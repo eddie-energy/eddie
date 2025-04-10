@@ -6,7 +6,7 @@ import energy.eddie.tests.e2e.E2eTestSetup;
 import org.junit.jupiter.api.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static energy.eddie.tests.e2e.PlaywrightOptions.E2E_BASE_URL;
+import static energy.eddie.tests.e2e.PlaywrightOptions.BASE_URL;
 
 class NlMijnAansluitingTest extends E2eTestSetup {
     @Test
@@ -25,7 +25,7 @@ class NlMijnAansluitingTest extends E2eTestSetup {
         }
         // Interact with external permission page
         callbackPage.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Deel mijn data")).click();
-        callbackPage.evaluate("document.location = document.URL.replace('https://eddie.projekte.fh-hagenberg.at/region-connectors/nl-edsn/authorization-callback','%s/region-connectors/nl-mijn-aansluiting/oauth2/code/mijn-aansluiting');".formatted(E2E_BASE_URL));
+        callbackPage.evaluate("document.location = document.URL.replace('https://eddie.projekte.fh-hagenberg.at/region-connectors/nl-edsn/authorization-callback','%s/region-connectors/nl-mijn-aansluiting/oauth2/code/mijn-aansluiting');".formatted(BASE_URL));
 
         // Check if success message is shown on redirect page
         assertThat(callbackPage.getByText("Access Granted. You can close this tab now.")).isVisible();
@@ -43,7 +43,7 @@ class NlMijnAansluitingTest extends E2eTestSetup {
             page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Submit")).click();
         });
 
-        callbackPage.evaluate("document.location = document.URL.replace('https://eddie.projekte.fh-hagenberg.at/region-connectors/nl-edsn/authorization-callback','%s/region-connectors/nl-mijn-aansluiting/oauth2/code/mijn-aansluiting');".formatted(E2E_BASE_URL));
+        callbackPage.evaluate("document.location = document.URL.replace('https://eddie.projekte.fh-hagenberg.at/region-connectors/nl-edsn/authorization-callback','%s/region-connectors/nl-mijn-aansluiting/oauth2/code/mijn-aansluiting');".formatted(BASE_URL));
         assertThat(callbackPage.getByText("Unable to complete request. You can close this tab now.")).isVisible();
 
         assertThat(page.getByText("Request was declined as invalid")).isVisible();
