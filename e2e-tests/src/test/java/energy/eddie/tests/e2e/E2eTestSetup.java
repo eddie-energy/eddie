@@ -1,6 +1,5 @@
 package energy.eddie.tests.e2e;
 
-import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
@@ -18,7 +17,6 @@ import java.nio.file.Paths;
  */
 @UsePlaywright(PlaywrightOptions.class)
 public class E2eTestSetup {
-    protected BrowserContext context;
     protected Page page;
 
     protected void navigateToRegionConnector(String dataNeed, String country, String permissionAdministrator) {
@@ -49,8 +47,7 @@ public class E2eTestSetup {
     }
 
     @BeforeEach
-    void navigateToDemoPage(BrowserContext context, Page page) {
-        this.context = context;
+    void navigateToDemoPage(Page page) {
         this.page = page;
         page.navigate("/demo");
     }
