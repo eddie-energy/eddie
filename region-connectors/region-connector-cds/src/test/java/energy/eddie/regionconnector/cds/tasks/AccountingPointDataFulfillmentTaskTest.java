@@ -40,7 +40,6 @@ class AccountingPointDataFulfillmentTaskTest {
                 List.of(),
                 List.of(),
                 List.of(),
-                List.of(),
                 List.of()
         );
 

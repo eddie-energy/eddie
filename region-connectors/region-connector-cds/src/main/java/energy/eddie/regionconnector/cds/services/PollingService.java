@@ -89,12 +89,11 @@ public class PollingService {
                     client.accounts(pr),
                     client.serviceContracts(pr),
                     client.servicePoints(pr),
-                    client.meterDevices(pr),
-                    client.billSections(pr)
+                    client.meterDevices(pr)
             )
             .doOnError(errorHandler, errorHandler.thenRevoke(pr))
             .subscribe(res -> streams.publishAccountingPointData(
-                    pr, res.getT1(), res.getT2(), res.getT3(), res.getT4(), res.getT5()
+                    pr, res.getT1(), res.getT2(), res.getT3(), res.getT4()
             ));
     }
 }

@@ -53,8 +53,7 @@ class IntermediateAccountingPointDocumentTest {
                                 new MeterDeviceEndpoint200ResponseAllOfMeterDevicesInner()
                                         .addCurrentServicepointsItem("service-point-id")
                                         .cdsMeterdeviceId("meter-id")
-                        ),
-                        List.of()
+                        )
                 )
         );
         var document = new IntermediateAccountingPointDocument(id);
@@ -154,8 +153,7 @@ class IntermediateAccountingPointDocumentTest {
                                 new MeterDeviceEndpoint200ResponseAllOfMeterDevicesInner()
                                         .addCurrentServicepointsItem("service-point-id")
                                         .cdsMeterdeviceId("meter-id")
-                        ),
-                        List.of()
+                        )
                 )
         );
         var document = new IntermediateAccountingPointDocument(id);
@@ -212,8 +210,7 @@ class IntermediateAccountingPointDocumentTest {
                                 new MeterDeviceEndpoint200ResponseAllOfMeterDevicesInner()
                                         .addCurrentServicepointsItem("service-point-id")
                                         .cdsMeterdeviceId("meter-id")
-                        ),
-                        List.of()
+                        )
                 )
         );
         var document = new IntermediateAccountingPointDocument(id);
@@ -271,8 +268,7 @@ class IntermediateAccountingPointDocumentTest {
                                 new MeterDeviceEndpoint200ResponseAllOfMeterDevicesInner()
                                         .addCurrentServicepointsItem("service-point-id")
                                         .cdsMeterdeviceId("meter-id")
-                        ),
-                        List.of()
+                        )
                 )
         );
         var document = new IntermediateAccountingPointDocument(id);
@@ -332,8 +328,7 @@ class IntermediateAccountingPointDocumentTest {
                                 new MeterDeviceEndpoint200ResponseAllOfMeterDevicesInner()
                                         .addCurrentServicepointsItem("service-point-id")
                                         .cdsMeterdeviceId("meter-id")
-                        ),
-                        List.of()
+                        )
                 )
         );
         var document = new IntermediateAccountingPointDocument(id);

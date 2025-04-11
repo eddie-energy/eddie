@@ -51,8 +51,7 @@ class CdsAccountingPointDataMarketDocumentProviderTest {
                             List.of(account),
                             List.of(serviceContract),
                             List.of(servicePoint),
-                            List.of(meterDevice),
-                            List.of()
+                            List.of(meterDevice)
                     ))
                     .then(streams::close)
                     .expectNextCount(1)

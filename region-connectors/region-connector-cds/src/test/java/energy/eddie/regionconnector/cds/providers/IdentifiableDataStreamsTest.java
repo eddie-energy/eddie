@@ -51,8 +51,8 @@ class IdentifiableDataStreamsTest {
                                                                      List.of(),
                                                                      List.of(),
                                                                      List.of(),
-                                                                     List.of(),
-                                                                     List.of())
+                                                                     List.of()
+                                  )
                     )
                     .then(streams::close)
                     // Then
