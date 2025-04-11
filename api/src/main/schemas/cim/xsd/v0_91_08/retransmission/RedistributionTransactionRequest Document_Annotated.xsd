@@ -4,7 +4,7 @@
            xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified"
            targetNamespace="https://eddie.energy/CIM">
     <xs:import schemaLocation="../urn-entsoe-eu-wgedi-codelists.xsd" namespace="urn:entsoe.eu:wgedi:codelists"/>
-    <xs:element name="RTR_Enveloppe" type="TargetNamespace:RTR_Enveloppe"/>
+    <xs:element name="RTR_Envelope" type="TargetNamespace:RTR_Envelope"/>
     <xs:simpleType name="ESMP_DateTime" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#DateTime">
         <xs:annotation>
             <xs:documentation>In ESMP, the dateTime shall be expressed in UTC as YYYY-MM-DDThh:mm:ssZ.
@@ -74,7 +74,7 @@
             </xs:element>
         </xs:sequence>
     </xs:complexType>
-    <xs:complexType name="RTR_Enveloppe" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Enveloppe">
+    <xs:complexType name="RTR_Envelope" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Envelope">
         <xs:annotation>
             <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessContextValue">
             </xs:documentation>

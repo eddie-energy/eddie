@@ -31,7 +31,7 @@ public final class Endpoints {
     }
 
     /**
-     * CIM compliant v0.82 endpoints.
+     * CIM v0.82 compliant endpoints.
      */
     @SuppressWarnings("java:S101") // Used to determine between CIM versions
     public static final class V0_82 {

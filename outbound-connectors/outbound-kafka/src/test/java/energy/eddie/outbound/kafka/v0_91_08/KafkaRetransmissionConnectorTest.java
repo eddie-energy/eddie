@@ -2,7 +2,7 @@ package energy.eddie.outbound.kafka.v0_91_08;
 
 import energy.eddie.api.agnostic.outbound.RetransmissionOutboundConnector;
 import energy.eddie.cim.v0_91_08.retransmission.ESMPDateTimeInterval;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnveloppe;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.kafka.KafkaTestConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.Tag;
@@ -37,7 +37,7 @@ class KafkaRetransmissionConnectorTest {
     @Test
     void testGettingRetransmissionRequest() throws ExecutionException, InterruptedException {
         // Given
-        var envelope = new RTREnveloppe()
+        var envelope = new RTREnvelope()
                 .withMessageDocumentHeaderMetaInformationPermissionId("permissionId")
                 .withMessageDocumentHeaderMetaInformationRegionConnector("rc-id")
                 .withMarketDocumentPeriodTimeInterval(
@@ -62,7 +62,7 @@ class KafkaRetransmissionConnectorTest {
     void testRetransmissionRequestWithInvalidFormat() throws ExecutionException, InterruptedException {
         // Given
         stringKafkaTemplate.send(new ProducerRecord<>("retransmissions", "id", "Invalid JSON")).get();
-        var envelope = new RTREnveloppe()
+        var envelope = new RTREnvelope()
                 .withMessageDocumentHeaderMetaInformationPermissionId("permissionId")
                 .withMessageDocumentHeaderMetaInformationRegionConnector("rc-id")
                 .withMarketDocumentPeriodTimeInterval(

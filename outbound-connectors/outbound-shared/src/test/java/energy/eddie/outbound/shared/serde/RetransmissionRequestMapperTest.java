@@ -1,7 +1,7 @@
 package energy.eddie.outbound.shared.serde;
 
 import energy.eddie.cim.v0_91_08.retransmission.ESMPDateTimeInterval;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnveloppe;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.datatype.DatatypeFactory;
@@ -17,7 +17,7 @@ class RetransmissionRequestMapperTest {
         // Given
         var gregorianCalendar = DatatypeFactory.newDefaultInstance()
                                                .newXMLGregorianCalendar(2024, 1, 1, 0, 0, 0, 0, 0);
-        var envelope = new RTREnveloppe()
+        var envelope = new RTREnvelope()
                 .withMarketDocumentMRID("mrid")
                 .withMessageDocumentHeaderCreationDateTime(gregorianCalendar)
                 .withMessageDocumentHeaderMetaInformationPermissionId("pid")

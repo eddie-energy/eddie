@@ -4,7 +4,7 @@ import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Publisher;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_91_08.retransmission.ESMPDateTimeInterval;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnveloppe;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.Endpoints;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerializationException;
@@ -104,7 +104,7 @@ class AmqpInboundTest {
         var publisher = connection.publisherBuilder()
                                   .queue(Endpoints.V0_91_08.RETRANSMISSIONS)
                                   .build();
-        var envelope = new RTREnveloppe()
+        var envelope = new RTREnvelope()
                 .withMessageDocumentHeaderMetaInformationPermissionId("permissionId")
                 .withMessageDocumentHeaderMetaInformationRegionConnector("rc-id")
                 .withMarketDocumentPeriodTimeInterval(

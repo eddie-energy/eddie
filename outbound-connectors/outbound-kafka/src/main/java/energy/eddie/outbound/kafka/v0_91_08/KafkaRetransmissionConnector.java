@@ -3,7 +3,7 @@ package energy.eddie.outbound.kafka.v0_91_08;
 import energy.eddie.api.agnostic.outbound.RetransmissionOutboundConnector;
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnveloppe;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.Endpoints;
 import energy.eddie.outbound.shared.serde.RetransmissionRequestMapper;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class KafkaRetransmissionConnector implements RetransmissionOutboundConne
             containerFactory = "rtrEnvelopeListenerContainerFactory"
     )
     public void process(
-            @Payload RTREnveloppe payload
+            @Payload RTREnvelope payload
     ) {
         LOGGER.atDebug()
               .addArgument(payload::getMarketDocumentMRID)

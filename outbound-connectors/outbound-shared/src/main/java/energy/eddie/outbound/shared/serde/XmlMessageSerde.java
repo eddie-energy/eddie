@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnveloppe;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
@@ -38,7 +38,7 @@ public class XmlMessageSerde implements MessageSerde {
                     PermissionEnvelope.class,
                     AccountingPointEnvelope.class,
                     ValidatedHistoricalDataEnvelope.class,
-                    RTREnveloppe.class
+                    RTREnvelope.class
             );
             marshaller = ctx.createMarshaller();
             unmarshaller = ctx.createUnmarshaller();
@@ -55,7 +55,7 @@ public class XmlMessageSerde implements MessageSerde {
                 case ValidatedHistoricalDataEnvelope ignored -> serializeCimMessage(message);
                 case PermissionEnvelope ignored -> serializeCimMessage(message);
                 case AccountingPointEnvelope ignored -> serializeCimMessage(message);
-                case RTREnveloppe ignored -> serializeCimMessage(message);
+                case RTREnvelope ignored -> serializeCimMessage(message);
                 default -> objectMapper.writeValueAsBytes(message);
             };
         } catch (Exception e) {

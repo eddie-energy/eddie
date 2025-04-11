@@ -2,7 +2,7 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnveloppe;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerdeFactory;
 import energy.eddie.outbound.shared.serde.SerdeInitializationException;
@@ -65,21 +65,21 @@ public class KafkaOutboundConnector {
     }
 
     @Bean
-    public ConsumerFactory<String, RTREnveloppe> rtrEnvelopeConsumerFactory(
+    public ConsumerFactory<String, RTREnvelope> rtrEnvelopeConsumerFactory(
             @Qualifier("kafkaPropertiesMap") Map<String, String> kafkaProperties,
             MessageSerde serde
     ) {
         var config = kafkaProperties(kafkaProperties);
         return new DefaultKafkaConsumerFactory<>(config,
                                                  new StringDeserializer(),
-                                                 new CustomDeserializer<>(serde, RTREnveloppe.class));
+                                                 new CustomDeserializer<>(serde, RTREnvelope.class));
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, RTREnveloppe>> rtrEnvelopeListenerContainerFactory(
-            ConsumerFactory<String, RTREnveloppe> consumerFactory
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, RTREnvelope>> rtrEnvelopeListenerContainerFactory(
+            ConsumerFactory<String, RTREnvelope> consumerFactory
     ) {
-        var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, RTREnveloppe>();
+        var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, RTREnvelope>();
         listenerContainerFactory.setConsumerFactory(consumerFactory);
         return listenerContainerFactory;
     }

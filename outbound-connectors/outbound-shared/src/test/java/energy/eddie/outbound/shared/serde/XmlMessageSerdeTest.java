@@ -12,7 +12,7 @@ import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.cim.v0_82.vhd.MeasurementPointIDStringComplexType;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.cim.v0_91_08.retransmission.ESMPDateTimeInterval;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnveloppe;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.testing.XmlValidator;
 import org.junit.jupiter.api.Test;
 
@@ -472,7 +472,7 @@ class XmlMessageSerdeTest {
     void testSerialize_producesCIMCompliantRTREnvelope() throws SerdeInitializationException, SerializationException {
         // Given
         var gregorianCalendar = DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar("2000-01-20T12:00:00Z");
-        var document = new RTREnveloppe()
+        var document = new RTREnvelope()
                 .withMarketDocumentMRID("mrid")
                 .withMessageDocumentHeaderCreationDateTime(gregorianCalendar)
                 .withMessageDocumentHeaderMetaInformationPermissionId("pid")

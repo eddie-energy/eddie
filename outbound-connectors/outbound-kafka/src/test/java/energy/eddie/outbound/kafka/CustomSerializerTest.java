@@ -8,7 +8,7 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.*;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocumentComplexType;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnveloppe;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerdeFactory;
 import energy.eddie.outbound.shared.serde.SerdeInitializationException;
@@ -295,7 +295,7 @@ class CustomSerializerTest {
         when(mockSerde.serialize(any())).thenThrow(new SerializationException(null));
 
         // When
-        var res = customSerializer.serialize("any", new RTREnveloppe());
+        var res = customSerializer.serialize("any", new RTREnvelope());
 
         // Then
         assertNull(res);

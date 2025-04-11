@@ -12,8 +12,8 @@ public class XmlValidator {
         // Utility Class
     }
 
-    @SuppressWarnings({"CallToPrintStackTrace", "java:S4507"})
     // Only used during testing
+    @SuppressWarnings({"CallToPrintStackTrace", "java:S4507", "java:S2755"})
     public static boolean validateXMLSchema(URL xsdPath, String xml) {
         try {
             var factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -30,7 +30,7 @@ public class XmlValidator {
     }
 
     public static boolean validatePermissionMarketDocument(String xml) {
-        var xsd = XmlValidator.class.getResource("/cim/xsd/v0_82/pmd/Permission_Enveloppe_2024-06-21T11.51.02.xsd");
+        var xsd = XmlValidator.class.getResource("/cim/xsd/v0_82/pmd/Permission_Envelope_2024-06-21T11.51.02.xsd");
         return validateXMLSchema(xsd, xml);
     }
 

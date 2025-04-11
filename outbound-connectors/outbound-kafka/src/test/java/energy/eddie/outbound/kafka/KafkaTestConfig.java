@@ -1,7 +1,7 @@
 package energy.eddie.outbound.kafka;
 
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnveloppe;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerdeFactory;
 import energy.eddie.outbound.shared.serde.SerdeInitializationException;
@@ -70,7 +70,7 @@ public class KafkaTestConfig {
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, RTREnveloppe>> rtrEnvelopeListenerContainerFactory(
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, RTREnvelope>> rtrEnvelopeListenerContainerFactory(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") EmbeddedKafkaBroker embeddedKafka,
             MessageSerde serde
     ) {
@@ -79,8 +79,8 @@ public class KafkaTestConfig {
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         var consumerFactory = new DefaultKafkaConsumerFactory<>(props,
                                                                 new StringDeserializer(),
-                                                                new CustomDeserializer<>(serde, RTREnveloppe.class));
-        var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, RTREnveloppe>();
+                                                                new CustomDeserializer<>(serde, RTREnvelope.class));
+        var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, RTREnvelope>();
         listenerContainerFactory.setConsumerFactory(consumerFactory);
         return listenerContainerFactory;
     }

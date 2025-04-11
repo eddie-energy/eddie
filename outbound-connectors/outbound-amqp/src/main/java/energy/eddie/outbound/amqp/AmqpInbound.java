@@ -9,7 +9,7 @@ import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
 import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnveloppe;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.Endpoints;
 import energy.eddie.outbound.shared.serde.DeserializationException;
 import energy.eddie.outbound.shared.serde.MessageSerde;
@@ -84,7 +84,7 @@ public class AmqpInbound implements TerminationConnector, RetransmissionOutbound
 
     private void consumeRetransmissionRequests(Consumer.Context context, Message message) {
         try {
-            var envelope = serde.deserialize(message.body(), RTREnveloppe.class);
+            var envelope = serde.deserialize(message.body(), RTREnvelope.class);
             LOGGER.atDebug()
                   .addArgument(envelope::getMarketDocumentMRID)
                   .log("Got new retransmission request {}");
