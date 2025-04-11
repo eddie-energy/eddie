@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.cds.providers.vhd;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.cds.openapi.model.UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner.FormatEnum;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
+import energy.eddie.regionconnector.cds.providers.cim.*;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -76,15 +77,23 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     ) {
         // Given
         var now = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var usageSegment = new Account.UsageSegment(
+        var usageSegment = new UsageSegment(
                 now,
                 now,
                 BigDecimal.valueOf(900),
                 Map.of(format, List.of(BigDecimal.ONE))
         );
-        var meter = new Account.Meter("meter-number", List.of(usageSegment)
+        var meter = new Meter("meter-number", "cds-id", List.of(usageSegment)
         );
-        var acc = new Account("customer-number", List.of(meter));
+        var acc = new Account("customer-number",
+                              "customer name",
+                              "business",
+                              List.of(new ServiceContract(
+                                      "",
+                                      "",
+                                      List.of(new ServicePoint("", List.of(meter)))
+                              ))
+        );
         var pr = new CdsPermissionRequestBuilder()
                 .setCdsServer(1)
                 .setPermissionId("pid")
@@ -111,7 +120,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                     assertThat(vhd.getProcessProcessType()).isEqualTo(ProcessTypeList.REALISED);
                     assertThat(vhd.getSenderMarketParticipantMRID()
                                   .getCodingScheme()).isEqualTo(CodingSchemeTypeList.USA_NATIONAL_CODING_SCHEME);
-                    assertThat(vhd.getSenderMarketParticipantMRID().getValue()).isNullOrEmpty();
+                    assertThat(vhd.getSenderMarketParticipantMRID().getValue()).isEqualTo("CDSC");
                     assertThat(vhd.getReceiverMarketParticipantMRID()
                                   .getCodingScheme()).isEqualTo(CodingSchemeTypeList.USA_NATIONAL_CODING_SCHEME);
                     assertThat(vhd.getReceiverMarketParticipantMRID().getValue()).isEqualTo(acc.cdsCustomerNumber());
@@ -162,16 +171,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     @Test
     void testToVhds_withUnknownGranularity_returnsVhds() {
         // Given
-        var now = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var usageSegment = new Account.UsageSegment(
-                now,
-                now,
-                BigDecimal.valueOf(1),
-                Map.of(FormatEnum.KWH_FWD, List.of(BigDecimal.ONE))
-        );
-        var meter = new Account.Meter("meter-number", List.of(usageSegment)
-        );
-        var acc = new Account("customer-number", List.of(meter));
+        var acc = createAccount();
         var pr = new CdsPermissionRequestBuilder()
                 .setCdsServer(1)
                 .setPermissionId("pid")
@@ -197,5 +197,25 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 .singleElement()
                 .extracting(SeriesPeriodComplexType::getResolution)
                 .isEqualTo("1s");
+    }
+
+    private static Account createAccount() {
+        var now = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var usageSegment = new UsageSegment(
+                now,
+                now,
+                BigDecimal.valueOf(1),
+                Map.of(FormatEnum.KWH_FWD, List.of(BigDecimal.ONE))
+        );
+        var meter = new Meter("meter-number", "cds-id", List.of(usageSegment));
+        return new Account("customer-number",
+                           "customer name",
+                           "business",
+                           List.of(new ServiceContract(
+                                   "",
+                                   "",
+                                   List.of(new ServicePoint("", List.of(meter)))
+                           ))
+        );
     }
 }

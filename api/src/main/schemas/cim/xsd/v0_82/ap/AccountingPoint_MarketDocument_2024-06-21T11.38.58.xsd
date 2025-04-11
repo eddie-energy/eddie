@@ -467,6 +467,11 @@ PURPOSE
                     <xs:documentation>Bulgaria National coding scheme</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="NCA">
+                <xs:annotation>
+                    <xs:documentation>Canada National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
             <xs:enumeration value="NCH">
                 <xs:annotation>
                     <xs:documentation>Switzerland National coding scheme</xs:documentation>
@@ -655,6 +660,11 @@ PURPOSE
             <xs:enumeration value="NUA">
                 <xs:annotation>
                     <xs:documentation>Ukraine National coding scheme</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NUS">
+                <xs:annotation>
+                    <xs:documentation>USA National coding scheme</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="A02">

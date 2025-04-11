@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.cds.providers;
 
 import energy.eddie.regionconnector.cds.openapi.model.*;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
+import energy.eddie.regionconnector.cds.providers.ap.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.cds.providers.vhd.IdentifiableValidatedHistoricalData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

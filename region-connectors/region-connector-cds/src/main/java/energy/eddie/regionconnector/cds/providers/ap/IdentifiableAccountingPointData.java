@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.cds.providers;
+package energy.eddie.regionconnector.cds.providers.ap;
 
 import energy.eddie.api.agnostic.IdentifiablePayload;
 import energy.eddie.regionconnector.cds.openapi.model.*;
