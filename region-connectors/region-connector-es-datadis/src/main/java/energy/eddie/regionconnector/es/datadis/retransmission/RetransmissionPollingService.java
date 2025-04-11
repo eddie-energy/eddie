@@ -1,20 +1,18 @@
-package energy.eddie.regionconnector.es.datadis.services;
+package energy.eddie.regionconnector.es.datadis.retransmission;
 
-import energy.eddie.api.agnostic.retransmission.RegionConnectorRetransmissionService;
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
-import energy.eddie.api.agnostic.retransmission.result.*;
-import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.api.agnostic.retransmission.result.DataNotAvailable;
+import energy.eddie.api.agnostic.retransmission.result.Failure;
+import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
+import energy.eddie.api.agnostic.retransmission.result.Success;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.filter.MeteringDataFilter;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
-import jakarta.validation.constraints.NotNull;
+import energy.eddie.regionconnector.shared.retransmission.PollingFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -27,90 +25,23 @@ import java.time.ZonedDateTime;
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
 @Service
-public class DatadisRegionConnectorRetransmissionService implements RegionConnectorRetransmissionService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DatadisRegionConnectorRetransmissionService.class);
-
-    private final EsPermissionRequestRepository repository;
-    private final DataNeedsService dataNeedsService;
+public class RetransmissionPollingService implements PollingFunction<EsPermissionRequest> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RetransmissionPollingService.class);
     private final DataApi dataApi;
     private final Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink;
 
-    public DatadisRegionConnectorRetransmissionService(
-            EsPermissionRequestRepository repository,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")  // defined in core
-            DataNeedsService dataNeedsService,
+    public RetransmissionPollingService(
             DataApi dataApi,
             Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink
     ) {
-        this.repository = repository;
-        this.dataNeedsService = dataNeedsService;
         this.dataApi = dataApi;
         this.identifiableMeteringDataSink = identifiableMeteringDataSink;
     }
 
     @Override
-    public Mono<RetransmissionResult> requestRetransmission(RetransmissionRequest retransmissionRequest) {
-        LOGGER.info("Validating retransmission request {}", retransmissionRequest);
-        var permissionRequest = repository.findByPermissionId(retransmissionRequest.permissionId());
-        ZonedDateTime now = ZonedDateTime.now(ZONE_ID_SPAIN);
-
-        if (permissionRequest.isEmpty()) {
-            LOGGER.warn("No permission with this id found: {}", retransmissionRequest.permissionId());
-            return Mono.just(new PermissionRequestNotFound(
-                    retransmissionRequest.permissionId(),
-                    now
-            ));
-        }
-
-        var request = permissionRequest.get();
-
-        if (request.status() != PermissionProcessStatus.ACCEPTED && request.status() != PermissionProcessStatus.FULFILLED) {
-            LOGGER.warn("Can only request retransmission for accepted or fulfilled permissions, current status: {}",
-                        request.status());
-            return Mono.just(new NoActivePermission(
-                    retransmissionRequest.permissionId(),
-                    now
-            ));
-        }
-
-        var dataNeed = dataNeedsService.getById(request.dataNeedId());
-        if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed)) {
-            var reason = "Retransmission of data for " + dataNeed.getClass().getSimpleName() + " not supported";
-            LOGGER.warn(reason);
-            return Mono.just(new NotSupported(
-                    retransmissionRequest.permissionId(),
-                    now,
-                    reason
-            ));
-        }
-
-        if (retransmissionRequest.from().isBefore(request.start()) ||
-            retransmissionRequest.to().isAfter(request.end())
-        ) {
-            LOGGER.warn("Retransmission request not within permission time frame");
-            return Mono.just(new NoPermissionForTimeFrame(
-                    retransmissionRequest.permissionId(),
-                    now
-            ));
-        }
-
-        if (now.toLocalDate().isEqual(retransmissionRequest.to()) ||
-            now.toLocalDate().isBefore(retransmissionRequest.to())
-        ) {
-            LOGGER.warn("Retransmission request to date needs to be before today!");
-            return Mono.just(new NotSupported(
-                    retransmissionRequest.permissionId(),
-                    now,
-                    "Retransmission to date needs to be before today"
-            ));
-        }
-
-        return requestValidatedHistoricalData(retransmissionRequest, request);
-    }
-
-    private @NotNull Mono<RetransmissionResult> requestValidatedHistoricalData(
-            RetransmissionRequest retransmissionRequest,
-            EsPermissionRequest request
+    public Mono<RetransmissionResult> poll(
+            EsPermissionRequest request,
+            RetransmissionRequest retransmissionRequest
     ) {
         LOGGER.info("Requesting retransmission of {}", retransmissionRequest);
         var meteringDataRequest = MeteringDataRequest.fromPermissionRequest(

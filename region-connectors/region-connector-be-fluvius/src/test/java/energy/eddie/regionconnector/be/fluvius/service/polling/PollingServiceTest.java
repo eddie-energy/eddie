@@ -17,19 +17,25 @@ import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequ
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
+import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -47,6 +53,21 @@ class PollingServiceTest {
     private Outbox outbox;
     @InjectMocks
     private PollingService service;
+
+    public static Stream<Arguments> testPollEnergyData_retriesOnError() {
+        return Stream.of(
+                Arguments.of(WebClientResponseException.create(HttpStatus.TOO_MANY_REQUESTS.value(),
+                                                               "",
+                                                               null,
+                                                               null,
+                                                               null)),
+                Arguments.of(WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
+                                                               "",
+                                                               null,
+                                                               null,
+                                                               null))
+        );
+    }
 
     @Test
     void testPollEnergyData_notStarted_noDataIsFetched() {
@@ -171,8 +192,9 @@ class PollingServiceTest {
         verify(apiClient).energy(eq("pid"), any(), eq(DataServiceType.QUARTER_HOURLY), any(), any());
     }
 
-    @Test
-    void testPollEnergyData_retriesOnError() {
+    @ParameterizedTest
+    @MethodSource
+    void testPollEnergyData_retriesOnError(Exception error) {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         when(repository.getByPermissionId("pid")).thenReturn(
@@ -191,11 +213,7 @@ class PollingServiceTest {
                         )
                 );
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
-                .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.TOO_MANY_REQUESTS.value(),
-                                                                         "",
-                                                                         null,
-                                                                         null,
-                                                                         null)))
+                .thenReturn(Mono.error(error))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
 
         // When
@@ -335,6 +353,35 @@ class PollingServiceTest {
     }
 
     @Test
+    void testPollEnergyData_onUnknownException_doesNothing() {
+        // Given
+        var now = LocalDate.now(ZoneOffset.UTC);
+        when(repository.getByPermissionId("pid")).thenReturn(
+                DefaultFluviusPermissionRequestBuilder.create()
+                                                      .granularity(Granularity.PT15M)
+                                                      .addMeterReadings(new MeterReading("pid", "ean", null))
+                                                      .dataNeedId("did")
+                                                      .build()
+        );
+        when(calculationService.calculate(eq("did"), any()))
+                .thenReturn(
+                        new ValidatedHistoricalDataDataNeedResult(
+                                List.of(Granularity.PT15M),
+                                new Timeframe(now, now),
+                                new Timeframe(now, now)
+                        )
+                );
+        when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
+                .thenReturn(Mono.error(new RuntimeException()));
+
+        // When
+        service.poll("pid");
+
+        // Then
+        verify(outbox, never()).commit(any());
+    }
+
+    @Test
     void testPollEnergyData_forUnrelatedError_doesNotRevoke() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
@@ -365,6 +412,38 @@ class PollingServiceTest {
 
         // Then
         verify(outbox, never()).commit(any());
+    }
+
+    @Test
+    void testForcePoll_pollsHistoricalValidatedData() {
+        // Given
+        var lastMeterReadingDate = ZonedDateTime.of(2025, 3, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+        var from = LocalDate.of(2024, 2, 1);
+        var to = LocalDate.of(2024, 3, 1);
+        var request = DefaultFluviusPermissionRequestBuilder.create()
+                                                            .granularity(Granularity.PT15M)
+                                                            .addMeterReadings(new MeterReading("pid",
+                                                                                               "ean",
+                                                                                               lastMeterReadingDate))
+                                                            .dataNeedId("did")
+                                                            .start(LocalDate.of(2025, 1, 1))
+                                                            .start(LocalDate.of(2025, 4, 1))
+                                                            .build();
+        when(apiClient.energy(any(), any(), any(), any(), any()))
+                .thenReturn(Mono.just(createSampleGetEnergyResponseModels()));
+
+        // When
+        var res = service.forcePoll(request, from, to);
+
+        // Then
+        StepVerifier.create(res)
+                    .expectNextCount(1)
+                    .verifyComplete();
+        verify(apiClient).energy("pid",
+                                 "ean",
+                                 DataServiceType.QUARTER_HOURLY,
+                                 from.atStartOfDay(ZoneOffset.UTC),
+                                 endOfDay(to, ZoneOffset.UTC));
     }
 
     private GetEnergyResponseModelApiDataResponse createSampleGetEnergyResponseModels() {

@@ -11,13 +11,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
+
 class RequestPartitions {
     public static final int MAX_AMOUNT_OF_DAYS_BETWEEN_START_AND_END = 184;
-    private final FluviusPermissionRequest permissionRequest;
     private final MeterReading meterReading;
+    private final LocalDate energyDataStart;
+    private final LocalDate energyDataEnd;
 
     public RequestPartitions(FluviusPermissionRequest permissionRequest, MeterReading meterReading) {
-        this.permissionRequest = permissionRequest;
+        this(
+                permissionRequest.start(),
+                permissionRequest.end(),
+                meterReading
+        );
+    }
+
+    public RequestPartitions(LocalDate start, LocalDate end, MeterReading meterReading) {
+        this.energyDataStart = start;
+        this.energyDataEnd = end;
         this.meterReading = meterReading;
     }
 
@@ -43,12 +55,12 @@ class RequestPartitions {
 
     private ZonedDateTime calcEnergyDataStart() {
         var lastMeterReading = meterReading.lastMeterReading();
-        var dataStart = ZonedDateTime.of(permissionRequest.start().atStartOfDay(), ZoneOffset.UTC);
+        var dataStart = ZonedDateTime.of(energyDataStart.atStartOfDay(), ZoneOffset.UTC);
         return Objects.requireNonNullElse(lastMeterReading, dataStart);
     }
 
     private ZonedDateTime calcEnergyDataEnd() {
-        var end = permissionRequest.end().atStartOfDay(ZoneOffset.UTC);
+        var end = endOfDay(energyDataEnd, ZoneOffset.UTC);
         var now = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
         return end.isAfter(now) ? now : end;
     }

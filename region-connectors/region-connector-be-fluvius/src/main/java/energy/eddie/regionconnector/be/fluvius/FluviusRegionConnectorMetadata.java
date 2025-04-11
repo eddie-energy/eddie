@@ -40,6 +40,7 @@ public class FluviusRegionConnectorMetadata implements RegionConnectorMetadata {
             EnergyType.ELECTRICITY, List.of(Granularity.PT15M, Granularity.P1D),
             EnergyType.NATURAL_GAS, List.of(Granularity.PT15M, Granularity.P1D)
     );
+    public static final ZoneId ZONE_ID_BELGIUM = ZoneId.of("Europe/Brussels");
     private final boolean fluviusSandboxEnabled;
 
     public FluviusRegionConnectorMetadata() {
@@ -88,7 +89,7 @@ public class FluviusRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public ZoneId timeZone() {
-        return ZoneId.of("Europe/Brussels");
+        return ZONE_ID_BELGIUM;
     }
 
     @Override
