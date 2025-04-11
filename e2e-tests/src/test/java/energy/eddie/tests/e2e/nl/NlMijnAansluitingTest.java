@@ -15,7 +15,7 @@ class NlMijnAansluitingTest extends E2eTestSetup {
 
         // Shows permission form
         page.getByLabel("House Number").fill("12");
-        Page callbackPage = context.waitForPage(() -> {
+        Page callbackPage = page.context().waitForPage(() -> {
             page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Submit")).click();
         });
 
@@ -39,7 +39,7 @@ class NlMijnAansluitingTest extends E2eTestSetup {
         this.navigateToRegionConnector(null, "Netherlands", null);
 
         page.getByLabel("House Number").fill("invalid");
-        Page callbackPage = context.waitForPage(() -> {
+        Page callbackPage = page.context().waitForPage(() -> {
             page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Submit")).click();
         });
 
