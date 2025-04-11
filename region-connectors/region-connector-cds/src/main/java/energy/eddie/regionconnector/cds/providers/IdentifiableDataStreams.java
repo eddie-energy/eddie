@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.cds.providers;
 
 import energy.eddie.regionconnector.cds.openapi.model.*;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
+import energy.eddie.regionconnector.cds.providers.ap.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.cds.providers.vhd.IdentifiableValidatedHistoricalData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,8 +81,7 @@ public class IdentifiableDataStreams implements AutoCloseable {
             List<AccountsEndpoint200ResponseAllOfAccountsInner> accounts,
             List<ServiceContractEndpoint200ResponseAllOfServiceContractsInner> serviceContracts,
             List<ServicePointEndpoint200ResponseAllOfServicePointsInner> servicePoints,
-            List<MeterDeviceEndpoint200ResponseAllOfMeterDevicesInner> meterDevices,
-            List<BillSectionEndpoint200ResponseAllOfBillSectionsInner> billSections
+            List<MeterDeviceEndpoint200ResponseAllOfMeterDevicesInner> meterDevices
     ) {
         LOGGER.atInfo()
               .addArgument(pr::permissionId)
@@ -91,8 +91,8 @@ public class IdentifiableDataStreams implements AutoCloseable {
                 new IdentifiableAccountingPointData.Payload(accounts,
                                                             serviceContracts,
                                                             servicePoints,
-                                                            meterDevices,
-                                                            billSections)
+                                                            meterDevices
+                )
         );
         accountingPointDataSink.tryEmitNext(id);
     }

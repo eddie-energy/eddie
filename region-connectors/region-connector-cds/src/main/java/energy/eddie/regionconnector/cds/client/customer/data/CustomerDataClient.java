@@ -65,14 +65,6 @@ public class CustomerDataClient {
                 .collectList();
     }
 
-    public Mono<List<BillSectionEndpoint200ResponseAllOfBillSectionsInner>> billSections(CdsPermissionRequest permissionRequest) {
-        var uri = cdsServer.endpoints().billSectionEndpoint();
-        var request = getAll(BillSectionEndpoint200Response.class, uri, BillSectionEndpoint200Response::getNext);
-        return requestWithToken(permissionRequest, request)
-                .flatMapIterable(BillSectionEndpoint200Response::getBillSections)
-                .collectList();
-    }
-
     /**
      * Retrieves all usage segments between after and before.
      *

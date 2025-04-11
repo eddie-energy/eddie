@@ -37,7 +37,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       .catch((error) => this.error(error))
       .then(({ redirectUri }) => {
         if (redirectUri) {
-          this.redirectUri = redirectUri;
+          this._redirectUri = redirectUri;
           window.open(this._redirectUri);
         }
       });

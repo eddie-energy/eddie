@@ -1,8 +1,9 @@
-package energy.eddie.regionconnector.cds.providers.vhd;
+package energy.eddie.regionconnector.cds.providers.cim;
 
 import energy.eddie.regionconnector.cds.openapi.model.*;
 import energy.eddie.regionconnector.cds.openapi.model.UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner.FormatEnum;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
+import energy.eddie.regionconnector.cds.providers.vhd.IdentifiableValidatedHistoricalData;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
