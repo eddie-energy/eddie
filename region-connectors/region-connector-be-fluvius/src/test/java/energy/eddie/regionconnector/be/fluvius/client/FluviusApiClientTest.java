@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.be.fluvius.clients;
+package energy.eddie.regionconnector.be.fluvius.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.oauth2.sdk.ParseException;

@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.be.fluvius.clients;
+package energy.eddie.regionconnector.be.fluvius.client;
 
 import org.springframework.web.util.UriComponentsBuilder;
 
