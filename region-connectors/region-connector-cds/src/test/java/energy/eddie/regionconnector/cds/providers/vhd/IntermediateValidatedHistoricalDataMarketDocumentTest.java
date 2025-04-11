@@ -77,23 +77,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     ) {
         // Given
         var now = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var usageSegment = new UsageSegment(
-                now,
-                now,
-                BigDecimal.valueOf(900),
-                Map.of(format, List.of(BigDecimal.ONE))
-        );
-        var meter = new Meter("meter-number", "cds-id", List.of(usageSegment)
-        );
-        var acc = new Account("customer-number",
-                              "customer name",
-                              "business",
-                              List.of(new ServiceContract(
-                                      "",
-                                      "",
-                                      List.of(new ServicePoint("", List.of(meter)))
-                              ))
-        );
+        var acc = createAccount(900, format, now);
         var pr = new CdsPermissionRequestBuilder()
                 .setCdsServer(1)
                 .setPermissionId("pid")
@@ -143,7 +127,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                     assertThat(t.getEnergyMeasurementUnitName()).isEqualTo(unit);
                     assertThat(t.getMarketEvaluationPointMRID().getCodingScheme())
                             .isEqualTo(CodingSchemeTypeList.USA_NATIONAL_CODING_SCHEME);
-                    assertThat(t.getMarketEvaluationPointMRID().getValue()).isEqualTo(meter.meterNumber());
+                    assertThat(t.getMarketEvaluationPointMRID().getValue()).isEqualTo("meter-number");
                     assertThat(t.getReasonList().getReasons())
                             .singleElement()
                             .extracting(ReasonComplexType::getCode)
@@ -171,7 +155,8 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     @Test
     void testToVhds_withUnknownGranularity_returnsVhds() {
         // Given
-        var acc = createAccount();
+        var now = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var acc = createAccount(1, FormatEnum.KWH_FWD, now);
         var pr = new CdsPermissionRequestBuilder()
                 .setCdsServer(1)
                 .setPermissionId("pid")
@@ -199,23 +184,22 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 .isEqualTo("1s");
     }
 
-    private static Account createAccount() {
-        var now = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+    private static Account createAccount(int interval, FormatEnum format, ZonedDateTime timestamp) {
         var usageSegment = new UsageSegment(
-                now,
-                now,
-                BigDecimal.valueOf(1),
-                Map.of(FormatEnum.KWH_FWD, List.of(BigDecimal.ONE))
+                timestamp,
+                timestamp,
+                BigDecimal.valueOf(interval),
+                Map.of(format, List.of(BigDecimal.ONE))
         );
         var meter = new Meter("meter-number", "cds-id", List.of(usageSegment));
         return new Account("customer-number",
                            "customer name",
                            "business",
                            List.of(new ServiceContract(
-                                   "",
-                                   "",
-                                   List.of(new ServicePoint("", List.of(meter)))
-                           ))
+                                      "",
+                                      "",
+                                      List.of(new ServicePoint("", List.of(meter)))
+                              ))
         );
     }
 }
