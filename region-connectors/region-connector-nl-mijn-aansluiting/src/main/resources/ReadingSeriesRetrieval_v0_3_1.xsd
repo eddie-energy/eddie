@@ -1,0 +1,144 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+>
+
+
+    <!-- Schema for DateAndOrTime -->
+    <xs:complexType name="DateAndOrTime">
+        <xs:sequence>
+            <xs:element name="DateTime" type="xs:dateTime"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Schema for MarketEvaluationPoint -->
+    <xs:simpleType name="MarketEvaluationPoint_MRID">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]{18}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="MarketEvaluationPoint">
+        <xs:sequence>
+            <xs:element name="MRID" type="MarketEvaluationPoint_MRID"/>
+            <xs:element name="RegisterList" type="RegisterListType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Schema for Meter -->
+    <xs:simpleType name="Meter_MRID">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="70"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="Meter">
+        <xs:sequence>
+            <xs:element name="MRID" type="Meter_MRID"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Schema for Reading -->
+    <xs:complexType name="Reading">
+        <xs:sequence>
+            <xs:element name="DateAndOrTime" type="DateAndOrTime"/>
+            <xs:element name="ReadingType" type="ReadingType"/>
+            <xs:element name="Value" type="xs:decimal"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Schema for ReadingSeries -->
+    <xs:complexType name="ReadingSeries">
+        <xs:sequence>
+            <xs:element name="marketEvaluationPoint" type="MarketEvaluationPoint"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Schema for ReadingType -->
+    <xs:complexType name="ReadingType">
+        <xs:sequence>
+            <xs:element name="Multiplier" type="xs:string" default="k"/>
+            <xs:element name="Unit" type="xs:string">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="m3"/>
+                        <xs:enumeration value="Wh"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Schema for Register -->
+    <xs:simpleType name="Register_MRID">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="255"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="Register">
+        <xs:sequence>
+            <xs:element name="Meter" type="Meter"/>
+            <xs:element name="MRID" type="Register_MRID"/>
+            <xs:element name="ReadingList" type="ReadingListType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Schema for RequestMarketEvaluationPoint -->
+    <xs:complexType name="RequestMarketEvaluationPoint">
+        <xs:sequence>
+            <xs:element name="MRID" type="MarketEvaluationPoint_MRID"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Schema for RFC7807ProblemResultType -->
+    <xs:complexType name="RFC7807ProblemResultType">
+        <xs:sequence>
+            <xs:element name="title" type="xs:string"/>
+            <xs:element name="type" type="xs:string"/>
+            <xs:element name="detail" type="xs:string" minOccurs="0"/>
+            <xs:element name="status" type="xs:int"/>
+            <xs:element name="instance" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Schema for RFC7807WithErrorCodeProblemResultType -->
+    <xs:complexType name="RFC7807WithErrorCodeProblemResultType">
+        <xs:sequence>
+            <xs:element name="title" type="xs:string"/>
+            <xs:element name="type" type="xs:string"/>
+            <xs:element name="detail" type="xs:string"/>
+            <xs:element name="status" type="xs:int"/>
+            <xs:element name="errorCode" type="xs:string"/>
+            <xs:element name="instance" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Schema for RegisterListType -->
+    <xs:complexType name="RegisterListType">
+        <xs:sequence>
+            <xs:element name="Register" type="Register" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Schema for ReadingListType -->
+    <xs:complexType name="ReadingListType">
+        <xs:sequence>
+            <xs:element name="Reading" type="Reading" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Schema for List of RequestMarketEvaluationPoint -->
+    <xs:complexType name="RequestMarketEvaluationPointListType">
+        <xs:sequence>
+            <xs:element name="RequestMarketEvaluationPoint" type="RequestMarketEvaluationPoint"
+                        maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Root Element -->
+    <xs:element name="MijnAansluitingResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="MarketEvaluationPoint" type="MarketEvaluationPoint"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
