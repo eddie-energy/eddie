@@ -45,21 +45,17 @@ public class CMRevoke01p00OutboundMessageFactory implements CMRevokeOutboundMess
                               .build();
     }
 
-    private static MessageType createMessageType() {
-        return new MessageType.MessageTypeBuilder()
-                .setSchemaSet(new SchemaSet(
-                        "CM_REV_SP_01.02"))
-                .setVersion(new MessageTypeVersion(
-                        "01.02"))
-                .setName(new MessageTypeName(
-                        MessageCodes.Revoke.EligibleParty.REVOKE))
-                .setMimeType(new MimeType(
-                        "text/xml"))
-                .build();
-    }
-
     @Override
     public boolean isActive(LocalDate date) {
         return true;
+    }
+
+    private static MessageType createMessageType() {
+        return new MessageType.MessageTypeBuilder()
+                .setSchemaSet(new SchemaSet(MessageCodes.Revoke.EligibleParty.SCHEMA))
+                .setVersion(new MessageTypeVersion(MessageCodes.Revoke.EligibleParty.VERSION))
+                .setName(new MessageTypeName(MessageCodes.Revoke.EligibleParty.REVOKE))
+                .setMimeType(new MimeType("text/xml"))
+                .build();
     }
 }

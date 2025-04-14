@@ -23,8 +23,8 @@ public class CMRequest01p21OutboundMessageFactory implements CMRequestOutboundMe
      */
     public static final LocalDate ACTIVE_FROM = LocalDate.of(2025, 4, 7);
     private static final MessageType MESSAGETYPE = new MessageType.MessageTypeBuilder()
-            .setSchemaSet(new SchemaSet("CM_REQ_ONL_01.30"))
-            .setVersion(new MessageTypeVersion("01.30"))
+            .setSchemaSet(new SchemaSet(MessageCodes.Request.SCHEMA))
+            .setVersion(new MessageTypeVersion(MessageCodes.Request.VERSION))
             .setName(new MessageTypeName(MessageCodes.Request.CODE))
             .setMimeType(new MimeType("text/xml"))
             .build();
