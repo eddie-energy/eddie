@@ -3,8 +3,8 @@ prev:
   text: "Validated Historical Data Market Documents"
   link: "./validated-historical-data-market-documents.md"
 next:
-  text: "Data Needs"
-  link: "../data-needs.md"
+  text: "Redistribution Transaction Request Documents"
+  link: "./redistribution-transaction-request-documents.md"
 ---
 
 # Accounting Point Data Market Documents

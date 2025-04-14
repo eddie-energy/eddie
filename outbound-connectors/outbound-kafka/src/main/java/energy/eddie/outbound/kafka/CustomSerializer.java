@@ -5,12 +5,17 @@ import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerializationException;
+import jakarta.annotation.Nullable;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class CustomSerializer implements Serializer<Object> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomSerializer.class);
     private final StringSerializer stringSerializer = new StringSerializer();
     private final MessageSerde serde;
 
@@ -19,16 +24,20 @@ class CustomSerializer implements Serializer<Object> {
     }
 
     @Override
+    @Nullable
     public byte[] serialize(String topic, Object data) {
         return switch (data) {
-            case ConnectionStatusMessage csm -> serializeConnectionStatusMessage(csm);
-            case ValidatedHistoricalDataEnvelope vhd -> serializeEddieValidatedHistoricalDataMarketDocument(vhd);
-            case PermissionEnvelope pmd -> serializePermissionMarketDocument(pmd);
-            case RawDataMessage rawDataMessage -> serializeRawDataMessage(rawDataMessage);
-            case AccountingPointEnvelope accountingPointMarketDocument ->
-                    serializeAccountingPointEnvelope(accountingPointMarketDocument);
-            case null -> new byte[0];
-            default -> throw new UnsupportedOperationException("Unsupported object type: " + data.getClass());
+            case ConnectionStatusMessage ignored -> serialize(data);
+            case ValidatedHistoricalDataEnvelope ignored -> serialize(data);
+            case PermissionEnvelope ignored -> serialize(data);
+            case RawDataMessage ignored -> serialize(data);
+            case AccountingPointEnvelope ignored -> serialize(data);
+            case RTREnvelope ignored -> serialize(data);
+            case null -> null;
+            default -> {
+                LOGGER.warn("Got invalid type to serialize {}", data.getClass());
+                yield null;
+            }
         };
     }
 
@@ -37,74 +46,15 @@ class CustomSerializer implements Serializer<Object> {
         stringSerializer.close();
     }
 
-    private byte[] serializeConnectionStatusMessage(ConnectionStatusMessage data) {
+    // Sonar wants us to return an empty array, but the kafka implementations return null, so will do the same
+    @SuppressWarnings("java:S1168")
+    @Nullable
+    private byte[] serialize(Object payload) {
         try {
-            return serde.serialize(data);
+            return serde.serialize(payload);
         } catch (SerializationException e) {
-            throw new ConnectionStatusMessageSerializationException(e);
-        }
-    }
-
-    private byte[] serializeEddieValidatedHistoricalDataMarketDocument(ValidatedHistoricalDataEnvelope data) {
-        try {
-            return serde.serialize(data);
-        } catch (SerializationException e) {
-            throw new ValidatedHistoricalDataEnvelopeSerializationException(e);
-        }
-    }
-
-    private byte[] serializePermissionMarketDocument(PermissionEnvelope pmd) {
-        try {
-            return serde.serialize(pmd);
-        } catch (SerializationException e) {
-            throw new PermissionMarketDocumentSerializationException(e);
-        }
-    }
-
-    private byte[] serializeRawDataMessage(RawDataMessage message) {
-        try {
-            return serde.serialize(message);
-        } catch (SerializationException e) {
-            throw new RawDataMessageSerializationException(e);
-        }
-    }
-
-    private byte[] serializeAccountingPointEnvelope(AccountingPointEnvelope data) {
-        try {
-            return serde.serialize(data);
-        } catch (SerializationException e) {
-            throw new AccountingPointEnvelopeSerializationException(e);
-        }
-    }
-
-    public static class ConnectionStatusMessageSerializationException extends RuntimeException {
-        public ConnectionStatusMessageSerializationException(Throwable cause) {
-            super(cause);
-        }
-    }
-
-    public static class ValidatedHistoricalDataEnvelopeSerializationException extends RuntimeException {
-        public ValidatedHistoricalDataEnvelopeSerializationException(Throwable cause) {
-            super(cause);
-        }
-    }
-
-
-    public static class AccountingPointEnvelopeSerializationException extends RuntimeException {
-        public AccountingPointEnvelopeSerializationException(Throwable cause) {
-            super(cause);
-        }
-    }
-
-    public static class PermissionMarketDocumentSerializationException extends RuntimeException {
-        public PermissionMarketDocumentSerializationException(Throwable cause) {
-            super(cause);
-        }
-    }
-
-    public static class RawDataMessageSerializationException extends RuntimeException {
-        public RawDataMessageSerializationException(Throwable cause) {
-            super(cause);
+            LOGGER.warn("Could not serialize message of type {}", payload.getClass(), e);
+            return null;
         }
     }
 }

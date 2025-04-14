@@ -15,6 +15,8 @@ The following exchanges and queues are created upon starting this outbound-conne
 - `accounting-point-market-documents`: Provides accounting point market documents
 - `terminations`: Allows the eligible party to send termination documents to terminate a permission request.
   For an example of termination document, see [termination messages](./outbound-connector-kafka.md#termination-of-permission-requests)
+- `retransmissions`: Allows the eligible party to send redistribution transaction request documents to request validated historical data again.
+  For an example of this document, see [redistribution transaction request documents](../../2-integrating/messages/redistribution-transaction-request-documents.md).
 
 ## Properties of messages
 
@@ -38,23 +40,8 @@ The following configuration values are supported by the AMQP outbound-connector:
 
 Example configuration for an `application.properties` file:
 
-```properties
+```properties :spring
 outbound-connector.amqp.enabled=true
 outbound-connector.amqp.format=json
 outbound-connector.amqp.uri=amqp://user:password@localhost:5672
-```
-
-### Environment variables
-
-When using environment variables, the configuration values need to be converted in the following way:
-
-* Replace all non-alphanumeric characters with an underscore (`_`)
-* Optionally convert all letters to upper case
-
-Example configuration for dotenv file:
-
-```dotenv
-OUTBOUND_CONNECTOR_AMQP_ENABLED=true
-OUTBOUND_CONNECTOR_AMQP_FORMAT=json
-OUTBOUND_CONNECTOR_AMQP_URI=amqp://user:password@localhost:5672
 ```

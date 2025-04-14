@@ -11,6 +11,8 @@ import energy.eddie.cim.v0_82.pmd.*;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.cim.v0_82.vhd.MeasurementPointIDStringComplexType;
 import energy.eddie.cim.v0_82.vhd.*;
+import energy.eddie.cim.v0_91_08.retransmission.ESMPDateTimeInterval;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.testing.XmlValidator;
 import org.junit.jupiter.api.Test;
 
@@ -464,6 +466,30 @@ class XmlMessageSerdeTest {
 
         // Then
         assertNotNull(res);
+    }
+
+    @Test
+    void testSerialize_producesCIMCompliantRTREnvelope() throws SerdeInitializationException, SerializationException {
+        // Given
+        var gregorianCalendar = DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar("2000-01-20T12:00:00Z");
+        var document = new RTREnvelope()
+                .withMarketDocumentMRID("mrid")
+                .withMessageDocumentHeaderCreationDateTime(gregorianCalendar)
+                .withMessageDocumentHeaderMetaInformationPermissionId("pid")
+                .withMessageDocumentHeaderMetaInformationRegionConnector("rc-id")
+                .withMarketDocumentPeriodTimeInterval(
+                        new ESMPDateTimeInterval()
+                                .withStart("2024-01-01T00:00Z")
+                                .withEnd("2024-01-01T00:00Z")
+                );
+        var serde = new XmlMessageSerde();
+
+        // When
+        var res = serde.serialize(document);
+        var valid = XmlValidator.validateRtrEnvelope(new String(res, StandardCharsets.UTF_8));
+
+        // Then
+        assertTrue(valid);
     }
 
     @Test

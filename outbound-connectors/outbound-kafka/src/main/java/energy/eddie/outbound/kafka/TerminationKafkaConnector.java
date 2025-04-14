@@ -25,7 +25,7 @@ public class TerminationKafkaConnector implements TerminationConnector {
         return sink.asFlux();
     }
 
-    @KafkaListener(groupId = "termination-group", id = "eddie-termination-listener", topics = "${kafka.termination.topic:" + Endpoints.V0_82.TERMINATIONS + "}", containerFactory = "listenerContainerFactory")
+    @KafkaListener(groupId = "termination-group", id = "eddie-termination-listener", topics = "${kafka.termination.topic:" + Endpoints.V0_82.TERMINATIONS + "}", containerFactory = "permissionEnvelopeListenerContainerFactory")
     public void process(
             @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) String key,
             @Payload PermissionEnvelope payload

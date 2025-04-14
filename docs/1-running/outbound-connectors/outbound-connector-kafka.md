@@ -6,17 +6,19 @@ To include them the prefix `kafka.` has to be used.
 
 The following parameters are of special interest:
 
-| Parameter                        | Type                                           | Default        | Description                                                                                                                 |
-|----------------------------------|------------------------------------------------|----------------|-----------------------------------------------------------------------------------------------------------------------------|
-| outbound-connector.kafka.enabled | `true` or `false`                              | `false`        | Enables or disables the kafka connector.                                                                                    |
-| outbound-connector.kafka.format  | `json` or `xml`                                | `json`         | Sets the output and input format for kafka topics. If set to json will only accept and produce json messages, same for xml. |
-| kafka.bootstrap.servers          | comma-separated _host:port_ tuples (mandatory) |                | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.                              |
-| kafka.termination.topic          | valid kafka topic name                         | `terminations` | The topic on which the kafka connector listens for termination requests. Optional, the default is `terminations`.           |
+| Parameter                                     | Type                                           | Default           | Description                                                                                                                 |
+|-----------------------------------------------|------------------------------------------------|-------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| outbound-connector.kafka.enabled              | `true` or `false`                              | `false`           | Enables or disables the kafka connector.                                                                                    |
+| outbound-connector.kafka.format               | `json` or `xml`                                | `json`            | Sets the output and input format for kafka topics. If set to json will only accept and produce json messages, same for xml. |
+| kafka.bootstrap.servers                       | comma-separated _host:port_ tuples (mandatory) |                   | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.                              |
+| kafka.termination.topic                       | valid kafka topic name                         | `terminations`    | The topic on which the kafka connector listens for termination requests. Optional, the default is `terminations`.           |
+| outbound-connector.kafka.retransmission.topic | valid kafka topic name                         | `retransmissions` | The topic on which the kafka connector listens for redistribution transaction request documents.                            |
 
 E.g., if Kafka is installed locally:
 
-```properties
+```properties :spring
 outbound-connector.kafka.enabled=true
+outbound-connector.kafka.retransmission.topic=retransmissions
 kafka.bootstrap.servers=localhost:9094
 ```
 
@@ -30,9 +32,8 @@ The following topics are created upon starting this outbound-connector:
 - `permission-market-documents`: Provides permission market documents
 - `validated-historical-data`: Provides validated historical data market documents
 - `accounting-point-market-documents`: Provides accounting point market documents
--
-
-`terminations`: Allows the eligible party to send [termination documents](../../2-integrating/messages/permission-market-documents.md#termination-documents) to terminate a permission request.
+- `terminations`: Allows the eligible party to send [termination documents](../../2-integrating/messages/permission-market-documents.md#termination-documents) to terminate a permission request.
+- `retransmissions`: Allows the eligible party to send [redistribution transaction request documents](../../2-integrating/messages/redistribution-transaction-request-documents.md) to request validated historical data again.
 
 ## Headers of messages
 
@@ -47,7 +48,12 @@ The following headers are set by EDDIE for outbound messages and can be used for
 To terminate permission requests, a permission market document in the configured format has to be sent to the
 `kafka.termination.topic`.
 The key should be the ID of the region connector, from which the request originated.
-The permisison market document for termination is described in [termination documents](../../2-integrating/messages/permission-market-documents.md#termination-documents).
+The permission market document for termination is described in [termination documents](../../2-integrating/messages/permission-market-documents.md#termination-documents).
 
 > [!Info]  
 > Keep in mind that some kafka clients use newlines as message separator, in that case, minimize the message, or change the message separator!
+
+## Requesting Validated Historical Data Again
+
+The redistribution transaction request documents allow requesting timeframes of validated historical data again, after it has already been requested.
+This document is described in [Redistribution transaction request documents](../../2-integrating/messages/redistribution-transaction-request-documents.md).

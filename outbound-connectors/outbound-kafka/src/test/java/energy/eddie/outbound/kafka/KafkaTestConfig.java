@@ -1,6 +1,7 @@
 package energy.eddie.outbound.kafka;
 
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerdeFactory;
 import energy.eddie.outbound.shared.serde.SerdeInitializationException;
@@ -23,7 +24,7 @@ import java.util.HashMap;
 
 @TestConfiguration
 @EmbeddedKafka(partitions = 1, topics = {"status-messages", "permission-market-documents", "validated-historical-data", "raw-data-in-proprietary-format", "accounting-point-market-documents", "terminations"})
-class KafkaTestConfig {
+public class KafkaTestConfig {
     @Bean
     public MessageSerde serde() throws SerdeInitializationException {
         return SerdeFactory.getInstance().create("json");
@@ -52,7 +53,7 @@ class KafkaTestConfig {
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, PermissionEnvelope>> listenerContainerFactory(
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, PermissionEnvelope>> permissionEnvelopeListenerContainerFactory(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") EmbeddedKafkaBroker embeddedKafka,
             MessageSerde serde
     ) {
@@ -61,8 +62,25 @@ class KafkaTestConfig {
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         var consumerFactory = new DefaultKafkaConsumerFactory<>(props,
                                                                 new StringDeserializer(),
-                                                                new CustomDeserializer(serde));
+                                                                new CustomDeserializer<>(serde,
+                                                                                         PermissionEnvelope.class));
         var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, PermissionEnvelope>();
+        listenerContainerFactory.setConsumerFactory(consumerFactory);
+        return listenerContainerFactory;
+    }
+
+    @Bean
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, RTREnvelope>> rtrEnvelopeListenerContainerFactory(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") EmbeddedKafkaBroker embeddedKafka,
+            MessageSerde serde
+    ) {
+        var props = new HashMap<String, Object>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        var consumerFactory = new DefaultKafkaConsumerFactory<>(props,
+                                                                new StringDeserializer(),
+                                                                new CustomDeserializer<>(serde, RTREnvelope.class));
+        var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, RTREnvelope>();
         listenerContainerFactory.setConsumerFactory(consumerFactory);
         return listenerContainerFactory;
     }

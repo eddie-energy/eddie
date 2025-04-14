@@ -137,6 +137,10 @@ export default withMermaid(
                   text: "Accounting Point Data Market Documents",
                   link: "2-integrating/messages/accounting-point-data-market-documents.md",
                 },
+                {
+                  text: "Redistribution Transaction Request Documents",
+                  link: "2-integrating/messages/redistribution-transaction-request-documents.md",
+                },
               ],
             },
           ],

@@ -8,6 +8,7 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.*;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocumentComplexType;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerdeFactory;
 import energy.eddie.outbound.shared.serde.SerdeInitializationException;
@@ -15,18 +16,15 @@ import energy.eddie.outbound.shared.serde.SerializationException;
 import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.stream.Stream;
 
 import static energy.eddie.api.CommonInformationModelVersions.V0_82;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -35,31 +33,6 @@ import static org.mockito.Mockito.when;
 class CustomSerializerTest {
     @Mock
     private MessageSerde mockSerde;
-
-    public static Stream<Arguments> testSerialize_throwsOnSerializationException() {
-        var dataSourceInformation = new MockDataSourceInformation("AT", "at-eda", "paid", "mdaid");
-        return Stream.of(
-                Arguments.of(new ValidatedHistoricalDataEnvelope(),
-                             CustomSerializer.ValidatedHistoricalDataEnvelopeSerializationException.class),
-                Arguments.of(new AccountingPointEnvelope(),
-                             CustomSerializer.AccountingPointEnvelopeSerializationException.class),
-                Arguments.of(new PermissionEnvelope(),
-                             CustomSerializer.PermissionMarketDocumentSerializationException.class),
-                Arguments.of(new RawDataMessage("pid",
-                                                "cid",
-                                                "dnid",
-                                                dataSourceInformation,
-                                                ZonedDateTime.now(ZoneOffset.UTC),
-                                                ""),
-                             CustomSerializer.RawDataMessageSerializationException.class),
-                Arguments.of(new ConnectionStatusMessage("cid",
-                                                         "pid",
-                                                         "dnid",
-                                                         dataSourceInformation,
-                                                         PermissionProcessStatus.ACCEPTED),
-                             CustomSerializer.ConnectionStatusMessageSerializationException.class)
-        );
-    }
 
     @Test
     void testSerialize_StatusMessageData() throws SerdeInitializationException {
@@ -91,12 +64,10 @@ class CustomSerializerTest {
     void testSerialize_NullData() throws SerdeInitializationException {
         var customSerializer = new CustomSerializer(SerdeFactory.getInstance().create("json"));
         String topic = "test";
-        Object data = null;
-        byte[] expected = new byte[0];
 
-        byte[] result = customSerializer.serialize(topic, data);
+        byte[] result = customSerializer.serialize(topic, null);
 
-        assertArrayEquals(expected, result);
+        assertNull(result);
 
         customSerializer.close();
     }
@@ -107,8 +78,7 @@ class CustomSerializerTest {
         String topic = "test";
         Object data = new Object();
 
-        assertThrows(UnsupportedOperationException.class,
-                     () -> customSerializer.serialize(topic, data));
+        assertNull(customSerializer.serialize(topic, data));
 
         customSerializer.close();
     }
@@ -160,7 +130,10 @@ class CustomSerializerTest {
         var result = customSerializer.serialize(topic, message);
 
         // Then
-        assertEquals(expectedString, new String(result, StandardCharsets.UTF_8));
+        assertThat(result)
+                .isNotNull()
+                .asString(StandardCharsets.UTF_8)
+                .isEqualTo(expectedString);
 
         // Clean-Up
         customSerializer.close();
@@ -290,24 +263,42 @@ class CustomSerializerTest {
         var res = customSerializer.serialize("anyTopic", pmd);
 
         // Then
-        assertEquals(json, new String(res, StandardCharsets.UTF_8));
+        assertThat(res)
+                .isNotNull()
+                .asString(StandardCharsets.UTF_8)
+                .isEqualTo(json);
 
         // Clean-Up
         customSerializer.close();
     }
 
-    @ParameterizedTest
-    @MethodSource
-    void testSerialize_throwsOnSerializationException(
-            Object serializable,
-            Class<? extends Exception> exception
-    ) throws SerializationException {
+    @Test
+    void givenAccountingPointMarketDocument_canSerialize() throws SerdeInitializationException {
+        // Given
+        var customSerializer = new CustomSerializer(SerdeFactory.getInstance().create("json"));
+        var ac = new AccountingPointEnvelope();
+
+        // When
+        var res = customSerializer.serialize("any", ac);
+
+        // Then
+        assertThat(res).isNotNull();
+
+        // Clean-Up
+        customSerializer.close();
+    }
+
+    @Test
+    void testSerialize_throwsOnSerializationException() throws SerializationException {
         // Given
         var customSerializer = new CustomSerializer(mockSerde);
-        when(mockSerde.serialize(any())).thenThrow(exception);
+        when(mockSerde.serialize(any())).thenThrow(new SerializationException(null));
 
-        // When & Then
-        assertThrows(exception, () -> customSerializer.serialize("any", serializable));
+        // When
+        var res = customSerializer.serialize("any", new RTREnvelope());
+
+        // Then
+        assertNull(res);
 
         // Clean-Up
         customSerializer.close();
