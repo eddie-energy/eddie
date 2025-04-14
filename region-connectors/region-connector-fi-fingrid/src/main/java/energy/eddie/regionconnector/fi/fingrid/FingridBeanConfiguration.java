@@ -23,6 +23,7 @@ import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
@@ -94,13 +95,17 @@ public class FingridBeanConfiguration {
             PollingService pollingService,
             FiPermissionRequestRepository repository,
             @Value("${region-connector.fi.fingrid.polling:0 0 17 * * *}") String cronExpr,
-            FingridRegionConnector connector
-    ){
+            FingridRegionConnector connector,
+            TaskScheduler taskScheduler,
+            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+    ) {
         return new CommonFutureDataService<>(
                 pollingService,
                 repository,
                 cronExpr,
-                connector.getMetadata()
+                connector.getMetadata(),
+                taskScheduler,
+                dataNeedCalculationService
         );
     }
 }
