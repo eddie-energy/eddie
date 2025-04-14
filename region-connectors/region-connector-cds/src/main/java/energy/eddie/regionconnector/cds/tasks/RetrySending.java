@@ -7,7 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Scheduled(cron = "${region-connector.cds.retry:0 * * * * *}")
+@Scheduled(cron = "${region-connector.cds.retry:0 0 * * * *}")
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface RetrySending {

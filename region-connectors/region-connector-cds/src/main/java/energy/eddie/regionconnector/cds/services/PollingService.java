@@ -8,6 +8,8 @@ import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientE
 import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientFactory;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
 import energy.eddie.regionconnector.cds.providers.IdentifiableDataStreams;
+import energy.eddie.regionconnector.shared.services.CommonPollingService;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,7 +22,8 @@ import java.time.ZonedDateTime;
 import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
 
 @Service
-public class PollingService {
+@Transactional(Transactional.TxType.REQUIRED)
+public class PollingService implements CommonPollingService<CdsPermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     private final DataNeedCalculationService<DataNeed> calculationService;
     private final CustomerDataClientFactory factory;
@@ -44,24 +47,22 @@ public class PollingService {
         var dataNeedId = permissionRequest.dataNeedId();
         var dataNeed = calculationService.calculate(dataNeedId, permissionRequest.created());
         switch (dataNeed) {
-            case ValidatedHistoricalDataDataNeedResult ignored -> retrieveValidatedHistoricalData(permissionRequest);
+            case ValidatedHistoricalDataDataNeedResult ignored when isActiveAndNeedsToBeFetched(permissionRequest) ->
+                    pollTimeSeriesData(permissionRequest);
+            case ValidatedHistoricalDataDataNeedResult ignored ->
+                    LOGGER.info("Permission request {} is not active yet", permissionId);
             case AccountingPointDataNeedResult ignored -> retrieveAccountPointData(permissionRequest);
             default -> LOGGER.info(
-                    "Permission request {} with data need {} does not need polling for validated historical data",
+                    "Permission request {} with data need {} does not need polling",
                     permissionId,
                     dataNeedId
             );
         }
     }
 
-    public void retrieveValidatedHistoricalData(CdsPermissionRequest pr) {
+    @Override
+    public void pollTimeSeriesData(CdsPermissionRequest pr) {
         var permissionId = pr.permissionId();
-        LOGGER.info("Checking if permission request {} is active and needs validated historical data polled",
-                    permissionId);
-        if (pr.start().isAfter(LocalDate.now(ZoneOffset.UTC))) {
-            LOGGER.info("Permission request {} is not active yet", permissionId);
-            return;
-        }
         LOGGER.info("Polling validated historical data for permission request {}", permissionId);
         var start = pr.oldestMeterReading().orElseGet(() -> pr.start().atStartOfDay(ZoneOffset.UTC));
         var now = ZonedDateTime.now(ZoneOffset.UTC);
@@ -79,6 +80,15 @@ public class PollingService {
             .subscribe(res -> streams.publishValidatedHistoricalData(
                     pr, res.getT1(), res.getT2(), res.getT3(), res.getT4(), res.getT5()
             ));
+    }
+
+    @Override
+    public boolean isActiveAndNeedsToBeFetched(CdsPermissionRequest permissionRequest) {
+        var today = LocalDate.now(ZoneOffset.UTC);
+        if (permissionRequest.start().isAfter(today)) {
+            return false;
+        }
+        return permissionRequest.latestMeterReadingEndDate().map(today::isAfter).orElse(true);
     }
 
     private void retrieveAccountPointData(CdsPermissionRequest pr) {

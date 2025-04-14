@@ -16,6 +16,7 @@ depends on the way you deploy the region connector.
 | `region-connector.cds.client-name`  | The name that will be used for OAuth clients when a new CDS server is registered.                                                                                                                                                                                                                                                                               |
 | `region-connector.cds.par.enabled`  | Either `true` or `false` defaults to `false`, if enabled experimental pushed authorization requests are used to send the authorization request to the CDS server. Currently, PAR is not supported by the sandbox environment.                                                                                                                                   |
 | `region-connector.cds.retry`        | The interval in which messages are sent to the CDS server again, after it failed the first time. There are two types of messages: Creating the permission request at the PA's side, which only works if `region-connector.cds.par.enabled=true`, and terminating permission requests, which works all the time. Uses Spring Cron syntax. Default is every hour. |
+| `region-connector.cds.polling`      | Sets the polling interval to poll future validated historical data. Uses Spring Cron expression. Default is `0 0 17 * * *`.                                                                                                                                                                                                                                     |
 
 The region connector can be configured using Spring properties or environment variables.
 When using environment variables, the configuration values need to be converted in the following way:
@@ -29,6 +30,7 @@ region-connector.cds.redirect.url=${eddie.public.url}/region-connectors/cds/call
 region-connector.cds.client-name=EDDIE
 region-connector.cds.par.enabled=false
 region-connector.cds.retry=0 0 * * * *
+region-connector.cds.polling=0 0 17 * * *
 ```
 
 ## Register new CDS Server

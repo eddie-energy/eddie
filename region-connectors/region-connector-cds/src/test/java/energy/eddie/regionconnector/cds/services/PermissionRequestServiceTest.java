@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,7 +51,8 @@ class PermissionRequestServiceTest {
                 today,
                 today,
                 "state",
-                "redirectUri"
+                "redirectUri",
+                Map.of()
         );
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(pr));
 
