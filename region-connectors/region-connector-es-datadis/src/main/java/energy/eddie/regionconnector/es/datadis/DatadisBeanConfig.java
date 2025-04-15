@@ -35,6 +35,7 @@ import energy.eddie.regionconnector.shared.services.data.needs.calculation.strat
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.netty.http.client.HttpClient;
@@ -84,9 +85,9 @@ public class DatadisBeanConfig {
     @Bean
     public HttpClient httpClient(DatadisApiHealthIndicator datadisApiHealthIndicator) {
         return HttpClient.create()
-                .doOnResponse((httpClientResponse, connection) -> datadisApiHealthIndicator.up())
-                .doOnRequestError((httpClientResponse, throwable) -> datadisApiHealthIndicator.down(throwable))
-                .doOnResponseError((httpClientResponse, throwable) -> datadisApiHealthIndicator.down(throwable));
+                         .doOnResponse((httpClientResponse, connection) -> datadisApiHealthIndicator.up())
+                         .doOnRequestError((httpClientResponse, throwable) -> datadisApiHealthIndicator.down(throwable))
+                         .doOnResponseError((httpClientResponse, throwable) -> datadisApiHealthIndicator.down(throwable));
     }
 
     @Bean
@@ -175,13 +176,17 @@ public class DatadisBeanConfig {
             DataApiService apiService,
             EsPermissionRequestRepository repository,
             @Value("${region-connector.es.datadis.polling:0 0 17 * * *}") String cronExpr,
-            DatadisRegionConnector connector
-    ){
+            DatadisRegionConnector connector,
+            TaskScheduler taskScheduler,
+            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+    ) {
         return new CommonFutureDataService<>(
                 apiService,
                 repository,
                 cronExpr,
-                connector.getMetadata()
+                connector.getMetadata(),
+                taskScheduler,
+                dataNeedCalculationService
         );
     }
 }

@@ -119,6 +119,34 @@ class PollingServiceTest {
         verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any());
     }
 
+    @Test
+    void testPoll_forPermissionRequestThatDoesNotNeedPolling_doesNothing() {
+        // Given
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var today = LocalDate.now(ZoneOffset.UTC);
+        var start = today.minusDays(1);
+        var end = today.plusWeeks(1);
+        var pr = new CdsPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setDataStart(start)
+                .setDataEnd(end)
+                .setDataNeedId("dnid")
+                .setCreated(now)
+                .addLastMeterReading("meter", now)
+                .build();
+        when(calculationService.calculate("dnid", now))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
+                                                                      new Timeframe(start, end),
+                                                                      new Timeframe(start, end)));
+
+        // When
+        pollingService.poll(pr);
+
+        // Then
+        verify(handler, never()).revoke(any(), any());
+        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any());
+    }
+
     @ParameterizedTest
     @MethodSource
     void testPoll_forActivePermissionRequest_emitsUsageSegments(LocalDate end) {

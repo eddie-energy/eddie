@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 
 import javax.net.ssl.X509KeyManager;
 import java.io.IOException;
@@ -183,13 +184,17 @@ public class MijnAansluitingBeanConfig {
             PollingService pollingService,
             NlPermissionRequestRepository repository,
             @Value("${region-connector.nl.mijn.aansluiting.polling:0 0 17 * * *}") String cronExpr,
-            MijnAansluitingRegionConnector connector
+            MijnAansluitingRegionConnector connector,
+            TaskScheduler taskScheduler,
+            DataNeedCalculationService<DataNeed> dataNeedCalculationService
     ){
         return new CommonFutureDataService<>(
                 pollingService,
                 repository,
                 cronExpr,
-                connector.getMetadata()
+                connector.getMetadata(),
+                taskScheduler,
+                dataNeedCalculationService
         );
     }
 }
