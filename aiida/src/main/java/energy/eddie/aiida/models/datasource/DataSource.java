@@ -3,9 +3,9 @@ package energy.eddie.aiida.models.datasource;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
-import energy.eddie.aiida.models.datasource.at.OesterreichsEnergieDataSource;
-import energy.eddie.aiida.models.datasource.fr.MicroTeleinfoV3DataSource;
-import energy.eddie.aiida.models.datasource.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
+import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -41,14 +41,14 @@ public abstract class DataSource {
     protected DataSource(DataSourceDto dto, UUID userId) {
         this.id = dto.id();
         this.userId = userId;
-        this.asset = AiidaAsset.forValue(dto.asset());
+        this.asset = dto.asset();
         this.name = dto.name();
         this.enabled = dto.enabled();
-        this.dataSourceType = DataSourceType.fromIdentifier(dto.dataSourceType());
+        this.dataSourceType = dto.dataSourceType();
     }
 
     public static DataSource createFromDto(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
-        var dataSourceType = DataSourceType.fromIdentifier(dto.dataSourceType());
+        var dataSourceType = dto.dataSourceType();
 
         return switch (dataSourceType) {
             case SMART_METER_ADAPTER -> new OesterreichsEnergieDataSource(dto, userId, dataSourceMqttDto);
@@ -91,6 +91,6 @@ public abstract class DataSource {
     }
 
     public DataSourceDto toDto() {
-        return new DataSourceDto(id, dataSourceType.identifier(), asset.asset(), name, enabled, null, null, null);
+        return new DataSourceDto(id, dataSourceType, asset, name, enabled, null, null);
     }
 }

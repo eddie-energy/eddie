@@ -1,4 +1,4 @@
-package energy.eddie.aiida.models.datasource;
+package energy.eddie.aiida.models.datasource.mqtt;
 
 import java.security.SecureRandom;
 

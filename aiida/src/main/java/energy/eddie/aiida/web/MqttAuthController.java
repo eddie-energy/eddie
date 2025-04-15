@@ -1,7 +1,7 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.errors.MqttUnauthorizedException;
-import energy.eddie.aiida.models.datasource.MqttAction;
+import energy.eddie.aiida.models.datasource.mqtt.MqttAction;
 import energy.eddie.aiida.services.MqttAuthService;
 import energy.eddie.api.agnostic.EddieApiError;
 import io.swagger.v3.oas.annotations.Operation;

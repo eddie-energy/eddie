@@ -6,17 +6,18 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
 public enum UnitOfMeasurement {
-    W("W"),
-    KW("kW"),
-    WH("Wh"),
-    KWH("kWh"),
-    VAR("var"),
-    KVAR("kvar"),
-    VARH("varh"),
-    KVARH("kvarh"),
+    WATT("W"),
+    KILO_WATT("kW"),
+    WATT_HOUR("Wh"),
+    KILO_WATT_HOUR("kWh"),
+    VOLT_AMPERE_REACTIVE("VAr"),
+    KILO_VOLT_AMPERE_REACTIVE("kVAr"),
+    VOLT_AMPERE_REACTIVE_HOUR("kVArh"),
+    KILO_VOLT_AMPERE_REACTIVE_HOUR("kVArh"),
     AMPERE("A"),
     VOLT("V"),
-    VOLTAMPERE("VA"),
+    VOLT_AMPERE("VA"),
+    KILO_VOLT_AMPERE("kVA"),
     NONE("none"),
     UNKNOWN("unknown");
 

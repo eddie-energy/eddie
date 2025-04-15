@@ -2,11 +2,12 @@ package energy.eddie.aiida.adapters.datasource.fr;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.adapters.datasource.fr.mode.MicroTeleinfoV3Mode;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
-import energy.eddie.aiida.models.datasource.fr.MicroTeleinfoV3DataSource;
+import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -30,6 +31,7 @@ import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -39,11 +41,10 @@ class MicroTeleinfoV3AdapterTest {
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final MicroTeleinfoV3DataSource DATA_SOURCE = new MicroTeleinfoV3DataSource(
             new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.Identifiers.MICRO_TELEINFO,
-                              AiidaAsset.SUBMETER.asset(),
+                              DataSourceType.MICRO_TELEINFO,
+                              AiidaAsset.SUBMETER,
                               "teleinfo",
                               true,
-                              "FR123456789123",
                               null,
                               null),
             USER_ID,
@@ -62,6 +63,7 @@ class MicroTeleinfoV3AdapterTest {
 
         mapper = new AiidaConfiguration().customObjectMapper().build();
         adapter = new MicroTeleinfoV3Adapter(DATA_SOURCE, mapper);
+        LOG_CAPTOR.resetLogLevel();
     }
 
     @AfterEach
@@ -281,9 +283,8 @@ class MicroTeleinfoV3AdapterTest {
                                                 .expectNextMatches(received -> received.aiidaRecordValues()
                                                                                        .stream()
                                                                                        .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
-                                                                                                                                     .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) ||
-                                                                                                                     aiidaRecordValue.dataTag()
-                                                                                                                                     .equals(POSITIVE_ACTIVE_ENERGY)))
+                                                                                                                                     .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) || aiidaRecordValue.dataTag()
+                                                                                                                                                                                                     .equals(POSITIVE_ACTIVE_ENERGY)))
                                                 .then(adapter::close)
                                                 .expectComplete()
                                                 .verifyLater();
@@ -296,6 +297,268 @@ class MicroTeleinfoV3AdapterTest {
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
                 invalidJson), LOG_CAPTOR, JsonMappingException.class);
 
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void givenJsonIsFromHistoryMode() {
+        LOG_CAPTOR.setLogLevelToDebug();
+        var historyModeJson = "{\"ADCO\":{\"raw\":\"123456789123\",\"value\":123456789123},\"OPTARIF\":{\"raw\":\"BASE\",\"value\":\"BASE\"},\"ISOUSC\":{\"raw\":\"30\",\"value\":30},\"BASE\":{\"raw\":\"006367621\",\"value\":6367621},\"PTEC\":{\"raw\":\"TH..\",\"value\":\"TH\"},\"IINST\":{\"raw\":\"001\",\"value\":1},\"IMAX\":{\"raw\":\"090\",\"value\":90},\"PAPP\":{\"raw\":\"00126\",\"value\":126},\"HHPHC\":{\"raw\":\"A\",\"value\":\"A\"}}";
+
+        StepVerifier stepVerifier = StepVerifier.create(adapter.start())
+                                                .expectNextMatches(received -> received.aiidaRecordValues()
+                                                                                       .stream()
+                                                                                       .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
+                                                                                                                                     .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) || aiidaRecordValue.dataTag()
+                                                                                                                                                                                                     .equals(POSITIVE_ACTIVE_ENERGY)))
+                                                .then(adapter::close)
+                                                .expectComplete()
+                                                .verifyLater();
+
+        adapter.messageArrived(DATA_SOURCE.mqttSubscribeTopic(),
+                               new MqttMessage(historyModeJson.getBytes(StandardCharsets.UTF_8)));
+
+        assertEquals(3, LOG_CAPTOR.getDebugLogs().size());
+        assertTrue(LOG_CAPTOR.getDebugLogs().contains("Connected smart meter operates in %s mode.".formatted(
+                MicroTeleinfoV3Mode.HISTORY)));
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void givenJsonIsFromStandardMode() {
+        LOG_CAPTOR.setLogLevelToDebug();
+        var standardModeJson = """
+                {
+                  "ADSC": {
+                    "raw": "841875104423",
+                    "value": 841875104423
+                  },
+                  "VTIC": {
+                    "raw": "02",
+                    "value": 2
+                  },
+                  "DATE": {
+                    "raw": "",
+                    "value": "",
+                    "timestamp": {
+                      "dst": "summer",
+                      "date": "2025-04-14T12:54:38.000Z"
+                    }
+                  },
+                  "NGTF": {
+                    "raw": "      BASE      ",
+                    "value": "      BASE      "
+                  },
+                  "LTARF": {
+                    "raw": "      BASE      ",
+                    "value": "      BASE      "
+                  },
+                  "EAST": {
+                    "raw": "032507388",
+                    "value": 32507388
+                  },
+                  "EASF01": {
+                    "raw": "032507388",
+                    "value": 32507388
+                  },
+                  "EASF03": {
+                    "raw": "000000000",
+                    "value": 0
+                  },
+                  "EASF04": {
+                    "raw": "000000000",
+                    "value": 0
+                  },
+                  "EASF05": {
+                    "raw": "000000000",
+                    "value": 0
+                  },
+                  "EASF06": {
+                    "raw": "000000000",
+                    "value": 0
+                  },
+                  "EASF07": {
+                    "raw": "000000000",
+                    "value": 0
+                  },
+                  "EASF08": {
+                    "raw": "000000000",
+                    "value": 0
+                  },
+                  "EASF09": {
+                    "raw": "000000000",
+                    "value": 0
+                  },
+                  "EASF10": {
+                    "raw": "000000000",
+                    "value": 0
+                  },
+                  "EASD01": {
+                    "raw": "007545288",
+                    "value": 7545288
+                  },
+                  "EASD02": {
+                    "raw": "006699887",
+                    "value": 6699887
+                  },
+                  "EASD04": {
+                    "raw": "011806842",
+                    "value": 11806842
+                  },
+                  "EAIT": {
+                    "raw": "009509008",
+                    "value": 9509008
+                  },
+                  "ERQ1": {
+                    "raw": "003136793",
+                    "value": 3136793
+                  },
+                  "ERQ2": {
+                    "raw": "000015124",
+                    "value": 15124
+                  },
+                  "ERQ3": {
+                    "raw": "001432483",
+                    "value": 1432483
+                  },
+                  "ERQ4": {
+                    "raw": "006198829",
+                    "value": 6198829
+                  },
+                  "IRMS1": {
+                    "raw": "005",
+                    "value": 5
+                  },
+                  "URMS1": {
+                    "raw": "236",
+                    "value": 236
+                  },
+                  "PREF": {
+                    "raw": "12",
+                    "value": 12
+                  },
+                  "PCOUP": {
+                    "raw": "12",
+                    "value": 12
+                  },
+                  "SINSTS": {
+                    "raw": "00000",
+                    "value": 0
+                  },
+                  "SMAXSN-1": {
+                    "raw": "07000",
+                    "value": 7000,
+                    "timestamp": {
+                      "dst": "summer",
+                      "date": "2025-04-08T06:11:26.000Z"
+                    }
+                  },
+                  "SINSTI": {
+                    "raw": "01156",
+                    "value": 1156
+                  },
+                  "SMAXIN": {
+                    "raw": "05030",
+                    "value": 5030,
+                    "timestamp": {
+                      "dst": "summer",
+                      "date": "2025-04-14T12:45:12.000Z"
+                    }
+                  },
+                  "SMAXIN-1": {
+                    "raw": "04140",
+                    "value": 4140,
+                    "timestamp": {
+                      "dst": "summer",
+                      "date": "2025-04-08T12:53:25.000Z"
+                    }
+                  },
+                  "CCASN": {
+                    "raw": "00000",
+                    "value": 0,
+                    "timestamp": {
+                      "dst": "summer",
+                      "date": "2025-04-14T12:30:00.000Z"
+                    }
+                  },
+                  "CCASN-1": {
+                    "raw": "00000",
+                    "value": 0,
+                    "timestamp": {
+                      "dst": "summer",
+                      "date": "2025-04-14T12:00:00.000Z"
+                    }
+                  },
+                  "CCAIN": {
+                    "raw": "02556",
+                    "value": 2556,
+                    "timestamp": {
+                      "dst": "summer",
+                      "date": "2025-04-14T12:30:00.000Z"
+                    }
+                  },
+                  "CCAIN-1": {
+                    "raw": "03582",
+                    "value": 3582,
+                    "timestamp": {
+                      "dst": "summer",
+                      "date": "2025-04-14T12:00:00.000Z"
+                    }
+                  },
+                  "UMOY1": {
+                    "raw": "237",
+                    "value": 237,
+                    "timestamp": {
+                      "dst": "summer",
+                      "date": "2025-04-14T12:50:00.000Z"
+                    }
+                  },
+                  "STGE": {
+                    "raw": "003A4301",
+                    "value": "003A4301"
+                  },
+                  "MSG1": {
+                    "raw": "PAS DE          MESSAGE     \\u0000   ",
+                    "value": "PAS DE          MESSAGE     \\u0000   "
+                  },
+                  "PRM": {
+                    "raw": "06444138907938",
+                    "value": 6444138907938
+                  },
+                  "RELAIS": {
+                    "raw": "000",
+                    "value": 0
+                  },
+                  "NTARF": {
+                    "raw": "01",
+                    "value": 1
+                  },
+                  "NJOURF": {
+                    "raw": "00",
+                    "value": 0
+                  },
+                  "NJOURF+1": {
+                    "raw": "00",
+                    "value": 0
+                  }
+                }
+                """;
+        StepVerifier stepVerifier = StepVerifier.create(adapter.start())
+                                                .expectNextMatches(received -> received.aiidaRecordValues()
+                                                                                       .stream()
+                                                                                       .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
+                                                                                                                                     .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) || aiidaRecordValue.dataTag()
+                                                                                                                                                                                                     .equals(POSITIVE_ACTIVE_ENERGY)))
+                                                .then(adapter::close)
+                                                .expectComplete()
+                                                .verifyLater();
+
+        adapter.messageArrived(DATA_SOURCE.mqttSubscribeTopic(),
+                               new MqttMessage(standardModeJson.getBytes(StandardCharsets.UTF_8)));
+
+        assertEquals(5, LOG_CAPTOR.getDebugLogs().size());
+        assertTrue(LOG_CAPTOR.getDebugLogs().contains("Connected smart meter operates in %s mode.".formatted(
+                MicroTeleinfoV3Mode.STANDARD)));
         stepVerifier.verify(Duration.ofSeconds(2));
     }
 

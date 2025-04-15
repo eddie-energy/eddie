@@ -30,13 +30,14 @@ public class OesterreichsEnergieAdapterMeasurement {
      */
     public UnitOfMeasurement rawUnitOfMeasurement() {
         return switch (obisCode.unitOfMeasurement()) {
-            case W, KW -> UnitOfMeasurement.W;
-            case WH, KWH -> UnitOfMeasurement.WH;
-            case VAR, KVAR -> UnitOfMeasurement.VAR;
-            case VARH, KVARH -> UnitOfMeasurement.VARH;
+            case WATT, KILO_WATT -> UnitOfMeasurement.WATT;
+            case WATT_HOUR, KILO_WATT_HOUR -> UnitOfMeasurement.WATT_HOUR;
+            case VOLT_AMPERE_REACTIVE, KILO_VOLT_AMPERE_REACTIVE -> UnitOfMeasurement.VOLT_AMPERE_REACTIVE;
+            case VOLT_AMPERE_REACTIVE_HOUR, KILO_VOLT_AMPERE_REACTIVE_HOUR ->
+                    UnitOfMeasurement.VOLT_AMPERE_REACTIVE_HOUR;
             case AMPERE -> UnitOfMeasurement.AMPERE;
             case VOLT -> UnitOfMeasurement.VOLT;
-            case VOLTAMPERE -> UnitOfMeasurement.VOLTAMPERE;
+            case VOLT_AMPERE, KILO_VOLT_AMPERE -> UnitOfMeasurement.VOLT_AMPERE;
             case NONE -> UnitOfMeasurement.NONE;
             case UNKNOWN -> UnitOfMeasurement.UNKNOWN;
         };
@@ -52,8 +53,10 @@ public class OesterreichsEnergieAdapterMeasurement {
      */
     public String value() {
         return switch (obisCode.unitOfMeasurement()) {
-            case W, VARH, VAR, WH, AMPERE, VOLTAMPERE, NONE, UNKNOWN, VOLT -> rawValue;
-            case KW, KVAR, KWH, KVARH -> String.valueOf(Double.parseDouble(rawValue) / 1000);
+            case AMPERE, VOLT, VOLT_AMPERE, VOLT_AMPERE_REACTIVE, VOLT_AMPERE_REACTIVE_HOUR, WATT, WATT_HOUR, NONE,
+                 UNKNOWN -> rawValue;
+            case KILO_VOLT_AMPERE, KILO_VOLT_AMPERE_REACTIVE, KILO_VOLT_AMPERE_REACTIVE_HOUR, KILO_WATT,
+                 KILO_WATT_HOUR -> String.valueOf(Double.parseDouble(rawValue) / 1000);
         };
     }
 }

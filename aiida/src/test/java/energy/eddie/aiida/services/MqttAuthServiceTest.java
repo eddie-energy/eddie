@@ -6,9 +6,9 @@ import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.MqttUnauthorizedException;
 import energy.eddie.aiida.models.datasource.DataSourceType;
-import energy.eddie.aiida.models.datasource.MqttAction;
-import energy.eddie.aiida.models.datasource.MqttDataSource;
-import energy.eddie.aiida.models.datasource.at.OesterreichsEnergieDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.MqttAction;
+import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
@@ -29,11 +30,10 @@ import static org.mockito.Mockito.when;
 class MqttAuthServiceTest {
     private static final MqttDataSource DATA_SOURCE = new OesterreichsEnergieDataSource(
             new DataSourceDto(UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606"),
-                              DataSourceType.Identifiers.SMART_METER_ADAPTER,
-                              AiidaAsset.SUBMETER.asset(),
+                              DataSourceType.SMART_METER_ADAPTER,
+                              AiidaAsset.SUBMETER,
                               "sma",
                               true,
-                              null,
                               null,
                               null),
             UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606"),

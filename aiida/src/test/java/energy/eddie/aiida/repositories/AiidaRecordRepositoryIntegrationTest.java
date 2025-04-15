@@ -50,9 +50,9 @@ class AiidaRecordRepositoryIntegrationTest {
                 new AiidaRecordValue("1-0:1.8.0",
                                      POSITIVE_ACTIVE_ENERGY,
                                      "237",
-                                     UnitOfMeasurement.KWH,
+                                     UnitOfMeasurement.KILO_WATT_HOUR,
                                      "237",
-                                     UnitOfMeasurement.KWH)));
+                                     UnitOfMeasurement.KILO_WATT_HOUR)));
         AiidaRecord stringRecord = new AiidaRecord(now, AiidaAsset.SUBMETER, userId, dataSourceId, List.of(
                 new AiidaRecordValue("0-0:C.1.0",
                                      METER_SERIAL,

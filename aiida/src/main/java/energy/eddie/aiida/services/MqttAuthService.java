@@ -2,8 +2,8 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.errors.MqttUnauthorizedException;
-import energy.eddie.aiida.models.datasource.MqttAction;
-import energy.eddie.aiida.models.datasource.MqttDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.MqttAction;
+import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -49,8 +49,8 @@ public class MqttAuthService {
         }
 
         var dataSource = getDataSourceForUsernameAndPassword(username, password);
-        if(!isAuthorizedForTopic(dataSource, topic)) {
-            throw new MqttUnauthorizedException("User not authorized for topic");
+        if (!isAuthorizedForTopic(dataSource, topic)) {
+            throw new MqttUnauthorizedException("User not authorized for topic " + topic);
         }
     }
 
@@ -59,7 +59,12 @@ public class MqttAuthService {
     }
 
     private boolean isAuthorizedForTopic(MqttDataSource dataSource, String topic) {
-        return dataSource.mqttSubscribeTopic().equals(topic) || topic.startsWith(SYS_BROKER_NODE_TOPIC_PREFIX);
+        return dataSource.mqttSubscribeTopic()
+                         .regionMatches(0,
+                                        topic,
+                                        0,
+                                        dataSource.mqttSubscribeTopicLengthWithoutWildcard()) || topic.startsWith(
+                SYS_BROKER_NODE_TOPIC_PREFIX);
     }
 
     private MqttDataSource getDataSourceForUsernameAndPassword(

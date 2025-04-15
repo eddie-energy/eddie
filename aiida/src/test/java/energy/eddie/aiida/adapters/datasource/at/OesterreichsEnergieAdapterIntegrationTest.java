@@ -5,7 +5,7 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
-import energy.eddie.aiida.models.datasource.at.OesterreichsEnergieDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
@@ -81,11 +81,10 @@ class OesterreichsEnergieAdapterIntegrationTest {
 
         dataSource = new OesterreichsEnergieDataSource(
                 new DataSourceDto(DATA_SOURCE_ID,
-                                  DataSourceType.Identifiers.SMART_METER_ADAPTER,
-                                  AiidaAsset.SUBMETER.asset(),
+                                  DataSourceType.SMART_METER_ADAPTER,
+                                  AiidaAsset.SUBMETER,
                                   "sma",
                                   true,
-                                  null,
                                   null,
                                   null),
                 USER_ID,

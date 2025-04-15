@@ -38,8 +38,12 @@ class SchemaTest {
             AiidaAsset.SUBMETER,
             userId,
             dataSourceId,
-            List.of(new AiidaRecordValue("1-0:1.7.0", POSITIVE_ACTIVE_INSTANTANEOUS_POWER, "10", KW, "10", KW),
-                    new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KWH, "50", KWH)));
+            List.of(new AiidaRecordValue("1-0:1.7.0", POSITIVE_ACTIVE_INSTANTANEOUS_POWER, "10",
+                                         KILO_WATT, "10",
+                                         KILO_WATT),
+                    new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50",
+                                         KILO_WATT_HOUR, "50",
+                                         KILO_WATT_HOUR)));
 
     private static final AiidaRecord aiidaRecordFR = new AiidaRecord(
             timestamp,
@@ -49,10 +53,10 @@ class SchemaTest {
             List.of(new AiidaRecordValue("PAPP",
                                          POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
                                          "10",
-                                         VOLTAMPERE,
+                                         VOLT_AMPERE,
                                          "10",
-                                         VOLTAMPERE),
-                    new AiidaRecordValue("BASE", POSITIVE_ACTIVE_ENERGY, "50", WH, "50", WH)));
+                                         VOLT_AMPERE),
+                    new AiidaRecordValue("BASE", POSITIVE_ACTIVE_ENERGY, "50", WATT_HOUR, "50", WATT_HOUR)));
 
     @BeforeEach
     void setUp() {

@@ -3,7 +3,7 @@ package energy.eddie.aiida.adapters.datasource.sga;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
-import energy.eddie.aiida.models.datasource.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
@@ -90,11 +90,10 @@ class SmartGatewaysAdapterTest {
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final SmartGatewaysDataSource DATA_SOURCE = new SmartGatewaysDataSource(
             new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.Identifiers.SMART_GATEWAYS,
-                              AiidaAsset.SUBMETER.asset(),
+                              DataSourceType.SMART_GATEWAYS_ADAPTER,
+                              AiidaAsset.SUBMETER,
                               "sma",
                               true,
-                              null,
                               null,
                               null),
             USER_ID,

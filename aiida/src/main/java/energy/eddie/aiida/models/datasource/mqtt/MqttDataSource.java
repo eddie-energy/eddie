@@ -1,15 +1,20 @@
-package energy.eddie.aiida.models.datasource;
+package energy.eddie.aiida.models.datasource.mqtt;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.DataSource;
 import jakarta.persistence.Entity;
+import jakarta.persistence.PostPersist;
 
 import java.util.UUID;
 
 @Entity
 @SuppressWarnings("NullAway")
 public abstract class MqttDataSource extends DataSource {
+    protected static final String TOPIC_PREFIX = "aiida/";
+    private static final String TOPIC_POSTFIX = "/+";
+
     @JsonProperty
     protected String mqttInternalHost;
     @JsonProperty
@@ -43,6 +48,19 @@ public abstract class MqttDataSource extends DataSource {
         return createFromDto(dto, userId, mqttSettingsDto);
     }
 
+    @Override
+    public DataSourceDto toDto() {
+        return new DataSourceDto(
+                id,
+                dataSourceType,
+                asset,
+                name,
+                enabled,
+                null,
+                toMqttDto()
+        );
+    }
+
     public String mqttInternalHost() {
         return mqttInternalHost;
     }
@@ -63,21 +81,25 @@ public abstract class MqttDataSource extends DataSource {
         return mqttPassword;
     }
 
-    @Override
-    public DataSourceDto toDto() {
-        return new DataSourceDto(
-                id,
-                dataSourceType.identifier(),
-                asset.asset(),
-                name,
-                enabled,
-                null,
-                null,
-                toMqttDto()
-        );
+    /**
+     * Returns the length of the MQTT subscribe topic without the wildcard.
+     *
+     * @return the length of the MQTT subscribe topic without the wildcard
+     */
+    public int mqttSubscribeTopicLengthWithoutWildcard() {
+        return mqttSubscribeTopic.length() - 1;
     }
 
     public DataSourceMqttDto toMqttDto() {
-        return new DataSourceMqttDto(mqttInternalHost, mqttExternalHost, mqttSubscribeTopic, mqttUsername, mqttPassword);
+        return new DataSourceMqttDto(mqttInternalHost,
+                                     mqttExternalHost,
+                                     mqttSubscribeTopic,
+                                     mqttUsername,
+                                     mqttPassword);
+    }
+
+    @PostPersist
+    protected void updateMqttSubscribeTopic() {
+        this.mqttSubscribeTopic = TOPIC_PREFIX + id + TOPIC_POSTFIX;
     }
 }

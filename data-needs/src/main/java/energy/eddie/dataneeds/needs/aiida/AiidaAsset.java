@@ -20,18 +20,14 @@ public enum AiidaAsset {
     @JsonCreator
     public static AiidaAsset forValue(String value) {
         return Arrays.stream(AiidaAsset.values())
-                     .filter(op -> op.asset().equals(value))
+                     .filter(op -> op.toString().equals(value))
                      .findFirst()
                      .orElseThrow();
     }
 
     @Override
-    public String toString() {
-        return asset;
-    }
-
     @JsonValue
-    public String asset() {
+    public String toString() {
         return asset;
     }
 }

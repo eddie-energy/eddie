@@ -1,6 +1,6 @@
 package energy.eddie.aiida.adapters.datasource;
 
-import energy.eddie.aiida.models.datasource.MqttDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.utils.MqttFactory;
 import jakarta.annotation.Nullable;

@@ -1,6 +1,5 @@
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.dtos.AiidaAssetDto;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceTypeDto;
 import energy.eddie.aiida.errors.InvalidUserException;
@@ -25,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -61,10 +61,8 @@ public class DataSourceController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = AiidaAsset.class))))
     })
     @GetMapping("/assets")
-    public List<AiidaAssetDto> getAssets() {
-        return Arrays.stream(AiidaAsset.values())
-                     .map(aiidaAsset -> new AiidaAssetDto(aiidaAsset.asset()))
-                     .toList();
+    public ResponseEntity<Map<String, AiidaAsset[]>> getAssets() {
+        return ResponseEntity.ok(Map.of("assets", AiidaAsset.values()));
     }
 
     @Operation(summary = "Get all datasources", description = "Retrieve all datasources.",

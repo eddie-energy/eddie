@@ -1,11 +1,11 @@
 package energy.eddie.aiida.models.datasource;
 
-import energy.eddie.aiida.models.datasource.at.OesterreichsEnergieDataSource;
-import energy.eddie.aiida.models.datasource.fr.MicroTeleinfoV3DataSource;
-import energy.eddie.aiida.models.datasource.sga.SmartGatewaysDataSource;
-import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
+import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +22,7 @@ class DataSourceTest {
     private static final UUID ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
 
     DataSourceDto createNewDataSourceDto(DataSourceType type) {
-        return new DataSourceDto(ID, type.identifier(), AiidaAsset.SUBMETER.asset(), "test", true, "", 1, null);
+        return new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", true, 1, null);
     }
 
     @Test
