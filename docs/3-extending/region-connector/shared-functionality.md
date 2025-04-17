@@ -197,6 +197,7 @@ public class Config {
 
 The `CommonFutureDataService` can be used to query [FutureData](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/services/CommonFutureDataService.html).
 It uses the provided cron expression and the region connectors timezone to schedule polling intervals. It requires a `PollingService` that implements `CommonPollingService` to poll data and a `PermissionRequestRepository` to find all active permission requests.
+
 ```java
 @Configuration
 public class Config{
@@ -204,14 +205,43 @@ public class Config{
   public CommonFutureDataService<FooPermissionRequest> commonFutureDataService(
           PollingService pollingService,
           BarPermissionRequestRepository repository,
-          BazRegionConnector connector
+          RegionConnectorMetadata metadata,
+          TaskSchedular taskSchedular,
+          DataNeedCalculationService<DataNeed> calculationService
   ){
     return new CommonFutureDataService<>(
             pollingService,
             repository,
             "0 0 17 * * *",
-            connector.getMetadata()
+            metadata,
+            taskSchedular,
+            calculationService
     );
+  }
+}
+```
+
+## `CommonRetransmissionService`
+
+The [`CommonRetransmissionService`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/retransmission/CommonRetransmissionService.html) is an implementation of the [`RegionConnectorRetransmissionService`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/retransmission/RegionConnectorRetransmissionService.html).
+It validates the retransmission request for the most common error cases, such as invalid timeframes or unknown permission ID.
+The polling of the validated historical data and emittion to the outbound connectors has to be implemented in the [`PollingFunction`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/retransmission/PollingFunction.html).
+If only the validation is needed and not the call to the polling function, only the [`RetransmissionValidation`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/retransmission/RetransmissionValidation.html) can be used.
+
+```java
+@Configuration
+public class Config{
+  @Bean
+  public RetransmissionValidation retransmissionValidation(RegionConnectorMetadata metadata, DataNeedsService dataNeedsService) {
+      return new RetransmissionValidation( metadata, dataNeedsService );
+  }
+  @Bean
+  public CommonRetransmissionService<FooPermissionRequest> retransmissionService(
+          BarPermissionRequestRepository repository,
+          PollingService pollingService,
+          RetransmissionValidation validation
+  ){
+    return new CommonFutureDataService<>( repository, pollingService, validation);
   }
 }
 ```
