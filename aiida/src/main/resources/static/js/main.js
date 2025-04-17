@@ -442,10 +442,6 @@ function renderDataSources() {
                 </dd>
               `;
 
-        if (dataSource.dataSourceType === "MICRO_TELEINFO") {
-          dataSourceTypeDetails += `<dt>Metering ID:</dt> <dd>${dataSource.meteringId}</dd>`;
-        }
-
         template.innerHTML = /* HTML */ `
           <sl-card>
             <h3>${dataSource.name}</h3>
@@ -615,16 +611,14 @@ function openAddDataSourceDialog() {
 
   fetch(`${DATASOURCES_BASE_URL}/assets`)
     .then((response) => response.json())
-    .then((assets) => {
+    .then((data) => {
+      const assets = data.assets;
       assetSelect.innerHTML = assets
-        .map(
-          (asset) =>
-            `<sl-option value="${asset.asset}">${asset.asset}</sl-option>`
-        )
+        .map((asset) => `<sl-option value="${asset}">${asset}</sl-option>`)
         .join("");
 
       if (assets.length > 0) {
-        assetSelect.value = assets[0].asset;
+        assetSelect.value = assets[0];
       }
     })
     .catch((error) => console.error("Failed to fetch assets:", error));
@@ -638,8 +632,6 @@ function updateDataSourceFields(type) {
   let dataTypeFields = "";
   if (type === "SIMULATION") {
     dataTypeFields += `<br /><sl-input name="simulationPeriod" label="Simulation Period" type="number" required></sl-input>`;
-  } else if (type === "MICRO_TELEINFO") {
-    dataTypeFields += `<br /><sl-input name="meteringID" label="MeteringID" required></sl-input>`;
   }
 
   dataSourceFields.innerHTML = dataTypeFields;
@@ -668,7 +660,8 @@ function openEditDataSourceDialog(dataSourceId) {
           response.json()
         ),
       ])
-        .then(([assets]) => {
+        .then(([data]) => {
+          const assets = data.assets;
           let editFields = /* HTML */ `
             <sl-input
               name="name"
@@ -685,8 +678,7 @@ function openEditDataSourceDialog(dataSourceId) {
             <sl-select id="asset-select" name="asset" label="Asset" required>
               ${assets
                 .map(
-                  (asset) =>
-                    `<sl-option value="${asset.asset}">${asset.asset}</sl-option>`
+                  (asset) => `<sl-option value="${asset}">${asset}</sl-option>`
                 )
                 .join("")}
             </sl-select>
@@ -705,16 +697,6 @@ function openEditDataSourceDialog(dataSourceId) {
                 label="Simulation Period"
                 type="number"
                 value="${dataSource.simulationPeriod}"
-                required
-              ></sl-input>
-            `;
-          } else if (dataSource.dataSourceType === "MICRO_TELEINFO") {
-            editFields += /* HTML */ `
-              <br />
-              <sl-input
-                name="meteringID"
-                label="Metering ID"
-                value="${dataSource.meteringId}"
                 required
               ></sl-input>
             `;
@@ -764,10 +746,6 @@ document
         formData.get("simulationPeriod"),
         10
       );
-    } else {
-      if (dataSourceType === "MICRO_TELEINFO") {
-        newDataSource.meteringId = formData.get("meteringID");
-      }
     }
 
     fetch(DATASOURCES_BASE_URL, {
@@ -803,7 +781,6 @@ document
       enabled: formData.get("enabled") === "on",
       asset: document.getElementById("asset-select").value,
       dataSourceType: formData.get("dataSourceType"),
-      meteringId: formData.get("meteringID"),
     };
 
     if (formData.has("simulationPeriod")) {

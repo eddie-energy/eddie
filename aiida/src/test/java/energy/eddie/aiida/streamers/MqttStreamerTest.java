@@ -30,7 +30,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static energy.eddie.aiida.models.record.UnitOfMeasurement.KWH;
+import static energy.eddie.aiida.models.record.UnitOfMeasurement.KILO_WATT_HOUR;
 import static energy.eddie.aiida.utils.ObisCode.NEGATIVE_ACTIVE_ENERGY;
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static org.mockito.ArgumentMatchers.any;
@@ -53,9 +53,9 @@ class MqttStreamerTest {
                                                         List.of(new AiidaRecordValue("1-0:1.8.0",
                                                                                      POSITIVE_ACTIVE_ENERGY,
                                                                                      "444",
-                                                                                     KWH,
+                                                                                     KILO_WATT_HOUR,
                                                                                      "10",
-                                                                                     KWH)));
+                                                                                     KILO_WATT_HOUR)));
     private final AiidaRecord record2 = new AiidaRecord(Instant.now(),
                                                         AiidaAsset.SUBMETER,
                                                         userId,
@@ -63,9 +63,9 @@ class MqttStreamerTest {
                                                         List.of(new AiidaRecordValue("1-0:2.8.0",
                                                                                      NEGATIVE_ACTIVE_ENERGY,
                                                                                      "888",
-                                                                                     KWH,
+                                                                                     KILO_WATT_HOUR,
                                                                                      "10",
-                                                                                     KWH)));
+                                                                                     KILO_WATT_HOUR)));
     private final UUID permissionId = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a5");
 
     @Mock
@@ -87,8 +87,8 @@ class MqttStreamerTest {
 
     @BeforeEach
     void setUp() {
-        var mqttDto = new MqttDto("username",
-                                  "password",
+        var mqttDto = new MqttDto("mqttUsername",
+                                  "mqttPassword",
                                   "tcp://localhost:1883",
                                   EXPECTED_DATA_TOPIC,
                                   EXPECTED_STATUS_TOPIC,

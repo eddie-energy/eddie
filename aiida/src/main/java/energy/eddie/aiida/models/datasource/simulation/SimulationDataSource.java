@@ -33,11 +33,10 @@ public class SimulationDataSource extends DataSource {
     public DataSourceDto toDto() {
         return new DataSourceDto(
                 id,
-                dataSourceType.identifier(),
-                asset.asset(),
+                dataSourceType,
+                asset,
                 name,
                 enabled,
-                null,
                 simulationPeriod,
                 null
         );

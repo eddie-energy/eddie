@@ -2,7 +2,7 @@ package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.config.OAuth2SecurityConfiguration;
 import energy.eddie.aiida.errors.MqttUnauthorizedException;
-import energy.eddie.aiida.models.datasource.MqttAction;
+import energy.eddie.aiida.models.datasource.mqtt.MqttAction;
 import energy.eddie.aiida.services.MqttAuthService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)

@@ -1,9 +1,9 @@
 package energy.eddie.aiida.aggregator;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
-import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static energy.eddie.aiida.models.record.UnitOfMeasurement.KW;
-import static energy.eddie.aiida.models.record.UnitOfMeasurement.KWH;
+import static energy.eddie.aiida.models.record.UnitOfMeasurement.KILO_WATT;
+import static energy.eddie.aiida.models.record.UnitOfMeasurement.KILO_WATT_HOUR;
 import static energy.eddie.aiida.utils.ObisCode.*;
 import static org.mockito.Mockito.*;
 
@@ -46,20 +46,18 @@ class AggregatorTest {
     private static final UUID USER_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56607");
     private static final SimulationDataSource DATA_SOURCE_1 = new SimulationDataSource(new DataSourceDto(
             DATA_SOURCE_ID_1,
-            DataSourceType.Identifiers.SIMULATION,
-            AiidaAsset.SUBMETER.asset(),
+            DataSourceType.SIMULATION,
+            AiidaAsset.SUBMETER,
             DATASOURCE_NAME_1,
             true,
-            null,
             null,
             null), USER_ID);
     private static final SimulationDataSource DATA_SOURCE_2 = new SimulationDataSource(new DataSourceDto(
             DATA_SOURCE_ID_2,
-            DataSourceType.Identifiers.SIMULATION,
-            AiidaAsset.SUBMETER.asset(),
+            DataSourceType.SIMULATION,
+            AiidaAsset.SUBMETER,
             "test-2",
             true,
-            null,
             null,
             null), USER_ID);
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
@@ -88,15 +86,20 @@ class AggregatorTest {
         wantedAsset = AiidaAsset.SUBMETER;
         wantedCodes = Set.of("1-0:1.8.0", "1-0:2.8.0");
         unwanted1 = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
-                new AiidaRecordValue("1-0:1.7.0", POSITIVE_ACTIVE_INSTANTANEOUS_POWER, "10", KWH, "10", KWH)));
+                new AiidaRecordValue("1-0:1.7.0",
+                                     POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
+                                     "10",
+                                     KILO_WATT_HOUR,
+                                     "10",
+                                     KILO_WATT_HOUR)));
         unwanted2 = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
-                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KW, "10", KW)));
+                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KILO_WATT, "10", KILO_WATT)));
         unwanted3 = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
-                new AiidaRecordValue("1-0:2.8.0", NEGATIVE_ACTIVE_ENERGY, "60", KWH, "10", KWH)));
+                new AiidaRecordValue("1-0:2.8.0", NEGATIVE_ACTIVE_ENERGY, "60", KILO_WATT_HOUR, "10", KILO_WATT_HOUR)));
         unwanted4 = new AiidaRecord(instant, AiidaAsset.CONTROLLABLE_UNIT, USER_ID, DATA_SOURCE_ID_1, List.of(
-                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KW, "10", KW)));
+                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
         wanted1 = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
-                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KW, "10", KW)));
+                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
         expiration = Instant.now().plusSeconds(300_000);
         transmissionSchedule = CronExpression.parse("* * * * * *");
 
@@ -143,9 +146,9 @@ class AggregatorTest {
     void getFilteredFlux_filtersFluxFromDataSources() {
         var instant = Instant.now().plusSeconds(600);
         wanted1 = new AiidaRecord(instant, AiidaAsset.SUBMETER, USER_ID, DATA_SOURCE_ID_2, List.of(
-                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KW, "10", KW)));
+                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
         unwanted2 = new AiidaRecord(instant, AiidaAsset.SUBMETER, USER_ID, DATA_SOURCE_ID_2, List.of(
-                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KW, "10", KW)));
+                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KILO_WATT, "10", KILO_WATT)));
 
         TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
         TestPublisher<AiidaRecord> publisher2 = TestPublisher.create();
@@ -226,9 +229,9 @@ class AggregatorTest {
                                                  List.of(new AiidaRecordValue("1-0:1.8.0",
                                                                               POSITIVE_ACTIVE_ENERGY,
                                                                               "50",
-                                                                              KW,
+                                                                              KILO_WATT,
                                                                               "10",
-                                                                              KW)));
+                                                                              KILO_WATT)));
 
         aggregator.addNewDataSourceAdapter(mockAdapter);
 
@@ -297,9 +300,9 @@ class AggregatorTest {
                                                List.of(new AiidaRecordValue("1-0:1.7.0",
                                                                             POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
                                                                             "111",
-                                                                            KWH,
+                                                                            KILO_WATT_HOUR,
                                                                             "10",
-                                                                            KWH)));
+                                                                            KILO_WATT_HOUR)));
         var afterExpirationTime = new AiidaRecord(expiration.plusSeconds(10),
                                                   wantedAsset,
                                                   USER_ID,
@@ -307,13 +310,17 @@ class AggregatorTest {
                                                   List.of(new AiidaRecordValue("1-0:2.7.0",
                                                                                NEGATIVE_ACTIVE_INSTANTANEOUS_POWER,
                                                                                "111",
-                                                                               KWH,
+                                                                               KILO_WATT_HOUR,
                                                                                "10",
-                                                                               KWH)));
+                                                                               KILO_WATT_HOUR)));
 
         aggregator.addNewDataSourceAdapter(mockAdapter);
 
-        StepVerifier.create(aggregator.getFilteredFlux(wantedCodes, wantedAsset, expiration, transmissionSchedule, USER_ID))
+        StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
+                                                       wantedAsset,
+                                                       expiration,
+                                                       transmissionSchedule,
+                                                       USER_ID))
                     .then(() -> {
                         publisher.next(wanted1);
                         publisher.next(unwanted1);

@@ -1,9 +1,9 @@
-package energy.eddie.aiida.models.datasource.at;
+package energy.eddie.aiida.models.datasource.mqtt.at;
 
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
-import energy.eddie.aiida.models.datasource.MqttDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 

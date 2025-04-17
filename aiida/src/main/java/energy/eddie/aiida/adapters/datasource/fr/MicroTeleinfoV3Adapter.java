@@ -2,7 +2,12 @@ package energy.eddie.aiida.adapters.datasource.fr;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
-import energy.eddie.aiida.models.datasource.fr.MicroTeleinfoV3DataSource;
+import energy.eddie.aiida.adapters.datasource.fr.mode.MicroTeleinfoV3DataFieldDeserializer;
+import energy.eddie.aiida.adapters.datasource.fr.mode.MicroTeleinfoV3Json;
+import energy.eddie.aiida.adapters.datasource.fr.mode.MicroTeleinfoV3Mode;
+import energy.eddie.aiida.adapters.datasource.fr.mode.history.MicroTeleinfoV3HistoryModeJson;
+import energy.eddie.aiida.adapters.datasource.fr.mode.standard.MicroTeleinfoV3StandardModeJson;
+import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
@@ -17,6 +22,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV3DataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MicroTeleinfoV3Adapter.class);
@@ -24,6 +30,7 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
     private final String healthTopic;
     private final ObjectMapper mapper;
     private Health healthState = Health.unknown().withDetail(dataSource.id().toString(), "Initial value").build();
+    private Optional<MicroTeleinfoV3Mode> mode = Optional.empty();
 
     /**
      * Creates the datasource for the Micro Teleinfo V3. It connects to the specified MQTT broker and expects that the
@@ -32,7 +39,7 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
      *
      * @param dataSource The entity of the data source.
      * @param mapper     {@link ObjectMapper} that is used to deserialize the JSON messages. A
-     *                   {@link MicroTeleinfoV3AdapterValueDeserializer} will be registered to this mapper.
+     *                   {@link MicroTeleinfoV3DataFieldDeserializer} will be registered to this mapper.
      */
     public MicroTeleinfoV3Adapter(MicroTeleinfoV3DataSource dataSource, ObjectMapper mapper) {
         super(dataSource, LOGGER);
@@ -40,8 +47,9 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
         this.mapper = mapper;
 
         healthSink.asFlux().subscribe(this::setHealthState);
-        this.healthTopic = dataSource.mqttSubscribeTopic().replaceFirst("/.*", HEALTH_TOPIC);
+        this.healthTopic = dataSource.mqttSubscribeTopic().replaceFirst("/#", HEALTH_TOPIC);
     }
+
 
     /**
      * MQTT callback function that is called when a new message from the broker is received. Will convert the message to
@@ -63,29 +71,56 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
             }
         } else {
             try {
-                var json = mapper.readValue(message.getPayload(), MicroTeleinfoV3AdapterJson.class);
+                if (mode.isEmpty()) {
+                    determineMode(message.getPayload());
+                }
 
-                // TODO: Rework with GH-1209 to support other kinds of data supplied by MicroTeleinfoV3
-                List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
-                var papp = json.papp();
-                var pappValue = String.valueOf(papp.value());
-                var base = json.base();
-                var baseValue = String.valueOf(base.value());
+                // TODO: Support every value of both modes with GH-1733
+                if (mode.get().equals(MicroTeleinfoV3Mode.HISTORY)) {
+                    var json = mapper.readValue(message.getPayload(), MicroTeleinfoV3HistoryModeJson.class);
+                    List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
+                    var papp = json.papp();
+                    var pappValue = String.valueOf(papp.value());
+                    var base = json.base();
+                    var baseValue = String.valueOf(base.value());
 
-                aiidaRecordValues.add(new AiidaRecordValue("PAPP",
-                                                           papp.mappedObisCode(),
-                                                           pappValue,
-                                                           papp.unitOfMeasurement(),
-                                                           pappValue,
-                                                           papp.unitOfMeasurement()));
-                aiidaRecordValues.add(new AiidaRecordValue("BASE",
-                                                           base.mappedObisCode(),
-                                                           baseValue,
-                                                           base.unitOfMeasurement(),
-                                                           baseValue,
-                                                           base.unitOfMeasurement()));
+                    aiidaRecordValues.add(new AiidaRecordValue("PAPP",
+                                                               papp.mappedObisCode(),
+                                                               pappValue,
+                                                               papp.unitOfMeasurement(),
+                                                               pappValue,
+                                                               papp.unitOfMeasurement()));
+                    aiidaRecordValues.add(new AiidaRecordValue("BASE",
+                                                               base.mappedObisCode(),
+                                                               baseValue,
+                                                               base.unitOfMeasurement(),
+                                                               baseValue,
+                                                               base.unitOfMeasurement()));
 
-                emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
+                    emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
+                } else if (mode.get().equals(MicroTeleinfoV3Mode.STANDARD)) {
+                    var json = mapper.readValue(message.getPayload(), MicroTeleinfoV3StandardModeJson.class);
+                    List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
+                    var east = json.east();
+                    var eastValue = String.valueOf(east.value());
+                    var sinsts = json.sinsts();
+                    var sinstsValue = String.valueOf(sinsts.value());
+
+                    aiidaRecordValues.add(new AiidaRecordValue("EAST",
+                                                               east.mappedObisCode(),
+                                                               eastValue,
+                                                               east.unitOfMeasurement(),
+                                                               eastValue,
+                                                               east.unitOfMeasurement()));
+                    aiidaRecordValues.add(new AiidaRecordValue("SINSTS",
+                                                               sinsts.mappedObisCode(),
+                                                               sinstsValue,
+                                                               sinsts.unitOfMeasurement(),
+                                                               sinstsValue,
+                                                               sinsts.unitOfMeasurement()));
+
+                    emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
+                }
             } catch (IOException e) {
                 LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
                              new String(message.getPayload(), StandardCharsets.UTF_8),
@@ -130,6 +165,36 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
             LOGGER.error("Error while subscribing to topic {}", healthTopic, ex);
             healthSink.tryEmitNext(Health.down().withDetail("Error", ex).build());
         }
+    }
+
+    private void determineMode(byte[] payload) throws IOException {
+        Class<? extends MicroTeleinfoV3Json> jsonClass = MicroTeleinfoV3HistoryModeJson.class;
+
+        try {
+            readPayloadValue(payload, jsonClass);
+            mode = Optional.of(MicroTeleinfoV3Mode.HISTORY);
+            LOGGER.debug("Connected smart meter operates in {} mode.", mode.get());
+            return;
+        } catch (IOException e) {
+            LOGGER.debug("Payload is not a {}", jsonClass.getSimpleName());
+        }
+
+        jsonClass = MicroTeleinfoV3StandardModeJson.class;
+
+        try {
+            readPayloadValue(payload, MicroTeleinfoV3StandardModeJson.class);
+            mode = Optional.of(MicroTeleinfoV3Mode.STANDARD);
+            LOGGER.debug("Connected smart meter operates in {} mode.", mode.get());
+        } catch (IOException e) {
+            LOGGER.debug("Payload is not a {}", jsonClass.getSimpleName());
+            throw e;
+        }
+    }
+
+    private void readPayloadValue(byte[] payload, Class<? extends MicroTeleinfoV3Json> valueType) throws IOException {
+        LOGGER.debug("Checking if incoming payload is a {}.", valueType.getSimpleName());
+        mapper.readValue(payload, valueType);
+        LOGGER.debug("Payload is a {}", valueType.getSimpleName());
     }
 
     /**
