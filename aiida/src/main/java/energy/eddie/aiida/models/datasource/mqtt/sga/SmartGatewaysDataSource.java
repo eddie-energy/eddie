@@ -12,7 +12,7 @@ import java.util.UUID;
 @Entity
 @DiscriminatorValue(DataSourceType.Identifiers.SMART_GATEWAYS_ADAPTER)
 public class SmartGatewaysDataSource extends MqttDataSource {
-    private static final String TOPIC_POSTFIX = "/#";
+    private static final String TOPIC_SUFFIX = "/#";
 
     @SuppressWarnings("NullAway")
     protected SmartGatewaysDataSource() {}
@@ -23,6 +23,6 @@ public class SmartGatewaysDataSource extends MqttDataSource {
 
     @Override
     protected void updateMqttSubscribeTopic() {
-        this.mqttSubscribeTopic = TOPIC_PREFIX + id + TOPIC_POSTFIX;
+        this.mqttSubscribeTopic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
     }
 }

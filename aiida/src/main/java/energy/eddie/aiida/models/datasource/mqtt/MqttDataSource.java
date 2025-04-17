@@ -13,7 +13,7 @@ import java.util.UUID;
 @SuppressWarnings("NullAway")
 public abstract class MqttDataSource extends DataSource {
     protected static final String TOPIC_PREFIX = "aiida/";
-    private static final String TOPIC_POSTFIX = "/+";
+    private static final String TOPIC_SUFFIX = "/+";
 
     @JsonProperty
     protected String mqttInternalHost;
@@ -100,6 +100,6 @@ public abstract class MqttDataSource extends DataSource {
 
     @PostPersist
     protected void updateMqttSubscribeTopic() {
-        this.mqttSubscribeTopic = TOPIC_PREFIX + id + TOPIC_POSTFIX;
+        this.mqttSubscribeTopic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
     }
 }

@@ -59,12 +59,10 @@ public class MqttAuthService {
     }
 
     private boolean isAuthorizedForTopic(MqttDataSource dataSource, String topic) {
-        return dataSource.mqttSubscribeTopic()
-                         .regionMatches(0,
-                                        topic,
-                                        0,
-                                        dataSource.mqttSubscribeTopicLengthWithoutWildcard()) || topic.startsWith(
-                SYS_BROKER_NODE_TOPIC_PREFIX);
+        var lenghtOfTopicWithoutWildcard = dataSource.mqttSubscribeTopicLengthWithoutWildcard();
+
+        return dataSource.mqttSubscribeTopic().regionMatches(0, topic, 0, lenghtOfTopicWithoutWildcard) ||
+               topic.startsWith(SYS_BROKER_NODE_TOPIC_PREFIX);
     }
 
     private MqttDataSource getDataSourceForUsernameAndPassword(
