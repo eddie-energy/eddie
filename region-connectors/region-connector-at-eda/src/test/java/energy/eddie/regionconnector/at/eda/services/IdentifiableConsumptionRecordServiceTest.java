@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.at.eda.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.*;
+import energy.eddie.regionconnector.at.eda.persistence.JpaPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -24,11 +24,12 @@ import static org.mockito.Mockito.when;
 class IdentifiableConsumptionRecordServiceTest {
 
     @Mock
-    private AtPermissionRequestRepository repository;
+    private JpaPermissionRequestRepository repository;
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     void mapToIdentifiableConsumptionRecord_returnsCorrectlyMappedRecord() {
+
         String identifiableMeteringPoint = "identifiableMeteringPoint";
         var identifiableConsumptionRecord = createConsumptionRecord(identifiableMeteringPoint);
 
@@ -59,7 +60,7 @@ class IdentifiableConsumptionRecordServiceTest {
         var unidentifiableConsumptionRecord = createConsumptionRecord(unidentifiableMeteringPoint);
 
         when(repository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted(eq(unidentifiableMeteringPoint),
-                                                                                    any()))
+                              any()))
                 .thenReturn(List.of());
 
         IdentifiableConsumptionRecordService service = new IdentifiableConsumptionRecordService(repository);

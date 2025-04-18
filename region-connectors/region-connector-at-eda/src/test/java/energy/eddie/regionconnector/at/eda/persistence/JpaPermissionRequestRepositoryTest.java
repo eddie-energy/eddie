@@ -163,7 +163,7 @@ class JpaPermissionRequestRepositoryTest {
 
         // When
         var res = permissionRequestRepository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted("mid",
-                                                                                                          start.plusDays(
+                                                    start.plusDays(
                                                                                                                   1));
 
         // Then
@@ -184,8 +184,124 @@ class JpaPermissionRequestRepositoryTest {
         permissionEventRepository.saveAndFlush(event3);
         // When
         var res = permissionRequestRepository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted("mid",
-                                                                                                          start.plusDays(
+                                                    start.plusDays(
                                                                                                                   1));
+
+        // Then
+        assertThat(res).hasSize(1);
+    }
+
+    @Test
+    void findByMeteringPointIdAndDate_AndStateAfterAcceptedOrSentToPA__returnsPermissionRequest_forExistingPermissionRequest() {
+        // Given
+        var start = LocalDate.of(2024, 1, 1);
+        PermissionEvent event1 = new CreatedEvent("pid", "cid", "did", new EdaDataSourceInformation("asd"), "mid");
+        permissionEventRepository.saveAndFlush(event1);
+        PermissionEvent event2 = new ValidatedEvent("pid", start,
+                                                    null, AllowedGranularity.PT15M, "cmRequestId",
+                                                    "convId", ValidatedEvent.NeedsToBeSent.YES);
+        permissionEventRepository.saveAndFlush(event2);
+        PermissionEvent event3 = new SimpleEvent("pid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        permissionEventRepository.saveAndFlush(event3);
+
+        // When
+        var res = permissionRequestRepository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted("mid",
+                                                    start);
+
+        // Then
+        assertThat(res).hasSize(1);
+    }
+
+    @Test
+    void findByMeteringPointIdAndDate_AndStateAfterAcceptedOrSendToPA__returnsNoPermission_forCreatedEvent() {
+        // Given
+        var start = LocalDate.of(2024, 1, 1);
+        PermissionEvent event1 = new CreatedEvent("pid", "cid", "did", new EdaDataSourceInformation("asd"), "mid");
+        permissionEventRepository.saveAndFlush(event1);
+
+        // When
+        var res = permissionRequestRepository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted("mid",
+                                                    start);
+
+        // Then
+        assertThat(res).isEmpty();
+    }
+
+    @Test
+    void findByMeteringPointIdAndDate_AndStateAfterAcceptedOrSendToPA__returnNotCreatedEvents() {
+        // Given
+        var start = LocalDate.of(2024, 1, 1);
+        PermissionEvent event1 = new CreatedEvent("pid", "cid", "did", new EdaDataSourceInformation("asd"), "mid");
+        permissionEventRepository.saveAndFlush(event1);
+        PermissionEvent event2 = new ValidatedEvent("pid", start,
+                                                    null, AllowedGranularity.PT15M, "cmRequestId",
+                                                    "convId", ValidatedEvent.NeedsToBeSent.YES);
+        permissionEventRepository.saveAndFlush(event2);
+        PermissionEvent event3 = new SimpleEvent("pid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        permissionEventRepository.saveAndFlush(event3);
+
+
+        // When
+        var res = permissionRequestRepository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted("mid",
+                                                    start);
+
+        // Then
+        assertThat(res).hasSize(1);
+    }
+
+    @Test
+    void findByMeteringPointIdAndDate_AndStateAfterAcceptedOrSendToPA__parseObjects() {
+        // Given
+        var start = LocalDate.of(2024, 1, 1);
+        PermissionEvent event1 = new CreatedEvent("pid", "cid", "did", new EdaDataSourceInformation("asd"), "mid");
+        permissionEventRepository.saveAndFlush(event1);
+        PermissionEvent event2 = new ValidatedEvent("pid", start,
+                                                    null, AllowedGranularity.PT15M, "cmRequestId",
+                                                    "convId", ValidatedEvent.NeedsToBeSent.YES);
+        permissionEventRepository.saveAndFlush(event2);
+        PermissionEvent event3 = new SimpleEvent("pid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        permissionEventRepository.saveAndFlush(event3);
+
+        // When
+        var res = permissionRequestRepository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted("mid",
+                                                    start);
+
+        // Then
+        var first = res.getFirst();
+        assertThat(first.getPermissionId()).isEqualTo("pid");
+        assertThat(first.getConnectionId()).isEqualTo("cid");
+        assertThat(first.getDataNeedId()).isEqualTo("did");
+        assertThat(first.getMeteringPointId()).isEqualTo("mid");
+    }
+
+    @Test
+    void findByMeteringPointIdAndDate_AndStateAfterAcceptedOrSendToPA__multipleMeteringPoints() {
+        // Given
+        var start = LocalDate.of(2024, 1, 1);
+
+        // Metering Point 1
+        PermissionEvent event1 = new CreatedEvent("pid", "cid", "did", new EdaDataSourceInformation("asd"), "mid");
+        permissionEventRepository.saveAndFlush(event1);
+        PermissionEvent event2 = new ValidatedEvent("pid", start,
+                                                    null, AllowedGranularity.PT15M, "cmRequestId",
+                                                    "convId", ValidatedEvent.NeedsToBeSent.YES);
+        permissionEventRepository.saveAndFlush(event2);
+        PermissionEvent event3 = new SimpleEvent("pid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        permissionEventRepository.saveAndFlush(event3);
+
+        // Metering Point 2
+        PermissionEvent event21 = new CreatedEvent("pid2", "cid2", "did2", new EdaDataSourceInformation("asd2"), "mid2");
+        permissionEventRepository.saveAndFlush(event21);
+        PermissionEvent event22 = new ValidatedEvent("pid2", start,
+                                                    null, AllowedGranularity.PT15M, "cmRequestId2",
+                                                    "convId2", ValidatedEvent.NeedsToBeSent.YES);
+        permissionEventRepository.saveAndFlush(event22);
+        PermissionEvent event23 = new SimpleEvent("pid2", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        permissionEventRepository.saveAndFlush(event23);
+
+        // When
+        var res = permissionRequestRepository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted("mid",
+                                                                                                          start);
 
         // Then
         assertThat(res).hasSize(1);

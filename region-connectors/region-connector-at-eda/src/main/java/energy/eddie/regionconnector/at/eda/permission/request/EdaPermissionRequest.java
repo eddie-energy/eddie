@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.at.eda.permission.request;
 import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestProjection;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import jakarta.annotation.Nullable;
@@ -91,6 +92,25 @@ public class EdaPermissionRequest implements AtPermissionRequest {
         this.message = message;
         this.consentId = consentId;
         this.created = created;
+    }
+
+    public static EdaPermissionRequest fromProjection(AtPermissionRequestProjection projection) {
+        return new EdaPermissionRequest(
+                projection.getConnectionId(),
+                projection.getPermissionId(),
+                projection.getDataNeedId(),
+                projection.getCmRequestId(),
+                projection.getConversationId(),
+                projection.getMeteringPointId(),
+                projection.getDsoId(),
+                projection.getStart(),
+                projection.getEnd(),
+                AllowedGranularity.valueOf(projection.getGranularity()),
+                PermissionProcessStatus.valueOf(projection.getStatus()),
+                projection.getMessage(),
+                projection.getConsentId(),
+                projection.getCreated()
+        );
     }
 
     // protected no-args ctor needed for JPA and reflections

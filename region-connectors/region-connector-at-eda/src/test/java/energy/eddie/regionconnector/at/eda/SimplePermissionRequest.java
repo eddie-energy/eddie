@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.at.eda;
 import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestProjection;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import jakarta.annotation.Nullable;
@@ -24,7 +25,7 @@ public record SimplePermissionRequest(String permissionId,
                                       PermissionProcessStatus status,
                                       Optional<String> consentId,
                                       @Nullable AllowedGranularity granularity
-) implements AtPermissionRequest {
+) implements AtPermissionRequest, AtPermissionRequestProjection {
 
     public SimplePermissionRequest(String permissionId, String connectionId, String dataNeedId) {
         this(permissionId,
@@ -97,5 +98,75 @@ public record SimplePermissionRequest(String permissionId,
         return permissionId.equals(that.permissionId()) && connectionId.equals(
                 that.connectionId()) && cmRequestId.equals(that.cmRequestId()) && conversationId.equals(
                 that.conversationId()) && status == that.status();
+    }
+
+    @Override
+    public String getPermissionId() {
+        return permissionId;
+    }
+
+    @Override
+    public String getConnectionId() {
+        return connectionId;
+    }
+
+    @Override
+    public String getCmRequestId() {
+        return cmRequestId;
+    }
+
+    @Override
+    public String getConversationId() {
+        return conversationId;
+    }
+
+    @Override
+    public LocalDate getStart() {
+        return start;
+    }
+
+    @Override
+    public LocalDate getEnd() {
+        return end;
+    }
+
+    @Override
+    public String getDataNeedId() {
+        return dataNeedId;
+    }
+
+    @Override
+    public String getDsoId() {
+        return dsoId;
+    }
+
+    @Override
+    public String getMeteringPointId() {
+        return String.valueOf(meteringPointId);
+    }
+
+    @Override
+    public String getConsentId() {
+        return String.valueOf(consentId);
+    }
+
+    @Override
+    public String getMessage() {
+        return null;
+    }
+
+    @Override
+    public String getGranularity() {
+        return String.valueOf(granularity());
+    }
+
+    @Override
+    public String getStatus() {
+        return String.valueOf(status);
+    }
+
+    @Override
+    public ZonedDateTime getCreated() {
+        return created();
     }
 }

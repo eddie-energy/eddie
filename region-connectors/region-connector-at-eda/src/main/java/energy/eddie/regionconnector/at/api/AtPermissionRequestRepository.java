@@ -40,24 +40,6 @@ public interface AtPermissionRequestRepository extends PermissionRequestReposito
             String meteringPointId
     );
 
-
-    /**
-     * This method returns all permission requests that are associated with the given metering point, where:
-     * <ul style="bullet">
-     *     <li>the date is between start and end of the permission request</li>
-     *     <li>the state is either {@link energy.eddie.api.v0.PermissionProcessStatus#SENT_TO_PERMISSION_ADMINISTRATOR} or after {@link energy.eddie.api.v0.PermissionProcessStatus#ACCEPTED} </li>
-     * </ul>
-     * For more info about the states consult "permission-process-model.md"
-     *
-     * @param meteringPointId for which to get permission requests
-     * @param date            to filter time relevant permission requests
-     * @return a list of matching permission requests
-     */
-    List<AtPermissionRequest> findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted(
-            String meteringPointId,
-            LocalDate date
-    );
-
     /**
      * This method returns all {@link energy.eddie.api.v0.PermissionProcessStatus#ACCEPTED} and
      * {@link energy.eddie.api.v0.PermissionProcessStatus#FULFILLED} permission requests that are associated with the
