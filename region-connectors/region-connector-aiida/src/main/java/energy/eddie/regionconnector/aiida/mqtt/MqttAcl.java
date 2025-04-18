@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
+import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
+import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;

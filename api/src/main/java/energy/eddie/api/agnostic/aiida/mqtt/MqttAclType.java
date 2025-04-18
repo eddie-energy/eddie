@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.aiida.mqtt;
+package energy.eddie.api.agnostic.aiida.mqtt;
 
 public enum MqttAclType {
     ALLOW,

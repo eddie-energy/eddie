@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.aiida.services;
 
-import energy.eddie.api.agnostic.aiida.MqttDto;
+import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;

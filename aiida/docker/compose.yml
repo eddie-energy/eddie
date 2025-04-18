@@ -1,3 +1,4 @@
+name: aiida
 services:
   timescaledb:
     image: timescale/timescaledb:latest-pg12
@@ -8,6 +9,11 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${SPRING_DATASOURCE_USERNAME} -d aiida'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   aiida:
     image: ghcr.io/eddie-energy/aiida:latest
@@ -16,9 +22,9 @@ services:
       context: ../
     depends_on:
       timescaledb:
-        condition: service_started
-      nanomq:
-        condition: service_started
+        condition: service_healthy
+      emqx:
+        condition: service_healthy
       keycloak:
         condition: service_healthy
     ports:
@@ -28,18 +34,30 @@ services:
     env_file:
       - .env
 
-  nanomq:
-    image: emqx/nanomq:latest
+  emqx:
+    image: emqx/emqx:5.8.6
+    depends_on:
+      timescaledb:
+        condition: service_healthy
     ports:
       - "1884:1883"
-      - "8084:8083"
       - "8884:8883"
+      - "18084:18083" # management web interface
+    environment:
+      EMQX_NAME: example_emqx_node
+      EMQX_HOST: 127.0.0.1
+    restart: always
     volumes:
-      - ./nanomq.conf:/etc/nanomq.conf
+      - emqx_data:/opt/emqx/data
+    healthcheck:
+      test: [ "CMD", "/opt/emqx/bin/emqx", "ctl", "status" ]
+      interval: 5s
+      timeout: 25s
+      retries: 5
 
   teleinfo2mqtt:
     depends_on:
-      - nanomq
+      - emqx
     profiles:
       - teleinfo
     image: fmartinou/teleinfo2mqtt
@@ -77,3 +95,4 @@ networks:
 
 volumes:
   db_data:
+  emqx_data:

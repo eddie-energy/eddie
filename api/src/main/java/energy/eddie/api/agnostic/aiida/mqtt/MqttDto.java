@@ -1,4 +1,4 @@
-package energy.eddie.api.agnostic.aiida;
+package energy.eddie.api.agnostic.aiida.mqtt;
 
 public record MqttDto(String serverUri,
                       String username,

@@ -1,0 +1,4 @@
+ALTER TABLE data_source
+    ADD COLUMN action VARCHAR(9) DEFAULT 'SUBSCRIBE';
+ALTER TABLE data_source
+    ADD COLUMN acl_type VARCHAR(5) DEFAULT 'ALLOW';

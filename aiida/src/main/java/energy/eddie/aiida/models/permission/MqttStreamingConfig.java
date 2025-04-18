@@ -1,6 +1,6 @@
 package energy.eddie.aiida.models.permission;
 
-import energy.eddie.api.agnostic.aiida.MqttDto;
+import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
