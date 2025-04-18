@@ -13,7 +13,6 @@ import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
-import energy.eddie.outbound.shared.TopicStructure;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.slf4j.Logger;
@@ -96,8 +95,7 @@ public class KafkaConnector implements
 
     private void produceStatusMessage(ConnectionStatusMessage statusMessage) {
         var toSend = new ProducerRecord<String, Object>(
-                config.toEddieProductionTopic(TopicStructure.DataModels.AGNOSTIC,
-                                              TopicStructure.DocumentTypes.CONNECTION_STATUS_MESSAGE),
+                config.connectionStatusMessage(),
                 statusMessage
         );
         sendToKafka(toSend, "Could not produce connection status message");
@@ -111,8 +109,7 @@ public class KafkaConnector implements
                                              .getMessageDocumentHeaderMetaInformation();
         var permissionId = header.getPermissionid();
         var toSend = new ProducerRecord<String, Object>(
-                config.toEddieProductionTopic(TopicStructure.DataModels.CIM_0_82,
-                                              TopicStructure.DocumentTypes.PERMISSION_MD),
+                config.permissionMarketDocument(),
                 null,
                 permissionId,
                 permissionMarketDocument,
@@ -134,8 +131,7 @@ public class KafkaConnector implements
     ) {
         var info = marketDocument.getMessageDocumentHeader()
                                  .getMessageDocumentHeaderMetaInformation();
-        var toSend = new ProducerRecord<String, Object>(config.toEddieProductionTopic(TopicStructure.DataModels.CIM_0_82,
-                                                                                      TopicStructure.DocumentTypes.VALIDATED_HISTORICAL_DATA_MD),
+        var toSend = new ProducerRecord<String, Object>(config.validatedHistoricalDataMarketDocument(),
                                                         null,
                                                         info.getConnectionid(),
                                                         marketDocument,
@@ -154,8 +150,7 @@ public class KafkaConnector implements
     }
 
     private void produceRawDataMessage(RawDataMessage message) {
-        var toSend = new ProducerRecord<String, Object>(config.toEddieProductionTopic(TopicStructure.DataModels.AGNOSTIC,
-                                                                                      TopicStructure.DocumentTypes.RAW_DATA_MESSAGE),
+        var toSend = new ProducerRecord<String, Object>(config.rawDataMessage(),
                                                         message.connectionId(),
                                                         message);
         sendToKafka(toSend, "Could not produce raw data message");
@@ -166,8 +161,7 @@ public class KafkaConnector implements
         var header = marketDocument.getMessageDocumentHeader()
                                    .getMessageDocumentHeaderMetaInformation();
         var toSend = new ProducerRecord<String, Object>(
-                config.toEddieProductionTopic(TopicStructure.DataModels.CIM_0_82,
-                                              TopicStructure.DocumentTypes.ACCOUNTING_POINT_MD),
+                config.accountingPointMarketDocument(),
                 null,
                 header.getConnectionid(),
                 marketDocument,

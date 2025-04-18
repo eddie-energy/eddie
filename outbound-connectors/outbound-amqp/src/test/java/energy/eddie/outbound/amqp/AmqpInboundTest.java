@@ -5,7 +5,7 @@ import com.rabbitmq.client.amqp.Publisher;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_91_08.retransmission.ESMPDateTimeInterval;
 import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
-import energy.eddie.outbound.shared.Endpoints;
+import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerializationException;
 import energy.eddie.outbound.shared.serde.XmlMessageSerde;
@@ -23,6 +23,7 @@ class AmqpInboundTest {
     private static final RabbitMQContainer rabbit =
             new RabbitMQContainer(DockerImageName.parse("rabbitmq:4-management-alpine"));
     private final MessageSerde serde = new XmlMessageSerde();
+    private final TopicConfiguration config = new TopicConfiguration("eddie");
     private Connection connection;
     private AmqpInbound amqpInbound;
 
@@ -41,8 +42,8 @@ class AmqpInboundTest {
     @BeforeEach
     void setUp() {
         var connector = new AmqpOutboundConnector();
-        connection = connector.connection(connector.amqpEnvironment(), rabbit.getAmqpUrl());
-        amqpInbound = new AmqpInbound(connection, serde);
+        connection = connector.connection(connector.amqpEnvironment(), rabbit.getAmqpUrl(), config);
+        amqpInbound = new AmqpInbound(connection, serde, config);
     }
 
     @AfterEach
@@ -56,7 +57,7 @@ class AmqpInboundTest {
         // Given
         CountDownLatch latch = new CountDownLatch(1);
         var publisher = connection.publisherBuilder()
-                                  .queue(Endpoints.V0_82.TERMINATIONS)
+                                  .queue(config.terminationMarketDocument())
                                   .build();
         var msg = publisher.message(serde.serialize(new PermissionEnvelope()));
         // When
@@ -80,7 +81,7 @@ class AmqpInboundTest {
         // Given
         CountDownLatch latch = new CountDownLatch(1);
         var publisher = connection.publisherBuilder()
-                                  .queue(Endpoints.V0_82.TERMINATIONS)
+                                  .queue(config.terminationMarketDocument())
                                   .build();
         var msg = publisher.message("INVALID MESSAGE".getBytes(StandardCharsets.UTF_8));
         // When
@@ -102,7 +103,7 @@ class AmqpInboundTest {
         // Given
         CountDownLatch latch = new CountDownLatch(1);
         var publisher = connection.publisherBuilder()
-                                  .queue(Endpoints.V0_91_08.RETRANSMISSIONS)
+                                  .queue(config.redistributionTransactionRequestDocument())
                                   .build();
         var envelope = new RTREnvelope()
                 .withMessageDocumentHeaderMetaInformationPermissionId("permissionId")
@@ -135,7 +136,7 @@ class AmqpInboundTest {
         // Given
         CountDownLatch latch = new CountDownLatch(1);
         var publisher = connection.publisherBuilder()
-                                  .queue(Endpoints.V0_91_08.RETRANSMISSIONS)
+                                  .queue(config.redistributionTransactionRequestDocument())
                                   .build();
         var msg = publisher.message("INVALID MESSAGE".getBytes(StandardCharsets.UTF_8));
         // When

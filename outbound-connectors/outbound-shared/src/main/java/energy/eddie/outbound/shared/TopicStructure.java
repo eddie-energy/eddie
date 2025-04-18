@@ -4,6 +4,9 @@ import energy.eddie.api.CommonInformationModelVersions;
 import jakarta.annotation.Nullable;
 
 
+/**
+ * Utility class to track different document types that can be consumed or produced by eddie
+ */
 public class TopicStructure {
 
     public static final String REDISTRIBUTION_TRANSACTION_RD_VALUE = "redistribution-transaction-rd";
@@ -15,12 +18,31 @@ public class TopicStructure {
         // No-Op
     }
 
+    /**
+     * Creates a standard name for topics using a dot(".") as delimiter.
+     *
+     * @param direction Declares who the recipient of the document is.
+     * @param eddieId The ID of the eddie instance for the respective outbound connector.
+     * @param model The data model to which the document type belongs to.
+     * @param type The document type provided by the topic.
+     * @return a string with the topic name
+     */
     public static String toTopic(Direction direction, String eddieId, DataModels model, DocumentTypes type) {
         return direction.value() + "." + eddieId + "." + model.value() + "." + type.value();
     }
 
+    /**
+     * The recipient of a specific document.
+     */
     public enum Direction {
-        FW("fw"), EP("ep");
+        /**
+         * The eddie framework(fw) is the recipient.
+         */
+        FW("fw"),
+        /**
+         * The eligible party(ep) is the recipient.
+         */
+        EP("ep");
         private final String value;
 
         Direction(String value) {this.value = value;}
@@ -30,12 +52,25 @@ public class TopicStructure {
         }
     }
 
+    /**
+     * All the supported data models
+     */
     public enum DataModels {
+        /**
+         * Common Information Model version 0.82
+         */
         CIM_0_82(CIM_0_82_VALUE, CommonInformationModelVersions.V0_82),
+        /**
+         * Common Information Model version 0.91.08
+         */
         CIM_0_91_08(CIM_0_91_08_VALUE, CommonInformationModelVersions.V0_91_08),
+        /**
+         * Eddie's internal model.
+         */
         AGNOSTIC("agnostic", null);
 
         private final String value;
+        @SuppressWarnings("FieldCanBeLocal")
         @Nullable
         private final CommonInformationModelVersions version;
 
@@ -52,8 +87,16 @@ public class TopicStructure {
         public String toString() {
             return value;
         }
+
+        @Nullable
+        public CommonInformationModelVersions version() {
+            return version;
+        }
     }
 
+    /**
+     * The document types that can be consumed or produced by eddie.
+     */
     public enum DocumentTypes {
         // CIM
         TERMINATION_MD(TopicStructure.TERMINATION_MD_VALUE),

@@ -4,7 +4,6 @@ import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.TopicConfiguration;
-import energy.eddie.outbound.shared.TopicStructure;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerdeFactory;
 import energy.eddie.outbound.shared.serde.SerdeInitializationException;
@@ -92,21 +91,13 @@ public class KafkaOutboundConnector {
 
     @Bean
     public NewTopic terminationTopic(TopicConfiguration config) {
-        var topic = config.toTopic(
-                TopicStructure.Direction.FW,
-                TopicStructure.DataModels.CIM_0_82,
-                TopicStructure.DocumentTypes.TERMINATION_MD
-        );
+        var topic = config.terminationMarketDocument();
         return TopicBuilder.name(topic).build();
     }
 
     @Bean
     public NewTopic retransmissionTopic(TopicConfiguration config) {
-        var topic = config.toTopic(
-                TopicStructure.Direction.FW,
-                TopicStructure.DataModels.CIM_0_91_08,
-                TopicStructure.DocumentTypes.REDISTRIBUTION_TRANSACTION_RD
-        );
+        var topic = config.redistributionTransactionRequestDocument();
         return TopicBuilder.name(topic).build();
     }
 
