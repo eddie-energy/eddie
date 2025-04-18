@@ -1,6 +1,15 @@
-# Administrative console
+---
+prev:
+  text: "Outbound Connectors"
+  link: "./outbound-connectors/outbound-connectors.md"
+next:
+  text: "Demo Button"
+  link: "./demo-button.md"
+---
 
-The admin console allows the eligible party to manage permission via a web interface.
+# Admin Console
+
+The administrative console allows the eligible party to manage permission via a web interface.
 It will be served via `<hostname>:<eddie.management.server.port>/outbound-connectors/admin-console`.
 The default for `eddie.management.server.port` is `9090`.
 
