@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = {KafkaRetransmissionConnector.class, KafkaTestConfig.class})
+@SpringBootTest(classes = {KafkaRetransmissionConnector.class, KafkaTestConfig.class}, properties = "outbound-connector.kafka.eddie-id=eddie")
 @EnableKafka
 @EmbeddedKafka
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -46,7 +46,7 @@ class KafkaRetransmissionConnectorTest {
                                 .withEnd("2025-01-02T00:00Z")
                 );
         // When
-        kafkaTemplate.send(new ProducerRecord<>("retransmissions", "id", envelope)).get();
+        kafkaTemplate.send(new ProducerRecord<>("fw.eddie.cim_0_91_08.redistribution-transaction-rd", "id", envelope)).get();
 
         // Then
         var request = retransmissionConnector.retransmissionRequests().blockFirst();
@@ -61,7 +61,7 @@ class KafkaRetransmissionConnectorTest {
     @Test
     void testRetransmissionRequestWithInvalidFormat() throws ExecutionException, InterruptedException {
         // Given
-        stringKafkaTemplate.send(new ProducerRecord<>("retransmissions", "id", "Invalid JSON")).get();
+        stringKafkaTemplate.send(new ProducerRecord<>("fw.eddie.cim_0_91_08.redistribution-transaction-rd", "id", "Invalid JSON")).get();
         var envelope = new RTREnvelope()
                 .withMessageDocumentHeaderMetaInformationPermissionId("permissionId")
                 .withMessageDocumentHeaderMetaInformationRegionConnector("rc-id")
@@ -70,7 +70,7 @@ class KafkaRetransmissionConnectorTest {
                                 .withStart("2025-01-01T01:01Z")
                                 .withEnd("2025-01-02T00:00Z")
                 );
-        kafkaTemplate.send(new ProducerRecord<>("retransmissions", "id", envelope)).get();
+        kafkaTemplate.send(new ProducerRecord<>("fw.eddie.cim_0_91_08.redistribution-transaction-rd", "id", envelope)).get();
 
         // When
         var request = retransmissionConnector.retransmissionRequests()

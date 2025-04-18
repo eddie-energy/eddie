@@ -3,7 +3,6 @@ package energy.eddie.outbound.kafka;
 import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
-import energy.eddie.outbound.shared.Endpoints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -25,7 +24,12 @@ public class TerminationKafkaConnector implements TerminationConnector {
         return sink.asFlux();
     }
 
-    @KafkaListener(groupId = "termination-group", id = "eddie-termination-listener", topics = "${kafka.termination.topic:" + Endpoints.V0_82.TERMINATIONS + "}", containerFactory = "permissionEnvelopeListenerContainerFactory")
+    @KafkaListener(
+            groupId = "termination-group",
+            id = "eddie-termination-listener",
+            topics = "fw.${outbound-connector.kafka.eddie-id}.cim_0_82.termination-md",
+            containerFactory = "permissionEnvelopeListenerContainerFactory"
+    )
     public void process(
             @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) String key,
             @Payload PermissionEnvelope payload

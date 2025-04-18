@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = {TerminationKafkaConnector.class, KafkaTestConfig.class})
+@SpringBootTest(classes = {TerminationKafkaConnector.class, KafkaTestConfig.class}, properties = {"outbound-connector.kafka.eddie-id=eddie"})
 @EnableKafka
 @EmbeddedKafka
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -36,7 +36,7 @@ class TerminationKafkaConnectorTest {
         var pmd = new PermissionMarketDocumentComplexType().withMRID("permissionId");
         var envelope = new PermissionEnvelope().withPermissionMarketDocument(pmd);
         // When
-        kafkaTemplate.send(new ProducerRecord<>("terminations", "id", envelope)).get();
+        kafkaTemplate.send(new ProducerRecord<>("fw.eddie.cim_0_82.termination-md", "id", envelope)).get();
 
         // Then
         var pair = terminationConnector.getTerminationMessages().blockFirst();
@@ -50,8 +50,8 @@ class TerminationKafkaConnectorTest {
     @Test
     void testTerminationWithInvalidFormat() throws ExecutionException, InterruptedException {
         // Given
-        stringKafkaTemplate.send(new ProducerRecord<>("terminations", "id", "Invalid JSON")).get();
-        kafkaTemplate.send(new ProducerRecord<>("terminations", "id", new PermissionEnvelope())).get();
+        stringKafkaTemplate.send(new ProducerRecord<>("fw.eddie.cim_0_82.termination-md", "id", "Invalid JSON")).get();
+        kafkaTemplate.send(new ProducerRecord<>("fw.eddie.cim_0_82.termination-md", "id", new PermissionEnvelope())).get();
 
         // When
         var pair = terminationConnector.getTerminationMessages()

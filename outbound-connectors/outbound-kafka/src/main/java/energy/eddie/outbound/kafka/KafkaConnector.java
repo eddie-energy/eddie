@@ -11,8 +11,9 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.ap.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
-import energy.eddie.outbound.shared.Endpoints;
 import energy.eddie.outbound.shared.Headers;
+import energy.eddie.outbound.shared.TopicConfiguration;
+import energy.eddie.outbound.shared.TopicStructure;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.slf4j.Logger;
@@ -34,9 +35,11 @@ public class KafkaConnector implements
         AccountingPointEnvelopeOutboundConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final TopicConfiguration config;
 
-    public KafkaConnector(KafkaTemplate<String, Object> kafkaTemplate) {
+    public KafkaConnector(KafkaTemplate<String, Object> kafkaTemplate, TopicConfiguration config) {
         this.kafkaTemplate = kafkaTemplate;
+        this.config = config;
     }
 
     @Override
@@ -92,7 +95,11 @@ public class KafkaConnector implements
     }
 
     private void produceStatusMessage(ConnectionStatusMessage statusMessage) {
-        var toSend = new ProducerRecord<String, Object>(Endpoints.Agnostic.CONNECTION_STATUS_MESSAGE, statusMessage);
+        var toSend = new ProducerRecord<String, Object>(
+                config.toEddieProductionTopic(TopicStructure.DataModels.AGNOSTIC,
+                                              TopicStructure.DocumentTypes.CONNECTION_STATUS_MESSAGE),
+                statusMessage
+        );
         sendToKafka(toSend, "Could not produce connection status message");
         LOGGER.debug("Produced connection status {} message for permission request {}",
                      statusMessage.status(),
@@ -104,7 +111,8 @@ public class KafkaConnector implements
                                              .getMessageDocumentHeaderMetaInformation();
         var permissionId = header.getPermissionid();
         var toSend = new ProducerRecord<String, Object>(
-                Endpoints.V0_82.PERMISSION_MARKET_DOCUMENTS,
+                config.toEddieProductionTopic(TopicStructure.DataModels.CIM_0_82,
+                                              TopicStructure.DocumentTypes.PERMISSION_MD),
                 null,
                 permissionId,
                 permissionMarketDocument,
@@ -126,7 +134,8 @@ public class KafkaConnector implements
     ) {
         var info = marketDocument.getMessageDocumentHeader()
                                  .getMessageDocumentHeaderMetaInformation();
-        var toSend = new ProducerRecord<String, Object>(Endpoints.V0_82.VALIDATED_HISTORICAL_DATA,
+        var toSend = new ProducerRecord<String, Object>(config.toEddieProductionTopic(TopicStructure.DataModels.CIM_0_82,
+                                                                                      TopicStructure.DocumentTypes.VALIDATED_HISTORICAL_DATA_MD),
                                                         null,
                                                         info.getConnectionid(),
                                                         marketDocument,
@@ -145,20 +154,20 @@ public class KafkaConnector implements
     }
 
     private void produceRawDataMessage(RawDataMessage message) {
-        var toSend = new ProducerRecord<String, Object>(Endpoints.Agnostic.RAW_DATA_IN_PROPRIETARY_FORMAT,
+        var toSend = new ProducerRecord<String, Object>(config.toEddieProductionTopic(TopicStructure.DataModels.AGNOSTIC,
+                                                                                      TopicStructure.DocumentTypes.RAW_DATA_MESSAGE),
                                                         message.connectionId(),
                                                         message);
         sendToKafka(toSend, "Could not produce raw data message");
         LOGGER.debug("Produced raw data message for permission request {}", message.permissionId());
     }
 
-    private void produceAccountingPointEnvelope(
-            AccountingPointEnvelope marketDocument
-    ) {
+    private void produceAccountingPointEnvelope(AccountingPointEnvelope marketDocument) {
         var header = marketDocument.getMessageDocumentHeader()
                                    .getMessageDocumentHeaderMetaInformation();
         var toSend = new ProducerRecord<String, Object>(
-                Endpoints.V0_82.ACCOUNTING_POINT_MARKET_DOCUMENTS,
+                config.toEddieProductionTopic(TopicStructure.DataModels.CIM_0_82,
+                                              TopicStructure.DocumentTypes.ACCOUNTING_POINT_MD),
                 null,
                 header.getConnectionid(),
                 marketDocument,

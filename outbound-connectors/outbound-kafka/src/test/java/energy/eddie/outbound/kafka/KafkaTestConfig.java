@@ -2,6 +2,7 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
+import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerdeFactory;
 import energy.eddie.outbound.shared.serde.SerdeInitializationException;
@@ -41,7 +42,6 @@ public class KafkaTestConfig {
                                                                      new StringSerializer(),
                                                                      new CustomSerializer(serde)));
     }
-
 
     @Bean
     public KafkaTemplate<String, String> stringKafkaTemplate(@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") EmbeddedKafkaBroker embeddedKafka) {
@@ -83,5 +83,10 @@ public class KafkaTestConfig {
         var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, RTREnvelope>();
         listenerContainerFactory.setConsumerFactory(consumerFactory);
         return listenerContainerFactory;
+    }
+
+    @Bean
+    public TopicConfiguration topicConfiguration() {
+        return new TopicConfiguration("eddie");
     }
 }

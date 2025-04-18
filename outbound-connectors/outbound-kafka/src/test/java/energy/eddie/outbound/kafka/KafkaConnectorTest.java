@@ -55,7 +55,7 @@ class KafkaConnectorTest {
         kafkaConnector.setConnectionStatusMessageStream(Flux.just(csm));
         var consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafka);
         var consumer = new DefaultKafkaConsumerFactory<String, Object>(consumerProps).createConsumer();
-        consumer.subscribe(Collections.singleton("status-messages"));
+        consumer.subscribe(Collections.singleton("ep.eddie.agnostic.connection-status-message"));
 
         // When
         var records = KafkaTestUtils.getRecords(consumer);
@@ -83,7 +83,7 @@ class KafkaConnectorTest {
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
-        consumer.subscribe(Collections.singleton("permission-market-documents"));
+        consumer.subscribe(Collections.singleton("ep.eddie.cim_0_82.permission-md"));
 
         // When
         var records = KafkaTestUtils.getRecords(consumer);
@@ -111,7 +111,7 @@ class KafkaConnectorTest {
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
-        consumer.subscribe(Collections.singleton("validated-historical-data"));
+        consumer.subscribe(Collections.singleton("ep.eddie.cim_0_82.validated-historical-data-md"));
 
         // When
         var records = KafkaTestUtils.getRecords(consumer);
@@ -139,7 +139,7 @@ class KafkaConnectorTest {
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
-        consumer.subscribe(Collections.singleton("accounting-point-market-documents"));
+        consumer.subscribe(Collections.singleton("ep.eddie.cim_0_82.accounting-point-md"));
 
         // When
         var records = KafkaTestUtils.getRecords(consumer);
@@ -164,7 +164,7 @@ class KafkaConnectorTest {
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
-        consumer.subscribe(Collections.singleton("raw-data-in-proprietary-format"));
+        consumer.subscribe(Collections.singleton("ep.eddie.agnostic.raw-data-message"));
 
         // When
         var records = KafkaTestUtils.getRecords(consumer);
