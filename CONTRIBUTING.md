@@ -1,6 +1,5 @@
 ---
 TODO:
-  - Write and link dev button page
   - Document and link code quality standards
   - Automate formatting on push, so we do not have to document it in the PR guidelines
   - Merge in issue tracking (features, bugs) from https://github.com/eddie-energy/eddie/wiki/EDDIE-Development-&-Deployment-Strategy
@@ -57,7 +56,7 @@ You can then run the EDDIE Framework using Gradle:
 ./gradlew run-core --args=--spring.profiles.active=dev,local
 ```
 
-The EDDIE Core will run a demo page on http://localhost:8080/demo, which can be used to test the application with a configurable EDDIE button.
+The EDDIE Core will run a [demo page](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/demo-button.html) on http://localhost:8080/demo, which can be used to test the application with a configurable EDDIE button.
 
 The repository includes IntelliJ run configurations for both the EDDIE Core and AIIDA.
 
