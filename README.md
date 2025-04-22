@@ -16,6 +16,8 @@ It provides different entry points for:
 - [Integrating EDDIE into your application](https://eddie-web.projekte.fh-hagenberg.at/framework/2-integrating/integrating.html)
 - [Extending or contributing to this repository](https://eddie-web.projekte.fh-hagenberg.at/framework/3-extending/tech-stack.html)
 
+If you want to contribute as a developer, please take a look at our [contributing guide](CONTRIBUTING.md).
+
 ## A quick overview of how EDDIE works
 
 ![Simple diagram showing how the EDDIE Framework works](/docs/images/eddie-simple.svg)
@@ -85,8 +87,8 @@ The following instructions can be used to perform a local test run with compilin
 Although the Docker Compose file and local configuration should run out of the box, EDDIE requires further configuration.
 Please refer to the [Configuration](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/OPERATION.html#configuration) of the operation manual.
 
-## Contributing
+## References
 
 Development & Deployment Strategy can be found [here](https://github.com/eddie-energy/eddie/wiki/EDDIE-Development-&-Deployment-Strategy).
 
-To get started with the development process, see the [development guide](docs/3-extending/tech-stack.md).
+A list of languages, frameworks, and tools used in the project can be found [here](docs/3-extending/tech-stack.md).

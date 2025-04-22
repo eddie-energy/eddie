@@ -7,12 +7,18 @@ on:
       - synchronize
     paths-ignore:
       - "docs/**"
+      - ".idea/**"
+      - ".sonarlint/**"
+      - ".run/**"
       - "**.md"
   push:
     branches:
       - main
     paths-ignore:
       - "docs/**"
+      - ".idea/**"
+      - ".sonarlint/**"
+      - ".run/**"
       - "**.md"
 
 jobs:

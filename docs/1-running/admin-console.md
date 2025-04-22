@@ -1,6 +1,15 @@
-# Administrative console
+---
+prev:
+  text: "Outbound Connectors"
+  link: "./outbound-connectors/outbound-connectors.md"
+next:
+  text: "Demo Button"
+  link: "./demo-button.md"
+---
 
-The admin console allows the eligible party to manage permission via a web interface.
+# Admin Console
+
+The administrative console allows the eligible party to manage permission via a web interface.
 It will be served via `<hostname>:<eddie.management.server.port>/outbound-connectors/admin-console`.
 The default for `eddie.management.server.port` is `9090`.
 
@@ -10,38 +19,24 @@ The username for the admin user and a ***BCrypt encrypted*** password can be con
 
 ## Configuration of the Admin Console
 
-| Configuration values                                     | Description                                                                                                                   |
-|----------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
-| `outbound-connector.admin.console.enabled`               | `true` or `false`, enables the admin console. Default is `false`                                                              |
-| `outbound-connector.admin.console.login.enabled`         | `true` or `false`, enables basic auth authentication. Default is `false`                                                      |
-| `outbound-connector.admin.console.login.username`        | Only required if login is enabled. Username for the admin user.                                                               |
-| `outbound-connector.admin.console.login.encodedPassword` | Only required if login is enabled. Password for the admin user ***encrypted using BCrypt***.                                  |
+| Configuration values                                     | Description                                                                                  |
+|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| `outbound-connector.admin.console.enabled`               | `true` or `false`, enables the admin console. Default is `false`                             |
+| `outbound-connector.admin.console.login.enabled`         | `true` or `false`, enables basic auth authentication. Default is `false`                     |
+| `outbound-connector.admin.console.login.username`        | Only required if login is enabled. Username for the admin user.                              |
+| `outbound-connector.admin.console.login.encodedPassword` | Only required if login is enabled. Password for the admin user **_encrypted using BCrypt_**. |
 
 `eddie.public.url` and `eddie.management.url` are also required for the admin console to work as expected.
 
-### .properties file
+The region connector can be configured using Spring properties or environment variables.
+When using environment variables, the configuration values need to be converted in the following way:
 
-Example configuration for an `application.properties` file:
+- Replace all non-alphanumeric characters with an underscore (`_`)
+- Optionally convert all letters to upper case
 
-```properties
+```properties :spring
 outbound-connector.admin.console.enabled=true
 outbound-connector.admin.console.login.enabled=true
 outbound-connector.admin.console.login.username=admin
 outbound-connector.admin.console.login.encodedPassword=$2a$10$qYTmwhGa3dd7Sl1CdXKKHOfmf0lNXL3L2k4CVhhm3CfY131hrcEyS # encrypted value of 'password'
-```
-
-### Environment variables
-
-When using environment variables, the configuration values need to be converted in the following way:
-
-* Replace all non-alphanumeric characters with an underscore (`_`)
-* Optionally convert all letters to upper case
-
-Example configuration for dotenv file:
-
-```dotenv
-OUTBOUND_CONNECTOR_ADMIN_CONSOLE_ENABLED=true
-OUTBOUND_CONNECTOR_ADMIN_CONSOLE_LOGIN_ENABLED=true
-OUTBOUND_CONNECTOR_ADMIN_CONSOLE_LOGIN_USERNAME=admin
-OUTBOUND_CONNECTOR_ADMIN_CONSOLE_LOGIN_ENCODEDPASSWORD='$2a$10$qYTmwhGa3dd7Sl1CdXKKHOfmf0lNXL3L2k4CVhhm3CfY131hrcEyS' # encrypted value of 'password'
 ```

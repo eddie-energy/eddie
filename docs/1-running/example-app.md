@@ -1,4 +1,10 @@
-# Example app
+---
+prev:
+  text: "Demo Button"
+  link: "./demo-button.md"
+---
+
+# Example App
 
 A simple demo app to check and try EDDIE's functionality.
 
