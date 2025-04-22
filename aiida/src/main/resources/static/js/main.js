@@ -786,158 +786,115 @@ function closeEditDataSourceDialog() {
 }
 
 function createModbusFields(dataSourceFields) {
-    //const dataSourceFields = document.getElementById("data-source-fields");
-    dataSourceFields.innerHTML = "";
+  dataSourceFields.innerHTML = `
+    <sl-input
+      id="modbus-ip"
+      name="modbusIp"
+      label="Local IP Address"
+      placeholder="e.g. 192.168.x.x / localhost"
+      required
+      help-text="Enter a private local IP address (e.g. 192.168.x.x)"
+    ></sl-input>
+    <br />
+    <sl-select
+      id="modbus-vendor-list"
+      name="modbusVendor"
+      label="Vendor"
+      placeholder="Select a vendor..."
+      required
+    ></sl-select>
+    <br />
+    <sl-select
+      id="modbus-model-list"
+      name="modbusModel"
+      label="Model"
+      placeholder="Select a model..."
+      required
+      disabled
+    ></sl-select>
+    <br />
+    <sl-select
+      id="modbus-device-list"
+      name="modbusDevice"
+      label="Device"
+      placeholder="Select a device..."
+      required
+      disabled
+    ></sl-select>
+  `;
 
-    const ipInput = document.createElement("sl-input");
-    ipInput.id = "modbus-ip";
-    ipInput.name = "modbusIp";
-    ipInput.label = "Local IP Address";
-    ipInput.placeholder = "e.g. 192.168.x.x / localhost";
-    ipInput.required = true;
-    ipInput.helpText = "Enter a private local IP address (e.g. 192.168.x.x)";
+  const ipInput = document.getElementById("modbus-ip");
+  const vendorSelect = document.getElementById("modbus-vendor-list");
+  const modelSelect = document.getElementById("modbus-model-list");
+  const deviceSelect = document.getElementById("modbus-device-list");
 
-    function isValidIPv4(value) {
-        if (value === 'localhost') return true;
-        const ipRegex = /^((25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)(\.)){3}(25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)$/;
-        return ipRegex.test(value);
+  ipInput.addEventListener("sl-change", (event) => {
+    if (!isValidIPv4(event.target.value)) {
+      ipInput.setCustomValidity("Please enter a valid IP address.");
+    } else {
+      ipInput.setCustomValidity("");
     }
+    ipInput.reportValidity();
+  });
 
-    // Optional: Validation helper on blur
-    ipInput.addEventListener("sl-blur", (event) => {
-        if (!isValidIPv4(event.target.value)) {
-            ipInput.setCustomValidity("Please enter a valid IP address.");
-        } else {
-            ipInput.setCustomValidity("");
+  function isValidIPv4(value) {
+    if (value === "localhost") return true;
+    const ipRegex = /^((25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)(\.)){3}(25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)$/;
+    return ipRegex.test(value);
+  }
+
+  function fetchAndPopulateSelect(url, selectElement, onChangeCallback) {
+    fetch(url)
+      .then((res) => res.json())
+      .then((items) => {
+        selectElement.innerHTML = "";
+        selectElement.disabled = false;
+        items.forEach((item) => {
+          const option = document.createElement("sl-option");
+          option.value = item.id;
+          option.textContent = item.name;
+          selectElement.appendChild(option);
+        });
+
+        if (onChangeCallback) {
+          selectElement.addEventListener("sl-change", (event) => {
+            const selectedValue = event.target.value;
+            onChangeCallback(selectedValue);
+          });
         }
-        ipInput.reportValidity();
-    });
+      })
+      .catch((error) => {
+        console.error(`Failed to fetch data from ${url}:`, error);
+      });
+  }
 
-    dataSourceFields.appendChild(ipInput);
-    dataSourceFields.appendChild(document.createElement("br"));
+  function handleFetchVendors() {
+    fetchAndPopulateSelect(
+      "/datasources/modbus/vendors",
+      vendorSelect,
+      (vendorId) => handleFetchModels(vendorId)
+    );
+  }
 
-    // Vendor select
-    const vendorSelect = document.createElement("sl-select");
-    vendorSelect.id = "modbus-vendor-list";
-    vendorSelect.name = "modbusVendor";
-    vendorSelect.label = "Vendor";
-    vendorSelect.placeholder = "Select a vendor...";
-    vendorSelect.required = true;
+  function handleFetchModels(vendorId) {
+    fetchAndPopulateSelect(
+      `/datasources/modbus/vendors/${vendorId}/models`,
+      modelSelect,
+      (modelId) => handleFetchDevices(modelId)
+    );
+  }
 
-    dataSourceFields.appendChild(vendorSelect); // Append BEFORE working with it
-    dataSourceFields.appendChild(document.createElement("br"));
+  function handleFetchDevices(modelId) {
+    fetchAndPopulateSelect(
+      `/datasources/modbus/models/${modelId}/devices`,
+      deviceSelect,
+      null
+    );
+  }
 
-    // Model select
-    const modelSelect = document.createElement("sl-select");
-    modelSelect.id = "modbus-model-list";
-    modelSelect.name = "modbusModel";
-    modelSelect.label = "Model";
-    modelSelect.placeholder = "Select a model...";
-    modelSelect.required = true;
-    modelSelect.disabled = true;
-
-    dataSourceFields.appendChild(modelSelect);
-    dataSourceFields.appendChild(document.createElement("br"));
-
-    // Model select
-    const deviceSelect = document.createElement("sl-select");
-    deviceSelect.id = "modbus-device-list";
-    deviceSelect.name = "modbusDevice";
-    deviceSelect.label = "Device";
-    deviceSelect.placeholder = "Select a device...";
-    deviceSelect.required = true;
-    deviceSelect.disabled = true;
-
-    dataSourceFields.appendChild(deviceSelect);
-
-    handleFetchVendors();
-
-    function handleFetchVendors() {
-        fetch("/datasources/modbus/vendors")
-            .then((res) => res.json())
-            .then((vendors) => {
-                vendors.forEach((vendor) => {
-                    const option = document.createElement("sl-option");
-                    option.value = vendor.id;
-                    option.textContent = vendor.name;
-                    vendorSelect.appendChild(option);
-                });
-
-                // 💡 Wait for Shoelace to hydrate the element
-                vendorSelect.updateComplete.then(() => {
-                    vendorSelect.addEventListener("sl-change", (event) => {
-                        const selectedValue = event.target.value;
-                        const selectedOption = vendorSelect.selectedOptions[0];
-                        const vendorName = selectedOption?.textContent ?? "(none)";
-
-                        console.log("🔥 Selected via sl-change:", selectedValue, vendorName);
-                        handleFetchModels(selectedValue);
-                    });
-                });
-            })
-            .catch((error) => {
-                console.error("Failed to fetch vendors:", error);
-            });
-    }
-
-    function handleFetchModels(vendorId) {
-        fetch(`/datasources/modbus/vendors/${vendorId}/models`)
-            .then((res) => res.json())
-            .then((models) => {
-                modelSelect.disabled = false;
-                //modelSelect.innerHTML = "";
-                models.forEach((model) => {
-                    const option = document.createElement("sl-option");
-                    option.value = model.id;
-                    option.textContent = model.name;
-                    modelSelect.appendChild(option);
-                });
-
-                // 💡 Wait for Shoelace to hydrate the element
-                modelSelect.updateComplete.then(() => {
-                    modelSelect.addEventListener("sl-change", (event) => {
-                        const selectedValue = event.target.value;
-                        const selectedOption = modelSelect.selectedOptions[0];
-                        const modelName = selectedOption?.textContent ?? "(none)";
-
-                        console.log("🔥 Selected via sl-change:", selectedValue, modelName);
-                        handleFetchDevices(selectedValue);
-                    });
-                });
-            })
-            .catch((error) => {
-                console.error("Failed to fetch models:", error);
-            });
-    }
-
-    function handleFetchDevices(modelId) {
-        fetch(`/datasources/modbus/models/${modelId}/devices`)
-            .then((res) => res.json())
-            .then((devices) => {
-                deviceSelect.disabled = false;
-                devices.forEach((device) => {
-                    const option = document.createElement("sl-option");
-                    option.value = device.id;
-                    option.textContent = device.name;
-                    deviceSelect.appendChild(option);
-                });
-
-                // 💡 Wait for Shoelace to hydrate the element
-                deviceSelect.updateComplete.then(() => {
-                    deviceSelect.addEventListener("sl-change", (event) => {
-                        const selectedValue = event.target.value;
-                        const selectedOption = deviceSelect.selectedOptions[0];
-                        const deviceName = selectedOption?.textContent ?? "(none)";
-
-                        console.log("🔥 Selected via sl-change:", selectedValue, deviceName);
-                    });
-                });
-            })
-            .catch((error) => {
-                console.error("Failed to fetch devices:", error);
-            });
-    }
+  handleFetchVendors();
 }
+
 
 document
   .getElementById("add-data-source-form")
@@ -980,15 +937,21 @@ document
       },
       body: JSON.stringify(newDataSource),
     })
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to add data source");
-        return response;
+      .then(async (response) => {
+          if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(`Failed to add data source: [${response.status}] ${errorMessage}`);
+          }
+          return response;
       })
       .then(() => {
         closeAddDataSourceDialog();
         renderDataSources();
       })
-      .catch((error) => console.error("Failed to add data source:", error));
+      .catch((error) => {
+        console.error("Failed to add data source:", error);
+        alert(`Failed to add data source: ${error.message}`);
+      });
   });
 
 document
@@ -1029,8 +992,11 @@ document
       },
       body: JSON.stringify(updatedDataSource),
     })
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to update data source");
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          throw new Error(`Failed to update data source: [${response.status}] ${errorMessage}`);
+        }
       })
       .then(() => {
         closeEditDataSourceDialog();

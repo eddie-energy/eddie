@@ -37,28 +37,20 @@ class ModbusSourceTest {
 
         ModbusSource source = objectMapper.readValue(json, ModbusSource.class);
 
-        assertEquals(SourceCategory.INVERTER, source.getCategory());
-        assertEquals("source-1", source.getId());
-        assertNotNull(source.getDatapoints());
-        assertEquals(1, source.getDatapoints().size());
-        ModbusDataPoint dp = source.getDatapoints().get(0);
-        assertEquals("voltage", dp.getId());
-        assertEquals(100, dp.getRegister());
-        assertEquals(RegisterType.HOLDING, dp.getRegisterType());
-        assertEquals("int16", dp.getValueType());
-        assertEquals(1, dp.getLength());
-        assertEquals(Endian.BIG, dp.getEndian());
-        assertFalse(dp.isVirtual());
-        assertEquals(Access.READ, dp.getAccess());
-    }
+        assertEquals(SourceCategory.INVERTER, source.category());
+        assertEquals("source-1", source.id());
+        assertNotNull(source.dataPoints());
+        assertEquals(1, source.dataPoints().size());
 
-    @Test
-    void shouldSetAndGetId() {
-        ModbusSource source = new ModbusSource(SourceCategory.PV, "pv-1", List.of());
-        assertEquals("pv-1", source.getId());
-
-        source.setId("pv-2");
-        assertEquals("pv-2", source.getId());
+        ModbusDataPoint dp = source.dataPoints().getFirst();
+        assertEquals("voltage", dp.id());
+        assertEquals(100, dp.register());
+        assertEquals(RegisterType.HOLDING, dp.registerType());
+        assertEquals("int16", dp.valueType());
+        assertEquals(1, dp.getLength()); // still method
+        assertEquals(Endian.BIG, dp.endian());
+        assertFalse(dp.virtual());
+        assertEquals(Access.READ, dp.access());
     }
 
     @Test
@@ -79,8 +71,9 @@ class ModbusSourceTest {
 
         ModbusSource source = new ModbusSource(SourceCategory.BATTERY, "battery-1", List.of(dp));
 
-        assertEquals(SourceCategory.BATTERY, source.getCategory());
-        assertEquals(1, source.getDatapoints().size());
-        assertEquals("power", source.getDatapoints().get(0).getId());
+        assertEquals(SourceCategory.BATTERY, source.category());
+        assertEquals("battery-1", source.id());
+        assertEquals(1, source.dataPoints().size());
+        assertEquals("power", source.dataPoints().getFirst().id());
     }
 }

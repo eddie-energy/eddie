@@ -117,7 +117,7 @@ class DataSourceTest {
 
         DataSource merged = original.mergeWithDto(updatedDto, ID);
         assertInstanceOf(ModbusDataSource.class, merged);
-        assertEquals("192.168.1.200", ((ModbusDataSource) merged).getModbusIp());
+        assertEquals("192.168.1.200", ((ModbusDataSource) merged).modbusIp());
     }
 
     @Test
@@ -142,7 +142,7 @@ class DataSourceTest {
         // No exception should be thrown because original has a valid IP
         DataSource merged = original.mergeWithDto(updatedDto, ID);
         assertInstanceOf(ModbusDataSource.class, merged);
-        assertEquals("192.168.1.100", ((ModbusDataSource) merged).getModbusIp());
+        assertEquals("192.168.1.100", ((ModbusDataSource) merged).modbusIp());
     }
 
     @Test

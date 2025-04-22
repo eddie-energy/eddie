@@ -102,7 +102,7 @@ class ModbusTcpDataSourceAdapterTest {
 
                     assertThat(values).hasSize(21);
 
-                    assertThat(values).extracting(AiidaRecordValue::getTag, AiidaRecordValue::value).containsExactlyInAnyOrder(
+                    assertThat(values).extracting(AiidaRecordValue::dataPointKey, AiidaRecordValue::value).containsExactlyInAnyOrder(
                             tuple("inverter-2::status", "UNKNOWN"),
                             tuple("inverter-1::status", "UNKNOWN"),
                             tuple("inverter-1::firmware_version", "123"),
@@ -132,7 +132,7 @@ class ModbusTcpDataSourceAdapterTest {
     }
 
     @Test
-    void testCloseDisposesResources() throws Exception {
+    void testCloseDisposesResources() {
         // Spy on an instance, bypassing real TCP logic
         ModbusTcpClient spyClient = Mockito.mock(ModbusTcpClient.class);
 

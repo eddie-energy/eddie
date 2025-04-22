@@ -2,6 +2,7 @@ package energy.eddie.aiida.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
+import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
@@ -16,6 +17,7 @@ import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 
 import java.util.List;
@@ -104,7 +106,10 @@ class DataSourceServiceTest {
 
     @Test
     void shouldAddModbusDataSource() throws InvalidUserException {
-        try (MockedStatic<ModbusDeviceService> mockedStatic = mockStatic(ModbusDeviceService.class)) {
+        try (
+                MockedStatic<ModbusDeviceService> mockedStatic = mockStatic(ModbusDeviceService.class);
+                MockedConstruction<ModbusTcpDataSourceAdapter> ignored = mockConstruction(ModbusTcpDataSourceAdapter.class)
+        ) {
             mockedStatic.when(() -> ModbusDeviceService.loadConfig(any()))
                     .thenReturn(ModbusDeviceTestHelper.setupModbusDevice());
             when(authService.getCurrentUserId()).thenReturn(userId);
@@ -135,7 +140,6 @@ class DataSourceServiceTest {
         }
     }
 
-
     @Test
     void shouldNotAddNewDataSource() throws InvalidUserException {
         when(authService.getCurrentUserId()).thenReturn(userId);
@@ -158,7 +162,6 @@ class DataSourceServiceTest {
         verify(repository, times(1)).deleteById(DATA_SOURCE_ID);
     }
 
-
     @Test
     void shouldUpdateDataSource() throws InvalidUserException {
         var dataSource = createNewDataSource(DATA_SOURCE_ID, DataSourceType.SMART_METER_ADAPTER);
@@ -177,7 +180,6 @@ class DataSourceServiceTest {
         assertEquals("New Name", savedDataSource.name());
         assertFalse(savedDataSource.enabled());
     }
-
 
     @Test
     void shouldAddDataSourcesOnStartDataSources() {

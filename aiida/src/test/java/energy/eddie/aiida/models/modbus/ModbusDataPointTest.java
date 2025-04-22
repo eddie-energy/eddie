@@ -60,28 +60,23 @@ class ModbusDataPointTest {
     }
 
     @Test
-    void testSettersAndGetters() {
+    void testGetters() {
         ModbusDataPoint dp = new ModbusDataPoint(
-                "dp", 123, RegisterType.HOLDING, 0, "int16",
-                Endian.LITTLE, true, List.of("a", "b"), "x*2", Map.of("on", "1"), Access.WRITE
+                "dp", 123, RegisterType.HOLDING, 3, "int16",
+                Endian.BIG, true, List.of("new"), "x*2", Map.of("on", "1"), Access.WRITE
         );
 
-        dp.setId("updatedId");
-        dp.setLength(3);
-        dp.setEndian(Endian.BIG);
-        dp.setSource(List.of("new"));
-
-        assertThat(dp.getId()).isEqualTo("updatedId");
+        assertThat(dp.id()).isEqualTo("dp");
+        assertThat(dp.register()).isEqualTo(123);
         assertThat(dp.getLength()).isEqualTo(3);
-        assertThat(dp.getRegister()).isEqualTo(123);
-        assertThat(dp.getRegisterType()).isEqualTo(RegisterType.HOLDING);
-        assertThat(dp.getValueType()).isEqualTo("int16");
-        assertThat(dp.getEndian()).isEqualTo(Endian.BIG);
-        assertThat(dp.isVirtual()).isTrue();
-        assertThat(dp.getSource()).containsExactly("new");
-        assertThat(dp.getTransform()).isEqualTo("x*2");
-        assertThat(dp.getTranslations()).containsEntry("on", "1");
-        assertThat(dp.getAccess()).isEqualTo(Access.WRITE);
+        assertThat(dp.registerType()).isEqualTo(RegisterType.HOLDING);
+        assertThat(dp.valueType()).isEqualTo("int16");
+        assertThat(dp.endian()).isEqualTo(Endian.BIG);
+        assertThat(dp.virtual()).isTrue();
+        assertThat(dp.source()).containsExactly("new");
+        assertThat(dp.transform()).isEqualTo("x*2");
+        assertThat(dp.translations()).containsEntry("on", "1");
+        assertThat(dp.access()).isEqualTo(Access.WRITE);
     }
 
     private ModbusDataPoint createDataPoint(String id, String valueType) {

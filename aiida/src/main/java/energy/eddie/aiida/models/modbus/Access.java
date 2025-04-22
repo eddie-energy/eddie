@@ -2,6 +2,8 @@ package energy.eddie.aiida.models.modbus;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
+import java.util.Locale;
+
 public enum Access {
     READ,
     WRITE,
@@ -11,7 +13,7 @@ public enum Access {
     @JsonCreator
     public static Access fromString(String value) {
         try {
-            return Access.valueOf(value.toUpperCase());
+            return Access.valueOf(value.toUpperCase(Locale.ROOT));
         } catch (Exception e) {
             return UNKNOWN;
         }

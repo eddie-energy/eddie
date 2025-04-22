@@ -25,29 +25,16 @@ class ModbusDeviceTest {
 
         ModbusDevice device = new ModbusDevice("dev1", "Main Device", 502, 1, intervals, sources);
 
-        assertEquals("dev1", device.getId());
-        assertEquals("Main Device", device.getName());
-        assertEquals(502, device.getPort());
-        assertEquals(1, device.getUnitId());
-        assertSame(intervals, device.getIntervals());
-        assertSame(sources, device.getSources());
-        assertEquals(1000L, device.getIntervals().read().defaultInterval());
-        assertEquals(500L, device.getIntervals().read().minInterval());
-        assertEquals("source1", device.getSources().get(0).getId());
-        assertEquals(SourceCategory.INVERTER, device.getSources().get(0).getCategory());
-    }
-
-    @Test
-    void testSetters() {
-        IntervalConfig intervalConfig = new IntervalConfig(1000L, 500L);
-        Intervals intervals = new Intervals(intervalConfig);
-        ModbusDevice device = new ModbusDevice("dev1", "Main Device", 502, 1, intervals, Collections.emptyList());
-
-        device.setId("dev2");
-        device.setName("Updated Device");
-
-        assertEquals("dev2", device.getId());
-        assertEquals("Updated Device", device.getName());
+        assertEquals("dev1", device.id());
+        assertEquals("Main Device", device.name());
+        assertEquals(502, device.port());
+        assertEquals(1, device.unitId());
+        assertSame(intervals, device.intervals());
+        assertSame(sources, device.sources());
+        assertEquals(1000L, device.intervals().read().defaultInterval());
+        assertEquals(500L, device.intervals().read().minInterval());
+        assertEquals("source1", device.sources().getFirst().id());
+        assertEquals(SourceCategory.INVERTER, device.sources().getFirst().category());
     }
 
     @Test
@@ -58,9 +45,9 @@ class ModbusDeviceTest {
         ModbusDevice device = new ModbusDevice("id", "name", 1234, 2, intervals, sources);
 
         // These final fields should remain unchanged
-        assertEquals(1234, device.getPort());
-        assertEquals(2, device.getUnitId());
-        assertSame(intervals, device.getIntervals());
-        assertSame(sources, device.getSources());
+        assertEquals(1234, device.port());
+        assertEquals(2, device.unitId());
+        assertSame(intervals, device.intervals());
+        assertSame(sources, device.sources());
     }
 }

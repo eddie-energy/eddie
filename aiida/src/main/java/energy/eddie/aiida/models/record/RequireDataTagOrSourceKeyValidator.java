@@ -9,7 +9,7 @@ public class RequireDataTagOrSourceKeyValidator implements ConstraintValidator<R
         if (aiidaRecordValue == null) return true;
 
         boolean dataTagPresent = aiidaRecordValue.dataTag() != null;
-        boolean sourceKeyPresent = aiidaRecordValue.getSourceKey() != null;
+        boolean sourceKeyPresent = aiidaRecordValue.sourceKey() != null;
 
         return dataTagPresent ^ sourceKeyPresent; // true if exactly one is true
     }

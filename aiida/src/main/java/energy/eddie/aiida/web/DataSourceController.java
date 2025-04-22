@@ -4,6 +4,7 @@ import energy.eddie.aiida.dtos.AiidaAssetDto;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceTypeDto;
 import energy.eddie.aiida.errors.InvalidUserException;
+import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.services.DataSourceService;
@@ -95,7 +96,7 @@ public class DataSourceController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> addDataSource(@RequestBody DataSourceDto dataSource) throws InvalidUserException {
+    public ResponseEntity<Void> addDataSource(@RequestBody DataSourceDto dataSource) throws InvalidUserException, ModbusConnectionException {
         LOGGER.info("Adding new datasource");
 
         if (dataSource.name() == null || dataSource.name().isEmpty()) {
@@ -138,7 +139,7 @@ public class DataSourceController {
     public ResponseEntity<Void> updateDataSource(
             @PathVariable("id") UUID dataSourceId,
             @RequestBody DataSourceDto dataSource
-    ) throws InvalidUserException {
+    ) throws InvalidUserException, ModbusConnectionException {
         LOGGER.info("Updating datasource with ID: {} - {}", dataSourceId, dataSource);
 
         service.updateDataSource(dataSource);

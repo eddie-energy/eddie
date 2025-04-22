@@ -1,8 +1,8 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.models.modbus.Device;
-import energy.eddie.aiida.models.modbus.Model;
-import energy.eddie.aiida.models.modbus.Vendor;
+import energy.eddie.aiida.models.modbus.ModbusModel;
+import energy.eddie.aiida.models.modbus.ModbusVendor;
 import energy.eddie.aiida.services.ModbusDeviceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -36,11 +36,11 @@ public class ModbusDeviceController {
             operationId = "getAllModbusVendors", tags = {"datasource"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Vendor.class))))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ModbusVendor.class))))
     })
     @GetMapping(path = "/vendors", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Vendor>> getAllModbusVendors() {
-        List<Vendor> vendors = service.getVendors();
+    public ResponseEntity<List<ModbusVendor>> getAllModbusVendors() {
+        List<ModbusVendor> vendors = service.vendors();
 
         if (vendors == null || vendors.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vendors found");
@@ -53,11 +53,11 @@ public class ModbusDeviceController {
             operationId = "getModelsByVendor", tags = {"datasource"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Model.class))))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ModbusModel.class))))
     })
     @GetMapping(path = "/vendors/{vendorId}/models", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Model>> getModelsByVendor(@PathVariable String vendorId) {
-        var models = service.getModels(vendorId);
+    public ResponseEntity<List<ModbusModel>> getModelsByVendor(@PathVariable String vendorId) {
+        var models = service.models(vendorId);
 
         if (models == null || models.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No models found");
@@ -74,7 +74,7 @@ public class ModbusDeviceController {
     })
     @GetMapping(path = "/models/{modelId}/devices", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Device>> getDevicesByModel(@PathVariable String modelId) {
-        var devices = service.getDevices(modelId);
+        var devices = service.devices(modelId);
 
         if (devices == null || devices.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No devices found");

@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import org.springframework.lang.Nullable;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Entity
@@ -90,19 +89,7 @@ public abstract class DataSource {
 
 
     public DataSource mergeWithDto(DataSourceDto dto, UUID userId) {
-        if (dto.dataSourceType().equals(DataSourceType.MODBUS.identifier())) {
-            String updatedIp = Optional.ofNullable(dto.modbusSettings())
-                    .map(DataSourceModbusDto::modbusIp)
-                    .orElse(((ModbusDataSource) this).getModbusIp());
-
-            if (updatedIp == null) {
-                throw new IllegalArgumentException("Modbus IP is required and must not be null");
-            }
-
-            return createFromDto(dto, userId, new DataSourceModbusDto(updatedIp, ((ModbusDataSource) this).getModbusVendor(), ((ModbusDataSource) this).getModbusModel(), ((ModbusDataSource) this).getModbusDevice()));
-        } else {
-            return createFromDto(dto, userId, new DataSourceMqttDto());
-        }
+        return createFromDto(dto, userId, new DataSourceMqttDto());
     }
 
     public UUID id() {

@@ -1,8 +1,8 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.models.modbus.Device;
-import energy.eddie.aiida.models.modbus.Model;
-import energy.eddie.aiida.models.modbus.Vendor;
+import energy.eddie.aiida.models.modbus.ModbusModel;
+import energy.eddie.aiida.models.modbus.ModbusVendor;
 import energy.eddie.aiida.services.ModbusDeviceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,10 +29,10 @@ class ModbusDeviceControllerTest {
 
     @Test
     void getAllModbusVendors_shouldReturnList() {
-        List<Vendor> vendors = List.of(new Vendor(UUID.randomUUID().toString(), "TestVendor"));
-        when(mockService.getVendors()).thenReturn(vendors);
+        List<ModbusVendor> vendors = List.of(new ModbusVendor(UUID.randomUUID().toString(), "TestVendor"));
+        when(mockService.vendors()).thenReturn(vendors);
 
-        ResponseEntity<List<Vendor>> response = controller.getAllModbusVendors();
+        ResponseEntity<List<ModbusVendor>> response = controller.getAllModbusVendors();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(vendors, response.getBody());
@@ -40,7 +40,7 @@ class ModbusDeviceControllerTest {
 
     @Test
     void getAllModbusVendors_shouldThrowIfEmpty() {
-        when(mockService.getVendors()).thenReturn(List.of());
+        when(mockService.vendors()).thenReturn(List.of());
 
         assertThrows(ResponseStatusException.class, controller::getAllModbusVendors);
     }
@@ -48,17 +48,17 @@ class ModbusDeviceControllerTest {
     @Test
     void getModelsByVendor_shouldReturnList() {
         String vendorId = UUID.randomUUID().toString();
-        List<Model> models = List.of(new Model(UUID.randomUUID().toString(), "Model A", vendorId));
-        when(mockService.getModels(vendorId)).thenReturn(models);
+        List<ModbusModel> modbusModels = List.of(new ModbusModel(UUID.randomUUID().toString(), "Model A", vendorId));
+        when(mockService.models(vendorId)).thenReturn(modbusModels);
 
-        ResponseEntity<List<Model>> response = controller.getModelsByVendor(vendorId);
+        ResponseEntity<List<ModbusModel>> response = controller.getModelsByVendor(vendorId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(models, response.getBody());
+        assertEquals(modbusModels, response.getBody());
     }
 
     @Test
     void getModelsByVendor_shouldThrowIfEmpty() {
-        when(mockService.getModels(anyString())).thenReturn(List.of());
+        when(mockService.models(anyString())).thenReturn(List.of());
         assertThrows(ResponseStatusException.class, () -> controller.getModelsByVendor("invalid-vendor-id"));
     }
 
@@ -66,7 +66,7 @@ class ModbusDeviceControllerTest {
     void getDevicesByModel_shouldReturnList() {
         String modelId = UUID.randomUUID().toString();
         List<Device> devices = List.of(new Device(UUID.randomUUID().toString(), "Device A", modelId));
-        when(mockService.getDevices(modelId)).thenReturn(devices);
+        when(mockService.devices(modelId)).thenReturn(devices);
 
         ResponseEntity<List<Device>> response = controller.getDevicesByModel(modelId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -75,7 +75,7 @@ class ModbusDeviceControllerTest {
 
     @Test
     void getDevicesByModel_shouldThrowIfEmpty() {
-        when(mockService.getDevices(anyString())).thenReturn(List.of());
+        when(mockService.devices(anyString())).thenReturn(List.of());
         assertThrows(ResponseStatusException.class, () -> controller.getDevicesByModel("invalid-model-id"));
     }
 }

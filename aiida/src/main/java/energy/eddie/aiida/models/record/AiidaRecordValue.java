@@ -130,7 +130,7 @@ public class AiidaRecordValue {
     }
 
     @Nullable
-    public String getSourceKey() { return sourceKey; }
+    public String sourceKey() { return sourceKey; }
 
     /*
      * Returns either the dataTag or the sourceKey
@@ -138,7 +138,7 @@ public class AiidaRecordValue {
      * is fine here as we don't expect both null at the same time
      * ensured through @RequireDataTagOrSourceKey
      */
-    public String getTag() {
+    public String dataPointKey() {
         if (dataTag != null) {
             return dataTag.toString();
         }

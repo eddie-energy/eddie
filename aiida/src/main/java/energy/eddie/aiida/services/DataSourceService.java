@@ -8,6 +8,7 @@ import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
+import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.models.datasource.*;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -79,8 +80,8 @@ public class DataSourceService {
                         modbusSettings.modbusDevice()
                 );
                 var dataSource = DataSource.createFromDto(dto, currentUserId, modbusSettingsDto);
-                repository.save(dataSource);
                 startDataSource(dataSource);
+                repository.save(dataSource);
             }
         } else {
             var mqttSettingsDto = new DataSourceMqttDto(
@@ -105,7 +106,7 @@ public class DataSourceService {
         repository.deleteById(dataSourceId);
     }
 
-    public DataSource updateDataSource(DataSourceDto dto) throws InvalidUserException, EntityNotFoundException {
+    public DataSource updateDataSource(DataSourceDto dto) throws InvalidUserException, EntityNotFoundException, ModbusConnectionException {
         var currentDataSource = repository.findById(dto.id())
                                           .orElseThrow(() -> new EntityNotFoundException(
                                                   "Datasource not found with ID: " + dto.id()
@@ -148,7 +149,7 @@ public class DataSourceService {
                                  .findFirst();
     }
 
-    private void startDataSource(DataSource dataSource) {
+    private void startDataSource(DataSource dataSource) throws ModbusConnectionException {
         var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper);
         dataSourceAdapters.add(dataSourceAdapter);
 
