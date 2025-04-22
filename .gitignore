@@ -140,3 +140,5 @@ application-local.properties
 
 # IntelliJ HTTP Client environment secrets
 *.private.env.json
+
+**/docker-compose.override.yml

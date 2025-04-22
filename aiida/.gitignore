@@ -109,5 +109,3 @@ build
 
 application-local.properties
 application-local.yml
-
-aiida/docker/docker-compose.override.yml
