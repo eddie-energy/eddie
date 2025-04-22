@@ -2,6 +2,7 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerdeFactory;
 import energy.eddie.outbound.shared.serde.SerdeInitializationException;
@@ -23,6 +24,8 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import static energy.eddie.outbound.shared.Endpoints.V0_91_08.RETRANSMISSIONS;
 
 @OutboundConnector(name = "kafka")
 @SpringBootApplication
@@ -49,14 +52,34 @@ public class KafkaOutboundConnector {
         var config = kafkaProperties(kafkaProperties);
         return new DefaultKafkaConsumerFactory<>(config,
                                                  new StringDeserializer(),
-                                                 new CustomDeserializer(serde));
+                                                 new CustomDeserializer<>(serde, PermissionEnvelope.class));
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, PermissionEnvelope>> listenerContainerFactory(
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, PermissionEnvelope>> permissionEnvelopeListenerContainerFactory(
             ConsumerFactory<String, PermissionEnvelope> consumerFactory
     ) {
         var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, PermissionEnvelope>();
+        listenerContainerFactory.setConsumerFactory(consumerFactory);
+        return listenerContainerFactory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, RTREnvelope> rtrEnvelopeConsumerFactory(
+            @Qualifier("kafkaPropertiesMap") Map<String, String> kafkaProperties,
+            MessageSerde serde
+    ) {
+        var config = kafkaProperties(kafkaProperties);
+        return new DefaultKafkaConsumerFactory<>(config,
+                                                 new StringDeserializer(),
+                                                 new CustomDeserializer<>(serde, RTREnvelope.class));
+    }
+
+    @Bean
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, RTREnvelope>> rtrEnvelopeListenerContainerFactory(
+            ConsumerFactory<String, RTREnvelope> consumerFactory
+    ) {
+        var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, RTREnvelope>();
         listenerContainerFactory.setConsumerFactory(consumerFactory);
         return listenerContainerFactory;
     }
@@ -65,6 +88,11 @@ public class KafkaOutboundConnector {
     @Bean
     public NewTopic terminationTopic(@Value("${kafka.termination.topic:terminations}") String terminationTopic) {
         return TopicBuilder.name(terminationTopic).build();
+    }
+
+    @Bean
+    public NewTopic retransmissionTopic(@Value("${outbound-connector.kafka.retransmission.topic:" + RETRANSMISSIONS + "}") String retransmissionTopic) {
+        return TopicBuilder.name(retransmissionTopic).build();
     }
 
     @Bean

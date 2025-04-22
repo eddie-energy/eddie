@@ -3,6 +3,9 @@ package energy.eddie.aiida.adapters.datasource.fr;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import energy.eddie.aiida.adapters.datasource.fr.mode.MicroTeleinfoV3DataField;
+import energy.eddie.aiida.adapters.datasource.fr.mode.MicroTeleinfoV3DataFieldDeserializer;
+import energy.eddie.aiida.adapters.datasource.fr.mode.history.MicroTeleinfoV3HistoryModeJson;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -17,8 +20,8 @@ class MicroTeleinfoV3AdapterJsonTest {
         ObjectMapper mapper = new AiidaConfiguration().customObjectMapper().build();
 
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(MicroTeleinfoV3AdapterJson.TeleinfoDataField.class,
-                               new MicroTeleinfoV3AdapterValueDeserializer(null));
+        module.addDeserializer(MicroTeleinfoV3DataField.class,
+                               new MicroTeleinfoV3DataFieldDeserializer(null));
         mapper.registerModule(module);
 
 
@@ -68,7 +71,7 @@ class MicroTeleinfoV3AdapterJsonTest {
                 
                 """;
 
-        var json = mapper.readValue(str, MicroTeleinfoV3AdapterJson.class);
+        var json = mapper.readValue(str, MicroTeleinfoV3HistoryModeJson.class);
 
         assertEquals("000000", json.motdetat().raw());
         assertEquals("12345678901", json.adco().raw());

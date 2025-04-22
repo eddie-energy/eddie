@@ -12,6 +12,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RequestPartitionsTest {
@@ -34,8 +35,7 @@ class RequestPartitionsTest {
         var partitions = new RequestPartitions(pr, new MeterReading("pid", "ean", null));
         var startDateTime = start.atStartOfDay(ZoneOffset.UTC);
         var item1 = new RequestPartitions.DateTimePartition(startDateTime, startDateTime.plusDays(184));
-        var item2 = new RequestPartitions.DateTimePartition(startDateTime.plusDays(184),
-                                                            end.atStartOfDay(ZoneOffset.UTC));
+        var item2 = new RequestPartitions.DateTimePartition(startDateTime.plusDays(184), endOfDay(end, ZoneOffset.UTC));
 
         // When
         var parts = partitions.partitions();
@@ -64,7 +64,7 @@ class RequestPartitionsTest {
         );
         var meterReading = start.plusDays(5).atStartOfDay(ZoneOffset.UTC);
         var partitions = new RequestPartitions(pr, new MeterReading("pid", "ean", meterReading));
-        var item = new RequestPartitions.DateTimePartition(meterReading, end.atStartOfDay(ZoneOffset.UTC));
+        var item = new RequestPartitions.DateTimePartition(meterReading, endOfDay(end, ZoneOffset.UTC));
 
         // When
         var parts = partitions.partitions();

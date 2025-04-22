@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.be.fluvius.service;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.clients.FluviusApi;
 import energy.eddie.regionconnector.be.fluvius.permission.events.AcceptedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;

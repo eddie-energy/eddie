@@ -8,6 +8,10 @@ import energy.eddie.aiida.models.datasource.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
+import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +38,7 @@ class DataSourceTest {
             null, VENDOR_ID, MODEL_ID, DEVICE_ID);
 
     DataSourceDto createNewDataSourceDto(DataSourceType type) {
-        return new DataSourceDto(ID, type.identifier(), AiidaAsset.SUBMETER.asset(), "test", true, "", 1, null, null);
+        return new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", true, "", 1, null, null);
     }
 
     @Test

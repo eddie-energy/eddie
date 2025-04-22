@@ -6,8 +6,8 @@ import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapterJson;
 import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapterValueDeserializer;
-import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3AdapterJson;
-import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3AdapterValueDeserializer;
+import energy.eddie.aiida.adapters.datasource.fr.mode.MicroTeleinfoV3DataField;
+import energy.eddie.aiida.adapters.datasource.fr.mode.MicroTeleinfoV3DataFieldDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -46,8 +46,8 @@ public class AiidaConfiguration {
                                               .disable(Hibernate6Module.Feature.USE_TRANSIENT_ANNOTATION),
                         new SimpleModule().addDeserializer(OesterreichsEnergieAdapterJson.AdapterValue.class,
                                                            new OesterreichsEnergieAdapterValueDeserializer(null)),
-                        new SimpleModule().addDeserializer(MicroTeleinfoV3AdapterJson.TeleinfoDataField.class,
-                                                           new MicroTeleinfoV3AdapterValueDeserializer(null))
+                        new SimpleModule().addDeserializer(MicroTeleinfoV3DataField.class,
+                                                           new MicroTeleinfoV3DataFieldDeserializer(null))
                 );
     }
 

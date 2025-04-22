@@ -3,7 +3,10 @@ import net.ltgt.gradle.errorprone.errorprone
 import org.w3c.dom.Element
 import java.util.*
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
+import kotlin.io.path.PathWalkOption
+import kotlin.io.path.walk
 
 plugins {
     id("energy.eddie.java-conventions")
@@ -78,6 +81,7 @@ sourceSets {
     }
 }
 
+@OptIn(ExperimentalPathApi::class)
 val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
     description = "Generate CIM Java Classes from XSD files"
     group = "Build"
@@ -94,8 +98,9 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
         // make sure the directory exists
         file(generatedXJCJavaDir).mkdirs()
 
-        // iterate each folder and generate the classes with the same package name
-        cimSchemaFiles.walk().forEach { srcFile ->
+        // iterate each folder in a breadth first search and generate the classes with the same package name
+        Path(cimSchemaFiles.path).walk(PathWalkOption.BREADTH_FIRST).forEach { path ->
+            val srcFile = path.toFile()
             if (!srcFile.isFile || srcFile.extension != xsdExtension) {
                 return@forEach
             }
@@ -107,7 +112,7 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
             generateBindingsFile(srcFile, xjbFile.absolutePath)
 
             val packageName = "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
-            exec {
+            val execution = providers.exec({
                 executable(Path(System.getProperty("java.home"), "bin", "java"))
                 val classpath = jaxb.resolve().joinToString(File.pathSeparator)
                 args(
@@ -119,6 +124,18 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
                     "-mark-generated", "-npa", "-encoding", "UTF-8",
                     "-extension", "-Xfluent-api", "-Xannotate"
                 )
+            })
+            try {
+                val stdOut = execution.standardOutput.asText
+                if (stdOut.isPresent) {
+                    logger.log(LogLevel.INFO, stdOut.get())
+                }
+                val stdError = execution.standardError.asText
+                if (stdError.isPresent) {
+                    logger.log(LogLevel.WARN, stdError.get())
+                }
+            } catch (e: Exception) {
+                logger.log(LogLevel.ERROR, e.message)
             }
         }
     }
@@ -144,7 +161,7 @@ fun generateBindingsFile(xsdFile: File, bindingsFilePath: String) {
         .append("xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" ")
         .append("xmlns:xjc=\"http://java.sun.com/xml/ns/jaxb/xjc\" ")
         .append("version=\"3.0\">\n")
-        .append("    <globalBindings>\n")
+        .append("    <globalBindings typesafeEnumMaxMembers=\"2000\">\n") // There is an arbitrary limit of 256 enumeration types per enumeration
         .append("           <xjc:simple/>\n") // Removes ComplexType Suffix from Root Elements
         .append("    </globalBindings>\n")
         .append("    <bindings schemaLocation=\"${schemaLocation}\" node=\"/xs:schema\">\n")

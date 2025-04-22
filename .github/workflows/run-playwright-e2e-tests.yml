@@ -11,6 +11,9 @@ on:
       - "docs/**"
       - "env/**"
       - "outbound-connectors/**"
+      - ".idea/**"
+      - ".sonarlint/**"
+      - ".run/**"
       - "**.md"
   push:
     branches:
@@ -21,6 +24,9 @@ on:
       - "docs/**"
       - "env/**"
       - "outbound-connectors/**"
+      - ".idea/**"
+      - ".sonarlint/**"
+      - ".run/**"
       - "**.md"
   workflow_dispatch:
 

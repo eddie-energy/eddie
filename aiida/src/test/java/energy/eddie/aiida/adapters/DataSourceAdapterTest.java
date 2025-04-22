@@ -9,6 +9,7 @@ import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
 import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
+import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
@@ -44,7 +45,7 @@ class DataSourceAdapterTest {
         }
 
         return DataSource.createFromDto(
-                new DataSourceDto(ID, type.identifier(), AiidaAsset.SUBMETER.asset(), "test", true, "", 1, null, null),
+                new DataSourceDto(ID, type.identifier(), AiidaAsset.SUBMETER, "test", true, "", 1, null, null),
                 ID,
                 settings
         );

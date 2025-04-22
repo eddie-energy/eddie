@@ -40,11 +40,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         "spring.flyway.enabled=false"})
 @MockitoBean(types = {ClientRegistrationRepository.class, OAuth2SecurityConfiguration.class, CorsConfigurationSource.class})
 @Testcontainers
-public class PermissionServiceIntegrationTest {
+class PermissionServiceIntegrationTest {
     @Container
     @ServiceConnection
     static final PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(DockerImageName.parse(
-            "timescale/timescaledb:2.11.2-pg15").asCompatibleSubstituteFor("postgres"));
+            "timescale/timescaledb:latest-pg12").asCompatibleSubstituteFor("postgres"));
     private final UUID permissionId = UUID.fromString("8609a9b3-0718-4082-935d-6a98c0f8c5a2");
     @Autowired
     Clock clock;
@@ -59,7 +59,7 @@ public class PermissionServiceIntegrationTest {
      * the @Sql annotation.
      */
     @BeforeAll
-    public static void setUpBeforeClass() throws Exception {
+    static void setUpBeforeClass() throws Exception {
         DriverManagerDataSource dataSource = getDataSource();
 
         Flyway flyway = Flyway.configure().locations("classpath:db/aiida/migration").dataSource(dataSource).load();

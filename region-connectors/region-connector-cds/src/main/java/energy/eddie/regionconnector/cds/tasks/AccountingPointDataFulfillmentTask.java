@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.cds.tasks;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.cds.permission.events.SimpleEvent;
-import energy.eddie.regionconnector.cds.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.cds.providers.IdentifiableDataStreams;
+import energy.eddie.regionconnector.cds.providers.ap.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

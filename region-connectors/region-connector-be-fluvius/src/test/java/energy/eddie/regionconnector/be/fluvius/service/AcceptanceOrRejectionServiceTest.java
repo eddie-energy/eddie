@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.be.fluvius.service;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModel;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.MandateResponseModel;
-import energy.eddie.regionconnector.be.fluvius.clients.FluviusApi;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
@@ -169,10 +169,8 @@ class AcceptanceOrRejectionServiceTest {
                         publisher.complete();
                     })
                     .expectNextCount(1)
-                    .then(() -> {
-                        verify(outbox).commit(assertArg(e -> assertEquals(PermissionProcessStatus.ACCEPTED,
-                                                                          e.status())));
-                    })
+                    .then(() -> verify(outbox)
+                            .commit(assertArg(e -> assertEquals(PermissionProcessStatus.ACCEPTED, e.status()))))
                     .verifyComplete();
     }
 

@@ -33,6 +33,7 @@ import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculati
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
@@ -176,13 +177,17 @@ public class EnedisBeanConfig {
             PollingService pollingService,
             FrPermissionRequestRepository repository,
             @Value("${region-connector.fr.enedis.polling:0 0 17 * * *}") String cronExpr,
-            EnedisRegionConnector connector
+            EnedisRegionConnector connector,
+            TaskScheduler taskScheduler,
+            DataNeedCalculationService<DataNeed> dataNeedCalculationService
     ){
         return new CommonFutureDataService<>(
                 pollingService,
                 repository,
                 cronExpr,
-                connector.getMetadata()
+                connector.getMetadata(),
+                taskScheduler,
+                dataNeedCalculationService
         );
     }
 }

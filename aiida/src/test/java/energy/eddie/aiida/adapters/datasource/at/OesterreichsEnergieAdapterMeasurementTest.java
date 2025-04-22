@@ -67,21 +67,21 @@ class OesterreichsEnergieAdapterMeasurementTest {
         // Then
         var expectedValue = String.valueOf(dummyValue / 1000f);
 
-        assertEquals(UnitOfMeasurement.W, aiidaRecordValue1.rawUnitOfMeasurement());
+        assertEquals(UnitOfMeasurement.WATT, aiidaRecordValue1.rawUnitOfMeasurement());
         assertEquals(expectedValue, aiidaRecordValue1.value());
-        assertEquals(UnitOfMeasurement.KW, aiidaRecordValue1.unitOfMeasurement());
+        assertEquals(UnitOfMeasurement.KILO_WATT, aiidaRecordValue1.unitOfMeasurement());
 
-        assertEquals(UnitOfMeasurement.WH, aiidaRecordValue2.rawUnitOfMeasurement());
+        assertEquals(UnitOfMeasurement.WATT_HOUR, aiidaRecordValue2.rawUnitOfMeasurement());
         assertEquals(expectedValue, aiidaRecordValue2.value());
-        assertEquals(UnitOfMeasurement.KWH, aiidaRecordValue2.unitOfMeasurement());
+        assertEquals(UnitOfMeasurement.KILO_WATT_HOUR, aiidaRecordValue2.unitOfMeasurement());
 
-        assertEquals(UnitOfMeasurement.VAR, aiidaRecordValue3.rawUnitOfMeasurement());
+        assertEquals(UnitOfMeasurement.VOLT_AMPERE_REACTIVE, aiidaRecordValue3.rawUnitOfMeasurement());
         assertEquals(expectedValue, aiidaRecordValue3.value());
-        assertEquals(UnitOfMeasurement.KVAR, aiidaRecordValue3.unitOfMeasurement());
+        assertEquals(UnitOfMeasurement.KILO_VOLT_AMPERE_REACTIVE, aiidaRecordValue3.unitOfMeasurement());
 
-        assertEquals(UnitOfMeasurement.VARH, aiidaRecordValue4.rawUnitOfMeasurement());
+        assertEquals(UnitOfMeasurement.VOLT_AMPERE_REACTIVE_HOUR, aiidaRecordValue4.rawUnitOfMeasurement());
         assertEquals(expectedValue, aiidaRecordValue4.value());
-        assertEquals(UnitOfMeasurement.KVARH, aiidaRecordValue4.unitOfMeasurement());
+        assertEquals(UnitOfMeasurement.KILO_VOLT_AMPERE_REACTIVE_HOUR, aiidaRecordValue4.unitOfMeasurement());
     }
 
     @Test

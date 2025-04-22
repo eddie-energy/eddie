@@ -19,7 +19,8 @@ class CustomDeserializerTest {
                     "key": "value"
                 }
                 """.getBytes(StandardCharsets.UTF_8);
-        var deserializer = new CustomDeserializer(SerdeFactory.getInstance().create("json"));
+        var deserializer = new CustomDeserializer<>(SerdeFactory.getInstance().create("json"),
+                                                    PermissionEnvelope.class);
 
         // When
         var res = deserializer.deserialize("anyTopic", json);
@@ -92,7 +93,8 @@ class CustomDeserializerTest {
                   }
                 }
                 """;
-        var deserializer = new CustomDeserializer(SerdeFactory.getInstance().create("json"));
+        var deserializer = new CustomDeserializer<>(SerdeFactory.getInstance().create("json"),
+                                                    PermissionEnvelope.class);
 
         // When
         PermissionEnvelope res = deserializer.deserialize("anyTopic", json.getBytes(StandardCharsets.UTF_8));
@@ -220,7 +222,7 @@ class CustomDeserializerTest {
                   </Permission_MarketDocument>
                 </Permission_Envelope>
                 """;
-        var deserializer = new CustomDeserializer(SerdeFactory.getInstance().create("xml"));
+        var deserializer = new CustomDeserializer<>(SerdeFactory.getInstance().create("xml"), PermissionEnvelope.class);
 
         // When
         var res = deserializer.deserialize("anyTopic", xml.getBytes(StandardCharsets.UTF_8));

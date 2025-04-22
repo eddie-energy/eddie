@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.shared.services.data.needs.calculation.strat
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionTimeframeStrategy;
 import energy.eddie.regionconnector.shared.validation.GranularityChoice;
+import jakarta.transaction.Transactional;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Implementation of the {@link DataNeedCalculationService} that can be customized to fit the requirements of the region connector.
  */
+@Transactional(value = Transactional.TxType.REQUIRED)
 public class DataNeedCalculationServiceImpl implements DataNeedCalculationService<DataNeed> {
     private final DataNeedsService dataNeedsService;
     private final RegionConnectorMetadata regionConnectorMetadata;
@@ -50,11 +52,12 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     /**
      * Constructs an instance with custom {@link PermissionTimeframeStrategy} and {@link EnergyDataTimeframeStrategy}.
      * Furthermore, it allows adding additional checks for the data need.
-     * @param dataNeedsService service to get the data need
-     * @param regionConnectorMetadata metadata of the region connector
-     * @param strategy strategy that is used to calculate the permission timeframe
+     *
+     * @param dataNeedsService            service to get the data need
+     * @param regionConnectorMetadata     metadata of the region connector
+     * @param strategy                    strategy that is used to calculate the permission timeframe
      * @param energyDataTimeframeStrategy strategy that is used to calculate the energy timeframe
-     * @param additionalChecks additional checks
+     * @param additionalChecks            additional checks
      */
     public DataNeedCalculationServiceImpl(
             DataNeedsService dataNeedsService,
@@ -113,7 +116,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         if (!areGranularitiesSupported(dataNeed, supportedGranularities)) {
             return new DataNeedNotSupportedResult("Granularities are not supported");
         }
-        if(!isEnergyTypeSupported(dataNeed)) {
+        if (!isEnergyTypeSupported(dataNeed)) {
             return new DataNeedNotSupportedResult("Energy type is not supported");
         }
         Timeframe energyStartAndEndDate;
@@ -161,6 +164,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         return !(dataNeed instanceof ValidatedHistoricalDataDataNeed vhd)
                || regionConnectorMetadata.supportedEnergyTypes().contains(vhd.energyType());
     }
+
     /**
      * Determines if the region-connector supports this data need type.
      *

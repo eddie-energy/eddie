@@ -2,12 +2,12 @@ package energy.eddie.regionconnector.be.fluvius.sandbox;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.be.fluvius.client.DataServiceType;
+import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
 import energy.eddie.regionconnector.be.fluvius.client.model.CreateMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.clients.DataServiceType;
-import energy.eddie.regionconnector.be.fluvius.clients.FluviusApi;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
 import jakarta.annotation.Priority;

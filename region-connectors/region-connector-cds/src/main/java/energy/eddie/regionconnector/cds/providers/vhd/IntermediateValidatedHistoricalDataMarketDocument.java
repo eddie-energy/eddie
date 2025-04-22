@@ -5,6 +5,9 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.cds.openapi.model.UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner.FormatEnum;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
+import energy.eddie.regionconnector.cds.providers.cim.Account;
+import energy.eddie.regionconnector.cds.providers.cim.Meter;
+import energy.eddie.regionconnector.cds.providers.cim.UsageSegment;
 import energy.eddie.regionconnector.shared.cim.v0_82.CimUtils;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
@@ -59,8 +62,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
     }
 
     private List<TimeSeriesComplexType> getTimeSeriesList(
-            Account.Meter meter,
-            Account.UsageSegment usageSegment,
+            Meter meter,
+            UsageSegment usageSegment,
             EsmpTimeInterval interval
     ) {
         List<TimeSeriesComplexType> timeSeriesList = new ArrayList<>();
@@ -129,7 +132,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
     }
 
     private static List<PointComplexType> toPoints(
-            Account.UsageSegment usageSegment,
+            UsageSegment usageSegment,
             List<BigDecimal> values,
             CimUnitConverter converter
     ) {
@@ -165,7 +168,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
     }
 
     @Nullable
-    private static String getResolution(Account.UsageSegment usageSegment) {
+    private static String getResolution(UsageSegment usageSegment) {
         try {
             var duration = Duration.ofSeconds(usageSegment.interval().longValue());
             return Granularity.fromMinutes((int) duration.toMinutes()).toString();
@@ -187,6 +190,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                 .withSenderMarketParticipantMRID(
                         new PartyIDStringComplexType()
                                 .withCodingScheme(codingScheme)
+                                .withValue("CDSC")
                 )
                 .withReceiverMarketParticipantMRID(
                         new PartyIDStringComplexType()

@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static energy.eddie.aiida.models.record.UnitOfMeasurement.KW;
+import static energy.eddie.aiida.models.record.UnitOfMeasurement.KILO_WATT;
 import static energy.eddie.aiida.models.record.UnitOfMeasurement.NONE;
 import static energy.eddie.aiida.utils.ObisCode.METER_SERIAL;
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
@@ -37,7 +37,7 @@ class AiidaRecordConverterTest {
         // Given
         Instant timestamp = Instant.now();
         var aiidaRecord = new AiidaRecord(timestamp, AiidaAsset.SUBMETER, userId, dataSourceId, List.of(
-                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "23", KW, "10", KW)));
+                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "23", KILO_WATT, "10", KILO_WATT)));
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);

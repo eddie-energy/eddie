@@ -102,6 +102,7 @@ export default withMermaid(
               ],
             },
             { text: "Admin Console", link: "1-running/admin-console" },
+            { text: "Demo Button", link: "1-running/demo-button" },
             { text: "Example App", link: "1-running/example-app" },
           ],
         },
@@ -136,6 +137,10 @@ export default withMermaid(
                 {
                   text: "Accounting Point Data Market Documents",
                   link: "2-integrating/messages/accounting-point-data-market-documents.md",
+                },
+                {
+                  text: "Redistribution Transaction Request Documents",
+                  link: "2-integrating/messages/redistribution-transaction-request-documents.md",
                 },
               ],
             },

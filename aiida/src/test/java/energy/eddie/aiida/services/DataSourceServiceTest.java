@@ -3,6 +3,7 @@ package energy.eddie.aiida.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
+import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
@@ -13,6 +14,7 @@ import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +45,7 @@ class DataSourceServiceTest {
     private UUID userId;
 
     DataSourceDto createNewDataSourceDto(UUID id, DataSourceType type, String name, boolean enabled) {
-        return new DataSourceDto(id, type.identifier(), AiidaAsset.SUBMETER.asset(), name, enabled, "", 1, null, null);
+        return new DataSourceDto(id, type, AiidaAsset.SUBMETER, name, enabled, "", 1, null, null);
     }
 
     DataSource createNewDataSource(UUID id, DataSourceType type) {
@@ -100,7 +102,7 @@ class DataSourceServiceTest {
                                                                "Test",
                                                                true));
 
-        verify(repository, times(1)).save(any());
+        verify(repository, times(2)).save(any());
         verify(aggregator, times(1)).addNewDataSourceAdapter(any());
     }
 
@@ -150,7 +152,7 @@ class DataSourceServiceTest {
                                                                "Test",
                                                                false));
 
-        verify(repository, times(1)).save(any());
+        verify(repository, times(2)).save(any());
         verify(aggregator, never()).addNewDataSourceAdapter(any());
     }
 

@@ -1,13 +1,16 @@
 package energy.eddie.aiida.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
+import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.MqttSecretGenerator;
 import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.models.datasource.*;
 import energy.eddie.aiida.repositories.DataSourceRepository;
@@ -92,7 +95,14 @@ public class DataSourceService {
                     MqttSecretGenerator.generate()
             );
             var dataSource = DataSource.createFromDto(dto, currentUserId, mqttSettingsDto);
+
+            // This save generates the datasource ID
             repository.save(dataSource);
+
+            if (dataSource instanceof MqttDataSource) {
+                // This save now perists the subscribe topic with the generated ID
+                repository.save(dataSource);
+            }
             startDataSource(dataSource);
         }
     }

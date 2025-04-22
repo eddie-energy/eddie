@@ -1,13 +1,19 @@
+name: aiida
 services:
   timescaledb:
     image: timescale/timescaledb:latest-pg12
     environment:
       POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
       POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      POSTGRES_DB: aiida
+      POSTGRES_DB: ${SPRING_DATASOURCE_DATABASE}
     volumes:
       - db_data:/var/lib/postgresql/data
     restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${SPRING_DATASOURCE_USERNAME} -d ${SPRING_DATASOURCE_DATABASE}'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   aiida:
     image: ghcr.io/eddie-energy/aiida:latest
@@ -16,30 +22,49 @@ services:
       context: ../
     depends_on:
       timescaledb:
-        condition: service_started
-      nanomq:
-        condition: service_started
+        condition: service_healthy
+      emqx:
+        condition: service_healthy
       keycloak:
         condition: service_healthy
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://timescaledb:5432/aiida"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}/${SPRING_DATASOURCE_DATABASE}
     env_file:
       - .env
 
-  nanomq:
-    image: emqx/nanomq:latest
+  emqx:
+    image: emqx/emqx:5.8.6
+    depends_on:
+      timescaledb:
+        condition: service_healthy
     ports:
       - "1884:1883"
-      - "8084:8083"
       - "8884:8883"
+      - "18084:18083"
+    environment:
+      EMQX_AUTHENTICATION__1__DATABASE: ${SPRING_DATASOURCE_DATABASE}
+      EMQX_AUTHENTICATION__1__SERVER: ${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}
+      EMQX_AUTHENTICATION__1__USERNAME: ${EMQX_DATASOURCE_USERNAME}
+      EMQX_AUTHENTICATION__1__PASSWORD: ${EMQX_DATASOURCE_PASSWORD}
+      EMQX_AUTHORIZATION__SOURCES__1__DATABASE: ${SPRING_DATASOURCE_DATABASE}
+      EMQX_AUTHORIZATION__SOURCES__1__SERVER: ${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}
+      EMQX_AUTHORIZATION__SOURCES__1__USERNAME: ${EMQX_DATASOURCE_USERNAME}
+      EMQX_AUTHORIZATION__SOURCES__1__PASSWORD: ${EMQX_DATASOURCE_PASSWORD}
+    restart: always
     volumes:
-      - ./nanomq.conf:/etc/nanomq.conf
+      - emqx_data:/opt/emqx/data
+      - ./emqx/emqx.hocon:/opt/emqx/etc/base.hocon
+    healthcheck:
+      test: [ "CMD", "/opt/emqx/bin/emqx", "ctl", "status" ]
+      interval: 5s
+      timeout: 25s
+      retries: 5
 
   teleinfo2mqtt:
     depends_on:
-      - nanomq
+      - emqx
     profiles:
       - teleinfo
     image: fmartinou/teleinfo2mqtt
@@ -60,7 +85,7 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_HEALTH_ENABLED: true
     volumes:
-      - ./keycloak-realm.json:/opt/keycloak/data/import/keycloak-realm.json
+      - ./keycloak/keycloak-realm.json:/opt/keycloak/data/import/keycloak-realm.json
       - ../../keycloak-eddie-theme/theme/eddie-theme:/opt/keycloak/themes/eddie-theme
     command: -v start-dev --import-realm
     env_file:
@@ -77,3 +102,4 @@ networks:
 
 volumes:
   db_data:
+  emqx_data:

@@ -1,7 +1,7 @@
 package energy.eddie.aiida.adapters.datasource.sga;
 
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
-import energy.eddie.aiida.models.datasource.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttMessage;

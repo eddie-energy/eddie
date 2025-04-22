@@ -89,7 +89,7 @@ class PollingServiceTest {
 
         // Then
         verify(handler, never()).revoke(any(), any());
-        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any(), any());
+        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -116,7 +116,35 @@ class PollingServiceTest {
 
         // Then
         verify(handler, never()).revoke(any(), any());
-        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any(), any());
+        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void testPoll_forPermissionRequestThatDoesNotNeedPolling_doesNothing() {
+        // Given
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var today = LocalDate.now(ZoneOffset.UTC);
+        var start = today.minusDays(1);
+        var end = today.plusWeeks(1);
+        var pr = new CdsPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setDataStart(start)
+                .setDataEnd(end)
+                .setDataNeedId("dnid")
+                .setCreated(now)
+                .addLastMeterReading("meter", now)
+                .build();
+        when(calculationService.calculate("dnid", now))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
+                                                                      new Timeframe(start, end),
+                                                                      new Timeframe(start, end)));
+
+        // When
+        pollingService.poll(pr);
+
+        // Then
+        verify(handler, never()).revoke(any(), any());
+        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any());
     }
 
     @ParameterizedTest
@@ -193,7 +221,7 @@ class PollingServiceTest {
 
         // Then
         verify(handler).revoke(any(), any());
-        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any(), any());
+        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -227,7 +255,7 @@ class PollingServiceTest {
 
         // Then
         verify(handler, never()).revoke(any(), any());
-        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any(), any());
+        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any());
     }
 
     @ParameterizedTest
@@ -253,7 +281,6 @@ class PollingServiceTest {
         when(customerDataClient.serviceContracts(pr)).thenReturn(Mono.error(exception));
         when(customerDataClient.servicePoints(pr)).thenReturn(Mono.error(exception));
         when(customerDataClient.meterDevices(pr)).thenReturn(Mono.error(exception));
-        when(customerDataClient.billSections(pr)).thenReturn(Mono.error(exception));
         when(handler.thenRevoke(any())).thenCallRealMethod();
         when(handler.test(any())).thenCallRealMethod();
 
@@ -262,7 +289,7 @@ class PollingServiceTest {
 
         // Then
         verify(handler).revoke(any(), any());
-        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any(), any());
+        verify(streams, never()).publishAccountingPointData(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -283,13 +310,12 @@ class PollingServiceTest {
         when(customerDataClient.serviceContracts(pr)).thenReturn(Mono.just(List.of()));
         when(customerDataClient.servicePoints(pr)).thenReturn(Mono.just(List.of()));
         when(customerDataClient.meterDevices(pr)).thenReturn(Mono.just(List.of()));
-        when(customerDataClient.billSections(pr)).thenReturn(Mono.just(List.of()));
         when(handler.thenRevoke(any())).thenCallRealMethod();
         // When
         pollingService.poll(pr);
 
         // Then
         verify(handler, never()).revoke(any(), any());
-        verify(streams).publishAccountingPointData(any(), any(), any(), any(), any(), any());
+        verify(streams).publishAccountingPointData(any(), any(), any(), any(), any());
     }
 }

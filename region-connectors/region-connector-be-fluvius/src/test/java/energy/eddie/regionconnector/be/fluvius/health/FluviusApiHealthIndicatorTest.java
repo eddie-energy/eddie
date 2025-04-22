@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.be.fluvius.health;
 
-import energy.eddie.regionconnector.be.fluvius.clients.FluviusApiClient;
+import energy.eddie.regionconnector.be.fluvius.client.FluviusApiClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

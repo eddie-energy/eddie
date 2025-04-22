@@ -4,8 +4,11 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CdsPermissionRequestBuilder {
+    private final Map<String, ZonedDateTime> lastMeterReadings = new HashMap<>();
     private String permissionId;
     private String connectionId;
     private String dataNeedId;
@@ -67,6 +70,11 @@ public class CdsPermissionRequestBuilder {
         return this;
     }
 
+    public CdsPermissionRequestBuilder addLastMeterReading(String meter, ZonedDateTime reading) {
+        lastMeterReadings.put(meter, reading);
+        return this;
+    }
+
     public CdsPermissionRequest build() {
         return new CdsPermissionRequest(permissionId,
                                         connectionId,
@@ -77,6 +85,7 @@ public class CdsPermissionRequestBuilder {
                                         dataStart,
                                         dataEnd,
                                         state,
-                                        redirectUri);
+                                        redirectUri,
+                                        lastMeterReadings);
     }
 }

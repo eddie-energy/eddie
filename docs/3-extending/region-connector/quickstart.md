@@ -112,6 +112,7 @@ For more details on the setup see the [build and setup section](./build-and-setu
 - Allow termination of permission requests
   - Remove credentials if possible
   - Terminate on the permission administrators side if possible
+- Allow retransmission of validated historical data for a specific permission request
 - Time out stale permission requests
 - Implement health indicators for external APIs and services
   :::
@@ -822,6 +823,7 @@ public class PermissionRequestController {
 - Allow termination of permission requests
   - Remove credentials if possible
   - Terminate on the permission administrators side if possible
+- Allow retransmission of validated historical data for a specific permission request
 - Time out stale permission requests
 - Implement health indicators for external APIs and services
   :::
@@ -847,6 +849,7 @@ First initialize a new pnpm module in the same directory as the region-connector
 - Allow termination of permission requests
   - Remove credentials if possible
   - Terminate on the permission administrators side if possible
+- Allow retransmission of validated historical data for a specific permission request
 - Time out stale permission requests
 - Implement health indicators for external APIs and services
   :::
@@ -915,6 +918,7 @@ When they receive a new event, they generate a new connection status message or 
 - Allow termination of permission requests
   - Remove credentials if possible
   - Terminate on the permission administrators side if possible
+- Allow retransmission of validated historical data for a specific permission request
 - Time out stale permission requests
 - Implement health indicators for external APIs and services
   :::
@@ -1212,6 +1216,7 @@ public class FooBarRawDataProvider implements RawDataProvider {
 - Allow termination of permission requests
   - Remove credentials if possible
   - Terminate on the permission administrators side if possible
+- Allow retransmission of validated historical data for a specific permission request
 - Time out stale permission requests
 - Implement health indicators for external APIs and services
   :::
@@ -1265,6 +1270,7 @@ That's everything needed to create a validated historical data market document.
 - Allow termination of permission requests
   - Remove credentials if possible
   - Terminate on the permission administrators side if possible
+- Allow retransmission of validated historical data for a specific permission request
 - Time out stale permission requests
 - Implement health indicators for external APIs and services
   :::
@@ -1273,20 +1279,24 @@ Implementing future data is rather easy once requesting validated historical dat
 This implementation periodically checks for new data for active permission requests.
 It uses a cron expression that should be configured for the region connector.
 To avoid redundant implementations for each region connector, a CommonFutureDataService was implemented. 
-To use it, just add a Bean to the region connectors spring configuration.
+To use it, add a Bean to the region connectors spring configuration.
 
 ```java
 @Bean
 public CommonFutureDataService<FooPermissionRequest> commonFutureDataService(
         PollingService pollingService,
         BarPermissionRequestRepository repository,
-        BazRegionConnector connector
+        RegionConnectorMetadata metadata,
+        TaskSchedular taskSchedular,
+        DataNeedCalculationService<DataNeed> calculationService
 ){
   return new CommonFutureDataService<>(
           pollingService,
           repository,
           "0 0 17 * * *",
-          connector.getMetadata()
+          metadata,
+          taskSchedular,
+          calculationService
   );
 }
 ```
@@ -1355,6 +1365,7 @@ The region connector is now ready to poll data from the MDA for permission reque
 - Allow termination of permission requests
   - Remove credentials if possible
   - Terminate on the permission administrators side if possible
+- Allow retransmission of validated historical data for a specific permission request
 - Time out stale permission requests
 - Implement health indicators for external APIs and services
   :::
@@ -1382,8 +1393,9 @@ Emit the data via the `RawDataProvider` and the [`AccountingPointEnvelopeProvide
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - Allow termination of permission requests
-- Remove credentials if possible
-- Terminate on the permission administrators side if possible
+  - Remove credentials if possible
+  - Terminate on the permission administrators side if possible
+- Allow retransmission of validated historical data for a specific permission request
 - Time out stale permission requests
 - Implement health indicators for external APIs and services
   :::
@@ -1412,8 +1424,9 @@ Nevertheless, this should not be forgotten.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :arrow_right: Allow termination of permission requests
-- Remove credentials if possible
-- Terminate on the permission administrators side if possible
+  - Remove credentials if possible
+  - Terminate on the permission administrators side if possible
+- Allow retransmission of validated historical data for a specific permission request
 - Time out stale permission requests
 - Implement health indicators for external APIs and services
   :::
@@ -1471,8 +1484,9 @@ If not, go to [remove credentials](#remove-credentials).
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :white_check_mark: Allow termination of permission requests
-- Remove credentials if possible
-- :arrow_right: Terminate on the permission administrators side if possible
+  - Remove credentials if possible
+  - :arrow_right: Terminate on the permission administrators side if possible
+- Allow retransmission of validated historical data for a specific permission request
 - Time out stale permission requests
 - Implement health indicators for external APIs and services
   :::
@@ -1548,8 +1562,9 @@ The logic to retry termination when it fails is exactly the same as for the fail
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :white_check_mark: Allow termination of permission requests
-- :arrow_right: Remove credentials if possible
-- :white_check_mark: Terminate on the permission administrators side if possible
+  - :arrow_right: Remove credentials if possible
+  - :white_check_mark: Terminate on the permission administrators side if possible
+- Allow retransmission of validated historical data for a specific permission request
 - Time out stale permission requests
 - Implement health indicators for external APIs and services
   :::
@@ -1582,6 +1597,82 @@ public class PermissionRequestFinishedHandler implements EventHandler<Permission
 }
 ```
 
+## Allow retransmission of validated historical data for a specific permission request
+
+::: details Checklist Status
+
+- :white_check_mark: Create a permission request at the permission administrators side
+- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement permission market documents
+- :white_check_mark: Request validated historical data and emit it to raw data stream
+- :white_check_mark: Map validated historical data to validated historical data market documents
+- :white_check_mark: Allow data needs for future data, and request the data once available
+- :white_check_mark: Request accounting point data and emit it to raw data stream
+- :white_check_mark: Map accounting point data to accounting point market document
+- :white_check_mark: Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+  For example, not requesting gas metered data for data need that specifies electricity.
+- :white_check_mark: React to revocation of permission request
+- :white_check_mark: Allow termination of permission requests
+  - :white_check_mark: Remove credentials if possible
+  - :white_check_mark: Terminate on the permission administrators side if possible
+- :right_arrow: Allow retransmission of validated historical data for a specific permission request
+- Time out stale permission requests
+- Implement health indicators for external APIs and services
+  :::
+
+To implement the retransmission requests for validated historical data for a region connector, the [RegionConnectorRetransmissionService](./api.md#regionconnectorretransmissionservice) must be implemented.
+It allows the eligible party to request validated historical data again, after it was already requested by the region connector.
+The reasons for this can vary, for example, the eligible party is missing a specific timeframe of the data.
+There is already a shared implementation, that validates the retransmission request and requests the data from the polling service of the region connector.
+
+```java
+@Configuration
+public class FooSpringConfig{
+  @Bean
+  public RetransmissionValidation retransmissionValidation(RegionConnectorMetadata metadata, DataNeedsService dataNeedsService) {
+    return new RetransmissionValidation( metadata, dataNeedsService );
+  }
+  @Bean
+  public CommonRetransmissionService<FooPermissionRequest> retransmissionService(
+          BarPermissionRequestRepository repository,
+          PollingService pollingService,
+          RetransmissionValidation validation
+  ){
+    return new CommonFutureDataService<>( repository, pollingService, validation);
+  }
+}
+```
+
+To request the data from the API, the polling service needs to implement the `PollingFunction`, which can be implemented in any service that polls the data.
+Important is that the polling function emits the data to the outbound connectors using whatever mechanisms are present in the region connector.
+
+```java
+import java.time.ZonedDateTime;
+
+@Service
+public class PollingService implements PollingFunction<FooPermissionRequest> {
+  private final ApiClient api;
+  private final ValidatedHistoricalDataStream stream;
+
+  public PollingService(ApiClient api, ValidatedHistoricalDataStream stream) {
+    this.api = api;
+    this.stream = stream;
+  }
+
+  @Override
+  public Mono<RetransmissionResult> poll(
+          FooPermissionRequest permissionRequest,
+          RetransmissionRequest retransmissionRequest
+  ) {
+    return api.meteredData(pr, retransmissionRequest.from(), retransmissionRequest.to())
+              .doOnSuccess(result -> stream.publish(pr, result))
+              .onErrorResume(error -> new Failure(permissionRequest.permissionId, ZonedDateTime.now(), error.getMessage()))
+              .map(ignored -> new Success(permissionRequest.permissionId(), ZonedDateTime.now()));
+  }
+}
+```
+
+
 ## Timing Out Permission Requests
 
 ::: details Checklist Status
@@ -1598,8 +1689,9 @@ public class PermissionRequestFinishedHandler implements EventHandler<Permission
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :white_check_mark: Allow termination of permission requests
-- :white_check_mark: Remove credentials if possible
-- :white_check_mark: Terminate on the permission administrators side if possible
+  - :white_check_mark: Remove credentials if possible
+  - :white_check_mark: Terminate on the permission administrators side if possible
+- :white_check_mark: Allow retransmission of validated historical data for a specific permission request
 - :arrow_right: Time out stale permission requests
 - Implement health indicators for external APIs and services
   :::
@@ -1678,8 +1770,9 @@ public interface FooBarPermissionRequestRepository
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :white_check_mark: Allow termination of permission requests
-- :white_check_mark: Remove credentials if possible
-- :white_check_mark: Terminate on the permission administrators side if possible
+  - :white_check_mark: Remove credentials if possible
+  - :white_check_mark: Terminate on the permission administrators side if possible
+- :white_check_mark: Allow retransmission of validated historical data for a specific permission request
 - :white_check_mark: Time out stale permission requests
 - :arrow_right: Implement health indicators for external APIs and services
   :::
@@ -1729,7 +1822,8 @@ If any errors in this document are found, please let us know or [edit the docume
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :white_check_mark: Allow termination of permission requests
-- :white_check_mark: Remove credentials if possible
-- :white_check_mark: Terminate on the permission administrators side if possible
+  - :white_check_mark: Remove credentials if possible
+  - :white_check_mark: Terminate on the permission administrators side if possible
+- :white_check_mark: Allow retransmission of validated historical dat for a specific permission request
 - :white_check_mark: Time out stale permission requests
 - :white_check_mark: Implement health indicators for external APIs and services

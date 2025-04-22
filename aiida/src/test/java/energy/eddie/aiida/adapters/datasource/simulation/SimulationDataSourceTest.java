@@ -21,11 +21,10 @@ class SimulationDataSourceTest {
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final SimulationDataSource DATA_SOURCE = new SimulationDataSource(
             new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.Identifiers.SIMULATION,
-                              AiidaAsset.SUBMETER.asset(),
+                              DataSourceType.SIMULATION,
+                              AiidaAsset.SUBMETER,
                               "simulation",
                               true,
-                              null,
                               1,
                               null,
                               null),

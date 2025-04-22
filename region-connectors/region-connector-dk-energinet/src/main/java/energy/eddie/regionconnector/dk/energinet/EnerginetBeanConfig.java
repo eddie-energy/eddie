@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 import reactor.core.publisher.Flux;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
@@ -124,12 +125,12 @@ public class EnerginetBeanConfig {
             CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(eventBus,
-                repository,
-                dataNeedsService,
-                cimConfig.eligiblePartyFallbackId(),
-                cimConfig,
-                pr -> Granularity.P1D.toString(),
-                DK_ZONE_ID);
+                                                            repository,
+                                                            dataNeedsService,
+                                                            cimConfig.eligiblePartyFallbackId(),
+                                                            cimConfig,
+                                                            pr -> Granularity.P1D.toString(),
+                                                            DK_ZONE_ID);
     }
 
     @Bean
@@ -162,13 +163,17 @@ public class EnerginetBeanConfig {
             PollingService pollingService,
             DkPermissionRequestRepository repository,
             @Value("${region-connector.dk.energinet.polling:0 0 17 * * *}") String cronExpr,
-            EnerginetRegionConnector connector
-    ){
+            EnerginetRegionConnector connector,
+            TaskScheduler taskScheduler,
+            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+    ) {
         return new CommonFutureDataService<>(
                 pollingService,
                 repository,
                 cronExpr,
-                connector.getMetadata()
+                connector.getMetadata(),
+                taskScheduler,
+                dataNeedCalculationService
         );
     }
 }

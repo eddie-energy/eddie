@@ -1,9 +1,9 @@
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.services.DataSourceService;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
@@ -33,11 +33,10 @@ class DataSourceControllerTest {
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final SimulationDataSource DATA_SOURCE = new SimulationDataSource(
             new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.Identifiers.SIMULATION,
-                              AiidaAsset.SUBMETER.asset(),
+                              DataSourceType.SIMULATION,
+                              AiidaAsset.SUBMETER,
                               "simulation",
                               true,
-                              null,
                               1,
                               null,
                               null),
@@ -66,7 +65,7 @@ class DataSourceControllerTest {
         mockMvc.perform(get("/datasources/assets")
                                 .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk())
-               .andExpect(jsonPath("$.length()").value(4));
+               .andExpect(jsonPath("assets.length()").value(4));
     }
 
     @Test
