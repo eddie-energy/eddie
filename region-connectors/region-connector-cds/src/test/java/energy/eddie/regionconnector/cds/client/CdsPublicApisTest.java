@@ -126,9 +126,7 @@ class CdsPublicApisTest {
                       "registration_optional": [],
                       "registration_requirements": [],
                       "response_types_supported": [],
-                      "token_endpoint_auth_methods_supported": [
-                        "string"
-                      ]
+                      "token_endpoint_auth_methods_supported": "string"
                     }
                   },
                   "cds_test_accounts": "https://example.com/",
