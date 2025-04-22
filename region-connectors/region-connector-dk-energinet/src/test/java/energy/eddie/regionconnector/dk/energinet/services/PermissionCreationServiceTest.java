@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
@@ -142,7 +143,7 @@ class PermissionCreationServiceTest {
                                                        VALID_REFRESH_TOKEN,
                                                        "meteringPointId",
                                                        "dnid");
-        var now = LocalDate.now(ZoneOffset.UTC);
+        var now = LocalDate.now(DK_ZONE_ID);
         when(calculationService.calculate("dnid"))
                 .thenReturn(new AccountingPointDataNeedResult(new Timeframe(now, now)));
 
