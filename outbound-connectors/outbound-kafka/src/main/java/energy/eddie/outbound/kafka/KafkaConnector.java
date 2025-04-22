@@ -18,14 +18,12 @@ import org.apache.kafka.common.header.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.Future;
 
 @Component
 public class KafkaConnector implements
@@ -44,15 +42,20 @@ public class KafkaConnector implements
     @Override
     public void setConnectionStatusMessageStream(Flux<ConnectionStatusMessage> statusMessageStream) {
         statusMessageStream
+                .onBackpressureBuffer()
                 .publishOn(Schedulers.boundedElastic())
-                .subscribe(this::produceStatusMessage);
+                .doOnNext(this::produceStatusMessage)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
     }
 
     @Override
     public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
         permissionMarketDocumentStream
                 .publishOn(Schedulers.boundedElastic())
-                .subscribe(this::producePermissionMarketDocument);
+                .doOnNext(this::producePermissionMarketDocument)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
     }
 
     @Override
@@ -60,44 +63,39 @@ public class KafkaConnector implements
             Flux<ValidatedHistoricalDataEnvelope> marketDocumentStream
     ) {
         marketDocumentStream
+                .onBackpressureBuffer()
                 .publishOn(Schedulers.boundedElastic())
-                .subscribe(this::produceEddieValidatedHistoricalDataMarketDocument);
+                .doOnNext(this::produceEddieValidatedHistoricalDataMarketDocument)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
     }
 
     @Override
     public void setRawDataStream(Flux<RawDataMessage> rawDataStream) {
         rawDataStream
+                .onBackpressureBuffer()
                 .publishOn(Schedulers.boundedElastic())
-                .subscribe(this::produceRawDataMessage);
+                .doOnNext(this::produceRawDataMessage)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
     }
 
     @Override
     public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
         marketDocumentStream
+                .onBackpressureBuffer()
                 .publishOn(Schedulers.boundedElastic())
-                .subscribe(this::produceAccountingPointEnvelope);
+                .doOnNext(this::produceAccountingPointEnvelope)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
     }
 
     private void produceStatusMessage(ConnectionStatusMessage statusMessage) {
-        var future = kafkaTemplate.send(new ProducerRecord<>(Endpoints.Agnostic.CONNECTION_STATUS_MESSAGE,
-                                                             statusMessage));
-        awaitFuture(future, "Could not produce connection status message");
+        var toSend = new ProducerRecord<String, Object>(Endpoints.Agnostic.CONNECTION_STATUS_MESSAGE, statusMessage);
+        sendToKafka(toSend, "Could not produce connection status message");
         LOGGER.debug("Produced connection status {} message for permission request {}",
                      statusMessage.status(),
                      statusMessage.permissionId());
-    }
-
-    private static void awaitFuture(Future<SendResult<String, Object>> future, String errorMessage) {
-        Thread.startVirtualThread(() -> {
-            try {
-                LOGGER.debug("Produced kafka message {}", future.get());
-            } catch (InterruptedException e) {
-                LOGGER.warn(errorMessage, e);
-                Thread.currentThread().interrupt();
-            } catch (Exception e) {
-                LOGGER.warn(errorMessage, e);
-            }
-        });
     }
 
     private void producePermissionMarketDocument(PermissionEnvelope permissionMarketDocument) {
@@ -111,8 +109,7 @@ public class KafkaConnector implements
                 permissionMarketDocument,
                 cimToHeaders(header)
         );
-        var future = kafkaTemplate.send(toSend);
-        awaitFuture(future, "Could not produce permission market document");
+        sendToKafka(toSend, "Could not produce permission market document");
     }
 
     private Iterable<Header> cimToHeaders(energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderMetaInformationComplexType header) {
@@ -133,8 +130,7 @@ public class KafkaConnector implements
                                                         info.getConnectionid(),
                                                         marketDocument,
                                                         cimToHeaders(info));
-        var kafka = kafkaTemplate.send(toSend);
-        awaitFuture(kafka, "Could not produce validated historical data market document message");
+        sendToKafka(toSend, "Could not produce validated historical data market document message");
         LOGGER.debug("Produced validated historical data market document message for permission request {}",
                      info.getPermissionid());
     }
@@ -151,8 +147,7 @@ public class KafkaConnector implements
         var toSend = new ProducerRecord<String, Object>(Endpoints.Agnostic.RAW_DATA_IN_PROPRIETARY_FORMAT,
                                                         message.connectionId(),
                                                         message);
-        var future = kafkaTemplate.send(toSend);
-        awaitFuture(future, "Could not produce raw data message");
+        sendToKafka(toSend, "Could not produce raw data message");
         LOGGER.debug("Produced raw data message for permission request {}", message.permissionId());
     }
 
@@ -168,10 +163,23 @@ public class KafkaConnector implements
                 marketDocument,
                 cimToHeaders(header)
         );
-        var future = kafkaTemplate.send(toSend);
-        awaitFuture(future, "Could not produce accounting point market document message");
+        sendToKafka(toSend, "Could not produce accounting point market document message");
         LOGGER.debug("Produced accounting point market document message for permission request {}",
                      header.getPermissionid());
+    }
+
+    private void sendToKafka(ProducerRecord<String, Object> toSend, String errorMessage) {
+        kafkaTemplate.send(toSend).whenComplete((result, ex) -> {
+            if (ex != null) {
+                LOGGER.warn(errorMessage, ex);
+            } else {
+                LOGGER.debug("Produced kafka message: {}", result);
+            }
+        });
+    }
+
+    private void logStreamerError(Throwable throwable, Object obj) {
+        LOGGER.warn("Error processing stream object: {}", obj, throwable);
     }
 
     private static List<Header> cimToHeaders(
