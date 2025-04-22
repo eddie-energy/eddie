@@ -14,15 +14,8 @@ The necessary things to do are:
    GRANT SELECT ON public.data_source TO emqx;
    GRANT CONNECT ON DATABASE aiida TO emqx;
    ```
-2. In the EMQX dashboard, add the AIIDA database as source for authentication.
-    ```postgresql
-    SELECT mqtt_password AS password_hash
-    FROM public.data_source
-    WHERE mqtt_username = ${username} LIMIT 1;
-    ```
-3. In the EMQX dashboard, add the AIIDA database as source for authorization.
-    ```postgresql
-    SELECT LOWER(action) AS action, LOWER(acl_type) AS permission, mqtt_subscribe_topic AS topic
-    FROM public.data_source
-    WHERE mqtt_username = ${username};
-    ```
+2. Set the environment variables in the .env for the emqx username and password
+   ```text
+   EMQX_DATASOURCE_USERNAME=emqx
+   EMQX_DATASOURCE_PASSWORD=REPLACE_ME
+   ```

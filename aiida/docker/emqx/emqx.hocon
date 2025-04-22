@@ -1,0 +1,80 @@
+authentication = [
+  {
+    backend = postgresql
+    # Replaced with .env file
+    database = REPLACED_WITH_ENV
+    disable_prepared_statements = false
+    enable = true
+    mechanism = password_based
+    # Replaced with .env file
+    password = REPLACED_WITH_ENV
+    password_hash_algorithm {name = plain, salt_position = disable}
+    pool_size = 8
+    query = """~
+      SELECT mqtt_password AS password_hash
+       FROM public.data_source
+       WHERE mqtt_username = ${username} LIMIT 1;~"""
+    # Replaced with .env file
+    server = "REPLACED_WITH_ENV:5432"
+    ssl {
+      ciphers = []
+      depth = 10
+      enable = false
+      hibernate_after = "5s"
+      log_level = notice
+      reuse_sessions = true
+      secure_renegotiate = true
+      verify = verify_peer
+      versions = [
+        "tlsv1.3",
+        "tlsv1.2"
+      ]
+    }
+    # Replaced with .env file
+    username = REPLACED_WITH_ENV
+  }
+]
+authorization {
+  cache {
+    enable = true
+    excludes = []
+    max_size = 32
+    ttl = "1m"
+  }
+  deny_action = ignore
+  no_match = allow
+  sources = [
+    {
+      # Replaced with .env file
+      database = REPLACED_WITH_ENV
+      disable_prepared_statements = false
+      enable = true
+      # Replaced with .env file
+      password = REPLACED_WITH_ENV
+      pool_size = 8
+      query = """~
+        SELECT LOWER(action) AS action, LOWER(acl_type) AS permission, mqtt_subscribe_topic AS topic
+         FROM public.data_source
+         WHERE mqtt_username = ${username};~"""
+      # Replaced with .env file
+      server = "REPLACED_WITH_ENV:5432"
+      ssl {
+        ciphers = []
+        depth = 10
+        enable = false
+        hibernate_after = "5s"
+        log_level = notice
+        reuse_sessions = true
+        secure_renegotiate = true
+        verify = verify_peer
+        versions = [
+          "tlsv1.3",
+          "tlsv1.2"
+        ]
+      }
+      type = postgresql
+      # Replaced with .env file
+      username = REPLACED_WITH_ENV
+    }
+  ]
+}
