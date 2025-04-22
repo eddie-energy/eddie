@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.PostPersist;
 
 import java.util.UUID;
@@ -25,6 +28,10 @@ public abstract class MqttDataSource extends DataSource {
     protected String mqttUsername;
     @JsonProperty
     protected String mqttPassword;
+    @Enumerated(EnumType.STRING)
+    protected MqttAction action;
+    @Enumerated(EnumType.STRING)
+    protected MqttAclType aclType;
 
     @SuppressWarnings("NullAway")
     protected MqttDataSource() {}
@@ -36,6 +43,8 @@ public abstract class MqttDataSource extends DataSource {
         this.mqttSubscribeTopic = dataSourceMqttDto.subscribeTopic();
         this.mqttUsername = dataSourceMqttDto.username();
         this.mqttPassword = dataSourceMqttDto.password();
+        this.action = MqttAction.SUBSCRIBE;
+        this.aclType = MqttAclType.ALLOW;
     }
 
     @Override
@@ -79,15 +88,6 @@ public abstract class MqttDataSource extends DataSource {
 
     public String mqttPassword() {
         return mqttPassword;
-    }
-
-    /**
-     * Returns the length of the MQTT subscribe topic without the wildcard.
-     *
-     * @return the length of the MQTT subscribe topic without the wildcard
-     */
-    public int mqttSubscribeTopicLengthWithoutWildcard() {
-        return mqttSubscribeTopic.length() - 1;
     }
 
     public DataSourceMqttDto toMqttDto() {

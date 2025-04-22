@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.aiida.web;
 
 import energy.eddie.api.agnostic.EddieApiError;
-import energy.eddie.api.agnostic.aiida.MqttDto;
 import energy.eddie.api.agnostic.aiida.PermissionUpdateDto;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
+import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;

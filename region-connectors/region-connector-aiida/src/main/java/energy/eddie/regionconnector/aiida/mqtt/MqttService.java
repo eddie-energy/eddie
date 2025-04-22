@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
-import energy.eddie.api.agnostic.aiida.MqttDto;
+import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
+import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
+import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
