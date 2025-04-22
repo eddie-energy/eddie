@@ -39,6 +39,7 @@ public class InternalPollingEventHandler implements EventHandler<InternalPolling
                 return;
             }
         }
+        LOGGER.info("Permission request {} is fulfilled", permissionId);
         outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.FULFILLED));
     }
 }
