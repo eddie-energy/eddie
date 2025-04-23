@@ -22,47 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class IntermediateValidatedHistoricalDataMarketDocumentTest {
 
-    static Stream<Arguments> testToVhds_returnsVhds() {
-        return Stream.of(
-                Arguments.of(FormatEnum.KWH_FWD,
-                             BusinessTypeList.CONSUMPTION,
-                             DirectionTypeList.DOWN,
-                             CommodityKind.ELECTRICITYPRIMARYMETERED,
-                             UnitOfMeasureTypeList.KILOWATT_HOUR,
-                             BigDecimal.ONE),
-                Arguments.of(FormatEnum.KWH_REV,
-                             BusinessTypeList.PRODUCTION,
-                             DirectionTypeList.UP,
-                             CommodityKind.ELECTRICITYPRIMARYMETERED,
-                             UnitOfMeasureTypeList.KILOWATT_HOUR,
-                             BigDecimal.ONE),
-                Arguments.of(FormatEnum.KWH_NET,
-                             null,
-                             DirectionTypeList.UP_AND_DOWN,
-                             CommodityKind.ELECTRICITYPRIMARYMETERED,
-                             UnitOfMeasureTypeList.KILOWATT_HOUR,
-                             BigDecimal.ONE),
-                Arguments.of(FormatEnum.WATER_GAL,
-                             BusinessTypeList.CONSUMPTION,
-                             DirectionTypeList.DOWN,
-                             CommodityKind.POTABLEWATER,
-                             UnitOfMeasureTypeList.CUBIC_METRE,
-                             CimUnitConverter.GAL_TO_CUBIC_METRE),
-                Arguments.of(FormatEnum.GAS_CCF,
-                             BusinessTypeList.CONSUMPTION,
-                             DirectionTypeList.DOWN,
-                             CommodityKind.NATURALGAS,
-                             UnitOfMeasureTypeList.KILOWATT_HOUR,
-                             CimUnitConverter.CCF_TO_KWH),
-                Arguments.of(FormatEnum.EACS,
-                             BusinessTypeList.CONSUMPTION,
-                             DirectionTypeList.DOWN,
-                             null,
-                             null,
-                             BigDecimal.ONE)
-        );
-    }
-
     @ParameterizedTest
     @MethodSource
     @SuppressWarnings("java:S5961")
@@ -83,6 +42,8 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 .setPermissionId("pid")
                 .setDataNeedId("dnid")
                 .setConnectionId("cid")
+                .setDataStart(now.toLocalDate())
+                .setDataEnd(now.toLocalDate())
                 .build();
         var intermediateDocs = new IntermediateValidatedHistoricalDataMarketDocument(pr, List.of(acc, acc));
 
@@ -162,6 +123,8 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 .setPermissionId("pid")
                 .setDataNeedId("dnid")
                 .setConnectionId("cid")
+                .setDataStart(now.toLocalDate())
+                .setDataEnd(now.toLocalDate())
                 .build();
         var intermediateDocs = new IntermediateValidatedHistoricalDataMarketDocument(pr, List.of(acc));
 
@@ -184,6 +147,84 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 .isEqualTo("1s");
     }
 
+    @Test
+    void testToVhds_removesDataOutsideOfStartAndEnd() {
+        // Given
+        var now = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var acc = createAccount(900, FormatEnum.DEMAND_KW, now);
+        var pr = new CdsPermissionRequestBuilder()
+                .setCdsServer(1)
+                .setPermissionId("pid")
+                .setDataNeedId("dnid")
+                .setConnectionId("cid")
+                .setDataStart(now.plusDays(1).toLocalDate())
+                .setDataEnd(now.plusDays(2).toLocalDate())
+                .build();
+        var intermediateDocs = new IntermediateValidatedHistoricalDataMarketDocument(pr, List.of(acc, acc));
+
+        // When
+        var res = intermediateDocs.toVhds();
+
+        // Then
+        assertThat(res)
+                .hasSize(2)
+                .first()
+                .extracting(ValidatedHistoricalDataEnvelope::getValidatedHistoricalDataMarketDocument)
+                .extracting(ValidatedHistoricalDataMarketDocumentComplexType::getTimeSeriesList)
+                .extracting(ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList::getTimeSeries)
+                .asInstanceOf(InstanceOfAssertFactories.list(TimeSeriesComplexType.class))
+                .singleElement()
+                .extracting(TimeSeriesComplexType::getSeriesPeriodList)
+                .extracting(TimeSeriesComplexType.SeriesPeriodList::getSeriesPeriods)
+                .asInstanceOf(InstanceOfAssertFactories.list(SeriesPeriodComplexType.class))
+                .singleElement()
+                .extracting(SeriesPeriodComplexType::getPointList)
+                .extracting(SeriesPeriodComplexType.PointList::getPoints)
+                .asInstanceOf(InstanceOfAssertFactories.list(PointComplexType.class))
+                .isEmpty();
+    }
+
+    private static Stream<Arguments> testToVhds_returnsVhds() {
+        return Stream.of(
+                Arguments.of(FormatEnum.KWH_FWD,
+                             BusinessTypeList.CONSUMPTION,
+                             DirectionTypeList.DOWN,
+                             CommodityKind.ELECTRICITYPRIMARYMETERED,
+                             UnitOfMeasureTypeList.KILOWATT_HOUR,
+                             BigDecimal.ONE),
+                Arguments.of(FormatEnum.KWH_REV,
+                             BusinessTypeList.PRODUCTION,
+                             DirectionTypeList.UP,
+                             CommodityKind.ELECTRICITYPRIMARYMETERED,
+                             UnitOfMeasureTypeList.KILOWATT_HOUR,
+                             BigDecimal.ONE),
+                Arguments.of(FormatEnum.KWH_NET,
+                             null,
+                             DirectionTypeList.UP_AND_DOWN,
+                             CommodityKind.ELECTRICITYPRIMARYMETERED,
+                             UnitOfMeasureTypeList.KILOWATT_HOUR,
+                             BigDecimal.ONE),
+                Arguments.of(FormatEnum.WATER_GAL,
+                             BusinessTypeList.CONSUMPTION,
+                             DirectionTypeList.DOWN,
+                             CommodityKind.POTABLEWATER,
+                             UnitOfMeasureTypeList.CUBIC_METRE,
+                             CimUnitConverter.GAL_TO_CUBIC_METRE),
+                Arguments.of(FormatEnum.GAS_CCF,
+                             BusinessTypeList.CONSUMPTION,
+                             DirectionTypeList.DOWN,
+                             CommodityKind.NATURALGAS,
+                             UnitOfMeasureTypeList.KILOWATT_HOUR,
+                             CimUnitConverter.CCF_TO_KWH),
+                Arguments.of(FormatEnum.EACS,
+                             BusinessTypeList.CONSUMPTION,
+                             DirectionTypeList.DOWN,
+                             null,
+                             null,
+                             BigDecimal.ONE)
+        );
+    }
+
     private static Account createAccount(int interval, FormatEnum format, ZonedDateTime timestamp) {
         var usageSegment = new UsageSegment(
                 timestamp,
@@ -196,10 +237,10 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                            "customer name",
                            "business",
                            List.of(new ServiceContract(
-                                      "",
-                                      "",
-                                      List.of(new ServicePoint("", List.of(meter)))
-                              ))
+                                   "",
+                                   "",
+                                   List.of(new ServicePoint("", List.of(meter)))
+                           ))
         );
     }
 }

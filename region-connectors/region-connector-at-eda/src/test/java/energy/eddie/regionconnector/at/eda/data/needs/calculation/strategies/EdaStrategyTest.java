@@ -83,7 +83,7 @@ class EdaStrategyTest {
         EdaStrategy edaStrategy = new EdaStrategy();
 
         // When
-        var timeFrame = edaStrategy.energyDataTimeframe(timeframedDataNeed, ZonedDateTime.now(ZoneOffset.UTC));
+        var timeFrame = edaStrategy.energyDataTimeframe(timeframedDataNeed, ZonedDateTime.now(AT_ZONE_ID));
 
         // Then
         assertAll(

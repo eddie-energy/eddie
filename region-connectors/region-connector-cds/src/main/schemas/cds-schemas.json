@@ -426,10 +426,7 @@
           "description": "The OAuth grant type values that can be used with this scope. This value follows the same behavior as OAuth’s Metadata object grant_types_supported, except that this value represents the grant types supported for this individual scope and not all scopes for the Client. This array MUST contain at least one grant type."
         },
         "token_endpoint_auth_methods_supported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
+          "type": "string",
           "description": "The OAuth client authentication methods that can be used for granting tokens with this scope. This value follows the same behavior as OAuth’s Metadata object token_endpoint_auth_methods_supported, except that this value represents the client authentication methods supported for this individual scope and not all scopes for the Client. A value of \"none\" this array indicates that the scope may be used for public application without using a client secret."
         },
         "code_challenge_methods_supported": {

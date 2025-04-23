@@ -21,7 +21,7 @@ class AuthorizationRequestFactoryTest {
 
     @Test
     void endDate_whenRequestingFutureData_IsOneDayGreaterToAccountForExclusivity() {
-        var futureDate = LocalDate.now(ZoneOffset.UTC).plusMonths(1);
+        var futureDate = LocalDate.now(ZONE_ID_SPAIN).plusMonths(1);
         var request = getPermissionRequest(futureDate);
 
         AuthorizationRequestFactory factory = new AuthorizationRequestFactory();
@@ -33,7 +33,7 @@ class AuthorizationRequestFactoryTest {
 
     @Test
     void endDate_whenRequestingPastData_isOneDayGraterThanAuthorizationStart() {
-        var pastDate = LocalDate.now(ZoneOffset.UTC).minusMonths(1);
+        var pastDate = LocalDate.now(ZONE_ID_SPAIN).minusMonths(1);
         var request = getPermissionRequest(pastDate);
 
         AuthorizationRequestFactory factory = new AuthorizationRequestFactory();
@@ -45,7 +45,7 @@ class AuthorizationRequestFactoryTest {
 
     @Test
     void endDate_whenRequestingToday_isOneDayGraterThanAuthorizationStart() {
-        var today = LocalDate.now(ZoneOffset.UTC);
+        var today = LocalDate.now(ZONE_ID_SPAIN);
         var request = getPermissionRequest(today);
 
         AuthorizationRequestFactory factory = new AuthorizationRequestFactory();

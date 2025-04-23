@@ -92,10 +92,10 @@ class UsPermissionRequestRepositoryTest {
     void testFindActiveOutPermissionRequests_findsActivePermissionRequests() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var start1 = now.minusDays(1);
-        var end1 = now.plusDays(1);
-        var start2 = now.plusDays(1);
-        var end2 = now.plusDays(2);
+        var start1 = now.minusDays(2);
+        var end1 = now.plusDays(2);
+        var start2 = now.plusDays(10);
+        var end2 = now.plusDays(20);
         permissionEventRepository.saveAndFlush(new UsValidatedEvent("pid1", start1, end1, Granularity.PT15M, "scope"));
         permissionEventRepository.saveAndFlush(new UsSimpleEvent("pid1", PermissionProcessStatus.ACCEPTED));
         permissionEventRepository.saveAndFlush(new UsValidatedEvent("pid2", start2, end2, Granularity.PT15M, "scope"));

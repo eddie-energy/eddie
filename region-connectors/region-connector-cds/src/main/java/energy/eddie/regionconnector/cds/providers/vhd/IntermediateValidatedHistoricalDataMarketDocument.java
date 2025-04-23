@@ -16,9 +16,12 @@ import jakarta.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
 
 class IntermediateValidatedHistoricalDataMarketDocument {
     private final CdsPermissionRequest permissionRequest;
@@ -131,16 +134,23 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         return CimUtils.getCodingSchemeVhd(permissionRequest.dataSourceInformation().countryCode());
     }
 
-    private static List<PointComplexType> toPoints(
+    private List<PointComplexType> toPoints(
             UsageSegment usageSegment,
             List<BigDecimal> values,
             CimUnitConverter converter
     ) {
         List<PointComplexType> points = new ArrayList<>();
+        var start = permissionRequest.start().atStartOfDay(ZoneOffset.UTC);
+        var end = endOfDay(permissionRequest.end(), ZoneOffset.UTC);
         for (var i = 0; i < values.size(); i++) {
             var value = converter.convert(values.get(i));
             var offset = usageSegment.interval().multiply(BigDecimal.valueOf(i)).longValue();
-            var position = usageSegment.start().toInstant().plusSeconds(offset).getEpochSecond();
+            var timestamp = usageSegment.start().toInstant().plusSeconds(offset);
+            var dateTime = timestamp.atZone(ZoneOffset.UTC);
+            if (dateTime.isAfter(end) || dateTime.isBefore(start)) {
+                continue;
+            }
+            var position = timestamp.getEpochSecond();
             var point = new PointComplexType()
                     .withPosition(String.valueOf(position))
                     .withEnergyQuantityQuantity(value)

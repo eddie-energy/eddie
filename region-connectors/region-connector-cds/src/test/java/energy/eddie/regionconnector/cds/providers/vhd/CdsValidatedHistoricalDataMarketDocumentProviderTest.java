@@ -53,6 +53,8 @@ class CdsValidatedHistoricalDataMarketDocumentProviderTest {
                 .setPermissionId("pid")
                 .setDataNeedId("dnid")
                 .setConnectionId("cid")
+                .setDataStart(now.toLocalDate())
+                .setDataEnd(now.toLocalDate())
                 .build();
 
         // When
