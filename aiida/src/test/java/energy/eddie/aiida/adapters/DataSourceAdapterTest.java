@@ -45,7 +45,7 @@ class DataSourceAdapterTest {
         }
 
         return DataSource.createFromDto(
-                new DataSourceDto(ID, type.identifier(), AiidaAsset.SUBMETER, "test", true, "", 1, null, null),
+                new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", true, 1, null, null),
                 ID,
                 settings
         );

@@ -444,27 +444,35 @@ function renderDataSources() {
       }
 
       function renderMqttDataSource(template, dataSource, dataSourceList) {
-          let dataSourceTypeDetails = /* HTML */ `
-                <dt>MQTT Server URI:</dt>
-                <dd>${dataSource.mqttSettings.externalHost}</dd>
-                <dt>MQTT Topic:</dt>
-                <dd>${dataSource.mqttSettings.subscribeTopic}</dd>
-                <dt>MQTT Username:</dt>
-                <dd>${dataSource.mqttSettings.username}</dd>
-                <dt>MQTT Password:</dt>
-                <dd>
-                  <span hidden id="mqtt-password">
-                    ${dataSource.mqttSettings.password}
-                  </span>
-                  <span>********</span>
-                  <sl-icon
-                    id="toggle-mqtt-password"
-                    style="cursor: pointer"
-                    name="eye"
-                  ></sl-icon>
-                </dd>
-              `;
+        const dataSourceTypeDetails = /* HTML */ `
+          <dt>MQTT Server URI:</dt>
+          <dd>${dataSource.mqttSettings.externalHost}</dd>
+          
+          <dt>MQTT Topic:</dt>
+          <dd>${dataSource.mqttSettings.subscribeTopic}</dd>
+          
+          <dt>MQTT Username:</dt>
+          <dd>${dataSource.mqttSettings.username}</dd>
+          
+          <dt>MQTT Password:</dt>
+          <dd>
+            <span hidden id="mqtt-password">
+              ${dataSource.mqttSettings.password}
+            </span>
+            <span>********</span>
+            <sl-icon
+              id="toggle-mqtt-password"
+              style="cursor: pointer"
+              name="eye"
+            ></sl-icon>
+          </dd>
+        `;
 
+          appendDataSourceToChild(dataSource, template, dataSourceTypeDetails, dataSourceList);
+      }
+
+
+      function appendDataSourceToChild(dataSource, template, dataSourceTypeDetails, dataSourceList) {
         template.innerHTML = /* HTML */ `
           <sl-card>
             <h3>${dataSource.name}</h3>

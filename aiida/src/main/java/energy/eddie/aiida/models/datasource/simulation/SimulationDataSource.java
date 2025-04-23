@@ -28,7 +28,8 @@ public class SimulationDataSource extends IntervalBasedDataSource {
                 asset,
                 name,
                 enabled,
-                simulationPeriod,
+                pollingInterval,
+                null,
                 null
         );
     }

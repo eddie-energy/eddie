@@ -2,12 +2,14 @@ package energy.eddie.aiida.adapters.datasource.modbus;
 
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
+import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.modbus.ModbusDevice;
 import energy.eddie.aiida.models.modbus.ModbusDataPoint;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.services.ModbusDeviceService;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -42,15 +44,14 @@ class ModbusTcpDataSourceAdapterTest {
 
         // Setup DataSource (customize fields if needed)
         DataSourceDto dto = new DataSourceDto(
-                UUID.randomUUID(),                   // id
-                "MODBUS",                        // dataSourceType
-                "DEDICATED-MEASUREMENT-DEVICE",                           // asset
-                "test-datasource",                   // name
-                true,                                // enabled
-                null,                                // meteringId
-                1,                                   // simulationPeriod (pollingInterval in seconds)
-                null,                                // mqttSettings
-                new DataSourceModbusDto(             // modbusSettings
+                UUID.randomUUID(),                          // id
+                DataSourceType.MODBUS,                      // data source type
+                AiidaAsset.DEDICATED_MEASUREMENT_DEVICE,    // asset
+                "test-datasource",                          // name
+                true,                                       // enabled
+                1,                                          // simulationPeriod (pollingInterval in seconds)
+                null,                                       // mqttSettings
+                new DataSourceModbusDto(                    // modbusSettings
                         "127.0.0.1",
                         null,
                         null,

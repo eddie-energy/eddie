@@ -73,7 +73,7 @@ public class DataSourceService {
     public void addDataSource(DataSourceDto dto) throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
 
-        if (dto.dataSourceType().equals(DataSourceType.MODBUS.identifier())) {
+        if (dto.dataSourceType().equals(DataSourceType.MODBUS)) {
             var modbusSettings = dto.modbusSettings();
             if (modbusSettings != null) {
                 var modbusSettingsDto = new DataSourceModbusDto(

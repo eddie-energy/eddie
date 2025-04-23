@@ -73,12 +73,11 @@ public class ModbusDataSource extends IntervalBasedDataSource {
     public DataSourceDto toDto() {
         return new DataSourceDto(
                 id,
-                dataSourceType.identifier(),
-                asset.asset(),
+                dataSourceType,
+                asset,
                 name,
                 enabled,
-                null,
-                this.pollingInterval,
+                pollingInterval,
                 null,
                 new DataSourceModbusDto(modbusIp, modbusVendor, modbusModel, modbusDevice)
         );

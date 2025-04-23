@@ -4,14 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.dtos.DataSourceProtocolSettings;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
-import energy.eddie.aiida.dtos.DataSourceProtocolSettings;
-import energy.eddie.aiida.models.datasource.at.OesterreichsEnergieDataSource;
-import energy.eddie.aiida.models.datasource.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
-import energy.eddie.aiida.models.datasource.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -54,7 +51,7 @@ public abstract class DataSource {
         this.dataSourceType = dto.dataSourceType();
     }
 
-    public static DataSource createFromDto(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
+    public static DataSource createFromDto(DataSourceDto dto, UUID userId, @Nullable DataSourceProtocolSettings settings) {
         var dataSourceType = dto.dataSourceType();
 
         return switch (dataSourceType) {
@@ -124,6 +121,6 @@ public abstract class DataSource {
     }
 
     public DataSourceDto toDto() {
-        return new DataSourceDto(id, dataSourceType, asset, name, enabled, null, null);
+        return new DataSourceDto(id, dataSourceType, asset, name, enabled, null, null, null);
     }
 }

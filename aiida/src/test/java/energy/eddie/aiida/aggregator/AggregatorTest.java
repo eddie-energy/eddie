@@ -61,7 +61,6 @@ class AggregatorTest {
             true,
             null,
             null,
-            null,
             null), USER_ID);
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
     private Aggregator aggregator;

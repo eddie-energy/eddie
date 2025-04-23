@@ -6,9 +6,7 @@ import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
-import energy.eddie.aiida.models.datasource.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
@@ -45,7 +43,7 @@ class DataSourceServiceTest {
     private UUID userId;
 
     DataSourceDto createNewDataSourceDto(UUID id, DataSourceType type, String name, boolean enabled) {
-        return new DataSourceDto(id, type, AiidaAsset.SUBMETER, name, enabled, "", 1, null, null);
+        return new DataSourceDto(id, type, AiidaAsset.SUBMETER, name, enabled, 1, null, null);
     }
 
     DataSource createNewDataSource(UUID id, DataSourceType type) {
@@ -125,11 +123,10 @@ class DataSourceServiceTest {
 
             var dto = new DataSourceDto(
                     DATA_SOURCE_ID,
-                    DataSourceType.MODBUS.identifier(),
-                    AiidaAsset.SUBMETER.asset(),
+                    DataSourceType.MODBUS,
+                    AiidaAsset.SUBMETER,
                     "Modbus DS",
                     true,
-                    "",
                     1,
                     null,
                     modbusSettings
