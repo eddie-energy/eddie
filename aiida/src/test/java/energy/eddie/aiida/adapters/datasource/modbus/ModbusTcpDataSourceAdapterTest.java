@@ -6,13 +6,14 @@ import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.modbus.ModbusDevice;
-import energy.eddie.aiida.models.modbus.ModbusDataPoint;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.services.ModbusDeviceService;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import org.assertj.core.groups.Tuple;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -31,121 +32,103 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ModbusTcpDataSourceAdapterTest {
-
-    private ModbusTcpDataSourceAdapter modbusTcpDataSourceAdapter;
-
-    @Mock
-    private ModbusTcpClient mockModbusTcpClient;
+    private MockedStatic<ModbusDeviceService> mockedDeviceService;
+    private ModbusDevice modbusDevice;
+    private ModbusTcpDataSourceAdapter adapter;
+    private MockedConstruction<ModbusTcpClient> mockedClientConstruction;
+    private ModbusTcpClient mockClient;
 
     @BeforeEach
-    void setUp() {
-        // Prepare your ModbusDevice using your helper
-        ModbusDevice modbusDevice = ModbusDeviceTestHelper.setupModbusDevice();
+    void setUp() throws Exception {
+        modbusDevice = ModbusDeviceTestHelper.setupModbusDevice();
 
-        // Setup DataSource (customize fields if needed)
-        DataSourceDto dto = new DataSourceDto(
-                UUID.randomUUID(),                          // id
-                DataSourceType.MODBUS,                      // data source type
-                AiidaAsset.DEDICATED_MEASUREMENT_DEVICE,    // asset
-                "test-datasource",                          // name
-                true,                                       // enabled
-                1,                                          // simulationPeriod (pollingInterval in seconds)
-                null,                                       // mqttSettings
-                new DataSourceModbusDto(                    // modbusSettings
-                        "127.0.0.1",
-                        null,
-                        null,
-                        UUID.randomUUID()  // modbusDevice UUID
-                )
+        mockedDeviceService = Mockito.mockStatic(ModbusDeviceService.class);
+        mockedDeviceService.when(() -> ModbusDeviceService.loadConfig(any(UUID.class)))
+                .thenReturn(modbusDevice);
+
+        // Construct mock client before adapter instantiation (intercepts new ModbusTcpClient(...))
+        mockedClientConstruction = Mockito.mockConstruction(ModbusTcpClient.class,
+                (mock, context) -> {
+                    when(mock.readHoldingRegister(any())).thenReturn(Optional.of(123));
+                    when(mock.readInputRegister(any())).thenReturn(Optional.of(456));
+                    when(mock.readCoil(any())).thenReturn(Optional.of(true));
+                    when(mock.readDiscreteInput(any())).thenReturn(Optional.of(false));
+                }
         );
 
-        UUID userId = UUID.randomUUID(); // Replace as needed for tests
+        DataSourceDto dto = new DataSourceDto(
+                UUID.randomUUID(),
+                DataSourceType.MODBUS,
+                AiidaAsset.DEDICATED_MEASUREMENT_DEVICE,
+                "test-datasource",
+                true,
+                1,
+                null,
+                new DataSourceModbusDto("127.0.0.1", null, null, UUID.randomUUID())
+        );
 
-        if (dto.modbusSettings() == null) return;
+        ModbusDataSource dataSource = new ModbusDataSource(dto, UUID.randomUUID(), dto.modbusSettings());
+        adapter = new ModbusTcpDataSourceAdapter(dataSource);
 
-        ModbusDataSource dataSource = new ModbusDataSource(dto, userId, dto.modbusSettings());
+        // Grab the actual mock instance created by the constructor
+        mockClient = mockedClientConstruction.constructed().get(0);
+    }
 
-        // Mock the static call
-        try (MockedStatic<ModbusDeviceService> mockedDeviceService = Mockito.mockStatic(ModbusDeviceService.class)) {
-            mockedDeviceService.when(() -> ModbusDeviceService.loadConfig(any(UUID.class)))
-                    .thenReturn(modbusDevice);
-
-            // instantiate the adapter within this block
-            modbusTcpDataSourceAdapter = new ModbusTcpDataSourceAdapter(dataSource);
-        }
-
-        modbusTcpDataSourceAdapter.setModbusClientHelper(mockModbusTcpClient);
+    @AfterEach
+    void tearDown() {
+        if (mockedDeviceService != null) mockedDeviceService.close();
+        if (mockedClientConstruction != null) mockedClientConstruction.close();
     }
 
     @Test
     void testModbusAdapterEmitsValuesOnStart() {
-        // Mock the behavior of ModbusClientHelper to return dummy values
-        when(mockModbusTcpClient.readHoldingRegister(any(ModbusDataPoint.class)))
-                .thenReturn(Optional.of(123));
+        Flux<AiidaRecord> flux = adapter.start();
 
-        when(mockModbusTcpClient.readInputRegister(any(ModbusDataPoint.class)))
-                .thenReturn(Optional.of(456));
-
-        when(mockModbusTcpClient.readCoil(any(ModbusDataPoint.class)))
-                .thenReturn(Optional.of(true));
-
-        when(mockModbusTcpClient.readDiscreteInput(any(ModbusDataPoint.class)))
-                .thenReturn(Optional.of(false));
-
-        // Start the Flux stream from the adapter
-        Flux<AiidaRecord> recordFlux = modbusTcpDataSourceAdapter.start();
-
-        // Verify using StepVerifier
-        StepVerifier.create(recordFlux)
+        StepVerifier.create(flux)
                 .thenAwait(java.time.Duration.ofSeconds(2))
-                .assertNext(recordValues -> {
-                    List<AiidaRecordValue> values = recordValues.aiidaRecordValues();
-
+                .assertNext(aiidaRecord -> {
+                    List<AiidaRecordValue> values = aiidaRecord.aiidaRecordValues();
                     assertThat(values).hasSize(21);
-
-                    assertThat(values).extracting(AiidaRecordValue::dataPointKey, AiidaRecordValue::value).containsExactlyInAnyOrder(
-                            tuple("inverter-2::status", "UNKNOWN"),
-                            tuple("inverter-1::status", "UNKNOWN"),
-                            tuple("inverter-1::firmware_version", "123"),
-                            tuple("inverter-1::start_command", "true"),
-                            tuple("battery-1::state_of_charge_lit", "123"),
-                            tuple("battery-1::state_of_charge_big", "1.23"),
-                            tuple("battery-1::charging_power", "123"),
-                            tuple("battery-1::force_charge", "true"),
-                            tuple("battery-1::discharge_enable", "true"),
-                            tuple("electricity_meter-1::voltage_l1", "456"),
-                            tuple("electricity_meter-1::voltage_l2", "456"),
-                            tuple("electricity_meter-1::voltage_l3", "456"),
-                            tuple("electricity_meter-1::current_l1", "456"),
-                            tuple("electricity_meter-1::current_l2", "456"),
-                            tuple("electricity_meter-1::current_l3", "456"),
-                            tuple("electricity_meter-1::breaker_closed", "false"),
-                            tuple("electricity_meter-1::grid_sync", "false"),
-                            tuple("electricity_meter-1::power_total", "623808"),
-                            tuple("electricity_meter-1::power_total_soc", "623931"),
-                            tuple("electricity_meter-1::is_error", "true"),
-                            tuple("electricity_meter-1::error_code", "high_error")
-                    );
-
+                    assertThat(values)
+                            .extracting(AiidaRecordValue::dataPointKey, AiidaRecordValue::value)
+                            .containsExactlyInAnyOrderElementsOf(expectedModbusRecordTuples());
                 })
                 .thenCancel()
                 .verify();
+
     }
 
     @Test
     void testCloseDisposesResources() {
-        // Spy on an instance, bypassing real TCP logic
-        ModbusTcpClient spyClient = Mockito.mock(ModbusTcpClient.class);
+        adapter.start();
+        adapter.close();
 
-        modbusTcpDataSourceAdapter.setModbusClientHelper(spyClient);
-        modbusTcpDataSourceAdapter.start();
-        modbusTcpDataSourceAdapter.close();
-
-        Mockito.verify(spyClient).close(); // ✅ verify cleanup
+        Mockito.verify(mockClient).close();
     }
 
-
-
+    private List<Tuple> expectedModbusRecordTuples() {
+        return List.of(
+                tuple("inverter-2::status", "UNKNOWN"),
+                tuple("inverter-1::status", "UNKNOWN"),
+                tuple("inverter-1::firmware_version", "123"),
+                tuple("inverter-1::start_command", "true"),
+                tuple("battery-1::state_of_charge_lit", "123"),
+                tuple("battery-1::state_of_charge_big", "1.23"),
+                tuple("battery-1::charging_power", "123"),
+                tuple("battery-1::force_charge", "true"),
+                tuple("battery-1::discharge_enable", "true"),
+                tuple("electricity_meter-1::voltage_l1", "456"),
+                tuple("electricity_meter-1::voltage_l2", "456"),
+                tuple("electricity_meter-1::voltage_l3", "456"),
+                tuple("electricity_meter-1::current_l1", "456"),
+                tuple("electricity_meter-1::current_l2", "456"),
+                tuple("electricity_meter-1::current_l3", "456"),
+                tuple("electricity_meter-1::breaker_closed", "false"),
+                tuple("electricity_meter-1::grid_sync", "false"),
+                tuple("electricity_meter-1::power_total", "623808"),
+                tuple("electricity_meter-1::power_total_soc", "623931"),
+                tuple("electricity_meter-1::is_error", "true"),
+                tuple("electricity_meter-1::error_code", "high_error")
+        );
+    }
 }
-
-

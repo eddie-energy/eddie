@@ -3,13 +3,13 @@ package energy.eddie.aiida.adapters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
+import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpClient;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
 import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
-import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
@@ -20,12 +20,16 @@ import energy.eddie.aiida.services.ModbusDeviceService;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 
 class DataSourceAdapterTest {
@@ -106,18 +110,18 @@ class DataSourceAdapterTest {
     }
 
     @Test
+    @ExtendWith(MockitoExtension.class)
     void givenModbus_returnsAdapter() {
-        try (MockedStatic<ModbusDeviceService> mockedStatic = mockStatic(ModbusDeviceService.class)) {
+        try (MockedStatic<ModbusDeviceService> mockedStatic = mockStatic(ModbusDeviceService.class);
+             MockedConstruction<ModbusTcpClient> mockedClient = mockConstruction(ModbusTcpClient.class)) {
+
             mockedStatic.when(() -> ModbusDeviceService.loadConfig(any()))
                     .thenReturn(ModbusDeviceTestHelper.setupModbusDevice());
 
-            // Given
             var dataSource = createNewDataSource(DataSourceType.MODBUS);
 
-            // When
             var adapter = DataSourceAdapter.create(dataSource, mapper);
 
-            // Then
             assertInstanceOf(ModbusTcpDataSourceAdapter.class, adapter);
         }
     }
