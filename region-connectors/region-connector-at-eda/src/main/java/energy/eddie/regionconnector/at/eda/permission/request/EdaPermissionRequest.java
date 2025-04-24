@@ -109,7 +109,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
                 PermissionProcessStatus.valueOf(projection.getStatus()),
                 projection.getMessage(),
                 projection.getConsentId(),
-                projection.getCreated()
+                ZonedDateTime.ofInstant(projection.getCreated(), AT_ZONE_ID)
         );
     }
 

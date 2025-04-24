@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.at.api;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 
 public interface AtPermissionRequestProjection {
     String getPermissionId();
@@ -17,5 +17,5 @@ public interface AtPermissionRequestProjection {
     String getMessage();
     String getGranularity();
     String getStatus();
-    ZonedDateTime getCreated();
+    Instant getCreated();
 }
