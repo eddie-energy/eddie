@@ -1,7 +1,10 @@
 package energy.eddie.aiida.adapters.datasource.modbus;
 
 import com.ghgande.j2mod.modbus.io.ModbusTCPTransaction;
-import com.ghgande.j2mod.modbus.msg.*;
+import com.ghgande.j2mod.modbus.msg.ReadCoilsResponse;
+import com.ghgande.j2mod.modbus.msg.ReadInputDiscretesResponse;
+import com.ghgande.j2mod.modbus.msg.ReadInputRegistersResponse;
+import com.ghgande.j2mod.modbus.msg.ReadMultipleRegistersResponse;
 import com.ghgande.j2mod.modbus.net.TCPMasterConnection;
 import com.ghgande.j2mod.modbus.procimg.InputRegister;
 import com.ghgande.j2mod.modbus.procimg.Register;
@@ -10,14 +13,17 @@ import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import energy.eddie.aiida.models.modbus.Endian;
 import energy.eddie.aiida.models.modbus.ModbusDataPoint;
 import energy.eddie.aiida.models.modbus.RegisterType;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 class ModbusTcpClientTest {
@@ -39,7 +45,7 @@ class ModbusTcpClientTest {
         Register[] regs = new Register[]{new SimpleRegister(0x01F4)};
         when(response.getRegisters()).thenReturn(regs);
 
-        try (MockedConstruction<ModbusTCPTransaction> mocked = Mockito.mockConstruction(ModbusTCPTransaction.class,
+        try (MockedConstruction<ModbusTCPTransaction> ignored = Mockito.mockConstruction(ModbusTCPTransaction.class,
                 (mock, context) -> {
                     when(mock.getResponse()).thenReturn(response);
                     doNothing().when(mock).setRequest(any());
@@ -68,7 +74,7 @@ class ModbusTcpClientTest {
         ReadInputRegistersResponse response = mock(ReadInputRegistersResponse.class);
         when(response.getRegisters()).thenReturn(regs);
 
-        try (MockedConstruction<ModbusTCPTransaction> mocked = Mockito.mockConstruction(ModbusTCPTransaction.class,
+        try (MockedConstruction<ModbusTCPTransaction> ignored = Mockito.mockConstruction(ModbusTCPTransaction.class,
                 (mock, context) -> {
                     when(mock.getResponse()).thenReturn(response);
                     doNothing().when(mock).setRequest(any());
@@ -88,7 +94,7 @@ class ModbusTcpClientTest {
         ReadCoilsResponse response = mock(ReadCoilsResponse.class);
         when(response.getCoilStatus(0)).thenReturn(true);
 
-        try (MockedConstruction<ModbusTCPTransaction> mocked = Mockito.mockConstruction(ModbusTCPTransaction.class,
+        try (MockedConstruction<ModbusTCPTransaction> ignored = Mockito.mockConstruction(ModbusTCPTransaction.class,
                 (mock, context) -> {
                     when(mock.getResponse()).thenReturn(response);
                     doNothing().when(mock).setRequest(any());
@@ -107,7 +113,7 @@ class ModbusTcpClientTest {
         ReadInputDiscretesResponse response = mock(ReadInputDiscretesResponse.class);
         when(response.getDiscreteStatus(0)).thenReturn(false);
 
-        try (MockedConstruction<ModbusTCPTransaction> mocked = Mockito.mockConstruction(ModbusTCPTransaction.class,
+        try (MockedConstruction<ModbusTCPTransaction> ignored = Mockito.mockConstruction(ModbusTCPTransaction.class,
                 (mock, context) -> {
                     when(mock.getResponse()).thenReturn(response);
                     doNothing().when(mock).setRequest(any());
@@ -205,6 +211,7 @@ class ModbusTcpClientTest {
         try {
             var method = ModbusTcpClient.class.getDeclaredMethod("parseRegisterResponse", InputRegister[].class, ModbusDataPoint.class);
             method.setAccessible(true);
+            //noinspection unchecked
             return (Optional<Object>) method.invoke(client, regs, dp);
         } catch (Exception e) {
             throw new RuntimeException(e);

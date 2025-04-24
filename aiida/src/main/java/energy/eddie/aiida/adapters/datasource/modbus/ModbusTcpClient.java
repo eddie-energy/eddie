@@ -1,12 +1,11 @@
 package energy.eddie.aiida.adapters.datasource.modbus;
 
-import com.ghgande.j2mod.modbus.msg.*;
-import energy.eddie.aiida.models.modbus.Endian;
-import energy.eddie.aiida.models.modbus.ModbusDataPoint;
 import com.ghgande.j2mod.modbus.io.ModbusTCPTransaction;
+import com.ghgande.j2mod.modbus.msg.*;
 import com.ghgande.j2mod.modbus.net.TCPMasterConnection;
 import com.ghgande.j2mod.modbus.procimg.InputRegister;
-
+import energy.eddie.aiida.models.modbus.Endian;
+import energy.eddie.aiida.models.modbus.ModbusDataPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,21 +168,27 @@ public class ModbusTcpClient {
     }
 
     public void reconnect() {
-        if (connection != null) {
-            try {
-                if (connection.isConnected()) {
-                    connection.close();
-                    LOGGER.info("Closed existing Modbus connection to device {}:{} before reconnecting.", connection.getAddress(), connection.getPort());
-                }
-
-                connection.connect();
-                LOGGER.info("Modbus device {}:{} reconnected.", connection.getAddress(), connection.getPort());
-            } catch (Exception e) {
-                LOGGER.error("Failed to reconnect to Modbus device {}:{} -> try again in 30 seconds", connection.getAddress(), connection.getPort(), e);
-                this.reconnectFuture = scheduler.schedule(this::reconnect, 30, TimeUnit.SECONDS);
-            }
-        } else {
+        if (connection == null) {
             LOGGER.warn("Connection object is null; cannot reconnect.");
+            return;
+        }
+
+        if (connection.isConnected()) {
+            connection.close();
+            LOGGER.info("Closed existing Modbus connection to device {}:{} before reconnecting.",
+                    connection.getAddress(),
+                    connection.getPort());
+        }
+
+        try {
+            connection.connect();
+            LOGGER.info("Modbus device {}:{} reconnected.", connection.getAddress(), connection.getPort());
+        } catch (Exception e) {
+            LOGGER.error("Failed to reconnect to Modbus device {}:{} -> try again in 30 seconds",
+                    connection.getAddress(),
+                    connection.getPort(),
+                    e);
+            this.reconnectFuture = scheduler.schedule(this::reconnect, 30, TimeUnit.SECONDS);
         }
     }
 

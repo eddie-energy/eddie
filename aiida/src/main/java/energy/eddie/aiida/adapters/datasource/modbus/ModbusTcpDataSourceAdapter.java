@@ -43,17 +43,19 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
     public ModbusTcpDataSourceAdapter(ModbusDataSource dataSource) throws IllegalArgumentException, ModbusConnectionException {
         super(dataSource);
         this.modbusDevice = ModbusDeviceService.loadConfig(dataSource.modbusDevice());
-        this.pollingInterval = Math.max(dataSource.pollingInterval() * (long) 1000, this.modbusDevice.intervals().read().minInterval());
+        this.pollingInterval = Math.max(dataSource.pollingInterval() * 1000L, this.modbusDevice.intervals().read().minInterval());
+
+        if (!dataSource.enabled()) return;
+
+        String ip = dataSource.modbusIp();
+
+        if (ip == null) {
+            LOGGER.error("Failed to create ModbusClientHelper -> Modbus IP is required and must not be null");
+            throw new IllegalArgumentException("Modbus IP is required and must not be null");
+        }
 
         try {
-            if (!dataSource.enabled()) return;
-            String ip = dataSource.modbusIp();
-            if (ip != null) {
-                this.modbusTcpClient = new ModbusTcpClient(ip, modbusDevice.port(), modbusDevice.unitId());
-            } else {
-                LOGGER.error("Failed to create ModbusClientHelper -> Modbus IP is required and must not be null");
-                throw new IllegalArgumentException("Modbus IP is required and must not be null");
-            }
+            this.modbusTcpClient = new ModbusTcpClient(ip, modbusDevice.port(), modbusDevice.unitId());
         } catch (Exception e) {
             throw new ModbusConnectionException("Failed to create ModbusClientHelper for device: " + dataSource.modbusDevice() + ", IP: " + dataSource.modbusIp(), e);
         }
@@ -62,12 +64,6 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
                 "Created new ModbusDataSource that will publish modbus values every {} seconds",
                 dataSource.pollingInterval());
     }
-
-    // For testing purposes only (package-private)
-    void setModbusClientHelper(ModbusTcpClient helper) {
-        this.modbusTcpClient = helper;
-    }
-
 
     @Override
     public Flux<AiidaRecord> start() {
@@ -140,26 +136,17 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
             return;
         }
 
-        Optional<Object> read = Optional.empty();
-
         // read based on register type
-        switch (dp.registerType()) {
-            case HOLDING:
-                read = modbusTcpClient.readHoldingRegister(dp);
-                break;
-            case INPUT:
-                read = modbusTcpClient.readInputRegister(dp);
-                break;
-            case COIL:
-                read = modbusTcpClient.readCoil(dp);
-                break;
-            case DISCRETE:
-                read = modbusTcpClient.readDiscreteInput(dp);
-                break;
-            default:
+        var read = switch (dp.registerType()) {
+            case HOLDING -> modbusTcpClient.readHoldingRegister(dp);
+            case INPUT -> modbusTcpClient.readInputRegister(dp);
+            case COIL -> modbusTcpClient.readCoil(dp);
+            case DISCRETE -> modbusTcpClient.readDiscreteInput(dp);
+            default -> {
                 LOGGER.warn("Unknown register type for datapoint {}", dp.id());
-                break;
-        }
+                yield Optional.empty();
+            }
+        };
 
         read.ifPresent(value -> {
             // 1. Apply transformations if needed

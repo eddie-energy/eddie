@@ -146,4 +146,4 @@ Currently, the following countries are supported:
 
 For details on configuring Modbus-based smart meters and other energy devices within AIIDA, including virtual datapoints, endian handling, and transformation logic, please refer to the full documentation:
 
-📄 [Modbus Configuration Documentation](docs/modbus/modbus_config_docs.md)
+📄 [Modbus Configuration Documentation](docs/modbus/ModbusConfigDocumentation.md)

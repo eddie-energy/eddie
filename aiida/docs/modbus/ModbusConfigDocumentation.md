@@ -10,7 +10,6 @@ This document describes the structure and components of a Modbus device configur
 - Transformations and translations
 - Read/write access specification
 
----
 
 ## Top-Level Structure
 
@@ -35,13 +34,12 @@ modbus:
 - **intervals.read.default/min**: Default and minimum polling intervals in milliseconds.
 - **sources**: List of logical data sources grouped by category.
 
----
 
 ## Sources
 
 ```yaml
 sources:
-  - category: "inverter"
+  - category: "INVERTER"
     id: "inverter-1"
     datapoints: [...]
 ```
@@ -50,19 +48,20 @@ sources:
 - **id**: Unique identifier for the logical source.
 - **datapoints**: List of data entries for this source.
 
----
 
 ## Datapoint Structure
 
 ```yaml
-- id: "status"
-  register: 10
-  registerType: "holding"
-  valueType: "uint16"
-  length: 1
-  endian: "big"
-  access: "read"
-  translations: {...}
+datapoints:
+  - id: "status"
+    register: 10
+    registerType: "holding"
+    valueType: "uint16"
+    length: 1
+    endian: "big"
+    access: "read"
+    translations: { ... }
+    transform: "(@self * 1000) + 200"
 ```
 
 - **id**: Identifier for the datapoint.
@@ -75,16 +74,16 @@ sources:
 - **translations** *(optional)*: Maps raw register values to human-readable labels.
 - **transform** *(optional)*: Mathematical expression to transform the raw value (see below).
 
----
 
 ## Virtual Datapoints
 
 ```yaml
-- id: "power_total"
-  virtual: true
-  source: [ "voltage_l1", "current_l1", ... ]
-  transform: "(@voltage_l1 * @current_l1) + ..."
-  access: "read"
+datapoints:
+  - id: "power_total"
+    virtual: true
+    source: [ "voltage_l1", "current_l1", ... ]
+    transform: "(@voltage_l1 * @current_l1) + ..."
+    access: "read"
 ```
 
 - **virtual**: Must be `true`.
@@ -96,7 +95,6 @@ Example with external references:
 transform: "@battery-1::state_of_charge_lit"
 ```
 
----
 
 ## Transform Expression Language
 
@@ -109,7 +107,6 @@ Example:
 transform: "(@power_total + @battery-1::state_of_charge_lit) < 8000 ? 'low' : 'high'"
 ```
 
----
 
 ## Translations
 
@@ -123,7 +120,6 @@ translations:
 
 Used for converting raw numeric values into user-friendly labels.
 
----
 
 ## Access Modes
 
@@ -131,12 +127,12 @@ Used for converting raw numeric values into user-friendly labels.
 - **write**: Value can be written to the device.
 - **readwrite**: Bi-directional.
 
----
 
 ## Notes
 
-- Use `::` to reference datapoints across sources, e.g., `battery-1::state_of_charge_lit`.
+- Use `::` to reference datapoints across sources, e.g., `@battery-1::state_of_charge_lit`.
 - Virtual datapoints support chained expressions combining multiple data sources.
 - Comments can be used to disable transformations for testing or documentation.
-
----
+- It is also possible to:
+  - first transform a value e.g. `transform: "Math.round(@self)"`.
+  - and then translate the transformed value as shown [above](#translations).
