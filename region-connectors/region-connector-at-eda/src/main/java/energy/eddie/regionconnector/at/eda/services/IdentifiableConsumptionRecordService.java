@@ -1,9 +1,11 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
-import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestProjection;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
+import energy.eddie.regionconnector.at.eda.persistence.JpaPermissionRequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -11,15 +13,16 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class IdentifiableConsumptionRecordService {
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentifiableConsumptionRecordService.class);
-    private final AtPermissionRequestRepository repository;
+    private final JpaPermissionRequestRepository repository;
 
 
     public IdentifiableConsumptionRecordService(
-            AtPermissionRequestRepository repository
+            JpaPermissionRequestRepository repository
     ) {
         this.repository = repository;
     }
@@ -34,11 +37,15 @@ public class IdentifiableConsumptionRecordService {
         // DSOs can send data for PermissionRequests that have already been revoked/terminated. This happens for example if some metering values
         // in the Timeframe we still had access are updated (e.g from replacement to actual values).
         // Please note that this causes the ConsumptionRecords to also be emitted for these PermissionRequests (EPs should be able to deal with values for previously received data being updated(
-        List<AtPermissionRequest> permissionRequests = repository
+        List<AtPermissionRequestProjection> permissionRequestProjections = repository
                 .findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted(
                         meteringPoint,
                         startDate
                 );
+
+        List<AtPermissionRequest> permissionRequests = permissionRequestProjections.stream()
+                                                                                   .map(EdaPermissionRequest::fromProjection)
+                                                                                   .collect(Collectors.toList());
 
         if (permissionRequests.isEmpty()) {
             LOGGER.warn("No permission requests found for consumption record with date {}", startDate);
