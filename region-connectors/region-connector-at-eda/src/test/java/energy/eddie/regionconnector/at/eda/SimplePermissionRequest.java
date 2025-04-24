@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInfor
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import jakarta.annotation.Nullable;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -166,7 +167,7 @@ public record SimplePermissionRequest(String permissionId,
     }
 
     @Override
-    public ZonedDateTime getCreated() {
-        return created();
+    public Instant getCreated() {
+        return created() != null ? created().toInstant() : Instant.now();
     }
 }
