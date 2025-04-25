@@ -5,6 +5,7 @@ import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
+import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -43,7 +44,7 @@ public abstract class MqttDataSource extends DataSource {
         this.mqttSubscribeTopic = dataSourceMqttDto.subscribeTopic();
         this.mqttUsername = dataSourceMqttDto.username();
         this.mqttPassword = dataSourceMqttDto.password();
-        this.action = MqttAction.SUBSCRIBE;
+        this.action = MqttAction.ALL;
         this.aclType = MqttAclType.ALLOW;
     }
 
