@@ -822,7 +822,7 @@ class EddieConnectButton extends LitElement {
               <br />
               <sl-button
                 variant="danger"
-                @click="${this.closeDialog}"
+                @click="${this.reset}"
                 style="float: right"
               >
                 Close
@@ -852,7 +852,7 @@ class EddieConnectButton extends LitElement {
               <br />
               <sl-button
                 variant="success"
-                @click="${this.closeDialog}"
+                @click="${this.reset}"
                 style="float: right"
               >
                 Close
@@ -882,7 +882,7 @@ class EddieConnectButton extends LitElement {
               <br />
               <sl-button
                 variant="primary"
-                @click="${this.closeDialog}"
+                @click="${this.reset}"
                 style="float: right"
               >
                 Close
@@ -911,7 +911,7 @@ class EddieConnectButton extends LitElement {
               <br />
               <sl-button
                 variant="danger"
-                @click="${this.closeDialog}"
+                @click="${this.reset}"
                 style="float: right"
               >
                 Close
@@ -939,7 +939,7 @@ class EddieConnectButton extends LitElement {
               <br />
               <sl-button
                 variant="danger"
-                @click="${this.closeDialog}"
+                @click="${this.reset}"
                 style="float: right"
               >
                 Close
@@ -967,7 +967,7 @@ class EddieConnectButton extends LitElement {
               <br />
               <sl-button
                 variant="danger"
-                @click="${this.closeDialog}"
+                @click="${this.reset}"
                 style="float: right"
               >
                 Close

@@ -101,7 +101,7 @@ The EDDIE button exposes methods to control its behavior programmatically.
 
 - `openDialog()`: Opens the dialog. Similar to clicking the button.
 - `closeDialog()`: Closes the dialog, keeping the button in its current state.
-- `reset()`: Resets the button to its initial state. Does not close the dialog if it is already open.
+- `reset()`: Resets the button to its initial state and closes the dialog if it is already open.
 
 ```js
 const button = document.querySelector("eddie-connect-button");
