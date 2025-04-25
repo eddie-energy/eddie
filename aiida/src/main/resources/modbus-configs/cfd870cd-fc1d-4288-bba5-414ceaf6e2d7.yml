@@ -1,0 +1,63 @@
+modbus:
+  devices:
+    - id: "oesterreichs-energie-adapter"
+      name: "Oesterreichs Energie Adapter"
+      port: 502
+      unitId: 1
+      intervals:
+        read:
+          default: 5000
+          min: 1000
+      sources:
+        - category: "ELECTRICITY_METER_AC"
+          id: "electricity_meter_oesterreichs"
+          datapoints:
+            - id: "M_Imported"
+              register: 116
+              obis: "1.8.0"
+              registerType: "holding"
+              valueType: "uint32"
+              length: 2
+              endian: "big"
+              access: "read"
+            - id: "M_Exported"
+              register: 108
+              obis: "2.8.0"
+              registerType: "holding"
+              valueType: "uint32"
+              length: 2
+              endian: "big"
+              access: "read"
+            - id: "M_Imported_VA"
+              register: 133
+              obis: "3.8.0"
+              registerType: "holding"
+              valueType: "uint32"
+              length: 2
+              endian: "big"
+              access: "read"
+            - id: "M_Exported_VA"
+              register: 125
+              obis: "4.8.0"
+              registerType: "holding"
+              valueType: "uint32"
+              length: 2
+              endian: "big"
+              access: "read"
+            - id: "M_AC_Power"
+              register: 88
+              obis: "1.7.0"
+              registerType: "holding"
+              valueType: "int16"
+              length: 1
+              endian: "big"
+              access: "read"
+            - id: "M_AC_VAR"
+              register: 98
+              obis: "3.7.0"
+              registerType: "holding"
+              valueType: "int16"
+              length: 1
+              endian: "big"
+              access: "read"
+              transform: "Math.abs(@self)"
