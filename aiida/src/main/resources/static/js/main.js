@@ -415,45 +415,59 @@ function renderDataSources() {
       dataSources.forEach((dataSource) => {
         const template = document.createElement("template");
         if (dataSource.dataSourceType === "SIMULATION") {
-            renderSimulationDataSource(template, dataSource, dataSourceList);
+          renderSimulationDataSource(template, dataSource, dataSourceList);
         } else if (dataSource.dataSourceType === "MODBUS") {
-            renderModbusDataSource(template, dataSource, dataSourceList);
+          renderModbusDataSource(template, dataSource, dataSourceList);
         } else {
-            renderMqttDataSource(template, dataSource, dataSourceList);
+          renderMqttDataSource(template, dataSource, dataSourceList);
         }
       });
 
       function renderModbusDataSource(template, dataSource, dataSourceList) {
-          let dataSourceTypeDetails = `
+        let dataSourceTypeDetails = `
                 <dt>Polling Interval:</dt>
                 <dd>${dataSource.simulationPeriod} seconds</dd>
                 <dt>Modbus IP:</dt>
                 <dd>${dataSource.modbusSettings.modbusIp}</dd>
-              `
-
-          appendDataSourceToChild(dataSource, template, dataSourceTypeDetails, dataSourceList);
-      }
-
-      function renderSimulationDataSource(template, dataSource, dataSourceList) {
-          let dataSourceTypeDetails = /* HTML */ `
-                <dt>Simulation Period:</dt>
-                <dd>${dataSource.simulationPeriod} seconds</dd>
               `;
 
-          appendDataSourceToChild(dataSource, template, dataSourceTypeDetails, dataSourceList);
+        appendDataSourceToChild(
+          dataSource,
+          template,
+          dataSourceTypeDetails,
+          dataSourceList
+        );
+      }
+
+      function renderSimulationDataSource(
+        template,
+        dataSource,
+        dataSourceList
+      ) {
+        let dataSourceTypeDetails = /* HTML */ `
+          <dt>Simulation Period:</dt>
+          <dd>${dataSource.simulationPeriod} seconds</dd>
+        `;
+
+        appendDataSourceToChild(
+          dataSource,
+          template,
+          dataSourceTypeDetails,
+          dataSourceList
+        );
       }
 
       function renderMqttDataSource(template, dataSource, dataSourceList) {
-        const dataSourceTypeDetails = /* HTML */ `
+        let dataSourceTypeDetails = /* HTML */ `
           <dt>MQTT Server URI:</dt>
           <dd>${dataSource.mqttSettings.externalHost}</dd>
-          
+
           <dt>MQTT Topic:</dt>
           <dd>${dataSource.mqttSettings.subscribeTopic}</dd>
-          
+
           <dt>MQTT Username:</dt>
           <dd>${dataSource.mqttSettings.username}</dd>
-          
+
           <dt>MQTT Password:</dt>
           <dd>
             <span hidden id="mqtt-password">
@@ -468,11 +482,20 @@ function renderDataSources() {
           </dd>
         `;
 
-          appendDataSourceToChild(dataSource, template, dataSourceTypeDetails, dataSourceList);
+        appendDataSourceToChild(
+          dataSource,
+          template,
+          dataSourceTypeDetails,
+          dataSourceList
+        );
       }
 
-
-      function appendDataSourceToChild(dataSource, template, dataSourceTypeDetails, dataSourceList) {
+      function appendDataSourceToChild(
+        dataSource,
+        template,
+        dataSourceTypeDetails,
+        dataSourceList
+      ) {
         template.innerHTML = /* HTML */ `
           <sl-card>
             <h3>${dataSource.name}</h3>
@@ -501,7 +524,7 @@ function renderDataSources() {
           </sl-card>
         `;
 
-          dataSourceList.appendChild(template.content);
+        dataSourceList.appendChild(template.content);
       }
 
       const passwordSpan = document.getElementById("mqtt-password");
@@ -668,7 +691,7 @@ function updateDataSourceFields(type) {
   dataSourceFields.innerHTML = dataTypeFields;
 
   if (type === "MODBUS") {
-    createModbusFields(dataSourceFields)
+    createModbusFields(dataSourceFields);
   }
 }
 
@@ -825,7 +848,8 @@ function createModbusFields(dataSourceFields) {
 
   function isValidIPv4(value) {
     if (value === "localhost") return true;
-    const ipRegex = /^((25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)(\.)){3}(25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)$/;
+    const ipRegex =
+      /^((25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)(\.)){3}(25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)$/;
     return ipRegex.test(value);
   }
 
@@ -881,7 +905,6 @@ function createModbusFields(dataSourceFields) {
   handleFetchVendors();
 }
 
-
 document
   .getElementById("add-data-source-form")
   .addEventListener("submit", (event) => {
@@ -908,7 +931,7 @@ document
         modbusVendor: formData.get("modbusVendor"),
         modbusModel: formData.get("modbusModel"),
         modbusDevice: formData.get("modbusDevice"),
-      }
+      };
     }
 
     fetch(DATASOURCES_BASE_URL, {
@@ -920,11 +943,13 @@ document
       body: JSON.stringify(newDataSource),
     })
       .then(async (response) => {
-          if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error(`Failed to add data source: [${response.status}] ${errorMessage}`);
-          }
-          return response;
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          throw new Error(
+            `Failed to add data source: [${response.status}] ${errorMessage}`
+          );
+        }
+        return response;
       })
       .then(() => {
         closeAddDataSourceDialog();
@@ -960,9 +985,9 @@ document
     }
 
     if (formData.has("modbusIp")) {
-        updatedDataSource.modbusSettings = {
-            modbusIp: formData.get("modbusIp"),
-        }
+      updatedDataSource.modbusSettings = {
+        modbusIp: formData.get("modbusIp"),
+      };
     }
 
     fetch(`${DATASOURCES_BASE_URL}/${dataSourceId}`, {
@@ -976,7 +1001,9 @@ document
       .then(async (response) => {
         if (!response.ok) {
           const errorMessage = await response.text();
-          throw new Error(`Failed to update data source: [${response.status}] ${errorMessage}`);
+          throw new Error(
+            `Failed to update data source: [${response.status}] ${errorMessage}`
+          );
         }
       })
       .then(() => {
