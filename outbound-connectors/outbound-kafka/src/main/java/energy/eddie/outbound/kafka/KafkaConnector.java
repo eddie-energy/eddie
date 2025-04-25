@@ -52,6 +52,7 @@ public class KafkaConnector implements
     @Override
     public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
         permissionMarketDocumentStream
+                .onBackpressureBuffer()
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext(this::producePermissionMarketDocument)
                 .onErrorContinue(this::logStreamerError)
