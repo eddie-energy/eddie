@@ -68,9 +68,11 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
     @Override
     public Flux<AiidaRecord> start() {
         LOGGER.info("Starting {} with polling interval {}ms", dataSource().name(), this.pollingInterval);
+        long now = System.currentTimeMillis();
+        long delayUntilNextAlignedInterval = this.pollingInterval - (now % this.pollingInterval);
 
 
-        periodicFlux = Flux.interval(Duration.ofMillis(this.pollingInterval))
+        periodicFlux = Flux.interval(Duration.ofMillis(delayUntilNextAlignedInterval), Duration.ofMillis(this.pollingInterval))
                 .subscribeOn(Schedulers.parallel())
                 .subscribe(unused -> readModbusValues());
 
