@@ -133,10 +133,8 @@ public class AiidaRecordValue {
     public String sourceKey() { return sourceKey; }
 
     /*
-     * Returns either the dataTag or the sourceKey
-     * 'return ""'
-     * is fine here as we don't expect both null at the same time
-     * ensured through @RequireDataTagOrSourceKey
+     * Returns either the dataTag or the sourceKey.
+     * `@RequireDataTagOrSourceKey` ensures that either dataTag or sourceKey are not null.
      */
     public String dataPointKey() {
         if (dataTag != null) {
@@ -145,6 +143,6 @@ public class AiidaRecordValue {
         if (sourceKey != null) {
             return sourceKey;
         }
-        return "";
+        throw new IllegalStateException("Both dataTag and sourceKey are null.");
     }
 }

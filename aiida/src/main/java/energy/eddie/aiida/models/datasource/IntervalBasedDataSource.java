@@ -9,18 +9,19 @@ import java.util.UUID;
 
 @MappedSuperclass
 public class IntervalBasedDataSource extends DataSource {
+    private static final Integer DEFAULT_INTERVAL = 5;
 
     @JsonProperty
     @Column(name = "polling_interval")
     protected Integer pollingInterval;
 
     protected IntervalBasedDataSource() {
-        this.pollingInterval = 5;
+        this.pollingInterval = DEFAULT_INTERVAL;
     }
 
     protected IntervalBasedDataSource(DataSourceDto dto, UUID userId) {
         super(dto, userId);
-        this.pollingInterval = dto.simulationPeriod() != null ? dto.simulationPeriod() : 5;
+        this.pollingInterval = dto.simulationPeriod() != null ? dto.simulationPeriod() : DEFAULT_INTERVAL;
     }
 
     public Integer pollingInterval() {

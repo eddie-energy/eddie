@@ -7,6 +7,3 @@ public record IntervalConfig(
         @JsonProperty("min") long minInterval
 ) {
 }
-
-
-
