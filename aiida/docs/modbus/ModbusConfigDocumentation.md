@@ -98,6 +98,7 @@ transform: "@battery-1::state_of_charge_lit"
 
 ## Transform Expression Language
 
+Transformations are based on MVEL whereas following constructs are supported:
 - Standard arithmetic: `+`, `-`, `*`, `/`
 - Ternary logic: `condition ? trueVal : falseVal`
 - Boolean comparisons: `==`, `!=`, `>`, `<`, `>=`, `<=`
