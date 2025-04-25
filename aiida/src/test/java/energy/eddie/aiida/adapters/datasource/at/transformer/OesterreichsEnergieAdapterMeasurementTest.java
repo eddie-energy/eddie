@@ -1,4 +1,4 @@
-package energy.eddie.aiida.adapters.datasource.at;
+package energy.eddie.aiida.adapters.datasource.at.transformer;
 
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.UnitOfMeasurement;
@@ -19,13 +19,13 @@ class OesterreichsEnergieAdapterMeasurementTest {
         var dummyValue = 1000;
 
         // When
-        var oeaMeasurement1 = new OesterreichsEnergieAdapterMeasurement(positiveActiveInstantaneousPower,
+        var oeaMeasurement1 = new OesterreichsEnergieAdapterMeasurement(positiveActiveInstantaneousPower.toString(),
                                                                         String.valueOf(dummyValue));
-        var oeaMeasurement2 = new OesterreichsEnergieAdapterMeasurement(positiveActiveEnergy,
+        var oeaMeasurement2 = new OesterreichsEnergieAdapterMeasurement(positiveActiveEnergy.toString(),
                                                                         String.valueOf(dummyValue));
-        var oeaMeasurement3 = new OesterreichsEnergieAdapterMeasurement(positiveReactiveInstantaneousPower,
+        var oeaMeasurement3 = new OesterreichsEnergieAdapterMeasurement(positiveReactiveInstantaneousPower.toString(),
                                                                         String.valueOf(dummyValue));
-        var oeaMeasurement4 = new OesterreichsEnergieAdapterMeasurement(positiveReactiveEnergyInTariff,
+        var oeaMeasurement4 = new OesterreichsEnergieAdapterMeasurement(positiveReactiveEnergyInTariff.toString(),
                                                                         String.valueOf(dummyValue));
 
         var aiidaRecordValue1 = new AiidaRecordValue(
@@ -95,10 +95,13 @@ class OesterreichsEnergieAdapterMeasurementTest {
         var dummyValue = "1000";
 
         // When
-        var oeaMeasurement1 = new OesterreichsEnergieAdapterMeasurement(instantaneousPowerFactor, dummyValue);
-        var oeaMeasurement2 = new OesterreichsEnergieAdapterMeasurement(instantaneousCurrentInPhaseL1, dummyValue);
-        var oeaMeasurement3 = new OesterreichsEnergieAdapterMeasurement(instantaneousVoltageInPhaseL1, dummyValue);
-        var oeaMeasurement4 = new OesterreichsEnergieAdapterMeasurement(unknown, dummyValue);
+        var oeaMeasurement1 = new OesterreichsEnergieAdapterMeasurement(instantaneousPowerFactor.toString(),
+                                                                        dummyValue);
+        var oeaMeasurement2 = new OesterreichsEnergieAdapterMeasurement(instantaneousCurrentInPhaseL1.toString(),
+                                                                        dummyValue);
+        var oeaMeasurement3 = new OesterreichsEnergieAdapterMeasurement(instantaneousVoltageInPhaseL1.toString(),
+                                                                        dummyValue);
+        var oeaMeasurement4 = new OesterreichsEnergieAdapterMeasurement(unknown.toString(), dummyValue);
 
         var aiidaRecordValue1 = new AiidaRecordValue(
                 instantaneousPowerFactor.toString(),

@@ -1,4 +1,4 @@
-package energy.eddie.aiida.adapters.datasource.at;
+package energy.eddie.aiida.adapters.datasource.at.transformer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

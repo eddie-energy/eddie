@@ -1,23 +1,12 @@
-package energy.eddie.aiida.adapters.datasource.at;
+package energy.eddie.aiida.adapters.datasource.at.transformer;
 
+import energy.eddie.aiida.adapters.datasource.AbstractAdapterMeasurement;
 import energy.eddie.aiida.models.record.UnitOfMeasurement;
 import energy.eddie.aiida.utils.ObisCode;
 
-public class OesterreichsEnergieAdapterMeasurement {
-    private final ObisCode obisCode;
-    private final String rawValue;
-
-    public OesterreichsEnergieAdapterMeasurement(ObisCode obisCode, String rawValue) {
-        this.obisCode = obisCode;
-        this.rawValue = rawValue;
-    }
-
-    public UnitOfMeasurement unitOfMeasurement() {
-        return obisCode.unitOfMeasurement();
-    }
-
-    public String rawValue() {
-        return rawValue;
+public class OesterreichsEnergieAdapterMeasurement extends AbstractAdapterMeasurement {
+    public OesterreichsEnergieAdapterMeasurement(String key, String rawValue) {
+        super(key, rawValue);
     }
 
     /**
@@ -28,6 +17,7 @@ public class OesterreichsEnergieAdapterMeasurement {
      *
      * @return the raw unit of the measurement.
      */
+    @Override
     public UnitOfMeasurement rawUnitOfMeasurement() {
         return switch (obisCode.unitOfMeasurement()) {
             case WATT, KILO_WATT -> UnitOfMeasurement.WATT;
@@ -51,6 +41,7 @@ public class OesterreichsEnergieAdapterMeasurement {
      *
      * @return the value.
      */
+    @Override
     public String value() {
         return switch (obisCode.unitOfMeasurement()) {
             case AMPERE, VOLT, VOLT_AMPERE, VOLT_AMPERE_REACTIVE, VOLT_AMPERE_REACTIVE_HOUR, WATT, WATT_HOUR, NONE,
@@ -58,5 +49,10 @@ public class OesterreichsEnergieAdapterMeasurement {
             case KILO_VOLT_AMPERE, KILO_VOLT_AMPERE_REACTIVE, KILO_VOLT_AMPERE_REACTIVE_HOUR, KILO_WATT,
                  KILO_WATT_HOUR -> String.valueOf(Double.parseDouble(rawValue) / 1000);
         };
+    }
+
+    @Override
+    protected ObisCode obisCodeForEntryKey(String entryKey) {
+        return ObisCode.forCode(entryKey);
     }
 }

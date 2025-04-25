@@ -2,10 +2,12 @@ package energy.eddie.aiida.adapters.datasource.at;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
+import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterJson;
+import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterMeasurement;
+import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterValueDeserializer;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.utils.ObisCode;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
@@ -50,13 +52,12 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
 
             List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
             for (var entry : json.energyData().entrySet()) {
-                var obisCode = ObisCode.forCode(entry.getKey());
-                var oeaMeasurement = new OesterreichsEnergieAdapterMeasurement(obisCode,
+                var oeaMeasurement = new OesterreichsEnergieAdapterMeasurement(entry.getKey(),
                                                                                String.valueOf(entry.getValue()
                                                                                                    .value()));
 
-                aiidaRecordValues.add(new AiidaRecordValue(entry.getKey(),
-                                                           obisCode,
+                aiidaRecordValues.add(new AiidaRecordValue(oeaMeasurement.entryKey(),
+                                                           oeaMeasurement.obisCode(),
                                                            oeaMeasurement.rawValue(),
                                                            oeaMeasurement.rawUnitOfMeasurement(),
                                                            oeaMeasurement.value(),
