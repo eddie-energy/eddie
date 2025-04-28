@@ -54,7 +54,7 @@ class ModbusDeviceServiceTest {
         List<ModbusModel> models = service.models(vendorId);
         assertNotNull(models);
         assertFalse(models.isEmpty());
-        assertEquals("Simulation", models.get(0).name());
+        assertEquals("Simulation", models.getFirst().name());
     }
 
     @Test
@@ -63,7 +63,7 @@ class ModbusDeviceServiceTest {
         List<ModbusModel> models = service.models(vendorId);
         assertNotNull(models);
         assertFalse(models.isEmpty());
-        assertEquals("Carlo Gavazzi EM24", models.get(0).name());
+        assertEquals("Carlo Gavazzi EM24", models.getFirst().name());
     }
 
     @Test
@@ -72,7 +72,7 @@ class ModbusDeviceServiceTest {
         List<Device> devices = service.devices(modelId);
         assertNotNull(devices);
         assertFalse(devices.isEmpty());
-        assertEquals("Carlo Gavazzi EM24 Default", devices.get(0).name());
+        assertEquals("Carlo Gavazzi EM24 Default", devices.getFirst().name());
     }
 
     @Test
