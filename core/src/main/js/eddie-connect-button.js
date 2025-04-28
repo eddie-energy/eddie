@@ -75,6 +75,7 @@ const eventRoutes = new Map([
     "eddie-request-unfulfillable",
     { view: "unfulfillable", step: 5, error: true },
   ],
+  ["eddie-request-fulfilled", { view: "fulfilled", step: 5 }],
 ]);
 
 const dialogOpenEvent = new Event("eddie-dialog-open", {
@@ -967,6 +968,38 @@ class EddieConnectButton extends LitElement {
               <br />
               <sl-button
                 variant="danger"
+                @click="${this.closeDialog}"
+                style="float: right"
+              >
+                Close
+              </sl-button>
+            `,
+          ],
+          [
+            "fulfilled",
+            () => html`
+              <h3>Request fulfilled</h3>
+
+              <sl-alert variant="success" open>
+                <sl-icon slot="icon" name="check-circle"></sl-icon>
+
+                <p>
+                  You successfully granted permission for the service provider
+                  to access to your ${this.dataNeedDescription()}. The
+                  permission request has been fulfilled. The service provider
+                  should have access to the requested data. The permission can
+                  be terminated by either party at any time.
+                </p>
+
+                <p>
+                  You may now close this dialog and continue on the website of
+                  the service provider.
+                </p>
+              </sl-alert>
+
+              <br />
+              <sl-button
+                variant="success"
                 @click="${this.closeDialog}"
                 style="float: right"
               >
