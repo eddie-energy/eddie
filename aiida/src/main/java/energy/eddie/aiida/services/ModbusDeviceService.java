@@ -21,22 +21,18 @@ public class ModbusDeviceService {
 
     public ModbusDeviceService() {
         this.vendors = List.of(
-                new ModbusVendor("e440249c-9d44-4a9a-9a19-e77e4174a9ff", "Simulation"),
                 new ModbusVendor("cbdfbd39-24c9-469f-bc7f-ef73b9834ec1", "Carlo Gavazzi"),
                 new ModbusVendor("07e0b9ae-8b30-4cf9-8c3c-32de49e3aa56", "Oesterreichs Energie")
         );
 
         this.modbusModels = List.of(
-                new ModbusModel("15b77548-8a5e-41ab-a48a-93e024da6ef0", "Simulation", String.valueOf(vendors.get(0).id())),
-                new ModbusModel("9875b409-2040-4a2e-b8df-80c3e81bd3d7", "Carlo Gavazzi EM24", String.valueOf(vendors.get(1).id())),
-                new ModbusModel("91d8b15b-bb88-47d3-8425-15cf997bd1d9", "Oesterreichs Energie Adapter", String.valueOf(vendors.get(2).id()))
+                new ModbusModel("9875b409-2040-4a2e-b8df-80c3e81bd3d7", "Carlo Gavazzi EM24", String.valueOf(vendors.getFirst().id())),
+                new ModbusModel("91d8b15b-bb88-47d3-8425-15cf997bd1d9", "Oesterreichs Energie Adapter", String.valueOf(vendors.get(1).id()))
         );
 
         this.devices = List.of(
-                new Device("b69031ea-8b95-4323-a09e-2348cbf460d2", "Simulation Device A", String.valueOf(modbusModels.get(0).id())),
-                new Device("b69031ea-8b95-4323-a09e-2348cbf460d2", "Simulation Device B", String.valueOf(modbusModels.get(0).id())),
-                new Device("26f5dbb2-d1a3-42cb-93d0-5e71ac62e5fc", "Carlo Gavazzi EM24 Default", String.valueOf(modbusModels.get(1).id())),
-                new Device("cfd870cd-fc1d-4288-bba5-414ceaf6e2d7", "Oesterreichs Energie Adapter", String.valueOf(modbusModels.get(2).id()))
+                new Device("26f5dbb2-d1a3-42cb-93d0-5e71ac62e5fc", "Carlo Gavazzi EM24 Default", String.valueOf(modbusModels.getFirst().id())),
+                new Device("cfd870cd-fc1d-4288-bba5-414ceaf6e2d7", "Oesterreichs Energie Adapter", String.valueOf(modbusModels.get(1).id()))
         );
     }
 
