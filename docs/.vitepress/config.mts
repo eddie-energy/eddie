@@ -25,7 +25,13 @@ export default withMermaid(
     themeConfig: {
       // https://vitepress.dev/reference/default-theme-config
       logo: "/images/favicon-32x32.png",
-      nav: [{ text: "Home", link: "/" }],
+      nav: [
+        { text: "Home", link: "/" },
+        {
+          text: "Architecture",
+          link: "https://eddie-web.projekte.fh-hagenberg.at/architecture",
+        },
+      ],
       search: {
         provider: "local",
       },
@@ -221,5 +227,5 @@ export default withMermaid(
         { icon: "github", link: "https://github.com/eddie-energy/eddie" },
       ],
     },
-  }),
+  })
 );
