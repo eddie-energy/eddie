@@ -1,6 +1,7 @@
 package energy.eddie.aiida.adapters.datasource.at;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.adapters.datasource.AdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterJson;
 import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterMeasurement;
@@ -15,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
 public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<OesterreichsEnergieDataSource> {
@@ -50,19 +50,18 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
         try {
             var json = mapper.readValue(message.getPayload(), OesterreichsEnergieAdapterJson.class);
 
-            List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
-            for (var entry : json.energyData().entrySet()) {
-                var oeaMeasurement = new OesterreichsEnergieAdapterMeasurement(entry.getKey(),
-                                                                               String.valueOf(entry.getValue()
-                                                                                                   .value()));
+            List<AiidaRecordValue> aiidaRecordValues = json.energyData()
+                                                           .entrySet()
+                                                           .stream()
+                                                           .map(entry ->
+                                                                        new OesterreichsEnergieAdapterMeasurement(entry.getKey(),
+                                                                                                                  String.valueOf(
+                                                                                                                          entry.getValue()
+                                                                                                                               .value()))
+                                                           )
+                                                           .map(AdapterMeasurement::toAiidaRecordValue)
+                                                           .toList();
 
-                aiidaRecordValues.add(new AiidaRecordValue(oeaMeasurement.entryKey(),
-                                                           oeaMeasurement.obisCode(),
-                                                           oeaMeasurement.rawValue(),
-                                                           oeaMeasurement.rawUnitOfMeasurement(),
-                                                           oeaMeasurement.value(),
-                                                           oeaMeasurement.unitOfMeasurement()));
-            }
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (IOException e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",

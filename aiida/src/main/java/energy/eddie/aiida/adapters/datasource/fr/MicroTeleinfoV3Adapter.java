@@ -1,6 +1,7 @@
 package energy.eddie.aiida.adapters.datasource.fr;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.adapters.datasource.AdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3DataFieldDeserializer;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3Json;
@@ -24,7 +25,6 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV3DataSource> {
@@ -82,42 +82,30 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
                 LOGGER.debug("Connected smart meter operates in {} mode.", mode);
             }
 
-            MicroTeleinfoV3Json json;
-            List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
-
-            if (mode.equals(MicroTeleinfoV3Mode.HISTORY)) {
-                json = readPayload(message.getPayload(), MicroTeleinfoV3HistoryModeJson.class);
-
-                for (var entry : json.energyData().entrySet()) {
-                    var historyModeMeasurement = new MicroTeleinfoV3AdapterHistoryModeMeasurement(entry.getKey(),
-                                                                                                  String.valueOf(
-                                                                                                          entry.getValue()
-                                                                                                               .value()));
-
-                    aiidaRecordValues.add(new AiidaRecordValue(historyModeMeasurement.entryKey(),
-                                                               historyModeMeasurement.obisCode(),
-                                                               historyModeMeasurement.rawValue(),
-                                                               historyModeMeasurement.rawUnitOfMeasurement(),
-                                                               historyModeMeasurement.value(),
-                                                               historyModeMeasurement.unitOfMeasurement()));
-                }
-            } else if (mode.equals(MicroTeleinfoV3Mode.STANDARD)) {
-                json = readPayload(message.getPayload(), MicroTeleinfoV3StandardModeJson.class);
-
-                for (var entry : json.energyData().entrySet()) {
-                    var standardModeMeasurement = new MicroTeleinfoV3AdapterStandardModeMeasurement(entry.getKey(),
-                                                                                                    String.valueOf(
-                                                                                                            entry.getValue()
-                                                                                                                 .value()));
-
-                    aiidaRecordValues.add(new AiidaRecordValue(standardModeMeasurement.entryKey(),
-                                                               standardModeMeasurement.obisCode(),
-                                                               standardModeMeasurement.rawValue(),
-                                                               standardModeMeasurement.rawUnitOfMeasurement(),
-                                                               standardModeMeasurement.value(),
-                                                               standardModeMeasurement.unitOfMeasurement()));
-                }
-            }
+            List<AiidaRecordValue> aiidaRecordValues = switch (mode) {
+                case HISTORY -> readPayload(message.getPayload(), MicroTeleinfoV3HistoryModeJson.class)
+                        .energyData()
+                        .entrySet()
+                        .stream()
+                        .map(entry ->
+                                     new MicroTeleinfoV3AdapterHistoryModeMeasurement(
+                                             entry.getKey(),
+                                             String.valueOf(entry.getValue().value()))
+                        ).map(AdapterMeasurement::toAiidaRecordValue)
+                        .toList();
+                case STANDARD -> readPayload(message.getPayload(), MicroTeleinfoV3StandardModeJson.class)
+                        .energyData()
+                        .entrySet()
+                        .stream()
+                        .map(entry ->
+                                     new MicroTeleinfoV3AdapterStandardModeMeasurement(
+                                             entry.getKey(),
+                                             String.valueOf(entry.getValue().value()))
+                        ).map(AdapterMeasurement::toAiidaRecordValue)
+                        .toList();
+                case UNKNOWN -> throw new MicroTeleinfoV3ModeNotSupportedException(message.getPayload(),
+                                                                                   List.of(MicroTeleinfoV3Mode.UNKNOWN));
+            };
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (MicroTeleinfoV3ModeNotSupportedException e) {
