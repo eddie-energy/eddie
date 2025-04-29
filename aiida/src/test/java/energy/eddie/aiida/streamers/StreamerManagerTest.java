@@ -3,6 +3,7 @@ package energy.eddie.aiida.streamers;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
+import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
@@ -30,8 +31,7 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class StreamerManagerTest {
@@ -49,6 +49,8 @@ class StreamerManagerTest {
     private ConnectionStatusMessage mockStatusMessage;
     @Mock
     private Permission mockPermission;
+    @Mock
+    private DataSource mockDataSource;
     private StreamerManager manager;
     @Mock
     private AiidaLocalDataNeed mockDataNeed;
@@ -66,12 +68,13 @@ class StreamerManagerTest {
     @Test
     void givenSamePermissionTwice_createNewStreamer_throws() {
         // Given
-        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.eddieId()).thenReturn(eddieId);
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockPermission.userId()).thenReturn(userId);
+        when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
         when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
@@ -89,13 +92,32 @@ class StreamerManagerTest {
     }
 
     @Test
-    void givenPermission_createStreamer_callsConnect() throws MqttException {
+    void givenPermissionWithoutDataSource_createNoStreamer() throws MqttException {
         // Given
-        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockPermission.userId()).thenReturn(userId);
+        when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
+        when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
+
+        // When
+        manager.createNewStreamer(mockPermission);
+
+        // Then
+        verify(aggregatorMock, never()).getFilteredFlux(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void givenPermission_createStreamer_callsConnect() throws MqttException {
+        // Given
+        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any(), any())).thenReturn(Flux.empty());
+        when(mockPermission.permissionId()).thenReturn(permissionId);
+        when(mockPermission.expirationTime()).thenReturn(expirationTime);
+        when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
+        when(mockPermission.userId()).thenReturn(userId);
+        when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
         when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
@@ -136,15 +158,16 @@ class StreamerManagerTest {
 
     @Test
     void verify_close_closesAllStreamers() throws MqttException {
-        when(aggregatorMock.getFilteredFlux(any(), any(),  any(), any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
         when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(mockPermission.userId()).thenReturn(userId);
+        when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
-        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any())).thenReturn(Flux.empty());
+        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any(), any())).thenReturn(Flux.empty());
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any()))
                      .thenReturn(mockAiidaStreamer);

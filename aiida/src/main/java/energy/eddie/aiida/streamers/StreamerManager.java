@@ -71,29 +71,35 @@ public class StreamerManager implements AutoCloseable {
         var transmissionSchedule = Objects.requireNonNull(dataNeed.transmissionSchedule());
         var permissionExpirationTime = Objects.requireNonNull(permission.expirationTime());
         var userId = Objects.requireNonNull(permission.userId());
+        var dataSource = permission.dataSource();
 
-        Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(allowedDataTags,
-                                                                  allowedAsset,
-                                                                  permissionExpirationTime,
-                                                                  transmissionSchedule,
-                                                                  userId);
-        Sinks.One<UUID> streamerTerminationRequestSink = Sinks.one();
+        if (dataSource != null) {
+            Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(allowedDataTags,
+                                                                      allowedAsset,
+                                                                      permissionExpirationTime,
+                                                                      transmissionSchedule,
+                                                                      userId,
+                                                                      dataSource.id());
+            Sinks.One<UUID> streamerTerminationRequestSink = Sinks.one();
 
-        streamerTerminationRequestSink.asMono().subscribe(permissionId -> {
-            var result = terminationRequests.tryEmitNext(permissionId);
-            if (result.isFailure()) LOGGER.error(
-                    "Error while emitting termination request for permission {}. Error was: {}",
-                    permissionId,
-                    result);
-        });
+            streamerTerminationRequestSink.asMono().subscribe(permissionId -> {
+                var result = terminationRequests.tryEmitNext(permissionId);
+                if (result.isFailure()) LOGGER.error(
+                        "Error while emitting termination request for permission {}. Error was: {}",
+                        permissionId,
+                        result);
+            });
 
-        var streamer = StreamerFactory.getAiidaStreamer(permission,
-                                                        recordFlux,
-                                                        streamerTerminationRequestSink,
-                                                        mapper,
-                                                        failedToSendRepository);
-        streamer.connect();
-        streamers.put(id, streamer);
+            var streamer = StreamerFactory.getAiidaStreamer(permission,
+                                                            recordFlux,
+                                                            streamerTerminationRequestSink,
+                                                            mapper,
+                                                            failedToSendRepository);
+            streamer.connect();
+            streamers.put(id, streamer);
+        } else {
+            LOGGER.error("No data source found for permission {}", permission.permissionId());
+        }
     }
 
     /**

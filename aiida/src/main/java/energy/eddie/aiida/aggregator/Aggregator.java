@@ -95,7 +95,8 @@ public class Aggregator implements AutoCloseable {
             AiidaAsset allowedAsset,
             Instant permissionExpirationTime,
             CronExpression transmissionSchedule,
-            UUID userId
+            UUID userId,
+            UUID dataSourceId
     ) {
         var cronSink = Sinks.many().multicast().directAllOrNothing();
         var cronTrigger = new CronTrigger(transmissionSchedule.toString());
@@ -114,7 +115,8 @@ public class Aggregator implements AutoCloseable {
                    .filter(aiidaRecord -> isValidAiidaRecord(aiidaRecord,
                                                              allowedAsset,
                                                              permissionExpirationTime,
-                                                             userId))
+                                                             userId,
+                                                             dataSourceId))
                    .map(aiidaRecord -> filterAllowedDataTags(aiidaRecord, allowedDataTags))
                    .buffer(cronSink.asFlux())
                    .flatMapIterable(this::aggregateRecords);
@@ -163,11 +165,13 @@ public class Aggregator implements AutoCloseable {
             AiidaRecord aiidaRecord,
             AiidaAsset allowedAsset,
             Instant expirationTime,
-            UUID userId
+            UUID userId,
+            UUID dataSourceId
     ) {
         return isAllowedAsset(aiidaRecord, allowedAsset) &&
                areAiidaRecordValuesValid(aiidaRecord.aiidaRecordValues()) &&
                isBeforeExpiration(aiidaRecord, expirationTime) &&
+               doesAiidaRecordBelongToCurrentDataSource(aiidaRecord, dataSourceId) &&
                doesAiidaRecordBelongToCurrentUser(aiidaRecord, userId);
     }
 
@@ -177,6 +181,10 @@ public class Aggregator implements AutoCloseable {
 
     private boolean areAiidaRecordValuesValid(List<AiidaRecordValue> aiidaRecordValues) {
         return !aiidaRecordValues.isEmpty();
+    }
+
+    private boolean doesAiidaRecordBelongToCurrentDataSource(AiidaRecord aiidaRecord, UUID dataSourceId) {
+        return aiidaRecord.dataSourceId().equals(dataSourceId);
     }
 
     private boolean doesAiidaRecordBelongToCurrentUser(AiidaRecord aiidaRecord, UUID userId) {

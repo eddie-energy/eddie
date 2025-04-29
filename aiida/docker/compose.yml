@@ -85,7 +85,7 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_HEALTH_ENABLED: true
     volumes:
-      - ./keycloak/keycloak-realm.json:/opt/keycloak/data/import/keycloak-realm.json
+      - ./keycloak/EDDIE-realm.json:/opt/keycloak/data/import/EDDIE-realm.json
       - ../../keycloak-eddie-theme/theme/eddie-theme:/opt/keycloak/themes/eddie-theme
     command: -v start-dev --import-realm
     env_file:
