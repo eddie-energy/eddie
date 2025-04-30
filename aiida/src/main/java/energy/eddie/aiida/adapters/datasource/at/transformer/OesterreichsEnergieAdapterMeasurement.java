@@ -1,12 +1,20 @@
 package energy.eddie.aiida.adapters.datasource.at.transformer;
 
-import energy.eddie.aiida.adapters.datasource.AbstractAdapterMeasurement;
+import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
 import energy.eddie.aiida.models.record.UnitOfMeasurement;
 import energy.eddie.aiida.utils.ObisCode;
 
-public class OesterreichsEnergieAdapterMeasurement extends AbstractAdapterMeasurement {
-    public OesterreichsEnergieAdapterMeasurement(String key, String rawValue) {
-        super(key, rawValue);
+public class OesterreichsEnergieAdapterMeasurement extends SmartMeterAdapterMeasurement {
+    private final ObisCode obisCode;
+
+    public OesterreichsEnergieAdapterMeasurement(String entryKey, String rawValue) {
+        super(entryKey, rawValue);
+        this.obisCode = ObisCode.forCode(entryKey);
+    }
+
+    @Override
+    public ObisCode obisCode() {
+        return obisCode;
     }
 
     /**
@@ -31,28 +39,5 @@ public class OesterreichsEnergieAdapterMeasurement extends AbstractAdapterMeasur
             case NONE -> UnitOfMeasurement.NONE;
             case UNKNOWN -> UnitOfMeasurement.UNKNOWN;
         };
-    }
-
-    /**
-     * <p>
-     * Adapts the raw value to the correct unit of measurement.
-     * For OesterreichsEnergieAdapter this means that values with a unit of measurement of kilo (k) need to be divided by 1000 as they are transmitted without the factor 1000.
-     * </p>
-     *
-     * @return the value.
-     */
-    @Override
-    public String value() {
-        return switch (obisCode.unitOfMeasurement()) {
-            case AMPERE, VOLT, VOLT_AMPERE, VOLT_AMPERE_REACTIVE, VOLT_AMPERE_REACTIVE_HOUR, WATT, WATT_HOUR, NONE,
-                 UNKNOWN -> rawValue;
-            case KILO_VOLT_AMPERE, KILO_VOLT_AMPERE_REACTIVE, KILO_VOLT_AMPERE_REACTIVE_HOUR, KILO_WATT,
-                 KILO_WATT_HOUR -> String.valueOf(Double.parseDouble(rawValue) / 1000);
-        };
-    }
-
-    @Override
-    protected ObisCode obisCodeForEntryKey(String entryKey) {
-        return ObisCode.forCode(entryKey);
     }
 }

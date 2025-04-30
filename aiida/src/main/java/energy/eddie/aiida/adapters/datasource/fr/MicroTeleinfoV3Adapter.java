@@ -1,8 +1,8 @@
 package energy.eddie.aiida.adapters.datasource.fr;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.adapters.datasource.AdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
+import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3DataFieldDeserializer;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3Json;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3Mode;
@@ -91,7 +91,7 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
                                      new MicroTeleinfoV3AdapterHistoryModeMeasurement(
                                              entry.getKey(),
                                              String.valueOf(entry.getValue().value()))
-                        ).map(AdapterMeasurement::toAiidaRecordValue)
+                        ).map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
                         .toList();
                 case STANDARD -> readPayload(message.getPayload(), MicroTeleinfoV3StandardModeJson.class)
                         .energyData()
@@ -101,7 +101,7 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
                                      new MicroTeleinfoV3AdapterStandardModeMeasurement(
                                              entry.getKey(),
                                              String.valueOf(entry.getValue().value()))
-                        ).map(AdapterMeasurement::toAiidaRecordValue)
+                        ).map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
                         .toList();
                 case UNKNOWN -> throw new MicroTeleinfoV3ModeNotSupportedException(message.getPayload(),
                                                                                    List.of(MicroTeleinfoV3Mode.UNKNOWN));

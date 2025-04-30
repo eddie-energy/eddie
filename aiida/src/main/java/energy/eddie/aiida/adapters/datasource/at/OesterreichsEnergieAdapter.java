@@ -1,8 +1,8 @@
 package energy.eddie.aiida.adapters.datasource.at;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.adapters.datasource.AdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
+import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterJson;
 import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterValueDeserializer;
@@ -59,7 +59,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
                                                                                                                           entry.getValue()
                                                                                                                                .value()))
                                                            )
-                                                           .map(AdapterMeasurement::toAiidaRecordValue)
+                                                           .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
                                                            .toList();
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
