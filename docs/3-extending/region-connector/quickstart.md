@@ -1,12 +1,3 @@
----
-prev:
-  text: "Add a Region Connector"
-  link: "./add-region-connector.md"
-next:
-  text: "Build and Setup"
-  link: "./build-and-setup.md"
----
-
 # Quickstart
 
 This is a simple quickstart guide to implement a new region connector.

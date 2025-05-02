@@ -1,12 +1,3 @@
----
-prev:
-  text: "Add a Region Connector"
-  link: "./region-connector/add-region-connector.md"
-next:
-  text: "Edit Documentation"
-  link: "./documentation.md"
----
-
 # Add an outbound-connector
 
 An outbound-connector is a Spring Boot application.

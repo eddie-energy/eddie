@@ -1,12 +1,3 @@
----
-prev:
-  text: "Frontend"
-  link: "./frontend.md"
-next:
-  text: "Shared Functiona"
-  link: "./shared-functionality.md"
----
-
 # Beans of interest
 
 The following beans are of special interest, because they are either:

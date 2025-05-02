@@ -1,12 +1,3 @@
----
-prev:
-  text: "Accounting Point Data Market Documents"
-  link: "./accounting-point-data-market-documents.md"
-next:
-  text: "Data Needs"
-  link: "../data-needs.md"
----
-
 # Redistribution Transaction Request Documents (RTR Documents)
 
 Redistribution Transaction Request Documents (RTR Documents) are a CIM document that allows the eligible party to request validated historical data for a specific timeframe for a specific permission request.

@@ -1,12 +1,3 @@
----
-prev:
-  text: "Tech Stack"
-  link: "../tech-stack.md"
-next:
-  text: "Quickstart"
-  link: "./quickstart.md"
----
-
 # Add a region connector
 
 Region connectors are an essential part of EDDIE for creating and managing [permission requests](../../2-integrating/integrating.md#permission-requests) for the eligible party.

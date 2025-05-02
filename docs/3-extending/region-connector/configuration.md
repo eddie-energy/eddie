@@ -1,12 +1,3 @@
----
-prev:
-  text: "Internal Architecture"
-  link: "./internal-architecture.md"
-next:
-  text: "Frontend"
-  link: "./frontend.md"
----
-
 # Configuration
 
 This section gives insights on which files have to be adapted in order to show the new region connector, as well as describing the naming conventions of configuration properties.

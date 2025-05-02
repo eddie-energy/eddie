@@ -1,12 +1,3 @@
----
-prev:
-  text: "Validated Historical Data Market Documents"
-  link: "./validated-historical-data-market-documents.md"
-next:
-  text: "Redistribution Transaction Request Documents"
-  link: "./redistribution-transaction-request-documents.md"
----
-
 # Accounting Point Data Market Documents
 
 Accounting point data market documents provide information to one or multiple metering points related to one permission request.

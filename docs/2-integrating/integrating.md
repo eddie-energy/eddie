@@ -1,12 +1,3 @@
----
-prev:
-  text: "Example App"
-  link: "../1-running/example-app.md"
-next:
-  text: "Data Needs"
-  link: "./data-needs.md"
----
-
 # Integrating
 
 EDDIE can integrate with other systems using [several protocols](../1-running/outbound-connectors/outbound-connectors.md).

@@ -1,12 +1,3 @@
----
-prev:
-  text: "Outbound Connectors"
-  link: "./outbound-connectors/outbound-connectors.md"
-next:
-  text: "Demo Button"
-  link: "./demo-button.md"
----
-
 # Admin Console
 
 The administrative console allows the eligible party to manage permission via a web interface.

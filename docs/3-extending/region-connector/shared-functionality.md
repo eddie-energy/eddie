@@ -1,12 +1,3 @@
----
-prev:
-  text: "Beans of Interest"
-  link: "./beans-of-interest.md"
-next:
-  text: "Dispatcher Servlet"
-  link: "./dispatcher-servlet.md"
----
-
 # Shared Functionality
 
 Often region connectors have to implement the same functionality slightly different.

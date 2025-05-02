@@ -1,12 +1,3 @@
----
-prev:
-  text: "Data Needs"
-  link: "../data-needs.md"
-next:
-  text: "Connection Status Messages"
-  link: "./connection-status-messages.md"
----
-
 # Messages and Documents
 
 EDDIE emits several messages and documents that can be used by the EP to react to permission request status changes, as well as collect the data that was requested from final customers.
