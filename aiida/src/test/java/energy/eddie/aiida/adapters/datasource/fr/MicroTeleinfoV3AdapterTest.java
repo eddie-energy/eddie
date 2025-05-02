@@ -1,14 +1,15 @@
 package energy.eddie.aiida.adapters.datasource.fr;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.adapters.datasource.fr.mode.MicroTeleinfoV3Mode;
+import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3Mode;
+import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3ModeNotSupportedException;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.utils.MqttFactory;
+import energy.eddie.aiida.utils.ObisCode;
 import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
@@ -27,8 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.UUID;
 
-import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
-import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
+import static energy.eddie.aiida.utils.ObisCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -182,9 +182,9 @@ class MicroTeleinfoV3AdapterTest {
                         .expectNextMatches(received -> received.aiidaRecordValues()
                                                                .stream()
                                                                .anyMatch(aiidaRecordValue -> (aiidaRecordValue.dataTag()
-                                                                                                              .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) &&
+                                                                                                              .equals(METER_SERIAL) &&
                                                                                               aiidaRecordValue.value()
-                                                                                                              .equals("126")) ||
+                                                                                                              .equals("123456789123")) ||
                                                                                              (aiidaRecordValue.dataTag()
                                                                                                               .equals(POSITIVE_ACTIVE_ENERGY) &&
                                                                                               aiidaRecordValue.value()
@@ -295,7 +295,7 @@ class MicroTeleinfoV3AdapterTest {
                                new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
-                invalidJson), LOG_CAPTOR, JsonMappingException.class);
+                invalidJson), LOG_CAPTOR, MicroTeleinfoV3ModeNotSupportedException.class);
 
         stepVerifier.verify(Duration.ofSeconds(2));
     }
@@ -309,8 +309,8 @@ class MicroTeleinfoV3AdapterTest {
                                                 .expectNextMatches(received -> received.aiidaRecordValues()
                                                                                        .stream()
                                                                                        .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
-                                                                                                                                     .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) || aiidaRecordValue.dataTag()
-                                                                                                                                                                                                     .equals(POSITIVE_ACTIVE_ENERGY)))
+                                                                                                                                     .equals(ObisCode.METER_SERIAL) || aiidaRecordValue.dataTag()
+                                                                                                                                                                                       .equals(POSITIVE_ACTIVE_ENERGY)))
                                                 .then(adapter::close)
                                                 .expectComplete()
                                                 .verifyLater();
@@ -556,7 +556,7 @@ class MicroTeleinfoV3AdapterTest {
         adapter.messageArrived(DATA_SOURCE.mqttSubscribeTopic(),
                                new MqttMessage(standardModeJson.getBytes(StandardCharsets.UTF_8)));
 
-        assertEquals(5, LOG_CAPTOR.getDebugLogs().size());
+        assertEquals(3, LOG_CAPTOR.getDebugLogs().size());
         assertTrue(LOG_CAPTOR.getDebugLogs().contains("Connected smart meter operates in %s mode.".formatted(
                 MicroTeleinfoV3Mode.STANDARD)));
         stepVerifier.verify(Duration.ofSeconds(2));

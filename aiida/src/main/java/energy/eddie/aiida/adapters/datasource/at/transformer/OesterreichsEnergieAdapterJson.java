@@ -1,4 +1,4 @@
-package energy.eddie.aiida.adapters.datasource.at;
+package energy.eddie.aiida.adapters.datasource.at.transformer;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;

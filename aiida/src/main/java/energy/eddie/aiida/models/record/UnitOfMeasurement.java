@@ -12,7 +12,7 @@ public enum UnitOfMeasurement {
     KILO_WATT_HOUR("kWh"),
     VOLT_AMPERE_REACTIVE("VAr"),
     KILO_VOLT_AMPERE_REACTIVE("kVAr"),
-    VOLT_AMPERE_REACTIVE_HOUR("kVArh"),
+    VOLT_AMPERE_REACTIVE_HOUR("VArh"),
     KILO_VOLT_AMPERE_REACTIVE_HOUR("kVArh"),
     AMPERE("A"),
     VOLT("V"),

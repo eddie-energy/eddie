@@ -1,11 +1,10 @@
-package energy.eddie.aiida.adapters.datasource.fr;
+package energy.eddie.aiida.adapters.datasource.fr.transformer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import energy.eddie.aiida.adapters.datasource.fr.mode.MicroTeleinfoV3DataField;
-import energy.eddie.aiida.adapters.datasource.fr.mode.MicroTeleinfoV3DataFieldDeserializer;
-import energy.eddie.aiida.adapters.datasource.fr.mode.history.MicroTeleinfoV3HistoryModeJson;
+import energy.eddie.aiida.adapters.datasource.fr.transformer.history.HistoryModeEntry;
+import energy.eddie.aiida.adapters.datasource.fr.transformer.history.MicroTeleinfoV3HistoryModeJson;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -73,15 +72,15 @@ class MicroTeleinfoV3AdapterJsonTest {
 
         var json = mapper.readValue(str, MicroTeleinfoV3HistoryModeJson.class);
 
-        assertEquals("000000", json.motdetat().raw());
-        assertEquals("12345678901", json.adco().raw());
-        assertEquals("HC..", json.optarif().raw());
-        assertEquals("45", json.isousc().raw());
-        assertEquals("905868888", json.base().raw());
-        assertEquals("A", json.hhphc().raw());
-        assertEquals("HP..", json.ptec().raw());
-        assertEquals("22", json.iinst().raw());
-        assertEquals("90", json.imax().raw());
-        assertEquals("4110", json.papp().raw());
+        assertEquals("000000", json.energyData().get(HistoryModeEntry.MOTDETAT.toString()).raw());
+        assertEquals("12345678901", json.energyData().get(HistoryModeEntry.ADCO.toString()).raw());
+        assertEquals("HC..", json.energyData().get(HistoryModeEntry.OPTARIF.toString()).raw());
+        assertEquals("45", json.energyData().get(HistoryModeEntry.ISOUSC.toString()).raw());
+        assertEquals("905868888", json.energyData().get(HistoryModeEntry.BASE.toString()).raw());
+        assertEquals("A", json.energyData().get(HistoryModeEntry.HHPHC.toString()).raw());
+        assertEquals("HP..", json.energyData().get(HistoryModeEntry.PTEC.toString()).raw());
+        assertEquals("22", json.energyData().get(HistoryModeEntry.IINST.toString()).raw());
+        assertEquals("90", json.energyData().get(HistoryModeEntry.IMAX.toString()).raw());
+        assertEquals("4110", json.energyData().get(HistoryModeEntry.PAPP.toString()).raw());
     }
 }
