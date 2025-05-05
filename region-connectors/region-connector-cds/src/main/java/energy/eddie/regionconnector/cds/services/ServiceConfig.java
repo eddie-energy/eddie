@@ -2,11 +2,15 @@ package energy.eddie.regionconnector.cds.services;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.cds.CdsRegionConnectorMetadata;
 import energy.eddie.regionconnector.cds.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
 import energy.eddie.regionconnector.cds.persistence.CdsPermissionRequestRepository;
+import energy.eddie.regionconnector.cds.services.retransmission.RetransmissionPollingService;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.retransmission.CommonRetransmissionService;
+import energy.eddie.regionconnector.shared.retransmission.RetransmissionValidation;
 import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import energy.eddie.regionconnector.shared.timeout.CommonTimeoutService;
 import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
@@ -52,6 +56,23 @@ public class ServiceConfig {
                 cdsRegionConnectorMetadata,
                 taskScheduler,
                 dataNeedCalculationService
+        );
+    }
+
+    @Bean
+    public CommonRetransmissionService<CdsPermissionRequest> retransmissionService(
+            CdsPermissionRequestRepository cdsPermissionRequestRepository,
+            CdsRegionConnectorMetadata cdsRegionConnectorMetadata,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
+            RetransmissionPollingService retransmissionPollingService
+    ) {
+        return new CommonRetransmissionService<>(
+                cdsPermissionRequestRepository,
+                retransmissionPollingService,
+                new RetransmissionValidation(
+                        cdsRegionConnectorMetadata,
+                        dataNeedsService
+                )
         );
     }
 }
