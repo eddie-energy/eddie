@@ -3,9 +3,11 @@ package energy.eddie.aiida.adapters.datasource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
 import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
+import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
@@ -55,6 +57,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
             case MICRO_TELEINFO -> new MicroTeleinfoV3Adapter((MicroTeleinfoV3DataSource) dataSource, objectMapper);
             case SMART_GATEWAYS_ADAPTER -> new SmartGatewaysAdapter((SmartGatewaysDataSource) dataSource);
             case SIMULATION -> new SimulationAdapter((SimulationDataSource) dataSource);
+            case MODBUS -> new ModbusTcpDataSourceAdapter((ModbusDataSource) dataSource);
         };
     }
 

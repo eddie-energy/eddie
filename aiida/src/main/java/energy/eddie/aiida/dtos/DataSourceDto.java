@@ -14,5 +14,6 @@ public record DataSourceDto(
         @JsonProperty String name,
         @JsonProperty boolean enabled,
         @Nullable @JsonProperty Integer simulationPeriod,
-        @Nullable @JsonProperty DataSourceMqttDto mqttSettings
+        @Nullable @JsonProperty DataSourceMqttDto mqttSettings,
+        @Nullable @JsonProperty DataSourceModbusDto modbusSettings
 ) { }

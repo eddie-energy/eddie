@@ -5,11 +5,14 @@ import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.MqttSecretGenerator;
+import energy.eddie.aiida.errors.ModbusConnectionException;
+import energy.eddie.aiida.models.datasource.*;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -70,23 +73,38 @@ public class DataSourceService {
     public void addDataSource(DataSourceDto dto) throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
 
-        var mqttSettingsDto = new DataSourceMqttDto(
-                mqttConfiguration.internalHost(),
-                mqttConfiguration.externalHost(),
-                "aiida/" + MqttSecretGenerator.generate(),
-                MqttSecretGenerator.generate(),
-                MqttSecretGenerator.generate()
-        );
-        var dataSource = DataSource.createFromDto(dto, currentUserId, mqttSettingsDto);
+        if (dto.dataSourceType().equals(DataSourceType.MODBUS)) {
+            var modbusSettings = dto.modbusSettings();
+            if (modbusSettings != null) {
+                var modbusSettingsDto = new DataSourceModbusDto(
+                        modbusSettings.modbusIp(),
+                        modbusSettings.modbusVendor(),
+                        modbusSettings.modbusModel(),
+                        modbusSettings.modbusDevice()
+                );
+                var dataSource = DataSource.createFromDto(dto, currentUserId, modbusSettingsDto);
+                startDataSource(dataSource);
+                repository.save(dataSource);
+            }
+        } else {
+            var mqttSettingsDto = new DataSourceMqttDto(
+                    mqttConfiguration.internalHost(),
+                    mqttConfiguration.externalHost(),
+                    "aiida/" + MqttSecretGenerator.generate(),
+                    MqttSecretGenerator.generate(),
+                    MqttSecretGenerator.generate()
+            );
+            var dataSource = DataSource.createFromDto(dto, currentUserId, mqttSettingsDto);
 
-        // This save generates the datasource ID
-        repository.save(dataSource);
-
-        if (dataSource instanceof MqttDataSource) {
-            // This save now perists the subscribe topic with the generated ID
+            // This save generates the datasource ID
             repository.save(dataSource);
+
+            if (dataSource instanceof MqttDataSource) {
+                // This save now perists the subscribe topic with the generated ID
+                repository.save(dataSource);
+            }
+            startDataSource(dataSource);
         }
-        startDataSource(dataSource);
     }
 
     public void deleteDataSource(UUID dataSourceId) {
@@ -98,7 +116,7 @@ public class DataSourceService {
         repository.deleteById(dataSourceId);
     }
 
-    public DataSource updateDataSource(DataSourceDto dto) throws InvalidUserException, EntityNotFoundException {
+    public DataSource updateDataSource(DataSourceDto dto) throws InvalidUserException, EntityNotFoundException, ModbusConnectionException {
         var currentDataSource = repository.findById(dto.id())
                                           .orElseThrow(() -> new EntityNotFoundException(
                                                   "Datasource not found with ID: " + dto.id()
@@ -141,7 +159,7 @@ public class DataSourceService {
                                  .findFirst();
     }
 
-    private void startDataSource(DataSource dataSource) {
+    private void startDataSource(DataSource dataSource) throws ModbusConnectionException {
         var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper);
         dataSourceAdapters.add(dataSourceAdapter);
 

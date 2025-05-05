@@ -1,9 +1,8 @@
 package energy.eddie.aiida.models.datasource.simulation;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.IntervalBasedDataSource;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
@@ -13,20 +12,12 @@ import java.util.UUID;
 @Entity
 @DiscriminatorValue(DataSourceType.Identifiers.SIMULATION)
 @SuppressWarnings("NullAway")
-public class SimulationDataSource extends DataSource {
-    @JsonProperty
-    private Integer simulationPeriod;
-
+public class SimulationDataSource extends IntervalBasedDataSource {
     @SuppressWarnings("NullAway")
     protected SimulationDataSource() {}
 
     public SimulationDataSource(DataSourceDto dto, UUID userId) {
         super(dto, userId);
-        this.simulationPeriod = dto.simulationPeriod();
-    }
-
-    public Integer simulationPeriod() {
-        return simulationPeriod;
     }
 
     @Override
@@ -37,7 +28,8 @@ public class SimulationDataSource extends DataSource {
                 asset,
                 name,
                 enabled,
-                simulationPeriod,
+                pollingInterval,
+                null,
                 null
         );
     }

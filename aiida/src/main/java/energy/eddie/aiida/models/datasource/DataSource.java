@@ -2,14 +2,18 @@ package energy.eddie.aiida.models.datasource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.dtos.DataSourceProtocolSettings;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import org.springframework.lang.Nullable;
 
 import java.util.UUID;
 
@@ -47,16 +51,42 @@ public abstract class DataSource {
         this.dataSourceType = dto.dataSourceType();
     }
 
-    public static DataSource createFromDto(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
+    public static DataSource createFromDto(DataSourceDto dto, UUID userId, @Nullable DataSourceProtocolSettings settings) {
         var dataSourceType = dto.dataSourceType();
 
         return switch (dataSourceType) {
-            case SMART_METER_ADAPTER -> new OesterreichsEnergieDataSource(dto, userId, dataSourceMqttDto);
-            case MICRO_TELEINFO -> new MicroTeleinfoV3DataSource(dto, userId, dataSourceMqttDto);
-            case SMART_GATEWAYS_ADAPTER -> new SmartGatewaysDataSource(dto, userId, dataSourceMqttDto);
+            case SMART_METER_ADAPTER -> {
+                if (settings instanceof DataSourceMqttDto mqtt) {
+                    yield new OesterreichsEnergieDataSource(dto, userId, mqtt);
+                }
+                throw new IllegalArgumentException("Expected MQTT settings for SMART_METER_ADAPTER");
+            }
+
+            case MICRO_TELEINFO -> {
+                if (settings instanceof DataSourceMqttDto mqtt) {
+                    yield new MicroTeleinfoV3DataSource(dto, userId, mqtt);
+                }
+                throw new IllegalArgumentException("Expected MQTT settings for MICRO_TELEINFO");
+            }
+
+            case SMART_GATEWAYS_ADAPTER -> {
+                if (settings instanceof DataSourceMqttDto mqtt) {
+                    yield new SmartGatewaysDataSource(dto, userId, mqtt);
+                }
+                throw new IllegalArgumentException("Expected MQTT settings for SMART_GATEWAYS_ADAPTER");
+            }
+
             case SIMULATION -> new SimulationDataSource(dto, userId);
+
+            case MODBUS -> {
+                if (settings instanceof DataSourceModbusDto modbus) {
+                    yield new ModbusDataSource(dto, userId, modbus);
+                }
+                throw new IllegalArgumentException("Expected MODBUS settings for MODBUS data source");
+            }
         };
     }
+
 
     public DataSource mergeWithDto(DataSourceDto dto, UUID userId) {
         return createFromDto(dto, userId, new DataSourceMqttDto());
@@ -91,6 +121,6 @@ public abstract class DataSource {
     }
 
     public DataSourceDto toDto() {
-        return new DataSourceDto(id, dataSourceType, asset, name, enabled, null, null);
+        return new DataSourceDto(id, dataSourceType, asset, name, enabled, null, null, null);
     }
 }

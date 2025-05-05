@@ -3,9 +3,13 @@ package energy.eddie.aiida.models.record;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.utils.ObisCode;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 @Entity
+@RequireDataTagOrSourceKey
 public class AiidaRecordValue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,37 +23,69 @@ public class AiidaRecordValue {
 
     @JsonProperty
     private String rawTag;
+
+    @Nullable
     @JsonProperty
     @Enumerated(EnumType.STRING)
     private ObisCode dataTag;
+
     @JsonProperty
     private String rawValue;
+
     @SuppressWarnings("unused") // Used when serialized to JSON
     @JsonProperty
     @Enumerated(EnumType.STRING)
     private UnitOfMeasurement rawUnitOfMeasurement;
+
     @JsonProperty
     private String value;
+
     @SuppressWarnings("unused") // Used when serialized to JSON
     @JsonProperty
     @Enumerated(EnumType.STRING)
     private UnitOfMeasurement unitOfMeasurement;
 
+    @Nullable
+    @JsonProperty
+    @Column(name = "source_key")
+    private String sourceKey;
+
     @SuppressWarnings("NullAway.Init")
     public AiidaRecordValue(
             String rawTag,
-            ObisCode dataTag,
+            @Nullable ObisCode dataTag,
             String rawValue,
             UnitOfMeasurement rawUnitOfMeasurement,
             String value,
             UnitOfMeasurement unitOfMeasurement
     ) {
+        Objects.requireNonNull(dataTag, "Data tag cannot be null here");
         this.rawTag = rawTag;
         this.dataTag = dataTag;
         this.rawValue = rawValue;
         this.rawUnitOfMeasurement = rawUnitOfMeasurement;
         this.value = value;
         this.unitOfMeasurement = unitOfMeasurement;
+        this.sourceKey = null;
+    }
+
+    @SuppressWarnings("NullAway.Init")
+    public AiidaRecordValue(
+            String rawTag,
+            @Nullable String sourceKey,
+            String rawValue,
+            UnitOfMeasurement rawUnitOfMeasurement,
+            String value,
+            UnitOfMeasurement unitOfMeasurement
+    ) {
+        Objects.requireNonNull(sourceKey, "Source key cannot be null here");
+        this.rawTag = rawTag;
+        this.dataTag = null;
+        this.rawValue = rawValue;
+        this.rawUnitOfMeasurement = rawUnitOfMeasurement;
+        this.value = value;
+        this.unitOfMeasurement = unitOfMeasurement;
+        this.sourceKey = sourceKey;
     }
 
     @SuppressWarnings("NullAway.Init")
@@ -68,6 +104,7 @@ public class AiidaRecordValue {
         this.aiidaRecord = aiidaRecord;
     }
 
+    @Nullable
     public ObisCode dataTag() {
         return dataTag;
     }
@@ -90,5 +127,22 @@ public class AiidaRecordValue {
 
     public UnitOfMeasurement rawUnitOfMeasurement() {
         return rawUnitOfMeasurement;
+    }
+
+    @Nullable
+    public String sourceKey() { return sourceKey; }
+
+    /*
+     * Returns either the dataTag or the sourceKey.
+     * `@RequireDataTagOrSourceKey` ensures that either dataTag or sourceKey are not null.
+     */
+    public String dataPointKey() {
+        if (dataTag != null) {
+            return dataTag.toString();
+        }
+        if (sourceKey != null) {
+            return sourceKey;
+        }
+        throw new IllegalStateException("Both dataTag and sourceKey are null.");
     }
 }

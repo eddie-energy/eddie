@@ -67,7 +67,8 @@ public abstract class MqttDataSource extends DataSource {
                 name,
                 enabled,
                 null,
-                toMqttDto()
+                toMqttDto(),
+                null
         );
     }
 

@@ -1,9 +1,12 @@
 package energy.eddie.aiida.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
+import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
+import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
@@ -14,6 +17,8 @@ import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +30,10 @@ import static org.mockito.Mockito.*;
 class DataSourceServiceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
 
+    private static final UUID VENDOR_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private static final UUID MODEL_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
+    private static final UUID DEVICE_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
+
     private DataSourceRepository repository;
     private Aggregator aggregator;
     private AuthService authService;
@@ -34,7 +43,7 @@ class DataSourceServiceTest {
     private UUID userId;
 
     DataSourceDto createNewDataSourceDto(UUID id, DataSourceType type, String name, boolean enabled) {
-        return new DataSourceDto(id, type, AiidaAsset.SUBMETER, name, enabled, 1, null);
+        return new DataSourceDto(id, type, AiidaAsset.SUBMETER, name, enabled, 1, null, null);
     }
 
     DataSource createNewDataSource(UUID id, DataSourceType type) {
@@ -96,6 +105,41 @@ class DataSourceServiceTest {
     }
 
     @Test
+    void shouldAddModbusDataSource() throws InvalidUserException {
+        try (
+                MockedStatic<ModbusDeviceService> mockedStatic = mockStatic(ModbusDeviceService.class);
+                MockedConstruction<ModbusTcpDataSourceAdapter> ignored = mockConstruction(ModbusTcpDataSourceAdapter.class)
+        ) {
+            mockedStatic.when(() -> ModbusDeviceService.loadConfig(any()))
+                    .thenReturn(ModbusDeviceTestHelper.setupModbusDevice());
+            when(authService.getCurrentUserId()).thenReturn(userId);
+
+            var modbusSettings = new DataSourceModbusDto(
+                    "192.168.1.100",
+                    VENDOR_ID,
+                    MODEL_ID,
+                    DEVICE_ID
+            );
+
+            var dto = new DataSourceDto(
+                    DATA_SOURCE_ID,
+                    DataSourceType.MODBUS,
+                    AiidaAsset.SUBMETER,
+                    "Modbus DS",
+                    true,
+                    1,
+                    null,
+                    modbusSettings
+            );
+
+            dataSourceService.addDataSource(dto);
+
+            verify(repository, times(1)).save(any());
+            verify(aggregator, times(1)).addNewDataSourceAdapter(any());
+        }
+    }
+
+    @Test
     void shouldNotAddNewDataSource() throws InvalidUserException {
         when(authService.getCurrentUserId()).thenReturn(userId);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
@@ -117,7 +161,6 @@ class DataSourceServiceTest {
         verify(repository, times(1)).deleteById(DATA_SOURCE_ID);
     }
 
-
     @Test
     void shouldUpdateDataSource() throws InvalidUserException {
         var dataSource = createNewDataSource(DATA_SOURCE_ID, DataSourceType.SMART_METER_ADAPTER);
@@ -136,7 +179,6 @@ class DataSourceServiceTest {
         assertEquals("New Name", savedDataSource.name());
         assertFalse(savedDataSource.enabled());
     }
-
 
     @Test
     void shouldAddDataSourcesOnStartDataSources() {

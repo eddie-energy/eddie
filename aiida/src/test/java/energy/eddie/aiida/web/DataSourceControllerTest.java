@@ -38,6 +38,7 @@ class DataSourceControllerTest {
                               "simulation",
                               true,
                               1,
+                              null,
                               null),
             USER_ID
     );
@@ -54,7 +55,7 @@ class DataSourceControllerTest {
         mockMvc.perform(get("/datasources/types")
                                 .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk())
-               .andExpect(jsonPath("$.length()").value(4));
+               .andExpect(jsonPath("$.length()").value(5));
     }
 
 

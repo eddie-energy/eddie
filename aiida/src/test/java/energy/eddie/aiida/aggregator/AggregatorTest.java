@@ -51,6 +51,7 @@ class AggregatorTest {
             DATASOURCE_NAME_1,
             true,
             null,
+            null,
             null), USER_ID);
     private static final SimulationDataSource DATA_SOURCE_2 = new SimulationDataSource(new DataSourceDto(
             DATA_SOURCE_ID_2,
@@ -58,6 +59,7 @@ class AggregatorTest {
             AiidaAsset.SUBMETER,
             "test-2",
             true,
+            null,
             null,
             null), USER_ID);
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();

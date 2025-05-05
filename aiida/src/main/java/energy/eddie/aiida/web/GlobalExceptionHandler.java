@@ -3,6 +3,7 @@ package energy.eddie.aiida.web;
 import api.ValidationErrors;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.errors.*;
+import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.springframework.http.HttpStatus;
@@ -128,5 +129,11 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<Map<String, List<EddieApiError>>> handleInstallerException(MqttUnauthorizedException exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errors);
+    }
+
+    @ExceptionHandler(value = {ModbusConnectionException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleModbusConnectionException(ModbusConnectionException exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errors);
     }
 }

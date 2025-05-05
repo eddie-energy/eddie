@@ -1,0 +1,109 @@
+modbus:
+  devices:
+    - id: "electricity_meter_em24"
+      name: "Carlo Gavazzi EM-24"
+      port: 502
+      unitId: 1
+      intervals:
+        read:
+          default: 5000
+          min: 1000
+      sources:
+        - category: "ELECTRICITY_METER_AC"
+          id: "em24-main"
+          datapoints:
+            - id: "VOLTAGE_L1_N"
+              register: 0        # 0000h
+              registerType: "input"
+              valueType: "int32"
+              length: 2
+              endian: "little"
+              transform: "(@self / 10.0)"
+              access: "read"
+
+            - id: "VOLTAGE_L2_N"
+              register: 2        # 0002h
+              registerType: "input"
+              valueType: "int32"
+              length: 2
+              endian: "little"
+              transform: "(@self / 10.0)"
+              access: "read"
+
+            - id: "VOLTAGE_L3_N"
+              register: 4        # 0004h
+              registerType: "input"
+              valueType: "int32"
+              length: 2
+              endian: "little"
+              transform: "(@self / 10.0)"
+              access: "read"
+
+            - id: "CURRENT_L1"
+              register: 12       # 000Ch
+              registerType: "input"
+              valueType: "int32"
+              length: 2
+              endian: "little"
+              transform: "(@self / 1000.0)"
+              access: "read"
+
+            - id: "CURRENT_L2"
+              register: 14       # 000Eh
+              registerType: "input"
+              valueType: "int32"
+              length: 2
+              endian: "little"
+              transform: "(@self / 1000.0)"
+              access: "read"
+
+            - id: "CURRENT_L3"
+              register: 16       # 0010h
+              registerType: "input"
+              valueType: "int32"
+              length: 2
+              endian: "little"
+              transform: "(@self / 1000.0)"
+              access: "read"
+
+            - id: "ACTIVE_POWER_L1"
+              register: 22       # 0016h
+              registerType: "input"
+              valueType: "int32"
+              length: 2
+              endian: "little"
+              transform: "(@self / 10.0)"
+              access: "read"
+
+            - id: "ACTIVE_POWER_L2"
+              register: 24       # 0018h
+              registerType: "input"
+              valueType: "int32"
+              length: 2
+              endian: "little"
+              transform: "(@self / 10.0)"
+              access: "read"
+
+            - id: "ACTIVE_POWER_L3"
+              register: 26       # 001Ah
+              registerType: "input"
+              valueType: "int32"
+              length: 2
+              endian: "little"
+              transform: "(@self / 10.0)"
+              access: "read"
+
+            - id: "FREQUENCY"
+              register: 51       # 0033h
+              registerType: "input"
+              valueType: "uint16"
+              length: 1
+              endian: "little"
+              transform: "(@self / 10.0)"
+              access: "read"
+
+            - id: "ACTIVE_POWER_SUM"
+              virtual: true
+              source: [ "ACTIVE_POWER_L1", "ACTIVE_POWER_L2", "ACTIVE_POWER_L3" ]
+              transform: "(@ACTIVE_POWER_L1 + @ACTIVE_POWER_L2 + @ACTIVE_POWER_L3)"
+              access: "read"

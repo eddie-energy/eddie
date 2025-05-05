@@ -46,6 +46,7 @@ class OesterreichsEnergieAdapterTest {
                               "sma",
                               true,
                               null,
+                              null,
                               null),
             USER_ID,
             new DataSourceMqttDto("tcp://localhost:1883",

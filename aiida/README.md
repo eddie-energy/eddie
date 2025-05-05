@@ -141,3 +141,9 @@ Currently, the following countries are supported:
 
 ![SupportedMeters](docs/images/Smart_Meter_supported_by_AIIDA.png)
 *Map created with https://www.mapchart.net*
+
+## Modbus Configuration Documentation
+
+For details on configuring Modbus-based smart meters and other energy devices within AIIDA, including virtual datapoints, endian handling, and transformation logic, please refer to the full documentation:
+
+📄 [Modbus Configuration Documentation](docs/modbus/ModbusConfigDocumentation.md)

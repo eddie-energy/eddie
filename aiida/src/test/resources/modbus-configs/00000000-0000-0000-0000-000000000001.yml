@@ -1,0 +1,22 @@
+modbus:
+  devices:
+    - id: "11111111-1111-1111-1111-111111111111"
+      name: "Test Device-1"
+      port: 502
+      unitId: 1
+      intervals:
+        read:
+          default: 5000
+          min: 1000
+      sources:
+        - category: "ELECTRICITY_METER_AC"
+          id: "Test Device EM"
+          datapoints:
+            - id: "VOLTAGE_L1_N"
+              register: 0        # 0000h
+              registerType: "input"
+              valueType: "int32"
+              length: 2
+              endian: "little"
+              transform: "(@self / 10.0)"
+              access: "read"

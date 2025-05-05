@@ -8,7 +8,7 @@ public record DataSourceMqttDto(
         @JsonProperty String subscribeTopic,
         @JsonProperty String username,
         @JsonProperty String password
-) {
+) implements DataSourceProtocolSettings {
     public DataSourceMqttDto() {
         this("", "", "", "", "");
     }
