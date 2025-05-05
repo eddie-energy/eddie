@@ -1,12 +1,3 @@
----
-prev:
-  text: "API"
-  link: "./api.md"
-next:
-  text: "Configuration"
-  link: "./configuration.md"
----
-
 # Internal Architecture
 
 While each region connector could implement a completely different architecture, since they are isolated from another, it is better to use the same architecture.

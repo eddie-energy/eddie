@@ -1,12 +1,3 @@
----
-prev:
-  text: "Configuration"
-  link: "./configuration.md"
-next:
-  text: "Beans of Interest"
-  link: "./beans-of-interest.md"
----
-
 # Implementing a Region Connector Frontend
 
 The frontend of each region connector is to be implemented as a custom element.

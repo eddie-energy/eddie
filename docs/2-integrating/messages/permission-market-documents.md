@@ -1,12 +1,3 @@
----
-prev:
-  text: "Raw Data Messages"
-  link: "./raw-data-messages.md"
-next:
-  text: "Validated Historical Data Market Documents"
-  link: "./validated-historical-data-market-documents.md"
----
-
 # Permission Market Documents
 
 Permission market documents are used to signal the status change of one or multiple permission requests.

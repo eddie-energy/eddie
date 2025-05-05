@@ -1,12 +1,3 @@
----
-prev:
-  text: "Messages"
-  link: "./messages.md"
-next:
-  text: "Raw Data Messages"
-  link: "./raw-data-messages.md"
----
-
 # Connection status messages
 
 Connection status messages are an EDDIE internal message format and are an alternative version to the permission market documents.

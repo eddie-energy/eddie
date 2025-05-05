@@ -1,12 +1,3 @@
----
-prev:
-  text: "Permission Market Documents"
-  link: "./permission-market-documents.md"
-next:
-  text: "Accounting Point Data Market Documents"
-  link: "./accounting-point-data-market-documents.md"
----
-
 # Validated Historical Data Market Documents
 
 Validated historical data market documents contain metered data that is received from the MDA.

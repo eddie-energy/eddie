@@ -1,12 +1,3 @@
----
-prev:
-  text: "Build and Setup"
-  link: "./build-and-setup.md"
-next:
-  text: "Internal Architecture"
-  link: "./internal-architecture.md"
----
-
 # API
 
 The API documentation is split into two parts.

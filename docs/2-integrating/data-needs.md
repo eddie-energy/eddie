@@ -1,12 +1,3 @@
----
-prev:
-  text: "Integrating"
-  link: "./integrating.md"
-next:
-  text: "Messages and Documents"
-  link: "./messages/messages.md"
----
-
 # Data Needs
 
 Data needs define the format of permission requests and the data they provide.

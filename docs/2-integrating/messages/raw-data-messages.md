@@ -1,12 +1,3 @@
----
-prev:
-  text: "Connection Status Messages"
-  link: "./connection-status-messages.md"
-next:
-  text: "Permission Market Documents"
-  link: "./permission-market-documents.md"
----
-
 # Raw Data Messages
 
 Raw data messages are used to forward data from MDAs as is.

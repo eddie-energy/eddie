@@ -33,114 +33,114 @@ export default withMermaid(
         {
           text: "Running",
           items: [
-            { text: "Operation", link: "1-running/OPERATION" },
+            { text: "Operation", link: "/1-running/OPERATION" },
             {
               text: "EDDIE Button",
-              link: "1-running/eddie-button/eddie-button.md",
+              link: "/1-running/eddie-button/eddie-button.md",
               items: [
-                { text: "Angular", link: "1-running/eddie-button/angular.md" },
+                { text: "Angular", link: "/1-running/eddie-button/angular.md" },
               ],
             },
             {
               text: "Region Connectors",
-              link: "1-running/region-connectors/region-connectors.md",
+              link: "/1-running/region-connectors/region-connectors.md",
               items: [
                 {
                   text: "AIIDA",
-                  link: "1-running/region-connectors/region-connector-aiida.md",
+                  link: "/1-running/region-connectors/region-connector-aiida.md",
                 },
                 {
                   text: "EDA (Austria)",
-                  link: "1-running/region-connectors/region-connector-at-eda.md",
+                  link: "/1-running/region-connectors/region-connector-at-eda.md",
                 },
                 {
                   text: "Fluvius (Belgium)",
-                  link: "1-running/region-connectors/region-connector-be-fluvius.md",
+                  link: "/1-running/region-connectors/region-connector-be-fluvius.md",
                 },
                 {
                   text: "Energinet (Denmark)",
-                  link: "1-running/region-connectors/region-connector-dk-energinet.md",
+                  link: "/1-running/region-connectors/region-connector-dk-energinet.md",
                 },
                 {
                   text: "Datadis (Spain)",
-                  link: "1-running/region-connectors/region-connector-es-datadis.md",
+                  link: "/1-running/region-connectors/region-connector-es-datadis.md",
                 },
                 {
                   text: "Fingrid (Finland)",
-                  link: "1-running/region-connectors/region-connector-fi-fingrid.md",
+                  link: "/1-running/region-connectors/region-connector-fi-fingrid.md",
                 },
                 {
                   text: "Enedis (France)",
-                  link: "1-running/region-connectors/region-connector-fr-enedis.md",
+                  link: "/1-running/region-connectors/region-connector-fr-enedis.md",
                 },
                 {
                   text: "Mijn Aansluiting (Netherlands)",
-                  link: "1-running/region-connectors/region-connector-nl-mijn-aansluiting.md",
+                  link: "/1-running/region-connectors/region-connector-nl-mijn-aansluiting.md",
                 },
                 {
                   text: "Green Button (USA)",
-                  link: "1-running/region-connectors/region-connector-us-green-button.md",
+                  link: "/1-running/region-connectors/region-connector-us-green-button.md",
                 },
                 {
                   text: "CDS",
-                  link: "1-running/region-connectors/region-connector-cds.md",
+                  link: "/1-running/region-connectors/region-connector-cds.md",
                 },
               ],
             },
             {
               text: "Outbound-connectors",
-              link: "1-running/outbound-connectors/outbound-connectors.md",
+              link: "/1-running/outbound-connectors/outbound-connectors.md",
               items: [
                 {
                   text: "Apache Kafka",
-                  link: "1-running/outbound-connectors/outbound-connector-kafka.md",
+                  link: "/1-running/outbound-connectors/outbound-connector-kafka.md",
                 },
                 {
                   text: "AMQP",
-                  link: "1-running/outbound-connectors/outbound-connector-amqp.md",
+                  link: "/1-running/outbound-connectors/outbound-connector-amqp.md",
                 },
               ],
             },
-            { text: "Admin Console", link: "1-running/admin-console" },
-            { text: "Demo Button", link: "1-running/demo-button" },
-            { text: "Example App", link: "1-running/example-app" },
+            { text: "Admin Console", link: "/1-running/admin-console" },
+            { text: "Demo Button", link: "/1-running/demo-button" },
+            { text: "Example App", link: "/1-running/example-app" },
           ],
         },
         {
           text: "Integrating",
-          link: "2-integrating/integrating.md",
+          link: "/2-integrating/integrating.md",
           items: [
             {
               text: "Data Needs",
-              link: "2-integrating/data-needs.md",
+              link: "/2-integrating/data-needs.md",
             },
             {
               text: "Messages and Documents",
-              link: "2-integrating/messages/messages.md",
+              link: "/2-integrating/messages/messages.md",
               items: [
                 {
                   text: "Connection Status Messages",
-                  link: "2-integrating/messages/connection-status-messages.md",
+                  link: "/2-integrating/messages/connection-status-messages.md",
                 },
                 {
                   text: "Raw Data Messages",
-                  link: "2-integrating/messages/raw-data-messages.md",
+                  link: "/2-integrating/messages/raw-data-messages.md",
                 },
                 {
                   text: "Permission Market Documents",
-                  link: "2-integrating/messages/permission-market-documents.md",
+                  link: "/2-integrating/messages/permission-market-documents.md",
                 },
                 {
                   text: "Validated Historical Data Market Documents",
-                  link: "2-integrating/messages/validated-historical-data-market-documents.md",
+                  link: "/2-integrating/messages/validated-historical-data-market-documents.md",
                 },
                 {
                   text: "Accounting Point Data Market Documents",
-                  link: "2-integrating/messages/accounting-point-data-market-documents.md",
+                  link: "/2-integrating/messages/accounting-point-data-market-documents.md",
                 },
                 {
                   text: "Redistribution Transaction Request Documents",
-                  link: "2-integrating/messages/redistribution-transaction-request-documents.md",
+                  link: "/2-integrating/messages/redistribution-transaction-request-documents.md",
                 },
               ],
             },
@@ -149,54 +149,54 @@ export default withMermaid(
         {
           text: "Extending",
           items: [
-            { text: "Tech Stack", link: "3-extending/tech-stack" },
+            { text: "Tech Stack", link: "/3-extending/tech-stack" },
             {
               text: "Add a region connector",
-              link: "3-extending/region-connector/add-region-connector",
+              link: "/3-extending/region-connector/add-region-connector",
               items: [
                 {
                   text: "Quickstart",
-                  link: "3-extending/region-connector/quickstart",
+                  link: "/3-extending/region-connector/quickstart",
                 },
                 {
                   text: "Build and Setup",
-                  link: "3-extending/region-connector/build-and-setup",
+                  link: "/3-extending/region-connector/build-and-setup",
                 },
                 {
                   text: "API",
-                  link: "3-extending/region-connector/api",
+                  link: "/3-extending/region-connector/api",
                 },
                 {
                   text: "Internal Architecture",
-                  link: "3-extending/region-connector/internal-architecture",
+                  link: "/3-extending/region-connector/internal-architecture",
                 },
                 {
                   text: "Configuration",
-                  link: "3-extending/region-connector/configuration",
+                  link: "/3-extending/region-connector/configuration",
                 },
                 {
                   text: "Frontend",
-                  link: "3-extending/region-connector/frontend",
+                  link: "/3-extending/region-connector/frontend",
                 },
                 {
                   text: "Beans of Interest",
-                  link: "3-extending/region-connector/beans-of-interest",
+                  link: "/3-extending/region-connector/beans-of-interest",
                 },
                 {
                   text: "Shared Functionality",
-                  link: "3-extending/region-connector/shared-functionality",
+                  link: "/3-extending/region-connector/shared-functionality",
                 },
                 {
                   text: "Dispatcher Servlet",
-                  link: "3-extending/region-connector/dispatcher-servlet",
+                  link: "/3-extending/region-connector/dispatcher-servlet",
                 },
               ],
             },
             {
               text: "Add an outbound-connector",
-              link: "3-extending/add-outbound-connector",
+              link: "/3-extending/add-outbound-connector",
             },
-            { text: "Edit Documentation", link: "3-extending/documentation" },
+            { text: "Edit Documentation", link: "/3-extending/documentation" },
           ],
         },
       ],

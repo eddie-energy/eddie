@@ -1,12 +1,3 @@
----
-prev:
-  text: "Quickstart"
-  link: "./quickstart.md"
-next:
-  text: "API"
-  link: "./api.md"
----
-
 # Build and Setup
 
 The region connectors are subprojects of the [region-connectors project](https://github.com/eddie-energy/eddie/tree/main/region-connectors).

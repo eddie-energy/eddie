@@ -1,12 +1,3 @@
----
-prev:
-  text: "Data Needs"
-  link: "../2-integrating/data-needs.md"
-next:
-  text: "Add a region connector"
-  link: "./region-connector/add-region-connector.md"
----
-
 # Tech Stack
 
 **Backend**

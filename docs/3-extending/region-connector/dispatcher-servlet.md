@@ -1,12 +1,3 @@
----
-prev:
-  text: "Shared Functionality"
-  link: "./shared-functionality.md"
-next:
-  text: "Add an Outbound Connector"
-  link: "../add-outbound-connector.md"
----
-
 # Dispatcher Servlet (web interface)
 
 Each region connector is started in its own spring context and runs in a separate dispatcher servlet.
