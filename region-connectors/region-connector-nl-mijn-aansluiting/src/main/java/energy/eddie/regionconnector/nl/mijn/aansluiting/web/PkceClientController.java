@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriTemplate;
@@ -64,18 +65,34 @@ public class PkceClientController {
     ) throws URISyntaxException, PermissionNotFoundException {
         var queryString = request.getQueryString();
         if (Strings.isBlank(queryString)) {
-            return ResponseEntity.ok("Invalid Answer. You can close this tab now.");
+            LOGGER.warn("Answer did not provide any query parameters.");
+            return ResponseEntity.badRequest().body("Invalid answer. Please contact the service provider.");
         }
 
         URI fullUri = new URI(request.getRequestURI() + "?" + queryString);
-
         LOGGER.info("Full callback URI {}", fullUri);
+
+        var message = "";
+        var error = request.getParameter("error");
+        if (error != null) {
+            message = "%nAnswer included an error.%n%s: %s"
+                    .formatted(error, request.getParameter("error_description"));
+        }
+
         var status = service.receiveResponse(fullUri, permissionId);
         return switch (status) {
-            case PermissionProcessStatus.ACCEPTED -> ResponseEntity.ok("Access Granted. You can close this tab now.");
-            case PermissionProcessStatus.REJECTED ->
-                    ResponseEntity.ok("Permission Request rejected. You can close this tab now.");
-            default -> ResponseEntity.ok("Unable to complete request. You can close this tab now.");
+            case PermissionProcessStatus.ACCEPTED -> ResponseEntity.ok(
+                    "Access granted. You can close this tab now.");
+            case PermissionProcessStatus.REJECTED -> ResponseEntity.ok(
+                    "Access rejected. You can close this tab now.");
+            case PermissionProcessStatus.INVALID -> ResponseEntity.ok(
+                    "Invalid answer. Please contact the service provider."
+                    + message);
+            case PermissionProcessStatus.UNABLE_TO_SEND -> ResponseEntity.ok(
+                    "Permission request could not be sent to permission administrator. Please contact the service provider."
+                    + message);
+            default -> ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                                     .body("Response lead to unexpected status: " + status);
         };
     }
 }
