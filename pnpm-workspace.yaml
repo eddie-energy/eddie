@@ -3,3 +3,4 @@ packages:
   - 'region-connectors/*'
   - 'docs'
   - 'admin-console/ui'
+  - 'aiida/ui'
