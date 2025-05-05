@@ -186,7 +186,8 @@
         },
         "authorization_endpoint": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "Contains the authorization endpoint, might only be available after client registration"
         },
         "token_endpoint": {
           "type": "string",
@@ -195,6 +196,59 @@
         "jwks_uri": {
           "type": "string",
           "format": "uri"
+        },
+        "cds_oauth_version": {
+          "type": "string",
+          "description": "The version of the CDS-WG1-02 Client Registration specification that the Server has implemented, which for this version of the specification is v1"
+        },
+        "cds_human_registration": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where Clients who do not have the technical capacity to use the registration_endpoint can visit to manually register a Client using a user device"
+        },
+        "cds_clients_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Clients API."
+        },
+        "cds_messages_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Clients Messages API."
+        },
+        "cds_credentials_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Scope Credentials API."
+        },
+        "cds_grants_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base url for the Grants API."
+        },
+        "cds_server_provided_files_api":{
+          "type": "string",
+          "format": "uri",
+          "description": "The URL for the Server-Provided Files API. This MUST be included if scopes_supported includes the server_provided_files scope."
+        },
+        "cds_test_accounts": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where Clients can find developer documentation on what test account credentials may be used for testing OAuth response_type=code authorization requests"
+        },
+        "cds_scope_descriptions": {
+          "type": "object",
+          "description": "An object providing additional information about what Scope values listed in scopes_supported mean. This object MUST include a key for each Scope listed in scopes_supported with a Scope Description as that key’s value.",
+          "additionalProperties": {
+            "$ref": "#/$defs/CdsScopeDescription"
+          }
+        },
+        "cds_registration_fields": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/RegistrationField"
+          },
+          "description": "An object providing additional information about Registration Field that are referenced in Scope Description’s registration_requirements list. This object MUST include a key for each Registration Field id included in the registration_requirements lists in the metadata object with a Registration Field as that key’s value. If all registration_requirements lists are empty, this reference object is an empty object ({})."
         },
         "cds_customerdata_accounts_api": {
           "type": "string",
@@ -243,7 +297,16 @@
         "code_challenge_methods_supported",
         "introspection_endpoint",
         "issuer",
-        "authorization_endpoint",
+        "cds_oauth_version",
+        "cds_human_registration",
+        "cds_clients_api",
+        "cds_messages_api",
+        "cds_credentials_api",
+        "cds_grants_api",
+        "cds_server_provided_files_api",
+        "cds_test_accounts",
+        "cds_scope_descriptions",
+        "cds_registration_fields",
         "cds_customerdata_accounts_api",
         "cds_customerdata_aggregations_api",
         "cds_customerdata_billsections_api",
@@ -270,9 +333,6 @@
         ]
       },
       "allOf": [
-        {
-          "$ref": "#/$defs/OAuthCDSValues"
-        },
         {
           "$ref": "#/$defs/OAuthExtensions"
         },
@@ -332,51 +392,6 @@
         "token_endpoint_auth_methods_supported"
       ]
     },
-    "OAuthCDSValues": {
-      "type": "object",
-      "properties": {
-        "cds_oauth_version": {
-          "type": "string",
-          "description": "The version of the CDS-WG1-02 Client Registration specification that the Server has implemented, which for this version of the specification is v1"
-        },
-        "cds_human_registration": {
-          "type": "string",
-          "format": "uri",
-          "description": "Where Clients who do not have the technical capacity to use the registration_endpoint can visit to manually register a Client using a user device"
-        },
-        "cds_test_accounts": {
-          "type": "string",
-          "format": "uri",
-          "description": "Where Clients can find developer documentation on what test account credentials may be used for testing OAuth response_type=code authorization requests"
-        },
-        "cds_scope_descriptions": {
-          "type": "object",
-          "description": "An object providing additional information about what Scope values listed in scopes_supported mean. This object MUST include a key for each Scope listed in scopes_supported with a Scope Description as that key’s value.",
-          "additionalProperties": {
-            "$ref": "#/$defs/CdsScopeDescription"
-          }
-        },
-        "cds_registration_fields": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/RegistrationField"
-          },
-          "description": "An object providing additional information about Registration Field that are referenced in Scope Description’s registration_requirements list. This object MUST include a key for each Registration Field id included in the registration_requirements lists in the metadata object with a Registration Field as that key’s value. If all registration_requirements lists are empty, this reference object is an empty object ({})."
-        }
-      },
-      "required": [
-        "cds_oauth_version",
-        "cds_human_registration",
-        "cds_test_accounts",
-        "cds_scope_descriptions",
-        "cds_registration_fields"
-      ],
-      "allOf": [
-        {
-          "$ref": "#/$defs/CdsEndpoints"
-        }
-      ]
-    },
     "CdsScopeDescription": {
       "type": "object",
       "properties": {
@@ -426,7 +441,10 @@
           "description": "The OAuth grant type values that can be used with this scope. This value follows the same behavior as OAuth’s Metadata object grant_types_supported, except that this value represents the grant types supported for this individual scope and not all scopes for the Client. This array MUST contain at least one grant type."
         },
         "token_endpoint_auth_methods_supported": {
-          "type": "string",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "description": "The OAuth client authentication methods that can be used for granting tokens with this scope. This value follows the same behavior as OAuth’s Metadata object token_endpoint_auth_methods_supported, except that this value represents the client authentication methods supported for this individual scope and not all scopes for the Client. A value of \"none\" this array indicates that the scope may be used for public application without using a client secret."
         },
         "code_challenge_methods_supported": {
@@ -811,24 +829,26 @@
         },
         "scope": {
           "type": "string",
-          "description": "Space separated list of scopes, must include 'client_admin'",
-          "pattern": ".*client_admin.*"
+          "description": "If no scope is configured, this value is an empty string (\"\")."
         },
         "redirect_uris": {
           "type": "array",
+          "description": "If no redirect URIs are configured, this value is an empty list ([]).",
           "items": {
             "type": "string",
             "format": "uri"
           }
         },
         "token_endpoint_auth_method": {
-          "type": "string",
+          "type": ["string", "null"],
+          "description": "If no auth methods are configured, this value is null.",
           "enum": [
             "client_secret_basic"
           ]
         },
         "grant_types": {
           "type": "array",
+          "description": "If no grant types are configured, this value is an empty list ([]).",
           "items": {
             "type": "string"
           }
@@ -846,6 +866,7 @@
         },
         "contacts": {
           "type": "array",
+          "description": "If no contacts are configured, this value is an empty list ([]).",
           "items": {
             "type": "string"
           }
@@ -889,12 +910,7 @@
         "cds_server_metadata": {
           "type": "string",
           "format": "uri",
-          "description": "Where the Client can find their registration-specific version of the CDSC-WG1-01 Server Metadata."
-        },
-        "cds_server_provided_files_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base URL for the Server-Provided Files API. MUST be included if the Client’s registration response scope string included the 'server_provided_files' scope."
+          "description": "Where the Client can find their registration-specific version of the CDSC-WG1-01 Server Metadata. If the Client’s registered scopes have different Scope Descriptions than what is in the publicly available oauth_metadata resource, such as more limited coverages_supported or different limits in authorization_details_fields_supported, then the cds_server_metadata MUST be to a resource that has an updated oauth_metadata resource with the Client-specific values. If the Client’s CDSC server metadata is no different from the public CDSC server metadata, Servers MAY simply link to the public URL. If this metadata endpoint requires authentication, Servers MUST authenticate Client requests to this endpoint via Bearer access token obtained using OAuth’s client_credentials grant with a scope of client_admin, and reject unauthenticated requests with a 401 Unauthorized response code. Clients know that they must use a Bearer token when Servers return a 401 response code for this endpoint when the Client makes an unauthenticated request to the endpoint."
         },
         "cds_default_scope": {
           "type": "string",
@@ -936,14 +952,6 @@
         "cds_status",
         "cds_status_options",
         "cds_server_metadata"
-      ],
-      "allOf": [
-        {
-          "$ref": "#/$defs/CdsEndpoints"
-        },
-        {
-          "$ref": "#/$defs/ClientMetadataExtension"
-        }
       ]
     },
     "ClientStatus": {
@@ -952,92 +960,6 @@
         "production",
         "sandbox",
         "disabled"
-      ]
-    },
-    "CdsEndpoints": {
-      "properties": {
-        "cds_clients_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Clients API."
-        },
-        "cds_messages_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Clients Messages API."
-        },
-        "cds_credentials_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Scope Credentials API."
-        },
-        "cds_grants_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Grants API."
-        }
-      },
-      "required": [
-        "cds_clients_api",
-        "cds_messages_api",
-        "cds_credentials_api",
-        "cds_grants_api"
-      ]
-    },
-    "ClientMetadataExtension": {
-      "type": "object",
-      "description": "This specification extends CDSC-WG1-02 (Client Registration) to add the following named values to the Client Registration Response objects",
-      "properties": {
-        "cds_accounts_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Accounts API"
-        },
-        "cds_servicecontracts_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Service Contracts API"
-        },
-        "cds_servicepoints_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Service Points API"
-        },
-        "cds_meterdevices_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Meter Devices API"
-        },
-        "cds_billstatement_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Bill Statements API"
-        },
-        "cds_billsection_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Bill Sections API"
-        },
-        "cds_aggregations_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Aggregations API"
-        },
-        "cds_usagesegments_api": {
-          "type": "string",
-          "format": "uri",
-          "description": "The base url for the Usage Segments API"
-        }
-      },
-      "required": [
-        "cds_accounts_api",
-        "cds_servicecontracts_api",
-        "cds_servicepoints_api",
-        "cds_meterdevices_api",
-        "cds_billstatement_api",
-        "cds_billsection_api",
-        "cds_aggregations_api",
-        "cds_usagesegments_api"
       ]
     },
     "CoverageListing": {

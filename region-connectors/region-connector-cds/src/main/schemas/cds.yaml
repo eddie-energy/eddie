@@ -90,6 +90,23 @@ paths:
               schema:
                 $ref: "cds-schemas.json/#/$defs/OAuthMetadata"
 
+  /specific/oauth-authorization-server:
+    get:
+      operationId: OAuth Authorization Client Specific Endpoint
+      description: |
+      tags:
+        - Client Registration
+      security:
+        - oauth:
+            - client_admin
+      responses:
+        200:
+          description: OAuth Metadata, containing URIs to endpoints to create an oauth client and client specific information
+          content:
+            application/json:
+              schema:
+                $ref: "cds-schemas.json/#/$defs/OAuthMetadata"
+
   /oauth/register/:
     post:
       operationId: OAuth Client Registration
