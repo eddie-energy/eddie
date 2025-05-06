@@ -6,7 +6,7 @@ If you already have access to the EDDIE repository, follow this [guide](https://
 If you do not have access to the EDDIE repository, contact the developers to gain access.
 
 > [!INFO]
-> Find the package with the CIM classes in the EDDIE repository [here](https://github.com/eddie-energy/eddie/packages/2494610).
+> Find the package with the CIM classes in the EDDIE repository [here](https://github.com/eddie-energy/eddie/packages/2495238).
 
 ## Getting started
 
