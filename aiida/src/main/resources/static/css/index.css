@@ -86,6 +86,6 @@ img {
   }
 }
 
-#mqtt-password:not([hidden]) + span {
+.mqtt-password:not([hidden]) + span {
   display: none;
 }

@@ -470,12 +470,12 @@ function renderDataSources() {
 
           <dt>MQTT Password:</dt>
           <dd>
-            <span hidden id="mqtt-password">
+            <span hidden class="mqtt-password" id="mqtt-password-${dataSource.id}">
               ${dataSource.mqttSettings.password}
             </span>
             <span>********</span>
             <sl-icon
-              id="toggle-mqtt-password"
+              id="toggle-mqtt-password-${dataSource.id}"
               style="cursor: pointer"
               name="eye"
             ></sl-icon>
@@ -488,6 +488,16 @@ function renderDataSources() {
           dataSourceTypeDetails,
           dataSourceList
         );
+
+        const passwordSpan = document.getElementById(`mqtt-password-${dataSource.id}`);
+        const toggleIcon = document.getElementById(`toggle-mqtt-password-${dataSource.id}`);
+
+        if (toggleIcon) {
+          toggleIcon.addEventListener("click", () => {
+            const present = passwordSpan.toggleAttribute("hidden");
+            toggleIcon.setAttribute("name", present ? "eye" : "eye-slash");
+          });
+        }
       }
 
       function appendDataSourceToChild(
@@ -525,16 +535,6 @@ function renderDataSources() {
         `;
 
         dataSourceList.appendChild(template.content);
-      }
-
-      const passwordSpan = document.getElementById("mqtt-password");
-      const toggleIcon = document.getElementById("toggle-mqtt-password");
-
-      if (toggleIcon) {
-        toggleIcon.addEventListener("click", () => {
-          const present = passwordSpan.toggleAttribute("hidden");
-          toggleIcon.setAttribute("name", present ? "eye" : "eye-slash");
-        });
       }
 
       document.querySelectorAll(".delete-button").forEach((button) => {
