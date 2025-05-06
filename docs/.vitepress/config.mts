@@ -142,6 +142,10 @@ export default withMermaid(
                   text: "Redistribution Transaction Request Documents",
                   link: "/2-integrating/messages/redistribution-transaction-request-documents.md",
                 },
+                {
+                  text: "Common Information Model Client Libraries",
+                  link: "/2-integrating/messages/cim-client-libraries.md"
+                }
               ],
             },
           ],
