@@ -1,6 +1,9 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import org.w3c.dom.Element
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.io.path.ExperimentalPathApi
@@ -10,6 +13,7 @@ import kotlin.io.path.walk
 
 plugins {
     id("energy.eddie.java-conventions")
+    `maven-publish`
 }
 
 group = "energy.eddie"
@@ -111,8 +115,12 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
             ) // generate the bindings file
             generateBindingsFile(srcFile, xjbFile.absolutePath)
 
-            val packageName = "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
-            val execution = providers.exec({
+            val packageName = if (srcFile.parentFile.parentFile.name.equals("xsd")) {
+                "energy.eddie.cim." + srcFile.parentFile.name
+            } else {
+                "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
+            }
+            val execution = providers.exec {
                 executable(Path(System.getProperty("java.home"), "bin", "java"))
                 val classpath = jaxb.resolve().joinToString(File.pathSeparator)
                 args(
@@ -124,7 +132,7 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
                     "-mark-generated", "-npa", "-encoding", "UTF-8",
                     "-extension", "-Xfluent-api", "-Xannotate"
                 )
-            })
+            }
             try {
                 val stdOut = execution.standardOutput.asText
                 if (stdOut.isPresent) {
@@ -144,6 +152,63 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
 tasks.named("compileJava") {
     // generate the classes before compiling
     dependsOn(generateCIMSchemaClasses)
+}
+
+val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+// Have a different version for generated CIM classes, since they can change disjunct to the API package
+val cimVersion: String = "SNAPSHOT-" + LocalDate.now(ZoneOffset.UTC).format(formatter)
+val cimJar = tasks.register<Jar>("cimJar") {
+    description = "Packs the generated CIM classes into a JAR"
+    group = "Build"
+    dependsOn("generateCIMSchemaClasses")
+    manifest {
+        attributes(
+            "cim" to project.name,
+            cimVersion to project.version
+        )
+    }
+    from(generatedXJCJavaDir)
+    archiveFileName.set("cim-$cimVersion.jar")
+    archiveVersion.set(cimVersion)
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/eddie-energy/eddie")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GPR_USER")
+                password = project.findProperty("gpr.token") as String? ?: System.getenv("GPR_TOKEN")
+            }
+        }
+    }
+
+    publications {
+        create<MavenPublication>("mavenJava") {
+            artifact(cimJar.get().archiveFile.get().asFile) { // Use the custom JAR file
+                builtBy(cimJar)
+            }
+
+            pom {
+                name = "cim"
+                artifactId = "cim"
+                version = cimVersion
+                description = "Generated CIM classes"
+                url = "https://github.com/eddie-energy/eddie"
+                developers {
+                    developer {
+                        id = "eddie-energy"
+                        name = "EDDIE Energy"
+                        email = "developers@eddie.energy"
+                    }
+                }
+                scm {
+                    url = "https://github.com/eddie-energy/eddie"
+                }
+            }
+        }
+    }
 }
 
 // Generate a bindings file that customizes the generated code, so that the enums are usable and the root elements don't have the ComplexType suffix

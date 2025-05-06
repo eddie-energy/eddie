@@ -24,7 +24,7 @@ on:
 jobs:
   build:
     name: Build and analyze
-    runs-on: [self-hosted, no-dind]
+    runs-on: [ self-hosted, no-dind ]
     timeout-minutes: 25 # Builds running longer than 25 minutes should be investigated
     steps:
       - uses: actions/checkout@v4
@@ -61,8 +61,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./gradlew build integrationTest codeCoverageReport sonar --info
 
-  release:
-    name: Build docker containers
+  publish-docker-images:
+    name: Publish docker images
     needs: build
     runs-on: self-hosted
     if: github.ref_name == 'main'
@@ -71,8 +71,53 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - name: Build and Tag docker images
+      - name: Build and publish docker images
         uses: ./.github/actions/build-containers
         with:
           version: 'latest'
           secrets: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-maven-packages:
+    name: Publish maven packages
+    needs: build
+    runs-on: self-hosted
+    if: github.ref_name == 'main'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        name: Check for CIM changes
+        # language=bash
+        run: |
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+          
+          # Detect base commit depending on event type
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_REF="origin/${{ github.base_ref }}"
+          else
+            BASE_REF="${{ github.event.before }}"
+          fi
+          
+          echo "Base ref: $BASE_REF"
+          CHANGED=$(git diff --name-only $BASE_REF HEAD)
+          
+          echo "Changed files:"
+          echo "$CHANGED"
+          
+          MATCH=false
+          echo "$CHANGED" | grep -E '^api/src/main/schemas/cim/.*\.xsd$|^api/build\.gradle\.kts$' && MATCH=true
+          echo "changed=$MATCH" >> $GITHUB_OUTPUT
+      - name: Set up JDK 21
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Build and publish CIM maven package
+        if: steps.check.outputs.changed == 'true'
+        env:
+          GPR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPR_USER: ${{ env.GITHUB_ACTOR }}
+        run: ./gradlew api:publish
