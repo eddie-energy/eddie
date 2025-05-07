@@ -1,9 +1,7 @@
+
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import org.w3c.dom.Element
-import java.time.LocalDate
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.io.path.ExperimentalPathApi
@@ -18,6 +16,8 @@ plugins {
 
 group = "energy.eddie"
 version = "0.0.0"
+
+val cimVersion: String = "0.0.0"
 
 repositories {
     mavenCentral()
@@ -154,9 +154,6 @@ tasks.named("compileJava") {
     dependsOn(generateCIMSchemaClasses)
 }
 
-val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-// Have a different version for generated CIM classes, since they can change disjunct to the API package
-val cimVersion: String = "SNAPSHOT-" + LocalDate.now(ZoneOffset.UTC).format(formatter)
 val cimJar = tasks.register<Jar>("cimJar") {
     description = "Packs the generated CIM classes into a JAR"
     group = "Build"
@@ -164,7 +161,7 @@ val cimJar = tasks.register<Jar>("cimJar") {
     manifest {
         attributes(
             "cim" to project.name,
-            cimVersion to project.version
+            "cimVersion" to project.version
         )
     }
     from(generatedXJCJavaDir)
