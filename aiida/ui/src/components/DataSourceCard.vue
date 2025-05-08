@@ -1,8 +1,14 @@
 <script setup>
+import { deleteDataSource } from '@/api.js'
+
 /** @type {{ dataSource: AiidaDataSource }} */
 const { dataSource } = defineProps(['dataSource'])
 
 const { asset, dataSourceType, enabled, id, mqttSettings, name, simulationPeriod } = dataSource
+
+function handleDelete() {
+  confirm('This action will remove the given data source.') && deleteDataSource(id)
+}
 </script>
 
 <template>
@@ -51,7 +57,7 @@ const { asset, dataSourceType, enabled, id, mqttSettings, name, simulationPeriod
 
     <br />
     <sl-button :data-id="dataSource">Edit</sl-button>
-    <sl-button :data-id="id">Delete</sl-button>
+    <sl-button @click="handleDelete">Delete</sl-button>
   </sl-details>
 </template>
 

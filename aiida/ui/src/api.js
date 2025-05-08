@@ -22,3 +22,26 @@ export function getPermissions() {
 export function getDataSources() {
   return fetchJson(DATA_SOURCES_URL)
 }
+
+export function revokePermission(permissionId) {
+  return fetch(`${PERMISSIONS_URL}/${permissionId}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${keycloak.token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      operation: 'REVOKE',
+    }),
+  })
+}
+
+export function deleteDataSource(dataSourceId) {
+  return fetch(`${DATA_SOURCES_URL}/${dataSourceId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${keycloak.token}`,
+      'Content-Type': 'application/json',
+    },
+  })
+}

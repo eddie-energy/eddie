@@ -2,6 +2,7 @@
 import cronstrue from 'cronstrue'
 
 import STATUS from '@/constants/permission-status.js'
+import { revokePermission } from '@/api.js'
 
 /** @type {{ permission: AiidaPermission }} */
 const { permission } = defineProps(['permission'])
@@ -26,6 +27,12 @@ const {
   status,
   userId,
 } = permission
+
+function handleRevoke() {
+  confirm(
+    'This action will revoke the given permission. The eligible party will no longer be able to receive data for this entry.',
+  ) && revokePermission(permissionId)
+}
 </script>
 
 <template>
@@ -85,13 +92,8 @@ const {
       </template>
     </dl>
 
-    <sl-button
-      v-if="STATUS[status].isRevocable"
-      style="margin-top: 1rem"
-      onclick="window.openRevokePermissionDialog('{permissionId}')"
-    >
-      Revoke
-    </sl-button>
+    <br />
+    <sl-button v-if="STATUS[status].isRevocable" @click="handleRevoke">Revoke</sl-button>
   </sl-details>
 </template>
 
