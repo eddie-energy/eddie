@@ -84,10 +84,11 @@ public class StreamerManager implements AutoCloseable {
 
             streamerTerminationRequestSink.asMono().subscribe(permissionId -> {
                 var result = terminationRequests.tryEmitNext(permissionId);
-                if (result.isFailure()) LOGGER.error(
-                        "Error while emitting termination request for permission {}. Error was: {}",
-                        permissionId,
-                        result);
+                if (result.isFailure()) {
+                    LOGGER.error("Error while emitting termination request for permission {}. Error was: {}",
+                                 permissionId,
+                                 result);
+                }
             });
 
             var streamer = StreamerFactory.getAiidaStreamer(permission,

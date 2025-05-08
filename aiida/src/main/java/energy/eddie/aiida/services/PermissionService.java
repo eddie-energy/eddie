@@ -198,7 +198,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * in the future) or starts the data sharing right away.
      *
      * @param permissionId The ID of the permission that should be accpted.
-     * @param dataSourceId  The ID of the data source that should be used for the permission.
+     * @param dataSourceId The ID of the data source that should be used for the permission.
      * @return The updated permission object.
      * @throws PermissionStateTransitionException Thrown if the permission is not in the state
      *                                            {@link PermissionStatus#FETCHED_DETAILS}.
@@ -221,9 +221,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setGrantTime(Instant.now(clock));
         permission.setStatus(ACCEPTED);
 
-        if(dataSourceId != null) {
+        if (dataSourceId != null) {
             var dataSource = dataSourceRepository.findById(dataSourceId);
-            if(dataSource.isPresent()) {
+            if (dataSource.isPresent()) {
                 permission.setDataSource(dataSource.get());
             }
         }
@@ -271,7 +271,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @throws PermissionNotFoundException In case no permission with the specified ID can be found.
      */
     public Permission findById(UUID permissionId) throws PermissionNotFoundException {
-        return permissionRepository.findById(permissionId).orElseThrow(() -> new PermissionNotFoundException(permissionId));
+        return permissionRepository.findById(permissionId)
+                                   .orElseThrow(() -> new PermissionNotFoundException(permissionId));
     }
 
     /**
