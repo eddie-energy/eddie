@@ -80,6 +80,9 @@ importers:
 
   aiida/ui:
     dependencies:
+      cronstrue:
+        specifier: ^2.51.0
+        version: 2.51.0
       keycloak-js:
         specifier: ^26.2.0
         version: 26.2.0

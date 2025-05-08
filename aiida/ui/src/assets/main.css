@@ -33,3 +33,27 @@ b,
 strong {
   font-weight: bold;
 }
+
+.details-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 2rem;
+
+  dt {
+    font-weight: bold;
+    color: var(--sl-color-neutral-500);
+    font-size: var(--sl-font-size-small);
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+
+    dd + dt {
+      margin-top: 0.5rem;
+    }
+  }
+}
