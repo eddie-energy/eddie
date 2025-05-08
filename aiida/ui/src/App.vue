@@ -4,13 +4,15 @@ import { RouterLink, RouterView } from 'vue-router'
 
 <template>
   <header>
-    <img alt="AIIDA logo" src="@/assets/logo.svg" height="64" />
+    <h1>
+      <img alt="AIIDA" src="@/assets/logo.svg" height="64" />
+    </h1>
 
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-      </nav>
-    </div>
+    <UserProfile />
+
+    <nav>
+      <RouterLink to="/">Dashboard</RouterLink>
+    </nav>
   </header>
 
   <main>
