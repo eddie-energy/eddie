@@ -222,10 +222,17 @@ function permissionElement(permission) {
 
         ${dataTags && dataTags.length
           ? `
-            <dt>OBIS-Codes</dt>
-            <dd>${dataTags.map((code) => `<span>${code}</span>`).join("<br>")}</dd>
-        `
+                <dt>OBIS-Codes</dt>
+                <dd>${dataTags.map((code) => `<span>${code}</span>`).join("<br>")}</dd>
+            `
           : ""}
+
+        <dt>Data Source</dt>
+        <dd>
+          ${permission.dataSource
+            ? `${permission.dataSource.name} (${permission.dataSource.id})`
+            : 'Not found.'}
+        </dd>
       </dl>
       ${STATUS[status].isRevocable
         ? /* HTML */ `
@@ -305,6 +312,9 @@ function updatePermission(operation) {
 
   const { permissionId } = JSON.parse(atob(aiidaCodeInput.value));
 
+  const dataSourceSelect = document.getElementById("data-source-select");
+  const dataSourceId = dataSourceSelect.value;
+
   fetch(`${PERMISSIONS_BASE_URL}/${permissionId}`, {
     method: "PATCH",
     headers: {
@@ -313,6 +323,7 @@ function updatePermission(operation) {
     },
     body: JSON.stringify({
       operation: operation,
+      dataSourceId: dataSourceId,
     }),
   }).then(() => {
     permissionDialog.hide();
@@ -333,52 +344,75 @@ function updatePermissionDialogWithDetails(permission) {
     dataNeed: { dataTags, transmissionSchedule, schemas, asset },
   } = permission;
 
-  permissionDialogContent.innerHTML = /* HTML */ `
-    <span>Permission request from</span>
+  fetch(`${DATASOURCES_BASE_URL}`)
+    .then((response) => response.json())
+    .then((dataSources) => {
+      permissionDialogContent.innerHTML = /* HTML */ `
+        <span>Permission request from</span>
 
-    <h3>
-      <strong>${serviceName}</strong>
-    </h3>
+        <h3>
+          <strong>${serviceName}</strong>
+        </h3>
 
-    <dl class="permission-details">
-      <dt>Service</dt>
-      <dd>${serviceName}</dd>
+        <dl class="permission-details">
+          <dt>Service</dt>
+          <dd>${serviceName}</dd>
 
-      <dt>EDDIE Application</dt>
-      <dd>${eddieId}</dd>
+          <dt>EDDIE Application</dt>
+          <dd>${eddieId}</dd>
 
-      <dt>Permission ID</dt>
-      <dd>${permissionId}</dd>
+          <dt>Permission ID</dt>
+          <dd>${permissionId}</dd>
 
-      <dt>Start</dt>
-      <dd>${toLocalDateString(startTime)}</dd>
+          <dt>Start</dt>
+          <dd>${toLocalDateString(startTime)}</dd>
 
-      <dt>End</dt>
-      <dd>${toLocalDateString(expirationTime)}</dd>
+          <dt>End</dt>
+          <dd>${toLocalDateString(expirationTime)}</dd>
 
-      <dt>Transmission Schedule</dt>
-      <dd>${window.cronstrue.toString(transmissionSchedule)}</dd>
+          <dt>Transmission Schedule</dt>
+          <dd>${window.cronstrue.toString(transmissionSchedule)}</dd>
 
-      <dt>Schemas</dt>
-      <dd>${schemas.map((schema) => `<span>${schema}</span>`).join("<br>")}</dd>
+          <dt>Schemas</dt>
+          <dd>
+            ${schemas.map((schema) => `<span>${schema}</span>`).join("<br>")}
+          </dd>
 
-      <dt>Asset</dt>
-      <dd>${asset}</dd>
+          <dt>Asset</dt>
+          <dd>${asset}</dd>
 
-      ${dataTags && dataTags.length
-        ? `
+          ${dataTags && dataTags.length
+            ? `
             <dt>OBIS-Codes</dt>
             <dd>${dataTags.map((code) => `<span>${code}</span>`).join("<br>")}</dd>
         `
-        : ""}
-    </dl>
+            : ""}
+        </dl>
 
-    <p class="text">
-      <em>${serviceName}</em> requests permission to retrieve the near-realtime
-      data for the given time frame and OBIS-codes. Please confirm the request
-      is correct before granting permission.
-    </p>
-  `;
+        <sl-select
+          id="data-source-select"
+          name="data-source"
+          label="Data Source"
+          required
+        >
+          ${dataSources
+            .map(
+              (dataSource) =>
+                `<sl-option value="${dataSource.id}">${dataSource.name} (${dataSource.id})</sl-option>`
+            )
+            .join("")}
+        </sl-select>
+
+        <p class="text">
+          <em>${serviceName}</em> requests permission to retrieve the
+          near-realtime data for the given time frame and OBIS-codes. Please
+          confirm the request is correct before granting permission.
+        </p>
+      `;
+
+      const dataSourceSelect = document.getElementById("data-source-select");
+      dataSourceSelect.value = dataSources[0].id;
+    });
 
   acceptButton.loading = rejectButton.loading = closeButton.loading = false;
   acceptButton.disabled = rejectButton.disabled = closeButton.disabled = false;

@@ -84,7 +84,7 @@ public class PermissionController {
               .log("Got request to update permission '{}' with operation {}");
 
         var permission = switch (patchDto.operation()) {
-            case ACCEPT -> permissionService.acceptPermission(permissionId);
+            case ACCEPT -> permissionService.acceptPermission(permissionId, patchDto.dataSourceId());
             case REJECT -> permissionService.rejectPermission(permissionId);
             case REVOKE -> permissionService.revokePermission(permissionId);
         };

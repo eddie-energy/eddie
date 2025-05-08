@@ -40,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PermissionControllerTest {
     private final UUID eddieId = UUID.fromString("31d0a13e-688a-454d-acab-7a6b2951cde2");
     private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
+    private final UUID dataSourceId = UUID.fromString("51d0a13e-688a-454d-acab-7a6b2951cde2");
     private final UUID userId = UUID.randomUUID();
     @Autowired
     private MockMvc mockMvc;
@@ -189,7 +190,7 @@ class PermissionControllerTest {
     @WithMockUser
     void givenAccept_updatePermission_callsAcceptOnService() throws Exception {
         // Given
-        var requestJson = "{\"operation\": \"ACCEPT\"}";
+        var requestJson = "{\"operation\": \"ACCEPT\", \"dataSourceId\": \"" + dataSourceId + "\"}";
 
         // When
         mockMvc.perform(patch("/permissions/{permissionId}", permissionId).with(csrf())
@@ -198,7 +199,7 @@ class PermissionControllerTest {
                // Then
                .andExpect(status().isOk());
 
-        verify(permissionService).acceptPermission(permissionId);
+        verify(permissionService).acceptPermission(permissionId, dataSourceId);
     }
 
     @Test

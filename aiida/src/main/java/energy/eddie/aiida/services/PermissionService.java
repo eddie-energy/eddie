@@ -7,6 +7,7 @@ import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -31,7 +33,8 @@ import static java.util.Objects.requireNonNull;
 @Service
 public class PermissionService implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
-    private final PermissionRepository repository;
+    private final PermissionRepository permissionRepository;
+    private final DataSourceRepository dataSourceRepository;
     private final Clock clock;
     private final StreamerManager streamerManager;
     private final HandshakeService handshakeService;
@@ -41,7 +44,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
     @Autowired
     public PermissionService(
-            PermissionRepository repository,
+            PermissionRepository permissionRepository,
+            DataSourceRepository dataSourceRepository,
             Clock clock,
             StreamerManager streamerManager,
             HandshakeService handshakeService,
@@ -49,7 +53,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             AuthService authService,
             AiidaLocalDataNeedService aiidaLocalDataNeedService
     ) {
-        this.repository = repository;
+        this.permissionRepository = permissionRepository;
+        this.dataSourceRepository = dataSourceRepository;
         this.clock = clock;
         this.streamerManager = streamerManager;
         this.handshakeService = handshakeService;
@@ -93,7 +98,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         Instant revocationTime = clock.instant();
         permission.setStatus(REVOKED);
         permission.setRevokeTime(revocationTime);
-        permission = repository.save(permission);
+        permission = permissionRepository.save(permission);
 
 
         var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
@@ -128,11 +133,11 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         var currentUserId = authService.getCurrentUserId();
         var permissionId = qrCodeDto.permissionId();
 
-        if (repository.existsById(permissionId)) {
+        if (permissionRepository.existsById(permissionId)) {
             throw new PermissionAlreadyExistsException(permissionId);
         }
 
-        Permission permission = repository.save(new Permission(qrCodeDto, currentUserId));
+        Permission permission = permissionRepository.save(new Permission(qrCodeDto, currentUserId));
 
         PermissionDetailsDto details = handshakeService.fetchDetailsForPermission(permission)
                                                        .doOnError(error -> LOGGER.atError()
@@ -180,7 +185,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setStatus(PermissionStatus.REJECTED);
         // revokeTime is also used to keep reject timestamp, the status indicates which of the two happened
         permission.setRevokeTime(Instant.now(clock));
-        permission = repository.save(permission);
+        permission = permissionRepository.save(permission);
 
         handshakeService.sendUnfulfillableOrRejected(permission, PermissionStatus.REJECTED);
 
@@ -193,13 +198,15 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * in the future) or starts the data sharing right away.
      *
      * @param permissionId The ID of the permission that should be accpted.
+     * @param dataSourceId The ID of the data source that should be used for the permission.
      * @return The updated permission object.
      * @throws PermissionStateTransitionException Thrown if the permission is not in the state
      *                                            {@link PermissionStatus#FETCHED_DETAILS}.
      * @throws UnauthorizedException              If the current user is not the owner of the Permission.
      */
     public Permission acceptPermission(
-            UUID permissionId
+            UUID permissionId,
+            @Nullable UUID dataSourceId
     ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
         var permission = findById(permissionId);
         authService.checkAuthorizationForPermission(permission);
@@ -213,7 +220,15 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         permission.setGrantTime(Instant.now(clock));
         permission.setStatus(ACCEPTED);
-        permission = repository.save(permission);
+
+        if (dataSourceId != null) {
+            var dataSource = dataSourceRepository.findById(dataSourceId);
+            if (dataSource.isPresent()) {
+                permission.setDataSource(dataSource.get());
+            }
+        }
+
+        permission = permissionRepository.save(permission);
 
         var mqttDto = handshakeService.fetchMqttDetails(permission)
                                       .doOnError(error -> LOGGER.atError()
@@ -231,7 +246,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         permission.setMqttStreamingConfig(mqttStreamingConfig);
         permission.setStatus(FETCHED_MQTT_CREDENTIALS);
-        permission = repository.save(permission);
+        permission = permissionRepository.save(permission);
 
         return permissionScheduler.scheduleOrStart(permission);
     }
@@ -245,7 +260,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     public List<Permission> getAllPermissionsSortedByGrantTime() throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
 
-        return repository.findByUserIdOrderByGrantTimeDesc(currentUserId);
+        return permissionRepository.findByUserIdOrderByGrantTimeDesc(currentUserId);
     }
 
     /**
@@ -256,7 +271,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @throws PermissionNotFoundException In case no permission with the specified ID can be found.
      */
     public Permission findById(UUID permissionId) throws PermissionNotFoundException {
-        return repository.findById(permissionId).orElseThrow(() -> new PermissionNotFoundException(permissionId));
+        return permissionRepository.findById(permissionId)
+                                   .orElseThrow(() -> new PermissionNotFoundException(permissionId));
     }
 
     /**
@@ -267,7 +283,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     @Override
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
         // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
-        List<Permission> allActivePermissions = repository.findAllActivePermissions();
+        List<Permission> allActivePermissions = permissionRepository.findAllActivePermissions();
         LOGGER.info(
                 "Fetched {} active permissions from database and will resume streaming or update them if they are expired.",
                 allActivePermissions.size());
@@ -288,7 +304,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                 LOGGER.info("Permission {} has expired but AIIDA was not running at that time, will expire it now",
                             permission.permissionId());
                 permission.setStatus(PermissionStatus.FULFILLED);
-                repository.save(permission);
+                permissionRepository.save(permission);
             }
         }
     }
@@ -325,7 +341,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             markPermissionAsUnfulfillable(permission);
         }
 
-        return repository.save(permission);
+        return permissionRepository.save(permission);
     }
 
     /**
@@ -356,7 +372,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         Instant terminateTime = clock.instant();
         permission.setRevokeTime(terminateTime);
         permission.setStatus(TERMINATED);
-        permission = repository.save(permission);
+        permission = permissionRepository.save(permission);
 
         var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
         var connectionId = requireNonNull(permission.connectionId());
@@ -390,7 +406,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setStatus(UNFULFILLABLE);
         permission.setRevokeTime(clock.instant());
         // TODO save reason or at least return to user why it cannot be fulfilled --> GH-1040
-        permission = repository.save(permission);
+        permission = permissionRepository.save(permission);
 
         handshakeService.sendUnfulfillableOrRejected(permission, UNFULFILLABLE);
         throw new PermissionUnfulfillableException(permission.serviceName());

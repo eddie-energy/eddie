@@ -147,7 +147,7 @@ class AggregatorTest {
     @Disabled("Disable till better aggregation method: GH-1307")
     void getFilteredFlux_filtersFluxFromDataSources() {
         var instant = Instant.now().plusSeconds(600);
-        wanted1 = new AiidaRecord(instant, AiidaAsset.SUBMETER, USER_ID, DATA_SOURCE_ID_2, List.of(
+        wanted1 = new AiidaRecord(instant, AiidaAsset.SUBMETER, USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
         unwanted2 = new AiidaRecord(instant, AiidaAsset.SUBMETER, USER_ID, DATA_SOURCE_ID_2, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KILO_WATT, "10", KILO_WATT)));
@@ -168,7 +168,8 @@ class AggregatorTest {
                                                                                    wantedAsset,
                                                                                    expiration,
                                                                                    transmissionSchedule,
-                                                                                   USER_ID))
+                                                                                   USER_ID,
+                                                                                   DATA_SOURCE_ID_1))
                                                 .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
                                                         aiidaRecord,
                                                         unwanted3.aiidaRecordValues().getFirst()))
@@ -186,7 +187,7 @@ class AggregatorTest {
     }
 
     /**
-     * Tests that the Flux returned by {@link Aggregator#getFilteredFlux(Set, AiidaAsset, Instant, CronExpression, UUID)} only returns
+     * Tests that the Flux returned by {@link Aggregator#getFilteredFlux(Set, AiidaAsset, Instant, CronExpression, UUID, UUID)} only returns
      * {@link AiidaRecord}s that have been published after the returned Flux has been created.
      */
     @Test
@@ -203,7 +204,8 @@ class AggregatorTest {
                                                                                    wantedAsset,
                                                                                    expiration,
                                                                                    transmissionSchedule,
-                                                                                   USER_ID))
+                                                                                   USER_ID,
+                                                                                   DATA_SOURCE_ID_1))
                                                 .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
                                                         aiidaRecord,
                                                         wanted1.aiidaRecordValues().getFirst()))
@@ -241,7 +243,8 @@ class AggregatorTest {
                                                                                    wantedAsset,
                                                                                    expiration,
                                                                                    transmissionSchedule,
-                                                                                   USER_ID))
+                                                                                   USER_ID,
+                                                                                   DATA_SOURCE_ID_1))
                                                 .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
                                                         aiidaRecord,
                                                         wanted1.aiidaRecordValues().getFirst()))
@@ -322,7 +325,8 @@ class AggregatorTest {
                                                        wantedAsset,
                                                        expiration,
                                                        transmissionSchedule,
-                                                       USER_ID))
+                                                       USER_ID,
+                                                       DATA_SOURCE_ID_1))
                     .then(() -> {
                         publisher.next(wanted1);
                         publisher.next(unwanted1);
@@ -343,7 +347,8 @@ class AggregatorTest {
                                                                            wantedAsset,
                                                                            expiration,
                                                                            transmissionSchedule,
-                                                                           USER_ID))
+                                                                           USER_ID,
+                                                                           DATA_SOURCE_ID_1))
                                         .expectComplete()
                                         .verifyLater();
 
@@ -351,7 +356,8 @@ class AggregatorTest {
                                                                            wantedAsset,
                                                                            expiration,
                                                                            transmissionSchedule,
-                                                                           USER_ID))
+                                                                           USER_ID,
+                                                                           DATA_SOURCE_ID_1))
                                         .expectComplete()
                                         .verifyLater();
 
@@ -359,7 +365,8 @@ class AggregatorTest {
                                                                            wantedAsset,
                                                                            expiration,
                                                                            transmissionSchedule,
-                                                                           USER_ID))
+                                                                           USER_ID,
+                                                                           DATA_SOURCE_ID_1))
                                         .expectComplete()
                                         .verifyLater();
 

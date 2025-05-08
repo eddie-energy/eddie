@@ -3,6 +3,7 @@ package energy.eddie.aiida.models.permission;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
@@ -80,6 +81,11 @@ public class Permission {
     @JsonProperty
     @Nullable
     private UUID userId;
+    @ManyToOne(cascade = CascadeType.DETACH)
+    @JoinColumn(name = "data_source_id", referencedColumnName = "id", insertable = false)
+    @JsonProperty
+    @Nullable
+    private DataSource dataSource;
 
     /**
      * Create a new permission from the contents of the QR code. The status will be set to
@@ -189,6 +195,10 @@ public class Permission {
         return userId;
     }
 
+    public @Nullable DataSource dataSource() {
+        return dataSource;
+    }
+
     /**
      * Only available if status is {@link PermissionStatus#FETCHED_DETAILS} or a later status.
      */
@@ -237,5 +247,9 @@ public class Permission {
 
     public void setDataNeed(AiidaLocalDataNeed dataNeed) {
         this.dataNeed = requireNonNull(dataNeed);
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = requireNonNull(dataSource);
     }
 }
