@@ -7,7 +7,7 @@ found [here](https://github.com/eddie-energy/eddie/wiki/EDDIE-Development-&-Depl
 
 In order for AIIDA to run, it is necessary to start a [TimescaleDB](https://www.timescale.com/) and a [Keycloak](https://www.keycloak.org/) instance. The predefined docker-compose.yml for starting
 those services can be found in the [docker](docker) folder.
-In order to use Datasources that use MQTT a NanoMQ instances is required additionally, which is also included in the docker-compose.yml.
+In order to use Datasources that use MQTT a EMQX instance is required additionally, which is also included in the docker-compose.yml.
 Before starting the services, the environment variables in the [.env](docker/.env) file should be configured, especially the
 `SPRING_DATASOURCE_USERNAME` and
 `SPRING_DATASOURCE_PASSWORD`. This user will be used to authenticate to the TimescaleDB.
@@ -111,8 +111,6 @@ When using Docker, most of these properties should be configured in the [.env](d
 | KEYCLOAK_ADMIN_PASSWORD    | Password of the Keycloak admin                                                                                                       |
 | MQTT_EXTERNAL_HOST         | Network-accessible host of the MQTT broker                                                                                           |
 | MQTT_INTERNAL_HOST         | Internal network host of the MQTT broker (e.g. inside Docker network)                                                                |
-| MQTT_ADMIN_USERNAME        | Username of the MQTT superuser                                                                                                       |
-| MQTT_ADMIN_PASSWORD        | Password of the MQTT superuser                                                                                                       |
 
 ### Reverse Proxy Deployment
 If you are running an AIIDA instance behind a reverse proxy (e.g. nginx) to make it accessible everywhere, it is necessary to add the origin of the AIIDA instance to the allowed origins.
