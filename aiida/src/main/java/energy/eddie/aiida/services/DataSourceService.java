@@ -109,9 +109,10 @@ public class DataSourceService {
 
     public void deleteDataSource(UUID dataSourceId) {
         findDataSourceAdapter(dataSourceId).ifPresentOrElse(
-                this::closeDataSource,
-                () -> LOGGER.warn("Data Source Adapter for data source ID {} not found.", dataSourceId)
-        );
+                this::closeDataSourceAdapter,
+                () -> LOGGER.warn(
+                        "Data Source Adapter for data source ID {} not found.",
+                        dataSourceId));
 
         repository.deleteById(dataSourceId);
     }
@@ -119,18 +120,20 @@ public class DataSourceService {
     public DataSource updateDataSource(DataSourceDto dto) throws InvalidUserException, EntityNotFoundException, ModbusConnectionException {
         var currentDataSource = repository.findById(dto.id())
                                           .orElseThrow(() -> new EntityNotFoundException(
-                                                  "Datasource not found with ID: " + dto.id()
-                                          ));
+                                                  "Datasource not found with ID: " + dto.id()));
+
+        var currentEnabledState = currentDataSource.enabled();
 
         var currentUserId = authService.getCurrentUserId();
         var dataSource = currentDataSource.mergeWithDto(dto, currentUserId);
 
-        boolean wasEnabled = dataSource.enabled();
-
-        findDataSourceAdapter(dataSource.id()).ifPresentOrElse(
-                adapter -> updateDataSourceAdapterState(adapter, dataSource, wasEnabled),
-                () -> startDataSource(dataSource)
-        );
+        findDataSourceAdapter(currentDataSource.id()).ifPresentOrElse(
+                adapter -> updateDataSourceAdapterState(
+                        adapter,
+                        dataSource,
+                        currentEnabledState,
+                        dto.enabled()),
+                () -> startDataSource(dataSource));
 
         return repository.save(dataSource);
     }
@@ -140,12 +143,18 @@ public class DataSourceService {
                                           .orElseThrow(() -> new EntityNotFoundException(
                                                   "Datasource not found with ID: " + dataSourceId));
 
-        findDataSourceAdapter(dataSourceId).ifPresentOrElse(
-                adapter -> updateDataSourceAdapterState(adapter, dataSource, enabled),
-                () -> startDataSource(dataSource)
-        );
 
+        var currentEnabledState = dataSource.enabled();
         dataSource.setEnabled(enabled);
+
+        findDataSourceAdapter(dataSourceId).ifPresentOrElse(
+                adapter -> updateDataSourceAdapterState(
+                        adapter,
+                        dataSource,
+                        currentEnabledState,
+                        enabled),
+                () -> startDataSource(dataSource));
+
         repository.save(dataSource);
     }
 
@@ -154,9 +163,7 @@ public class DataSourceService {
     }
 
     public Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(Predicate<DataSourceAdapter<? extends DataSource>> predicate) {
-        return dataSourceAdapters.stream()
-                                 .filter(predicate)
-                                 .findFirst();
+        return dataSourceAdapters.stream().filter(predicate).findFirst();
     }
 
     private void startDataSource(DataSource dataSource) throws ModbusConnectionException {
@@ -168,7 +175,7 @@ public class DataSourceService {
         }
     }
 
-    private void closeDataSource(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
+    private void closeDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
         aggregator.removeDataSourceAdapter(dataSourceAdapter);
         dataSourceAdapters.remove(dataSourceAdapter);
     }
@@ -176,16 +183,18 @@ public class DataSourceService {
     private void updateDataSourceAdapterState(
             DataSourceAdapter<? extends DataSource> dataSourceAdapter,
             DataSource dataSource,
-            boolean enabled
+            boolean currentEnabledState,
+            boolean newEnabledState
     ) {
-        if (!enabled && dataSource.enabled()) {
-            closeDataSource(dataSourceAdapter);
-        } else if (enabled && !dataSource.enabled()) {
-            dataSource.setEnabled(true);
+        if (newEnabledState == currentEnabledState) {
+            if (newEnabledState) {
+                closeDataSourceAdapter(dataSourceAdapter);
+                startDataSource(dataSource);
+            }
+        } else if (newEnabledState) {
             startDataSource(dataSource);
-        } else if (enabled && dataSource.enabled()) {
-            closeDataSource(dataSourceAdapter);
-            startDataSource(dataSource);
+        } else {
+            closeDataSourceAdapter(dataSourceAdapter);
         }
     }
 }
