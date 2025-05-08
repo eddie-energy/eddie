@@ -36,6 +36,7 @@ dependencies {
     implementation(libs.spring.boot.starter.keycloak)
     implementation(libs.spring.boot.starter.thymeleaf)
     implementation(libs.spring.boot.starter.oauth2.client)
+    implementation(libs.spring.boot.starter.oauth2.resource.server)
 
     implementation(libs.reactor.core)
     implementation(libs.eclipse.paho.mqttv5.client)

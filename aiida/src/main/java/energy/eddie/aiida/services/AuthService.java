@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -18,14 +19,17 @@ public class AuthService {
     public UUID getCurrentUserId() throws InvalidUserException {
         var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (!(principal instanceof OidcUser)) {
-            LOGGER.error("Could not parse UUID from token, because the user is not an OIDC user");
-            throw new InvalidUserException();
-        }
+        var id = switch (principal) {
+            case Jwt jwt -> jwt.getSubject();
+            case OidcUser oidcUser -> oidcUser.getSubject();
+            default -> {
+                LOGGER.error("Could not parse UUID from token, because the user is not an OIDC user");
+                throw new InvalidUserException();
+            }
+        };
 
-        var subject = ((OidcUser) principal).getSubject();
         try {
-            var uuid = UUID.fromString(subject);
+            var uuid = UUID.fromString(id);
             LOGGER.debug("Successfully Parsed UUID ({}) from token!", uuid);
             return uuid;
         } catch (IllegalArgumentException ex) {

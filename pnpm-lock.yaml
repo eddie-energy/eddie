@@ -80,6 +80,9 @@ importers:
 
   aiida/ui:
     dependencies:
+      keycloak-js:
+        specifier: ^26.2.0
+        version: 26.2.0
       vue:
         specifier: ^3.5.13
         version: 3.5.13(typescript@5.4.2)
@@ -4297,6 +4300,10 @@ packages:
     dependencies:
       commander: 8.3.0
     dev: true
+
+  /keycloak-js@26.2.0:
+    resolution: {integrity: sha512-CrFcXTN+d6J0V/1v3Zpioys6qHNWE6yUzVVIsCUAmFn9H14GZ0vuYod+lt+SSpMgWGPuneDZBSGBAeLBFuqjsw==}
+    dev: false
 
   /keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
