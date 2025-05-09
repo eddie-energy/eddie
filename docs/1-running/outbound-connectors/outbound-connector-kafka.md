@@ -22,6 +22,19 @@ outbound-connector.kafka.retransmission.topic=retransmissions
 kafka.bootstrap.servers=localhost:9094
 ```
 
+## Additional Configuration
+
+The EDDIE framework can produce large amounts of data in a single record.
+Kafka can by default not handle data larger than 1 MB, to be able to handle larger messages the size limit of the EDDIE Kafka producer has to be increased.
+This only increases the message size limit that the EDDIE Framework can produce.
+
+```properties :spring
+### Increase producer message size to 800 Megabit
+kafka.buffer.memory=104857600
+kafka.message.max.bytes=104857600
+kafka.max.request.size=104857600
+```
+
 ## Topology
 
 The outbound-connector defines a basic topology for interacting with EDDIE.
