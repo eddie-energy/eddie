@@ -1,15 +1,13 @@
 <script setup>
 import PermissionList from '@/components/PermissionList.vue'
 import DataSourceList from '@/components/DataSourceList.vue'
+import AiidaCodeInput from '@/components/AiidaCodeInput.vue'
 </script>
 
 <template>
   <h2>Add new permission</h2>
 
-  <div class="add-permission">
-    <sl-input placeholder="AIIDA code" required></sl-input>
-    <sl-button type="submit" variant="primary">Add</sl-button>
-  </div>
+  <AiidaCodeInput />
 
   <h2>Permissions</h2>
 
@@ -36,10 +34,5 @@ import DataSourceList from '@/components/DataSourceList.vue'
 h2 {
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
-}
-
-.add-permission {
-  display: flex;
-  gap: 0.75rem;
 }
 </style>

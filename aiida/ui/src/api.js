@@ -40,6 +40,26 @@ export function getApplicationInformation() {
   return fetchJson('/application-information')
 }
 
+/**
+ * Create permission from a permission request.
+ *
+ * @param permission {AiidaPermissionRequest}
+ * @returns {Promise<AiidaPermission>}
+ */
+export function addPermission(permission) {
+  return fetch('/permissions', {
+    method: 'POST',
+    body: JSON.stringify(permission),
+  }).then((response) =>
+    response.json().then((json) => {
+      if (!response.ok) {
+        throw new Error(`Failed to add permission: ${json.errors[0].message}`)
+      }
+      return json
+    }),
+  )
+}
+
 export function revokePermission(permissionId) {
   return fetch(`/permissions/${permissionId}`, {
     method: 'PATCH',

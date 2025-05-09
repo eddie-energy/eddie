@@ -47,3 +47,12 @@
  * @typedef AiidaApplicationInformation
  * @prop {string} aiidaId
  */
+
+/**
+ * @typedef AiidaPermissionRequest
+ * @prop {string} eddieId
+ * @prop {string} permissionId
+ * @prop {string} serviceName
+ * @prop {string} handshakeUrl
+ * @prop {string} accessToken
+ */
