@@ -1,0 +1,17 @@
+apiVersion: openslo/v1
+kind: SLO
+metadata:
+  name: aiida-ec-response-time-slo
+  labels:
+    service: aiida-ec-service
+spec:
+  description: Average response time should not exceed 500ms over the last 7 days
+  service: aiida-ec-service
+  indicatorRef: aiida-ec-response-time-sli
+  timeWindow:
+    duration: 7d
+    isRolling: true
+  budgetingMethod: ratio
+  objective:
+    op: lte
+    target: 0.5 # 0.5s = 500ms

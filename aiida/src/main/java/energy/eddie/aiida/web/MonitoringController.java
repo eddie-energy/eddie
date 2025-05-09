@@ -1,8 +1,8 @@
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.models.monitoring.HostMetrics;
-import energy.eddie.aiida.models.monitoring.ServiceMetrics;
-import energy.eddie.aiida.services.monitoring.MonitoringMetricsService;
+import energy.eddie.aiida.models.monitoring.metrics.HostMetrics;
+import energy.eddie.aiida.models.monitoring.metrics.ServiceMetrics;
+import energy.eddie.aiida.services.monitoring.MetricsMonitoringService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -18,10 +18,10 @@ import java.util.List;
 @RequestMapping("/monitoring")
 @OpenAPIDefinition(info = @Info(title = "Monitoring API", version = "1.0", description = "Monitoring of AIIDA, Host and Services"))
 public class MonitoringController {
-    private final MonitoringMetricsService monitoringMetricsService;
+    private final MetricsMonitoringService monitoringMetricsService;
 
     @Autowired
-    public MonitoringController(MonitoringMetricsService monitoringMetricsService) {
+    public MonitoringController(MetricsMonitoringService monitoringMetricsService) {
         this.monitoringMetricsService = monitoringMetricsService;
     }
 

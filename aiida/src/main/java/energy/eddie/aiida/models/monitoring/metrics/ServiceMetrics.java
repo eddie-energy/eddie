@@ -1,4 +1,4 @@
-package energy.eddie.aiida.models.monitoring;
+package energy.eddie.aiida.models.monitoring.metrics;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

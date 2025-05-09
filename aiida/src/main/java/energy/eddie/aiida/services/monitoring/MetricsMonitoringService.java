@@ -2,8 +2,8 @@ package energy.eddie.aiida.services.monitoring;
 
 import energy.eddie.aiida.communication.RestInterceptor;
 import energy.eddie.aiida.config.MonitoringAgentConfiguration;
-import energy.eddie.aiida.models.monitoring.HostMetrics;
-import energy.eddie.aiida.models.monitoring.ServiceMetrics;
+import energy.eddie.aiida.models.monitoring.metrics.HostMetrics;
+import energy.eddie.aiida.models.monitoring.metrics.ServiceMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class MonitoringMetricsService {
+public class MetricsMonitoringService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MonitoringMetricsService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MetricsMonitoringService.class);
 
     private static final String SERVICE_NAME_AGENT = "aiida-agent";
     private static final String HOST_METRICS_PATH = "/host-metrics";
@@ -32,7 +32,7 @@ public class MonitoringMetricsService {
     private final HttpHeaders headers;
     private final HttpEntity<Void> entity;
 
-    public MonitoringMetricsService(MonitoringAgentConfiguration config, RestTemplate restTemplate) {
+    public MetricsMonitoringService(MonitoringAgentConfiguration config, RestTemplate restTemplate) {
         this.config = config;
         this.restTemplate = restTemplate;
         this.headers = new HttpHeaders();

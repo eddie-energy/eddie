@@ -1,0 +1,27 @@
+apiVersion: openslo/v1
+kind: AlertPolicy
+metadata:
+  name: aiida-ec-response-time-alert
+  labels:
+    service: aiida-ec-service
+spec:
+  description: Alert if average response time breaches SLO
+  alertWhenBreaching: true
+  alertWhenResolved: true
+  alertWhenNoData: true
+  conditions:
+    - kind: AlertCondition
+      metadata:
+        name: aiida-ec-response-time-burnrate
+        displayName: Response time burnrate exceeds threshold
+      spec:
+        description: Breach of average response time threshold over 1h
+        severity: page
+        condition:
+          kind: burnrate
+          op: gt
+          threshold: 2
+          lookbackWindow: 1h
+          alertAfter: 5m
+  notificationTargets:
+    - targetRef: on-call-devops

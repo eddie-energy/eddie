@@ -1,0 +1,16 @@
+apiVersion: openslo/v1
+kind: SLI
+metadata:
+  name: aiida-ec-response-time-sli
+  labels:
+    service: aiida-ec-service
+spec:
+  description: Average response time for aiida-ec-service over 7 days
+  indicator:
+    ratioMetric:
+      good:
+        source: prometheus
+        query: sum(rate(service_response_time_seconds_sum{service="aiida-ec-service"}[5m]))
+      total:
+        source: prometheus
+        query: sum(rate(service_response_time_seconds_count{service="aiida-ec-service"}[5m]))
