@@ -10,13 +10,15 @@ const BASE_URL = 'http://localhost:8081'
  * @returns {Promise<Response>}
  */
 function fetch(path, init) {
-  return window.fetch(BASE_URL + path, {
-    headers: {
-      Authorization: `Bearer ${keycloak.token}`,
-      'Content-Type': 'application/json',
-    },
-    ...init,
-  })
+  return keycloak.updateToken(5).then(() =>
+    window.fetch(BASE_URL + path, {
+      headers: {
+        Authorization: `Bearer ${keycloak.token}`,
+        'Content-Type': 'application/json',
+      },
+      ...init,
+    }),
+  )
 }
 
 function fetchJson(path) {
