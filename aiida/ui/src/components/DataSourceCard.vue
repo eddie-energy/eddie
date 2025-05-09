@@ -1,5 +1,6 @@
 <script setup>
 import { deleteDataSource } from '@/api.js'
+import PasswordToggle from '@/components/PasswordToggle.vue'
 
 /** @type {{ dataSource: AiidaDataSource }} */
 const { dataSource } = defineProps(['dataSource'])
@@ -43,11 +44,7 @@ function handleDelete() {
         <dd>{{ mqttSettings.username }}</dd>
         <dt>MQTT Password:</dt>
         <dd>
-          <span hidden id="mqtt-password">
-            {{ mqttSettings.password }}
-          </span>
-          <span>********</span>
-          <sl-icon id="toggle-mqtt-password" style="cursor: pointer" name="eye"></sl-icon>
+          <PasswordToggle>{{ mqttSettings.password }}</PasswordToggle>
         </dd>
       </template>
 
