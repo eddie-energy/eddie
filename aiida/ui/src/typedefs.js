@@ -42,3 +42,8 @@
  * @prop {number} simulationPeriod
  * @prop {AiidaMqttSettings} mqttSettings
  */
+
+/**
+ * @typedef AiidaApplicationInformation
+ * @prop {string} aiidaId
+ */

@@ -1,44 +1,110 @@
 <script setup>
 import { keycloak } from '@/keycloak.js'
-import { ref } from 'vue'
+import { ref, useTemplateRef } from 'vue'
+import { getApplicationInformation } from '@/api.js'
 
 const firstName = ref('')
 const lastName = ref('')
 const username = ref('')
+const aiidaId = ref('')
+
+const drawer = useTemplateRef('drawer')
 
 keycloak.loadUserProfile().then((user) => {
   firstName.value = user.firstName
   lastName.value = user.lastName
   username.value = user.username
 })
+
+getApplicationInformation().then((data) => {
+  aiidaId.value = data.aiidaId
+})
 </script>
 
 <template>
-  <div class="wrapper">
-    <sl-avatar :initials="firstName[0] + lastName[0]"></sl-avatar>
-    <div class="text">
-      <strong>{{ firstName }} {{ lastName }}</strong>
-      <br />
-      <span>{{ username }}</span>
+  <button>
+    <sl-avatar
+      :initials="firstName[0] + lastName[0]"
+      @click="drawer.show()"
+      class="avatar"
+      label="Open user drawer"
+    ></sl-avatar>
+  </button>
+
+  <sl-drawer ref="drawer" no-header>
+    <div class="header">
+      <div class="profile">
+        <sl-avatar :initials="firstName[0] + lastName[0]"></sl-avatar>
+        <div>
+          <strong>{{ firstName }} {{ lastName }}</strong>
+          <br />
+          <span>{{ username }}</span>
+        </div>
+      </div>
+
+      <sl-icon-button name="x-lg" label="close" @click="drawer.hide()"></sl-icon-button>
     </div>
-  </div>
+
+    <div class="actions">
+      <sl-button variant="primary" outline @click="keycloak.accountManagement()">
+        <sl-icon slot="prefix" name="person-fill"></sl-icon>
+        Account settings
+      </sl-button>
+
+      <sl-button variant="primary" outline href="/installer">
+        <sl-icon slot="prefix" name="box-arrow-in-down"></sl-icon>
+        Installer
+      </sl-button>
+
+      <sl-button variant="danger" outline @click="keycloak.logout()">
+        <sl-icon slot="prefix" name="box-arrow-in-right"></sl-icon>
+        Logout
+      </sl-button>
+    </div>
+
+    <small>
+      <strong>AIIDA ID: </strong>
+      <span>{{ aiidaId }}</span>
+    </small>
+  </sl-drawer>
 </template>
 
 <style scoped>
-.wrapper {
+.header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.profile {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1rem;
-
-  @media (min-width: 600px) {
-    position: absolute;
-    right: 2rem;
-    top: 2rem;
-  }
 }
 
-.text {
+.profile div {
   line-height: 1.25;
+}
+
+.actions {
+  display: grid;
+  gap: 0.5rem;
+}
+
+sl-drawer::part(body) {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 2rem;
+}
+
+small {
+  align-self: end;
+}
+
+button {
+  all: unset;
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  cursor: pointer;
 }
 </style>

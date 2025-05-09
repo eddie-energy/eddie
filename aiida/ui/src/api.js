@@ -33,6 +33,11 @@ export function getDataSources() {
   return fetchJson('/datasources')
 }
 
+/** @returns {Promise<AiidaApplicationInformation>} */
+export function getApplicationInformation() {
+  return fetchJson('/application-information')
+}
+
 export function revokePermission(permissionId) {
   return fetch(`/permissions/${permissionId}`, {
     method: 'PATCH',
