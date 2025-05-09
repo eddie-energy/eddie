@@ -1,35 +1,41 @@
 import { keycloak } from '@/keycloak.js'
 
 const BASE_URL = 'http://localhost:8081'
-const PERMISSIONS_URL = BASE_URL + '/permissions'
-const DATA_SOURCES_URL = BASE_URL + '/datasources'
 
-function fetchJson(url) {
-  return fetch(url, {
+/**
+ * Wrapper for {@link window.fetch} preconfigured with base url, content-type and authorization.
+ *
+ * @param path {string}
+ * @param init {RequestInit?}
+ * @returns {Promise<Response>}
+ */
+function fetch(path, init) {
+  return window.fetch(BASE_URL + path, {
     headers: {
       Authorization: `Bearer ${keycloak.token}`,
       'Content-Type': 'application/json',
     },
-  }).then((response) => response.json())
+    ...init,
+  })
+}
+
+function fetchJson(path) {
+  return fetch(path).then((response) => response.json())
 }
 
 /** @returns {Promise<AiidaPermission>} */
 export function getPermissions() {
-  return fetchJson(PERMISSIONS_URL)
+  return fetchJson('/permissions')
 }
 
 /** @returns {Promise<AiidaDataSource>} */
 export function getDataSources() {
-  return fetchJson(DATA_SOURCES_URL)
+  return fetchJson('/datasources')
 }
 
 export function revokePermission(permissionId) {
-  return fetch(`${PERMISSIONS_URL}/${permissionId}`, {
+  return fetch(`/permissions/${permissionId}`, {
     method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${keycloak.token}`,
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({
       operation: 'REVOKE',
     }),
@@ -37,11 +43,7 @@ export function revokePermission(permissionId) {
 }
 
 export function deleteDataSource(dataSourceId) {
-  return fetch(`${DATA_SOURCES_URL}/${dataSourceId}`, {
+  return fetch(`/datasources/${dataSourceId}`, {
     method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${keycloak.token}`,
-      'Content-Type': 'application/json',
-    },
   })
 }
