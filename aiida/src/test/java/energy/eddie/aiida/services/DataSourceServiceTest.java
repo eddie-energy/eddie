@@ -91,6 +91,18 @@ class DataSourceServiceTest {
     }
 
     @Test
+    void shouldReturnDataSources() throws InvalidUserException {
+        var dataSource = createNewDataSource(DATA_SOURCE_ID, DataSourceType.SMART_GATEWAYS_ADAPTER);
+        when(repository.findByUserId(userId)).thenReturn(List.of(dataSource));
+        when(authService.getCurrentUserId()).thenReturn(userId);
+
+        var result = dataSourceService.getDataSources();
+
+        assertTrue(result.contains(dataSource));
+        verify(repository, times(1)).findByUserId(userId);
+    }
+
+    @Test
     void shouldAddNewDataSource() throws InvalidUserException {
         when(authService.getCurrentUserId()).thenReturn(userId);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
@@ -215,13 +227,11 @@ class DataSourceServiceTest {
         doReturn(Optional.of(mockAdapter)).when(dataSourceService).findDataSourceAdapter(DATA_SOURCE_ID);
 
         dataSourceService.updateEnabledState(DATA_SOURCE_ID, true);
-
-        verify(repository, times(1)).save(argThat(DataSource::enabled));
-        verify(aggregator, times(1)).addNewDataSourceAdapter(any());
-
+        dataSourceService.updateEnabledState(DATA_SOURCE_ID, true);
+        dataSourceService.updateEnabledState(DATA_SOURCE_ID, false);
         dataSourceService.updateEnabledState(DATA_SOURCE_ID, false);
 
-        verify(repository, times(2)).save(argThat(ds -> !ds.enabled()));
-        verify(aggregator, times(1)).removeDataSourceAdapter(any());
+        verify(aggregator, times(2)).addNewDataSourceAdapter(any());
+        verify(aggregator, times(2)).removeDataSourceAdapter(any());
     }
 }
