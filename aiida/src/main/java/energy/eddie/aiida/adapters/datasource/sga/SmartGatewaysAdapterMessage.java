@@ -1,5 +1,7 @@
 package energy.eddie.aiida.adapters.datasource.sga;
 
+import java.util.Objects;
+
 public record SmartGatewaysAdapterMessage(
         SmartGatewaysAdapterMessageField electricityEquipmentId,
         SmartGatewaysAdapterMessageField gasEquipmentId,
@@ -25,10 +27,21 @@ public record SmartGatewaysAdapterMessage(
         SmartGatewaysAdapterMessageField phaseVoltageL3,
         SmartGatewaysAdapterMessageField phasePowerCurrentL1,
         SmartGatewaysAdapterMessageField phasePowerCurrentL2,
-        SmartGatewaysAdapterMessageField phasePowerCurrentL3,
-        SmartGatewaysAdapterMessageField gasDelivered,
-        SmartGatewaysAdapterMessageField powerDeliveredHour,
-        SmartGatewaysAdapterMessageField gasDeliveredHour
-) {}
+        SmartGatewaysAdapterMessageField phasePowerCurrentL3
+) {
+    private static final String DSMR_TARIFF_LOW = "0001";
+
+    SmartGatewaysAdapterMessageField electricityDelivered() {
+        return Objects.equals(this.electricityTariff().value(), DSMR_TARIFF_LOW) ?
+                this.electricityDeliveredTariff1() :
+                this.electricityDeliveredTariff2();
+    }
+
+    SmartGatewaysAdapterMessageField electricityReturned() {
+        return Objects.equals(this.electricityTariff().value(), DSMR_TARIFF_LOW) ?
+                this.electricityReturnedTariff1() :
+                this.electricityReturnedTariff2();
+    }
+}
 
 

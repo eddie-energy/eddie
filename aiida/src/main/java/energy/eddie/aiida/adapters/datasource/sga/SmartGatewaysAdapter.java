@@ -2,20 +2,33 @@ package energy.eddie.aiida.adapters.datasource.sga;
 
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysTopic;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SmartGatewaysAdapter.class);
-    private static final String DSMR_TARIFF_LOW = "0001";
+
+    final Map<SmartGatewaysTopic, String> batchBuffer = new HashMap<>();
+    private final String topicPrefix;
+    private final List<SmartGatewaysTopic> expectedTopics;
+
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private static final Duration TIMEOUT = Duration.ofSeconds(15);
+    @Nullable
+    private ScheduledFuture<?> timeoutFuture = null;
 
     /**
      * Creates the datasource for the Smart Gateways Adapter. It connects to the specified MQTT broker and expects that the
@@ -26,37 +39,41 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
      */
     public SmartGatewaysAdapter(SmartGatewaysDataSource dataSource) {
         super(dataSource, LOGGER);
+        this.topicPrefix = topicPrefixOf(dataSource.mqttSubscribeTopic());
+        this.expectedTopics = Arrays.stream(SmartGatewaysTopic.values())
+                                    .filter(SmartGatewaysTopic::isExpected)
+                                    .toList();
     }
 
     @Override
-    public void messageArrived(String topic, MqttMessage message) {
+    public synchronized void messageArrived(String topic, MqttMessage message) {
         LOGGER.trace("Topic {} new message: {}", topic, message);
         try {
-            var adapterMessage = SmartGatewaysAdapterValueDeserializer.deserialize(message.getPayload());
-            List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
+            var sgaTopic = SmartGatewaysTopic.from(topic, topicPrefix);
 
-            SmartGatewaysAdapterMessageField powerCurrentlyDelivered = adapterMessage.powerCurrentlyDelivered();
-            SmartGatewaysAdapterMessageField powerCurrentlyReturned = adapterMessage.powerCurrentlyReturned();
-            SmartGatewaysAdapterMessageField electricityDelivered, electricityReturned;
+            if (sgaTopic.isExpected()) {
+                batchBuffer.put(sgaTopic, new String(message.getPayload(), StandardCharsets.UTF_8));
 
-            if (Objects.equals(adapterMessage.electricityTariff().value(), DSMR_TARIFF_LOW)) {
-                electricityDelivered = adapterMessage.electricityDeliveredTariff1();
-                electricityReturned = adapterMessage.electricityReturnedTariff1();
-            } else {
-                electricityDelivered = adapterMessage.electricityDeliveredTariff2();
-                electricityReturned = adapterMessage.electricityReturnedTariff2();
+                if (batchBuffer.size() == 1 && (timeoutFuture == null || timeoutFuture.isDone())) {
+                    timeoutFuture = scheduler.schedule(() -> {
+                        LOGGER.warn("Batch timeout reached. Processing incomplete batch with {} entries.", batchBuffer.size());
+                        synchronized (SmartGatewaysAdapter.this) {
+                            processBatch(batchBuffer);
+                            batchBuffer.clear();
+                        }
+                    }, TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+                }
+
+                if (batchBuffer.keySet().containsAll(expectedTopics)) {
+                    if (timeoutFuture != null) {
+                        timeoutFuture.cancel(false);
+                    }
+                    processBatch(batchBuffer);
+                    batchBuffer.clear();
+                }
             }
-
-            addAiidaRecordValue(aiidaRecordValues, electricityDelivered);
-            addAiidaRecordValue(aiidaRecordValues, electricityReturned);
-            addAiidaRecordValue(aiidaRecordValues, powerCurrentlyDelivered);
-            addAiidaRecordValue(aiidaRecordValues, powerCurrentlyReturned);
-
-            emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (Exception e) {
-            LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
-                         new String(message.getPayload(), StandardCharsets.UTF_8),
-                         e);
+            LOGGER.error("Error while processing message from topic {}: {}", topic, e.getMessage(), e);
         }
     }
 
@@ -82,5 +99,33 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
                                                    recordValue.unitOfMeasurement(),
                                                    String.valueOf(recordValue.value()),
                                                    recordValue.unitOfMeasurement()));
+    }
+
+    private void processBatch(Map<SmartGatewaysTopic, String> batch) {
+        var adapterMessage = SmartGatewaysAdapterValueDeserializer.deserialize(batch);
+        List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
+
+        var powerCurrentlyDelivered = adapterMessage.powerCurrentlyDelivered();
+        var powerCurrentlyReturned = adapterMessage.powerCurrentlyReturned();
+        var electricityDelivered = adapterMessage.electricityDelivered();
+        var electricityReturned = adapterMessage.electricityReturned();
+
+        addAiidaRecordValue(aiidaRecordValues, electricityDelivered);
+        addAiidaRecordValue(aiidaRecordValues, electricityReturned);
+        addAiidaRecordValue(aiidaRecordValues, powerCurrentlyDelivered);
+        addAiidaRecordValue(aiidaRecordValues, powerCurrentlyReturned);
+
+        emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
+        batchBuffer.clear();
+    }
+
+    private String topicPrefixOf(String mqttSubscribeTopic) {
+        return Arrays.stream(mqttSubscribeTopic.split("/")).findFirst().orElse("");
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        scheduler.shutdown();
     }
 }

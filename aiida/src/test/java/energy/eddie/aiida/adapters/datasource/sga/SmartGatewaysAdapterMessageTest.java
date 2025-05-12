@@ -1,51 +1,42 @@
 package energy.eddie.aiida.adapters.datasource.sga;
 
+import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysTopic;
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
+import java.util.EnumMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-class SmartGatewaysAdapterMessageTest {
+class SmartGatewaysAdapterValueDeserializerTest {
+
     @Test
-    void verify_isProperlyDeserialized() {
-        var message = """
-                4530303632303030303037393239333232
-                4730303732303034303036353733323230
-                0002
-                3845.467
-                2621.303
-                1894.882
-                1435.228
-                0.000
-                0.000
-                0.000
-                0.000
-                0.531
-                0.030
-                0
-                71
-                460
-                30
-                0
-                0
-                233.00
-                234.00
-                234.00
-                0.00
-                0.00
-                2.00
-                736.650
-                -0.061
-                0.002""";
+    void testDeserializeSelectedFields() {
+        Map<SmartGatewaysTopic, String> batch = new EnumMap<>(SmartGatewaysTopic.class);
 
-        var actual = SmartGatewaysAdapterValueDeserializer.deserialize(message.getBytes(StandardCharsets.UTF_8));
+        batch.put(SmartGatewaysTopic.ELECTRICITY_TARIFF, "0002");
+        batch.put(SmartGatewaysTopic.ELECTRICITY_DELIVERED_1, "3845.467");
+        batch.put(SmartGatewaysTopic.ELECTRICITY_RETURNED_2, "1435.228");
+        batch.put(SmartGatewaysTopic.ELECTRICITY_CURRENTLY_DELIVERED, "0.531");
+        batch.put(SmartGatewaysTopic.PHASE_CURRENTLY_DELIVERED_L3, "460");
 
-        assertEquals("0002", actual.electricityTariff().value());
-        assertEquals("3845.467", actual.electricityDeliveredTariff1().value());
-        assertEquals("1435.228", actual.electricityReturnedTariff2().value());
-        assertEquals("0.531", actual.powerCurrentlyDelivered().value());
-        assertEquals("736.650", actual.gasDelivered().value());
-        assertEquals("460", actual.phaseCurrentlyDeliveredL3().value());
+        var result = SmartGatewaysAdapterValueDeserializer.deserialize(batch);
+
+        assertEquals("0002", result.electricityTariff().value());
+        assertEquals("3845.467", result.electricityDeliveredTariff1().value());
+        assertEquals("1435.228", result.electricityReturnedTariff2().value());
+        assertEquals("0.531", result.powerCurrentlyDelivered().value());
+        assertEquals("460", result.phaseCurrentlyDeliveredL3().value());
+    }
+
+    @Test
+    void testEmptyBatchProducesNullFields() {
+        Map<SmartGatewaysTopic, String> batch = new EnumMap<>(SmartGatewaysTopic.class);
+        var result = SmartGatewaysAdapterValueDeserializer.deserialize(batch);
+
+        assertNull(result.electricityTariff());
+        assertNull(result.electricityDeliveredTariff1());
+        assertNull(result.electricityReturnedTariff2());
     }
 }
