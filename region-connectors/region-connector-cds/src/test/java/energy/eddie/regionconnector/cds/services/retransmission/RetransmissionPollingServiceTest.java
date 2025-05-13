@@ -144,6 +144,7 @@ class RetransmissionPollingServiceTest {
                     .verifyComplete();
     }
 
+    @SuppressWarnings("unused") // errorprone  false positive
     private static Stream<Arguments> testPoll_forPartiallyEmptyResponse_returnsDataEmpty() {
         return Stream.of(
                 Arguments.of(Tuples.of(List.of(),
