@@ -37,7 +37,7 @@ public class FluviusApiClient implements FluviusApi {
             WebClient webClient,
             FluviusConfiguration fluviusConfiguration,
             OAuthTokenService oAuthTokenService,
-            @Value("${eddie.public.url}") String publicUrl
+            @Value("${region-connector.be.fluvius.redirect-uri}") String publicUrl
     ) {
         this.webClient = webClient;
         this.fluviusConfiguration = fluviusConfiguration;

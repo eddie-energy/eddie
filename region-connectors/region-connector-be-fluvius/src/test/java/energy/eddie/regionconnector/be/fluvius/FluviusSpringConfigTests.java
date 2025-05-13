@@ -17,7 +17,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {"eddie.public.url=http://localhost:8080"})
+@SuppressWarnings("SpringBootApplicationProperties")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {"region-connector.be.fluvius.redirect-uri=http://localhost:8080"})
 @Testcontainers
 @Import(FluviusSpringConfigTests.TestConfig.class)
 class FluviusSpringConfigTests {
