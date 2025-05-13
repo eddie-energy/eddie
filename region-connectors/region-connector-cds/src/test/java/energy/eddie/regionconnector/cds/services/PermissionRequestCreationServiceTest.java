@@ -11,7 +11,6 @@ import energy.eddie.regionconnector.cds.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.cds.exceptions.UnknownPermissionAdministratorException;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
-import energy.eddie.regionconnector.cds.master.data.Coverage;
 import energy.eddie.regionconnector.cds.permission.events.CreatedEvent;
 import energy.eddie.regionconnector.cds.permission.events.MalformedEvent;
 import energy.eddie.regionconnector.cds.permission.events.SimpleEvent;
@@ -32,7 +31,6 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -170,11 +168,8 @@ class PermissionRequestCreationServiceTest {
 
     private static CdsServer getCdsServer() {
         return new CdsServerBuilder().setBaseUri("http://localhost")
-                                     .setName("CDS Server")
-                                     .setCoverages(Set.of(new Coverage(EnergyType.ELECTRICITY, "us")))
                                      .setAdminClientId("client-id")
                                      .setAdminClientSecret("client-secret")
-                                     .setTokenEndpoint("http://localhost")
                                      .build();
     }
 }

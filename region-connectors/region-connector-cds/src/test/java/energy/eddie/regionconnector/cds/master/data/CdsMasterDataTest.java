@@ -3,14 +3,18 @@ package energy.eddie.regionconnector.cds.master.data;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.agnostic.master.data.MeteredDataAdministrator;
 import energy.eddie.api.agnostic.master.data.PermissionAdministrator;
-import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
+import energy.eddie.regionconnector.cds.client.CdsServerClient;
+import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
+import energy.eddie.regionconnector.cds.dtos.CdsServerMasterData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.util.List;
+import java.net.URI;
 import java.util.Optional;
 import java.util.Set;
 
@@ -20,19 +24,21 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CdsMasterDataTest {
     @Mock
-    private CdsServerRepository repository;
+    private CdsServerClientFactory factory;
+    @Mock
+    private CdsServerClient client;
     @InjectMocks
     private CdsMasterData cdsMasterData;
 
     @Test
     void testPermissionAdministrators_returnsAllPermissionAdministrators() {
         // Given
-        when(repository.findAll())
-                .thenReturn(List.of(createCdsServer()));
+        when(factory.getAll()).thenReturn(Flux.just(client));
+        when(client.masterData()).thenReturn(createCdsServerMasterData());
         var expected = new PermissionAdministrator("us",
                                                    "CDS Server",
-                                                   "CDS Server - http://localhost",
-                                                   "null",
+                                                   "CDS Server",
+                                                   "1",
                                                    "http://localhost",
                                                    "cds");
 
@@ -48,12 +54,12 @@ class CdsMasterDataTest {
     @Test
     void testGetPermissionAdministrator_returnsPermissionAdministrator() {
         // Given
-        when(repository.findById(1L))
-                .thenReturn(Optional.of(createCdsServer()));
+        when(factory.get(1L)).thenReturn(Optional.of(client));
+        when(client.masterData()).thenReturn(createCdsServerMasterData());
         var expected = new PermissionAdministrator("us",
                                                    "CDS Server",
-                                                   "CDS Server - http://localhost",
-                                                   "null",
+                                                   "CDS Server",
+                                                   "1",
                                                    "http://localhost",
                                                    "cds");
 
@@ -69,14 +75,14 @@ class CdsMasterDataTest {
     @Test
     void testMeteredDataAdministrators_returnsAllMeteredDataAdministrators() {
         // Given
-        when(repository.findAll())
-                .thenReturn(List.of(createCdsServer()));
+        when(factory.getAll()).thenReturn(Flux.just(client));
+        when(client.masterData()).thenReturn(createCdsServerMasterData());
         var expected = new MeteredDataAdministrator("us",
-                                                    "CDS Server",
-                                                    "null",
+                                                   "CDS Server",
+                                                   "1",
+                                                   "http://localhost",
                                                     "http://localhost",
-                                                    "http://localhost",
-                                                    "null");
+                                                   "1");
 
         // When
         var res = cdsMasterData.meteredDataAdministrators();
@@ -90,14 +96,14 @@ class CdsMasterDataTest {
     @Test
     void testGetMeteredDataAdministrator_returnsPermissionAdministrator() {
         // Given
-        when(repository.findById(1L))
-                .thenReturn(Optional.of(createCdsServer()));
+        when(factory.get(1L)).thenReturn(Optional.of(client));
+        when(client.masterData()).thenReturn(createCdsServerMasterData());
         var expected = new MeteredDataAdministrator("us",
                                                     "CDS Server",
-                                                    "null",
+                                                    "1",
                                                     "http://localhost",
                                                     "http://localhost",
-                                                    "null");
+                                                    "1");
 
         // When
         var res = cdsMasterData.getMeteredDataAdministrator("1");
@@ -107,15 +113,15 @@ class CdsMasterDataTest {
                 .isPresent()
                 .contains(expected);
     }
-    private static CdsServer createCdsServer() {
-        return new CdsServerBuilder().setBaseUri("http://localhost")
-                                     .setName("CDS Server")
-                                     .setCoverages(Set.of(new Coverage(EnergyType.ELECTRICITY, "US")))
-                                     .setAdminClientId("client-id")
-                                     .setAdminClientSecret("client-secret")
-                                     .setTokenEndpoint("http://localhost")
-                                     .setAuthorizationEndpoint(null)
-                                     .setParEndpoint(null)
-                                     .build();
+
+    private static Mono<CdsServerMasterData> createCdsServerMasterData() {
+        return Mono.just(
+                new CdsServerMasterData(
+                        "CDS Server",
+                        "1",
+                        URI.create("http://localhost"),
+                        Set.of(new Coverage(EnergyType.ELECTRICITY, "us"))
+                )
+        );
     }
 }

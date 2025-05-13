@@ -57,6 +57,6 @@ public class HealthIndicatorCreator {
     }
 
     private static String contributorName(CdsServer cdsServer) {
-        return (cdsServer.name() + "-" + cdsServer.id()).replace(" ", "-");
+        return cdsServer.id().toString();
     }
 }
