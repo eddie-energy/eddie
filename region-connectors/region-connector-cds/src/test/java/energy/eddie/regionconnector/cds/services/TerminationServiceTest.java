@@ -1,15 +1,11 @@
 package energy.eddie.regionconnector.cds.services;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.cds.client.CdsPublicApis;
+import energy.eddie.regionconnector.cds.client.CdsServerClient;
+import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
-import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
-import energy.eddie.regionconnector.cds.openapi.model.CarbonDataSpec200Response;
-import energy.eddie.regionconnector.cds.openapi.model.OAuthAuthorizationServer200Response;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
-import energy.eddie.regionconnector.cds.persistence.OAuthCredentialsRepository;
-import energy.eddie.regionconnector.cds.services.oauth.OAuthService;
 import energy.eddie.regionconnector.cds.services.oauth.revocation.RevocationResult;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
@@ -22,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
-import java.net.URI;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -36,11 +31,9 @@ class TerminationServiceTest {
     @Mock
     private CdsServerRepository serverRepository;
     @Mock
-    private OAuthCredentialsRepository credentialsRepository;
+    private CdsServerClientFactory factory;
     @Mock
-    private CdsPublicApis apis;
-    @Mock
-    private OAuthService oAuthService;
+    private CdsServerClient client;
     @Mock
     private Outbox outbox;
     @InjectMocks
@@ -60,19 +53,12 @@ class TerminationServiceTest {
                 .setBaseUri("http://localhost")
                 .build();
         when(serverRepository.getReferenceById(1L)).thenReturn(cdsServer);
-        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
-        when(credentialsRepository.getOAuthCredentialByPermissionId("pid")).thenReturn(credentials);
         var pr = new CdsPermissionRequestBuilder()
                 .setPermissionId("pid")
                 .setCdsServer(1L)
                 .build();
-        var baseUrl = URI.create("http://localhost");
-        when(apis.carbonDataSpec(baseUrl))
-                .thenReturn(Mono.just(new CarbonDataSpec200Response().oauthMetadata(baseUrl)));
-        when(apis.oauthMetadataSpec(baseUrl))
-                .thenReturn(Mono.just(new OAuthAuthorizationServer200Response().revocationEndpoint(baseUrl)));
-        when(oAuthService.revokeToken(baseUrl, cdsServer, credentials))
-                .thenReturn(new RevocationResult.SuccessfulRevocation());
+        when(factory.get(pr)).thenReturn(client);
+        when(client.revokeToken(pr)).thenReturn(Mono.just(new RevocationResult.SuccessfulRevocation()));
 
 
         // When
@@ -94,17 +80,12 @@ class TerminationServiceTest {
                 .setBaseUri("http://localhost")
                 .build();
         when(serverRepository.getReferenceById(1L)).thenReturn(cdsServer);
-        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
-        when(credentialsRepository.getOAuthCredentialByPermissionId("pid")).thenReturn(credentials);
         var pr = new CdsPermissionRequestBuilder()
                 .setPermissionId("pid")
                 .setCdsServer(1L)
                 .build();
-        var baseUrl = URI.create("http://localhost");
-        when(apis.carbonDataSpec(baseUrl)).thenReturn(Mono.just(new CarbonDataSpec200Response().oauthMetadata(baseUrl)));
-        when(apis.oauthMetadataSpec(baseUrl))
-                .thenReturn(Mono.just(new OAuthAuthorizationServer200Response().revocationEndpoint(baseUrl)));
-        when(oAuthService.revokeToken(baseUrl, cdsServer, credentials)).thenReturn(revocationResult);
+        when(factory.get(pr)).thenReturn(client);
+        when(client.revokeToken(pr)).thenReturn(Mono.just(revocationResult));
 
 
         // When
@@ -125,19 +106,13 @@ class TerminationServiceTest {
                 .setBaseUri("http://localhost")
                 .build();
         when(serverRepository.getReferenceById(1L)).thenReturn(cdsServer);
-        var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
-        when(credentialsRepository.getOAuthCredentialByPermissionId("pid")).thenReturn(credentials);
         var pr = new CdsPermissionRequestBuilder()
                 .setPermissionId("pid")
                 .setCdsServer(1L)
                 .build();
-        var baseUrl = URI.create("http://localhost");
-        when(apis.carbonDataSpec(baseUrl))
-                .thenReturn(Mono.just(new CarbonDataSpec200Response().oauthMetadata(baseUrl)));
-        when(apis.oauthMetadataSpec(baseUrl))
-                .thenReturn(Mono.just(new OAuthAuthorizationServer200Response().revocationEndpoint(baseUrl)));
-        when(oAuthService.revokeToken(baseUrl, cdsServer, credentials))
-                .thenReturn(new RevocationResult.InvalidRevocationRequest(RevocationResult.InvalidRevocationRequest.UNSUPPORTED_TOKEN_TYPE));
+        when(factory.get(pr)).thenReturn(client);
+        when(client.revokeToken(pr))
+                .thenReturn(Mono.just(new RevocationResult.InvalidRevocationRequest(RevocationResult.InvalidRevocationRequest.UNSUPPORTED_TOKEN_TYPE)));
 
 
         // When

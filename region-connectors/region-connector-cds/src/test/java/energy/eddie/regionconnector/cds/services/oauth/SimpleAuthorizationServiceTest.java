@@ -1,5 +1,9 @@
 package energy.eddie.regionconnector.cds.services.oauth;
 
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.cds.client.CdsServerClient;
+import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
+import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
 import energy.eddie.regionconnector.cds.permission.events.SentToPaEvent;
 import energy.eddie.regionconnector.cds.services.oauth.code.AuthorizationCodeResult;
@@ -13,11 +17,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,7 +30,9 @@ class SimpleAuthorizationServiceTest {
     @Mock
     private Outbox outbox;
     @Mock
-    private OAuthService oAuthService;
+    private CdsServerClientFactory factory;
+    @Mock
+    private CdsServerClient client;
     @InjectMocks
     private SimpleAuthorizationService authorizationService;
     @Captor
@@ -39,8 +45,9 @@ class SimpleAuthorizationServiceTest {
                 .setId(1L)
                 .build();
         var redirectUri = URI.create("http://localhost");
-        when(oAuthService.createAuthorizationUri(eq(cdsServer), any()))
-                .thenReturn(new AuthorizationCodeResult(redirectUri, "state"));
+        when(factory.get(cdsServer)).thenReturn(client);
+        when(client.createAuthorizationUri(List.of(Scopes.CUSTOMER_DATA_SCOPE)))
+                .thenReturn(Optional.of(new AuthorizationCodeResult(redirectUri, "state")));
 
         // When
         var res = authorizationService.createOAuthRequest(cdsServer, "pid");
@@ -51,5 +58,25 @@ class SimpleAuthorizationServiceTest {
         var event = sentToPaEvent.getValue();
         assertFalse(event.isPushedAuthorizationRequest());
         assertEquals(redirectUri.toString(), event.redirectUri());
+    }
+
+    @Test
+    void testCreateOAuthRequest_forInvalidRequest_returnsNull() {
+        // Given
+        var cdsServer = new CdsServerBuilder()
+                .setId(1L)
+                .build();
+        when(factory.get(cdsServer)).thenReturn(client);
+        when(client.createAuthorizationUri(List.of(Scopes.CUSTOMER_DATA_SCOPE))).thenReturn(Optional.empty());
+
+        // When
+        var res = authorizationService.createOAuthRequest(cdsServer, "pid");
+
+        // Then
+        assertNull(res);
+        verify(outbox).commit(assertArg(event -> assertAll(
+                () -> assertEquals("pid", event.permissionId()),
+                () -> assertEquals(PermissionProcessStatus.MALFORMED, event.status())
+        )));
     }
 }

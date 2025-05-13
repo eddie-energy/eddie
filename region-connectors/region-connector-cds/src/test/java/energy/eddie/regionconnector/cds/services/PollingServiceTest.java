@@ -3,9 +3,9 @@ package energy.eddie.regionconnector.cds.services;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClient;
+import energy.eddie.regionconnector.cds.client.CdsServerClient;
+import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
 import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientErrorHandler;
-import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientFactory;
 import energy.eddie.regionconnector.cds.exceptions.NoTokenException;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
 import energy.eddie.regionconnector.cds.providers.IdentifiableDataStreams;
@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -28,7 +29,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -39,9 +39,9 @@ class PollingServiceTest {
     @Mock
     private DataNeedCalculationService<DataNeed> calculationService;
     @Mock
-    private CustomerDataClientFactory factory;
+    private CdsServerClientFactory factory;
     @Mock
-    private CustomerDataClient customerDataClient;
+    private CdsServerClient client;
     @Mock
     private CustomerDataClientErrorHandler handler;
     @InjectMocks
@@ -165,17 +165,11 @@ class PollingServiceTest {
         var calcResult = new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                    new Timeframe(start, today),
                                                                    new Timeframe(start, end));
-        when(calculationService.calculate("dnid", now))
-                .thenReturn(calcResult);
-        when(factory.get(pr))
-                .thenReturn(customerDataClient);
-        when(customerDataClient.usagePoints(eq(pr), any(), eq(start.atStartOfDay(ZoneOffset.UTC))))
-                .thenReturn(Mono.just(List.of()));
-        when(customerDataClient.accounts(pr)).thenReturn(Mono.just(List.of()));
-        when(customerDataClient.serviceContracts(pr)).thenReturn(Mono.just(List.of()));
-        when(customerDataClient.servicePoints(pr)).thenReturn(Mono.just(List.of()));
-        when(customerDataClient.meterDevices(pr)).thenReturn(Mono.just(List.of()));
+        when(calculationService.calculate("dnid", now)).thenReturn(calcResult);
         when(handler.thenRevoke(any())).thenCallRealMethod();
+        when(factory.get(pr)).thenReturn(client);
+        when(client.validatedHistoricalData(eq(pr), any(), any()))
+                .thenReturn(Mono.just(Tuples.of(List.of(), List.of(), List.of(), List.of(), List.of())));
         // When
         pollingService.poll(pr);
 
@@ -205,13 +199,8 @@ class PollingServiceTest {
                                                                    new Timeframe(start, end));
         when(calculationService.calculate("dnid", now))
                 .thenReturn(calcResult);
-        when(factory.get(pr))
-                .thenReturn(customerDataClient);
-        when(customerDataClient.accounts(pr)).thenReturn(Mono.error(exception));
-        when(customerDataClient.serviceContracts(pr)).thenReturn(Mono.error(exception));
-        when(customerDataClient.servicePoints(pr)).thenReturn(Mono.error(exception));
-        when(customerDataClient.meterDevices(pr)).thenReturn(Mono.error(exception));
-        when(customerDataClient.usagePoints(pr, endOfDay(end, ZoneOffset.UTC), start.atStartOfDay(ZoneOffset.UTC)))
+        when(factory.get(pr)).thenReturn(client);
+        when(client.validatedHistoricalData(eq(pr), any(), eq(start.atStartOfDay(ZoneOffset.UTC))))
                 .thenReturn(Mono.error(exception));
         when(handler.thenRevoke(any())).thenCallRealMethod();
         when(handler.test(any())).thenCallRealMethod();
@@ -244,8 +233,8 @@ class PollingServiceTest {
                                                                    new Timeframe(start, end));
         when(calculationService.calculate("dnid", now))
                 .thenReturn(calcResult);
-        when(factory.get(pr)).thenReturn(customerDataClient);
-        when(customerDataClient.usagePoints(pr, endOfDay(end, ZoneOffset.UTC), start.atStartOfDay(ZoneOffset.UTC)))
+        when(factory.get(pr)).thenReturn(client);
+        when(client.validatedHistoricalData(eq(pr), any(), eq(start.atStartOfDay(ZoneOffset.UTC))))
                 .thenReturn(Mono.error(new RuntimeException()));
         when(handler.test(any())).thenCallRealMethod();
         when(handler.thenRevoke(any())).thenCallRealMethod();
@@ -276,11 +265,8 @@ class PollingServiceTest {
                 .build();
         var calcResult = new AccountingPointDataNeedResult(new Timeframe(start, end));
         when(calculationService.calculate("dnid", now)).thenReturn(calcResult);
-        when(factory.get(pr)).thenReturn(customerDataClient);
-        when(customerDataClient.accounts(pr)).thenReturn(Mono.error(exception));
-        when(customerDataClient.serviceContracts(pr)).thenReturn(Mono.error(exception));
-        when(customerDataClient.servicePoints(pr)).thenReturn(Mono.error(exception));
-        when(customerDataClient.meterDevices(pr)).thenReturn(Mono.error(exception));
+        when(factory.get(pr)).thenReturn(client);
+        when(client.accountingPointData(pr)).thenReturn(Mono.error(exception));
         when(handler.thenRevoke(any())).thenCallRealMethod();
         when(handler.test(any())).thenCallRealMethod();
 
@@ -305,12 +291,11 @@ class PollingServiceTest {
                 .build();
         var calcResult = new AccountingPointDataNeedResult(new Timeframe(today, today));
         when(calculationService.calculate("dnid", now)).thenReturn(calcResult);
-        when(factory.get(pr)).thenReturn(customerDataClient);
-        when(customerDataClient.accounts(pr)).thenReturn(Mono.just(List.of()));
-        when(customerDataClient.serviceContracts(pr)).thenReturn(Mono.just(List.of()));
-        when(customerDataClient.servicePoints(pr)).thenReturn(Mono.just(List.of()));
-        when(customerDataClient.meterDevices(pr)).thenReturn(Mono.just(List.of()));
+        when(factory.get(pr)).thenReturn(client);
+        when(client.accountingPointData(pr))
+                .thenReturn(Mono.just(Tuples.of(List.of(), List.of(), List.of(), List.of())));
         when(handler.thenRevoke(any())).thenCallRealMethod();
+
         // When
         pollingService.poll(pr);
 

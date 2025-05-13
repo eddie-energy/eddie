@@ -21,6 +21,7 @@ public class CustomerDataClientErrorHandler implements Predicate<Throwable> {
     public CustomerDataClientErrorHandler(Outbox outbox) {this.outbox = outbox;}
 
 
+    @Override
     public boolean test(Throwable e) {
         return e instanceof WebClientResponseException.Unauthorized || e instanceof NoTokenException;
     }

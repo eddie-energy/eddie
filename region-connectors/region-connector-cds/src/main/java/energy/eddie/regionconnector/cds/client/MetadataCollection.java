@@ -1,17 +1,12 @@
-package energy.eddie.regionconnector.cds.client.admin;
+package energy.eddie.regionconnector.cds.client;
 
-import energy.eddie.regionconnector.cds.client.CdsPublicApis;
 import energy.eddie.regionconnector.cds.exceptions.CoverageNotSupportedException;
 import energy.eddie.regionconnector.cds.exceptions.OAuthNotSupportedException;
-import energy.eddie.regionconnector.cds.openapi.model.CarbonDataSpec200Response;
-import energy.eddie.regionconnector.cds.openapi.model.Coverages200ResponseAllOfCoverageEntriesInner;
 import energy.eddie.regionconnector.cds.openapi.model.OAuthAuthorizationServer200Response;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple3;
 
 import java.net.URI;
-import java.util.List;
 
 @Component
 public class MetadataCollection {
@@ -21,11 +16,11 @@ public class MetadataCollection {
 
     /**
      * Collects all the required metadata from a new CDS server.
-     * The data includes coverage, oauth metadata, and the CDS metadata
+     *
      * @param cdsBaseUri the base URI of the cds server
      * @return a tuple containing the metadata or throws {@link CoverageNotSupportedException} or {@link OAuthNotSupportedException}
      */
-    public Mono<Tuple3<CarbonDataSpec200Response, OAuthAuthorizationServer200Response, List<Coverages200ResponseAllOfCoverageEntriesInner>>> metadata(
+    public Mono<OAuthAuthorizationServer200Response> metadata(
             URI cdsBaseUri
     ) {
         return cdsPublicApis.carbonDataSpec(cdsBaseUri)
@@ -36,11 +31,7 @@ public class MetadataCollection {
                                          if (cdsResponse.getOauthMetadata() == null) {
                                              return Mono.error(new OAuthNotSupportedException());
                                          }
-                                         return Mono.zip(
-                                                 Mono.just(cdsResponse),
-                                                 cdsPublicApis.oauthMetadataSpec(cdsResponse.getOauthMetadata()),
-                                                 cdsPublicApis.coverage(cdsResponse.getCoverage())
-                                         );
+                                         return cdsPublicApis.oauthMetadataSpec(cdsResponse.getOauthMetadata());
                                      }
                             );
     }

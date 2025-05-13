@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.cds.services.oauth;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
+import energy.eddie.regionconnector.cds.client.CdsServerClient;
+import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
 import energy.eddie.regionconnector.cds.persistence.CdsPermissionRequestRepository;
-import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import energy.eddie.regionconnector.cds.persistence.OAuthCredentialsRepository;
 import energy.eddie.regionconnector.cds.services.oauth.authorization.AcceptedResult;
 import energy.eddie.regionconnector.cds.services.oauth.authorization.ErrorResult;
@@ -23,7 +23,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,9 +37,9 @@ class CallbackServiceTest {
     @Mock
     private CdsPermissionRequestRepository permissionRequestRepository;
     @Mock
-    private OAuthService oAuthService;
+    private CdsServerClient cdsServerClient;
     @Mock
-    private CdsServerRepository cdsServerRepository;
+    private CdsServerClientFactory cdsServerClientFactory;
     @Mock
     private OAuthCredentialsRepository credentialsRepository;
     @InjectMocks
@@ -205,22 +204,12 @@ class CallbackServiceTest {
                 .build();
         when(permissionRequestRepository.findByState("state"))
                 .thenReturn(Optional.of(pr));
-        var cdsServer = new CdsServerBuilder().setBaseUri("http://localhost")
-                                              .setId(1L)
-                                              .setName("CDS server")
-                                              .setCoverages(Set.of())
-                                              .setAdminClientId("client-id")
-                                              .setAdminClientSecret("client-secret")
-                                              .setTokenEndpoint("http://localhost")
-                                              .build();
-        when(cdsServerRepository.getReferenceById(1L))
-                .thenReturn(cdsServer);
+        when(cdsServerClientFactory.get(pr)).thenReturn(cdsServerClient);
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         var credentials = new CredentialsWithRefreshToken("accessToken",
                                                           "refreshToken",
                                                           now);
-        when(oAuthService.retrieveAccessToken("code", cdsServer))
-                .thenReturn(credentials);
+        when(cdsServerClient.retrieveCustomerCredentials("code")).thenReturn(credentials);
         var callback = new Callback("code", null, "state");
 
         // When
@@ -250,20 +239,10 @@ class CallbackServiceTest {
                 .build();
         when(permissionRequestRepository.findByState("state"))
                 .thenReturn(Optional.of(pr));
-        var cdsServer = new CdsServerBuilder().setBaseUri("http://localhost")
-                                              .setId(1L)
-                                              .setName("CDS server")
-                                              .setCoverages(Set.of())
-                                              .setAdminClientId("client-id")
-                                              .setAdminClientSecret("client-secret")
-                                              .setTokenEndpoint("http://localhost")
-                                              .build();
-        when(cdsServerRepository.getReferenceById(1L))
-                .thenReturn(cdsServer);
+        when(cdsServerClientFactory.get(pr)).thenReturn(cdsServerClient);
         var credentials = new CredentialsWithoutRefreshToken("accessToken",
                                                              ZonedDateTime.now(ZoneOffset.UTC));
-        when(oAuthService.retrieveAccessToken("code", cdsServer))
-                .thenReturn(credentials);
+        when(cdsServerClient.retrieveCustomerCredentials("code")).thenReturn(credentials);
         var callback = new Callback("code", null, "state");
 
         // When
@@ -291,17 +270,8 @@ class CallbackServiceTest {
                 .build();
         when(permissionRequestRepository.findByState("state"))
                 .thenReturn(Optional.of(pr));
-        var cdsServer = new CdsServerBuilder().setBaseUri("http://localhost")
-                                              .setName("CDS server")
-                                              .setCoverages(Set.of())
-                                              .setAdminClientId("client-id")
-                                              .setAdminClientSecret("client-secret")
-                                              .setTokenEndpoint("http://localhost")
-                                              .build();
-        when(cdsServerRepository.getReferenceById(1L))
-                .thenReturn(cdsServer);
-        when(oAuthService.retrieveAccessToken("code", cdsServer))
-                .thenReturn(new InvalidTokenResult());
+        when(cdsServerClientFactory.get(pr)).thenReturn(cdsServerClient);
+        when(cdsServerClient.retrieveCustomerCredentials("code")).thenReturn(new InvalidTokenResult());
         var callback = new Callback("code", null, "state");
 
         // When

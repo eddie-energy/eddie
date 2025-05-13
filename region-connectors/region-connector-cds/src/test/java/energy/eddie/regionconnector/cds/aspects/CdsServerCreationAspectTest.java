@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.cds.aspects;
 
-import energy.eddie.regionconnector.cds.client.admin.AdminClientFactory;
-import energy.eddie.regionconnector.cds.client.admin.MetadataCollection;
+import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
+import energy.eddie.regionconnector.cds.client.MetadataCollection;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.exceptions.OAuthNotSupportedException;
 import energy.eddie.regionconnector.cds.health.HealthIndicatorCreator;
@@ -32,7 +32,7 @@ class CdsServerCreationAspectTest {
     private CdsServerRepository repository;
     @SuppressWarnings("unused")
     @MockitoBean
-    private AdminClientFactory factory;
+    private CdsServerClientFactory factory;
     @MockitoBean
     private MetadataCollection collection;
     @SuppressWarnings("unused")

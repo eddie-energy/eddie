@@ -10,7 +10,6 @@ import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
-import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
 import energy.eddie.regionconnector.cds.services.oauth.client.registration.RegistrationResponse;
 import energy.eddie.regionconnector.cds.services.oauth.code.AuthorizationCodeResult;
@@ -85,31 +84,33 @@ public class OAuthService {
     }
 
     public ParResponse pushAuthorization(
-            CdsServer cdsServer,
-            List<String> scopes
+            List<String> scopes,
+            String customerDataClientId,
+            String customerDataClientSecret,
+            URI parEndpoint,
+            URI authorizationEndpoint
     ) {
-        var clientID = new ClientID(cdsServer.customerDataClientId());
-        var clientSecret = new Secret(cdsServer.customerDataClientSecret());
+        var clientID = new ClientID(customerDataClientId);
+        var clientSecret = new Secret(customerDataClientSecret);
         var state = new State();
-        var parUri = cdsServer.endpoints().pushedAuthorizationRequestEndpoint();
         var authzReq = new AuthorizationRequest.Builder(ResponseType.CODE, clientID)
-                .endpointURI(parUri)
+                .endpointURI(parEndpoint)
                 .scope(Scope.parse(scopes))
                 .state(state)
                 .redirectionURI(config.redirectUrl())
                 .responseType(ResponseType.CODE)
                 .build();
         var clientCreds = new ClientSecretBasic(clientID, clientSecret);
-        var req = new PushedAuthorizationRequest(parUri, clientCreds, authzReq).toHTTPRequest();
+        var req = new PushedAuthorizationRequest(parEndpoint, clientCreds, authzReq).toHTTPRequest();
         PushedAuthorizationResponse resp;
         try {
             var httpResp = req.send();
             resp = PushedAuthorizationResponse.parse(httpResp);
         } catch (ParseException e) {
-            LOGGER.warn("Got invalid response from {}", parUri, e);
+            LOGGER.warn("Got invalid response from {}", parEndpoint, e);
             return new ErrorParResponse(e.toString());
         } catch (IOException e) {
-            LOGGER.warn("Could not reach {}", parUri, e);
+            LOGGER.warn("Could not reach {}", parEndpoint, e);
             return new UnableToSendPar();
         }
         if (!resp.indicatesSuccess()) {
@@ -118,26 +119,26 @@ public class OAuthService {
         var successResp = resp.toSuccessResponse();
         var expiresAt = ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(successResp.getLifetime());
         var urn = successResp.getRequestURI();
-        var redirectUri = new AuthorizationRequest.Builder(urn, new ClientID(cdsServer.adminClientId()))
-                .endpointURI(cdsServer.endpoints().authorizationEndpoint())
+        var redirectUri = new AuthorizationRequest.Builder(urn, clientID)
+                .endpointURI(authorizationEndpoint)
                 .build()
                 .toURI();
         return new SuccessfulParResponse(redirectUri, expiresAt, state.getValue());
     }
 
     public AuthorizationCodeResult createAuthorizationUri(
-            CdsServer cdsServer,
-            List<String> scopes
+            List<String> scopes,
+            String customerDataClientId,
+            URI authorizationEndpoint
     ) {
-        var clientId = new ClientID(cdsServer.customerDataClientId());
+        var clientId = new ClientID(customerDataClientId);
         var state = new State();
-        var authUri = cdsServer.endpoints().authorizationEndpoint();
         var request = new AuthorizationRequest.Builder(
                 new ResponseType(ResponseType.Value.CODE), clientId)
                 .redirectionURI(config.redirectUrl())
                 .state(state)
                 .scope(Scope.parse(scopes))
-                .endpointURI(authUri)
+                .endpointURI(authorizationEndpoint)
                 .build();
 
         return new AuthorizationCodeResult(request.toURI(), state.getValue());
@@ -146,22 +147,24 @@ public class OAuthService {
     /**
      * Retrieves the access token for a user, using the code flow
      *
-     * @param authCode  auth code that was part of the redirect URI
-     * @param cdsServer the cds server that the user belongs to
+     * @param authCode                 auth code that was part of the redirect URI
+     * @param customerDataClientId     the client ID for customer data
+     * @param customerDataClientSecret the client secret for customer data
+     * @param tokenEndpoint            token endpoint to get access tokens
      * @return the result of the token request
      */
     public TokenResult retrieveAccessToken(
             String authCode,
-            CdsServer cdsServer
+            String customerDataClientId,
+            String customerDataClientSecret,
+            URI tokenEndpoint
     ) {
         var code = new AuthorizationCode(authCode);
         var callback = config.redirectUrl();
         var codeGrant = new AuthorizationCodeGrant(code, callback);
-        var clientID = new ClientID(cdsServer.customerDataClientId());
-        var clientSecret = new Secret(cdsServer.customerDataClientSecret());
+        var clientID = new ClientID(customerDataClientId);
+        var clientSecret = new Secret(customerDataClientSecret);
         var clientCreds = new ClientSecretBasic(clientID, clientSecret);
-
-        var tokenEndpoint = cdsServer.endpoints().tokenEndpoint();
 
         var request = new TokenRequest(tokenEndpoint, clientCreds, codeGrant);
 
@@ -171,31 +174,36 @@ public class OAuthService {
     /**
      * Retrieves an admin client access token for a CDS server to get access to admin APIs
      *
-     * @param cdsServer the cds server that is used
+     * @param adminClientId     the client ID of the admin client
+     * @param adminClientSecret the client secret of the admin client
+     * @param tokenEndpoint     the token endpoint
      * @return the result of the token request
      */
-    public TokenResult retrieveAccessToken(CdsServer cdsServer) {
+    public TokenResult retrieveAccessToken(String adminClientId, String adminClientSecret, URI tokenEndpoint) {
         AuthorizationGrant clientGrant = new ClientCredentialsGrant();
-
-        var clientID = new ClientID(cdsServer.adminClientId());
-        var clientSecret = new Secret(cdsServer.adminClientSecret());
+        var clientID = new ClientID(adminClientId);
+        var clientSecret = new Secret(adminClientSecret);
         ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
         var scope = new Scope(Scopes.CLIENT_ADMIN_SCOPE);
-
-        var tokenEndpoint = cdsServer.endpoints().tokenEndpoint();
         var request = new TokenRequest(tokenEndpoint, clientAuth, clientGrant, scope);
         return sendAccessTokenRequest(request);
     }
 
-
     /**
      * Retrieves an access token for a specific user for a CDS server to get access to the customerdata APIs
      *
-     * @param cdsServer   the cds server that is used
-     * @param credentials the credentials of the user
+     * @param credentials              the credentials of the user
+     * @param customerDataClientId     the client ID for customer data
+     * @param customerDataClientSecret the client secret for customer data
+     * @param tokenEndpoint            the token endpoint
      * @return the result of the token request
      */
-    public TokenResult retrieveAccessToken(CdsServer cdsServer, OAuthCredentials credentials) {
+    public TokenResult retrieveAccessToken(
+            OAuthCredentials credentials,
+            String customerDataClientId,
+            String customerDataClientSecret,
+            URI tokenEndpoint
+    ) {
         if (credentials.refreshToken() == null) {
             LOGGER.info("No refresh token found for permission request {}", credentials.permissionId());
             return new InvalidTokenResult();
@@ -203,18 +211,22 @@ public class OAuthService {
         var refreshToken = new RefreshToken(credentials.refreshToken());
         AuthorizationGrant refreshTokenGrant = new RefreshTokenGrant(refreshToken);
 
-        var clientID = new ClientID(cdsServer.customerDataClientId());
-        var clientSecret = new Secret(cdsServer.customerDataClientSecret());
+        var clientID = new ClientID(customerDataClientId);
+        var clientSecret = new Secret(customerDataClientSecret);
         ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
 
-        var tokenEndpoint = cdsServer.endpoints().tokenEndpoint();
         var request = new TokenRequest(tokenEndpoint, clientAuth, refreshTokenGrant);
         return sendAccessTokenRequest(request);
     }
 
-    public RevocationResult revokeToken(URI revocationUri, CdsServer cdsServer, OAuthCredentials credentials) {
-        var clientId = new ClientID(cdsServer.customerDataClientId());
-        var clientSecret = new Secret(cdsServer.customerDataClientSecret());
+    public RevocationResult revokeToken(
+            URI revocationUri,
+            OAuthCredentials credentials,
+            String customerDataClientId,
+            String customerDataClientSecret
+    ) {
+        var clientId = new ClientID(customerDataClientId);
+        var clientSecret = new Secret(customerDataClientSecret);
         var clientCreds = new ClientSecretBasic(clientId, clientSecret);
         var refreshToken = new RefreshToken(credentials.refreshToken());
         var req = new TokenRevocationRequest(revocationUri, clientCreds, refreshToken);

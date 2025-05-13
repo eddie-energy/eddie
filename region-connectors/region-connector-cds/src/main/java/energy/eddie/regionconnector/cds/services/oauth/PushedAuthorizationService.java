@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.cds.services.oauth;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
 import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.permission.events.SentToPaEvent;
@@ -23,17 +24,17 @@ import java.util.List;
 @ConditionalOnProperty(name = "region-connector.cds.par.enabled", havingValue = "true")
 public class PushedAuthorizationService implements AuthorizationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PushedAuthorizationService.class);
-    private final OAuthService oAuthService;
+    private final CdsServerClientFactory factory;
     private final Outbox outbox;
 
-    public PushedAuthorizationService(OAuthService oAuthService, Outbox outbox) {
-        this.oAuthService = oAuthService;
+    public PushedAuthorizationService(CdsServerClientFactory factory, Outbox outbox) {
+        this.factory = factory;
         this.outbox = outbox;
     }
 
     @Override
     public URI createOAuthRequest(CdsServer cdsServer, String permissionId) {
-        var res = oAuthService.pushAuthorization(cdsServer, List.of(Scopes.USAGE_DETAILED_SCOPE));
+        var res = factory.get(cdsServer).pushAuthorizationRequest(List.of(Scopes.USAGE_DETAILED_SCOPE));
         return switch (res) {
             case ErrorParResponse(String code) -> {
                 LOGGER.info("Got error when requesting PAR '{}' for permission request {}",

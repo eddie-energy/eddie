@@ -1,12 +1,12 @@
 package energy.eddie.regionconnector.cds.services.oauth;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
 import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
 import energy.eddie.regionconnector.cds.permission.events.AcceptedEvent;
 import energy.eddie.regionconnector.cds.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
 import energy.eddie.regionconnector.cds.persistence.CdsPermissionRequestRepository;
-import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import energy.eddie.regionconnector.cds.persistence.OAuthCredentialsRepository;
 import energy.eddie.regionconnector.cds.services.oauth.authorization.AcceptedResult;
 import energy.eddie.regionconnector.cds.services.oauth.authorization.AuthorizationResult;
@@ -28,22 +28,19 @@ public class CallbackService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CallbackService.class);
     private final Outbox outbox;
     private final CdsPermissionRequestRepository permissionRequestRepository;
-    private final OAuthService oAuthService;
-    private final CdsServerRepository cdsServerRepository;
     private final OAuthCredentialsRepository credentialsRepository;
+    private final CdsServerClientFactory factory;
 
     public CallbackService(
             Outbox outbox,
             CdsPermissionRequestRepository permissionRequestRepository,
-            OAuthService oAuthService,
-            CdsServerRepository cdsServerRepository,
-            OAuthCredentialsRepository credentialsRepository
+            OAuthCredentialsRepository credentialsRepository,
+            CdsServerClientFactory factory
     ) {
         this.outbox = outbox;
         this.permissionRequestRepository = permissionRequestRepository;
-        this.oAuthService = oAuthService;
-        this.cdsServerRepository = cdsServerRepository;
         this.credentialsRepository = credentialsRepository;
+        this.factory = factory;
     }
 
     public AuthorizationResult processCallback(Callback callback) throws PermissionNotFoundException {
@@ -70,44 +67,43 @@ public class CallbackService {
                 outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REJECTED));
                 return new UnauthorizedResult(permissionId, PermissionProcessStatus.REJECTED);
             } else {
-                outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
-                return new ErrorResult(permissionId, error);
+                return createInvalidTokenResult(permissionId, error);
             }
         }
         var code = callback.code();
         if (code == null) {
             LOGGER.info("Permission request {} has no code", permissionId);
-            outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
-            return new ErrorResult(permissionId, "No code provided");
+            return createInvalidTokenResult(permissionId, "No code provided");
         }
 
-        var cdsServerId = pr.dataSourceInformation().cdsServerId();
-        return getToken(code, permissionId, pr, cdsServerId);
+        return getToken(code, permissionId, pr);
     }
 
     private AuthorizationResult getToken(
             String code,
             String permissionId,
-            CdsPermissionRequest pr,
-            Long cdsServerId
+            CdsPermissionRequest pr
     ) {
-        var cdsServer = cdsServerRepository.getReferenceById(cdsServerId);
-        var result = oAuthService.retrieveAccessToken(code, cdsServer);
+        var client = factory.get(pr);
+        var result = client.retrieveCustomerCredentials(code);
         return switch (result) {
             case CredentialsWithRefreshToken(String accessToken, String refreshToken, ZonedDateTime expiresAt) -> {
                 credentialsRepository.save(new OAuthCredentials(permissionId, refreshToken, accessToken, expiresAt));
                 outbox.commit(new AcceptedEvent(permissionId));
                 yield new AcceptedResult(permissionId, pr.dataNeedId());
             }
-            case InvalidTokenResult ignored -> {
-                outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
-                yield new ErrorResult(permissionId, "Could not retrieve access token");
-            }
+            case InvalidTokenResult ignored ->
+                    createInvalidTokenResult(permissionId, "Could not retrieve access token");
             case CredentialsWithoutRefreshToken(String accessToken, ZonedDateTime expiresAt) -> {
                 credentialsRepository.save(new OAuthCredentials(permissionId, null, accessToken, expiresAt));
                 outbox.commit(new AcceptedEvent(permissionId));
                 yield new AcceptedResult(permissionId, pr.dataNeedId());
             }
         };
+    }
+
+    private ErrorResult createInvalidTokenResult(String permissionId, String message) {
+        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
+        return new ErrorResult(permissionId, message);
     }
 }
