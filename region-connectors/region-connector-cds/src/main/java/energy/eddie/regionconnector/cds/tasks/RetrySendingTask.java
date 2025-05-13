@@ -40,7 +40,7 @@ public class RetrySendingTask {
             outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.VALIDATED));
             var cdsServerId = permissionRequest.dataSourceInformation().cdsServerId();
             var cdsServer = serverRepository.getReferenceById(cdsServerId);
-            LOGGER.info("Retrying sending permission request {} to {}", permissionId, cdsServer.name());
+            LOGGER.info("Retrying sending permission request {} to CDS server with ID '{}'", permissionId, cdsServer.id());
             authorizationService.createOAuthRequest(cdsServer, permissionId);
         }
     }
