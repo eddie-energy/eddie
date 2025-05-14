@@ -4,7 +4,7 @@ import energy.eddie.api.agnostic.outbound.RetransmissionOutboundConnector;
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
 import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
-import energy.eddie.outbound.shared.Endpoints;
+import energy.eddie.outbound.shared.TopicStructure;
 import energy.eddie.outbound.shared.serde.RetransmissionRequestMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ public class KafkaRetransmissionConnector implements RetransmissionOutboundConne
     @KafkaListener(
             groupId = "retransmission-group",
             id = "eddie-retransmission-listener",
-            topics = "${kafka.retransmission.topic:" + Endpoints.V0_91_08.RETRANSMISSIONS + "}",
+            topics = "fw.${outbound-connector.kafka.eddie-id}." + TopicStructure.CIM_0_91_08_VALUE + "." + TopicStructure.REDISTRIBUTION_TRANSACTION_RD_VALUE,
             containerFactory = "rtrEnvelopeListenerContainerFactory"
     )
     public void process(

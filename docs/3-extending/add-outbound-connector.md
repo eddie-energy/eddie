@@ -92,6 +92,75 @@ Currently, there are no cim documents defined for retransmission requests.
 So the internal `RetransmissionRequest` and
 `RetransmissionResult` can be used to send and receive retransmission requests.
 
+## General Topic Structure
+
+To be compatible with different kings of messaging infrastructure (Kafka, NATS, RabbitMQ, Pulsar) the topic names (or
+queues, streams, whatever it's named in the respective messaging infrastructure) are made of a prefix and a suffix.
+Depending on the actual messaging solution, they are composed differently.
+
+- **Prefix:** eddie.**&lt;direction>**, e.g. `eddie.ep`
+- **Suffix:** **&lt;datamodel/version>**.**&lt;topic>**, e.g. `cim_0_82.permission-md`
+
+Applied to the different solutions:
+
+- **Kafka:** Kafka-Topic: **&lt;Prefix>**.**&lt;Suffix>**, e.g. `eddie.ep.cim_0_82.permission-md`
+- **AMQP1.0 (out):** Topic: **&lt;Prefix>**.**&lt;Suffix>**, e.g.: `topic://eddie.ep.cim_0_82.permission-md`
+- **AMQP1.0 (in):** Queue: **&lt;Prefix>**.**&lt;Suffix>**, e.g.: `queue://eddie.fw.cim_0_82.termination-md`
+- **NATS:** Subject: **&lt;Prefix>**.**&lt;Suffix>**, e.g. `eddie.ep.cim_0_82.permission-md`
+- **Pulsar:** Tenant: configurable, using "eddie.app" as default; Namespace: **&lt;Prefix>**; Topic **&lt;Suffix>**,
+  e.g. `persistent://eddie.app/eddie.ep/cim_0_82.permission-md`
+
+**Topic names are composed of the following fields:**
+
+| Field         | Values             | Description                                                                           |
+|---------------|--------------------|---------------------------------------------------------------------------------------|
+| EDDIE-id      | eddie              | A constant prefix to group all eddie framework related topics                         |
+| direction     | ep / fw            | ep: message from the EDDIE fw to the elibible party app, fw: message for the EDDIE fw |
+| datamodel     | cim_0_82 / cim_1_0 | Datamodel combined with version                                                       |
+| document type | _see below_        | Type of document exchanged                                                            |
+
+## CIM Topic Structure
+
+**CIM Document types:**
+
+| Document type                 | Direction | Description                                                             |
+|-------------------------------|-----------|-------------------------------------------------------------------------|
+| termination-md                | fw        | used to terminate a connection / subscription                           |
+| permission-md                 | ep        | informs about changes of the current permission status                  |
+| accounting-point-md           | ep        | contains accounting point metadata from the MDA                         |
+| validated-historical-data-md  | ep        | contains validated historical consumption data (VHCD) from the MDA      |
+| redistribution-transaction-rd | ep        | contains VHCD updates to already received VHCD documents _cim_1_0 only_ |
+
+- _-md_: market document
+- _-rd_: request document
+
+### CIM 1.0 Kafka
+
+Kafka topics can be configured to allow for better integration into existing Kafka environments. The hash `#` at the
+beginning of the property name is a placeholder for the prefix `eddie.outbound.kafka.cim10`.
+
+| Spring Property                              | Default Kafka Topic                                      | Document Structure Link            |
+|----------------------------------------------|----------------------------------------------------------|------------------------------------|
+| `#.fw.cim_1_0.termination-md`                | `queue://eddie.fw.cim_1_0.termination-md`                | [termination-md](#)                |
+| `#.ep.cim_1_0.permission-md`                 | `queue://eddie.ep.cim_1_0.permission-md`                 | [permission-md](#)                 |
+| `#.ep.cim_1_0.accounting-point-md`           | `queue://eddie.ep.cim_1_0.accounting-point-md`           | [accounting-point-md](#)           |
+| `#.ep.cim_1_0.validated-historical-data-md`  | `queue://eddie.ep.cim_1_0.validated-historical-data-md`  | [validated-historical-data-md](#)  |
+| `#.ep.cim_1_0.redistribution-transaction-rd` | `queue://eddie.ep.cim_1_0.redistribution-transaction-rd` | [redistribution-transaction-rd](#) |
+
+### CIM 1.0 AMQP 1.0
+
+AMQP  topics can be configured to allow for better integration into specific AMQP brokers because the address syntax of queues and topics
+is broker dependent and not part of the AMQP 1.0 standard. The hash `#` at the beginning of the property name is a placeholder for the
+prefix `eddie.outbound.amqp10.cim10`.
+
+| Spring Property                              | Default AMQP 1.0 Address                         | Document Structure Link            |
+|----------------------------------------------|--------------------------------------------------|------------------------------------|
+| `#.fw.cim_1_0.termination-md`                | `eddie.fw.cim_1_0.termination-md`                | [termination-md](#)                |
+| `#.ep.cim_1_0.permission-md`                 | `eddie.ep.cim_1_0.permission-md`                 | [permission-md](#)                 |
+| `#.ep.cim_1_0.accounting-point-md`           | `eddie.ep.cim_1_0.accounting-point-md`           | [accounting-point-md](#)           |
+| `#.ep.cim_1_0.validated-historical-data-md`  | `eddie.ep.cim_1_0.validated-historical-data-md`  | [validated-historical-data-md](#)  |
+| `#.ep.cim_1_0.redistribution-transaction-rd` | `eddie.ep.cim_1_0.redistribution-transaction-rd` | [redistribution-transaction-rd](#) |
+
 ## Shared Functionality
 
 A lot of protocols have similar concepts, for example, AMQP's queue and Apache Kafka's topics.
@@ -100,7 +169,7 @@ It provides classes for consistent naming or serialization and deserialization(S
 
 ### Names
 
-To get the names for endpoints, which can be HTTP endpoints, AMQP Queues, or Kafka topics, the [Endpoints](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/Endpoints.html) class can be used.
+To get the names for endpoints, which can be HTTP endpoints, AMQP Queues, or Kafka topics, the [TopicStructure](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/TopicStructure.html) class can be used.
 For names for headers, such as HTTP headers, Kafka headers, or AMQP properties, the [Headers](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/Headers.html) class provides constants for that.
 Of course, the endpoints and headers are not limited to those values, but it should provide standard names for endpoints/headers which provide the same data.
 

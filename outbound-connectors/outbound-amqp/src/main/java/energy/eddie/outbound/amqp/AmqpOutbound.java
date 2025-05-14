@@ -13,8 +13,8 @@ import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundCo
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
-import energy.eddie.outbound.shared.Endpoints;
 import energy.eddie.outbound.shared.Headers;
+import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,40 +36,42 @@ public class AmqpOutbound implements
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpOutbound.class);
     private final Publisher publisher;
     private final MessageSerde serde;
+    private final TopicConfiguration config;
 
-    public AmqpOutbound(Connection connection, MessageSerde serde) {
+    public AmqpOutbound(Connection connection, MessageSerde serde, TopicConfiguration config) {
         publisher = connection.publisherBuilder().build();
         this.serde = serde;
+        this.config = config;
     }
 
     @Override
     public void setConnectionStatusMessageStream(Flux<ConnectionStatusMessage> connectionStatusMessageStream) {
         connectionStatusMessageStream
-                .subscribe(publish(Endpoints.Agnostic.CONNECTION_STATUS_MESSAGE, AmqpOutbound::toHeaders));
+                .subscribe(publish(config.connectionStatusMessage(), AmqpOutbound::toHeaders));
     }
 
     @Override
     public void setRawDataStream(Flux<RawDataMessage> rawDataStream) {
         rawDataStream
-                .subscribe(publish(Endpoints.Agnostic.RAW_DATA_IN_PROPRIETARY_FORMAT, AmqpOutbound::toHeaders));
+                .subscribe(publish(config.rawDataMessage(), AmqpOutbound::toHeaders));
     }
 
     @Override
     public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
         permissionMarketDocumentStream
-                .subscribe(publish(Endpoints.V0_82.PERMISSION_MARKET_DOCUMENTS, AmqpOutbound::toHeaders));
+                .subscribe(publish(config.permissionMarketDocument(), AmqpOutbound::toHeaders));
     }
 
     @Override
     public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
         marketDocumentStream
-                .subscribe(publish(Endpoints.V0_82.ACCOUNTING_POINT_MARKET_DOCUMENTS, AmqpOutbound::toHeaders));
+                .subscribe(publish(config.accountingPointMarketDocument(), AmqpOutbound::toHeaders));
     }
 
 
     @Override
     public void setEddieValidatedHistoricalDataMarketDocumentStream(Flux<ValidatedHistoricalDataEnvelope> marketDocumentStream) {
-        marketDocumentStream.subscribe(publish(Endpoints.V0_82.VALIDATED_HISTORICAL_DATA, AmqpOutbound::toHeaders));
+        marketDocumentStream.subscribe(publish(config.validatedHistoricalDataMarketDocument(), AmqpOutbound::toHeaders));
     }
 
     @Override

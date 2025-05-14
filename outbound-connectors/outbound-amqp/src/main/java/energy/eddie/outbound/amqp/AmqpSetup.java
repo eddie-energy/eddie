@@ -1,29 +1,29 @@
 package energy.eddie.outbound.amqp;
 
 import com.rabbitmq.client.amqp.Connection;
-import energy.eddie.outbound.shared.Endpoints;
-
-import java.util.List;
+import energy.eddie.outbound.shared.TopicConfiguration;
 
 public class AmqpSetup {
-    private static final List<String> EXCHANGE_AND_QUEUE_NAMES = List.of(
-            Endpoints.Agnostic.CONNECTION_STATUS_MESSAGE,
-            Endpoints.Agnostic.RAW_DATA_IN_PROPRIETARY_FORMAT,
-            Endpoints.V0_82.PERMISSION_MARKET_DOCUMENTS,
-            Endpoints.V0_82.VALIDATED_HISTORICAL_DATA,
-            Endpoints.V0_82.ACCOUNTING_POINT_MARKET_DOCUMENTS,
-            Endpoints.V0_82.TERMINATIONS,
-            Endpoints.V0_91_08.RETRANSMISSIONS
-    );
     private final Connection connection;
+    private final TopicConfiguration configuration;
 
-    public AmqpSetup(Connection connection) {
+    public AmqpSetup(Connection connection, TopicConfiguration configuration) {
         this.connection = connection;
+        this.configuration = configuration;
     }
 
     public void buildTopology() {
+        var topics = new String[]{
+                configuration.rawDataMessage(),
+                configuration.connectionStatusMessage(),
+                configuration.permissionMarketDocument(),
+                configuration.accountingPointMarketDocument(),
+                configuration.validatedHistoricalDataMarketDocument(),
+                configuration.terminationMarketDocument(),
+                configuration.redistributionTransactionRequestDocument()
+        };
         try (var management = connection.management()) {
-            for (var name : EXCHANGE_AND_QUEUE_NAMES) {
+            for (var name : topics) {
                 management.exchange(name)
                           .declare();
                 management.queue(name)

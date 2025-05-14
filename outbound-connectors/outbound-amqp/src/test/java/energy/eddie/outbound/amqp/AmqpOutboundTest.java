@@ -9,8 +9,8 @@ import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderComplexType;
 import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
-import energy.eddie.outbound.shared.Endpoints;
 import energy.eddie.outbound.shared.Headers;
+import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.serde.XmlMessageSerde;
 import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.junit.jupiter.api.*;
@@ -32,6 +32,7 @@ class AmqpOutboundTest {
                                                                                                   "at-eda",
                                                                                                   "paid",
                                                                                                   "mdaid");
+    private final TopicConfiguration config = new TopicConfiguration("eddie");
     private Connection connection;
     private AmqpOutbound amqpOutbound;
 
@@ -48,8 +49,10 @@ class AmqpOutboundTest {
     @BeforeEach
     void setUp() throws Exception {
         var connector = new AmqpOutboundConnector();
-        connection = connector.connection(connector.amqpEnvironment(), rabbit.getAmqpUrl());
-        amqpOutbound = new AmqpOutbound(connection, new XmlMessageSerde());
+        connection = connector.connection(connector.amqpEnvironment(),
+                                          rabbit.getAmqpUrl(),
+                                          config);
+        amqpOutbound = new AmqpOutbound(connection, new XmlMessageSerde(), config);
     }
 
     @AfterEach
@@ -74,7 +77,7 @@ class AmqpOutboundTest {
 
         // Then
         var consumer = connection.consumerBuilder()
-                                 .queue(Endpoints.Agnostic.CONNECTION_STATUS_MESSAGE)
+                                 .queue(config.connectionStatusMessage())
                                  .messageHandler((ctx, msg) -> {
                                      assertAll(
                                              () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
@@ -109,7 +112,7 @@ class AmqpOutboundTest {
 
         // Then
         var consumer = connection.consumerBuilder()
-                                 .queue(Endpoints.Agnostic.RAW_DATA_IN_PROPRIETARY_FORMAT)
+                                 .queue(config.rawDataMessage())
                                  .messageHandler((ctx, msg) -> {
                                      assertAll(
                                              () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
@@ -148,7 +151,7 @@ class AmqpOutboundTest {
 
         // Then
         var consumer = connection.consumerBuilder()
-                                 .queue(Endpoints.V0_82.PERMISSION_MARKET_DOCUMENTS)
+                                 .queue(config.permissionMarketDocument())
                                  .messageHandler((ctx, msg) -> {
                                      assertAll(
                                              () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
@@ -187,7 +190,7 @@ class AmqpOutboundTest {
 
         // Then
         var consumer = connection.consumerBuilder()
-                                 .queue(Endpoints.V0_82.ACCOUNTING_POINT_MARKET_DOCUMENTS)
+                                 .queue(config.accountingPointMarketDocument())
                                  .messageHandler((ctx, msg) -> {
                                      assertAll(
                                              () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
@@ -226,7 +229,7 @@ class AmqpOutboundTest {
 
         // Then
         var consumer = connection.consumerBuilder()
-                                 .queue(Endpoints.V0_82.VALIDATED_HISTORICAL_DATA)
+                                 .queue(config.validatedHistoricalDataMarketDocument())
                                  .messageHandler((ctx, msg) -> {
                                      assertAll(
                                              () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),

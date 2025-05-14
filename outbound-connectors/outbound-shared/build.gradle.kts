@@ -20,6 +20,7 @@ dependencies {
     implementation(libs.jackson.dataformat.xml)
     implementation(libs.jackson.jakarta.xmlbind.annotations)
     implementation(libs.jackson.core)
+    implementation(libs.jakarta.annotation.api)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(platform(libs.junit.bom))

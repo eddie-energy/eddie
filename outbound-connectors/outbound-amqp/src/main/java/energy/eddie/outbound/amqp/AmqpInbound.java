@@ -10,7 +10,7 @@ import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
-import energy.eddie.outbound.shared.Endpoints;
+import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.serde.DeserializationException;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.RetransmissionRequestMapper;
@@ -33,13 +33,13 @@ public class AmqpInbound implements TerminationConnector, RetransmissionOutbound
                                                                                   .onBackpressureBuffer();
     private final MessageSerde serde;
 
-    public AmqpInbound(Connection connection, MessageSerde serde) {
+    public AmqpInbound(Connection connection, MessageSerde serde, TopicConfiguration config) {
         terminationsConsumer = connection.consumerBuilder()
-                                         .queue(Endpoints.V0_82.TERMINATIONS)
+                                         .queue(config.terminationMarketDocument())
                                          .messageHandler(this::consumeTerminationDocuments)
                                          .build();
         retransmissionRequestsConsumer = connection.consumerBuilder()
-                                                   .queue(Endpoints.V0_91_08.RETRANSMISSIONS)
+                                                   .queue(config.redistributionTransactionRequestDocument())
                                                    .messageHandler(this::consumeRetransmissionRequests)
                                                    .build();
         this.serde = serde;
