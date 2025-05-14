@@ -21,6 +21,7 @@ jobs:
         run: ./gradlew pnpmBuildDocs
       - name: Deploy docs to webserver
         uses: eddie-energy/ftp-deploy-action@main
+        timeout-minutes: 5
         with:
           host: ${{ secrets.WEBSERVER_SFTP_HOST }}
           password: ${{ secrets.WEBSERVER_SFTP_PASSWORD }}
