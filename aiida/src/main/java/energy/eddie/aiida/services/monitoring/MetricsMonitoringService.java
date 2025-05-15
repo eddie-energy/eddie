@@ -15,8 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class MetricsMonitoringService {
@@ -24,8 +26,8 @@ public class MetricsMonitoringService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MetricsMonitoringService.class);
 
     private static final String SERVICE_NAME_AGENT = "aiida-agent";
-    private static final String HOST_METRICS_PATH = "/host-metrics";
-    private static final String SERVICE_METRICS_PATH = "/service-metrics";
+    private static final String HOST_METRICS_PATH = "/metrics/host";
+    private static final String SERVICE_METRICS_PATH = "/metrics/services";
 
     private final MonitoringAgentConfiguration config;
     private final RestTemplate restTemplate;
@@ -46,8 +48,31 @@ public class MetricsMonitoringService {
     }
 
     public Optional<List<ServiceMetrics>> getServiceMetrics() {
-        return fetchList(config.host() + SERVICE_METRICS_PATH, new ParameterizedTypeReference<>() {});
+        //return fetchList(config.host() + SERVICE_METRICS_PATH, new ParameterizedTypeReference<>() {});
+        double randomCpu = ThreadLocalRandom.current().nextDouble(1, 20); // e.g. 0.031
+        double randomMemory = ThreadLocalRandom.current().nextDouble(1, 20); // 0.35
+        double randomNetIn = ThreadLocalRandom.current().nextDouble(20_000, 25000); // Bps
+        double randomNetOut = ThreadLocalRandom.current().nextDouble(5_000, 7_000); // Bps
+
+        ServiceMetrics demo = new ServiceMetrics(
+                ZonedDateTime.now(),
+                "aiida-core-service-7c8987676f-mrlgq",
+                "Running",
+                randomCpu,
+                "%",
+                randomMemory,
+                "%",
+                randomNetOut,
+                "Bps",
+                randomNetIn,
+                "Bps",
+                98.5,
+                "%"
+        );
+
+        return Optional.of(List.of(demo));
     }
+
 
     private <T> Optional<T> fetch(String url, Class<T> responseType) {
         try {
