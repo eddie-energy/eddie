@@ -3,7 +3,7 @@ package energy.eddie.outbound.kafka.v0_91_08;
 import energy.eddie.api.agnostic.outbound.RetransmissionOutboundConnector;
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
+import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.outbound.shared.TopicStructure;
 import energy.eddie.outbound.shared.serde.RetransmissionRequestMapper;
 import org.slf4j.Logger;

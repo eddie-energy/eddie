@@ -49,7 +49,7 @@ public class XmlValidator {
 
     public static boolean validateRtrEnvelope(String xml) {
         var xsd = XmlValidator.class.getResource(
-                "/cim/xsd/v0_91_08/retransmission/RedistributionTransactionRequest Document_Annotated.xsd"
+                "/cim/xsd/v0_91_08/RedistributionTransactionRequest Document_Annotated.xsd"
         );
         return validateXMLSchema(xsd, xml);
     }

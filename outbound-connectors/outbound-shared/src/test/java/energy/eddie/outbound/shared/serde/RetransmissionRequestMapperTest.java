@@ -1,7 +1,7 @@
 package energy.eddie.outbound.shared.serde;
 
-import energy.eddie.cim.v0_91_08.retransmission.ESMPDateTimeInterval;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
+import energy.eddie.cim.v0_91_08.ESMPDateTimeInterval;
+import energy.eddie.cim.v0_91_08.RTREnvelope;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.datatype.DatatypeFactory;

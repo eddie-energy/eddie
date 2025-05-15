@@ -17,7 +17,7 @@ plugins {
 group = "energy.eddie"
 version = "0.0.0"
 
-val cimVersion: String = "0.0.0"
+val cimVersion: String = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -133,18 +133,16 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
                     "-extension", "-Xfluent-api", "-Xannotate"
                 )
             }
-            try {
-                val stdOut = execution.standardOutput.asText
-                if (stdOut.isPresent) {
-                    logger.log(LogLevel.INFO, stdOut.get())
-                }
-                val stdError = execution.standardError.asText
-                if (stdError.isPresent) {
-                    logger.log(LogLevel.WARN, stdError.get())
-                }
-            } catch (e: Exception) {
-                logger.log(LogLevel.ERROR, e.message)
+            val stdOut = execution.standardOutput?.asText?.get()
+            stdOut.let {
+                logger.log(LogLevel.INFO, it)
             }
+            val stdError = execution.standardError?.asText?.get()
+            stdError.let {
+                logger.log(LogLevel.INFO, it)
+            }
+            if (execution.result.get().exitValue != 0)
+                throw RuntimeException(execution.result.get().toString())
         }
     }
 }
