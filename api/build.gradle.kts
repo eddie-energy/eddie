@@ -101,7 +101,7 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
         file(generatedXJCJavaDir).mkdirs()
         val xsdToGenerate = ArrayList<Triple<File, File, File>>()
         // Copy all files first, so they exist in the target directory
-        for(path in Path(cimSchemaFiles.path).walk()) {
+        for (path in Path(cimSchemaFiles.path).walk()) {
             val srcFile = path.toFile()
             if (!srcFile.isFile || srcFile.extension != xsdExtension) {
                 continue
@@ -113,12 +113,10 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
                 srcFile.parentFile.resolve(xjbFileBasename).relativeTo(cimSchemaFiles)
             )
             // generate the bindings file
-            logger.log(LogLevel.WARN, "Generating bindings for ${srcFile.name}")
+            logger.log(LogLevel.INFO, "Generating bindings for ${srcFile.name}")
             generateBindingsFile(srcFile, xjbFile.absolutePath)
-            logger.log(LogLevel.WARN, "Generated bindings for ${srcFile.name}")
             xsdToGenerate.add(Triple(srcFile, tmpSrcFile, xjbFile))
         }
-        logger.log(LogLevel.WARN, "Copied and generated all files $xsdToGenerate")
         xsdToGenerate.forEach { files: Triple<File, File, File> ->
             val srcFile = files.first
             val tmpSrcFile = files.second
@@ -128,8 +126,8 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
             } else {
                 "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
             }
-            logger.log(LogLevel.WARN, "Generating for ${tmpSrcFile.name}")
-            exec {
+            logger.log(LogLevel.INFO, "Generating for ${tmpSrcFile.name}")
+            val execution = providers.exec {
                 executable(Path(System.getProperty("java.home"), "bin", "java"))
                 val classpath = jaxb.resolve().joinToString(File.pathSeparator)
                 args(
@@ -141,6 +139,17 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
                     "-mark-generated", "-npa", "-encoding", "UTF-8",
                     "-extension", "-Xfluent-api", "-Xannotate"
                 )
+            }
+            val res = execution.result.get()
+            val stdOut = execution.standardOutput.asText
+            if (stdOut.isPresent) {
+                logger.log(LogLevel.LIFECYCLE, stdOut.get())
+            }
+            if(res.exitValue != 0) {
+                val stdError = execution.standardError.asText
+                if (stdError.isPresent) {
+                    logger.log(LogLevel.WARN, stdError.get())
+                }
             }
         }
     }
