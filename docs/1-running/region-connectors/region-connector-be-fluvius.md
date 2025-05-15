@@ -24,6 +24,7 @@ depends on the way you deploy the region connector.
 | `region-connector.be.fluvius.subscription-key`       | The subscription key to access the API, provided by Fluvius.                                                                                                     |
 | `region-connector.be.fluvius.contract-number`        | Contract number to create permission requests via Fluvius' API, provided by Fluvius.                                                                             |
 | `region-connector.be.fluvius.mock-mandates`          | Is either `true` or `false`. Set to `true` if the sandbox environment provided by Fluvius is used. Can be used to test the region-connector against the sandbox. |
+| `region-connector.be.fluvius.redirect-uri`           | The redirect uri that's used for success and error redirects by fluvius.                                                                                         |
 | `region-connector.be.fluvius.retry`                  | Configures when a failed to send permission request should be retried. Uses Spring Cron syntax. Default is `0 0 * * * *`.                                        |
 | `region-connector.be.fluvius.check-acceptance`       | Configures when the region-connector should check for acceptance of permission requests. Uses Spring Cron syntax. Default is `0 0 * * * *`.                      |
 | `spring.ssl.bundle.pem.fluvius.keystore.certificate` | Specify the public part of the certificate that was allowlisted by Fluvius.                                                                                      |
@@ -45,6 +46,7 @@ region-connector.be.fluvius.oauth.scope=REPLACE_ME
 region-connector.be.fluvius.subscription-key=REPLACE_ME
 region-connector.be.fluvius.contract-number=REPLACE_ME
 region-connector.be.fluvius.mock-mandates=false
+region-connector.be.fluvius.redirect-uri=${eddie.public.url}
 region-connector.be.fluvius.retry=0 0 * * * *
 region-connector.be.fluvius.check-acceptance=0 0 * * * *
 spring.ssl.bundle.pem.fluvius.keystore.certificate=/path/to/certificate.cer
