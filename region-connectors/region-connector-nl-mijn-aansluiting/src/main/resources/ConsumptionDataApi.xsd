@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.com/consumption"
+           xmlns="http://example.com/consumption"
+           elementFormDefault="qualified">
+
+    <!-- Root Element for Response Array -->
+    <xs:element name="ConsumptionDataList">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ConsumptionData" type="ConsumptionData" maxOccurs="100000"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ConsumptionData complex type -->
+    <xs:complexType name="ConsumptionData">
+        <xs:sequence>
+            <xs:element name="supplierEanCode" type="EANCode" minOccurs="0"/>
+            <xs:element name="supplierName" type="xs:string"/>
+            <xs:element name="productType" type="ProductType" minOccurs="0"/>
+            <xs:element name="energyFlowDirection" type="EnergyFlowDirection" minOccurs="0"/>
+            <xs:element name="sjaOffPeak" type="xs:long" minOccurs="0"/>
+            <xs:element name="sjaPeak" type="xs:long" minOccurs="0"/>
+            <xs:element name="sjiOffPeak" type="xs:long" minOccurs="0"/>
+            <xs:element name="sjiPeak" type="xs:long" minOccurs="0"/>
+            <xs:element name="energyMeterType" type="EnergyMeterType" minOccurs="0"/>
+            <xs:element name="numberOfRegisters" type="xs:int" minOccurs="0"/>
+            <xs:element name="contractEndDate" type="xs:date" minOccurs="0"/>
+            <xs:element name="subtype" type="Subtype" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ErrorResponse type -->
+    <xs:complexType name="ErrorResponse">
+        <xs:sequence>
+            <xs:element name="error" type="xs:string"/>
+            <xs:element name="errorDescription" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Custom simple types -->
+
+    <xs:simpleType name="EANCode">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="8\d{12}"/>
+            <xs:maxLength value="13"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ProductType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ELK"/>
+            <xs:enumeration value="GAS"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="EnergyFlowDirection">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="LVR"/>
+            <xs:enumeration value="TLV"/>
+            <xs:enumeration value="CMB"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="EnergyMeterType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="CVN"/>
+            <xs:enumeration value="SLM"/>
+            <xs:pattern value="[A-Z]{3}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="Subtype">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="GWN"/>
+            <xs:enumeration value="ABR"/>
+            <xs:enumeration value="AFV"/>
+            <xs:pattern value="[A-Z]{3}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>
