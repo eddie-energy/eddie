@@ -76,14 +76,14 @@ public class EnerginetPermissionRequest implements DkEnerginetPermissionRequest 
             Granularity granularity,
             @Nullable String accessToken,
             PermissionProcessStatus status,
-            ZonedDateTime created
+            ZonedDateTime created,
+            @Nullable LocalDate latestMeterReadingEndDate
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.accessToken = accessToken;
         this.meteringPoint = meteringPoint;
         this.dataNeedId = dataNeedId;
-        this.latestMeterReadingEndDate = null;
         this.refreshToken = refreshToken;
         this.start = start;
         this.end = end;
@@ -91,6 +91,7 @@ public class EnerginetPermissionRequest implements DkEnerginetPermissionRequest 
         this.status = status;
         this.created = created;
         this.errors = null;
+        this.latestMeterReadingEndDate = latestMeterReadingEndDate;
     }
 
     @Override

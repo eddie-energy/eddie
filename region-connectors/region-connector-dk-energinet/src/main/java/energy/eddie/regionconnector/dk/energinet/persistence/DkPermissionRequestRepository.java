@@ -16,9 +16,4 @@ public interface DkPermissionRequestRepository
         StatusPermissionRequestRepository<DkEnerginetPermissionRequest> {
     List<DkEnerginetPermissionRequest> findAllByStatus(PermissionProcessStatus status);
 
-    RefreshToken getRefreshTokenByPermissionId(String permissionId);
-
-    interface RefreshToken {
-        String getRefreshToken();
-    }
 }

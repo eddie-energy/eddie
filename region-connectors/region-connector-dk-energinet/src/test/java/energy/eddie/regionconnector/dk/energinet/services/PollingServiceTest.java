@@ -2,7 +2,11 @@ package energy.eddie.regionconnector.dk.energinet.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.dk.energinet.EnerginetBeanConfig;
@@ -36,7 +40,6 @@ import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -45,6 +48,7 @@ import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static energy.eddie.regionconnector.dk.energinet.services.PollingService.REQUESTED_AGGREGATION_UNAVAILABLE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -63,16 +67,6 @@ class PollingServiceTest {
     @Captor
     private ArgumentCaptor<DkInternalPollingEvent> pollingEventCaptor;
     private PollingService pollingService;
-
-    private static Stream<Arguments> granularityCombinations() {
-        return Stream.of(
-                Arguments.of(Granularity.PT1H, Granularity.PT1H, Granularity.PT15M, Granularity.P1Y),
-                Arguments.of(Granularity.PT15M, Granularity.P1D, Granularity.P1D, Granularity.P1M),
-                Arguments.of(Granularity.PT15M, Granularity.P1M, Granularity.P1M, Granularity.P1M),
-                Arguments.of(Granularity.PT15M, Granularity.P1Y, Granularity.P1Y, Granularity.P1Y),
-                Arguments.of(Granularity.PT1H, Granularity.P1M, Granularity.P1M, Granularity.P1Y)
-        );
-    }
 
     @BeforeEach
     @SuppressWarnings("DirectInvocationOnMock")
@@ -110,7 +104,7 @@ class PollingServiceTest {
                                                                        .setGranularity(Granularity.PT1H)
                                                                        .setAccessToken(null)
                                                                        .setStatus(PermissionProcessStatus.ACCEPTED)
-                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .setCreated(ZonedDateTime.now(DK_ZONE_ID))
                                                                        .build();
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
                                                                                     "",
@@ -148,7 +142,7 @@ class PollingServiceTest {
                                                                        .setGranularity(null)
                                                                        .setAccessToken(null)
                                                                        .setStatus(PermissionProcessStatus.ACCEPTED)
-                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .setCreated(ZonedDateTime.now(DK_ZONE_ID))
                                                                        .build();
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
@@ -203,7 +197,7 @@ class PollingServiceTest {
                                                                        .setGranularity(null)
                                                                        .setAccessToken(null)
                                                                        .setStatus(PermissionProcessStatus.ACCEPTED)
-                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .setCreated(ZonedDateTime.now(DK_ZONE_ID))
                                                                        .build();
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
@@ -269,7 +263,7 @@ class PollingServiceTest {
                                                                        .setGranularity(Granularity.PT15M)
                                                                        .setAccessToken(null)
                                                                        .setStatus(PermissionProcessStatus.ACCEPTED)
-                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .setCreated(ZonedDateTime.now(DK_ZONE_ID))
                                                                        .build();
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
@@ -315,7 +309,7 @@ class PollingServiceTest {
                                                                        .setGranularity(Granularity.PT1H)
                                                                        .setAccessToken(null)
                                                                        .setStatus(PermissionProcessStatus.ACCEPTED)
-                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .setCreated(ZonedDateTime.now(DK_ZONE_ID))
                                                                        .build();
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                                                                                     "",
@@ -353,7 +347,7 @@ class PollingServiceTest {
                                                                        .setGranularity(Granularity.PT1H)
                                                                        .setAccessToken(null)
                                                                        .setStatus(PermissionProcessStatus.ACCEPTED)
-                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .setCreated(ZonedDateTime.now(DK_ZONE_ID))
                                                                        .build();
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
@@ -363,9 +357,9 @@ class PollingServiceTest {
                                                                  Granularity.PT1H.name())))
                                                          .periodTimeInterval(new PeriodtimeInterval()
                                                                                      .start(start.atStartOfDay(
-                                                                                             ZoneOffset.UTC).format(
+                                                                                             DK_ZONE_ID).format(
                                                                                              DateTimeFormatter.ISO_DATE_TIME))
-                                                                                     .end(end.atStartOfDay(ZoneOffset.UTC)
+                                                                                     .end(end.atStartOfDay(DK_ZONE_ID)
                                                                                              .format(DateTimeFormatter.ISO_DATE_TIME)))
         );
         MyEnergyDataMarketDocumentResponseListApiResponse data = new MyEnergyDataMarketDocumentResponseListApiResponse()
@@ -415,7 +409,7 @@ class PollingServiceTest {
                                                                        .setGranularity(Granularity.PT1H)
                                                                        .setAccessToken(accessToken)
                                                                        .setStatus(PermissionProcessStatus.ACCEPTED)
-                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .setCreated(ZonedDateTime.now(DK_ZONE_ID))
                                                                        .build();
 
         // When
@@ -425,5 +419,123 @@ class PollingServiceTest {
         StepVerifier.create(pollingService.identifiableMeterReadings())
                     .then(pollingService::close)
                     .verifyComplete();
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void isActiveAndNeedsToBeFetched_forInvalidDataNeed_returnsFalse(DataNeed dataNeed) {
+        // Given
+        var pr = new EnerginetPermissionRequestBuilder()
+                .setDataNeedId("dnid")
+                .build();
+        when(dataNeedsService.findById("dnid")).thenReturn(Optional.ofNullable(dataNeed));
+
+        // When
+        var res = pollingService.isActiveAndNeedsToBeFetched(pr);
+
+        // Then
+        assertThat(res).isFalse();
+    }
+
+    @Test
+    void isActiveAndNeedsToBeFetched_inactivePermissionRequest_returnsFalse() {
+        // Given
+        var start = LocalDate.now(DK_ZONE_ID).plusDays(1);
+        var pr = new EnerginetPermissionRequestBuilder()
+                .setDataNeedId("dnid")
+                .setStart(start)
+                .build();
+        var dn = new ValidatedHistoricalDataDataNeed(
+                new RelativeDuration(null, null, null),
+                EnergyType.ELECTRICITY,
+                Granularity.PT5M,
+                Granularity.P1Y
+        );
+        when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(dn));
+
+        // When
+        var res = pollingService.isActiveAndNeedsToBeFetched(pr);
+
+        // Then
+        assertThat(res).isFalse();
+    }
+
+    @Test
+    void isActiveAndNeedsToBeFetched_alreadyPolledPermissionRequest_returnsFalse() {
+        // Given
+        var today = LocalDate.now(DK_ZONE_ID);
+        var tomorrow = today.plusDays(1);
+        var pr = new EnerginetPermissionRequestBuilder()
+                .setDataNeedId("dnid")
+                .setStart(today)
+                .setLatestMeterReadingEndDate(tomorrow)
+                .build();
+        var dn = new ValidatedHistoricalDataDataNeed(
+                new RelativeDuration(null, null, null),
+                EnergyType.ELECTRICITY,
+                Granularity.PT5M,
+                Granularity.P1Y
+        );
+        when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(dn));
+
+        // When
+        var res = pollingService.isActiveAndNeedsToBeFetched(pr);
+
+        // Then
+        assertThat(res).isFalse();
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void isActiveAndNeedsToBeFetched_readyToPollPermissionRequest_returnsTrue(LocalDate latestMeterReadingEndDate) {
+        // Given
+        var yesterday = LocalDate.now(DK_ZONE_ID).minusDays(1);
+        var pr = new EnerginetPermissionRequestBuilder()
+                .setDataNeedId("dnid")
+                .setStart(yesterday)
+                .setLatestMeterReadingEndDate(latestMeterReadingEndDate)
+                .build();
+        var dn = new ValidatedHistoricalDataDataNeed(
+                new RelativeDuration(null, null, null),
+                EnergyType.ELECTRICITY,
+                Granularity.PT5M,
+                Granularity.P1Y
+        );
+        when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(dn));
+
+        // When
+        var res = pollingService.isActiveAndNeedsToBeFetched(pr);
+
+        // Then
+        assertThat(res).isTrue();
+    }
+
+    @SuppressWarnings("unused") // Errorprone has problems with private method source methods
+    private static Stream<Arguments> isActiveAndNeedsToBeFetched_readyToPollPermissionRequest_returnsTrue() {
+        var today = LocalDate.now(DK_ZONE_ID);
+        return Stream.of(
+                Arguments.of(today),
+                Arguments.of(today.minusDays(1)),
+                Arguments.of((Object) null)
+        );
+    }
+
+    @SuppressWarnings("unused") // Errorprone has problems with private method source methods
+    private static Stream<Arguments> isActiveAndNeedsToBeFetched_forInvalidDataNeed_returnsFalse() {
+        return Stream.of(
+                Arguments.of(new AccountingPointDataNeed()),
+                Arguments.of((Object) null)
+        );
+    }
+
+    @SuppressWarnings("unused") // Errorprone has problems with private method source methods
+    private static Stream<Arguments> granularityCombinations() {
+        return Stream.of(
+                Arguments.of(Granularity.PT1H, Granularity.PT1H, Granularity.PT15M, Granularity.P1Y),
+                Arguments.of(Granularity.PT15M, Granularity.P1D, Granularity.P1D, Granularity.P1M),
+                Arguments.of(Granularity.PT15M, Granularity.P1M, Granularity.P1M, Granularity.P1M),
+                Arguments.of(Granularity.PT15M, Granularity.P1Y, Granularity.P1Y, Granularity.P1Y),
+                Arguments.of(Granularity.PT1H, Granularity.P1M, Granularity.P1M, Granularity.P1Y)
+        );
     }
 }
