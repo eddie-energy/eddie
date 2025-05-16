@@ -7,7 +7,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerA
 import energy.eddie.regionconnector.dk.energinet.permission.events.DKValidatedEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkAcceptedEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
@@ -32,7 +32,6 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -92,17 +91,10 @@ class SendingEventHandlerTest {
     void testAccept_emitsAcceptedOnSuccessResponse() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new EnerginetPermissionRequest("pid",
-                                                "cid",
-                                                "dnid",
-                                                "mid",
-                                                "refresh",
-                                                now,
-                                                now,
-                                                Granularity.PT1H,
-                                                null,
-                                                PermissionProcessStatus.VALIDATED,
-                                                ZonedDateTime.now(ZoneOffset.UTC));
+        var pr = new EnerginetPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setRefreshToken("refresh")
+                .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         when(customerApi.accessToken("refresh"))
@@ -123,17 +115,10 @@ class SendingEventHandlerTest {
     void testAccept_emitsErrorEvent(Throwable throwable, PermissionProcessStatus status) {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new EnerginetPermissionRequest("pid",
-                                                "cid",
-                                                "dnid",
-                                                "mid",
-                                                "refresh",
-                                                now,
-                                                now,
-                                                Granularity.PT1H,
-                                                null,
-                                                PermissionProcessStatus.VALIDATED,
-                                                ZonedDateTime.now(ZoneOffset.UTC));
+        var pr = new EnerginetPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setRefreshToken("refresh")
+                .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         when(customerApi.accessToken("refresh"))

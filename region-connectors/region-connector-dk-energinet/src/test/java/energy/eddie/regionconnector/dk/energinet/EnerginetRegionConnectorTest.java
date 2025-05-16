@@ -1,8 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
@@ -11,9 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -54,19 +50,10 @@ class EnerginetRegionConnectorTest {
     @Test
     void terminatePermission_withExistingPermissionId_terminates() {
         // Given
-        var permissionRequest = new EnerginetPermissionRequest(
-                "pid",
-                "cid",
-                "dataNeedId",
-                "meteringPointId",
-                "refreshToken",
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                Granularity.P1D,
-                "accessToken",
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .build();
         when(repository.findByPermissionId(anyString())).thenReturn(Optional.of(permissionRequest));
 
         // When
@@ -79,19 +66,10 @@ class EnerginetRegionConnectorTest {
     @Test
     void terminatePermission_withWrongState_doesNotThrow() {
         // Given
-        var request = new EnerginetPermissionRequest(
-                "pid",
-                "cid",
-                "dataNeedId",
-                "meteringPointId",
-                "refreshToken",
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                Granularity.P1D,
-                "accessToken",
-                PermissionProcessStatus.CREATED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var request = new EnerginetPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStatus(PermissionProcessStatus.CREATED)
+                .build();
         when(repository.findByPermissionId(anyString())).thenReturn(Optional.of(request));
 
         // When

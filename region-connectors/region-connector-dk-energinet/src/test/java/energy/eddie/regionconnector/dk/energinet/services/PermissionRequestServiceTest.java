@@ -4,7 +4,7 @@ import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,19 +46,16 @@ class PermissionRequestServiceTest {
         var permissionId = "a0ec0288-7eaf-4aa2-8387-77c6413cfd31";
         var connectionId = "connId";
         var dataNeedId = "dataNeedId";
-        var permissionRequest = new EnerginetPermissionRequest(
-                permissionId,
-                connectionId,
-                dataNeedId,
-                "meteringPointId",
-                "refreshToken",
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                Granularity.P1D,
-                "accessToken",
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder().setPermissionId(permissionId)
+                                                                       .setConnectionId(connectionId)
+                                                                       .setDataNeedId(dataNeedId)
+                                                                       .setMeteringPoint("meteringPointId")
+                                                                       .setStart(LocalDate.now(ZoneOffset.UTC))
+                                                                       .setEnd(LocalDate.now(ZoneOffset.UTC))
+                                                                       .setGranularity(Granularity.P1D)
+                                                                       .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .build();
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
 
         // When

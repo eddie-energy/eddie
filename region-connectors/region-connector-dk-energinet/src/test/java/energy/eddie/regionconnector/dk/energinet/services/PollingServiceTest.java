@@ -11,7 +11,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalGranularityEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalPollingEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
@@ -100,19 +100,18 @@ class PollingServiceTest {
         var dataNeedId = "dataNeedId";
         var refreshToken = "token";
         var meteringPoint = "meteringPoint";
-        var permissionRequest = new EnerginetPermissionRequest(
-                UUID.randomUUID().toString(),
-                connectionId,
-                dataNeedId,
-                meteringPoint,
-                refreshToken,
-                start,
-                end,
-                Granularity.PT1H,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder().setPermissionId(UUID.randomUUID().toString())
+                                                                       .setConnectionId(connectionId)
+                                                                       .setDataNeedId(dataNeedId)
+                                                                       .setMeteringPoint(meteringPoint)
+                                                                       .setRefreshToken(refreshToken)
+                                                                       .setStart(start)
+                                                                       .setEnd(end)
+                                                                       .setGranularity(Granularity.PT1H)
+                                                                       .setAccessToken(null)
+                                                                       .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .build();
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
                                                                                     "",
                                                                                     HttpHeaders.EMPTY,
@@ -139,19 +138,18 @@ class PollingServiceTest {
         var dataNeedId = "dataNeedId";
         var refreshToken = "token";
         var meteringPoint = "meteringPoint";
-        var permissionRequest = new EnerginetPermissionRequest(
-                UUID.randomUUID().toString(),
-                connectionId,
-                dataNeedId,
-                meteringPoint,
-                refreshToken,
-                start,
-                end,
-                null,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder().setPermissionId(UUID.randomUUID().toString())
+                                                                       .setConnectionId(connectionId)
+                                                                       .setDataNeedId(dataNeedId)
+                                                                       .setMeteringPoint(meteringPoint)
+                                                                       .setRefreshToken(refreshToken)
+                                                                       .setStart(start)
+                                                                       .setEnd(end)
+                                                                       .setGranularity(null)
+                                                                       .setAccessToken(null)
+                                                                       .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .build();
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
         var document = new MeteringPointDetailsCustomerDtoResponseListApiResponse();
@@ -195,19 +193,18 @@ class PollingServiceTest {
         var dataNeedId = "dataNeedId";
         var refreshToken = "token";
         var meteringPoint = "meteringPoint";
-        var permissionRequest = new EnerginetPermissionRequest(
-                UUID.randomUUID().toString(),
-                connectionId,
-                dataNeedId,
-                meteringPoint,
-                refreshToken,
-                start,
-                end,
-                null,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder().setPermissionId(UUID.randomUUID().toString())
+                                                                       .setConnectionId(connectionId)
+                                                                       .setDataNeedId(dataNeedId)
+                                                                       .setMeteringPoint(meteringPoint)
+                                                                       .setRefreshToken(refreshToken)
+                                                                       .setStart(start)
+                                                                       .setEnd(end)
+                                                                       .setGranularity(null)
+                                                                       .setAccessToken(null)
+                                                                       .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .build();
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
         var document = new MeteringPointDetailsCustomerDtoResponseListApiResponse();
@@ -262,19 +259,18 @@ class PollingServiceTest {
         var dataNeedId = "dataNeedId";
         var refreshToken = "token";
         var meteringPoint = "meteringPoint";
-        var permissionRequest = new EnerginetPermissionRequest(
-                UUID.randomUUID().toString(),
-                connectionId,
-                dataNeedId,
-                meteringPoint,
-                refreshToken,
-                start,
-                end,
-                Granularity.PT15M,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder().setPermissionId(UUID.randomUUID().toString())
+                                                                       .setConnectionId(connectionId)
+                                                                       .setDataNeedId(dataNeedId)
+                                                                       .setMeteringPoint(meteringPoint)
+                                                                       .setRefreshToken(refreshToken)
+                                                                       .setStart(start)
+                                                                       .setEnd(end)
+                                                                       .setGranularity(Granularity.PT15M)
+                                                                       .setAccessToken(null)
+                                                                       .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .build();
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
         var response = new MyEnergyDataMarketDocumentResponse(REQUESTED_AGGREGATION_UNAVAILABLE)
@@ -309,19 +305,18 @@ class PollingServiceTest {
         var dataNeedId = "dataNeedId";
         var refreshToken = "token";
         var meteringPoint = "meteringPoint";
-        var permissionRequest = new EnerginetPermissionRequest(
-                UUID.randomUUID().toString(),
-                connectionId,
-                dataNeedId,
-                meteringPoint,
-                refreshToken,
-                start,
-                end,
-                Granularity.PT1H,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder().setPermissionId(UUID.randomUUID().toString())
+                                                                       .setConnectionId(connectionId)
+                                                                       .setDataNeedId(dataNeedId)
+                                                                       .setMeteringPoint(meteringPoint)
+                                                                       .setRefreshToken(refreshToken)
+                                                                       .setStart(start)
+                                                                       .setEnd(end)
+                                                                       .setGranularity(Granularity.PT1H)
+                                                                       .setAccessToken(null)
+                                                                       .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .build();
         WebClientResponseException unauthorized = WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                                                                                     "",
                                                                                     HttpHeaders.EMPTY,
@@ -348,19 +343,18 @@ class PollingServiceTest {
         var dataNeedId = "dataNeedId";
         var refreshToken = "token";
         var meteringPoint = "meteringPoint";
-        var permissionRequest = new EnerginetPermissionRequest(
-                UUID.randomUUID().toString(),
-                connectionId,
-                dataNeedId,
-                meteringPoint,
-                refreshToken,
-                start,
-                end,
-                Granularity.PT1H,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder().setPermissionId(UUID.randomUUID().toString())
+                                                                       .setConnectionId(connectionId)
+                                                                       .setDataNeedId(dataNeedId)
+                                                                       .setMeteringPoint(meteringPoint)
+                                                                       .setRefreshToken(refreshToken)
+                                                                       .setStart(start)
+                                                                       .setEnd(end)
+                                                                       .setGranularity(Granularity.PT1H)
+                                                                       .setAccessToken(null)
+                                                                       .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .build();
         doReturn(Mono.just("token"))
                 .when(customerApi).accessToken(anyString());
         MyEnergyDataMarketDocumentResponse resultItem = new MyEnergyDataMarketDocumentResponse();
@@ -411,19 +405,18 @@ class PollingServiceTest {
         var refreshToken = "token";
         var meteringPoint = "meteringPoint";
         var accessToken = "accessToken";
-        var permissionRequest = new EnerginetPermissionRequest(
-                UUID.randomUUID().toString(),
-                connectionId,
-                dataNeedId,
-                meteringPoint,
-                refreshToken,
-                start,
-                end,
-                Granularity.PT1H,
-                accessToken,
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder().setPermissionId(UUID.randomUUID().toString())
+                                                                       .setConnectionId(connectionId)
+                                                                       .setDataNeedId(dataNeedId)
+                                                                       .setMeteringPoint(meteringPoint)
+                                                                       .setRefreshToken(refreshToken)
+                                                                       .setStart(start)
+                                                                       .setEnd(end)
+                                                                       .setGranularity(Granularity.PT1H)
+                                                                       .setAccessToken(accessToken)
+                                                                       .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                                       .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                                       .build();
 
         // When
         pollingService.fetchHistoricalMeterReadings(permissionRequest);

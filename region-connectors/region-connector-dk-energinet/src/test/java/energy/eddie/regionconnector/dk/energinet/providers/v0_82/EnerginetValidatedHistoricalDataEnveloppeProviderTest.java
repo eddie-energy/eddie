@@ -1,14 +1,13 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocument;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.SeriesPeriodBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.TimeSeriesBuilderFactory;
@@ -22,7 +21,6 @@ import reactor.test.publisher.TestPublisher;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -42,8 +40,8 @@ class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
     static void setUp() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JsonNullableModule());
         try (InputStream is = EnerginetValidatedHistoricalDataEnvelopeProviderTest.class.getClassLoader()
-                                                                                         .getResourceAsStream(
-                                                                                                           "MyEnergyDataMarketDocumentResponseListApiResponse.json")) {
+                                                                                        .getResourceAsStream(
+                                                                                                "MyEnergyDataMarketDocumentResponseListApiResponse.json")) {
             MyEnergyDataMarketDocumentResponseListApiResponse response = objectMapper.readValue(is,
                                                                                                 MyEnergyDataMarketDocumentResponseListApiResponse.class);
             myEnergyDataMarketDocument = response.getResult().getFirst().getMyEnergyDataMarketDocument();
@@ -57,19 +55,14 @@ class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
 
         MyEnergyDataMarketDocumentResponse myEnergyDataMarketDocumentResponse = new MyEnergyDataMarketDocumentResponse();
         myEnergyDataMarketDocumentResponse.setMyEnergyDataMarketDocument(myEnergyDataMarketDocument);
-        var permissionRequest = new EnerginetPermissionRequest(
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
-                "meteringPointId",
-                "refreshToken",
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                Granularity.PT1H,
-                "accessToken",
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder()
+                .setPermissionId("permissionId")
+                .setConnectionId("connectionId")
+                .setDataNeedId("dataNeedId")
+                .setMeteringPoint("meteringPointId")
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                .build();
         apiResponse = new IdentifiableApiResponse(
                 permissionRequest,
                 myEnergyDataMarketDocumentResponse
@@ -83,7 +76,7 @@ class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
 
         var provider = new EnerginetValidatedHistoricalDataEnvelopeProvider(testPublisher.flux(),
-                                                                             validatedHistoricalDataMarketDocumentBuilderFactory);
+                                                                            validatedHistoricalDataMarketDocumentBuilderFactory);
 
         // When & Then
         StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
@@ -143,7 +136,7 @@ class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
 
         try (var provider = new EnerginetValidatedHistoricalDataEnvelopeProvider(testPublisher.flux(),
-                                                                                  factory)) {
+                                                                                 factory)) {
 
             // When & Then
             StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())

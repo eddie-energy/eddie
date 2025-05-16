@@ -1,19 +1,15 @@
 package energy.eddie.regionconnector.dk.energinet.filter;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocument;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.PeriodtimeInterval;
 import energy.eddie.regionconnector.dk.energinet.exceptions.ApiResponseException;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
@@ -25,19 +21,9 @@ class IdentifiableApiResponseFilterTest {
     @Test
     void filter_returnsError_whenResponseContainsError() {
         // Given
-        var permissionRequest = new EnerginetPermissionRequest(
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
-                "meteringPointId",
-                "refreshToken",
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                Granularity.PT1H,
-                "accessToken",
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder()
+                .setPermissionId("permissionId")
+                .build();
         new MyEnergyDataMarketDocumentResponse(30000);
 
         var response = new MyEnergyDataMarketDocumentResponse(30000);
@@ -57,19 +43,9 @@ class IdentifiableApiResponseFilterTest {
     @Test
     void filter_returnEmpty_whenTimeIntervalNull() {
         // Given
-        var permissionRequest = new EnerginetPermissionRequest(
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
-                "meteringPointId",
-                "refreshToken",
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                Granularity.PT1H,
-                "accessToken",
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder()
+                .setPermissionId("permissionId")
+                .build();
         var response = new MyEnergyDataMarketDocumentResponse(0);
         response.success(true);
         var document = new MyEnergyDataMarketDocument();
@@ -90,19 +66,9 @@ class IdentifiableApiResponseFilterTest {
         // Given
         var start = LocalDate.now(DK_ZONE_ID);
         var end = start.plusDays(1);
-        var permissionRequest = new EnerginetPermissionRequest(
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
-                "meteringPointId",
-                "refreshToken",
-                start,
-                end,
-                Granularity.PT1H,
-                "accessToken",
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder()
+                .setPermissionId("permissionId")
+                .build();
         DkEnerginetPermissionRequest spy = spy(permissionRequest);
         var response = new MyEnergyDataMarketDocumentResponse(0);
         response.success(true);

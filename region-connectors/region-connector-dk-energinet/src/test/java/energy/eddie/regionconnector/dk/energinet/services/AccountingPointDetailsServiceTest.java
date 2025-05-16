@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.dk.energinet.EnerginetBeanConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,28 +82,6 @@ class AccountingPointDetailsServiceTest {
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
     }
 
-    private EnerginetPermissionRequest permissionRequest(
-            LocalDate start,
-            LocalDate end
-    ) {
-        String connectionId = "connId";
-        String meteringPoint = "meteringPoint";
-        String dataNeedId = "dataNeedId";
-        return new EnerginetPermissionRequest(
-                UUID.randomUUID().toString(),
-                connectionId,
-                dataNeedId,
-                meteringPoint,
-                refreshToken,
-                start,
-                end,
-                Granularity.PT1H,
-                null,
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
-    }
-
     @Test
     void fetchMeteringPointDetails_emitsDetailsAndFulfillsPermissionRequest() throws IOException {
         // Given
@@ -135,5 +114,26 @@ class AccountingPointDetailsServiceTest {
         verify(outbox).commit(simpleEventArgumentCaptor.capture());
         var res = simpleEventArgumentCaptor.getValue();
         assertEquals(PermissionProcessStatus.FULFILLED, res.status());
+    }
+
+    private EnerginetPermissionRequest permissionRequest(
+            LocalDate start,
+            LocalDate end
+    ) {
+        String connectionId = "connId";
+        String meteringPoint = "meteringPoint";
+        String dataNeedId = "dataNeedId";
+        return new EnerginetPermissionRequestBuilder().setPermissionId(UUID.randomUUID().toString())
+                                                      .setConnectionId(connectionId)
+                                                      .setDataNeedId(dataNeedId)
+                                                      .setMeteringPoint(meteringPoint)
+                                                      .setRefreshToken(refreshToken)
+                                                      .setStart(start)
+                                                      .setEnd(end)
+                                                      .setGranularity(Granularity.PT1H)
+                                                      .setAccessToken(null)
+                                                      .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                      .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                      .build();
     }
 }
