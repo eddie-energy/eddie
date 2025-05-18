@@ -14,4 +14,6 @@ spec:
   budgetingMethod: ratio
   objective:
     op: lte
-    target: 0.5 # 0.5s = 500ms
+    target: 0.5
+  alertPolicies:
+    - aiida-ec-response-time-alert

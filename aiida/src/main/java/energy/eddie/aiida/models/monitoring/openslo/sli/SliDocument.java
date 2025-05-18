@@ -1,16 +1,19 @@
-package energy.eddie.aiida.models.monitoring.openslo.slo;
+package energy.eddie.aiida.models.monitoring.openslo.sli;
+
+import energy.eddie.aiida.models.monitoring.openslo.slo.SloMetadata;
 
 @SuppressWarnings("NullAway")
-public class SloDocument {
+public class SliDocument {
     private String apiVersion;
     private String kind;
     private SloMetadata metadata;
-    private SloSpec spec;
+    private SliSpec spec;
 
-    public SloDocument() {
+    public SliDocument() {
+
     }
 
-    public SloDocument(String apiVersion, String kind, SloMetadata metadata, SloSpec spec) {
+    public SliDocument(String apiVersion, String kind, SloMetadata metadata, SliSpec spec) {
         this.apiVersion = apiVersion;
         this.kind = kind;
         this.metadata = metadata;
@@ -41,11 +44,11 @@ public class SloDocument {
         this.metadata = metadata;
     }
 
-    public SloSpec getSpec() {
+    public SliSpec getSpec() {
         return spec;
     }
 
-    public void setSpec(SloSpec spec) {
+    public void setSpec(SliSpec spec) {
         this.spec = spec;
     }
 }

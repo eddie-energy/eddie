@@ -10,7 +10,7 @@ spec:
     ratioMetric:
       good:
         source: prometheus
-        query: sum(rate(service_response_time_seconds_sum{service="aiida-ec-service"}[5m]))
+        query: sum(rate(http_response_time_seconds_sum{service="aiida-agent"}[1h]))
       total:
         source: prometheus
-        query: sum(rate(service_response_time_seconds_count{service="aiida-ec-service"}[5m]))
+        query: sum(rate(http_response_time_seconds_count{service="aiida-agent"}[1h]))

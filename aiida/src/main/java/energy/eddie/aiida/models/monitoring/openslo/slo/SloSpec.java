@@ -1,5 +1,7 @@
 package energy.eddie.aiida.models.monitoring.openslo.slo;
 
+import java.util.List;
+
 @SuppressWarnings("NullAway")
 public class SloSpec {
     private String description;
@@ -8,18 +10,20 @@ public class SloSpec {
     private SloTimeWindow timeWindow;
     private String budgetingMethod;
     private SloObjective objective;
-
+    private List<String> alertPolicies;
 
     public SloSpec() {
     }
 
-    public SloSpec(String description, String service, String indicatorRef, SloTimeWindow timeWindow, String budgetingMethod, SloObjective objective) {
+    public SloSpec(String description, String service, String indicatorRef, SloTimeWindow timeWindow,
+                   String budgetingMethod, SloObjective objective, List<String> alertPolicies) {
         this.description = description;
         this.service = service;
         this.indicatorRef = indicatorRef;
         this.timeWindow = timeWindow;
         this.budgetingMethod = budgetingMethod;
         this.objective = objective;
+        this.alertPolicies = alertPolicies;
     }
 
     public String getDescription() {
@@ -68,5 +72,13 @@ public class SloSpec {
 
     public void setObjective(SloObjective objective) {
         this.objective = objective;
+    }
+
+    public List<String> getAlertPolicies() {
+        return alertPolicies;
+    }
+
+    public void setAlertPolicies(List<String> alertPolicies) {
+        this.alertPolicies = alertPolicies;
     }
 }

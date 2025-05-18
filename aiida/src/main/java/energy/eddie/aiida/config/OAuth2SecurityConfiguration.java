@@ -47,6 +47,7 @@ public class OAuth2SecurityConfiguration {
                         .requestMatchers(
                                 "/login",
                                 "/actuator/health/**",
+                                "/actuator/prometheus",
                                 "/application-information",
                                 "/img/aiida.svg",
                                 "/img/icon.svg",
