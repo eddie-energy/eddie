@@ -226,7 +226,7 @@
           "format": "uri",
           "description": "The base url for the Grants API."
         },
-        "cds_server_provided_files_api":{
+        "cds_server_provided_files_api": {
           "type": "string",
           "format": "uri",
           "description": "The URL for the Server-Provided Files API. This MUST be included if scopes_supported includes the server_provided_files scope."
@@ -252,39 +252,43 @@
         },
         "cds_customerdata_accounts_api": {
           "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_aggregations_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_billsections_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_billstatements_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_eacs_api": {
-          "type": "string",
-          "format": "uri"
-        },
-        "cds_customerdata_meterdevices_api": {
-          "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "The base URL for the Accounts API."
         },
         "cds_customerdata_servicecontracts_api": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "The base URL for the Service Contracts API."
         },
         "cds_customerdata_servicepoints_api": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "The base URL for the Service Points API."
+        },
+        "cds_customerdata_meterdevices_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base URL for the Meter Devices API."
+        },
+        "cds_customerdata_billstatements_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base URL for the Bill Statements API."
+        },
+        "cds_customerdata_billsections_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base URL for the Bill Sections API."
+        },
+        "cds_customerdata_aggregations_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "The base URL for the Aggregations API."
         },
         "cds_customerdata_usagesegments_api": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "The base URL for the Usage Segments API."
         }
       },
       "required": [
@@ -306,16 +310,7 @@
         "cds_server_provided_files_api",
         "cds_test_accounts",
         "cds_scope_descriptions",
-        "cds_registration_fields",
-        "cds_customerdata_accounts_api",
-        "cds_customerdata_aggregations_api",
-        "cds_customerdata_billsections_api",
-        "cds_customerdata_billstatements_api",
-        "cds_customerdata_eacs_api",
-        "cds_customerdata_meterdevices_api",
-        "cds_customerdata_servicecontracts_api",
-        "cds_customerdata_servicepoints_api",
-        "cds_customerdata_usagesegments_api"
+        "cds_registration_fields"
       ],
       "if": {
         "not": {
@@ -390,6 +385,20 @@
         "response_types_supported",
         "grant_types_supported",
         "token_endpoint_auth_methods_supported"
+      ]
+    },
+    "OAuthMetadataWithApis": {
+      "$ref": "#/$defs/OAuthMetadata",
+      "required": [
+        "cds_customerdata_accounts_api",
+        "cds_customerdata_aggregations_api",
+        "cds_customerdata_billsections_api",
+        "cds_customerdata_billstatements_api",
+        "cds_customerdata_eacs_api",
+        "cds_customerdata_meterdevices_api",
+        "cds_customerdata_servicecontracts_api",
+        "cds_customerdata_servicepoints_api",
+        "cds_customerdata_usagesegments_api"
       ]
     },
     "CdsScopeDescription": {
@@ -840,7 +849,10 @@
           }
         },
         "token_endpoint_auth_method": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "If no auth methods are configured, this value is null.",
           "enum": [
             "client_secret_basic"

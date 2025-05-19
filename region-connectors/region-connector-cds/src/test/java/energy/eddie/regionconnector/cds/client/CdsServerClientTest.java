@@ -81,14 +81,7 @@ class CdsServerClientTest {
         when(adminClient.clients(uri, token))
                 .thenReturn(Mono.just(createClient(uri, Scopes.CUSTOMER_DATA_SCOPE, "customer-client-id")));
         when(adminClient.credentials("customer-client-id", uri, token))
-                .thenReturn(Mono.just(
-                        new ListingCredentials200Response()
-                                .addCredentialsItem(
-                                        new ListingCredentials200ResponseCredentialsInner()
-                                                .clientId("customer-client-id")
-                                                .clientSecret("customer-client-secret")
-                                )
-                ));
+                .thenReturn(Mono.just(createCredentials()));
         when(adminClient.carbonDataSpec(uri, token)).thenReturn(Mono.just(cdsData));
         when(adminClient.oauthMetadataSpec(uri, token)).thenReturn(Mono.just(oauthMetadata));
 
@@ -196,14 +189,7 @@ class CdsServerClientTest {
         when(adminClient.clients(uri, token))
                 .thenReturn(Mono.just(createClient(uri, Scopes.CUSTOMER_DATA_SCOPE, "customer-client-id")));
         when(adminClient.credentials("customer-client-id", uri, token))
-                .thenReturn(Mono.just(
-                        new ListingCredentials200Response()
-                                .addCredentialsItem(
-                                        new ListingCredentials200ResponseCredentialsInner()
-                                                .clientId("customer-client-id")
-                                                .clientSecret("customer-client-secret")
-                                )
-                ));
+                .thenReturn(Mono.just(createCredentials()));
 
         // When
         var res = client.retrieveCustomerCredentials("code");
@@ -275,12 +261,7 @@ class CdsServerClientTest {
                 .thenReturn(Mono.just(createClient(uri, Scopes.CUSTOMER_DATA_SCOPE, "customer-client-id")));
         when(adminClient.credentials(eq("customer-client-id"), eq(uri), any()))
                 .thenReturn(Mono.just(
-                        new ListingCredentials200Response()
-                                .addCredentialsItem(
-                                        new ListingCredentials200ResponseCredentialsInner()
-                                                .clientId("customer-client-id")
-                                                .clientSecret("customer-client-secret")
-                                )
+                        createCredentials()
                 ));
 
         // When
@@ -357,12 +338,7 @@ class CdsServerClientTest {
                 .thenReturn(Mono.just(createClient(uri, Scopes.CUSTOMER_DATA_SCOPE, "customer-client-id")));
         when(adminClient.credentials("customer-client-id", uri, token))
                 .thenReturn(Mono.just(
-                        new ListingCredentials200Response()
-                                .addCredentialsItem(
-                                        new ListingCredentials200ResponseCredentialsInner()
-                                                .clientId("customer-client-id")
-                                                .clientSecret("customer-client-secret")
-                                )
+                        createCredentials()
                 ));
 
         // When
@@ -410,8 +386,12 @@ class CdsServerClientTest {
                 .thenReturn(Mono.just(oAuthCredentials));
         var cdsData = createCdsMetadataResponse(uri);
         var oauthMetadata = createOAuthMetadataResponse(uri);
+        var clientResponse = createClient(uri, Scopes.CUSTOMER_DATA_SCOPE, "customer-client-id");
         when(publicApis.carbonDataSpec(uri)).thenReturn(Mono.just(cdsData));
         when(publicApis.oauthMetadataSpec(uri)).thenReturn(Mono.just(oauthMetadata));
+        when(adminClient.clients(uri, token)).thenReturn(Mono.just(clientResponse));
+        when(adminClient.carbonDataSpec(uri, token)).thenReturn(Mono.just(cdsData));
+        when(adminClient.oauthMetadataSpec(uri, token)).thenReturn(Mono.just(oauthMetadata));
         when(customerDataClient.accounts(uri, oAuthCredentials)).thenReturn(Mono.just(List.of()));
         when(customerDataClient.serviceContracts(uri, oAuthCredentials)).thenReturn(Mono.just(List.of()));
         when(customerDataClient.servicePoints(uri, oAuthCredentials)).thenReturn(Mono.just(List.of()));
@@ -420,12 +400,7 @@ class CdsServerClientTest {
                 .thenReturn(Mono.just(createClient(uri, Scopes.CUSTOMER_DATA_SCOPE, "customer-client-id")));
         when(adminClient.credentials("customer-client-id", uri, token))
                 .thenReturn(Mono.just(
-                        new ListingCredentials200Response()
-                                .addCredentialsItem(
-                                        new ListingCredentials200ResponseCredentialsInner()
-                                                .clientId("customer-client-id")
-                                                .clientSecret("customer-client-secret")
-                                )
+                        createCredentials()
                 ));
 
         // When
@@ -453,8 +428,12 @@ class CdsServerClientTest {
                 .thenReturn(Mono.just(oAuthCredentials));
         var cdsData = createCdsMetadataResponse(uri);
         var oauthMetadata = createOAuthMetadataResponse(uri);
+        var clientResponse = createClient(uri, Scopes.CUSTOMER_DATA_SCOPE, "customer-client-id");
         when(publicApis.carbonDataSpec(uri)).thenReturn(Mono.just(cdsData));
         when(publicApis.oauthMetadataSpec(uri)).thenReturn(Mono.just(oauthMetadata));
+        when(adminClient.clients(uri, token)).thenReturn(Mono.just(clientResponse));
+        when(adminClient.carbonDataSpec(uri, token)).thenReturn(Mono.just(cdsData));
+        when(adminClient.oauthMetadataSpec(uri, token)).thenReturn(Mono.just(oauthMetadata));
         when(customerDataClient.accounts(uri, oAuthCredentials)).thenReturn(Mono.just(List.of()));
         when(customerDataClient.serviceContracts(uri, oAuthCredentials)).thenReturn(Mono.just(List.of()));
         when(customerDataClient.servicePoints(uri, oAuthCredentials)).thenReturn(Mono.just(List.of()));
@@ -464,12 +443,7 @@ class CdsServerClientTest {
                 .thenReturn(Mono.just(createClient(uri, Scopes.CUSTOMER_DATA_SCOPE, "customer-client-id")));
         when(adminClient.credentials("customer-client-id", uri, token))
                 .thenReturn(Mono.just(
-                        new ListingCredentials200Response()
-                                .addCredentialsItem(
-                                        new ListingCredentials200ResponseCredentialsInner()
-                                                .clientId("customer-client-id")
-                                                .clientSecret("customer-client-secret")
-                                )
+                        createCredentials()
                 ));
 
         // When
@@ -508,6 +482,15 @@ class CdsServerClientTest {
                                 assertThat(masterData.energyTypes()).containsExactly(EnergyType.ELECTRICITY);
                             }))
                     .verifyComplete();
+    }
+
+    private static ListingCredentials200Response createCredentials() {
+        return new ListingCredentials200Response()
+                .addCredentialsItem(
+                        new ListingCredentials200ResponseCredentialsInner()
+                                .clientId("customer-client-id")
+                                .clientSecret("customer-client-secret")
+                );
     }
 
     private static List<ClientEndpoint200ResponseClientsInner> createClient(URI uri, String scope, String clientId) {

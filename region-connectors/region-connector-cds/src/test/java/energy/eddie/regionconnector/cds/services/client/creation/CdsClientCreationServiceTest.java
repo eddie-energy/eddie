@@ -87,12 +87,6 @@ class CdsClientCreationServiceTest {
                 .registrationEndpoint(baseUri)
                 .cdsClientsApi(baseUri)
                 .cdsCredentialsApi(baseUri)
-                .cdsCustomerdataUsagesegmentsApi(baseUri)
-                .cdsCustomerdataAccountsApi(baseUri)
-                .cdsCustomerdataServicecontractsApi(baseUri)
-                .cdsCustomerdataServicepointsApi(baseUri)
-                .cdsCustomerdataMeterdevicesApi(baseUri)
-                .cdsCustomerdataBillsectionsApi(baseUri)
                 .pushedAuthorizationRequestEndpoint(baseUri);
         when(metadataCollection.metadata(baseUri))
                 .thenReturn(Mono.just(metadataResponse));
@@ -131,12 +125,6 @@ class CdsClientCreationServiceTest {
                 .registrationEndpoint(baseUri)
                 .cdsClientsApi(baseUri)
                 .cdsCredentialsApi(baseUri)
-                .cdsCustomerdataAccountsApi(baseUri)
-                .cdsCustomerdataServicecontractsApi(baseUri)
-                .cdsCustomerdataServicepointsApi(baseUri)
-                .cdsCustomerdataMeterdevicesApi(baseUri)
-                .cdsCustomerdataUsagesegmentsApi(baseUri)
-                .cdsCustomerdataBillsectionsApi(baseUri)
                 .pushedAuthorizationRequestEndpoint(baseUri);
         when(metadataCollection.metadata(baseUri))
                 .thenReturn(Mono.just(metadataResponse));

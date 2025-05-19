@@ -153,7 +153,11 @@ public class CdsServerClient {
             List<ServicePointEndpoint200ResponseAllOfServicePointsInner>,
             List<MeterDeviceEndpoint200ResponseAllOfMeterDevicesInner>
             >> accountingPointData(CdsPermissionRequest permissionRequest) {
-        return withRefreshToken(oAuthMetadata(), permissionRequest)
+        return withRefreshToken(findClientByScope(Scopes.CUSTOMER_DATA_SCOPE), permissionRequest)
+                .flatMap(res -> Mono.zip(
+                        oAuthMetadata(res.getT1().getCdsServerMetadata()),
+                        Mono.just(res.getT2())
+                ))
                 .flatMap(response -> Mono.zip(
                         customerDataClient.accounts(response.getT1().getCdsCustomerdataAccountsApi(), response.getT2()),
                         customerDataClient.serviceContracts(response.getT1().getCdsCustomerdataServicecontractsApi(),
@@ -176,10 +180,16 @@ public class CdsServerClient {
             ZonedDateTime before,
             ZonedDateTime after
     ) {
-        return withRefreshToken(oAuthMetadata(), permissionRequest)
+        return withRefreshToken(findClientByScope(Scopes.CUSTOMER_DATA_SCOPE), permissionRequest)
+                .flatMap(res -> Mono.zip(
+                        oAuthMetadata(res.getT1().getCdsServerMetadata()),
+                        Mono.just(res.getT2())
+                ))
                 .flatMap(response -> Mono.zip(
-                        customerDataClient.accounts(response.getT1().getCdsCustomerdataAccountsApi(), response.getT2()),
-                        customerDataClient.serviceContracts(response.getT1().getCdsCustomerdataServicecontractsApi(),
+                        customerDataClient.accounts(response.getT1().getCdsCustomerdataAccountsApi(),
+                                                    response.getT2()),
+                        customerDataClient.serviceContracts(response.getT1()
+                                                                    .getCdsCustomerdataServicecontractsApi(),
                                                             response.getT2()),
                         customerDataClient.servicePoints(response.getT1().getCdsCustomerdataServicepointsApi(),
                                                          response.getT2()),

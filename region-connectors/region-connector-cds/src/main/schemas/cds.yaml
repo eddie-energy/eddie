@@ -105,7 +105,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "cds-schemas.json/#/$defs/OAuthMetadata"
+                $ref: "cds-schemas.json/#/$defs/OAuthMetadataWithApis"
 
   /oauth/register/:
     post:
