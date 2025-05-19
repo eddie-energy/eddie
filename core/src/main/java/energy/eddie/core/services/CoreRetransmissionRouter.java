@@ -42,7 +42,8 @@ public class CoreRetransmissionRouter implements RetransmissionRequestRouter, Au
             String regionConnectorId,
             RegionConnectorRetransmissionService regionConnectorRetransmissionService
     ) {
-        LOGGER.info("RetransmissionRouter: Registering RegionConnectorRetransmissionService: {}",
+        LOGGER.info("{}: Registering RegionConnectorRetransmissionService: {}",
+                    regionConnectorId,
                     regionConnectorRetransmissionService.getClass().getName());
         retransmissionServices.put(regionConnectorId, regionConnectorRetransmissionService);
     }
@@ -50,7 +51,7 @@ public class CoreRetransmissionRouter implements RetransmissionRequestRouter, Au
     public void registerRetransmissionConnector(
             RetransmissionOutboundConnector retransmissionOutboundConnector
     ) {
-        LOGGER.info("RetransmissionRouter: Registering RetransmissionConnector: {}",
+        LOGGER.info("Registering RetransmissionConnector: {}",
                     retransmissionOutboundConnector.getClass().getName());
         var subscription = retransmissionOutboundConnector.retransmissionRequests()
                                                           .subscribe(this::routeRetransmissionRequest);
