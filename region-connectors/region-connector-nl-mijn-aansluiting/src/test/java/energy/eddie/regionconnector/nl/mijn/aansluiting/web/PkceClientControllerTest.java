@@ -37,10 +37,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 class PkceClientControllerTest {
     @MockitoBean
+    @SuppressWarnings("unused")
     private PrivateKey ignored;
     @MockitoBean
+    @SuppressWarnings("unused")
     private PermissionEventRepository ignoredEventRepo;
     @MockitoBean
+    @SuppressWarnings("unused")
     private NlPermissionRequestRepository ignoredPermissionRequestRepo;
     @MockitoBean
     private PermissionRequestService service;
