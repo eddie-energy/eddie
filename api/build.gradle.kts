@@ -1,4 +1,3 @@
-
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import org.w3c.dom.Element
@@ -6,7 +5,6 @@ import java.util.*
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
-import kotlin.io.path.PathWalkOption
 import kotlin.io.path.walk
 
 plugins {
@@ -17,7 +15,7 @@ plugins {
 group = "energy.eddie"
 version = "0.0.0"
 
-val cimVersion: String = "0.0.0"
+val cimVersion: String = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -101,49 +99,57 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
     doLast {
         // make sure the directory exists
         file(generatedXJCJavaDir).mkdirs()
-
-        // iterate each folder in a breadth first search and generate the classes with the same package name
-        Path(cimSchemaFiles.path).walk(PathWalkOption.BREADTH_FIRST).forEach { path ->
+        val xsdToGenerate = ArrayList<Triple<File, File, File>>()
+        // Copy all files first, so they exist in the target directory
+        for (path in Path(cimSchemaFiles.path).walk()) {
             val srcFile = path.toFile()
             if (!srcFile.isFile || srcFile.extension != xsdExtension) {
-                return@forEach
+                continue
             }
             val xjbFileBasename = srcFile.name.dropLast(xsdExtension.length) + "xjb"
-            val file = srcFile.copyTo(temporaryDir.resolve(srcFile.relativeTo(cimSchemaFiles)), true)
+            // Create a copy of the source file to not accidentally manipulate the real file
+            val tmpSrcFile = srcFile.copyTo(temporaryDir.resolve(srcFile.relativeTo(cimSchemaFiles)), true)
             val xjbFile = temporaryDir.resolve(
                 srcFile.parentFile.resolve(xjbFileBasename).relativeTo(cimSchemaFiles)
-            ) // generate the bindings file
+            )
+            // generate the bindings file
+            logger.log(LogLevel.INFO, "Generating bindings for ${srcFile.name}")
             generateBindingsFile(srcFile, xjbFile.absolutePath)
-
+            xsdToGenerate.add(Triple(srcFile, tmpSrcFile, xjbFile))
+        }
+        xsdToGenerate.forEach { files: Triple<File, File, File> ->
+            val srcFile = files.first
+            val tmpSrcFile = files.second
+            val xjbFile = files.third
             val packageName = if (srcFile.parentFile.parentFile.name.equals("xsd")) {
                 "energy.eddie.cim." + srcFile.parentFile.name
             } else {
                 "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
             }
+            logger.log(LogLevel.INFO, "Generating for ${tmpSrcFile.name}")
             val execution = providers.exec {
                 executable(Path(System.getProperty("java.home"), "bin", "java"))
                 val classpath = jaxb.resolve().joinToString(File.pathSeparator)
                 args(
                     "-cp", classpath, "com.sun.tools.xjc.XJCFacade",
                     "-d", generatedXJCJavaDir,
-                    file.absolutePath,
+                    tmpSrcFile.absolutePath,
                     "-p", packageName,
                     "-b", xjbFile.absolutePath,
                     "-mark-generated", "-npa", "-encoding", "UTF-8",
                     "-extension", "-Xfluent-api", "-Xannotate"
                 )
             }
-            try {
-                val stdOut = execution.standardOutput.asText
-                if (stdOut.isPresent) {
-                    logger.log(LogLevel.INFO, stdOut.get())
-                }
+            val res = execution.result.get()
+            val stdOut = execution.standardOutput.asText
+            if (stdOut.isPresent) {
+                logger.log(LogLevel.LIFECYCLE, stdOut.get())
+            }
+            if(res.exitValue != 0) {
                 val stdError = execution.standardError.asText
                 if (stdError.isPresent) {
                     logger.log(LogLevel.WARN, stdError.get())
                 }
-            } catch (e: Exception) {
-                logger.log(LogLevel.ERROR, e.message)
             }
         }
     }

@@ -3,7 +3,7 @@
            xmlns:cimp="http://www.iec.ch/cimprofile" xmlns:TargetNamespace="https://eddie.energy/CIM"
            xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified"
            targetNamespace="https://eddie.energy/CIM">
-    <xs:import schemaLocation="../urn-entsoe-eu-wgedi-codelists.xsd" namespace="urn:entsoe.eu:wgedi:codelists"/>
+    <xs:import schemaLocation="./urn-entsoe-eu-wgedi-codelists.xsd" namespace="urn:entsoe.eu:wgedi:codelists"/>
     <xs:element name="RTR_Envelope" type="TargetNamespace:RTR_Envelope"/>
     <xs:simpleType name="ESMP_DateTime" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#DateTime">
         <xs:annotation>

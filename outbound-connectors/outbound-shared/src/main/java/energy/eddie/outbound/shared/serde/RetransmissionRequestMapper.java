@@ -1,7 +1,7 @@
 package energy.eddie.outbound.shared.serde;
 
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
+import energy.eddie.cim.v0_91_08.RTREnvelope;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

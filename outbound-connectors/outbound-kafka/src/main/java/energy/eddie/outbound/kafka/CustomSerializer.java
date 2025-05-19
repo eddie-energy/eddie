@@ -5,7 +5,7 @@ import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
+import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerializationException;
 import jakarta.annotation.Nullable;

@@ -3,7 +3,7 @@
 <!-- edited with XML Spy v4.4 (http://www.xmlspy.com) by Michael Conroy (SEMA) -->
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ecl="urn:entsoe.eu:wgedi:codelists"
 			targetNamespace="urn:entsoe.eu:wgedi:components" elementFormDefault="qualified">
-	<xsd:import namespace="urn:entsoe.eu:wgedi:codelists" schemaLocation="urn-entsoe-eu-wgedi-codelists.xsd"/>
+	<xsd:import namespace="urn:entsoe.eu:wgedi:codelists" schemaLocation="./urn-entsoe-eu-wgedi-codelists.xsd"/>
 	<!--_________________________________________________-->
 	<!--                            ETSO CORE COMPONENTS          V22 R0     -->
 	<!--_________________________________________________-->

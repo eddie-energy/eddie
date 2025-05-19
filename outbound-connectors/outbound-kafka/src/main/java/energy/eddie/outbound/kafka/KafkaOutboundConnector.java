@@ -2,7 +2,7 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
+import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerdeFactory;

@@ -9,7 +9,7 @@ import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
 import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
+import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.serde.DeserializationException;
 import energy.eddie.outbound.shared.serde.MessageSerde;

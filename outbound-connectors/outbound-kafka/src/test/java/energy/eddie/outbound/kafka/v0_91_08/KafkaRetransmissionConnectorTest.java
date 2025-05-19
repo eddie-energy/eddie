@@ -1,8 +1,8 @@
 package energy.eddie.outbound.kafka.v0_91_08;
 
 import energy.eddie.api.agnostic.outbound.RetransmissionOutboundConnector;
-import energy.eddie.cim.v0_91_08.retransmission.ESMPDateTimeInterval;
-import energy.eddie.cim.v0_91_08.retransmission.RTREnvelope;
+import energy.eddie.cim.v0_91_08.ESMPDateTimeInterval;
+import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.outbound.kafka.KafkaTestConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.Tag;
@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("SpringBootApplicationProperties")
 @SpringBootTest(classes = {KafkaRetransmissionConnector.class, KafkaTestConfig.class}, properties = "outbound-connector.kafka.eddie-id=eddie")
 @EnableKafka
 @EmbeddedKafka
