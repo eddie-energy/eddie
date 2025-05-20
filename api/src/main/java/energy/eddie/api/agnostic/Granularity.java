@@ -1,38 +1,44 @@
 package energy.eddie.api.agnostic;
 
+import java.time.Duration;
+
 /**
  * Contains all currently possible Granularities supported by at least one region connector. Granularities are valid ISO
  * 8601 durations.
  */
 public enum Granularity {
-    PT5M(5),
-    PT10M(10),
-    PT15M(15),
-    PT30M(30),
-    PT1H(60),
-    P1D(1440),
-    P1M(43200),
-    P1Y(518400);
+    PT5M(Duration.ofMinutes(5)),
+    PT10M(Duration.ofMinutes(10)),
+    PT15M(Duration.ofMinutes(15)),
+    PT30M(Duration.ofMinutes(30)),
+    PT1H(Duration.ofHours(1)),
+    P1D(Duration.ofDays(1)),
+    P1M(Duration.ofDays(30)),
+    P1Y(Duration.ofDays(365));
 
-    private final int minutes;
+    private final Duration duration;
 
-    Granularity(int minutes) {
-        this.minutes = minutes;
+    Granularity(Duration duration) {
+        this.duration = duration;
+    }
+
+    public static Granularity fromMinutes(int minutes) {
+        for (var granularity : Granularity.values()) {
+            if (granularity.minutes() == minutes) {
+                return granularity;
+            }
+        }
+        throw new IllegalArgumentException("Invalid granularity: " + minutes);
     }
 
     /**
      * Granularity roughly expressed in minutes. Used to compare if one granularity is greater than the other.
      */
     public int minutes() {
-        return minutes;
+        return (int) duration.toMinutes();
     }
 
-    public static Granularity fromMinutes(int minutes) {
-        for (var granularity : Granularity.values()) {
-            if (granularity.minutes == minutes) {
-                return granularity;
-            }
-        }
-        throw new IllegalArgumentException("Invalid granularity: " + minutes);
+    public Duration duration() {
+        return duration;
     }
 }

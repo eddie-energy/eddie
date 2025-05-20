@@ -60,6 +60,7 @@ dependencies {
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.okhttp3.mockwebserver)
+    testImplementation(project(":outbound-connectors:outbound-shared"))
     testRuntimeOnly(libs.flyway.core)
     testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)
