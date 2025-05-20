@@ -6,13 +6,16 @@ import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.dto.address.Address;
+import energy.eddie.regionconnector.fr.enedis.dto.contract.UsagePointContract;
 import energy.eddie.regionconnector.fr.enedis.dto.identity.LegalEntity;
 import energy.eddie.regionconnector.fr.enedis.dto.identity.NaturalPerson;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
-import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
 import jakarta.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public final class IntermediateAccountingPointDataMarketDocument {
@@ -56,20 +59,24 @@ public final class IntermediateAccountingPointDataMarketDocument {
     }
 
 
-    private AccountingPointComplexType accountingPoint() {
-        return new AccountingPointComplexType()
-                .withCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED)
-                .withMRID(measurementPointIDStringComplexType())
-                .withContractPartyList(contractPartyList())
-                .withAddressList(addressList())
-                .withTariffClassDSO(distributionTariff())
-                .withDirection(direction());
+    private List<AccountingPointComplexType> accountingPoint() {
+        var points = new ArrayList<AccountingPointComplexType>();
+        for (var contract : identifiableAccountingPointData.contract().usagePointContracts()) {
+            points.add(new AccountingPointComplexType()
+                               .withCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED)
+                               .withMRID(measurementPointIDStringComplexType(contract))
+                               .withContractPartyList(contractPartyList())
+                               .withAddressList(addressList())
+                               .withTariffClassDSO(distributionTariff(contract))
+                               .withDirection(direction()));
+        }
+        return points;
     }
 
-    private MeasurementPointIDStringComplexType measurementPointIDStringComplexType() {
+    private static MeasurementPointIDStringComplexType measurementPointIDStringComplexType(UsagePointContract contract) {
         return new MeasurementPointIDStringComplexType()
                 .withCodingScheme(CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
-                .withValue(identifiableAccountingPointData.permissionRequest().usagePointId());
+                .withValue(contract.usagePoint().id());
     }
 
     private AccountingPointComplexType.ContractPartyList contractPartyList() {
@@ -101,12 +108,8 @@ public final class IntermediateAccountingPointDataMarketDocument {
         );
     }
 
-    private String distributionTariff() {
-        return identifiableAccountingPointData.contract()
-                                              .usagePointContracts()
-                                              .getFirst()
-                                              .contract()
-                                              .distributionTariff();
+    private static String distributionTariff(UsagePointContract contract) {
+        return contract.contract().distributionTariff();
     }
 
     private @Nullable DirectionTypeList direction() {

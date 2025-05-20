@@ -98,7 +98,7 @@ class IntermediateAccountingPointDataMarketDocumentTest {
                                    ap.getTariffClassDSO()),
                 () -> assertEquals(energy.eddie.cim.v0_82.ap.CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME,
                                    ap.getMRID().getCodingScheme()),
-                () -> assertEquals(permissionRequest.usagePointId(), ap.getMRID().getValue()),
+                () -> assertEquals(contract.usagePointContracts().getFirst().usagePoint().id(), ap.getMRID().getValue()),
 //endregion
 //region Contract Party
                 () -> assertEquals(1, ap.getContractPartyList().getContractParties().size()),
