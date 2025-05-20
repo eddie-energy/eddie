@@ -145,7 +145,7 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
             if (stdOut.isPresent) {
                 logger.log(LogLevel.LIFECYCLE, stdOut.get())
             }
-            if(res.exitValue != 0) {
+            if (res.exitValue != 0) {
                 val stdError = execution.standardError.asText
                 if (stdError.isPresent) {
                     logger.log(LogLevel.WARN, stdError.get())
@@ -216,12 +216,16 @@ publishing {
 
 // Generate a bindings file that customizes the generated code, so that the enums are usable and the root elements don't have the ComplexType suffix
 fun generateBindingsFile(xsdFile: File, bindingsFilePath: String) {
-    val docBuilderFactory = DocumentBuilderFactory.newInstance()
-    val docBuilder = docBuilderFactory.newDocumentBuilder()
-    val xsdDocument = docBuilder.parse(xsdFile)
+    val documentBuilderFactory = DocumentBuilderFactory
+        .newInstance()
+    documentBuilderFactory.isNamespaceAware = true
+    val xsdDocument = documentBuilderFactory
+        .newDocumentBuilder()
+        .parse(xsdFile)
     val schemaLocation = xsdFile.name
 
-    val simpleTypes = xsdDocument.getElementsByTagName("xs:simpleType")
+    val xmlSchemaNs = "http://www.w3.org/2001/XMLSchema"
+    val simpleTypes = xsdDocument.getElementsByTagNameNS(xmlSchemaNs, "simpleType")
     val bindings = StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
     bindings
         .append("<bindings xmlns=\"https://jakarta.ee/xml/ns/jaxb\" ")
@@ -247,28 +251,32 @@ fun generateBindingsFile(xsdFile: File, bindingsFilePath: String) {
     // Make enums use the documentation as the enum name, as the values are not readable / incompatible with Java
     for (i in 0 until simpleTypes.length) {
         val simpleType = simpleTypes.item(i) as Element
-        val enumerationElements = simpleType.getElementsByTagName("xs:enumeration")
-        if (enumerationElements.length > 0) {
-            val typeName = simpleType.getAttribute("name")
-            bindings.append("        <bindings node=\"//xs:simpleType[@name='$typeName']\">\n")
-            bindings.append("            <annox:annotateEnumValueMethod>@com.fasterxml.jackson.annotation.JsonValue</annox:annotateEnumValueMethod>\n")
-            bindings.append("            <annox:annotateEnumFromValueMethod>@com.fasterxml.jackson.annotation.JsonCreator</annox:annotateEnumFromValueMethod>\n")
-            bindings.append("            <typesafeEnumClass name=\"${typeName.toJavaClassName()}\">\n")
+        val enumerationElements = simpleType.getElementsByTagNameNS(xmlSchemaNs, "enumeration")
+        if (enumerationElements.length == 0) continue
+        val typeName = simpleType.getAttribute("name")
+        bindings.append("        <bindings node=\"//xs:simpleType[@name='$typeName']\">\n")
+        bindings.append("            <annox:annotateEnumValueMethod>@com.fasterxml.jackson.annotation.JsonValue</annox:annotateEnumValueMethod>\n")
+        bindings.append("            <annox:annotateEnumFromValueMethod>@com.fasterxml.jackson.annotation.JsonCreator</annox:annotateEnumFromValueMethod>\n")
+        bindings.append("            <typesafeEnumClass name=\"${typeName.toJavaClassName()}\">\n")
 
-            for (j in 0 until enumerationElements.length) {
-                val enumElement = enumerationElements.item(j) as Element
-                val value = enumElement.getAttribute("value")
-                val doc = enumElement.getElementsByTagName("xs:documentation")
-                val javaName = if (doc.length > 0) { // only use the documentation if it exists
+        for (j in 0 until enumerationElements.length) {
+            val enumElement = enumerationElements.item(j) as Element
+            val value = enumElement.getAttribute("value")
+            val title = enumElement.getElementsByTagName("Title")
+            val javaName = if (title.length > 0) {
+                title.item(0).textContent.trimEnd().toJavaEnumName()
+            } else {
+                val doc = enumElement.getElementsByTagNameNS(xmlSchemaNs, "documentation")
+                if (doc.length > 0) { // only use the documentation if it exists
                     doc.item(0).textContent.trimEnd().toJavaEnumName()
                 } else value.toJavaEnumName()
-                // Makes the generated enums have usable names
-                bindings.append("                <typesafeEnumMember name=\"$javaName\" value=\"$value\"/>\n")
             }
-
-            bindings.append("            </typesafeEnumClass>\n")
-            bindings.append("        </bindings>\n")
+            // Makes the generated enums have usable names
+            bindings.append("                <typesafeEnumMember name=\"$javaName\" value=\"$value\"/>\n")
         }
+
+        bindings.append("            </typesafeEnumClass>\n")
+        bindings.append("        </bindings>\n")
     }
 
     bindings.append("    </bindings>\n")
@@ -278,10 +286,15 @@ fun generateBindingsFile(xsdFile: File, bindingsFilePath: String) {
 }
 
 
-fun String.toJavaEnumName(): String =
-    this.split("\\s+".toRegex())
+fun String.toJavaEnumName(): String {
+    val name = this.split("\\s+".toRegex())
         .joinToString("_") { it.uppercase() }
         .replace("[^A-Za-z0-9_]".toRegex(), "")
+    if (Character.isDigit(name[0])) {
+        return "_$name"
+    }
+    return name
+}
 
 fun String.toJavaClassName(): String =
     this.split("\\s+".toRegex())
