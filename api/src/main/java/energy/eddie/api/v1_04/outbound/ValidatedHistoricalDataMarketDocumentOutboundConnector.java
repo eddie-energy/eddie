@@ -9,7 +9,7 @@ import reactor.core.publisher.Flux;
  */
 public interface ValidatedHistoricalDataMarketDocumentOutboundConnector {
 
-    void setEddieValidatedHistoricalDataMarketDocumentStream(
+    void setValidatedHistoricalDataMarketDocumentStream(
             Flux<VHDEnvelope> marketDocumentStream
     );
 }

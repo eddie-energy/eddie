@@ -1,6 +1,7 @@
 package energy.eddie.core.converters;
 
 import energy.eddie.cim.v0_82.vhd.UnitOfMeasureTypeList;
+import energy.eddie.cim.v0_91_08.StandardUnitOfMeasureTypeList;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 public class UnitConstants {
+    public static final BigDecimal MINUTES_IN_HOUR = BigDecimal.valueOf(60);
+    /* CIM v0.82 */
     public static final List<UnitOfMeasureTypeList> powerUnits = List.of(
             // Apparent Power
             UnitOfMeasureTypeList.MEGAVOLTAMPERE,
@@ -33,7 +36,24 @@ public class UnitConstants {
             UnitOfMeasureTypeList.MEGAVOLT_AMPERE_REACTIVE_HOURS,
             UnitOfMeasureTypeList.MEGAWATT_HOURS
     );
-    public static final BigDecimal MINUTES_IN_HOUR = BigDecimal.valueOf(60);
+    /* CIM v0.91.08 */
+    public static final List<StandardUnitOfMeasureTypeList> POWER_UNITS = List.of(
+            // Apparent Power
+            StandardUnitOfMeasureTypeList.MEGAVOLTAMPERE,
+            StandardUnitOfMeasureTypeList.KILOVOLT_AMPERE_REACTIVE,
+            StandardUnitOfMeasureTypeList.MEGAVOLT_AMPERE_REACTIVE,
+            // Real Power
+            StandardUnitOfMeasureTypeList.KILOWATT,
+            StandardUnitOfMeasureTypeList.MEGAWATT,
+            StandardUnitOfMeasureTypeList.WATT,
+            StandardUnitOfMeasureTypeList.GIGAWATT
+    ) ;
+    public static final List<StandardUnitOfMeasureTypeList> ENERGY_UNITS = List.of(
+            StandardUnitOfMeasureTypeList.KILOWATT_HOUR,
+            StandardUnitOfMeasureTypeList.GIGAWATT_HOUR,
+            StandardUnitOfMeasureTypeList.MEGAVOLT_AMPERE_REACTIVE_HOURS,
+            StandardUnitOfMeasureTypeList.MEGAWATT_HOURS
+    );
 
     private UnitConstants() {
         throw new IllegalStateException("Utility class");

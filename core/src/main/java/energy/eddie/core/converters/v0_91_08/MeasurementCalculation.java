@@ -1,0 +1,15 @@
+package energy.eddie.core.converters.v0_91_08;
+
+import energy.eddie.cim.v0_91_08.StandardUnitOfMeasureTypeList;
+import energy.eddie.core.converters.UnsupportedUnitException;
+
+import java.math.BigDecimal;
+import java.time.Duration;
+
+interface MeasurementCalculation {
+    BigDecimal convert(BigDecimal value, Duration resolution, BigDecimal scale);
+
+    ScaledUnit scaledUnit(StandardUnitOfMeasureTypeList unit) throws UnsupportedUnitException;
+
+    boolean isTargetUnit(StandardUnitOfMeasureTypeList unit);
+}

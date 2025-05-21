@@ -1,7 +1,8 @@
 package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
-import energy.eddie.core.services.PermissionMarketDocumentService;
+import energy.eddie.core.services.v0_82.PermissionMarketDocumentService;
+import energy.eddie.spring.regionconnector.extensions.v0_82.PermissionMarketDocumentServiceRegistrar;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
