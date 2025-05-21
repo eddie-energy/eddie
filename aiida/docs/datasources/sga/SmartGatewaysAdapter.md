@@ -33,37 +33,28 @@ in your browser. The default username is `admin` and the default password is `sm
 ## How to use with AIIDA
 
 The adapter needs to send the smart meter data via MQTT to the AIIDA broker.
-You should configure the datasource in the AIIDA settings.
+You should configure the datasource in the AIIDA UI.
 
-Example of a working configuration:
+Create a new datasource in AIIDA with the datasource type `Smart Gateways Adapter`.
+This will generate the MQTT settings for the adapter.
 
-```yaml
-aiida:
-  datasources:
-    sga:
-        - enabled: true
-          id: 1
-          mqtt-server-uri: tcp://localhost:1884
-          mqtt-subscribe-topic: sga/metering
-          mqtt-username: sga
-          mqtt-password: sga
-```
-When AIIDA started via docker:
-
+An example configuration is shown below. The values are based on the example working configuration above.
 ```text
-AIIDA_DATASOURCES_SGA_0_ENABLED=true
-AIIDA_DATASOURCES_SGA_0_ID=1
-AIIDA_DATASOURCES_SGA_0_MQTT_SERVER_URI=tcp://localhost:1884
-AIIDA_DATASOURCES_SGA_0_MQTT_SUBSCRIBE_TOPIC=sga/metering
-AIIDA_DATASOURCES_SGA_0_MQTT_USERNAME=sga
-AIIDA_DATASOURCES_SGA_0_MQTT_PASSWORD=sga
+MQTT Server: host or ip of the AIIDA broker
+MQTT Port: 1884
+MQTT Username: unique username (e.g.: r0bw57fSZM)
+MQTT Password: unique password (e.g.: xfeAHruBB4)
+MQTT Topic: AcQY334Z4Q/dsmr/reading/+
 ```
 
 Now configure the MQTT settings in the adapter. The values are based on the example working configuration above.
 ```text
 MQTT Server: host or ip of the AIIDA broker
 MQTT Port: 1884
-MQTT Username: sga
-MQTT Password: sga
-MQTT Prefix: sga/metering
+MQTT Username: unique username (e.g.: r0bw57fSZM)
+MQTT Password: unique password (e.g.: xfeAHruBB4)
+MQTT Prefix: random string of 10 characters (e.g. AcQY334Z4Q)
 ```
+
+For the prefix only the first 10 characters of the MQTT Topic are used. In this
+example the prefix is `AcQY334Z4Q`.
