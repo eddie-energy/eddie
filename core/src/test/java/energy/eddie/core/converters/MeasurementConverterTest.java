@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MeasurementConverterTest {
     @Test
@@ -154,5 +153,24 @@ class MeasurementConverterTest {
                              .getSeriesPeriodList()
                              .getSeriesPeriods()
                              .size());
+    }
+
+    @Test
+    void convert_withEmptyTimeSeriesList_doesntThrow() {
+        // Given
+        var envelope = new ValidatedHistoricalDataEnvelope()
+                .withMessageDocumentHeader(new MessageDocumentHeaderComplexType()
+                                                   .withMessageDocumentHeaderMetaInformation(
+                                                           new MessageDocumentHeaderMetaInformationComplexType()
+                                                                   .withPermissionid("pid")
+                                                   ))
+                .withValidatedHistoricalDataMarketDocument(
+                        new ValidatedHistoricalDataMarketDocumentComplexType()
+                                .withTimeSeriesList(null)
+                );
+        var converter = new MeasurementConverter(List.of(new EnergyToPowerCalculation()));
+
+        // When & Then
+        assertDoesNotThrow(() -> converter.convert(envelope));
     }
 }
