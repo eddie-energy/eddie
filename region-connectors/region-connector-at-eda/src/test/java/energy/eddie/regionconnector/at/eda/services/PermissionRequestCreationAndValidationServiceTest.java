@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.at.eda.AtEdaBeanConfig;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEventFactory;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,6 +28,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestCreationAndValidationServiceTest {
+    @Mock
+    private Outbox mockOutbox;
     @Spy
     private final AtConfiguration configuration = new AtEdaBeanConfig().atConfiguration("epId");
     @SuppressWarnings("unused")
