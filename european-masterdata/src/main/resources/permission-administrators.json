@@ -417,6 +417,62 @@
   },
   {
     "country": "at",
+    "company": "Energienetze Steiermark GmbH",
+    "name": "Energienetze Steiermark",
+    "companyId": "AT008230",
+    "jumpOffUrl": "https://login.e-netze.at/auth/realms/enetze/protocol/openid-connect/auth?client_id=enetze-en&redirect_uri=https%3A%2F%2Fportal.e-netze.at%2Fkunde&response_mode=query&response_type=code&scope=openid#/",
+    "regionConnector": "at-eda"
+  },
+  {
+    "country": "at",
+    "company": "Energienetze Steiermark GmbH",
+    "name": "Energienetze Steiermark",
+    "companyId": "AT008200",
+    "jumpOffUrl": "https://login.e-netze.at/auth/realms/enetze/protocol/openid-connect/auth?client_id=enetze-en&redirect_uri=https%3A%2F%2Fportal.e-netze.at%2Fkunde&response_mode=query&response_type=code&scope=openid#/",
+    "regionConnector": "at-eda"
+  },
+  {
+    "country": "at",
+    "company": "Energienetze Steiermark GmbH",
+    "name": "Energienetze Steiermark",
+    "companyId": "AT008830",
+    "jumpOffUrl": "https://login.e-netze.at/auth/realms/enetze/protocol/openid-connect/auth?client_id=enetze-en&redirect_uri=https%3A%2F%2Fportal.e-netze.at%2Fkunde&response_mode=query&response_type=code&scope=openid#/",
+    "regionConnector": "at-eda"
+  },
+  {
+    "country": "at",
+    "company": "Energienetze Steiermark GmbH",
+    "name": "Energienetze Steiermark",
+    "companyId": "AT008380",
+    "jumpOffUrl": "https://login.e-netze.at/auth/realms/enetze/protocol/openid-connect/auth?client_id=enetze-en&redirect_uri=https%3A%2F%2Fportal.e-netze.at%2Fkunde&response_mode=query&response_type=code&scope=openid#/",
+    "regionConnector": "at-eda"
+  },
+  {
+    "country": "at",
+    "company": "Energienetze Steiermark GmbH",
+    "name": "Energienetze Steiermark",
+    "companyId": "AT008480",
+    "jumpOffUrl": "https://login.e-netze.at/auth/realms/enetze/protocol/openid-connect/auth?client_id=enetze-en&redirect_uri=https%3A%2F%2Fportal.e-netze.at%2Fkunde&response_mode=query&response_type=code&scope=openid#/",
+    "regionConnector": "at-eda"
+  },
+  {
+    "country": "at",
+    "company": "Energienetze Steiermark GmbH",
+    "name": "Energienetze Steiermark",
+    "companyId": "AT008960",
+    "jumpOffUrl": "https://login.e-netze.at/auth/realms/enetze/protocol/openid-connect/auth?client_id=enetze-en&redirect_uri=https%3A%2F%2Fportal.e-netze.at%2Fkunde&response_mode=query&response_type=code&scope=openid#/",
+    "regionConnector": "at-eda"
+  },
+  {
+    "country": "at",
+    "company": "Energienetze Steiermark GmbH",
+    "name": "Energienetze Steiermark",
+    "companyId": "AT008320",
+    "jumpOffUrl": "https://login.e-netze.at/auth/realms/enetze/protocol/openid-connect/auth?client_id=enetze-en&redirect_uri=https%3A%2F%2Fportal.e-netze.at%2Fkunde&response_mode=query&response_type=code&scope=openid#/",
+    "regionConnector": "at-eda"
+  },
+  {
+    "country": "at",
     "company": "Energieversorgung Kleinwalsertal Ges. m. b. H.",
     "name": "Kleinwalsertal",
     "companyId": "AT006230",

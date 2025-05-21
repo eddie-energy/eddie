@@ -9,7 +9,6 @@ import energy.eddie.regionconnector.at.eda.AtEdaBeanConfig;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEventFactory;
-import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,8 +27,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestCreationAndValidationServiceTest {
-    @Mock
-    private Outbox mockOutbox;
     @Spy
     private final AtConfiguration configuration = new AtEdaBeanConfig().atConfiguration("epId");
     @SuppressWarnings("unused")
@@ -41,7 +38,7 @@ class PermissionRequestCreationAndValidationServiceTest {
     private PermissionRequestCreationAndValidationService creationService;
 
     @Test
-    void createValidPermissionRequest_forHVDDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
+    void createValidPermissionRequest_forHVDDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var start = LocalDate.now(AT_ZONE_ID).minusDays(10);
         var timeframe = new Timeframe(start, start.plusDays(5));
@@ -62,7 +59,7 @@ class PermissionRequestCreationAndValidationServiceTest {
     }
 
     @Test
-    void createValidPermissionRequest_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
+    void createValidPermissionRequest_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(now, now);
@@ -76,19 +73,6 @@ class PermissionRequestCreationAndValidationServiceTest {
 
         // Then
         assertNotNull(res);
-    }
-
-    @Test
-    void createInvalidPermissionRequest() {
-        // Given
-        var pr = new PermissionRequestForCreation("cid", "AT1234500699900000000000206868100",
-                                                  "dnid", "AT000000");
-
-
-        // When
-        // Then
-        assertThrows(EdaValidationException.class, () -> creationService.createAndValidatePermissionRequest(pr));
-        verify(mockOutbox, times(2)).commit(any());
     }
 
     @Test
