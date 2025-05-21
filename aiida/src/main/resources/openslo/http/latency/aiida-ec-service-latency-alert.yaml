@@ -1,0 +1,25 @@
+apiVersion: openslo/v1
+kind: AlertPolicy
+metadata:
+  name: aiida-ec-service-latency-alert
+  labels:
+    service: aiida-ec-service
+spec:
+  description: Alert if 95th percentile latency exceeds 500ms
+  alertWhenBreaching: true
+  alertWhenResolved: true
+  alertWhenNoData: true
+  conditions:
+    - kind: AlertCondition
+      metadata:
+        name: aiida-ec-latency-burnrate
+        displayName: Latency burnrate exceeds threshold
+      spec:
+        description: Breach of 95th percentile latency threshold over 5 minutes
+        severity: page
+        condition:
+          kind: burnrate
+          op: gt
+          threshold: 2
+          lookbackWindow: 2m
+          alertAfter: 1m

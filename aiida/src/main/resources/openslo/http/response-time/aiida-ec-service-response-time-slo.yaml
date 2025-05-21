@@ -1,7 +1,7 @@
 apiVersion: openslo/v1
 kind: SLO
 metadata:
-  name: aiida-ec-response-time-slo
+  name: aiida-ec-service-response-time-slo
   labels:
     service: aiida-ec-service
 spec:

@@ -1,0 +1,16 @@
+apiVersion: openslo/v1
+kind: SLI
+metadata:
+  name: aiida-ec-service-latency-sli
+  labels:
+    service: aiida-ec-service
+spec:
+  description: 95th percentile response time over last 5 minutes
+  indicator:
+    thresholdMetric:
+      source: prometheus
+      query: |
+        histogram_quantile(
+          0.95,
+          sum(rate(http_response_time_seconds_bucket{service="aiida-agent"}[5m])) by (le)
+        )

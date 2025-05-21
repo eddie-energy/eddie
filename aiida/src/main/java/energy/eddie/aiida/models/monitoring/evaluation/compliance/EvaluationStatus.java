@@ -2,7 +2,7 @@ package energy.eddie.aiida.models.monitoring.evaluation.compliance;
 
 public enum EvaluationStatus {
     VIOLATION("violation"),
-    NO_DATA("no_data"),
+    NO_METRICS("no_metrics"),
     COMPLIANT("compliant"),
     PENDING("pending");
 

@@ -1,0 +1,19 @@
+apiVersion: openslo/v1
+kind: SLO
+metadata:
+  name: aiida-ec-service-latency-slo
+  labels:
+    service: aiida-ec-service
+spec:
+  description: 95% of requests should be faster than 100ms over the past 7 days
+  service: aiida-ec-service
+  indicatorRef: aiida-ec-service-latency-sli
+  timeWindow:
+    duration: 7d
+    isRolling: true
+  budgetingMethod: Timeslices
+  objective:
+    op: lte
+    target: 0.001
+  alertPolicies:
+    - aiida-ec-response-time-alert

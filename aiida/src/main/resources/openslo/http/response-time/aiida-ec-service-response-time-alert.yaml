@@ -20,6 +20,6 @@ spec:
         condition:
           kind: burnrate
           op: gt
-          threshold: 0.00001           # ⚠️ much lower threshold for test
-          lookbackWindow: 5m       # ⚠️ very short window
-          alertAfter: 2m           # ⚠️ quickly triggers alert
+          threshold: 1.5
+          lookbackWindow: 5m
+          alertAfter: 2m
