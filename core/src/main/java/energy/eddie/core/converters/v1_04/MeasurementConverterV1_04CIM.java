@@ -1,6 +1,8 @@
-package energy.eddie.core.converters.v0_91_08;
+package energy.eddie.core.converters.v1_04;
 
-import energy.eddie.cim.v0_91_08.*;
+import energy.eddie.cim.v1_04.StandardQualityTypeList;
+import energy.eddie.cim.v1_04.StandardUnitOfMeasureTypeList;
+import energy.eddie.cim.v1_04.vhd.*;
 import energy.eddie.core.converters.UnsupportedUnitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +17,11 @@ import java.util.List;
 
 @Component
 @SuppressWarnings("java:S101") // Names shouldn't contain underscores, but this is required to not have bean name clashes with the other MeasurementConverter
-public class MeasurementConverterCIM_v0_91_08 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MeasurementConverterCIM_v0_91_08.class);
+public class MeasurementConverterV1_04CIM {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MeasurementConverterV1_04CIM.class);
     private final List<MeasurementCalculation> newCalculations;
 
-    MeasurementConverterCIM_v0_91_08(
+    MeasurementConverterV1_04CIM(
             List<MeasurementCalculation> newCalculations
     ) {
         this.newCalculations = newCalculations;

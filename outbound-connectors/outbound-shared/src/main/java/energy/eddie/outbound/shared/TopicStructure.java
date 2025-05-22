@@ -11,6 +11,7 @@ public class TopicStructure {
 
     public static final String REDISTRIBUTION_TRANSACTION_RD_VALUE = "redistribution-transaction-rd";
     public static final String TERMINATION_MD_VALUE = "termination-md";
+    public static final String CIM_1_04_VALUE = "cim_1_04";
     public static final String CIM_0_91_08_VALUE = "cim_0_91_08";
     public static final String CIM_0_82_VALUE = "cim_0_82";
 
@@ -64,6 +65,7 @@ public class TopicStructure {
          * Common Information Model version 0.91.08
          */
         CIM_0_91_08(CIM_0_91_08_VALUE, CommonInformationModelVersions.V0_91_08),
+        CIM_1_04(CIM_1_04_VALUE, CommonInformationModelVersions.V1_04),
         /**
          * Eddie's internal model.
          */

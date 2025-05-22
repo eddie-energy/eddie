@@ -1,7 +1,7 @@
-package energy.eddie.core.converters.v0_91_08;
+package energy.eddie.core.converters.v1_04;
 
-import energy.eddie.cim.v0_91_08.StandardEnergyProductTypeList;
-import energy.eddie.cim.v0_91_08.StandardUnitOfMeasureTypeList;
+import energy.eddie.cim.v1_04.StandardEnergyProductTypeList;
+import energy.eddie.cim.v1_04.StandardUnitOfMeasureTypeList;
 import energy.eddie.core.converters.UnsupportedUnitException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,7 +26,6 @@ class EnergyToPowerCalculationTest {
 
         // When
         var res = calculation.convert(energy, resolution, BigDecimal.ONE);
-
 
         // Then
         assertEquals(expected, res);

@@ -1,7 +1,7 @@
-package energy.eddie.core.converters.v0_91_08;
+package energy.eddie.core.converters.v1_04;
 
-import energy.eddie.cim.v0_91_08.StandardEnergyProductTypeList;
-import energy.eddie.cim.v0_91_08.StandardUnitOfMeasureTypeList;
+import energy.eddie.cim.v1_04.StandardEnergyProductTypeList;
+import energy.eddie.cim.v1_04.StandardUnitOfMeasureTypeList;
 import energy.eddie.core.converters.UnsupportedUnitException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,9 +13,9 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.stream.Stream;
 
-import static energy.eddie.cim.v0_91_08.StandardEnergyProductTypeList.ACTIVE_ENERGY;
-import static energy.eddie.cim.v0_91_08.StandardEnergyProductTypeList.REACTIVE_ENERGY;
-import static energy.eddie.cim.v0_91_08.StandardUnitOfMeasureTypeList.*;
+import static energy.eddie.cim.v1_04.StandardEnergyProductTypeList.ACTIVE_ENERGY;
+import static energy.eddie.cim.v1_04.StandardEnergyProductTypeList.REACTIVE_ENERGY;
+import static energy.eddie.cim.v1_04.StandardUnitOfMeasureTypeList.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PowerToEnergyCalculationTest {

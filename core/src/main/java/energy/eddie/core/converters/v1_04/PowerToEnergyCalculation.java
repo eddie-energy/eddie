@@ -1,6 +1,6 @@
-package energy.eddie.core.converters.v0_91_08;
+package energy.eddie.core.converters.v1_04;
 
-import energy.eddie.cim.v0_91_08.StandardUnitOfMeasureTypeList;
+import energy.eddie.cim.v1_04.StandardUnitOfMeasureTypeList;
 import energy.eddie.core.converters.UnitConstants;
 import energy.eddie.core.converters.UnsupportedUnitException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -10,9 +10,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 
-import static energy.eddie.cim.v0_91_08.StandardEnergyProductTypeList.ACTIVE_ENERGY;
-import static energy.eddie.cim.v0_91_08.StandardEnergyProductTypeList.REACTIVE_ENERGY;
-import static energy.eddie.cim.v0_91_08.StandardUnitOfMeasureTypeList.*;
+import static energy.eddie.cim.v1_04.StandardEnergyProductTypeList.ACTIVE_ENERGY;
+import static energy.eddie.cim.v1_04.StandardEnergyProductTypeList.REACTIVE_ENERGY;
+import static energy.eddie.cim.v1_04.StandardUnitOfMeasureTypeList.*;
+
 
 @ConditionalOnProperty(prefix = "eddie.converters", name = "energy", havingValue = "true")
 @Component

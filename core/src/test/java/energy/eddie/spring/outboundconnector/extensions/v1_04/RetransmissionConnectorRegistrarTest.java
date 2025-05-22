@@ -1,4 +1,4 @@
-package energy.eddie.spring.outboundconnector.extensions.v0_91_08;
+package energy.eddie.spring.outboundconnector.extensions.v1_04;
 
 import energy.eddie.api.agnostic.outbound.RetransmissionOutboundConnector;
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
