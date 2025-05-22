@@ -159,11 +159,13 @@ class MeasurementConverterTest {
     void convert_withEmptyTimeSeriesList_doesntThrow() {
         // Given
         var envelope = new ValidatedHistoricalDataEnvelope()
-                .withMessageDocumentHeader(new MessageDocumentHeaderComplexType()
-                                                   .withMessageDocumentHeaderMetaInformation(
-                                                           new MessageDocumentHeaderMetaInformationComplexType()
-                                                                   .withPermissionid("pid")
-                                                   ))
+                .withMessageDocumentHeader(
+                        new MessageDocumentHeaderComplexType()
+                                .withMessageDocumentHeaderMetaInformation(
+                                        new MessageDocumentHeaderMetaInformationComplexType()
+                                                .withPermissionid("pid")
+                                )
+                )
                 .withValidatedHistoricalDataMarketDocument(
                         new ValidatedHistoricalDataMarketDocumentComplexType()
                                 .withTimeSeriesList(null)

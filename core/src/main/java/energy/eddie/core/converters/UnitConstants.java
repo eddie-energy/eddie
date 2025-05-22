@@ -1,7 +1,7 @@
 package energy.eddie.core.converters;
 
 import energy.eddie.cim.v0_82.vhd.UnitOfMeasureTypeList;
-import energy.eddie.cim.v0_91_08.StandardUnitOfMeasureTypeList;
+import energy.eddie.cim.v1_04.StandardUnitOfMeasureTypeList;
 
 import java.math.BigDecimal;
 import java.util.List;

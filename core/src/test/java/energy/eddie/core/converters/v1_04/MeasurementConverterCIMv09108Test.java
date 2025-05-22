@@ -1,6 +1,9 @@
-package energy.eddie.core.converters.v0_91_08;
+package energy.eddie.core.converters.v1_04;
 
-import energy.eddie.cim.v0_91_08.*;
+import energy.eddie.cim.v1_04.StandardCodingSchemeTypeList;
+import energy.eddie.cim.v1_04.StandardEnergyProductTypeList;
+import energy.eddie.cim.v1_04.StandardUnitOfMeasureTypeList;
+import energy.eddie.cim.v1_04.vhd.*;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.datatype.DatatypeFactory;
@@ -54,7 +57,7 @@ class MeasurementConverterCIMv09108Test {
                                 )
                 );
         var envelope = new VHDEnvelope().withMarketDocument(vhd);
-        var converter = new MeasurementConverterCIM_v0_91_08(List.of(new EnergyToPowerCalculation()));
+        var converter = new MeasurementConverterV1_04CIM(List.of(new EnergyToPowerCalculation()));
 
         // When
         var res = converter.convert(envelope);
@@ -100,7 +103,7 @@ class MeasurementConverterCIMv09108Test {
                                 )
                 );
         var envelope = new VHDEnvelope().withMarketDocument(vhd);
-        var converter = new MeasurementConverterCIM_v0_91_08(List.of(new EnergyToPowerCalculation()));
+        var converter = new MeasurementConverterV1_04CIM(List.of(new EnergyToPowerCalculation()));
 
         // When
         var res = converter.convert(envelope);

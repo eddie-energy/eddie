@@ -2,6 +2,7 @@ package energy.eddie.outbound.amqp;
 
 import com.rabbitmq.client.amqp.Connection;
 import energy.eddie.outbound.shared.TopicConfiguration;
+import energy.eddie.outbound.shared.TopicStructure;
 
 public class AmqpSetup {
     private final Connection connection;
@@ -18,7 +19,7 @@ public class AmqpSetup {
                 configuration.connectionStatusMessage(),
                 configuration.permissionMarketDocument(),
                 configuration.accountingPointMarketDocument(),
-                configuration.validatedHistoricalDataMarketDocument(),
+                configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_0_82),
                 configuration.terminationMarketDocument(),
                 configuration.redistributionTransactionRequestDocument()
         };

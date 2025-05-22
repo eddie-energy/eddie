@@ -7,12 +7,15 @@ import energy.eddie.api.agnostic.outbound.RawDataOutboundConnector;
 import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
+import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.ap.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
+import energy.eddie.outbound.shared.TopicStructure;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.slf4j.Logger;
@@ -20,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.nio.charset.StandardCharsets;
@@ -31,7 +35,8 @@ public class KafkaConnector implements
         ValidatedHistoricalDataEnvelopeOutboundConnector,
         PermissionMarketDocumentOutboundConnector,
         RawDataOutboundConnector,
-        AccountingPointEnvelopeOutboundConnector {
+        AccountingPointEnvelopeOutboundConnector,
+        ValidatedHistoricalDataMarketDocumentOutboundConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final TopicConfiguration config;
@@ -93,6 +98,16 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
+    @Override
+    public void setValidatedHistoricalDataMarketDocumentStream(Flux<VHDEnvelope> marketDocumentStream) {
+        marketDocumentStream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceValidatedHistoricalDataMarketDocument)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
+    }
+
     private void produceStatusMessage(ConnectionStatusMessage statusMessage) {
         var toSend = new ProducerRecord<String, Object>(
                 config.connectionStatusMessage(),
@@ -131,7 +146,7 @@ public class KafkaConnector implements
     ) {
         var info = marketDocument.getMessageDocumentHeader()
                                  .getMessageDocumentHeaderMetaInformation();
-        var toSend = new ProducerRecord<String, Object>(config.validatedHistoricalDataMarketDocument(),
+        var toSend = new ProducerRecord<String, Object>(config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_0_82),
                                                         null,
                                                         info.getConnectionid(),
                                                         marketDocument,
@@ -146,6 +161,26 @@ public class KafkaConnector implements
                 new StringHeader(Headers.PERMISSION_ID, header.getPermissionid()),
                 new StringHeader(Headers.CONNECTION_ID, header.getConnectionid()),
                 new StringHeader(Headers.DATA_NEED_ID, header.getDataNeedid())
+        );
+    }
+
+    @SuppressWarnings("LoggingSimilarMessage")
+    private void produceValidatedHistoricalDataMarketDocument(VHDEnvelope vhdEnvelope) {
+        var toSend = new ProducerRecord<String, Object>(config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_04),
+                                                        null,
+                                                        vhdEnvelope.getMessageDocumentHeaderMetaInformationConnectionId(),
+                                                        vhdEnvelope,
+                                                        cimToHeaders(vhdEnvelope));
+        sendToKafka(toSend, "Could not produce validated historical data market document message");
+        LOGGER.debug("Produced validated historical data market document message for permission request {}",
+                     vhdEnvelope.getMessageDocumentHeaderMetaInformationPermissionId());
+    }
+
+    private static Iterable<Header> cimToHeaders(energy.eddie.cim.v1_04.vhd.VHDEnvelope header) {
+        return List.of(
+                new StringHeader(Headers.PERMISSION_ID, header.getMessageDocumentHeaderMetaInformationPermissionId()),
+                new StringHeader(Headers.CONNECTION_ID, header.getMessageDocumentHeaderMetaInformationConnectionId()),
+                new StringHeader(Headers.DATA_NEED_ID, header.getMessageDocumentHeaderMetaInformationDataNeedId())
         );
     }
 
@@ -173,13 +208,11 @@ public class KafkaConnector implements
     }
 
     private void sendToKafka(ProducerRecord<String, Object> toSend, String errorMessage) {
-        kafkaTemplate.send(toSend).whenComplete((result, ex) -> {
-            if (ex != null) {
-                LOGGER.warn(errorMessage, ex);
-            } else {
-                LOGGER.debug("Produced kafka message: {}", result);
-            }
-        });
+        Mono.fromFuture(kafkaTemplate.send(toSend))
+            .subscribe(
+                    result -> LOGGER.debug("Produced kafka message: {}", result),
+                    ex -> LOGGER.warn(errorMessage, ex)
+            );
     }
 
     private void logStreamerError(Throwable throwable, Object obj) {

@@ -1,8 +1,8 @@
-package energy.eddie.spring.regionconnector.extensions.v0_91_08;
+package energy.eddie.spring.regionconnector.extensions.v1_04;
 
 import energy.eddie.api.agnostic.RegionConnectorExtension;
-import energy.eddie.api.v0_91_08.ValidatedHistoricalDataMarketDocumentProvider;
-import energy.eddie.core.services.v0_91_08.ValidatedHistoricalDataMarketDocumentService;
+import energy.eddie.api.v1_04.ValidatedHistoricalDataMarketDocumentProvider;
+import energy.eddie.core.services.v1_04.ValidatedHistoricalDataMarketDocumentService;
 import org.springframework.beans.factory.ObjectProvider;
 
 /**

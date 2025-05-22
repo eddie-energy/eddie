@@ -1,6 +1,6 @@
-package energy.eddie.core.converters.v0_91_08;
+package energy.eddie.core.converters.v1_04;
 
-import energy.eddie.cim.v0_91_08.StandardUnitOfMeasureTypeList;
+import energy.eddie.cim.v1_04.StandardUnitOfMeasureTypeList;
 import energy.eddie.core.converters.UnsupportedUnitException;
 
 import java.math.BigDecimal;

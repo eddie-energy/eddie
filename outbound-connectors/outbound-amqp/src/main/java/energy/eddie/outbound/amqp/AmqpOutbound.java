@@ -15,6 +15,7 @@ import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
+import energy.eddie.outbound.shared.TopicStructure;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,7 @@ public class AmqpOutbound implements
 
     @Override
     public void setEddieValidatedHistoricalDataMarketDocumentStream(Flux<ValidatedHistoricalDataEnvelope> marketDocumentStream) {
-        marketDocumentStream.subscribe(publish(config.validatedHistoricalDataMarketDocument(), AmqpOutbound::toHeaders));
+        marketDocumentStream.subscribe(publish(config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_0_82), AmqpOutbound::toHeaders));
     }
 
     @Override
