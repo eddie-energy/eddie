@@ -1,0 +1,21 @@
+package energy.eddie.cim.v0_91_08.extensions;
+
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
+
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
+
+public class CimDateTimeAdapter extends XmlAdapter<String, ZonedDateTime> {
+
+    @Override
+    public ZonedDateTime unmarshal(String stringValue) {
+        return stringValue != null ? ZonedDateTime.parse(stringValue, ISO_DATE_TIME) : null;
+    }
+
+    @Override
+    public String marshal(ZonedDateTime value) {
+        return value != null ? ISO_DATE_TIME.format(value.withZoneSameInstant(ZoneOffset.UTC)) : null;
+    }
+}

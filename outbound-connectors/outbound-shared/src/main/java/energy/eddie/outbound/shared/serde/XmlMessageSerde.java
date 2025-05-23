@@ -5,6 +5,7 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
+import energy.eddie.cim.v0_91_08.VHDEnvelope;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
@@ -26,7 +27,8 @@ public class XmlMessageSerde implements MessageSerde {
     private static final List<Class<?>> CIM_TYPES = List.of(
             PermissionEnvelope.class,
             ValidatedHistoricalDataEnvelope.class,
-            AccountingPointEnvelope.class
+            AccountingPointEnvelope.class,
+            VHDEnvelope.class
     );
     private final Marshaller marshaller;
     private final Unmarshaller unmarshaller;
@@ -38,7 +40,8 @@ public class XmlMessageSerde implements MessageSerde {
                     PermissionEnvelope.class,
                     AccountingPointEnvelope.class,
                     ValidatedHistoricalDataEnvelope.class,
-                    RTREnvelope.class
+                    RTREnvelope.class,
+                    VHDEnvelope.class
             );
             marshaller = ctx.createMarshaller();
             unmarshaller = ctx.createUnmarshaller();
@@ -56,6 +59,7 @@ public class XmlMessageSerde implements MessageSerde {
                 case PermissionEnvelope ignored -> serializeCimMessage(message);
                 case AccountingPointEnvelope ignored -> serializeCimMessage(message);
                 case RTREnvelope ignored -> serializeCimMessage(message);
+                case VHDEnvelope ignored -> serializeCimMessage(message);
                 default -> objectMapper.writeValueAsBytes(message);
             };
         } catch (Exception e) {

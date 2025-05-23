@@ -12,5 +12,10 @@ For more information, see [Common Information Model Client Libraries](https://ed
 ## 1.0.0 - 2025-05-15
 
 - Add validated historical data for CIM version `0.91.08`.
-- Flatten the directory structure for version `0.91.08` to not duplicate generated classes. 
+- Flatten the directory structure for version `0.91.08` to not duplicate generated classes.
 - This moves the redistribution transaction requests from the package `energy.eddie.cim.v0_91_08.retransmission` to the package `energy.eddie.cim.v0_91_08`.
+
+## 2.0.0 - 2025-05-22
+
+- Change enumeration name for generated CIM classes
+- Change serialization for xs:datetime

@@ -18,6 +18,7 @@ dependencies {
     // Shared between region-connectors
     implementation(libs.jakarta.xml.bind.api)
     implementation(libs.swagger.annotations)
+    implementation(project(":cim"))
 }
 
 plugins.withId(libs.plugins.errorprone.get().pluginId) {
