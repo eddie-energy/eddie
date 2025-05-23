@@ -41,7 +41,7 @@ class PermissionRequestCreationAndValidationServiceTest {
     private PermissionRequestCreationAndValidationService creationService;
 
     @Test
-    void createValidPermissionRequest_forHVDDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
+    void createValidPermissionRequest_forHVDDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var start = LocalDate.now(AT_ZONE_ID).minusDays(10);
         var timeframe = new Timeframe(start, start.plusDays(5));
@@ -62,7 +62,7 @@ class PermissionRequestCreationAndValidationServiceTest {
     }
 
     @Test
-    void createValidPermissionRequest_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
+    void createValidPermissionRequest_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(now, now);
@@ -76,19 +76,6 @@ class PermissionRequestCreationAndValidationServiceTest {
 
         // Then
         assertNotNull(res);
-    }
-
-    @Test
-    void createInvalidPermissionRequest() {
-        // Given
-        var pr = new PermissionRequestForCreation("cid", "AT1234500699900000000000206868100",
-                                                  "dnid", "AT000000");
-
-
-        // When
-        // Then
-        assertThrows(EdaValidationException.class, () -> creationService.createAndValidatePermissionRequest(pr));
-        verify(mockOutbox, times(2)).commit(any());
     }
 
     @Test

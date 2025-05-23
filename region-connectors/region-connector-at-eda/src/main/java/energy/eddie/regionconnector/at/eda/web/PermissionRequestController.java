@@ -6,7 +6,6 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.services.ConnectionStatusService;
-import energy.eddie.regionconnector.at.eda.services.EdaValidationException;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationAndValidationService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.validation.Valid;
@@ -44,7 +43,7 @@ public class PermissionRequestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedPermissionRequest> createPermissionRequest(
             @RequestBody @Valid PermissionRequestForCreation permissionRequestForCreation
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, EdaValidationException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
         LOGGER.info("Creating new permission request");
         var createdRequest = creationService.createAndValidatePermissionRequest(permissionRequestForCreation);
         var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
