@@ -9,7 +9,7 @@ export default withMermaid(
     title: "EDDIE Framework",
     description: "Using and Extending the EDDIE Framework",
     ignoreDeadLinks: "localhostLinks",
-    head: [["link", { rel: "icon", href: "/images/favicon-32x32.png" }]],
+    head: [["link", { rel: "icon", href: "/framework/images/favicon.svg" }]],
     vite: {
       // workaround for a vite/pnpm related mermaid bug: https://github.com/mermaid-js/mermaid/issues/4320
       // bug occurs in vitepress dev mode only
@@ -24,7 +24,7 @@ export default withMermaid(
     },
     themeConfig: {
       // https://vitepress.dev/reference/default-theme-config
-      logo: "/images/favicon-32x32.png",
+      logo: "/images/favicon.svg",
       nav: [
         { text: "Home", link: "/" },
         {
