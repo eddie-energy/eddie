@@ -6,6 +6,9 @@ import energy.eddie.aiida.models.record.UnitOfMeasurement;
 import energy.eddie.aiida.utils.ObisCode;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public enum HistoryModeEntry {
     MOTDETAT(ObisCode.UNKNOWN, UnitOfMeasurement.NONE),
@@ -25,6 +28,11 @@ public enum HistoryModeEntry {
     PAPP(ObisCode.APPARENT_INSTANTANEOUS_POWER, UnitOfMeasurement.VOLT_AMPERE),
     HHPHC(ObisCode.UNKNOWN, UnitOfMeasurement.NONE);
 
+    private static final Map<String, HistoryModeEntry> LOOK_UP_BY_ENTRY_KEY =
+            Arrays.stream(HistoryModeEntry.values())
+                  .collect(Collectors.toUnmodifiableMap(Enum::name,
+                                                        Function.identity()));
+
     private final ObisCode obisCode;
     private final UnitOfMeasurement rawUnitOfMeasurement;
 
@@ -35,10 +43,12 @@ public enum HistoryModeEntry {
 
     @JsonCreator
     public static HistoryModeEntry fromEntryKey(String entryKey) {
-        return Arrays.stream(HistoryModeEntry.values())
-                     .filter(entry -> entry.name().equals(entryKey))
-                     .findFirst()
-                     .orElseThrow();
+        var entry = LOOK_UP_BY_ENTRY_KEY.get(entryKey);
+        if (entry == null) {
+            throw new IllegalArgumentException("Unknown HistoryModeEntry key: " + entryKey);
+        }
+
+        return entry;
     }
 
     @JsonValue

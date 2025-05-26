@@ -100,7 +100,7 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
                         .map(entry ->
                                      new MicroTeleinfoV3AdapterStandardModeMeasurement(
                                              entry.getKey(),
-                                             String.valueOf(entry.getValue().value()))
+                                             String.valueOf(entry.getValue().sanitizedValue(entry.getKey())))
                         ).map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
                         .toList();
                 case UNKNOWN -> throw new MicroTeleinfoV3ModeNotSupportedException(message.getPayload(),
