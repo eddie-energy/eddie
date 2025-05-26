@@ -105,7 +105,7 @@ public class EdaPermissionRequest implements AtPermissionRequest {
                 projection.getDsoId(),
                 projection.getStart(),
                 projection.getEnd(),
-                AllowedGranularity.valueOf(projection.getGranularity()),
+                projection.getGranularity() == null ? null : AllowedGranularity.valueOf(projection.getGranularity()),
                 PermissionProcessStatus.valueOf(projection.getStatus()),
                 projection.getMessage(),
                 projection.getConsentId(),
