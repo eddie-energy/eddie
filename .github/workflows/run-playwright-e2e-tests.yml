@@ -5,29 +5,21 @@ on:
       - opened
       - reopened
       - synchronize
-    paths-ignore:
-      - "admin-console/**"
-      - "aiida/**"
-      - "docs/**"
-      - "env/**"
-      - "outbound-connectors/**"
-      - ".idea/**"
-      - ".sonarlint/**"
-      - ".run/**"
-      - "**.md"
+    paths:
+      - ".github/workflows/run-playwright-e2e-tests.yml"
+      - "core/**"
+      - "e2e-tests/**"
+      - "region-connectors/**"
+      - "!**.md"
   push:
     branches:
       - main
-    paths-ignore:
-      - "admin-console/**"
-      - "aiida/**"
-      - "docs/**"
-      - "env/**"
-      - "outbound-connectors/**"
-      - ".idea/**"
-      - ".sonarlint/**"
-      - ".run/**"
-      - "**.md"
+    paths:
+      - ".github/workflows/run-playwright-e2e-tests.yml"
+      - "core/**"
+      - "e2e-tests/**"
+      - "region-connectors/**"
+      - "!**.md"
   workflow_dispatch:
 
 env:
