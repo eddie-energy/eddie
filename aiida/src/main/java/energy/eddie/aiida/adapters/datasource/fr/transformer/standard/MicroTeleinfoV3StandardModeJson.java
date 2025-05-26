@@ -91,6 +91,6 @@ public record MicroTeleinfoV3StandardModeJson(
 
     @Override
     public void putEnergyData(String key, MicroTeleinfoV3DataField value) {
-        this.energyData.put(key.replaceAll("[-+]", "_"), value);
+        this.energyData.put(key, value);
     }
 }
