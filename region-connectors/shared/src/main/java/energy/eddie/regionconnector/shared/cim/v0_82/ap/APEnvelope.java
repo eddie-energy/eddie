@@ -8,10 +8,8 @@ import energy.eddie.cim.v0_82.ap.MessageDocumentHeaderRegionComplexType;
 import energy.eddie.regionconnector.shared.cim.v0_82.CimUtils;
 import energy.eddie.regionconnector.shared.cim.v0_82.DocumentType;
 
-import javax.xml.datatype.DatatypeFactory;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class APEnvelope {
     private final AccountingPointMarketDocumentComplexType ap;
@@ -23,12 +21,9 @@ public class APEnvelope {
     }
 
     public AccountingPointEnvelope wrap() {
-        var calendar = DatatypeFactory
-                .newDefaultInstance()
-                .newXMLGregorianCalendar(ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME));
         var codingScheme = CimUtils.getCodingSchemeAp(permissionRequest.dataSourceInformation().countryCode());
         var header = new energy.eddie.cim.v0_82.ap.MessageDocumentHeaderComplexType()
-                .withCreationDateTime(calendar)
+                .withCreationDateTime(ZonedDateTime.now(ZoneOffset.UTC))
                 .withMessageDocumentHeaderMetaInformation(
                         new MessageDocumentHeaderMetaInformationComplexType()
                                 .withConnectionid(permissionRequest.connectionId())

@@ -53,4 +53,10 @@ public class XmlValidator {
         );
         return validateXMLSchema(xsd, xml);
     }
+    public static boolean validateV09108ValidatedHistoricalDataMarketDocument(String xml) {
+        var xsd = XmlValidator.class.getResource(
+                "/cim/xsd/v0_91_08/ValidateHistoricalData Document_Annotated.xsd"
+        );
+        return validateXMLSchema(xsd, xml);
+    }
 }

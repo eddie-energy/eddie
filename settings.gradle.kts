@@ -6,6 +6,9 @@ plugins {
 
 include("region-connectors")
 
+include("cim")
+findProject("cim")?.name = "cim"
+
 include("api")
 findProject("api")?.name = "api"
 

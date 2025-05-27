@@ -1,26 +1,29 @@
 package energy.eddie.outbound.shared.serde;
 
 import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.cim.v0_82.ap.CommodityKind;
 import energy.eddie.cim.v0_82.ap.DirectionTypeList;
-import energy.eddie.cim.v0_82.ap.*;
+import energy.eddie.cim.v0_82.pmd.*;
 import energy.eddie.cim.v0_82.pmd.ESMPDateTimeIntervalComplexType;
 import energy.eddie.cim.v0_82.pmd.ProcessTypeList;
 import energy.eddie.cim.v0_82.pmd.TimeSeriesComplexType;
-import energy.eddie.cim.v0_82.pmd.*;
+import energy.eddie.cim.v0_82.vhd.*;
+import energy.eddie.cim.v0_82.vhd.AccumulationKind;
+import energy.eddie.cim.v0_82.vhd.AggregateKind;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.cim.v0_82.vhd.MeasurementPointIDStringComplexType;
-import energy.eddie.cim.v0_82.vhd.*;
-import energy.eddie.cim.v0_91_08.ESMPDateTimeInterval;
-import energy.eddie.cim.v0_91_08.RTREnvelope;
+import energy.eddie.cim.v0_91_08.*;
 import energy.eddie.outbound.shared.testing.XmlValidator;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.datatype.DatatypeFactory;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,11 +32,11 @@ class XmlMessageSerdeTest {
     @Test
     void testSerialize_producesCIMCompliantPermissionMarketDocument() throws SerdeInitializationException, SerializationException {
         // Given
-        var gregorianCalendar = DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar(2024, 1, 1, 0, 0, 0, 0, 0);
+        var dateTime = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         var document = new PermissionEnvelope()
                 .withMessageDocumentHeader(
                         new energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderComplexType()
-                                .withCreationDateTime(gregorianCalendar)
+                                .withCreationDateTime(dateTime)
                                 .withMessageDocumentHeaderMetaInformation(
                                         new energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderMetaInformationComplexType()
                                                 .withPermissionid("pid")
@@ -122,11 +125,11 @@ class XmlMessageSerdeTest {
     @Test
     void testSerialize_producesCIMCompliantAccountingPointMarketDocument() throws SerdeInitializationException, SerializationException {
         // Given
-        var gregorianCalendar = DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar(2024, 1, 1, 0, 0, 0, 0, 0);
+        var dateTime = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         var document = new AccountingPointEnvelope()
                 .withMessageDocumentHeader(
                         new energy.eddie.cim.v0_82.ap.MessageDocumentHeaderComplexType()
-                                .withCreationDateTime(gregorianCalendar)
+                                .withCreationDateTime(dateTime)
                                 .withMessageDocumentHeaderMetaInformation(
                                         new energy.eddie.cim.v0_82.ap.MessageDocumentHeaderMetaInformationComplexType()
                                                 .withPermissionid("pid")
@@ -220,11 +223,11 @@ class XmlMessageSerdeTest {
     @Test
     void testSerialize_producesCIMCompliantValidatedHistoricalDataMarketDocument() throws SerdeInitializationException, SerializationException {
         // Given
-        var gregorianCalendar = DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar(2024, 1, 1, 0, 0, 0, 0, 0);
+        var dateTime = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         var document = new ValidatedHistoricalDataEnvelope()
                 .withMessageDocumentHeader(
                         new energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderComplexType()
-                                .withCreationDateTime(gregorianCalendar)
+                                .withCreationDateTime(dateTime)
                                 .withMessageDocumentHeaderMetaInformation(
                                         new energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderMetaInformationComplexType()
                                                 .withPermissionid("pid")
@@ -304,7 +307,7 @@ class XmlMessageSerdeTest {
                                                                         UnitOfMeasureTypeList.KILOWATT_HOUR)
                                                                 .withRegistrationDateAndOrTimeDateTime(
                                                                         new DateAndOrTimeComplexType()
-                                                                                .withDateTime(gregorianCalendar)
+                                                                                .withDateTime(dateTime)
                                                                 )
                                                                 .withRegisteredResource(
                                                                         new RegisteredResourceComplexType()
@@ -471,10 +474,10 @@ class XmlMessageSerdeTest {
     @Test
     void testSerialize_producesCIMCompliantRTREnvelope() throws SerdeInitializationException, SerializationException {
         // Given
-        var gregorianCalendar = DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar("2000-01-20T12:00:00Z");
+        var dateTime = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         var document = new RTREnvelope()
                 .withMarketDocumentMRID("mrid")
-                .withMessageDocumentHeaderCreationDateTime(gregorianCalendar)
+                .withMessageDocumentHeaderCreationDateTime(dateTime)
                 .withMessageDocumentHeaderMetaInformationPermissionId("pid")
                 .withMessageDocumentHeaderMetaInformationRegionConnector("rc-id")
                 .withMarketDocumentPeriodTimeInterval(
@@ -516,5 +519,106 @@ class XmlMessageSerdeTest {
         // When & Then
         assertThrows(DeserializationException.class,
                      () -> serde.deserialize(message.getBytes(StandardCharsets.UTF_8), HashMap.class));
+    }
+
+    @Test
+    void testSerialize_producesCIM_v0_91_08CompliantValidatedHistoricalDataMarketDocument() throws SerdeInitializationException, SerializationException {
+        // Given
+        var dateTime = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var document = new VHDEnvelope()
+                .withMessageDocumentHeaderCreationDateTime(dateTime)
+                .withMessageDocumentHeaderMetaInformationPermissionId("pid")
+                .withMessageDocumentHeaderMetaInformationConnectionId("cid")
+                .withMessageDocumentHeaderMetaInformationDataNeedId("dnid")
+                .withMessageDocumentHeaderMetaInformationDocumentType("validated-historical-data-market-document")
+                .withMessageDocumentHeaderMetaInformationRegionConnector("at-eda")
+                .withMessageDocumentHeaderMetaInformationRegionCountry("at")
+                .withMarketDocument(
+                        new VHDMarketDocument()
+                                .withMRID("MRID")
+                                .withCreatedDateTime(dateTime)
+                                .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METER_ADMINISTRATOR.value())
+                                .withDescription("validated-historical-data-market-document")
+                                .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
+                                .withRevisionNumber("1")
+                                .withSenderMarketParticipantMRID(
+                                        new PartyIDString()
+                                                .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
+                                                .withValue("EDA")
+                                )
+                                .withReceiverMarketParticipantMarketRoleType(StandardRoleTypeList.CONSUMER.value())
+                                .withReceiverMarketParticipantMRID(
+                                        new PartyIDString()
+                                                .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
+                                                .withValue("eligible-party")
+                                )
+                                .withProcessProcessType(StandardProcessTypeList.ACCESS_TO_METERED_DATA.value())
+                                .withPeriodTimeInterval(
+                                        new ESMPDateTimeInterval()
+                                                .withStart("2024-01-01T00:00Z")
+                                                .withEnd("2024-01-01T00:00Z")
+                                )
+                                .withTimeSeries(
+                                        new TimeSeries()
+                                                .withMRID(UUID.randomUUID().toString())
+                                                .withVersion("1")
+                                                .withFlowDirectionDirection(StandardDirectionTypeList.DOWN.value())
+                                                .withProduct(StandardEnergyProductTypeList.ACTIVE_ENERGY.value())
+                                                .withMarketEvaluationPointMRID(
+                                                        new MeasurementPointIDString()
+                                                                .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
+                                                                .withValue("ID")
+                                                )
+                                                .withMarketEvaluationPointMeterReadingsMRID(
+                                                        new ResourceIDString()
+                                                                .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
+                                                                .withValue("ID")
+                                                )
+                                                .withMarketEvaluationPointMeterReadingsReadingsMRID(
+                                                        new ResourceIDString()
+                                                                .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
+                                                                .withValue("ID")
+                                                )
+                                                .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAccumulation(
+                                                        energy.eddie.cim.v0_91_08.AccumulationKind.DELTADATA
+                                                )
+                                                .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregate(
+                                                        energy.eddie.cim.v0_91_08.AggregateKind.AVERAGE
+                                                )
+                                                .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(
+                                                        energy.eddie.cim.v0_91_08.CommodityKind.ELECTRICITYPRIMARYMETERED
+                                                )
+                                                .withMarketEvaluationPointUsagePointLocationGeoInfoReference("ref")
+                                                .withEnergyMeasurementUnitName(StandardUnitOfMeasureTypeList.KILOWATT_HOUR.value())
+                                                .withEnergyQualityMeasurementUnitName(StandardUnitOfMeasureTypeList.KILOWATT_HOUR.value())
+                                                .withDateAndOrTimeDateTime(dateTime)
+                                                .withRegisteredResourceMRID(
+                                                        new ResourceIDString()
+                                                                .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
+                                                                .withValue("MRID")
+                                                )
+                                                .withRegisteredResourceFuelFuel(StandardFuelTypeList.FOSSIL_GASEOUS_COALDERIVED_GAS.value())
+                                                .withRegisteredResourceLocationMRID("mrid")
+                                                .withRegisteredResourceName("name")
+                                                .withRegisteredResourceDescription("description")
+                                                .withRegisteredResourceLocationPositionPointsSequenceNumber(BigInteger.ZERO)
+                                                .withRegisteredResourceLocationPositionPointsXPosition("x")
+                                                .withRegisteredResourceLocationPositionPointsYPosition("y")
+                                                .withRegisteredResourceLocationPositionPointsZPosition("z")
+                                                .withRegisteredResourceLocationCoordinateSystemCrsUrn(
+                                                        StandardCoordinateSystemTypeList.OSGB36.value())
+                                                .withRegisteredResourcePSRTypePsrType(StandardAssetTypeList.AC_LINK.value())
+                                                .withReasonCode(StandardReasonCodeTypeList.ACCOUNTING_POINT_TIELINE_TIME_SERIES_MISSING.value())
+                                )
+                );
+        var serde = new XmlMessageSerde();
+
+        // When
+        var res = serde.serialize(document);
+        var valid = XmlValidator.validateV09108ValidatedHistoricalDataMarketDocument(new String(res,
+                                                                                                StandardCharsets.UTF_8));
+
+        // Then
+        assertTrue(valid);
     }
 }
