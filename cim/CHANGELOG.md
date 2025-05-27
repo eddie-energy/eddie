@@ -19,3 +19,7 @@ For more information, see [Common Information Model Client Libraries](https://ed
 
 - Change enumeration name for generated CIM classes
 - Change serialization for xs:datetime
+
+## 2.0.1 - 2025-05-27
+
+- Change artifact ID to `cim` from `cim-test`
