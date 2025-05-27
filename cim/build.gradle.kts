@@ -181,8 +181,8 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             pom {
-                name = "cim-test"
-                artifactId = "cim-test"
+                name = "cim"
+                artifactId = "cim"
                 version = project.version.toString()
                 description = "Generated CIM classes"
                 url = "https://github.com/eddie-energy/eddie"
