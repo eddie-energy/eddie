@@ -23,6 +23,7 @@ class CimDateTimeAdapterTest {
         // Then
         assertEquals(expected, res);
     }
+
     @Test
     void marshal_onNull_returnsNull() {
         // Given
@@ -48,6 +49,7 @@ class CimDateTimeAdapterTest {
         // Then
         assertEquals(expected, res);
     }
+
     @Test
     void unmarshal_onNull_returnsNull() {
         // Given

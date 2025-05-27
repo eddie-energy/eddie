@@ -540,7 +540,7 @@ class XmlMessageSerdeTest {
                                 .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METER_ADMINISTRATOR.value())
                                 .withDescription("validated-historical-data-market-document")
                                 .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
-                                .withRevisionNumber(CommonInformationModelVersions.V0_91_08.version())
+                                .withRevisionNumber("1")
                                 .withSenderMarketParticipantMRID(
                                         new PartyIDString()
                                                 .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
@@ -561,7 +561,7 @@ class XmlMessageSerdeTest {
                                 .withTimeSeries(
                                         new TimeSeries()
                                                 .withMRID(UUID.randomUUID().toString())
-                                                .withVersion(CommonInformationModelVersions.V0_91_08.version())
+                                                .withVersion("1")
                                                 .withFlowDirectionDirection(StandardDirectionTypeList.DOWN.value())
                                                 .withProduct(StandardEnergyProductTypeList.ACTIVE_ENERGY.value())
                                                 .withMarketEvaluationPointMRID(
