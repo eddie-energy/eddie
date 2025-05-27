@@ -114,11 +114,6 @@ public interface JpaPermissionRequestRepository extends PagingAndSortingReposito
           AND status IN (
               'ACCEPTED',
               'FULFILLED',
-              'REVOKED',
-              'TERMINATED',
-              'REQUIRES_EXTERNAL_TERMINATION',
-              'EXTERNALLY_TERMINATED',
-              'FAILED_TO_TERMINATE',
               'SENT_TO_PERMISSION_ADMINISTRATOR'
           );
     """, nativeQuery = true)
