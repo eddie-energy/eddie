@@ -14,6 +14,7 @@ import java.time.ZonedDateTime;
 public class SentToPaEvent extends PersistablePermissionEvent   {
     @Column(name = "auth_expires_at")
     @Nullable
+    @SuppressWarnings("unused")
     private final ZonedDateTime authExpiresAt;
     @Column(name = "state")
     private final String state;

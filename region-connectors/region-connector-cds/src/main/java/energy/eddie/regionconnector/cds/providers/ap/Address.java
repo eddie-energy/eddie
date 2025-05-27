@@ -55,7 +55,7 @@ public record Address(
     }
 
     private static Address parseMultiLine(String input) {
-        var lines = input.split("\\r?\\n");
+        var lines = input.split("\\r?\\n", -1);
         if (lines.length < 2) {
             throw new IllegalArgumentException("Incomplete address format.");
         }
@@ -94,7 +94,7 @@ public record Address(
         String suffix = null;
 
         // Keywords to look for
-        var tokens = streetRaw.split("\\s+");
+        var tokens = streetRaw.split("\\s+", -1);
         var streetBuilder = new StringBuilder();
         var extrasStarted = false;
         List<String> extras = new ArrayList<>();

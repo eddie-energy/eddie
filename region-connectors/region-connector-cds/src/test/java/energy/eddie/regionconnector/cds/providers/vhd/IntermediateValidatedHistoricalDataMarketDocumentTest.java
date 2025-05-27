@@ -183,7 +183,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 .asInstanceOf(InstanceOfAssertFactories.list(PointComplexType.class))
                 .isEmpty();
     }
-
+    @SuppressWarnings("unused") // errorprone  false positive
     private static Stream<Arguments> testToVhds_returnsVhds() {
         return Stream.of(
                 Arguments.of(FormatEnum.KWH_FWD,

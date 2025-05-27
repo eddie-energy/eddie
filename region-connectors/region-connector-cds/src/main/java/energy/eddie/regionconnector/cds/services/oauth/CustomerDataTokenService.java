@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.cds.services.oauth;
 
+import energy.eddie.regionconnector.cds.client.CustomerDataClientCredentials;
 import energy.eddie.regionconnector.cds.exceptions.NoTokenException;
-import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
 import energy.eddie.regionconnector.cds.persistence.OAuthCredentialsRepository;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithRefreshToken;
@@ -22,23 +22,32 @@ public class CustomerDataTokenService {
         this.repository = repository;
     }
 
-    public Mono<OAuthCredentials> getOAuthCredentialsAsync(String permissionId, CdsServer cdsServer) {
+    public Mono<OAuthCredentials> getOAuthCredentialsAsync(
+            String permissionId,
+            CustomerDataClientCredentials credentials
+    ) {
         return Mono.create(sink -> {
             try {
-                sink.success(getOAuthCredentials(permissionId, cdsServer));
+                sink.success(getOAuthCredentials(permissionId, credentials));
             } catch (NoTokenException e) {
                 sink.error(e);
             }
         });
     }
 
-    private OAuthCredentials getOAuthCredentials(String permissionId, CdsServer cdsServer) throws NoTokenException {
+    private OAuthCredentials getOAuthCredentials(
+            String permissionId,
+            CustomerDataClientCredentials customerDataClientCredentials
+    ) throws NoTokenException {
         var credentials = repository.getOAuthCredentialByPermissionId(permissionId);
         if (credentials.isValid()) {
             return credentials;
         }
 
-        var res = switch (oAuthService.retrieveAccessToken(cdsServer, credentials)) {
+        var res = switch (oAuthService.retrieveAccessToken(credentials,
+                                                           customerDataClientCredentials.clientId(),
+                                                           customerDataClientCredentials.clientSecret(),
+                                                           customerDataClientCredentials.tokenEndpoint())) {
             case CredentialsWithRefreshToken(String accessToken, String refreshToken, ZonedDateTime expiresAt) ->
                     credentials.updateAllTokens(refreshToken, accessToken, expiresAt);
             case CredentialsWithoutRefreshToken(String accessToken, ZonedDateTime expiresAt) ->

@@ -40,7 +40,7 @@ class HealthIndicatorCreatorTest {
     @Test
     void testOnContextRefreshEvent_registersAllCdsServers() {
         // Given
-        var cdsServer = new CdsServerBuilder().setId(1L).setName("cds server").build();
+        var cdsServer = new CdsServerBuilder().setId(1L).build();
         when(repository.findAll()).thenReturn(List.of(cdsServer));
 
         // When
@@ -51,13 +51,13 @@ class HealthIndicatorCreatorTest {
         var composite = compositeCaptor.getValue();
         assertThat(composite).singleElement()
                              .extracting(NamedContributor::getName)
-                             .isEqualTo("cds-server-1");
+                             .isEqualTo("1");
     }
 
     @Test
     void testRegister_reregistersHealthContributor() {
         // Given
-        var cdsServer = new CdsServerBuilder().setId(1L).setName("cds server").build();
+        var cdsServer = new CdsServerBuilder().setId(1L).build();
         when(registry.unregisterContributor("region-connector-cds"))
                 .thenReturn(CompositeHealthContributor.fromMap(Map.of("test", new PingHealthIndicator())));
 
@@ -73,7 +73,7 @@ class HealthIndicatorCreatorTest {
     @Test
     void testRegister_registersHealthContributor() {
         // Given
-        var cdsServer = new CdsServerBuilder().setId(1L).setName("cds server").build();
+        var cdsServer = new CdsServerBuilder().setId(1L).build();
         when(registry.unregisterContributor("region-connector-cds"))
                 .thenReturn(null);
 
@@ -85,6 +85,6 @@ class HealthIndicatorCreatorTest {
         var composite = compositeCaptor.getValue();
         assertThat(composite).singleElement()
                              .extracting(NamedContributor::getName)
-                             .isEqualTo("cds-server-1");
+                             .isEqualTo("1");
     }
 }

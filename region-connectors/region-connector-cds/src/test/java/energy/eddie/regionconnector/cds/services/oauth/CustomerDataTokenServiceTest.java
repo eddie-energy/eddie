@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.cds.services.oauth;
 
+import energy.eddie.regionconnector.cds.client.CustomerDataClientCredentials;
 import energy.eddie.regionconnector.cds.exceptions.NoTokenException;
-import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
 import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
 import energy.eddie.regionconnector.cds.persistence.OAuthCredentialsRepository;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithRefreshToken;
@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
 
+import java.net.URI;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CustomerDataTokenServiceTest {
+    private final URI tokenEndpoint = URI.create("http://localhost");
     @Mock
     private OAuthService oAuthService;
     @Mock
@@ -35,12 +37,14 @@ class CustomerDataTokenServiceTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         var tomorrow = now.plusDays(1);
         var creds = new OAuthCredentials("pid", "refreshToken", "accessToken", tomorrow);
-        var cdsServer = new CdsServerBuilder().build();
         when(repository.getOAuthCredentialByPermissionId("pid"))
                 .thenReturn(creds);
+        var customerDataClientCredentials = new CustomerDataClientCredentials("client-id",
+                                                                              "client-secret",
+                                                                              tokenEndpoint);
 
         // When
-        var res = service.getOAuthCredentialsAsync("pid", cdsServer);
+        var res = service.getOAuthCredentialsAsync("pid", customerDataClientCredentials);
 
         // Then
         StepVerifier.create(res)
@@ -56,15 +60,15 @@ class CustomerDataTokenServiceTest {
         var yesterday = now.minusDays(1);
         var oldCreds = new OAuthCredentials("pid", "refreshToken", "accessToken", yesterday);
         var newCreds = new OAuthCredentials("pid", "refreshToken", "newAccessToken", tomorrow);
-        var cdsServer = new CdsServerBuilder().build();
         when(repository.getOAuthCredentialByPermissionId("pid"))
                 .thenReturn(oldCreds);
         when(repository.save(newCreds)).thenReturn(newCreds);
-        when(oAuthService.retrieveAccessToken(cdsServer, oldCreds))
+        var creds = new CustomerDataClientCredentials("client-id", "client-secret", tokenEndpoint);
+        when(oAuthService.retrieveAccessToken(oldCreds, "client-id", "client-secret", tokenEndpoint))
                 .thenReturn(new CredentialsWithoutRefreshToken("newAccessToken", tomorrow));
 
         // When
-        var res = service.getOAuthCredentialsAsync("pid", cdsServer);
+        var res = service.getOAuthCredentialsAsync("pid", creds);
 
         // Then
         StepVerifier.create(res)
@@ -80,15 +84,15 @@ class CustomerDataTokenServiceTest {
         var yesterday = now.minusDays(1);
         var oldCreds = new OAuthCredentials("pid", "refreshToken", "accessToken", yesterday);
         var newCreds = new OAuthCredentials("pid", "newRefreshToken", "newAccessToken", tomorrow);
-        var cdsServer = new CdsServerBuilder().build();
         when(repository.getOAuthCredentialByPermissionId("pid"))
                 .thenReturn(oldCreds);
         when(repository.save(newCreds)).thenReturn(newCreds);
-        when(oAuthService.retrieveAccessToken(cdsServer, oldCreds))
+        var creds = new CustomerDataClientCredentials("client-id", "client-secret", tokenEndpoint);
+        when(oAuthService.retrieveAccessToken(oldCreds, "client-id", "client-secret", tokenEndpoint))
                 .thenReturn(new CredentialsWithRefreshToken("newAccessToken", "newRefreshToken", tomorrow));
 
         // When
-        var res = service.getOAuthCredentialsAsync("pid", cdsServer);
+        var res = service.getOAuthCredentialsAsync("pid", creds);
 
         // Then
         StepVerifier.create(res)
@@ -102,14 +106,14 @@ class CustomerDataTokenServiceTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         var yesterday = now.minusDays(1);
         var oldCreds = new OAuthCredentials("pid", "refreshToken", "accessToken", yesterday);
-        var cdsServer = new CdsServerBuilder().build();
         when(repository.getOAuthCredentialByPermissionId("pid"))
                 .thenReturn(oldCreds);
-        when(oAuthService.retrieveAccessToken(cdsServer, oldCreds))
+        var creds = new CustomerDataClientCredentials("client-id", "client-secret", tokenEndpoint);
+        when(oAuthService.retrieveAccessToken(oldCreds, "client-id", "client-secret", tokenEndpoint))
                 .thenReturn(new InvalidTokenResult());
 
         // When
-        var res = service.getOAuthCredentialsAsync("pid", cdsServer);
+        var res = service.getOAuthCredentialsAsync("pid", creds);
 
         // Then
         StepVerifier.create(res)

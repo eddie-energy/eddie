@@ -1,6 +1,9 @@
 package energy.eddie.regionconnector.cds.services.oauth;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.cds.client.CdsServerClient;
+import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
+import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
 import energy.eddie.regionconnector.cds.permission.events.SentToPaEvent;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
@@ -8,6 +11,7 @@ import energy.eddie.regionconnector.cds.services.oauth.par.ParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.SuccessfulParResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.UnableToSendPar;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,7 +29,8 @@ import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,7 +39,9 @@ class PushedAuthorizationServiceTest {
     @Mock
     private Outbox outbox;
     @Mock
-    private OAuthService oAuthService;
+    private CdsServerClientFactory factory;
+    @Mock
+    private CdsServerClient client;
     @InjectMocks
     private PushedAuthorizationService authorizationService;
     @Captor
@@ -47,12 +54,17 @@ class PushedAuthorizationServiceTest {
         );
     }
 
+    @BeforeEach
+    void setUp() {
+        when(factory.get(any(CdsServer.class))).thenReturn(client);
+    }
+
     @ParameterizedTest
     @MethodSource
     void testCreateOAuthRequest_withInvalidParResponse_returnsNull(ParResponse parResponse) {
         // Given
         var cdsServer = new CdsServerBuilder().setId(1L).build();
-        when(oAuthService.pushAuthorization(eq(cdsServer), any())).thenReturn(parResponse);
+        when(client.pushAuthorizationRequest(any())).thenReturn(parResponse);
 
         // When
         var res = authorizationService.createOAuthRequest(cdsServer, "pid");
@@ -70,7 +82,7 @@ class PushedAuthorizationServiceTest {
                 .build();
         var redirectUri = URI.create("http://localhost");
         var parResponse = new SuccessfulParResponse(redirectUri, ZonedDateTime.now(ZoneOffset.UTC), "state");
-        when(oAuthService.pushAuthorization(eq(cdsServer), any())).thenReturn(parResponse);
+        when(client.pushAuthorizationRequest(any())).thenReturn(parResponse);
 
         // When
         var res = authorizationService.createOAuthRequest(cdsServer, "pid");

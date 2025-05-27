@@ -58,7 +58,7 @@ public class DataNeedMapper implements UnaryOperator<IdentifiableValidatedHistor
         );
     }
 
-    private static ArrayList<UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner> filterSegments(
+    private static List<UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner> filterSegments(
             String permissionId,
             List<UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner> oldSegments,
             ValidatedHistoricalDataDataNeed dataNeed

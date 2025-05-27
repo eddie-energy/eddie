@@ -2,8 +2,6 @@ package energy.eddie.regionconnector.cds.services.oauth;
 
 import energy.eddie.regionconnector.cds.client.Scopes;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
-import energy.eddie.regionconnector.cds.master.data.CdsServer;
-import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
 import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
 import energy.eddie.regionconnector.cds.services.oauth.client.registration.RegistrationResponse;
 import energy.eddie.regionconnector.cds.services.oauth.par.ErrorParResponse;
@@ -25,7 +23,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
@@ -33,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class OAuthServiceTest {
     private static MockWebServer mockWebServer;
-    private static CdsServer cdsServer;
+    private static URI serverUri;
     private final OAuthService oAuthService = new OAuthService(new CdsConfiguration(URI.create("http://localhost"),
                                                                                     "EDDIE"));
 
@@ -41,18 +38,7 @@ class OAuthServiceTest {
     static void setUp() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
-        cdsServer = new CdsServerBuilder().setBaseUri(mockWebServer.url("/").toString())
-                                          .setName("CDS server")
-                                          .setCoverages(Set.of())
-                                          .setAdminClientId("client-id")
-                                          .setAdminClientSecret("client-secret")
-                                          .setCustomerDataClientId("client-id")
-                                          .setCustomerDataClientSecret("client-secret")
-                                          .setCustomerDataClientId("customer-data-client-id")
-                                          .setTokenEndpoint(mockWebServer.url("/").toString())
-                                          .setAuthorizationEndpoint("http://localhost")
-                                          .setParEndpoint(mockWebServer.url("/").toString())
-                                          .build();
+        serverUri = mockWebServer.url("/").uri();
     }
 
     @AfterAll
@@ -73,11 +59,16 @@ class OAuthServiceTest {
                                                        }
                                                        """)
                                       .addHeader("Content-Type", "application/json"));
-        var expected = URI.create(
-                "http://localhost?client_id=client-id&request_uri=urn%3Aietf%3Aparams%3Aoauth%3Arequest_uri%3A6esc_11ACC5bwc014ltc14eY22c");
+        var expected = URI.create(serverUri + "?client_id=client-id&request_uri=urn%3Aietf%3Aparams%3Aoauth%3Arequest_uri%3A6esc_11ACC5bwc014ltc14eY22c");
 
         // When
-        var res = oAuthService.pushAuthorization(cdsServer, List.of(Scopes.USAGE_DETAILED_SCOPE));
+        var res = oAuthService.pushAuthorization(
+                List.of(Scopes.USAGE_DETAILED_SCOPE),
+                "client-id",
+                "client-secret",
+                serverUri,
+                serverUri
+        );
 
         // Then
         var success = assertInstanceOf(SuccessfulParResponse.class, res);
@@ -94,7 +85,13 @@ class OAuthServiceTest {
                                       .addHeader("Content-Type", "application/json"));
 
         // When
-        var res = oAuthService.pushAuthorization(cdsServer, List.of(Scopes.USAGE_DETAILED_SCOPE));
+        var res = oAuthService.pushAuthorization(
+                List.of(Scopes.USAGE_DETAILED_SCOPE),
+                "client-id",
+                "client-secret",
+                serverUri,
+                serverUri
+        );
 
         // Then
         assertInstanceOf(ErrorParResponse.class, res);
@@ -106,7 +103,13 @@ class OAuthServiceTest {
         mockWebServer.enqueue(new MockResponse().setStatus("INVALID STATUS LINE"));
 
         // When
-        var res = oAuthService.pushAuthorization(cdsServer, List.of(Scopes.USAGE_DETAILED_SCOPE));
+        var res = oAuthService.pushAuthorization(
+                List.of(Scopes.USAGE_DETAILED_SCOPE),
+                "client-id",
+                "client-screet",
+                serverUri,
+                serverUri
+        );
 
         // Then
         assertInstanceOf(UnableToSendPar.class, res);
@@ -121,7 +124,13 @@ class OAuthServiceTest {
                                       .addHeader("Content-Type", "application/json"));
 
         // When
-        var res = oAuthService.pushAuthorization(cdsServer, List.of(Scopes.USAGE_DETAILED_SCOPE));
+        var res = oAuthService.pushAuthorization(
+                List.of(Scopes.USAGE_DETAILED_SCOPE),
+                "client-id",
+                "client-screet",
+                serverUri,
+                serverUri
+        );
 
         // Then
         var error = assertInstanceOf(ErrorParResponse.class, res);
@@ -135,7 +144,7 @@ class OAuthServiceTest {
                                       .setStatus("Invalid status line"));
 
         // When
-        var res = oAuthService.retrieveAccessToken("code", cdsServer);
+        var res = oAuthService.retrieveAccessToken("code", "client-id", "client-secret", serverUri);
 
         // Then
         assertInstanceOf(InvalidTokenResult.class, res);
@@ -150,7 +159,7 @@ class OAuthServiceTest {
                                       .setBody("{ \"error\": \"bla\" }"));
 
         // When
-        var res = oAuthService.retrieveAccessToken("code", cdsServer);
+        var res = oAuthService.retrieveAccessToken("code", "client-id", "client-secret", serverUri);
 
         // Then
         assertInstanceOf(InvalidTokenResult.class, res);
@@ -174,7 +183,7 @@ class OAuthServiceTest {
         );
 
         // When
-        var res = oAuthService.retrieveAccessToken("code", cdsServer);
+        var res = oAuthService.retrieveAccessToken("code", "client-id", "client-secret", serverUri);
 
         // Then
         var creds = assertInstanceOf(CredentialsWithRefreshToken.class, res);
@@ -203,7 +212,7 @@ class OAuthServiceTest {
         );
 
         // When
-        var res = oAuthService.retrieveAccessToken(cdsServer);
+        var res = oAuthService.retrieveAccessToken("client-id", "client-secret", serverUri);
 
         // Then
         var creds = assertInstanceOf(CredentialsWithoutRefreshToken.class, res);
@@ -232,7 +241,7 @@ class OAuthServiceTest {
         var credentials = new OAuthCredentials("pid", "refreshToken", null, null);
 
         // When
-        var res = oAuthService.retrieveAccessToken(cdsServer, credentials);
+        var res = oAuthService.retrieveAccessToken(credentials, "client-id", "client-secret", serverUri);
 
         // Then
         var creds = assertInstanceOf(CredentialsWithoutRefreshToken.class, res);
@@ -250,7 +259,7 @@ class OAuthServiceTest {
         var credentials = new OAuthCredentials("pid", null, "accessToken", ZonedDateTime.now(ZoneOffset.UTC));
 
         // When
-        var res = oAuthService.retrieveAccessToken(cdsServer, credentials);
+        var res = oAuthService.retrieveAccessToken(credentials, "client-id", "client-secret", serverUri);
 
         // Then
         assertInstanceOf(InvalidTokenResult.class, res);
@@ -262,10 +271,10 @@ class OAuthServiceTest {
         var scopes = List.of(Scopes.USAGE_DETAILED_SCOPE);
 
         // When
-        var res = oAuthService.createAuthorizationUri(cdsServer, scopes);
+        var res = oAuthService.createAuthorizationUri(scopes, "client-id", serverUri);
 
         // Then
-        var expected = "http://localhost?response_type=code&redirect_uri=http%3A%2F%2Flocalhost&state=" + res.state() + "&client_id=customer-data-client-id&scope=cds_usage_detailed";
+        var expected = serverUri + "?response_type=code&redirect_uri=http%3A%2F%2Flocalhost&state=" + res.state() + "&client_id=client-id&scope=cds_usage_detailed";
         assertEquals(expected, res.redirectUri().toString());
     }
 
@@ -307,7 +316,7 @@ class OAuthServiceTest {
         );
 
         // When
-        var res = oAuthService.registerClient(URI.create(cdsServer.baseUri()));
+        var res = oAuthService.registerClient(serverUri);
 
         // Then
         var registered = assertInstanceOf(RegistrationResponse.Registered.class, res);
@@ -326,7 +335,7 @@ class OAuthServiceTest {
                                       .setBody("{ \"error\": \"bla\" }"));
 
         // When
-        var res = oAuthService.registerClient(URI.create(cdsServer.baseUri()));
+        var res = oAuthService.registerClient(serverUri);
 
         // Then
         var registrationError = assertInstanceOf(RegistrationResponse.RegistrationError.class, res);
@@ -381,7 +390,7 @@ class OAuthServiceTest {
                         .setResponseCode(200)
         );
         // When
-        var res = oAuthService.registerClient(URI.create(cdsServer.baseUri()));
+        var res = oAuthService.registerClient(serverUri);
 
         // Then
         var registrationError = assertInstanceOf(RegistrationResponse.RegistrationError.class, res);
@@ -391,12 +400,11 @@ class OAuthServiceTest {
     @Test
     void testRevokeToken_revokesToken() {
         // Given
-        var revocationUri = URI.create(cdsServer.baseUri());
         var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
 
         // When
-        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+        var res = oAuthService.revokeToken(serverUri, credentials, "client-id", "client-secret");
 
         // Then
         assertInstanceOf(RevocationResult.SuccessfulRevocation.class, res);
@@ -405,14 +413,13 @@ class OAuthServiceTest {
     @Test
     void testRevokeToken_withError_returnsInvalidRevocationRequest() {
         // Given
-        var revocationUri = URI.create(cdsServer.baseUri());
         var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
         mockWebServer.enqueue(new MockResponse()
                                       .setResponseCode(400)
                                       .setBody("{\"error\": \"bla\"}"));
 
         // When
-        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+        var res = oAuthService.revokeToken(serverUri, credentials, "client-id", "client-secret");
 
         // Then
         assertInstanceOf(RevocationResult.InvalidRevocationRequest.class, res);
@@ -421,17 +428,17 @@ class OAuthServiceTest {
     @Test
     void testRevokeToken_withServiceUnavailable_returnsServiceUnavailable() {
         // Given
-        var revocationUri = URI.create(cdsServer.baseUri());
         var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
         mockWebServer.enqueue(new MockResponse()
                                       .setResponseCode(503));
 
         // When
-        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+        var res = oAuthService.revokeToken(serverUri, credentials, "client-id", "client-secret");
 
         // Then
         assertInstanceOf(RevocationResult.ServiceUnavailable.class, res);
     }
+
     @Test
     void testRevokeToken_withInvalidResponse_returnsInvalidRevocationRequest() {
         // Given
@@ -440,11 +447,10 @@ class OAuthServiceTest {
                                       .setResponseCode(400)
                                       .setBody("INVALID RESPONSE")
                                       .addHeader("Content-Type", "application/json"));
-        var revocationUri = URI.create(cdsServer.baseUri());
         var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
 
         // When
-        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+        var res = oAuthService.revokeToken(serverUri, credentials, "client-id", "client-secret");
 
         // Then
         assertInstanceOf(RevocationResult.InvalidRevocationRequest.class, res);
@@ -454,11 +460,10 @@ class OAuthServiceTest {
     void testRevokeToken_withInvalidHttpResponse_returnsInvalidRevocationRequest() {
         // Given
         mockWebServer.enqueue(new MockResponse().setStatus("INVALID STATUS LINE"));
-        var revocationUri = URI.create(cdsServer.baseUri());
         var credentials = new OAuthCredentials("pid", "refresh-token", null, null);
 
         // When
-        var res = oAuthService.revokeToken(revocationUri, cdsServer, credentials);
+        var res = oAuthService.revokeToken(serverUri, credentials, "client-id", "client-secret");
 
         // Then
         assertInstanceOf(RevocationResult.InvalidRevocationRequest.class, res);

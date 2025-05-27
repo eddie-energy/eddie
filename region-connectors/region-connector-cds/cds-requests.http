@@ -36,10 +36,23 @@ Authorization: Bearer {{$auth.token("cds")}}
     if (item.scope === "customer_data") {
       client.global.set("customer_client_endpoint", item.cds_client_uri)
       client.global.set("customer_client_id", item.client_id)
+      client.global.set("cds_server_metadata", item.cds_server_metadata)
       break;
     }
   }
 %}
+
+### Get specific server metadata endpoint
+GET {{cds_server_metadata}}
+Authorization: Bearer {{$auth.token("cds")}}
+
+> {%
+  client.global.set("cds_oauth_endpoint_client_specific", response.body.oauth_metadata)
+%}
+
+### Get specific oauth metadata endpoint
+GET {{cds_oauth_endpoint_client_specific}}
+Authorization: Bearer {{$auth.token("cds")}}
 
 ### UPDATE client
 PUT {{customer_client_endpoint}}

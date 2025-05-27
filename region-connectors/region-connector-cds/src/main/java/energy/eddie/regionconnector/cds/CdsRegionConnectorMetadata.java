@@ -6,23 +6,26 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
+import energy.eddie.regionconnector.cds.client.CdsServerClient;
+import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
+import energy.eddie.regionconnector.cds.dtos.CdsServerMasterData;
 import org.springframework.stereotype.Component;
 
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class CdsRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "cds";
-    private final CdsServerRepository repository;
+    private final CdsServerClientFactory factory;
 
-    public CdsRegionConnectorMetadata(CdsServerRepository repository) {this.repository = repository;}
+    public CdsRegionConnectorMetadata(CdsServerClientFactory factory) {
+        this.factory = factory;
+    }
 
     @Override
     public String id() {
@@ -31,10 +34,13 @@ public class CdsRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<String> countryCodes() {
-        var servers = repository.findAll();
-        Set<String> countries = new HashSet<>();
-        for (var server : servers) {
-            countries.addAll(server.countryCodes());
+        var countries = factory.getAll()
+                               .flatMap(CdsServerClient::masterData)
+                               .flatMapIterable(CdsServerMasterData::countries)
+                               .collect(Collectors.toSet())
+                               .block();
+        if (countries == null) {
+            return List.of();
         }
         return countries.stream().toList();
     }
@@ -71,10 +77,13 @@ public class CdsRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<EnergyType> supportedEnergyTypes() {
-        var servers = repository.findAll();
-        Set<EnergyType> energyTypes = new HashSet<>();
-        for (var server : servers) {
-            energyTypes.addAll(server.energyTypes());
+        var energyTypes = factory.getAll()
+                .flatMap(CdsServerClient::masterData)
+                .flatMapIterable(CdsServerMasterData::energyTypes)
+                .collect(Collectors.toSet())
+                .block();
+        if(energyTypes == null) {
+            return List.of();
         }
         return energyTypes.stream().toList();
     }

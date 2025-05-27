@@ -6,8 +6,6 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import java.net.URI;
-
 public class CdsServerHealthIndicator implements HealthIndicator {
     private final CdsPublicApis apis;
     private final CdsServer cdsServer;
@@ -20,7 +18,7 @@ public class CdsServerHealthIndicator implements HealthIndicator {
     @Override
     public Health health() {
         try {
-            apis.carbonDataSpec(URI.create(cdsServer.baseUri())).block();
+            apis.carbonDataSpec(cdsServer.baseUri()).block();
             return Health.up().build();
         } catch (WebClientResponseException.ServiceUnavailable  e) {
             return Health.outOfService().build();

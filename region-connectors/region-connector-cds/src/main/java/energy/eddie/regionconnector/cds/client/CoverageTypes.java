@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.cds.services.client.creation;
+package energy.eddie.regionconnector.cds.client;
 
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.regionconnector.cds.master.data.Coverage;
@@ -15,14 +15,14 @@ class CoverageTypes {
 
     CoverageTypes(List<Coverages200ResponseAllOfCoverageEntriesInner> coverages) {this.coverages = coverages;}
 
-    public Set<Coverage> toCoverages() {
+    Set<Coverage> toCoverages() {
         Set<Coverage> set = new HashSet<>();
         for (var coverage : coverages) {
             var commodityTypes = coverage.getCommodityTypes();
             for (var commodityTypesEnum : commodityTypes) {
                 var energyType = of(commodityTypesEnum);
                 if (energyType != null) {
-                    set.add(new Coverage(energyType, coverage.getCountry().toUpperCase(Locale.ROOT)));
+                    set.add(new Coverage(energyType, coverage.getCountry().toLowerCase(Locale.ROOT)));
                 }
             }
         }

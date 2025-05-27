@@ -47,6 +47,7 @@ paho-mqtt-client = "1.2.5"
 nimbus = "11.10.1"
 bouncycastle = "1.78"
 keycloak = "25.0.3"
+caffeine = "3.2.0"
 
 swagger-annotations = "2.2.22"
 openapi-generator = "7.11.0"
@@ -183,6 +184,9 @@ bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref 
 
 # dependencies required by region-connector-us-green-button
 rometools-rome = { module = "com.rometools:rome", version.ref = "rometools" }
+
+# dependencies required by region-connector-cds
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine"}
 
 # dependencies region-connector-simulation
 jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version.ref = "jakarta-persistence-api" }

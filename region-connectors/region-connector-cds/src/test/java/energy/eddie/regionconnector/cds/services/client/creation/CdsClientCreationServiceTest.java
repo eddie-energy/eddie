@@ -1,18 +1,15 @@
 package energy.eddie.regionconnector.cds.services.client.creation;
 
-import energy.eddie.api.agnostic.data.needs.EnergyType;
-import energy.eddie.regionconnector.cds.client.CdsPublicApis;
+import energy.eddie.regionconnector.cds.client.CdsServerClient;
+import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
+import energy.eddie.regionconnector.cds.client.MetadataCollection;
 import energy.eddie.regionconnector.cds.client.Scopes;
-import energy.eddie.regionconnector.cds.client.admin.AdminClient;
-import energy.eddie.regionconnector.cds.client.admin.AdminClientFactory;
-import energy.eddie.regionconnector.cds.client.admin.MetadataCollection;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.exceptions.CoverageNotSupportedException;
+import energy.eddie.regionconnector.cds.exceptions.NoCustomerDataClientFoundException;
 import energy.eddie.regionconnector.cds.exceptions.OAuthNotSupportedException;
-import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
-import energy.eddie.regionconnector.cds.master.data.Coverage;
-import energy.eddie.regionconnector.cds.openapi.model.*;
+import energy.eddie.regionconnector.cds.openapi.model.OAuthAuthorizationServer200Response;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
 import energy.eddie.regionconnector.cds.services.client.creation.responses.CreatedCdsClientResponse;
 import energy.eddie.regionconnector.cds.services.client.creation.responses.NotACdsServerResponse;
@@ -30,14 +27,11 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuples;
 
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,11 +49,9 @@ class CdsClientCreationServiceTest {
     @Mock
     private MetadataCollection metadataCollection;
     @Mock
-    private CdsPublicApis api;
+    private CdsServerClientFactory factory;
     @Mock
-    private AdminClientFactory factory;
-    @Mock
-    private AdminClient adminClient;
+    private CdsServerClient cdsServerClient;
     @Mock
     private OAuthService oAuthService;
     @InjectMocks
@@ -79,7 +71,6 @@ class CdsClientCreationServiceTest {
 
         // Then
         assertThat(res).isInstanceOf(CreatedCdsClientResponse.class);
-        verify(api, never()).carbonDataSpec(any());
     }
 
 
@@ -89,32 +80,14 @@ class CdsClientCreationServiceTest {
         var baseUrl = "http://localhost:8080";
         var baseUri = URI.create(baseUrl);
         when(repository.findByBaseUri(baseUrl)).thenReturn(Optional.empty());
-        var metadataResponse = Tuples.of(
-                new CarbonDataSpec200Response()
-                        .name("CDS Server")
-                        .coverage(baseUri)
-                        .oauthMetadata(baseUri)
-                        .capabilities(List.of("coverage", "oauth")),
-                new OAuthAuthorizationServer200Response()
-                        .tokenEndpoint(baseUri)
-                        .authorizationEndpoint(baseUri)
-                        .grantTypesSupported(List.of("authorization_code", "refresh_token"))
-                        .registrationEndpoint(baseUri)
-                        .cdsClientsApi(baseUri)
-                        .cdsCredentialsApi(baseUri)
-                        .cdsCustomerdataUsagesegmentsApi(baseUri)
-                        .cdsCustomerdataAccountsApi(baseUri)
-                        .cdsCustomerdataServicecontractsApi(baseUri)
-                        .cdsCustomerdataServicepointsApi(baseUri)
-                        .cdsCustomerdataMeterdevicesApi(baseUri)
-                        .cdsCustomerdataBillsectionsApi(baseUri)
-                        .pushedAuthorizationRequestEndpoint(baseUri),
-                List.of(
-                        new Coverages200ResponseAllOfCoverageEntriesInner()
-                                .commodityTypes(Arrays.asList(Coverages200ResponseAllOfCoverageEntriesInner.CommodityTypesEnum.values()))
-                                .country("us")
-                )
-        );
+        var metadataResponse = new OAuthAuthorizationServer200Response()
+                .tokenEndpoint(baseUri)
+                .authorizationEndpoint(baseUri)
+                .grantTypesSupported(List.of("authorization_code", "refresh_token"))
+                .registrationEndpoint(baseUri)
+                .cdsClientsApi(baseUri)
+                .cdsCredentialsApi(baseUri)
+                .pushedAuthorizationRequestEndpoint(baseUri);
         when(metadataCollection.metadata(baseUri))
                 .thenReturn(Mono.just(metadataResponse));
         when(oAuthService.registerClient(baseUri))
@@ -122,35 +95,17 @@ class CdsClientCreationServiceTest {
                         "client-id",
                         "client-secret"
                 ));
-        when(factory.getTemporaryAdminClient(any(CdsServer.class)))
-                .thenReturn(adminClient);
-        var client = new ClientEndpoint200ResponseClientsInner()
-                .clientId("client-id")
-                .scope(Scopes.CUSTOMER_DATA_SCOPE);
-        when(adminClient.clients())
-                .thenReturn(Mono.just(List.of(client)));
-        when(adminClient.modifyClient(eq("client-id"), any()))
-                .thenReturn(Mono.just(new RetrievingIndividualClients200Response().clientId("client-id")));
-        var credentialResponse = new ListingCredentials200Response()
-                .addCredentialsItem(new ListingCredentials200ResponseCredentialsInner()
-                                            .clientId("client-id")
-                                            .clientSecret("client-secret"));
-        when(adminClient.credentials("client-id"))
-                .thenReturn(Mono.just(credentialResponse));
+        when(factory.getTemporary(any())).thenReturn(cdsServerClient);
+        when(cdsServerClient.modifyClientWithScope(eq(Scopes.CUSTOMER_DATA_SCOPE), any()))
+                .thenReturn(Mono.just("").then());
 
         // When
         var res = clientCreationService.createOAuthClients(baseUri.toURL());
 
         // Then
         assertThat(res).isInstanceOf(CreatedCdsClientResponse.class);
-        var expectedCoverages = Set.of(
-                new Coverage(EnergyType.ELECTRICITY, "us"),
-                new Coverage(EnergyType.NATURAL_GAS, "us")
-        );
         verify(repository).save(assertArg(cds -> assertAll(
-                () -> assertEquals(baseUrl, cds.baseUri()),
-                () -> assertEquals("CDS Server", cds.name()),
-                () -> assertEquals(expectedCoverages, cds.coverages()),
+                () -> assertEquals(baseUri, cds.baseUri()),
                 () -> assertEquals("client-id", cds.adminClientId()),
                 () -> assertEquals("client-secret", cds.adminClientSecret())
         )));
@@ -163,46 +118,21 @@ class CdsClientCreationServiceTest {
         var baseUrl = "http://localhost:8080";
         var baseUri = URI.create(baseUrl);
         when(repository.findByBaseUri(baseUrl)).thenReturn(Optional.empty());
-        var metadataResponse = Tuples.of(
-                new CarbonDataSpec200Response()
-                        .name("CDS Server")
-                        .coverage(baseUri)
-                        .oauthMetadata(baseUri)
-                        .capabilities(List.of("coverage", "oauth")),
-                new OAuthAuthorizationServer200Response()
-                        .authorizationEndpoint(baseUri)
-                        .tokenEndpoint(baseUri)
-                        .grantTypesSupported(List.of("authorization_code", "refresh_token"))
-                        .registrationEndpoint(baseUri)
-                        .cdsClientsApi(baseUri)
-                        .cdsCredentialsApi(baseUri)
-                        .cdsCustomerdataAccountsApi(baseUri)
-                        .cdsCustomerdataServicecontractsApi(baseUri)
-                        .cdsCustomerdataServicepointsApi(baseUri)
-                        .cdsCustomerdataMeterdevicesApi(baseUri)
-                        .cdsCustomerdataUsagesegmentsApi(baseUri)
-                        .cdsCustomerdataBillsectionsApi(baseUri)
-                        .pushedAuthorizationRequestEndpoint(baseUri),
-                List.of(
-                        new Coverages200ResponseAllOfCoverageEntriesInner()
-                                .commodityTypes(Arrays.asList(Coverages200ResponseAllOfCoverageEntriesInner.CommodityTypesEnum.values()))
-                                .country("us")
-                )
-        );
+        var metadataResponse = new OAuthAuthorizationServer200Response()
+                .authorizationEndpoint(baseUri)
+                .tokenEndpoint(baseUri)
+                .grantTypesSupported(List.of("authorization_code", "refresh_token"))
+                .registrationEndpoint(baseUri)
+                .cdsClientsApi(baseUri)
+                .cdsCredentialsApi(baseUri)
+                .pushedAuthorizationRequestEndpoint(baseUri);
         when(metadataCollection.metadata(baseUri))
                 .thenReturn(Mono.just(metadataResponse));
         when(oAuthService.registerClient(baseUri))
-                .thenReturn(new RegistrationResponse.Registered(
-                        "client-id",
-                        "client-secret"
-                ));
-        when(factory.getTemporaryAdminClient(any(CdsServer.class)))
-                .thenReturn(adminClient);
-        var client = new ClientEndpoint200ResponseClientsInner()
-                .clientId("client-id")
-                .scope(Scopes.CLIENT_ADMIN_SCOPE);
-        when(adminClient.clients())
-                .thenReturn(Mono.just(List.of(client)));
+                .thenReturn(new RegistrationResponse.Registered("client-id", "client-secret"));
+        when(factory.getTemporary(any())).thenReturn(cdsServerClient);
+        when(cdsServerClient.modifyClientWithScope(eq(Scopes.CUSTOMER_DATA_SCOPE), any()))
+                .thenReturn(Mono.error(new NoCustomerDataClientFoundException()));
 
         // When
         var res = clientCreationService.createOAuthClients(baseUri.toURL());
@@ -227,6 +157,22 @@ class CdsClientCreationServiceTest {
         // Then
         var unsupportedFeature = assertInstanceOf(UnsupportedFeatureResponse.class, res);
         assertEquals("Required coverage types are not supported", unsupportedFeature.message());
+    }
+
+    @Test
+    void testGetOrCreate_metadataIsEmpty_returnsError() throws MalformedURLException {
+        // Given
+        var baseUrl = "http://localhost:8080";
+        var baseUri = URI.create(baseUrl);
+        when(repository.findByBaseUri(baseUrl)).thenReturn(Optional.empty());
+        when(metadataCollection.metadata(baseUri)).thenReturn(Mono.empty());
+
+        // When
+        var res = clientCreationService.createOAuthClients(baseUri.toURL());
+
+        // Then
+        var unsupportedFeature = assertInstanceOf(UnableToRegisterClientResponse.class, res);
+        assertEquals("No metadata could be found", unsupportedFeature.message());
     }
 
     @Test
@@ -272,22 +218,10 @@ class CdsClientCreationServiceTest {
         var baseUrl = "http://localhost:8080";
         var baseUri = URI.create(baseUrl);
         when(repository.findByBaseUri(baseUrl)).thenReturn(Optional.empty());
-        var metadata = Tuples.of(
-                new CarbonDataSpec200Response()
-                        .name("CDS Server")
-                        .coverage(baseUri)
-                        .oauthMetadata(baseUri)
-                        .capabilities(List.of("coverage", "oauth")),
-                new OAuthAuthorizationServer200Response()
-                        .tokenEndpoint(baseUri)
-                        .grantTypesSupported(List.of(grantType))
-                        .registrationEndpoint(baseUri),
-                List.of(
-                        new Coverages200ResponseAllOfCoverageEntriesInner()
-                                .commodityTypes(Arrays.asList(
-                                        Coverages200ResponseAllOfCoverageEntriesInner.CommodityTypesEnum.values()))
-                )
-        );
+        var metadata = new OAuthAuthorizationServer200Response()
+                .tokenEndpoint(baseUri)
+                .grantTypesSupported(List.of(grantType))
+                .registrationEndpoint(baseUri);
         when(metadataCollection.metadata(baseUri))
                 .thenReturn(Mono.just(metadata));
 
@@ -305,22 +239,10 @@ class CdsClientCreationServiceTest {
         var baseUrl = "http://localhost:8080";
         var baseUri = URI.create(baseUrl);
         when(repository.findByBaseUri(baseUrl)).thenReturn(Optional.empty());
-        var metadata = Tuples.of(
-                new CarbonDataSpec200Response()
-                        .name("CDS Server")
-                        .coverage(baseUri)
-                        .oauthMetadata(baseUri)
-                        .capabilities(List.of("coverage", "oauth")),
-                new OAuthAuthorizationServer200Response()
-                        .authorizationEndpoint(baseUri)
-                        .grantTypesSupported(List.of("authorization_code", "refresh_token"))
-                        .registrationEndpoint(baseUri),
-                List.of(
-                        new Coverages200ResponseAllOfCoverageEntriesInner()
-                                .commodityTypes(Arrays.asList(
-                                        Coverages200ResponseAllOfCoverageEntriesInner.CommodityTypesEnum.values()))
-                )
-        );
+        var metadata = new OAuthAuthorizationServer200Response()
+                .authorizationEndpoint(baseUri)
+                .grantTypesSupported(List.of("authorization_code", "refresh_token"))
+                .registrationEndpoint(baseUri);
         when(metadataCollection.metadata(baseUri))
                 .thenReturn(Mono.just(metadata));
 
@@ -338,23 +260,11 @@ class CdsClientCreationServiceTest {
         var baseUrl = "http://localhost:8080";
         var baseUri = URI.create(baseUrl);
         when(repository.findByBaseUri(baseUrl)).thenReturn(Optional.empty());
-        var metadata = Tuples.of(
-                new CarbonDataSpec200Response()
-                        .name("CDS Server")
-                        .coverage(baseUri)
-                        .oauthMetadata(baseUri)
-                        .capabilities(List.of("coverage", "oauth")),
-                new OAuthAuthorizationServer200Response()
-                        .tokenEndpoint(baseUri)
-                        .authorizationEndpoint(baseUri)
-                        .grantTypesSupported(List.of("authorization_code", "refresh_token"))
-                        .registrationEndpoint(baseUri),
-                List.of(
-                        new Coverages200ResponseAllOfCoverageEntriesInner()
-                                .commodityTypes(Arrays.asList(
-                                        Coverages200ResponseAllOfCoverageEntriesInner.CommodityTypesEnum.values()))
-                )
-        );
+        var metadata = new OAuthAuthorizationServer200Response()
+                .tokenEndpoint(baseUri)
+                .authorizationEndpoint(baseUri)
+                .grantTypesSupported(List.of("authorization_code", "refresh_token"))
+                .registrationEndpoint(baseUri);
         when(metadataCollection.metadata(baseUri))
                 .thenReturn(Mono.just(metadata));
         when(oAuthService.registerClient(baseUri))

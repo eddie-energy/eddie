@@ -105,20 +105,18 @@ class IntermediateAccountingPointDocumentTest {
                 .extracting(AccountingPointComplexType.AddressList::getAddresses)
                 .asInstanceOf(InstanceOfAssertFactories.list(AddressComplexType.class))
                 .hasSize(2)
-                .satisfies(addresses -> {
-                    assertThat(addresses.getFirst())
-                            .satisfies(address -> {
-                                assertThat(address.getAddressRole()).isEqualTo(AddressRoleType.DELIVERY);
-                                assertThat(address.getPostalCode()).isEqualTo("11111");
-                                assertThat(address.getCityName()).isEqualTo("Anytown");
-                                assertThat(address.getStreetName()).isEqualTo("Main St - PARKING LOT");
-                                assertThat(address.getBuildingNumber()).isEqualTo("123");
-                                assertThat(address.getStaircaseNumber()).isNull();
-                                assertThat(address.getFloorNumber()).isNull();
-                                assertThat(address.getDoorNumber()).isNull();
-                                assertThat(address.getAddressSuffix()).isNull();
-                            });
-                });
+                .satisfies(addresses -> assertThat(addresses.getFirst())
+                        .satisfies(address -> {
+                            assertThat(address.getAddressRole()).isEqualTo(AddressRoleType.DELIVERY);
+                            assertThat(address.getPostalCode()).isEqualTo("11111");
+                            assertThat(address.getCityName()).isEqualTo("Anytown");
+                            assertThat(address.getStreetName()).isEqualTo("Main St - PARKING LOT");
+                            assertThat(address.getBuildingNumber()).isEqualTo("123");
+                            assertThat(address.getStaircaseNumber()).isNull();
+                            assertThat(address.getFloorNumber()).isNull();
+                            assertThat(address.getDoorNumber()).isNull();
+                            assertThat(address.getAddressSuffix()).isNull();
+                        }));
     }
 
     @Test
@@ -348,6 +346,7 @@ class IntermediateAccountingPointDocumentTest {
                 .isEqualTo(commodity);
     }
 
+    @SuppressWarnings("unused") // errorprone  false positive
     private static Stream<Arguments> testToAp_forDifferentCommodities() {
         return Stream.of(
                 Arguments.of("electric", CommodityKind.ELECTRICITYPRIMARYMETERED),

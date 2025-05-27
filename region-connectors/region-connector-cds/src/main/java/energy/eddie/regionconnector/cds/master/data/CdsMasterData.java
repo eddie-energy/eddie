@@ -3,76 +3,84 @@ package energy.eddie.regionconnector.cds.master.data;
 import energy.eddie.api.agnostic.master.data.MasterData;
 import energy.eddie.api.agnostic.master.data.MeteredDataAdministrator;
 import energy.eddie.api.agnostic.master.data.PermissionAdministrator;
-import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
+import energy.eddie.regionconnector.cds.client.CdsServerClient;
+import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
+import energy.eddie.regionconnector.cds.dtos.CdsServerMasterData;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.function.Function;
 
 import static energy.eddie.regionconnector.cds.CdsRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 @Component
 public class CdsMasterData implements MasterData {
-    private final CdsServerRepository repository;
+    private final CdsServerClientFactory factory;
 
-    public CdsMasterData(CdsServerRepository repository) {this.repository = repository;}
+    public CdsMasterData(CdsServerClientFactory factory) {
+        this.factory = factory;
+    }
 
     @Override
     public List<PermissionAdministrator> permissionAdministrators() {
-        return repository.findAll()
-                         .stream()
-                         .flatMap(CdsMasterData::toPermissionAdministrators)
-                         .toList();
+        return getAll(CdsMasterData::toPermissionAdministrators);
     }
 
     @Override
     public Optional<PermissionAdministrator> getPermissionAdministrator(String id) {
-        return repository.findById(Long.parseLong(id))
-                         .map(CdsMasterData::toPermissionAdministrators)
-                         .flatMap(Stream::findFirst);
+        return getById(id, CdsMasterData::toPermissionAdministrators);
     }
 
     @Override
     public List<MeteredDataAdministrator> meteredDataAdministrators() {
-        return repository.findAll()
-                         .stream()
-                         .flatMap(CdsMasterData::toMeteredDataAdministrator)
-                         .toList();
+        return getAll(CdsMasterData::toMeteredDataAdministrator);
     }
 
     @Override
     public Optional<MeteredDataAdministrator> getMeteredDataAdministrator(String id) {
-        return repository.findById(Long.parseLong(id))
-                         .map(CdsMasterData::toMeteredDataAdministrator)
-                         .flatMap(Stream::findFirst);
+        return getById(id, CdsMasterData::toMeteredDataAdministrator);
     }
 
-    private static Stream<PermissionAdministrator> toPermissionAdministrators(CdsServer server) {
-        return server.countryCodes()
-                .stream()
-                .map(countryCode ->
-                             new PermissionAdministrator(countryCode.toLowerCase(Locale.ROOT),
-                                                         server.name(),
-                                                         server.displayName(),
-                                                         server.idAsString(),
-                                                         server.baseUri(),
-                                                         REGION_CONNECTOR_ID)
-                );
+    private <T> List<T> getAll(Function<CdsServerMasterData, Flux<T>> mappingFunction) {
+        return factory.getAll()
+                      .flatMap(CdsServerClient::masterData)
+                      .flatMap(mappingFunction)
+                      .collectList()
+                      .block();
     }
 
-    private static Stream<MeteredDataAdministrator> toMeteredDataAdministrator(CdsServer server) {
-        var website = server.baseUri();
-        return server.countryCodes()
-                .stream()
-                .map(countryCode ->
-                             new MeteredDataAdministrator(countryCode.toLowerCase(Locale.ROOT),
-                                                          server.name(),
-                                                          server.idAsString(),
-                                                          website,
-                                                          website,
-                                                          server.idAsString())
-                );
+    private <T> Optional<T> getById(String id, Function<CdsServerMasterData, Flux<T>> mappingFunction) {
+        var cdsServerClient = factory.get(Long.parseLong(id));
+        return cdsServerClient.map(serverClient -> serverClient
+                .masterData()
+                .flatMapMany(mappingFunction)
+                .blockFirst());
+    }
+
+    private static Flux<PermissionAdministrator> toPermissionAdministrators(CdsServerMasterData server) {
+        return Flux.fromIterable(server.countries())
+                   .map(countryCode -> new PermissionAdministrator(countryCode.toLowerCase(Locale.ROOT),
+                                                                   server.name(),
+                                                                   server.name(),
+                                                                   server.id(),
+                                                                   server.baseUri().toString(),
+                                                                   REGION_CONNECTOR_ID)
+                   );
+    }
+
+    private static Flux<MeteredDataAdministrator> toMeteredDataAdministrator(CdsServerMasterData server) {
+        var website = server.baseUri().toString();
+        return Flux.fromIterable(server.countries())
+                   .map(countryCode ->
+                                new MeteredDataAdministrator(countryCode.toLowerCase(Locale.ROOT),
+                                                             server.name(),
+                                                             server.id(),
+                                                             website,
+                                                             website,
+                                                             server.id())
+                   );
     }
 }

@@ -1,10 +1,8 @@
-package energy.eddie.regionconnector.cds.client.admin;
+package energy.eddie.regionconnector.cds.client;
 
-import energy.eddie.regionconnector.cds.client.CdsPublicApis;
 import energy.eddie.regionconnector.cds.exceptions.CoverageNotSupportedException;
 import energy.eddie.regionconnector.cds.exceptions.OAuthNotSupportedException;
 import energy.eddie.regionconnector.cds.openapi.model.CarbonDataSpec200Response;
-import energy.eddie.regionconnector.cds.openapi.model.Coverages200ResponseAllOfCoverageEntriesInner;
 import energy.eddie.regionconnector.cds.openapi.model.OAuthAuthorizationServer200Response;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,8 +35,6 @@ class MetadataCollectionTest {
                                               .capabilities(List.of("coverage"))));
         when(apis.oauthMetadataSpec(baseUri))
                 .thenReturn(Mono.just(new OAuthAuthorizationServer200Response()));
-        when(apis.coverage(baseUri))
-                .thenReturn(Mono.just(List.of(new Coverages200ResponseAllOfCoverageEntriesInner())));
 
         // When
         var res = collection.metadata(baseUri);

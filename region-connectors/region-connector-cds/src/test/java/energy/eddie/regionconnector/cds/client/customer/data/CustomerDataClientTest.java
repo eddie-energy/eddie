@@ -2,11 +2,7 @@ package energy.eddie.regionconnector.cds.client.customer.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.cds.CdsBeanConfig;
-import energy.eddie.regionconnector.cds.master.data.CdsServer;
-import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
 import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
-import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
-import energy.eddie.regionconnector.cds.services.oauth.CustomerDataTokenService;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -14,7 +10,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
@@ -22,20 +17,19 @@ import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CustomerDataClientTest {
     private static MockWebServer server;
-    private static String basepath;
+    private static URI baseUri;
     private final ObjectMapper objectMapper = new CdsBeanConfig().customObjectMapper().build();
     private final ExchangeStrategies strats = ExchangeStrategies
             .builder()
@@ -52,19 +46,6 @@ class CustomerDataClientTest {
     private final WebClient webClient = WebClient.builder()
                                                  .exchangeStrategies(strats)
                                                  .build();
-    @Spy
-    private final CdsServer cdsServer = new CdsServerBuilder()
-            .setAccountsEndpoint(basepath)
-            .setServiceContractsEndpoint(basepath)
-            .setServicePointsEndpoint(basepath)
-            .setMeterDeviceEndpoint(basepath)
-            .setUsageSegmentsEndpoint(basepath)
-            .setBillSectionEndpoint(basepath)
-            .setAdminClientId("client-id")
-            .setAdminClientSecret("client-secret")
-            .build();
-    @Mock
-    private CustomerDataTokenService tokenService;
     @InjectMocks
     private CustomerDataClient customerDataClient;
 
@@ -72,7 +53,7 @@ class CustomerDataClientTest {
     static void setUp() throws IOException {
         server = new MockWebServer();
         server.start();
-        basepath = server.url("/").toString();
+        baseUri = server.url("/").uri();
     }
 
     @AfterAll
@@ -111,7 +92,7 @@ class CustomerDataClientTest {
                   "previous": null,
                   "usage_segments": %s
                 }
-                """.formatted(basepath, inner);
+                """.formatted(baseUri, inner);
         // language=JSON
         var page2 = """
                   {
@@ -134,14 +115,9 @@ class CustomerDataClientTest {
                                                     "refreshToken",
                                                     "accessToken",
                                                     now);
-        when(tokenService.getOAuthCredentialsAsync("pid", cdsServer))
-                .thenReturn(Mono.just(oAuthCredentials));
-        var pr = new CdsPermissionRequestBuilder()
-                .setPermissionId("pid")
-                .build();
 
         // When
-        var res = customerDataClient.usagePoints(pr, now, now);
+        var res = customerDataClient.usageSegments(now, now, baseUri, oAuthCredentials);
 
         // Then
         StepVerifier.create(res)
@@ -184,7 +160,7 @@ class CustomerDataClientTest {
                   "previous": null,
                   "accounts": %s
                 }
-                """.formatted(basepath, inner);
+                """.formatted(baseUri, inner);
         // language=JSON
         var page2 = """
                 {
@@ -207,14 +183,9 @@ class CustomerDataClientTest {
                                                     "refreshToken",
                                                     "accessToken",
                                                     now);
-        when(tokenService.getOAuthCredentialsAsync("pid", cdsServer))
-                .thenReturn(Mono.just(oAuthCredentials));
-        var pr = new CdsPermissionRequestBuilder()
-                .setPermissionId("pid")
-                .build();
 
         // When
-        var res = customerDataClient.accounts(pr);
+        var res = customerDataClient.accounts(baseUri, oAuthCredentials);
 
         // Then
         StepVerifier.create(res)
@@ -255,7 +226,7 @@ class CustomerDataClientTest {
                 "previous": null,
                 "service_contracts": %s
                 }
-                """.formatted(basepath, inner);
+                """.formatted(baseUri, inner);
         // language=JSON
         var page2 = """
                 {
@@ -278,14 +249,9 @@ class CustomerDataClientTest {
                                                     "refreshToken",
                                                     "accessToken",
                                                     now);
-        when(tokenService.getOAuthCredentialsAsync("pid", cdsServer))
-                .thenReturn(Mono.just(oAuthCredentials));
-        var pr = new CdsPermissionRequestBuilder()
-                .setPermissionId("pid")
-                .build();
 
         // When
-        var res = customerDataClient.serviceContracts(pr);
+        var res = customerDataClient.serviceContracts(baseUri, oAuthCredentials);
 
         // Then
         StepVerifier.create(res)
@@ -323,7 +289,7 @@ class CustomerDataClientTest {
                 "previous": null,
                 "service_points": %s
                 }
-                """.formatted(basepath, inner);
+                """.formatted(baseUri, inner);
         // language=JSON
         var page2 = """
                 {
@@ -346,14 +312,9 @@ class CustomerDataClientTest {
                                                     "refreshToken",
                                                     "accessToken",
                                                     now);
-        when(tokenService.getOAuthCredentialsAsync("pid", cdsServer))
-                .thenReturn(Mono.just(oAuthCredentials));
-        var pr = new CdsPermissionRequestBuilder()
-                .setPermissionId("pid")
-                .build();
 
         // When
-        var res = customerDataClient.servicePoints(pr);
+        var res = customerDataClient.servicePoints(baseUri, oAuthCredentials);
 
         // Then
         StepVerifier.create(res)
@@ -387,7 +348,7 @@ class CustomerDataClientTest {
                 "previous": null,
                 "meter_devices": %s
                 }
-                """.formatted(basepath, inner);
+                """.formatted(baseUri, inner);
         // language=JSON
         var page2 = """
                 {
@@ -410,14 +371,9 @@ class CustomerDataClientTest {
                                                     "refreshToken",
                                                     "accessToken",
                                                     now);
-        when(tokenService.getOAuthCredentialsAsync("pid", cdsServer))
-                .thenReturn(Mono.just(oAuthCredentials));
-        var pr = new CdsPermissionRequestBuilder()
-                .setPermissionId("pid")
-                .build();
 
         // When
-        var res = customerDataClient.meterDevices(pr);
+        var res = customerDataClient.meterDevices(baseUri, oAuthCredentials);
 
         // Then
         StepVerifier.create(res)
