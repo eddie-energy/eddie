@@ -106,35 +106,29 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         );
         var seriesPeriod = timeseries.getSeriesPeriodList().getSeriesPeriods().getFirst();
         assertAll(
-                () -> assertEquals("2023-04-29T22:00Z", seriesPeriod.getTimeInterval().getStart()),
+                () -> assertEquals("2023-04-30T22:00Z", seriesPeriod.getTimeInterval().getStart()),
                 () -> assertEquals("2023-05-02T22:00Z", seriesPeriod.getTimeInterval().getEnd()),
                 () -> assertEquals("P1D", seriesPeriod.getResolution()),
-                () -> assertEquals(4, seriesPeriod.getPointList().getPoints().size())
+                () -> assertEquals(3, seriesPeriod.getPointList().getPoints().size())
         );
         var points = seriesPeriod.getPointList().getPoints();
         var first = points.getFirst();
         assertAll(
-                () -> assertEquals(BigDecimal.valueOf(9738.65), first.getEnergyQuantityQuantity()),
-                () -> assertEquals("2023-04-29T22:00Z", first.getPosition()),
+                () -> assertEquals(BigDecimal.valueOf(100).setScale(2, RoundingMode.CEILING), first.getEnergyQuantityQuantity()),
+                () -> assertEquals("2023-04-30T22:00Z", first.getPosition()),
                 () -> assertEquals(QualityTypeList.AS_PROVIDED, first.getEnergyQuantityQuality())
         );
         var second = points.get(1);
         assertAll(
-                () -> assertEquals(BigDecimal.valueOf(19577.30).setScale(2, RoundingMode.CEILING), second.getEnergyQuantityQuantity()),
-                () -> assertEquals("2023-04-30T22:00Z", second.getPosition()),
+                () -> assertEquals(BigDecimal.valueOf(210.00).setScale(2, RoundingMode.CEILING), second.getEnergyQuantityQuantity()),
+                () -> assertEquals("2023-05-01T22:00Z", second.getPosition()),
                 () -> assertEquals(QualityTypeList.AS_PROVIDED, second.getEnergyQuantityQuality())
         );
         var third = points.get(2);
         assertAll(
-                () -> assertEquals(BigDecimal.valueOf(19787.30).setScale(2, RoundingMode.CEILING), third.getEnergyQuantityQuantity()),
-                () -> assertEquals("2023-05-01T22:00Z", third.getPosition()),
+                () -> assertEquals(BigDecimal.valueOf(110.00).setScale(2, RoundingMode.CEILING), third.getEnergyQuantityQuantity()),
+                () -> assertEquals("2023-05-02T22:00Z", third.getPosition()),
                 () -> assertEquals(QualityTypeList.AS_PROVIDED, third.getEnergyQuantityQuality())
-        );
-        var fourth = points.get(3);
-        assertAll(
-                () -> assertEquals(BigDecimal.valueOf(9948.65), fourth.getEnergyQuantityQuantity()),
-                () -> assertEquals("2023-05-02T22:00Z", fourth.getPosition()),
-                () -> assertEquals(QualityTypeList.AS_PROVIDED, fourth.getEnergyQuantityQuality())
         );
     }
 

@@ -7,8 +7,6 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnector;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.ApiClient;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.ConsumptionData;
@@ -62,10 +60,6 @@ class PollingServiceTest {
     private DataNeedsService dataNeedsService;
     @Mock
     private ValidatedHistoricalDataDataNeed dataNeed;
-    @Mock
-    private MijnAansluitingRegionConnectorMetadata metadata;
-    @Mock
-    MijnAansluitingRegionConnector regionConnector;
     @InjectMocks
     private PollingService pollingService;
     @Captor
@@ -432,55 +426,6 @@ class PollingServiceTest {
                                                   .getDateTime()
                                                   .toLocalDate())
                     ))
-                    .verifyComplete();
-    }
-
-    @Test
-    void testFetchConsumptionData_calculatesDeltas() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
-        // Given
-        var json = vhdMapper.loadTestJson("single_consumption_data.json");
-        when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
-                .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
-        when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
-                .thenReturn(Mono.just(json));
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(dataNeed));
-        when(dataNeed.energyType())
-                .thenReturn(EnergyType.ELECTRICITY);
-        var start = LocalDate.of(2023, 5, 1);
-        var end = LocalDate.of(2023, 5, 3);
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                "",
-                "",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                start,
-                end,
-                Granularity.P1D
-        );
-
-        // When
-        pollingService.pollTimeSeriesData(pr);
-
-        // Then
-        StepVerifier.create(pollingService.identifiableMeteredDataFlux())
-                    .then(pollingService::close)
-                    .assertNext(imd -> {
-                        var readingList = imd.meteredData()
-                                             .getFirst()
-                                             .getMarketEvaluationPoint()
-                                             .getRegisterList()
-                                             .getFirst()
-                                             .getReadingList();
-                        assertAll(
-                                () -> assertEquals(2, readingList.size()),
-                                () -> assertEquals(100.0, readingList.getFirst().getValue().doubleValue()),
-                                () -> assertEquals(110.0, readingList.get(1).getValue().doubleValue())
-                        );
-                    })
                     .verifyComplete();
     }
 

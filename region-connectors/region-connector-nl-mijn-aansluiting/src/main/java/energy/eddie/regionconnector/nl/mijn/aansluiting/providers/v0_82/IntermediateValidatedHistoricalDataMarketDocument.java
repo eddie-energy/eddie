@@ -154,7 +154,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                                             .toList();
     }
 
-    private static ArrayList<List<Register>> partitionByObisCode(List<List<Register>> partitions) {
+    private static List<List<Register>> partitionByObisCode(List<List<Register>> partitions) {
         var partitionedByMeterAndObisCode = new ArrayList<List<Register>>();
         for (var partition : partitions) {
             var map = new HashMap<String, List<Register>>();
@@ -180,14 +180,14 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         register.setMRID(lr.getMRID());
         Map<DateAndOrTime, Reading> map = new HashMap<>();
 
-        for (var reading : lr.getReadingList()) {
+        for (var reading : delta(lr.getReadingList())) {
             map.put(reading.getDateAndOrTime(), new Reading()
                     .dateAndOrTime(reading.getDateAndOrTime())
                     .value(reading.getValue())
                     .readingType(reading.getReadingType()));
         }
 
-        for (var reading : rr.getReadingList()) {
+        for (var reading : delta(rr.getReadingList())) {
             map.merge(reading.getDateAndOrTime(), reading,
                       (existing, incoming) -> existing.value(existing.getValue().add(incoming.getValue()))
             );
@@ -241,5 +241,27 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         var multiplier = (readingType.getMultiplier() == null ? "" : readingType.getMultiplier().toString());
         var readingUnit = multiplier + readingType.getUnit();
         return readingUnit.toUpperCase(Locale.ROOT);
+    }
+
+    /**
+     * Gets a reading list and will calculate the deltas between consecutive items in the list. By calculating deltas
+     * the first item will be dropped.
+     *
+     * @param readings list of readings with total cumulative values.
+     * @return list of readings, with the delta as reading values. It has the size of the original list - 1.
+     */
+    private static List<Reading> delta(List<Reading> readings) {
+        var array = readings.toArray(new Reading[0]);
+        List<Reading> deltas = new ArrayList<>(array.length - 1);
+        for (int i = array.length - 1; i > 0; i--) {
+            var prev = array[i - 1];
+            var current = array[i];
+            var delta = current.getValue().subtract(prev.getValue());
+            deltas.addFirst(new Reading()
+                                    .readingType(current.getReadingType())
+                                    .dateAndOrTime(current.getDateAndOrTime())
+                                    .value(delta));
+        }
+        return deltas;
     }
 }

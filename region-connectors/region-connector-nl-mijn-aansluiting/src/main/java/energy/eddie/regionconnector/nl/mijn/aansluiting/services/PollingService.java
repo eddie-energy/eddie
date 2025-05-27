@@ -20,19 +20,19 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlSimp
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import energy.eddie.regionconnector.shared.services.CommonPollingService;
-import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
+
+import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
 
 @Service
 public class PollingService implements AutoCloseable, CommonPollingService<NlPermissionRequest> {
@@ -43,11 +43,11 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
     private final DataNeedsService dataNeedsService;
 
     private final Sinks.Many<IdentifiableMeteredData> identifiableMeteredDataSink = Sinks.many()
-            .multicast()
-            .onBackpressureBuffer();
+                                                                                         .multicast()
+                                                                                         .onBackpressureBuffer();
     private final Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink = Sinks.many()
-            .multicast()
-            .onBackpressureBuffer();
+                                                                                                         .multicast()
+                                                                                                         .onBackpressureBuffer();
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     // DataNeedsService is injected from parent context
@@ -72,25 +72,15 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
         var accessTokenAndSingleSyncUrl = res.get();
         LOGGER.info("Fetching accounting point data for permission request {}", permissionId);
         apiClient.fetchSingleReading(accessTokenAndSingleSyncUrl.singleSync(),
-                        accessTokenAndSingleSyncUrl.accessToken())
-                .map(apData -> new IdentifiableAccountingPointData(permissionRequest, apData))
-                .subscribe(this::consume);
+                                     accessTokenAndSingleSyncUrl.accessToken())
+                 .map(apData -> new IdentifiableAccountingPointData(permissionRequest, apData))
+                 .subscribe(this::consume);
     }
 
     @Override
     public void pollTimeSeriesData(NlPermissionRequest permissionRequest) {
-        String permissionId = permissionRequest.permissionId();
-        var res = fetchAccessToken(permissionId, MijnAansluitingApi.CONTINUOUS_CONSENT_API);
-        if (res.isEmpty()) {
-            return;
-        }
-        var accessTokenAndSingleSyncUrl = res.get();
-        LOGGER.info("Fetching consumption data for permission request {}", permissionId);
-        apiClient.fetchConsumptionData(accessTokenAndSingleSyncUrl.singleSync(),
-                        accessTokenAndSingleSyncUrl.accessToken())
-                .filter(meteredData -> !meteredData.isEmpty())
-                .map(meteredData -> new IdentifiableMeteredData(permissionRequest, meteredData))
-                .subscribe(this::consume);
+        pollTimeSeriesData(permissionRequest, permissionRequest.start(), permissionRequest.end())
+                .subscribe(res -> outbox.commit(new NlInternalPollingEvent(permissionRequest.permissionId(), res)));
     }
 
     @Override
@@ -98,6 +88,25 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
         var dataNeedId = permissionRequest.dataNeedId();
         var dataNeed = dataNeedsService.getById(dataNeedId);
         return dataNeed instanceof ValidatedHistoricalDataDataNeed;
+    }
+
+    public Mono<Map<String, ZonedDateTime>> pollTimeSeriesData(
+            NlPermissionRequest permissionRequest,
+            LocalDate start,
+            LocalDate end
+    ) {
+        String permissionId = permissionRequest.permissionId();
+        var res = fetchAccessToken(permissionId, MijnAansluitingApi.CONTINUOUS_CONSENT_API);
+        if (res.isEmpty()) {
+            return Mono.empty();
+        }
+        var accessTokenAndSingleSyncUrl = res.get();
+        LOGGER.info("Fetching consumption data for permission request {}", permissionId);
+        return apiClient.fetchConsumptionData(accessTokenAndSingleSyncUrl.singleSync(),
+                                              accessTokenAndSingleSyncUrl.accessToken())
+                        .map(meteredData -> new IdentifiableMeteredData(permissionRequest, meteredData))
+                        .map(readings -> consume(readings, start, end))
+                        .filter(readings -> !readings.isEmpty());
     }
 
     public Flux<IdentifiableMeteredData> identifiableMeteredDataFlux() {
@@ -136,23 +145,26 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
     private void consume(IdentifiableAccountingPointData identifiableAccountingPointData) {
         identifiableAccountingPointDataSink.tryEmitNext(identifiableAccountingPointData);
         var event = new NlSimpleEvent(identifiableAccountingPointData.permissionRequest().permissionId(),
-                PermissionProcessStatus.FULFILLED);
+                                      PermissionProcessStatus.FULFILLED);
         outbox.commit(event);
     }
 
-    private void consume(IdentifiableMeteredData identifiableMeteredData) {
+    private Map<String, ZonedDateTime> consume(
+            IdentifiableMeteredData identifiableMeteredData,
+            LocalDate start,
+            LocalDate end
+    ) {
         var permissionRequest = identifiableMeteredData.permissionRequest();
         var permissionId = permissionRequest.permissionId();
         LOGGER.info("Received energy data for permission request {}", permissionId);
         var response = filterEnergyType(identifiableMeteredData.meteredData(), permissionRequest.dataNeedId());
         if (response.isEmpty()) {
-            return;
+            LOGGER.info("Received empty response for energy data for permission request {}", permissionId);
+            return Map.of();
         }
         var lastMeterReadings = new HashMap<String, ZonedDateTime>();
         for (MijnAansluitingResponse mijnAansluitingResponse : response) {
             for (Register register : mijnAansluitingResponse.getMarketEvaluationPoint().getRegisterList()) {
-                // Calculate deltas between readings, removes first reading day.
-                register.setReadingList(delta(register.getReadingList()));
 
                 // Update the last meter readings, even the ones that were already fulfilled.
                 // That way we always have the latest information, for the fulfillment-handler
@@ -161,44 +173,21 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
                 lastMeterReadings.put(meteringPointId, timestamp);
 
                 // Remove already received meter readings or before the start date from the response
-                ZonedDateTime lastMeterReading = permissionRequest.lastMeterReadings().get(meteringPointId);
-                var lastTimestamp = Optional.ofNullable(lastMeterReading)
-                        .orElse(permissionRequest.start().atStartOfDay(timestamp.getZone()));
+                var lastTimestamp = start.atStartOfDay(timestamp.getZone());
                 LOGGER.info("Removing all energy data before optional timestamp {} for permission request {}",
-                        lastTimestamp,
-                        permissionId);
+                            lastTimestamp,
+                            permissionId);
                 removeMeterReadingsBefore(register, lastTimestamp);
 
                 // Remove the rest of the meter readings which are not part of the permission request timeframe
-                var end = DateTimeUtils.endOfDay(permissionRequest.end(), timestamp.getZone());
                 LOGGER.info("Removing all energy data after optional timestamp {} for permission request {}",
-                        end,
-                        permissionId);
-                removeMeterReadingsAfter(register, end);
+                            end,
+                            permissionId);
+                removeMeterReadingsAfter(register, endOfDay(end, timestamp.getZone()));
             }
         }
-        outbox.commit(new NlInternalPollingEvent(permissionId, lastMeterReadings));
         identifiableMeteredDataSink.tryEmitNext(new IdentifiableMeteredData(permissionRequest, response));
-    }
-
-    /**
-     * Gets a reading list and will calculate the deltas between consecutive items in the list. By calculating deltas
-     * the first item will be dropped.
-     *
-     * @param readings list of readings with total cumulative values.
-     * @return list of readings, with the delta as reading values. It has the size of the original list - 1.
-     */
-    private static List<Reading> delta(List<Reading> readings) {
-        var array = readings.toArray(new Reading[0]);
-        List<Reading> deltas = new ArrayList<>(array.length - 1);
-        for (int i = array.length - 1; i > 0; i--) {
-            var prev = array[i - 1];
-            var current = array[i];
-            var delta = current.getValue().subtract(prev.getValue());
-            current.setValue(delta);
-            deltas.addFirst(current);
-        }
-        return deltas;
+        return lastMeterReadings;
     }
 
     private static void removeMeterReadingsBefore(Register register, ZonedDateTime lastTimestamp) {
@@ -214,9 +203,9 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
             }
         }
         LOGGER.atInfo()
-                .addArgument(list::size)
-                .addArgument(() -> register.getReadingList().size())
-                .log("Filtered meter readings resulting in a list of {} out of {} initial records");
+              .addArgument(list::size)
+              .addArgument(() -> register.getReadingList().size())
+              .log("Filtered meter readings resulting in a list of {} out of {} initial records");
 
         register.setReadingList(list);
     }
@@ -253,7 +242,7 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
             }
             if (!newRegisterList.isEmpty()) {
                 mijnAansluitingResponse.getMarketEvaluationPoint()
-                        .setRegisterList(newRegisterList);
+                                       .setRegisterList(newRegisterList);
                 newResponseList.add(mijnAansluitingResponse);
             }
         }
@@ -262,7 +251,7 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
 
     private static boolean isEnergyType(Register register, String energyType) {
         return register.getMeter()
-                .getMRID()
-                .startsWith(energyType);
+                       .getMRID()
+                       .startsWith(energyType);
     }
 }
