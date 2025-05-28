@@ -98,26 +98,26 @@ To be compatible with different kings of messaging infrastructure (Kafka, NATS, 
 queues, streams, whatever it's named in the respective messaging infrastructure) are made of a prefix and a suffix.
 Depending on the actual messaging solution, they are composed differently.
 
-- **Prefix:** eddie.**&lt;direction>**, e.g. `eddie.ep`
+- **Prefix:** **&lt;direction>**.eddie, e.g. `ep.eddie`
 - **Suffix:** **&lt;datamodel/version>**.**&lt;topic>**, e.g. `cim_0_82.permission-md`
 
 Applied to the different solutions:
 
-- **Kafka:** Kafka-Topic: **&lt;Prefix>**.**&lt;Suffix>**, e.g. `eddie.ep.cim_0_82.permission-md`
-- **AMQP1.0 (out):** Topic: **&lt;Prefix>**.**&lt;Suffix>**, e.g.: `topic://eddie.ep.cim_0_82.permission-md`
-- **AMQP1.0 (in):** Queue: **&lt;Prefix>**.**&lt;Suffix>**, e.g.: `queue://eddie.fw.cim_0_82.termination-md`
-- **NATS:** Subject: **&lt;Prefix>**.**&lt;Suffix>**, e.g. `eddie.ep.cim_0_82.permission-md`
+- **Kafka:** Kafka-Topic: **&lt;Prefix>**.**&lt;Suffix>**, e.g. `ep.eddie.cim_0_82.permission-md`
+- **AMQP1.0 (out):** Topic: **&lt;Prefix>**.**&lt;Suffix>**, e.g.: `topic://ep.eddie.cim_0_82.permission-md`
+- **AMQP1.0 (in):** Queue: **&lt;Prefix>**.**&lt;Suffix>**, e.g.: `queue://fw.eddie.cim_0_82.termination-md`
+- **NATS:** Subject: **&lt;Prefix>**.**&lt;Suffix>**, e.g. `ep.eddie.cim_0_82.permission-md`
 - **Pulsar:** Tenant: configurable, using "eddie.app" as default; Namespace: **&lt;Prefix>**; Topic **&lt;Suffix>**,
-  e.g. `persistent://eddie.app/eddie.ep/cim_0_82.permission-md`
+  e.g. `persistent://eddie.app/ep.eddie/cim_0_82.permission-md`
 
 **Topic names are composed of the following fields:**
 
-| Field         | Values             | Description                                                                           |
-|---------------|--------------------|---------------------------------------------------------------------------------------|
-| EDDIE-id      | eddie              | A constant prefix to group all eddie framework related topics                         |
-| direction     | ep / fw            | ep: message from the EDDIE fw to the elibible party app, fw: message for the EDDIE fw |
-| datamodel     | cim_0_82 / cim_1_0 | Datamodel combined with version                                                       |
-| document type | _see below_        | Type of document exchanged                                                            |
+| Field         | Values                 | Description                                                                           |
+|---------------|------------------------|---------------------------------------------------------------------------------------|
+| direction     | ep / fw                | ep: message from the EDDIE fw to the elibible party app, fw: message for the EDDIE fw |
+| EDDIE-id      | eddie                  | A constant prefix to group all eddie framework related topics                         |
+| datamodel     | cim_0_82 / cim_0_91_08 | Datamodel combined with version                                                       |
+| document type | _see below_            | Type of document exchanged                                                            |
 
 ## CIM Topic Structure
 
@@ -136,30 +136,27 @@ Applied to the different solutions:
 
 ### CIM 1.0 Kafka
 
-Kafka topics can be configured to allow for better integration into existing Kafka environments. The hash `#` at the
-beginning of the property name is a placeholder for the prefix `eddie.outbound.kafka.cim10`.
+The hash `#` at the beginning of the property name is a placeholder for the prefix `eddie`.
 
-| Spring Property                              | Default Kafka Topic                                      | Document Structure Link            |
-|----------------------------------------------|----------------------------------------------------------|------------------------------------|
-| `#.fw.cim_1_0.termination-md`                | `queue://eddie.fw.cim_1_0.termination-md`                | [termination-md](#)                |
-| `#.ep.cim_1_0.permission-md`                 | `queue://eddie.ep.cim_1_0.permission-md`                 | [permission-md](#)                 |
-| `#.ep.cim_1_0.accounting-point-md`           | `queue://eddie.ep.cim_1_0.accounting-point-md`           | [accounting-point-md](#)           |
-| `#.ep.cim_1_0.validated-historical-data-md`  | `queue://eddie.ep.cim_1_0.validated-historical-data-md`  | [validated-historical-data-md](#)  |
-| `#.ep.cim_1_0.redistribution-transaction-rd` | `queue://eddie.ep.cim_1_0.redistribution-transaction-rd` | [redistribution-transaction-rd](#) |
+| Kafka Topic                                          | Document Structure Link                                                                                    |
+|------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| `queue://fw.#.cim_1_0.termination-md`                | [termination-md](../2-integrating/messages/permission-market-documents.md)                                 |
+| `queue://ep.#.cim_1_0.permission-md`                 | [permission-md](../2-integrating/messages/permission-market-documents.md)                                  |
+| `queue://ep.#.cim_1_0.accounting-point-md`           | [accounting-point-md](../2-integrating/messages/accounting-point-data-market-documents.md)                 |
+| `queue://ep.#.cim_1_0.validated-historical-data-md`  | [validated-historical-data-md](../2-integrating/messages/validated-historical-data-market-documents.md)    |
+| `queue://ep.#.cim_1_0.redistribution-transaction-rd` | [redistribution-transaction-rd](../2-integrating/messages/redistribution-transaction-request-documents.md) |
 
 ### CIM 1.0 AMQP 1.0
 
-AMQP  topics can be configured to allow for better integration into specific AMQP brokers because the address syntax of queues and topics
-is broker dependent and not part of the AMQP 1.0 standard. The hash `#` at the beginning of the property name is a placeholder for the
-prefix `eddie.outbound.amqp10.cim10`.
+ The hash `#` at the beginning of the property name is a placeholder for the prefix `eddie.outbound.amqp10.cim10`.
 
-| Spring Property                              | Default AMQP 1.0 Address                         | Document Structure Link            |
-|----------------------------------------------|--------------------------------------------------|------------------------------------|
-| `#.fw.cim_1_0.termination-md`                | `eddie.fw.cim_1_0.termination-md`                | [termination-md](#)                |
-| `#.ep.cim_1_0.permission-md`                 | `eddie.ep.cim_1_0.permission-md`                 | [permission-md](#)                 |
-| `#.ep.cim_1_0.accounting-point-md`           | `eddie.ep.cim_1_0.accounting-point-md`           | [accounting-point-md](#)           |
-| `#.ep.cim_1_0.validated-historical-data-md`  | `eddie.ep.cim_1_0.validated-historical-data-md`  | [validated-historical-data-md](#)  |
-| `#.ep.cim_1_0.redistribution-transaction-rd` | `eddie.ep.cim_1_0.redistribution-transaction-rd` | [redistribution-transaction-rd](#) |
+| AMQP 1.0 Address                             | Document Structure Link                                                                                    |
+|----------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| `fw.#.cim_1_0.termination-md`                | [termination-md](../2-integrating/messages/permission-market-documents.md)                                 |
+| `ep.#.cim_1_0.permission-md`                 | [permission-md](../2-integrating/messages/permission-market-documents.md)                                  |
+| `ep.#.cim_1_0.accounting-point-md`           | [accounting-point-md](../2-integrating/messages/accounting-point-data-market-documents.md)                 |
+| `ep.#.cim_1_0.validated-historical-data-md`  | [validated-historical-data-md](../2-integrating/messages/validated-historical-data-market-documents.md)    |
+| `ep.#.cim_1_0.redistribution-transaction-rd` | [redistribution-transaction-rd](../2-integrating/messages/redistribution-transaction-request-documents.md) |
 
 ## Shared Functionality
 
@@ -189,16 +186,18 @@ To implement a custom SerDe for other formats, such as `CSV` or `protobuf`, impl
 
 Outbound Connectors that should be secured using spring security (like the Admin Console), can define a `SecurityFilterChain` using the [OutboundConnectorSecurityConfig](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/OutboundConnectorSecurityConfig.html) Annotation.
 The endpoints can then be secured as follows, but please note that the security config should only define rules for the paths of the certain outbound-connector.
+
 ```java
+
 @OutboundConnectorSecurityConfig
 public class OCSecurityConfig {
     @Bean
     public MvcRequestMatcher.Builder requestMatcher(HandlerMappingIntrospector introspector) {
-      return new MvcRequestMatcher.Builder(introspector).servletPath("/" + ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH + "/" + "oc-name");
+        return new MvcRequestMatcher.Builder(introspector).servletPath("/" + ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH + "/" + "oc-name");
     }
-    
+
     @Bean
-    public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf((csrf) -> csrf.requireCsrfProtectionMatcher(requestMatcher.pattern("*")))
                 .authorizeHttpRequests((authorize) -> authorize
@@ -210,6 +209,7 @@ public class OCSecurityConfig {
     }
 }
 ```
+
 > [!IMPORTANT]  
 > The filter chains are loaded by eddie core before the context of the outbound-connector is built.
 > Consequently, `Beans` that are part of the outbound-connector are ***not*** available in the security config.
