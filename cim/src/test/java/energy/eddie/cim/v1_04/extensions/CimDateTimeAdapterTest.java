@@ -13,7 +13,7 @@ class CimDateTimeAdapterTest {
     @Test
     void marshal_returnISO8601_withoutMilliseconds() {
         // Given
-        var input = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var input = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 12, ZoneOffset.UTC);
         var expected = "2025-01-01T00:00:00Z";
         var adapter = new CimDateTimeAdapter();
 
