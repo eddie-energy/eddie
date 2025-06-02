@@ -1,7 +1,7 @@
-package energy.eddie.api.v0_91_08;
+package energy.eddie.api.v0_92_08;
 
 import energy.eddie.api.v0.RegionConnector;
-import energy.eddie.cim.v0_91_08.VHDEnvelope;
+import energy.eddie.cim.v0_92_08.VHDEnvelope;
 import reactor.core.publisher.Flux;
 
 /**

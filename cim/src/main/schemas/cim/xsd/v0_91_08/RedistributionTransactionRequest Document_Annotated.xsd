@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:sawsdl="http://www.w3.org/ns/sawsdl"
-           xmlns:cimp="http://www.iec.ch/cimprofile" xmlns:TargetNamespace="https://eddie.energy/CIM"
+           xmlns:cimp="http://www.iec.ch/cimprofile" xmlns:TargetNamespace="https://eddie.energy/CIM/RTR"
            xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified"
-           targetNamespace="https://eddie.energy/CIM">
-    <xs:import schemaLocation="./urn-entsoe-eu-wgedi-codelists.xsd" namespace="urn:entsoe.eu:wgedi:codelists"/>
+           targetNamespace="https://eddie.energy/CIM/RTR">
     <xs:element name="RTR_Envelope" type="TargetNamespace:RTR_Envelope"/>
     <xs:simpleType name="ESMP_DateTime" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#DateTime">
         <xs:annotation>

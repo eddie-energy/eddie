@@ -1,4 +1,4 @@
-package energy.eddie.cim.v0_91_08.extensions;
+package energy.eddie.cim.v0_92_08.extensions;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 

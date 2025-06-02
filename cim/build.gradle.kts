@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "energy.eddie"
-version = "2.1.0"
+version = "3.0.0"
 
 repositories {
     mavenCentral()
@@ -90,7 +90,7 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
         File(cimSchemaFiles, "/v0_82/ap/AccountingPoint_MarketDocument_2024-06-21T11.38.58.xsd"),
         File(cimSchemaFiles, "/v0_82/pmd/Permission_Envelope_2024-06-21T11.51.02.xsd"),
         File(cimSchemaFiles, "/v0_82/pmd/Permission_Envelope_2024-06-21T11.51.02.xsd"),
-        // V0.92.08
+        // V0.91.08
         File(cimSchemaFiles, "/v0_91_08/RedistributionTransactionRequest Document_Annotated.xsd"),
         File(cimSchemaFiles, "/v0_91_08/ValidateHistoricalData Document_Annotated.xsd"),
         File(cimSchemaFiles, "/v0_91_08/urn-entsoe-eu-wgedi-components.xsd"),

@@ -13,7 +13,8 @@ import energy.eddie.cim.v0_82.vhd.AccumulationKind;
 import energy.eddie.cim.v0_82.vhd.AggregateKind;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.cim.v0_82.vhd.MeasurementPointIDStringComplexType;
-import energy.eddie.cim.v0_91_08.*;
+import energy.eddie.cim.v0_91_08.RTREnvelope;
+import energy.eddie.cim.v0_92_08.*;
 import energy.eddie.outbound.shared.testing.XmlValidator;
 import org.junit.jupiter.api.Test;
 
@@ -481,7 +482,7 @@ class XmlMessageSerdeTest {
                 .withMessageDocumentHeaderMetaInformationPermissionId("pid")
                 .withMessageDocumentHeaderMetaInformationRegionConnector("rc-id")
                 .withMarketDocumentPeriodTimeInterval(
-                        new ESMPDateTimeInterval()
+                        new energy.eddie.cim.v0_91_08.ESMPDateTimeInterval()
                                 .withStart("2024-01-01T00:00Z")
                                 .withEnd("2024-01-01T00:00Z")
                 );
@@ -580,13 +581,13 @@ class XmlMessageSerdeTest {
                                                                 .withValue("ID")
                                                 )
                                                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAccumulation(
-                                                        energy.eddie.cim.v0_91_08.AccumulationKind.DELTADATA
+                                                        energy.eddie.cim.v0_92_08.AccumulationKind.DELTADATA
                                                 )
                                                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregate(
-                                                        energy.eddie.cim.v0_91_08.AggregateKind.AVERAGE
+                                                        energy.eddie.cim.v0_92_08.AggregateKind.AVERAGE
                                                 )
                                                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(
-                                                        energy.eddie.cim.v0_91_08.CommodityKind.ELECTRICITYPRIMARYMETERED
+                                                        energy.eddie.cim.v0_92_08.CommodityKind.ELECTRICITYPRIMARYMETERED
                                                 )
                                                 .withMarketEvaluationPointUsagePointLocationGeoInfoReference("ref")
                                                 .withEnergyMeasurementUnitName(StandardUnitOfMeasureTypeList.KILOWATT_HOUR.value())
@@ -615,8 +616,7 @@ class XmlMessageSerdeTest {
 
         // When
         var res = serde.serialize(document);
-        var valid = XmlValidator.validateV09108ValidatedHistoricalDataMarketDocument(new String(res,
-                                                                                                StandardCharsets.UTF_8));
+        var valid = XmlValidator.validateV09208ValidatedHistoricalDataMarketDocument(res);
 
         // Then
         assertTrue(valid);
