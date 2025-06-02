@@ -5,6 +5,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 import java.io.StringReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class XmlValidator {
 
@@ -53,10 +54,9 @@ public class XmlValidator {
         );
         return validateXMLSchema(xsd, xml);
     }
-    public static boolean validateV09108ValidatedHistoricalDataMarketDocument(String xml) {
-        var xsd = XmlValidator.class.getResource(
-                "/cim/xsd/v0_91_08/ValidateHistoricalData Document_Annotated.xsd"
-        );
-        return validateXMLSchema(xsd, xml);
+
+    public static boolean validateV09208ValidatedHistoricalDataMarketDocument(byte[] xml) {
+        var xsd = XmlValidator.class.getResource("/cim/xsd/v0_92_08/ValidateHistoricalData Document_Annotated.xsd");
+        return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
     }
 }

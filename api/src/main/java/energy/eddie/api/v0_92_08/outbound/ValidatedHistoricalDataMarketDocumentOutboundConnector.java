@@ -1,6 +1,6 @@
-package energy.eddie.api.v0_91_08.outbound;
+package energy.eddie.api.v0_92_08.outbound;
 
-import energy.eddie.cim.v0_91_08.VHDEnvelope;
+import energy.eddie.cim.v0_92_08.VHDEnvelope;
 import reactor.core.publisher.Flux;
 
 /**

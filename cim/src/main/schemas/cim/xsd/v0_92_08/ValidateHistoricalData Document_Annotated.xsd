@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:sawsdl="http://www.w3.org/ns/sawsdl"
            xmlns:ecl="urn:entsoe.eu:wgedi:codelists" xmlns:cimp="http://www.iec.ch/cimprofile"
-           xmlns:TargetNamespace="https://eddie.energy/CIM" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:TargetNamespace="https://eddie.energy/CIM/VHD" xmlns:xs="http://www.w3.org/2001/XMLSchema"
            attributeFormDefault="unqualified" elementFormDefault="qualified"
-           targetNamespace="https://eddie.energy/CIM">
-    <xs:import schemaLocation="./urn-entsoe-eu-wgedi-codelists.xsd" namespace="urn:entsoe.eu:wgedi:codelists"/>
+           targetNamespace="https://eddie.energy/CIM/VHD">
+    <xs:import schemaLocation="urn-entsoe-eu-wgedi-codelists.xsd" namespace="urn:entsoe.eu:wgedi:codelists"/>
     <xs:element name="VHD_Envelope" type="TargetNamespace:VHD_Envelope"/>
     <xs:simpleType name="Position_Integer" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Integer">
         <xs:annotation>
