@@ -1,0 +1,1 @@
+DROP VIEW IF EXISTS at_eda.meter_reading_timeframe;
