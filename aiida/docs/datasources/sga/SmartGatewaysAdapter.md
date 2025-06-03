@@ -58,3 +58,7 @@ MQTT Prefix: random string of 10 characters (e.g. AcQY334Z4Q)
 
 For the prefix only the first 10 characters of the MQTT Topic are used. In this
 example the prefix is `AcQY334Z4Q`.
+
+An example of the MQTT configuration of the adapter is shown below.
+
+![Smart Meter Adapter](sga-mqtt-config.png)
