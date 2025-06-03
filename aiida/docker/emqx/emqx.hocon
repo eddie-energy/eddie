@@ -10,7 +10,6 @@ authentication = [
     password = REPLACED_WITH_ENV
     password_hash_algorithm {
       name = bcrypt
-      salt_rounds = REPLACED_WITH_ENV
     }
     pool_size = 8
     query = """~
