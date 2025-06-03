@@ -504,19 +504,9 @@ function renderDataSources() {
 
           <dt>MQTT Password:</dt>
           <dd>
-            <span
-              hidden
-              class="mqtt-password"
-              id="mqtt-password-${dataSource.id}"
-            >
-              ${dataSource.mqttSettings.password}
-            </span>
-            <span>********</span>
-            <sl-icon
-              id="toggle-mqtt-password-${dataSource.id}"
-              style="cursor: pointer"
-              name="eye"
-            ></sl-icon>
+            <sl-button variant="default" size="small" onclick="window.regenerateEphemeralDataSource('${dataSource.id}')">
+              Regenerate
+            </sl-button>
           </dd>
         `;
 
@@ -526,16 +516,6 @@ function renderDataSources() {
           dataSourceTypeDetails,
           dataSourceList
         );
-
-        const passwordSpan = document.getElementById(`mqtt-password-${dataSource.id}`);
-        const toggleIcon = document.getElementById(`toggle-mqtt-password-${dataSource.id}`);
-
-        if (toggleIcon) {
-          toggleIcon.addEventListener("click", () => {
-            const present = passwordSpan.toggleAttribute("hidden");
-            toggleIcon.setAttribute("name", present ? "eye" : "eye-slash");
-          });
-        }
       }
 
       function appendDataSourceToChild(
@@ -751,6 +731,58 @@ function updateDataSourceFields(type) {
 
 function closeAddDataSourceDialog() {
   document.getElementById("add-data-source-dialog").hide();
+}
+
+function regenerateEphemeralDataSource(dataSourceId) {
+  fetch(`${DATASOURCES_BASE_URL}/${dataSourceId}/regenerate-ephemeral`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      [getCsrfHeader()]: getCsrfToken(),
+    },
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(
+          `Failed to regenerate ephemeral data: [${response.status}] ${errorMessage}`
+        );
+      }
+      return response.json();
+    })
+    .then((dataSourceEphemeral) => {
+      openEphemeralDataSourceDialog(dataSourceEphemeral)
+    })
+    .catch((error) => {
+      console.error("Failed to regenerate ephemeral data:", error);
+      alert(`Failed to regenerate ephemeral data: ${error.message}`);
+    });
+}
+
+function openEphemeralDataSourceDialog(dataSourceEphemeral) {
+  closeAddDataSourceDialog();
+  renderDataSources();
+
+  if(dataSourceEphemeral && dataSourceEphemeral.plaintextPassword) {
+    const passwordSpan = document.getElementById(`ephemeral-data-source-password`);
+    const toggleIcon = document.getElementById(`ephemeral-data-source-toggle-password`);
+
+    passwordSpan.innerText = dataSourceEphemeral.plaintextPassword;
+
+    if (toggleIcon) {
+      toggleIcon.addEventListener("click", () => {
+        const present = passwordSpan.toggleAttribute("hidden");
+        toggleIcon.setAttribute("name", present ? "eye" : "eye-slash");
+      });
+    }
+
+    document.getElementById("ephemeral-data-source-dialog").show();
+
+  }
+}
+
+function closeEphemeralDataSourceDialog() {
+  document.getElementById("ephemeral-data-source-dialog").hide();
 }
 
 function openEditDataSourceDialog(dataSourceId) {
@@ -1009,11 +1041,10 @@ document
             `Failed to add data source: [${response.status}] ${errorMessage}`
           );
         }
-        return response;
+        return response.json();
       })
-      .then(() => {
-        closeAddDataSourceDialog();
-        renderDataSources();
+      .then((dataSourceEphemeral) => {
+        openEphemeralDataSourceDialog(dataSourceEphemeral)
       })
       .catch((error) => {
         console.error("Failed to add data source:", error);
@@ -1108,3 +1139,5 @@ window.hideUserDrawer = () => userDrawer.hide();
 window.openAddDataSourceDialog = openAddDataSourceDialog;
 window.closeAddDataSourceDialog = closeAddDataSourceDialog;
 window.closeEditDataSourceDialog = closeEditDataSourceDialog;
+window.closeEphemeralDataSourceDialog = closeEphemeralDataSourceDialog;
+window.regenerateEphemeralDataSource = regenerateEphemeralDataSource;
