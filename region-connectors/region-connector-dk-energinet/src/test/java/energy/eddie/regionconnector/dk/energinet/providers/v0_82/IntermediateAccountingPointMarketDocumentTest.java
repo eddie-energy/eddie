@@ -1,19 +1,17 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
 import energy.eddie.api.CommonInformationModelVersions;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.dk.energinet.DtoLoader;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Objects;
@@ -31,21 +29,15 @@ class IntermediateAccountingPointMarketDocumentTest {
     void testAccountingPointMarketDocument_isCorrectlyMapped() throws IOException {
         // Given
         var dto = DtoLoader.validApiResponse();
-        var now = LocalDate.now(ZoneOffset.UTC);
         var identifiableAp = new IdentifiableAccountingPointDetails(
-                new EnerginetPermissionRequest(
-                        "pid",
-                        "cid",
-                        "dnid",
-                        "mid",
-                        "token",
-                        now,
-                        now,
-                        Granularity.PT15M,
-                        "token",
-                        PermissionProcessStatus.ACCEPTED,
-                        ZonedDateTime.now(ZoneOffset.UTC)
-                ),
+                new EnerginetPermissionRequestBuilder()
+                        .setPermissionId("pid")
+                        .setConnectionId("cid")
+                        .setDataNeedId("dnid")
+                        .setMeteringPoint("mid")
+                        .setStatus(PermissionProcessStatus.ACCEPTED)
+                        .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                        .build(),
                 Objects.requireNonNull(dto.getResult()).getFirst().getResult()
         );
         var intermediateAccountingPointMarketDocument = new IntermediateAccountingPointMarketDocument(identifiableAp,

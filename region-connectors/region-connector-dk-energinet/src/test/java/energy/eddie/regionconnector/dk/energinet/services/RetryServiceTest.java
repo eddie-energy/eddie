@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.dk.energinet.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
@@ -36,19 +36,18 @@ class RetryServiceTest {
         var now = LocalDate.now(ZoneOffset.UTC);
         when(repository.findAllByStatus(PermissionProcessStatus.UNABLE_TO_SEND))
                 .thenReturn(List.of(
-                        new EnerginetPermissionRequest(
-                                "pid",
-                                "cid",
-                                "dnid",
-                                "mid",
-                                "refresh",
-                                now,
-                                now,
-                                Granularity.PT1H,
-                                "access",
-                                PermissionProcessStatus.UNABLE_TO_SEND,
-                                ZonedDateTime.now(ZoneOffset.UTC)
-                        )
+                        new EnerginetPermissionRequestBuilder().setPermissionId("pid")
+                                                               .setConnectionId("cid")
+                                                               .setDataNeedId("dnid")
+                                                               .setMeteringPoint("mid")
+                                                               .setRefreshToken("refresh")
+                                                               .setStart(now)
+                                                               .setEnd(now)
+                                                               .setGranularity(Granularity.PT1H)
+                                                               .setAccessToken("access")
+                                                               .setStatus(PermissionProcessStatus.UNABLE_TO_SEND)
+                                                               .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                               .build()
                 ));
 
         // When

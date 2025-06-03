@@ -1,12 +1,11 @@
 package energy.eddie.regionconnector.dk.energinet.permission.handler;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkAcceptedEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.services.AccountingPointDetailsService;
 import energy.eddie.regionconnector.dk.energinet.services.PollingService;
@@ -19,9 +18,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.mockito.Mockito.verify;
@@ -60,21 +56,6 @@ class AcceptanceHandlerTest {
         verify(pollingService).fetchHistoricalMeterReadings(pr);
     }
 
-    private EnerginetPermissionRequest permissionRequest() {
-        LocalDate now = LocalDate.now(ZoneOffset.UTC);
-        return new EnerginetPermissionRequest("pid",
-                                              "cid",
-                                              "dnid",
-                                              "mid",
-                                              "refresh",
-                                              now,
-                                              now,
-                                              Granularity.PT1H,
-                                              null,
-                                              PermissionProcessStatus.VALIDATED,
-                                              ZonedDateTime.now(ZoneOffset.UTC));
-    }
-
     @Test
     void testAccept_triggersAccountingPointService() {
         // Given
@@ -86,5 +67,11 @@ class AcceptanceHandlerTest {
 
         // Then
         verify(accountingPointDetailsService).fetchMeteringPointDetails(pr);
+    }
+
+    private EnerginetPermissionRequest permissionRequest() {
+        return new EnerginetPermissionRequestBuilder()
+                .setDataNeedId("dnid")
+                .build();
     }
 }

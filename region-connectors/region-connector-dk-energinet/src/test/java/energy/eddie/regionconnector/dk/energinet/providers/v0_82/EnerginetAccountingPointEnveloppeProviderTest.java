@@ -1,14 +1,13 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointDetailsCustomerDto;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointDetailsCustomerDtoResponseListApiResponse;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,26 +39,23 @@ class EnerginetAccountingPointEnvelopeProviderTest {
     static void setUp() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JsonNullableModule());
         try (InputStream is = EnerginetAccountingPointEnvelopeProviderTest.class.getClassLoader()
-                                                                                 .getResourceAsStream(
-                                                                                                   "MeteringPointDetailsCustomerDtoResponseListApiResponse.json")) {
+                                                                                .getResourceAsStream(
+                                                                                        "MeteringPointDetailsCustomerDtoResponseListApiResponse.json")) {
             MeteringPointDetailsCustomerDtoResponseListApiResponse response = objectMapper.readValue(is,
                                                                                                      MeteringPointDetailsCustomerDtoResponseListApiResponse.class);
             meteringPointDetailsCustomerDto = response.getResult().getFirst().getResult();
         }
 
-        var permissionRequest = new EnerginetPermissionRequest(
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
-                "meteringPointId",
-                "refreshToken",
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                Granularity.PT1H,
-                "accessToken",
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC)
-        );
+        var permissionRequest = new EnerginetPermissionRequestBuilder()
+                .setPermissionId("permissionId")
+                .setConnectionId("connectionId")
+                .setDataNeedId("dataNeedId")
+                .setMeteringPoint("meteringPointId")
+                .setStart(LocalDate.now(ZoneOffset.UTC))
+                .setEnd(LocalDate.now(ZoneOffset.UTC))
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                .build();
         apiResponse = new IdentifiableAccountingPointDetails(
                 permissionRequest,
                 meteringPointDetailsCustomerDto
