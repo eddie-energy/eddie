@@ -8,7 +8,10 @@ authentication = [
     mechanism = password_based
     # Replaced with .env file
     password = REPLACED_WITH_ENV
-    password_hash_algorithm {name = plain, salt_position = disable}
+    password_hash_algorithm {
+      name = bcrypt
+      salt_rounds = REPLACED_WITH_ENV
+    }
     pool_size = 8
     query = """~
       SELECT mqtt_password AS password_hash

@@ -141,6 +141,26 @@
       </div>
     </sl-dialog>
 
+    <sl-dialog id="ephemeral-data-source-dialog" label="MQTT Password">
+      <div>
+        <p>
+          Make sure to copy the password now. You won't be able to see it again.
+        </p>
+
+        <span hidden class="mqtt-password" id="ephemeral-data-source-password"></span>
+        <span>********</span>
+        <sl-icon
+          id="ephemeral-data-source-toggle-password"
+          style="cursor: pointer"
+          name="eye"
+        ></sl-icon>
+      </div>
+
+      <div slot="footer">
+        <sl-button type="button" variant="neutral" onclick="window.closeEphemeralDataSourceDialog()">Close</sl-button>
+      </div>
+    </sl-dialog>
+
     <div id="data-source-list" class="data-sources"></div>
 
     <script th:src="@{/js/main.js}" type="module"></script>

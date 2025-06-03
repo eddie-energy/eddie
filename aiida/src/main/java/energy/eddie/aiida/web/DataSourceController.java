@@ -1,6 +1,7 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceEphemeralDto;
 import energy.eddie.aiida.dtos.DataSourceTypeDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.ModbusConnectionException;
@@ -94,16 +95,16 @@ public class DataSourceController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> addDataSource(@RequestBody DataSourceDto dataSource) throws InvalidUserException, ModbusConnectionException {
+    public ResponseEntity<DataSourceEphemeralDto> addDataSource(@RequestBody DataSourceDto dataSource) throws InvalidUserException, ModbusConnectionException {
         LOGGER.info("Adding new datasource");
 
         if (dataSource.name() == null || dataSource.name().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
-        service.addDataSource(dataSource);
+        var dataSourceEphemeral = service.addDataSource(dataSource);
 
-        return ResponseEntity.status(201).build();
+        return ResponseEntity.status(201).body(dataSourceEphemeral);
     }
 
     @Operation(summary = "Delete a datasource", description = "Delete a datasource by ID.",
@@ -183,5 +184,24 @@ public class DataSourceController {
         service.updateEnabledState(dataSourceId, enabled);
 
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Regenerate ephemeral data for a datasource",
+            description = "Regenerate the ephemeral data for a datasource by ID.",
+            operationId = "regenerateDatasourceEphemeral",
+            tags = {"datasource"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ephemeral data regenerated successfully",
+                    content = @Content(schema = @Schema(implementation = DataSourceEphemeralDto.class))),
+            @ApiResponse(responseCode = "404", description = "Datasource not found",
+                    content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @PostMapping(value = "{id}/regenerate-ephemeral", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DataSourceEphemeralDto> regenerateEphemeral(@PathVariable("id") UUID dataSourceId) {
+    LOGGER.info("Regenerating ephemeral data for datasource with ID: {}", dataSourceId);
+
+        var dataSourceEphemeral = service.regenerateEphemeral(dataSourceId);
+
+        return ResponseEntity.ok().body(dataSourceEphemeral);
     }
 }
