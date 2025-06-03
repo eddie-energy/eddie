@@ -56,7 +56,7 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
                         .headers(headers -> headers.add(HttpHeaderNames.CONTENT_TYPE,
                                                         HttpHeaderValues.APPLICATION_JSON))
                         .headers(headers -> headers.add(HttpHeaderNames.AUTHORIZATION, "Bearer " + token))
-                        // TODO: fix with GH-1102
+                        // Datadis blocks the spring user-agent, see GH-1102
                         .headers(headers -> headers.add(HttpHeaderNames.USER_AGENT, "PostmanRuntime/7.36.3"))
                         .post()
                         .uri(authorizationEndpoint)
