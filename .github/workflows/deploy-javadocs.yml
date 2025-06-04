@@ -5,6 +5,8 @@ on:
       - opened
       - reopened
       - synchronize
+    paths:
+      - "**.java"
   push:
     branches:
       - main
