@@ -2,7 +2,7 @@
 
 Permission market documents are used to signal the status change of one or multiple permission requests.
 They contain a lot of information, the following example focuses on the most necessary parts.
-The header is described in [CIM envelope](./messages.md#cim-envelope).
+The header is described in [CIM envelope](./cim.md#cim-envelope-for-v082).
 The schema can be found [here](https://github.com/eddie-energy/eddie/tree/main/api/src/main/schemas/cim/xsd/v0_82/pmd).
 
 > [!Warning]
@@ -97,7 +97,7 @@ It indicates that an already **accepted** permission request should be terminate
 The termination document is sent to EDDIE by the eligible party, it uses the same format as described [above](#permission-market-documents).
 
 > [!Info]
-> Only accepted permission requests can be terminated, see [the permission process model](../integrating.md#permission-process-model)
+> Only accepted permission requests can be terminated, see [the permission process model](../../integrating.md#permission-process-model)
 
 The following is a minimal example of a permission market document.
 

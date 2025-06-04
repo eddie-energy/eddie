@@ -119,33 +119,45 @@ export default withMermaid(
               link: "/2-integrating/messages/messages.md",
               items: [
                 {
-                  text: "Connection Status Messages",
-                  link: "/2-integrating/messages/connection-status-messages.md",
+                  text: "Agnostic",
+                  link: "/2-integrating/messages/agnostic.md",
+                  items: [
+                    {
+                      text: "Connection Status Messages",
+                      link: "/2-integrating/messages/agnostic.md#connection-status-messages",
+                    },
+                    {
+                      text: "Raw Data Messages",
+                      link: "/2-integrating/messages/agnostic.md#raw-data-messages",
+                    }
+                  ]
                 },
                 {
-                  text: "Raw Data Messages",
-                  link: "/2-integrating/messages/raw-data-messages.md",
+                  text: "Common Information Model (CIM)",
+                  link: "/2-integrating/messages/cim/cim.md",
+                  items: [
+                    {
+                      text: "Permission Market Documents",
+                      link: "/2-integrating/messages/cim/permission-market-documents.md",
+                    },
+                    {
+                      text: "Validated Historical Data Market Documents",
+                      link: "/2-integrating/messages/cim/validated-historical-data-market-documents.md",
+                    },
+                    {
+                      text: "Accounting Point Data Market Documents",
+                      link: "/2-integrating/messages/cim/accounting-point-data-market-documents.md",
+                    },
+                    {
+                      text: "Redistribution Transaction Request Documents",
+                      link: "/2-integrating/messages/cim/redistribution-transaction-request-documents.md",
+                    },
+                    {
+                      text: "Client Libraries",
+                      link: "/2-integrating/messages/cim/client-libraries.md",
+                    },
+                  ],
                 },
-                {
-                  text: "Permission Market Documents",
-                  link: "/2-integrating/messages/permission-market-documents.md",
-                },
-                {
-                  text: "Validated Historical Data Market Documents",
-                  link: "/2-integrating/messages/validated-historical-data-market-documents.md",
-                },
-                {
-                  text: "Accounting Point Data Market Documents",
-                  link: "/2-integrating/messages/accounting-point-data-market-documents.md",
-                },
-                {
-                  text: "Redistribution Transaction Request Documents",
-                  link: "/2-integrating/messages/redistribution-transaction-request-documents.md",
-                },
-                {
-                  text: "Common Information Model Client Libraries",
-                  link: "/2-integrating/messages/cim-client-libraries.md"
-                }
               ],
             },
           ],

@@ -1163,7 +1163,7 @@ public class LatestMeterReadingEventHandler implements EventHandler<LatestMeterR
 Once the data is emitted to the `ValidatedHistoricalDataStream` it can be emitted to the outbound connectors.
 To that an implementation of the [`RawDataProvider`](./api.md#rawdataprovider) is required.
 The implementation subscribes to the `ValidatedHistoricalDataStream` and converts the
-`IdentifiableValidatedHistoricalData` to a [`RawDataMessage`](../../2-integrating/messages/raw-data-messages.md).
+`IdentifiableValidatedHistoricalData` to a [`RawDataMessage`](../../2-integrating/messages/agnostic.md#raw-data-messages).
 If the API responses are in JSON the default implementation [`JsonRawDataProvider`](./shared-functionality.md#jsonrawdataprovider) for JSON values can be used instead.
 
 ```java
@@ -1214,7 +1214,7 @@ public class FooBarRawDataProvider implements RawDataProvider {
 
 The region connector can request validated historical data and emit it as raw data messages.
 It can react to revocation of permissions by the final customer, by checking the error messages when requesting data from the MDA's API.
-The next step is to map the validated historical data to the [validated historical data market document](../../2-integrating/messages/validated-historical-data-market-documents.md).
+The next step is to map the validated historical data to the [validated historical data market document](../../2-integrating/messages/cim/validated-historical-data-market-documents.md).
 Similar to the `RawDataProvider`, we implement an [`ValidatedHistoricalDataEnvelopeProvider`](./api.md#validatedhistoricaldataenvelopeprovider).
 Since the mapping of the data to a CIM document depends on the data given, that part is left out as TODO.
 There are some [helpers](./shared-functionality.md#cim-utilities-and-helper-classes) for the mapping available.

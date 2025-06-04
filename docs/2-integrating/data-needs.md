@@ -23,14 +23,14 @@ Furthermore, the asset from which the data is received is defined.
 
 ### ValidatedHistoricalDataDataNeed
 
-This data need is used to collect [validated historical data](./messages/validated-historical-data-market-documents.md) from an MDA for a final customer.
+This data need is used to collect [validated historical data](./messages/cim/validated-historical-data-market-documents.md) from an MDA for a final customer.
 It defines what kind of energy type should be collected for and the allowed min and max granularity of the data.
 The granularity defines the reading interval or calculated resolution of meter readings.
 If an MDA cannot provide the data in the requested min-max granularity interval, the region connector cannot create a permission request for that data need.
 
 ### AccountingPointDataNeed
 
-This data need is used to request [accounting point data](./messages/accounting-point-data-market-documents.md) from an MDA for a final customer.
+This data need is used to request [accounting point data](./messages/cim/accounting-point-data-market-documents.md) from an MDA for a final customer.
 Accounting point data is related to the metering points owned by a final customer.
 
 ## Data need configuration
@@ -42,7 +42,7 @@ Data needs can be configured in two ways: via a JSON file that is read on startu
 API which stores the data needs in the core's database.
 
 | Parameter                                | Type              | Description                                            |
-| ---------------------------------------- | ----------------- | ------------------------------------------------------ |
+|------------------------------------------|-------------------|--------------------------------------------------------|
 | eddie.data-needs-config.data-need-source | CONFIG / DATABASE | Specifies the location where data needs are read from. |
 
 If this is set to `CONFIG`, the property `EDDIE_DATA_NEEDS_CONFIG_FILE` needs to be set, otherwise the file is ignored.
@@ -81,7 +81,7 @@ the ID is a mandatory field.
 All data needs have these common fields:
 
 | Attribute             | Type    | Description                                                                                                                                                                                                                                         |
-| --------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|-----------------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | type                  | String  | Type of the data need, e.g. `validated` for historical validated consumption data. Please check the OpenAPI documentation for all supported values.                                                                                                 |
 | id                    | String  | Unique id that can be used to reference this data need.                                                                                                                                                                                             |
 | name                  | String  | Short memorable name of the data need that may be presented to the customer.                                                                                                                                                                        |
@@ -97,7 +97,7 @@ Depending on the `type`, a data need may require more fields, e.g. for validated
 > Please see the OpenAPI documentation (default: [http://localhost:8080/data-needs/swagger-ui/index.html](http://localhost:8080/data-needs/swagger-ui/index.html)) for further details about all possible data need types and their respective fields.
 
 | Attribute      | Type   | Description                                                                                                                                                                                                                                                                                                                                |
-| -------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|----------------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | duration       | Object | Describes the timeframe for this data need.                                                                                                                                                                                                                                                                                                |
 | energyType     | String | Type of energy to be requested. See OpenAPI documentation for all possible values.                                                                                                                                                                                                                                                         |
 | minGranularity | String | Desired granularity of the data that should be requested.                                                                                                                                                                                                                                                                                  |

@@ -339,7 +339,7 @@ Can be a final event, but if the PA supports external termination, the [requires
 ### Terminated
 
 If the permission request was accepted, the EP can decide to terminate the permission request anytime for any reason.
-This is done by using a [termination document](../../2-integrating/messages/permission-market-documents.md#termination-documents)
+This is done by using a [termination document](../../2-integrating/messages/cim/permission-market-documents.md#termination-documents)
 The termination document is received by the [RegionConnector implementation](./api.md#regionconnector).
 It can be a final event, but if the PA supports external termination, the [external termination event](#requires-external-termination-event) needs to be emitted.
 

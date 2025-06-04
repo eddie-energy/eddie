@@ -69,7 +69,7 @@ All interfaces, except `RegionConnector` and `RegionConnectorRetransmissionServi
 The [`RegionConnector` interface](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0/RegionConnector.html) is mandatory for each region connector, and provides base functionality such as the [`getMetadata`](#regionconnectormetadata) and the `terminatePermission` methods.
 
 A region connector must allow the eligible party to terminate a permission request once it is accepted.
-This is done by sending a [termination document](../../2-integrating/messages/permission-market-documents.md#termination-documents) to EDDIE, which then routes the ID of the permission request to the region connector.
+This is done by sending a [termination document](../../2-integrating/messages/cim/permission-market-documents.md#termination-documents) to EDDIE, which then routes the ID of the permission request to the region connector.
 The region connector is responsible for terminating the permission request with the PA and deleting any credentials that would give the EP access to the data of the final customer.
 Furthermore, the region connector has to verify that a permission request with that permission ID actually exists.
 
@@ -97,7 +97,7 @@ The retransmission service gets permission ID and a timeframe, which declares th
 
 ### `ConnectionStatusMessageProvider`
 
-The [`ConnectionStatusMessageProvider`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/ConnectionStatusMessageProvider.html) interface provides the [connection status message](../../2-integrating/messages/connection-status-messages.md) stream to the outbound connectors.
+The [`ConnectionStatusMessageProvider`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/ConnectionStatusMessageProvider.html) interface provides the [connection status message](../../2-integrating/messages/cim/connection-status-messages.md) stream to the outbound connectors.
 Furthermore, it is used by the core to propagate status changes of a permission request to the EDDIE button.
 This allows immediate feedback for permission requests created by final customers.
 For a default implementation see the [connection status message provider implementation](./shared-functionality.md#connectionstatusmessagehandler).
