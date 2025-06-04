@@ -119,6 +119,7 @@ When using Docker, most of these properties should be configured in the [.env](d
 | KEYCLOAK_ADMIN_PASSWORD    | Password of the Keycloak admin                                                                                                       |
 | MQTT_EXTERNAL_HOST         | Network-accessible host of the MQTT broker                                                                                           |
 | MQTT_INTERNAL_HOST         | Internal network host of the MQTT broker (e.g. inside Docker network)                                                                |
+| MQTT_BCRYPT_SALT_ROUNDS    | Number of rounds for bcrypt hashing of MQTT passwords (default: 12)                                                                  |
 
 ### Reverse Proxy Deployment
 

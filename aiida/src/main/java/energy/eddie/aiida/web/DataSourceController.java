@@ -196,7 +196,7 @@ public class DataSourceController {
             @ApiResponse(responseCode = "404", description = "Datasource not found",
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
-    @PostMapping(value = "{id}/regenerate-ephemeral", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "{id}/regenerate-ephemeral")
     public ResponseEntity<DataSourceEphemeralDto> regenerateEphemeral(@PathVariable("id") UUID dataSourceId) {
     LOGGER.info("Regenerating ephemeral data for datasource with ID: {}", dataSourceId);
 
