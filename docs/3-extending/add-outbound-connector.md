@@ -46,35 +46,35 @@ Furthermore, it is used to set the name of the outbound-connector.
 
 ### `ConnectionStatusMessageOutboundConnector`
 
-The [`ConnectionStatusMessageOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/ConnectionStatusMessageOutboundConnector.html) interface provides means to get a stream of [connection status messages](../2-integrating/messages/connection-status-messages.md), which are emitted to the eligible party.
+The [`ConnectionStatusMessageOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/ConnectionStatusMessageOutboundConnector.html) interface provides means to get a stream of [connection status messages](../2-integrating/messages/cim/connection-status-messages.md), which are emitted to the eligible party.
 
 ### `RawDataOutboundConnector`
 
 The [`RawDataOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/RawDataOutboundConnector.html) interface provides a stream of raw data messages.
-[Raw data messages](../2-integrating/messages/raw-data-messages.md) are messages that are received from region-connectors and their region as is, without any changes, which can be useful for debugging purposes or operating on the data provided by metered data administrators itself.
+[Raw data messages](../2-integrating/messages/agnostic.md#raw-data-messages) are messages that are received from region-connectors and their region as is, without any changes, which can be useful for debugging purposes or operating on the data provided by metered data administrators itself.
 
 ### `PermissionMarketDocumentOutboundConnector`
 
 The [`PermissionMarketDocumentOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/PermissionMarketDocumentOutboundConnector.html) interface provides a stream of permission market documents.
 Their purpose is similar to the connection status messages described in subsubsection [`ConnectionStatusMessageOutboundConnector`](#connectionstatusmessageoutboundconnector).
 They provide information about status changes of a certain permission request in a CIM compliant format.
-For more information see section [permission market documents](../2-integrating/messages/permission-market-documents.md).
+For more information see section [permission market documents](../2-integrating/messages/cim/permission-market-documents.md).
 
 ### `ValidatedHistoricalDataMarketDocumentOutboundConnector`
 
 The [`ValidatedHistoricalDataMarketDocumentOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/ValidatedHistoricalDataEnvelopeOutboundConnector.html) interface provides a stream of validated historical data market documents.
-These are CIM compliant documents containing metered data, for more information see section [validated historical data market documents](../2-integrating/messages/validated-historical-data-market-documents.md).
+These are CIM compliant documents containing metered data, for more information see section [validated historical data market documents](../2-integrating/messages/cim/validated-historical-data-market-documents.md).
 
 ### `AccountingPointEnvelopeOutboundConnector`
 
 The [`AccountingPointEnvelopeOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/AccountingPointEnvelopeOutboundConnector.html) interface provides a stream of accounting point market documents.
-The accounting point market documents are CIM compliant documents, for more information see section [accounting point market documents](../2-integrating/messages/accounting-point-data-market-documents.md).
+The accounting point market documents are CIM compliant documents, for more information see section [accounting point market documents](../2-integrating/messages/cim/accounting-point-data-market-documents.md).
 
 ### `TerminationConnector`
 
 The [`TerminationConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/TerminationConnector.html) interface provides the eligible party with means to change the status of a permission request.
 If a permission request has the status accepted, the eligible party can terminate a permission request by sending a termination document, which is a permission market document.
-See subsection [termination documents](../2-integrating/messages/permission-market-documents.md#termination-documents) and the [permission process model](../2-integrating/integrating.md#permission-process-model) documentation for more information.
+See subsection [termination documents](../2-integrating/messages/cim/permission-market-documents.md#termination-documents) and the [permission process model](../2-integrating/integrating.md#permission-process-model) documentation for more information.
 This interface does not produce any documents, but receives them.
 
 ### `RetransmissionOutboundConnector`
@@ -138,25 +138,25 @@ Applied to the different solutions:
 
 The hash `#` at the beginning of the property name is a placeholder for the prefix `eddie`.
 
-| Kafka Topic                                          | Document Structure Link                                                                                    |
-|------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| `queue://fw.#.cim_1_0.termination-md`                | [termination-md](../2-integrating/messages/permission-market-documents.md)                                 |
-| `queue://ep.#.cim_1_0.permission-md`                 | [permission-md](../2-integrating/messages/permission-market-documents.md)                                  |
-| `queue://ep.#.cim_1_0.accounting-point-md`           | [accounting-point-md](../2-integrating/messages/accounting-point-data-market-documents.md)                 |
-| `queue://ep.#.cim_1_0.validated-historical-data-md`  | [validated-historical-data-md](../2-integrating/messages/validated-historical-data-market-documents.md)    |
-| `queue://ep.#.cim_1_0.redistribution-transaction-rd` | [redistribution-transaction-rd](../2-integrating/messages/redistribution-transaction-request-documents.md) |
+| Kafka Topic                                          | Document Structure Link                                                                                        |
+|------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| `queue://fw.#.cim_1_0.termination-md`                | [termination-md](../2-integrating/messages/cim/permission-market-documents.md)                                 |
+| `queue://ep.#.cim_1_0.permission-md`                 | [permission-md](../2-integrating/messages/cim/permission-market-documents.md)                                  |
+| `queue://ep.#.cim_1_0.accounting-point-md`           | [accounting-point-md](../2-integrating/messages/cim/accounting-point-data-market-documents.md)                 |
+| `queue://ep.#.cim_1_0.validated-historical-data-md`  | [validated-historical-data-md](../2-integrating/messages/cim/validated-historical-data-market-documents.md)    |
+| `queue://ep.#.cim_1_0.redistribution-transaction-rd` | [redistribution-transaction-rd](../2-integrating/messages/cim/redistribution-transaction-request-documents.md) |
 
 ### CIM 1.0 AMQP 1.0
 
  The hash `#` at the beginning of the property name is a placeholder for the prefix `eddie.outbound.amqp10.cim10`.
 
-| AMQP 1.0 Address                             | Document Structure Link                                                                                    |
-|----------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| `fw.#.cim_1_0.termination-md`                | [termination-md](../2-integrating/messages/permission-market-documents.md)                                 |
-| `ep.#.cim_1_0.permission-md`                 | [permission-md](../2-integrating/messages/permission-market-documents.md)                                  |
-| `ep.#.cim_1_0.accounting-point-md`           | [accounting-point-md](../2-integrating/messages/accounting-point-data-market-documents.md)                 |
-| `ep.#.cim_1_0.validated-historical-data-md`  | [validated-historical-data-md](../2-integrating/messages/validated-historical-data-market-documents.md)    |
-| `ep.#.cim_1_0.redistribution-transaction-rd` | [redistribution-transaction-rd](../2-integrating/messages/redistribution-transaction-request-documents.md) |
+| AMQP 1.0 Address                             | Document Structure Link                                                                                        |
+|----------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| `fw.#.cim_1_0.termination-md`                | [termination-md](../2-integrating/messages/cim/permission-market-documents.md)                                 |
+| `ep.#.cim_1_0.permission-md`                 | [permission-md](../2-integrating/messages/cim/permission-market-documents.md)                                  |
+| `ep.#.cim_1_0.accounting-point-md`           | [accounting-point-md](../2-integrating/messages/cim/accounting-point-data-market-documents.md)                 |
+| `ep.#.cim_1_0.validated-historical-data-md`  | [validated-historical-data-md](../2-integrating/messages/cim/validated-historical-data-market-documents.md)    |
+| `ep.#.cim_1_0.redistribution-transaction-rd` | [redistribution-transaction-rd](../2-integrating/messages/cim/redistribution-transaction-request-documents.md) |
 
 ## Shared Functionality
 

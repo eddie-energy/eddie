@@ -1,4 +1,4 @@
-# Common Information Model Client Libraries
+# Client Libraries
 
 The common information model is a comprehensive model, making generating Java classes from the XSD files complicated.
 [eddie-energy/eddie](https://github.com/eddie-energy/eddie) provides a maven artifact containing the relevant CIM classes.

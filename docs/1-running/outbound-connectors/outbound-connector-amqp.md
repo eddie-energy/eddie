@@ -21,9 +21,9 @@ The following topics are created upon starting this outbound-connector:
 - `ep.${outbound-connector.amqp.eddie-id}.cim_0_82.accounting-point-md`:
   Provides accounting point market documents
 - `fw.${outbound-connector.amqp.eddie-id}.cim_0_82.termination-md`:
-  Allows the eligible party to send [termination documents](../../2-integrating/messages/permission-market-documents.md#termination-documents) to terminate a permission request.
+  Allows the eligible party to send [termination documents](../../2-integrating/messages/cim/permission-market-documents.md#termination-documents) to terminate a permission request.
 - `fw.${outbound-connector.amqp.eddie-id}.cim_0_91_08.retransmissions`:
-  Allows the eligible party to send [redistribution transaction request documents](../../2-integrating/messages/redistribution-transaction-request-documents.md) to request validated historical data again.
+  Allows the eligible party to send [redistribution transaction request documents](../../2-integrating/messages/cim/redistribution-transaction-request-documents.md) to request validated historical data again.
 
 ## Properties of messages
 

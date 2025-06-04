@@ -80,12 +80,13 @@ The following is an example of a validated historical data market document.
                             <!-- End of the series period -->
                             <ns3:end>2024-12-01T00:15Z</ns3:end>
                         </ns3:timeInterval>
-                        <!-- The resolution of the point list -->
+                        <!-- The resolution of the point list following the ISO 8601 duration -->
+                        <!-- For the resolutions supported by EDDIE see: https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/Granularity.html -->
                         <ns3:resolution>PT15M</ns3:resolution>
                         <ns3:PointList>
                             <ns3:Point>
                                 <!-- Can contain a timestamp of the start of the measurement of the point or a simple index -->
-                                <!-- The smallest value is always first -->
+                                <!-- The smallest value is always first, the points should be read in an ascending order -->
                                 <ns3:position>1733011200</ns3:position>
                                 <!-- Measurement quantity -->
                                 <ns3:energy_Quantity.quantity>80000</ns3:energy_Quantity.quantity>

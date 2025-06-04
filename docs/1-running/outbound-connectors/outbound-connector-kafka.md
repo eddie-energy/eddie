@@ -52,9 +52,9 @@ The following topics are created upon starting this outbound-connector:
 - `ep.${outbound-connector.kafka.eddie-id}.cim_0_82.accounting-point-md`:
   Provides accounting point market documents
 - `fw.${outbound-connector.kafka.eddie-id}.cim_0_82.termination-md`:
-  Allows the eligible party to send [termination documents](../../2-integrating/messages/permission-market-documents.md#termination-documents) to terminate a permission request.
+  Allows the eligible party to send [termination documents](../../2-integrating/messages/cim/permission-market-documents.md#termination-documents) to terminate a permission request.
 - `fw.${outbound-connector.kafka.eddie-id}.cim_0_91_08.retransmissions`:
-  Allows the eligible party to send [redistribution transaction request documents](../../2-integrating/messages/redistribution-transaction-request-documents.md) to request validated historical data again.
+  Allows the eligible party to send [redistribution transaction request documents](../../2-integrating/messages/cim/redistribution-transaction-request-documents.md) to request validated historical data again.
 
 ## Headers of messages
 
@@ -69,7 +69,7 @@ The following headers are set by EDDIE for outbound messages and can be used for
 
 To terminate permission requests, a permission market document in the configured format has to be sent to the termination topic.
 The key should be the ID of the region connector, from which the request originated.
-The permission market document for termination is described in [termination documents](../../2-integrating/messages/permission-market-documents.md#termination-documents).
+The permission market document for termination is described in [termination documents](../../2-integrating/messages/cim/permission-market-documents.md#termination-documents).
 
 > [!Info]  
 > Keep in mind that some kafka clients use newlines as message separator, in that case, minimize the message, or change the message separator!
@@ -77,4 +77,4 @@ The permission market document for termination is described in [termination docu
 ## Requesting Validated Historical Data Again
 
 The redistribution transaction request documents allow requesting timeframes of validated historical data again, after it has already been requested.
-This document is described in [Redistribution transaction request documents](../../2-integrating/messages/redistribution-transaction-request-documents.md).
+This document is described in [Redistribution transaction request documents](../../2-integrating/messages/cim/redistribution-transaction-request-documents.md).
