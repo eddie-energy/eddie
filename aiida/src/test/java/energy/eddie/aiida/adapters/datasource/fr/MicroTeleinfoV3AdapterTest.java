@@ -26,6 +26,7 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.UUID;
 
 import static energy.eddie.aiida.utils.ObisCode.*;
@@ -545,11 +546,22 @@ class MicroTeleinfoV3AdapterTest {
                 }
                 """;
         StepVerifier stepVerifier = StepVerifier.create(adapter.start())
-                                                .expectNextMatches(received -> received.aiidaRecordValues()
-                                                                                       .stream()
-                                                                                       .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
-                                                                                                                                     .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) || aiidaRecordValue.dataTag()
-                                                                                                                                                                                                     .equals(POSITIVE_ACTIVE_ENERGY)))
+                                                .expectNextMatches(received -> {
+                                                    var aiidaRecordValues = received.aiidaRecordValues();
+                                                    var hasPositiveActiveTags = aiidaRecordValues.stream()
+                                                            .anyMatch(aiidaRecordValue -> Objects.equals(
+                                                                    aiidaRecordValue.dataTag(),
+                                                                    POSITIVE_ACTIVE_INSTANTANEOUS_POWER) || Objects.equals(
+                                                                    aiidaRecordValue.dataTag(),
+                                                                    POSITIVE_ACTIVE_ENERGY));
+
+                                                    var hasMeterDeviceId = aiidaRecordValues.stream()
+                                                            .anyMatch(aiidaRecordValue -> Objects.equals(
+                                                                    aiidaRecordValue.dataTag(),
+                                                                    DEVICE_ID_1));
+
+                                                    return hasPositiveActiveTags && hasMeterDeviceId;
+                                                })
                                                 .then(adapter::close)
                                                 .expectComplete()
                                                 .verifyLater();
