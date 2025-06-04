@@ -12,6 +12,7 @@ import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +41,7 @@ class DataSourceServiceTest {
     private AuthService authService;
     private MqttConfiguration mqttConfiguration;
     private ObjectMapper objectMapper;
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
     private DataSourceService dataSourceService;
     private UUID userId;
 
@@ -67,12 +70,14 @@ class DataSourceServiceTest {
         authService = mock(AuthService.class);
         mqttConfiguration = mock(MqttConfiguration.class);
         objectMapper = mock(ObjectMapper.class);
+        bCryptPasswordEncoder = mock(BCryptPasswordEncoder.class);
         userId = UUID.randomUUID();
         dataSourceService = spy(new DataSourceService(repository,
                                                       aggregator,
                                                       authService,
                                                       mqttConfiguration,
-                                                      objectMapper));
+                                                      objectMapper,
+                                                      bCryptPasswordEncoder));
     }
 
     @Test
@@ -113,12 +118,14 @@ class DataSourceServiceTest {
         when(authService.getCurrentUserId()).thenReturn(userId);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
 
-        dataSourceService.addDataSource(createNewDataSourceDto(DATA_SOURCE_ID,
+        var result = dataSourceService.addDataSource(createNewDataSourceDto(DATA_SOURCE_ID,
                                                                DataSourceType.SMART_GATEWAYS_ADAPTER,
                                                                "Test",
                                                                COUNTRY_CODE,
                                                                true));
 
+        assertNotNull(result.plaintextPassword());
+        verify(bCryptPasswordEncoder, times(1)).encode(anyString());
         verify(repository, times(2)).save(any());
         verify(aggregator, times(1)).addNewDataSourceAdapter(any());
     }
@@ -152,8 +159,9 @@ class DataSourceServiceTest {
                     modbusSettings
             );
 
-            dataSourceService.addDataSource(dto);
+            var result = dataSourceService.addDataSource(dto);
 
+            assertNull(result.plaintextPassword());
             verify(repository, times(1)).save(any());
             verify(aggregator, times(1)).addNewDataSourceAdapter(any());
         }
@@ -220,7 +228,7 @@ class DataSourceServiceTest {
                                                       microTeleinfoV3DataSource,
                                                       simulationDataSource));
 
-        var service = new DataSourceService(repository, aggregator, authService, mqttConfiguration, objectMapper);
+        var service = new DataSourceService(repository, aggregator, authService, mqttConfiguration, objectMapper, bCryptPasswordEncoder);
         service.startDataSources();
 
         verify(aggregator, times(2)).addNewDataSourceAdapter(any());
@@ -243,5 +251,29 @@ class DataSourceServiceTest {
 
         verify(aggregator, times(2)).addNewDataSourceAdapter(any());
         verify(aggregator, times(2)).removeDataSourceAdapter(any());
+    }
+
+    @Test
+    void shouldRegenerateEphemeral() {
+        MqttDataSource dataSource = (MqttDataSource) createNewDataSource(DATA_SOURCE_ID, DataSourceType.SMART_METER_ADAPTER);
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(dataSource));
+
+        var result = dataSourceService.regenerateEphemeral(DATA_SOURCE_ID);
+
+        assertNotNull(result.plaintextPassword());
+        assertNotEquals(dataSource.mqttPassword(), result.plaintextPassword());
+        verify(bCryptPasswordEncoder, times(1)).encode(any());
+        verify(aggregator, times(1)).addNewDataSourceAdapter(any());
+        verify(repository, times(1)).save(any(MqttDataSource.class));
+    }
+
+    @Test void shouldNotRegenerateEphemeralIfNotMqtt() {
+        var dataSource = createNewDataSource(DATA_SOURCE_ID, DataSourceType.SIMULATION);
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(dataSource));
+
+        var result = dataSourceService.regenerateEphemeral(DATA_SOURCE_ID);
+
+        assertNull(result.plaintextPassword());
+        verify(bCryptPasswordEncoder, never()).encode(any());
     }
 }
