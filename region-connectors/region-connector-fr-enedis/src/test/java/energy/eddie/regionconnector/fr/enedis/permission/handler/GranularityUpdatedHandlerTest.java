@@ -1,0 +1,70 @@
+package energy.eddie.regionconnector.fr.enedis.permission.handler;
+
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
+import energy.eddie.regionconnector.fr.enedis.permission.events.FrGranularityUpdateEvent;
+import energy.eddie.regionconnector.fr.enedis.permission.events.FrUsagePointTypeEvent;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import org.assertj.core.api.InstanceOfAssertFactories;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.assertArg;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class GranularityUpdatedHandlerTest {
+    @Spy
+    private final EventBus eventBus = new EventBusImpl();
+    @Mock
+    private FrPermissionRequestRepository repository;
+    @Mock
+    private Outbox outbox;
+    @InjectMocks
+    @SuppressWarnings("unused")
+    private GranularityUpdatedHandler handler;
+
+    @Test
+    void accept_onUpdatedGranularity_emitsNewUsagePointEvent() {
+        // Given
+        var today = LocalDate.now(ZoneOffset.UTC);
+        var request = new EnedisPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                today,
+                today,
+                Granularity.P1D,
+                PermissionProcessStatus.ACCEPTED,
+                "usagePointId",
+                null,
+                ZonedDateTime.now(ZoneOffset.UTC),
+                UsagePointType.CONSUMPTION
+        );
+        when(repository.getByPermissionId("pid")).thenReturn(request);
+
+        // When
+        eventBus.emit(new FrGranularityUpdateEvent("pid", Granularity.P1D));
+
+        // Then
+        verify(outbox).commit(assertArg(event -> assertThat(event)
+                .asInstanceOf(InstanceOfAssertFactories.type(FrUsagePointTypeEvent.class))
+                .extracting(FrUsagePointTypeEvent::usagePointType)
+                .isEqualTo(UsagePointType.CONSUMPTION)));
+    }
+}
