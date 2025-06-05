@@ -94,7 +94,7 @@ export default withMermaid(
               ],
             },
             {
-              text: "Outbound-connectors",
+              text: "Outbound Connectors",
               link: "/1-running/outbound-connectors/outbound-connectors.md",
               items: [
                 {
@@ -108,7 +108,6 @@ export default withMermaid(
               ],
             },
             { text: "Admin Console", link: "/1-running/admin-console" },
-            { text: "Demo Button", link: "/1-running/demo-button" },
             { text: "Example App", link: "/1-running/example-app" },
           ],
         },
@@ -171,7 +170,6 @@ export default withMermaid(
         {
           text: "Extending",
           items: [
-            { text: "Tech Stack", link: "/3-extending/tech-stack" },
             {
               text: "Add a region connector",
               link: "/3-extending/region-connector/add-region-connector",
@@ -215,10 +213,12 @@ export default withMermaid(
               ],
             },
             {
-              text: "Add an outbound-connector",
+              text: "Add an outbound connector",
               link: "/3-extending/add-outbound-connector",
             },
-            { text: "Edit Documentation", link: "/3-extending/documentation" },
+            { text: "Demo Button", link: "/3-extending/demo-button" },
+            { text: "Edit documentation", link: "/3-extending/documentation" },
+            { text: "Tech Stack", link: "/3-extending/tech-stack" },
           ],
         },
       ],
