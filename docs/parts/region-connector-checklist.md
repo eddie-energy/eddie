@@ -1,12 +1,12 @@
 - Create a permission request at the permission administrators side
-- Implement custom element for region-connector
+- Implement custom element for region connector
 - Implement permission market documents
 - Request validated historical data and emit it to raw data stream
 - Map validated historical data to validated historical data market documents
 - Allow data needs for future data, and request the data once available
 - Request accounting point data and emit it to raw data stream
 - Map accounting point data to accounting point market document
-- Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - React to revocation of permission request
 - Allow termination of permission requests

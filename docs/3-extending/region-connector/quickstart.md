@@ -90,14 +90,14 @@ For more details on the setup see the [build and setup section](./build-and-setu
 ::: details Checklist Status
 
 - :arrow_right: Create a permission request at the permission administrators side
-- Implement custom element for region-connector
+- Implement custom element for region connector
 - Implement permission market documents
 - Request validated historical data and emit it to raw data stream
 - Map validated historical data to validated historical data market documents
 - Allow data needs for future data, and request the data once available
 - Request accounting point data and emit it to raw data stream
 - Map accounting point data to accounting point market document
-- Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - React to revocation of permission request
 - Allow termination of permission requests
@@ -801,14 +801,14 @@ public class PermissionRequestController {
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :arrow_right: Implement custom element for region-connector
+- :arrow_right: Implement custom element for region connector
 - Implement permission market documents
 - Request validated historical data and emit it to raw data stream
 - Map validated historical data to validated historical data market documents
 - Allow data needs for future data, and request the data once available
 - Request accounting point data and emit it to raw data stream
 - Map accounting point data to accounting point market document
-- Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - React to revocation of permission request
 - Allow termination of permission requests
@@ -820,21 +820,21 @@ public class PermissionRequestController {
   :::
 
 Now that we can create permission requests via the REST API provided by the region connector, we have to connect it to the EDDIE button.
-First initialize a new pnpm module in the same directory as the region-connector subproject.
+First initialize a new pnpm module in the same directory as the region connector subproject.
 
 ## Enable Permission Market Documents and Connection Status Messages
 
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :arrow_right: Implement permission market documents
 - Request validated historical data and emit it to raw data stream
 - Map validated historical data to validated historical data market documents
 - Allow data needs for future data, and request the data once available
 - Request accounting point data and emit it to raw data stream
 - Map accounting point data to accounting point market document
-- Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - React to revocation of permission request
 - Allow termination of permission requests
@@ -896,14 +896,14 @@ When they receive a new event, they generate a new connection status message or 
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :white_check_mark: Implement permission market documents
 - :arrow_right: Request validated historical data and emit it to raw data stream
 - Map validated historical data to validated historical data market documents
 - Allow data needs for future data, and request the data once available
 - Request accounting point data and emit it to raw data stream
 - Map accounting point data to accounting point market document
-- Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :arrow_right: React to revocation of permission request
 - Allow termination of permission requests
@@ -1194,14 +1194,14 @@ public class FooBarRawDataProvider implements RawDataProvider {
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :white_check_mark: Implement permission market documents
 - :white_check_mark: Request validated historical data and emit it to raw data stream
 - :arrow_right: Map validated historical data to validated historical data market documents
 - Allow data needs for future data, and request the data once available
 - Request accounting point data and emit it to raw data stream
 - Map accounting point data to accounting point market document
-- Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - Allow termination of permission requests
@@ -1248,14 +1248,14 @@ That's everything needed to create a validated historical data market document.
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :white_check_mark: Implement permission market documents
 - :white_check_mark: Request validated historical data and emit it to raw data stream
 - :white_check_mark: Map validated historical data to validated historical data market documents
 - :arrow_right: Allow data needs for future data, and request the data once available
 - Request accounting point data and emit it to raw data stream
 - Map accounting point data to accounting point market document
-- Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - Allow termination of permission requests
@@ -1343,14 +1343,14 @@ The region connector is now ready to poll data from the MDA for permission reque
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :white_check_mark: Implement permission market documents
 - :white_check_mark: Request validated historical data and emit it to raw data stream
 - :white_check_mark: Map validated historical data to validated historical data market documents
 - :white_check_mark: Allow data needs for future data, and request the data once available
 - :arrow_right: Request accounting point data and emit it to raw data stream
 - :arrow_right: Map accounting point data to accounting point market document
-- Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - Allow termination of permission requests
@@ -1373,14 +1373,14 @@ Emit the data via the `RawDataProvider` and the [`AccountingPointEnvelopeProvide
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :white_check_mark: Implement permission market documents
 - :white_check_mark: Request validated historical data and emit it to raw data stream
 - :white_check_mark: Map validated historical data to validated historical data market documents
 - :white_check_mark: Allow data needs for future data, and request the data once available
 - :white_check_mark: Request accounting point data and emit it to raw data stream
 - :white_check_mark: Map accounting point data to accounting point market document
-- :arrow_right: Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- :arrow_right: Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - Allow termination of permission requests
@@ -1404,14 +1404,14 @@ Nevertheless, this should not be forgotten.
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :white_check_mark: Implement permission market documents
 - :white_check_mark: Request validated historical data and emit it to raw data stream
 - :white_check_mark: Map validated historical data to validated historical data market documents
 - :white_check_mark: Allow data needs for future data, and request the data once available
 - :white_check_mark: Request accounting point data and emit it to raw data stream
 - :white_check_mark: Map accounting point data to accounting point market document
-- :white_check_mark: Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- :white_check_mark: Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :arrow_right: Allow termination of permission requests
@@ -1464,14 +1464,14 @@ If not, go to [remove credentials](#remove-credentials).
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :white_check_mark: Implement permission market documents
 - :white_check_mark: Request validated historical data and emit it to raw data stream
 - :white_check_mark: Map validated historical data to validated historical data market documents
 - :white_check_mark: Allow data needs for future data, and request the data once available
 - :white_check_mark: Request accounting point data and emit it to raw data stream
 - :white_check_mark: Map accounting point data to accounting point market document
-- :white_check_mark: Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- :white_check_mark: Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :white_check_mark: Allow termination of permission requests
@@ -1542,14 +1542,14 @@ The logic to retry termination when it fails is exactly the same as for the fail
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :white_check_mark: Implement permission market documents
 - :white_check_mark: Request validated historical data and emit it to raw data stream
 - :white_check_mark: Map validated historical data to validated historical data market documents
 - :white_check_mark: Allow data needs for future data, and request the data once available
 - :white_check_mark: Request accounting point data and emit it to raw data stream
 - :white_check_mark: Map accounting point data to accounting point market document
-- :white_check_mark: Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- :white_check_mark: Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :white_check_mark: Allow termination of permission requests
@@ -1593,14 +1593,14 @@ public class PermissionRequestFinishedHandler implements EventHandler<Permission
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :white_check_mark: Implement permission market documents
 - :white_check_mark: Request validated historical data and emit it to raw data stream
 - :white_check_mark: Map validated historical data to validated historical data market documents
 - :white_check_mark: Allow data needs for future data, and request the data once available
 - :white_check_mark: Request accounting point data and emit it to raw data stream
 - :white_check_mark: Map accounting point data to accounting point market document
-- :white_check_mark: Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- :white_check_mark: Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :white_check_mark: Allow termination of permission requests
@@ -1669,14 +1669,14 @@ public class PollingService implements PollingFunction<FooPermissionRequest> {
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :white_check_mark: Implement permission market documents
 - :white_check_mark: Request validated historical data and emit it to raw data stream
 - :white_check_mark: Map validated historical data to validated historical data market documents
 - :white_check_mark: Allow data needs for future data, and request the data once available
 - :white_check_mark: Request accounting point data and emit it to raw data stream
 - :white_check_mark: Map accounting point data to accounting point market document
-- :white_check_mark: Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- :white_check_mark: Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :white_check_mark: Allow termination of permission requests
@@ -1750,14 +1750,14 @@ public interface FooBarPermissionRequestRepository
 ::: details Checklist Status
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :white_check_mark: Implement permission market documents
 - :white_check_mark: Request validated historical data and emit it to raw data stream
 - :white_check_mark: Map validated historical data to validated historical data market documents
 - :white_check_mark: Allow data needs for future data, and request the data once available
 - :white_check_mark: Request accounting point data and emit it to raw data stream
 - :white_check_mark: Map accounting point data to accounting point market document
-- :white_check_mark: Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- :white_check_mark: Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :white_check_mark: Allow termination of permission requests
@@ -1802,14 +1802,14 @@ Of course, region connectors can be extended to include more functionality from 
 If any errors in this document are found, please let us know or [edit the document yourself](../documentation.md).
 
 - :white_check_mark: Create a permission request at the permission administrators side
-- :white_check_mark: Implement custom element for region-connector
+- :white_check_mark: Implement custom element for region connector
 - :white_check_mark: Implement permission market documents
 - :white_check_mark: Request validated historical data and emit it to raw data stream
 - :white_check_mark: Map validated historical data to validated historical data market documents
 - :white_check_mark: Allow data needs for future data, and request the data once available
 - :white_check_mark: Request accounting point data and emit it to raw data stream
 - :white_check_mark: Map accounting point data to accounting point market document
-- :white_check_mark: Ensure that data needs are enforced by region-connector, such as only requesting the correct data.
+- :white_check_mark: Ensure that data needs are enforced by region connector, such as only requesting the correct data.
   For example, not requesting gas metered data for data need that specifies electricity.
 - :white_check_mark: React to revocation of permission request
 - :white_check_mark: Allow termination of permission requests

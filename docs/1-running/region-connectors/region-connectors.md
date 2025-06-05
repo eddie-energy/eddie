@@ -1,7 +1,7 @@
-# Region-Connectors
+# Region Connectors
 
-A region-connector connects EDDIE with a permission administrator (PA) and metered data administrators (MDA) of a region.
-There can be multiple region-connectors for a region, since there can be multiple PAs and MDAs per region.
+A region connector connects EDDIE with a permission administrator (PA) and metered data administrators (MDA) of a region.
+There can be multiple region connectors for a region, since there can be multiple PAs and MDAs per region.
 
 A PAs responsibility is to administer permissions to data of final customers.
 When a third party, here called the eligible party (EP), requests access to the data of a final customer, they have to do that via the PA.

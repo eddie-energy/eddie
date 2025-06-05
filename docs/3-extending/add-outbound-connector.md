@@ -1,23 +1,23 @@
-# Add an outbound-connector
+# Add an outbound connector
 
-An outbound-connector is a Spring Boot application.
+An outbound connector is a Spring Boot application.
 The starting point is a configuration class annotated with:
 
 - `@SpringBootApplication`
 - `@OutboundConnector(name = "outbound-connector-name")`
 
 The core module scans the classpath for all classes residing in the `energy.eddie` package and annotated with the `@OutboundConnector`-annotation.
-Outbound-connectors are started in their own spring context and dispatcher servlet, which is registered in the parent context (core module).
-The outbound-connector will behave like it is its own spring application with a few deviations.
+Outbound connectors are started in their own spring context and dispatcher servlet, which is registered in the parent context (core module).
+The outbound connector will behave like it is its own spring application with a few deviations.
 First, all beans defined in the core module are available in the child contexts.
-If the core defines a bean, it will be automatically available in the outbound-connector.
+If the core defines a bean, it will be automatically available in the outbound connector.
 For more information, see section [Beans of interest](#beans-of-interest)
-Second, each outbound-connector runs in a dispatcher servlet, meaning it is possible to add Spring WebMVC Controllers.
+Second, each outbound connector runs in a dispatcher servlet, meaning it is possible to add Spring WebMVC Controllers.
 This is described in section [Dispatcher-Servlet](#dispatcher-servlet-web-interface)
-Third, outbound-connectors have to be explicitly enabled, otherwise they will not be started by the core module.
+Third, outbound connectors have to be explicitly enabled, otherwise they will not be started by the core module.
 More on that in subsubsection [the enabled property](#the-enabled-property).
 
-A short example for a minimal outbound-connector:
+A short example for a minimal outbound connector:
 
 ```java
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
@@ -31,7 +31,7 @@ public class ExampleOutboundConnector {
 
 ## Interfaces
 
-An outbound-connector can support multiple interfaces.
+An outbound connector can support multiple interfaces.
 The interfaces are separated into two packages:
 
 - `energy.eddie.api.agnostic.outbound`: The interfaces in this package are not bound by a version
@@ -39,10 +39,10 @@ The interfaces are separated into two packages:
 
 ### `@OutboundConnector`
 
-The [`@OutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/OutboundConnector.html)-annotation denotes the starting point of an outbound-connector.
+The [`@OutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/OutboundConnector.html)-annotation denotes the starting point of an outbound connector.
 Must be used in combination with the `@SpringBootApplication`-annotation.
-The class annotated with the `@OutboundConnector`-annotation will be used to start the Spring context of the outbound-connector.
-Furthermore, it is used to set the name of the outbound-connector.
+The class annotated with the `@OutboundConnector`-annotation will be used to start the Spring context of the outbound connector.
+Furthermore, it is used to set the name of the outbound connector.
 
 ### `ConnectionStatusMessageOutboundConnector`
 
@@ -51,7 +51,7 @@ The [`ConnectionStatusMessageOutboundConnector`](https://eddie-web.projekte.fh-h
 ### `RawDataOutboundConnector`
 
 The [`RawDataOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/RawDataOutboundConnector.html) interface provides a stream of raw data messages.
-[Raw data messages](../2-integrating/messages/agnostic.md#raw-data-messages) are messages that are received from region-connectors and their region as is, without any changes, which can be useful for debugging purposes or operating on the data provided by metered data administrators itself.
+[Raw data messages](../2-integrating/messages/agnostic.md#raw-data-messages) are messages that are received from region connectors and their region as is, without any changes, which can be useful for debugging purposes or operating on the data provided by metered data administrators itself.
 
 ### `PermissionMarketDocumentOutboundConnector`
 
@@ -83,7 +83,7 @@ This interface does not produce any documents, but receives them.
 > This interface is still work in progress.
 
 The [`RetransmissionOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/RetransmissionOutboundConnector.html) interface provides the eligible party with means to request retransmission of data from a permission request.
-This interface receives retransmission requests and passes them on to the region-connectors.
+This interface receives retransmission requests and passes them on to the region connectors.
 The interface also informs about the result of the retransmission request in the form of a retransmission results.
 These results are only specific to permission requests and no order is guaranteed.
 Aka when sending multiple retransmission request for the same permission request there is no way to associate a retransmission result with a specific retransmission request, only with the permission request.
@@ -185,7 +185,7 @@ To implement a custom SerDe for other formats, such as `CSV` or `protobuf`, impl
 ## Security Configuration
 
 Outbound Connectors that should be secured using spring security (like the Admin Console), can define a `SecurityFilterChain` using the [OutboundConnectorSecurityConfig](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/OutboundConnectorSecurityConfig.html) Annotation.
-The endpoints can then be secured as follows, but please note that the security config should only define rules for the paths of the certain outbound-connector.
+The endpoints can then be secured as follows, but please note that the security config should only define rules for the paths of the certain outbound connector.
 
 ```java
 
@@ -211,19 +211,19 @@ public class OCSecurityConfig {
 ```
 
 > [!IMPORTANT]  
-> The filter chains are loaded by eddie core before the context of the outbound-connector is built.
-> Consequently, `Beans` that are part of the outbound-connector are ***not*** available in the security config.
+> The filter chains are loaded by eddie core before the context of the outbound connector is built.
+> Consequently, `Beans` that are part of the outbound connector are ***not*** available in the security config.
 > Nevertheless, you can access e.g. `@Values` that are instantiated by eddie core.
 
 ## Configuration
 
-Since the outbound-connector is a Spring Boot application, it is possible to load configurations from all sources as usual in Spring Boot.
-It is possible to use the `@Value`-annotation to get configuration values, as well as using `@ConfigurationProperties` to configure the outbound-connector.
+Since the outbound connector is a Spring Boot application, it is possible to load configurations from all sources as usual in Spring Boot.
+It is possible to use the `@Value`-annotation to get configuration values, as well as using `@ConfigurationProperties` to configure the outbound connector.
 
 ### Naming conventions
 
 While the names of the configuration properties are arbitrary the naming convention is to use `outbound-connector.<outbound-connector-name>.<property-name>`.
-This is useful because it helps differentiate between the configuration of different outbound-connectors.
+This is useful because it helps differentiate between the configuration of different outbound connectors.
 In some cases this can be ignored, for example, when libraries are used, which read the properties themselves.
 In that case, it is often not possible to use the naming convention
 
@@ -233,8 +233,8 @@ There are a few predefined properties, which are either needed by the core modul
 
 #### The `enabled` property
 
-**Important**: There is one special configuration property that must be set to `true` to enable the outbound-connector.
-Otherwise, the outbound-connector will not be started.
+**Important**: There is one special configuration property that must be set to `true` to enable the outbound connector.
+Otherwise, the outbound connector will not be started.
 
 ```properties
 outbound-connector.<outbound-connector-name>.enabled=true
@@ -245,11 +245,11 @@ outbound-connector.kafka.enabled=true
 
 #### The `format` property
 
-The format property is a convention that allows users of the outbound-connector to specify in which format the outbound-connector should send its data.
-While some outbound-connectors, like the [admin console](../1-running/admin-console.md) do not use that property, because they are showing the data in a human-readable format, others might support different formats in which data is produced and consumed.
-The [kafka outbound-connector](../1-running/outbound-connectors/outbound-connector-kafka.md) supports `json` and `xml`.
+The format property is a convention that allows users of the outbound connector to specify in which format the outbound connector should send its data.
+While some outbound connectors, like the [admin console](../1-running/admin-console.md) do not use that property, because they are showing the data in a human-readable format, others might support different formats in which data is produced and consumed.
+The [Kafka outbound connector](../1-running/outbound-connectors/outbound-connector-kafka.md) supports `json` and `xml`.
 
-Outbound-connectors that send data in a machine-readable format can benefit from defining and using this property, but the core module does not enforce the usage of the format property.
+Outbound connectors that send data in a machine-readable format can benefit from defining and using this property, but the core module does not enforce the usage of the format property.
 There is no rule on which formats need to be supported, but most [interfaces and their payload](#interfaces) are intended to be serialized to JSON or XML.
 
 ```properties
@@ -261,9 +261,9 @@ outbound-connector.kafka.format=xml
 
 ## Dispatcher Servlet (web interface)
 
-Each outbound-connector is started in its own spring context and runs in a separate dispatcher servlet.
-This means that each outbound-connector can serve data via HTTP to configure it or even use HTTP to send and receive documents.
-The outbound-connector is available under `<hostname>:<eddie.management.server.port>/outbound-connectors/<outbound-connector-name>`.
+Each outbound connector is started in its own spring context and runs in a separate dispatcher servlet.
+This means that each outbound connector can serve data via HTTP to configure it or even use HTTP to send and receive documents.
+The outbound connector is available under `<hostname>:<eddie.management.server.port>/outbound-connectors/<outbound-connector-name>`.
 
 ## Beans of interest
 
@@ -271,5 +271,5 @@ The following beans are registered in the parent context and are available in th
 
 ### DataNeedsService
 
-The `DataNeedsService` allows the outbound-connector to query data needs, described in section [data need configuration](../1-running/OPERATION.md#data-need-configuration).
-This allows the outbound-connector to implement complex routing logic based on the data need.
+The `DataNeedsService` allows the outbound connector to query data needs, described in section [data need configuration](../1-running/OPERATION.md#data-need-configuration).
+This allows the outbound connector to implement complex routing logic based on the data need.

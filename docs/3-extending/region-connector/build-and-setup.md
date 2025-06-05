@@ -1,6 +1,6 @@
 # Build and Setup
 
-The region connectors are subprojects of the [region-connectors project](https://github.com/eddie-energy/eddie/tree/main/region-connectors).
+The region connectors are subprojects of the [`region-connectors` project](https://github.com/eddie-energy/eddie/tree/main/region-connectors).
 Gradle with Kotlin is used to manage dependencies.
 The following is a typical `build.gradle.kts` for a region connector:
 

@@ -5,7 +5,7 @@ This README will guide you through the process of configuring a region connector
 ## Prerequisites
 
 - You have to have an account at the [Eloverblik](https://eloverblik.dk/customer/login) web portal.
-- In this web portal you have to generate an API key, also called refreshToken in this region-connector's context,
+- In this web portal you have to generate an API key, also called refreshToken in this region connector's context,
   which you have to provide when sending a request.
 
 ## Configuration of the Region Connector
