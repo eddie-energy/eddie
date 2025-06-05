@@ -11,13 +11,13 @@ This README will guide you through the process of configuring a region connector
 The region connector needs a set of configuration values to be able to function correctly, how you provide these values
 depends on the way you deploy the region connector.
 
-| Configuration values                           | Description                                                                                                                        |
-|------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| `region-connector.es.datadis.username`         | Username (DNI/NIF) used to log into the Datadis website private area.                                                              |
-| `region-connector.es.datadis.password`         | Password for the user used to log into the Datadis website private area.                                                           |
-| `region-connector.es.datadis.polling`          | Configures when future data should be polled. Uses Cron syntax. The default is 17 o'clock every day.                               |
-| `region-connector.es.datadis.retry`            | Configures the interval in which failed permission requests should be retried. Uses Cron syntax. The default is hourly.            |
-| `region-connector.es.datadis.basepath`         | Changes the base path used by the datadis clients. The default is https://datadis.es/                                              |
+| Configuration values                   | Description                                                                                                                                                                                                                                        |
+|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `region-connector.es.datadis.username` | Username (DNI/NIF) used to log into the Datadis website private area.                                                                                                                                                                              |
+| `region-connector.es.datadis.password` | Password for the user used to log into the Datadis website private area.                                                                                                                                                                           |
+| `region-connector.es.datadis.polling`  | Configures when future data should be polled. Uses Cron syntax. The default is every day at 17:00. Do not poll more than once a day. Datadis limits the number requests to one per day. Smaller intervals will result in errors when polling data. |
+| `region-connector.es.datadis.retry`    | Configures the interval in which failed permission requests should be retried. Uses Cron syntax. The default is hourly.                                                                                                                            |
+| `region-connector.es.datadis.basepath` | Changes the base path used by the datadis clients. The default is https://datadis.es/                                                                                                                                                              |
 
 The region connector can be configured using Spring properties or environment variables.
 When using environment variables, the configuration values need to be converted in the following way:
