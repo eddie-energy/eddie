@@ -50,6 +50,7 @@ export default withMermaid(
             {
               text: "Region Connectors",
               link: "/1-running/region-connectors/region-connectors.md",
+              collapsed: true,
               items: [
                 {
                   text: "AIIDA",
@@ -140,6 +141,7 @@ export default withMermaid(
                 {
                   text: "Common Information Model (CIM)",
                   link: "/2-integrating/messages/cim/cim.md",
+                  collapsed: true,
                   items: [
                     {
                       text: "Permission Market Documents",
@@ -173,6 +175,7 @@ export default withMermaid(
             {
               text: "Add a region connector",
               link: "/3-extending/region-connector/add-region-connector",
+              collapsed: true,
               items: [
                 {
                   text: "Quickstart",
