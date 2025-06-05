@@ -38,7 +38,7 @@ The following is an example of the header, that is part of each CIM document.
         <!-- the document type -->
         <dataType>permission-market-document</dataType>
         <MessageDocumentHeader_Region>
-            <!-- the region-connector ID -->
+            <!-- the region connector ID -->
             <connector>us-green-button</connector>
             <!-- the country that the permission request is from -->
             <country>NUS</country>

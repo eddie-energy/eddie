@@ -9,7 +9,7 @@ export default withMermaid(
     title: "EDDIE Framework",
     description: "Using and Extending the EDDIE Framework",
     ignoreDeadLinks: "localhostLinks",
-    head: [["link", { rel: "icon", href: "/images/favicon-32x32.png" }]],
+    head: [["link", { rel: "icon", href: "/framework/images/favicon.svg" }]],
     vite: {
       // workaround for a vite/pnpm related mermaid bug: https://github.com/mermaid-js/mermaid/issues/4320
       // bug occurs in vitepress dev mode only
@@ -24,8 +24,14 @@ export default withMermaid(
     },
     themeConfig: {
       // https://vitepress.dev/reference/default-theme-config
-      logo: "/images/favicon-32x32.png",
-      nav: [{ text: "Home", link: "/" }],
+      logo: "/images/favicon.svg",
+      nav: [
+        { text: "Home", link: "/" },
+        {
+          text: "Architecture",
+          link: "https://eddie-web.projekte.fh-hagenberg.at/architecture",
+        },
+      ],
       search: {
         provider: "local",
       },
@@ -44,6 +50,7 @@ export default withMermaid(
             {
               text: "Region Connectors",
               link: "/1-running/region-connectors/region-connectors.md",
+              collapsed: true,
               items: [
                 {
                   text: "AIIDA",
@@ -88,7 +95,7 @@ export default withMermaid(
               ],
             },
             {
-              text: "Outbound-connectors",
+              text: "Outbound Connectors",
               link: "/1-running/outbound-connectors/outbound-connectors.md",
               items: [
                 {
@@ -102,7 +109,6 @@ export default withMermaid(
               ],
             },
             { text: "Admin Console", link: "/1-running/admin-console" },
-            { text: "Demo Button", link: "/1-running/demo-button" },
             { text: "Example App", link: "/1-running/example-app" },
           ],
         },
@@ -135,6 +141,7 @@ export default withMermaid(
                 {
                   text: "Common Information Model (CIM)",
                   link: "/2-integrating/messages/cim/cim.md",
+                  collapsed: true,
                   items: [
                     {
                       text: "Permission Market Documents",
@@ -165,10 +172,10 @@ export default withMermaid(
         {
           text: "Extending",
           items: [
-            { text: "Tech Stack", link: "/3-extending/tech-stack" },
             {
               text: "Add a region connector",
               link: "/3-extending/region-connector/add-region-connector",
+              collapsed: true,
               items: [
                 {
                   text: "Quickstart",
@@ -209,10 +216,12 @@ export default withMermaid(
               ],
             },
             {
-              text: "Add an outbound-connector",
+              text: "Add an outbound connector",
               link: "/3-extending/add-outbound-connector",
             },
-            { text: "Edit Documentation", link: "/3-extending/documentation" },
+            { text: "Demo Button", link: "/3-extending/demo-button" },
+            { text: "Edit documentation", link: "/3-extending/documentation" },
+            { text: "Tech Stack", link: "/3-extending/tech-stack" },
           ],
         },
       ],
@@ -221,5 +230,5 @@ export default withMermaid(
         { icon: "github", link: "https://github.com/eddie-energy/eddie" },
       ],
     },
-  }),
+  })
 );

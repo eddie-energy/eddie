@@ -14,7 +14,7 @@ The following topics are created upon starting this outbound-connector:
 - `ep.${outbound-connector.amqp.eddie-id}.agnostic.connection-status-message`:
   Provides status change updates related to a permission request
 - `ep.${outbound-connector.amqp.eddie-id}.agnostic.raw-data-message`:
-  Provides messages from the region-connectors as is, with additional metadata
+  Provides messages from the region connectors as is, with additional metadata
 - `ep.${outbound-connector.amqp.eddie-id}.cim_0_82.permission-md`: Provides permission market documents
 - `ep.${outbound-connector.amqp.eddie-id}.cim_0_82.validated-historical-data-md`:
   Provides validated historical data market documents

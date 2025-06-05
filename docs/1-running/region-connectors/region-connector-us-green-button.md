@@ -45,7 +45,7 @@ depends on the way you deploy the region connector.
 | `region-connector.us.green.button.client-secrets.REPLACE_ME` | The client secrets of the utilities you want to support. The name of the utility should replace the `REPLACE_ME` placeholder.                                                  |
 | `region-connector.us.green.button.tokens.REPLACE_ME`         | The API token for the utilities you want to support. The name of the utility should replace the `REPLACE_ME` placeholder.                                                      |
 | `region-connector.us.green.button.termination.retry`         | When termination of permission requests with the green button API should be retried. Uses Spring cron syntax. Default is hourly                                                |
-| `region-connector.us.green.button.polling`                   | Optional configuration variable that sets the time when the region-connector should poll future validated historical data. Uses Spring CRON syntax. Default is `0 0 17 * * *`. |
+| `region-connector.us.green.button.polling`                   | Optional configuration variable that sets the time when the region connector should poll future validated historical data. Uses Spring CRON syntax. Default is `0 0 17 * * *`. |
 
 The region connector can be configured using Spring properties or environment variables.
 When using environment variables, the configuration values need to be converted in the following way:

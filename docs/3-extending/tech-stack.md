@@ -1,11 +1,13 @@
 # Tech Stack
 
+The following technologies, tools, and frameworks are used in the project.
+
 **Backend**
 
 - Java (JDK 21)
   - Project Reactor (Reactivity)
   - SLF4J (Logging)
-- Spring (Backends)
+- Spring Boot (Backends)
   - Hibernate
 - Javalin (Minimal Java web framework for the example app)
 - Gradle (Build tool)
@@ -29,7 +31,7 @@
 - Playwright (E2E Tests)
 - Keycloak (Authentication)
 - Message Brokers (Outbound Connectors)
-  - Kafka
+  - Apache Kafka
   - EMQX/NanoMQ (MQTT)
   - RabbitMQ (AMQP)
 - GitHub Actions (CI/CD)

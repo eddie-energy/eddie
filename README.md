@@ -16,7 +16,9 @@ It provides different entry points for:
 - [Integrating EDDIE into your application](https://eddie-web.projekte.fh-hagenberg.at/framework/2-integrating/integrating.html)
 - [Extending or contributing to this repository](https://eddie-web.projekte.fh-hagenberg.at/framework/3-extending/tech-stack.html)
 
-If you want to contribute as a developer, please take a look at our [contributing guide](CONTRIBUTING.md).
+To learn more about the architecture of the EDDIE project, 
+you can visit our [architecture documentation](https://eddie-web.projekte.fh-hagenberg.at/architecture).
+If you want to contribute to this repository, please take a look at our [contributing guide](CONTRIBUTING.md).
 
 ## A quick overview of how EDDIE works
 
@@ -40,11 +42,8 @@ The recommended way of running the EDDIE Framework is using [Docker](https://www
 Instructions are found in the [operation manual](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/OPERATION.html).
 
 It is also possible to run the EDDIE Framework from source.
+This requires [JDK 21](https://www.jetbrains.com/help/idea/sdk.html#set-up-jdk) to be installed.
 The following instructions can be used to set up a local instance including our [example app](docs/1-running/example-app.md).
-
-**Prerequisites:**
-
-- Java Development Kit (JDK) Version 21 is installed
 
 **Steps:**
 
@@ -84,7 +83,8 @@ The following instructions can be used to perform a local test run with compilin
 
 ## Configuration
 
-Although the Docker Compose file and local configuration should run out of the box, EDDIE requires further configuration.
+While Docker Compose and local configurations should run out of the box,
+actual deployments of the EDDIE Framework will require further configuration.
 Please refer to the [Configuration](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/OPERATION.html#configuration) of the operation manual.
 
 ## References

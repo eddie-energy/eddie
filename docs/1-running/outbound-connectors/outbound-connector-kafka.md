@@ -45,7 +45,7 @@ The following topics are created upon starting this outbound-connector:
 - `ep.${outbound-connector.kafka.eddie-id}.agnostic.connection-status-message`:
   Provides status change updates related to a permission request
 - `ep.${outbound-connector.kafka.eddie-id}.agnostic.raw-data-message`:
-  Provides messages from the region-connectors as is, with additional metadata
+  Provides messages from the region connectors as is, with additional metadata
 - `ep.${outbound-connector.kafka.eddie-id}.cim_0_82.permission-md`: Provides permission market documents
 - `ep.${outbound-connector.kafka.eddie-id}.cim_0_82.validated-historical-data-md`:
   Provides validated historical data market documents

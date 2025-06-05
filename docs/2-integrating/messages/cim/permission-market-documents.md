@@ -77,7 +77,7 @@ The comments explain the usage of each element.
                         <createdDateTime>2024-12-02T10:04:22Z</createdDateTime>
                         <!-- EDDIE internal status in the permission process model -->
                         <description>CREATED</description>
-                        <!-- region-connector ID -->
+                        <!-- region connector ID -->
                         <type>us-green-button</type>
                         <!-- Matching CIM status to the permission process model -->
                         <status>Creation</status>

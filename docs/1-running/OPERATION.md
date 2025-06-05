@@ -177,12 +177,12 @@ For usages for the endpoints see [internal.http](https://github.com/eddie-energy
 
 ### Actuator API
 
-EDDIE uses Spring actuator to expose health information for each region-connector.
+EDDIE uses Spring actuator to expose health information for each region connector.
 The actuator API is available at `<host>:<port>/actuator` and the health endpoint at `<host>:<port>/actuator/health`.
 
-### Information about region-connectors
+### Information about region connectors
 
-There are multiple APIs to gather information about region-connectors.
+There are multiple APIs to gather information about region connectors.
 
 #### Supported features
 
