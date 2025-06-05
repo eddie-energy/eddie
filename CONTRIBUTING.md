@@ -1,4 +1,4 @@
----
+<!--
 TODO:
   - Document and link code quality standards
   - Automate formatting on push, so we do not have to document it in the PR guidelines
@@ -8,7 +8,8 @@ Inspiration:
   - https://shoelace.style/resources/contributing
   - https://github.com/lit/lit/blob/main/CONTRIBUTING.md
   - https://github.com/withastro/astro/blob/main/CONTRIBUTING.md
----
+  - https://github.com/github/docs/blob/main/contributing/development.md
+-->
 
 # Contributing
 
@@ -16,7 +17,7 @@ This guide aims to help you set up your development environment and contribute t
 
 ## Prerequisites
 
-The EDDIE Framework requires at least the following software:
+Development on the EDDIE Framework requires at least the following software:
 
 - [JDK 21](https://www.jetbrains.com/help/idea/sdk.html#set-up-jdk)
 - [Docker](https://www.docker.com/)
@@ -43,6 +44,9 @@ pnpm install
 
 ## Running
 
+The following instructions are for local development on the EDDIE Framework.
+For AIIDA, please refer to its own [README](./aiida/README.md) instead.
+
 The EDDIE Framework requires at least a database to run, and you might want to set up additional services depending on your use-case.
 The simplest way to set up such services is to use their Docker configuration in `env/docker-compose.yml`.
 
@@ -51,6 +55,8 @@ docker compose -f ./env/docker-compose.yml up -d db kafka
 ```
 
 You can then run the EDDIE Framework using Gradle:
+The `dev` profile configures the application for development.
+`local` profiles are ignored by Git and ideal for your local configuration.
 
 ```shell
 ./gradlew run-core --args=--spring.profiles.active=dev,local
@@ -70,7 +76,6 @@ However, they do not build external dependencies such as web resources.
 - `Core (Spring)`
 
 All run configurations enable the `dev` and `local` Spring profiles to load `application-dev.properties` and `application-local.properties` respectively.
-The `dev` profile configures the application for development, and `local` profiles are ignored by Git and ideal for your local configuration.
 
 ## Configuration & Testing
 

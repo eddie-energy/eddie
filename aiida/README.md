@@ -1,13 +1,18 @@
 # ![AIIDA - Administrative Interface for In-house Data Access](docs/images/aiida-horizontal.svg)
 
-Development & Deployment Strategy can be
-found [here](https://github.com/eddie-energy/eddie/wiki/EDDIE-Development-&-Deployment-Strategy).
+The Administrative Interface for In-house Data Access (AIIDA) 
+connects to various metering devices such as smart meters and home automation systems,
+to stream near real-time energy data and other data to consumers like the EDDIE Framework.
+
+To learn more about the architecture of AIIDA, 
+you can visit its [architecture documentation](https://eddie-web.projekte.fh-hagenberg.at/architecture/aiida/aiida.html).
+If you want to contribute to this repository, please take a look at our [contributing guide](../CONTRIBUTING.md).
 
 ## Prerequisites
 
 In order for AIIDA to run, it is necessary to start a [TimescaleDB](https://www.timescale.com/) and a [Keycloak](https://www.keycloak.org/) instance. The predefined docker-compose.yml for starting
 those services can be found in the [docker](docker) folder.
-In order to use Datasources that use MQTT a EMQX instance is required additionally, which is also included in the docker-compose.yml.
+To use data sources that use MQTT, an EMQX instance is required additionally, which is also included in the docker-compose.yml.
 Before starting the services, the environment variables in the [.env](docker/.env) file should be configured, especially the
 `SPRING_DATASOURCE_USERNAME` and
 `SPRING_DATASOURCE_PASSWORD`. This user will be used to authenticate to the TimescaleDB.
@@ -71,16 +76,19 @@ The following properties must be set in the `application.yml` file:
 
 Additionally, Keycloak requires a configured frontend URL to validate the issuer URI. This is specified using the `KC_HOSTNAME` variable in the `compose.yml` file.
 The provided `compose.yml` file provides a preconfiguration of these values for keycloak, you can configure it using the environments:
+
 - `AIIDA_EXTERNAL_HOST`
 - `KEYCLOAK_INTERNAL_HOST`
 - `KEYCLOAK_EXTERNAL_HOST`
 
 For a local development setup these values can be configured as follows (defaults of `.env` file):
+
 - `AIIDA_EXTERNAL_HOST=http://localhost:8080`
 - `KEYCLOAK_INTERNAL_HOST=http://keycloak:8080`
 - `KEYCLOAK_EXTERNAL_HOST=http://localhost:8888`
- 
+
 For a production deployment setup these values can be configured as follows assuming keycloak is running on `keycloak.eddie.energy` and aiida is running on `aiida.eddie.energy`:
+
 - `AIIDA_EXTERNAL_HOST=https://aiida.eddie.energy`
 - `KEYCLOAK_INTERNAL_HOST=https://keycloak.eddie.energy`
 - `KEYCLOAK_EXTERNAL_HOST=https://keycloak.eddie.energy`
@@ -113,6 +121,7 @@ When using Docker, most of these properties should be configured in the [.env](d
 | MQTT_INTERNAL_HOST         | Internal network host of the MQTT broker (e.g. inside Docker network)                                                                |
 
 ### Reverse Proxy Deployment
+
 If you are running an AIIDA instance behind a reverse proxy (e.g. nginx) to make it accessible everywhere, it is necessary to add the origin of the AIIDA instance to the allowed origins.
 This can be done by setting the config `aiida.cors.allowed-origins` or using the `AIIDA_CORS_ALLOWED_ORIGINS` environment variable.
 For example if your AIIDA instance is reachable at the url `https://aiida.eddie.energy` you have to set the value of `AIIDA_CORS_ALLOWED_ORIGINS` to `https://aiida.eddie.energy`.
@@ -124,21 +133,21 @@ OpenAPI documentation can be found here: http://localhost:8080/v3/api-docs
 
 SwaggerUI is also included and can be found here: http://localhost:8080/swagger-ui/index.html
 
-# Supported Smart Meters
+## Supported Smart Meters
 
 Smart meters are the primary datasources and are gradually integrated in AIIDA. Data from all datasources is
 automatically persisted in the TimescaleDB.
- 
+
 Currently, the following countries are supported:
 
 | Country                        | Name of datasource                                                              |
-|--------------------------------|---------------------------------------------------------------------------------|
+| ------------------------------ | ------------------------------------------------------------------------------- |
 | AT                             | [OesterreichsEnergieAdapter](docs/datasources/at/OesterreichsEnergieAdapter.md) |
 | FR                             | [MicroTeleinfoV3](docs/datasources/fr/MicroTeleinfoV3.md)                       |
 | NL, BE, SE, DK, FI, HU, LT, CH | [SmartGatewaysAdapter](docs/datasources/sga/SmartGatewaysAdapter.md)            |
 
 ![SupportedMeters](docs/images/Smart_Meter_supported_by_AIIDA.png)
-*Map created with https://www.mapchart.net*
+_Map created with https://www.mapchart.net_
 
 ## Modbus Configuration Documentation
 
