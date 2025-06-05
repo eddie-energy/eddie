@@ -28,12 +28,12 @@ administrators in France.
 The region connector needs a set of configuration values to be able to function correctly, how you provide these values
 depends on the way you deploy the region connector.
 
-| Configuration values                       | Description                                                                                                 |
-|--------------------------------------------|-------------------------------------------------------------------------------------------------------------|
-| `region-connector.fr.enedis.basepath`      | Path to the data connect endpoints: https://gw.ext.prod.api.enedis.fr for production.                          |
-| `region-connector.fr.enedis.client.id`     | Public key/id of the application you want to switch to production. Can be found under "_Mes applications_". |
-| `region-connector.fr.enedis.client.secret` | Secret key of the application you want to switch to production. Can be found under "_Mes applications_".    |
-| `region-connector.fr.enedis.polling`       | Configures when future data should be polled. Uses spring Cron syntax. The default is 17 o'clock every day. |
+| Configuration values                       | Description                                                                                                                                                                                                      |
+|--------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `region-connector.fr.enedis.basepath`      | Path to the data connect endpoints: https://gw.ext.prod.api.enedis.fr for production.                                                                                                                            |
+| `region-connector.fr.enedis.client.id`     | Public key/id of the application you want to switch to production. Can be found under "_Mes applications_".                                                                                                      |
+| `region-connector.fr.enedis.client.secret` | Secret key of the application you want to switch to production. Can be found under "_Mes applications_".                                                                                                         |
+| `region-connector.fr.enedis.polling`       | Configures when future data should be polled. Uses spring Cron syntax. The default is 17:00 every day. We recommend polling at most once per day, otherwise EDDIE can hit the rate limit, which leads to errors. |
 
 The region connector can be configured using Spring properties or environment variables.
 When using environment variables, the configuration values need to be converted in the following way:
