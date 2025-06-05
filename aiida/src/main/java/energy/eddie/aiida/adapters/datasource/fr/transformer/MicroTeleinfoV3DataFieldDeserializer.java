@@ -67,6 +67,7 @@ public class MicroTeleinfoV3DataFieldDeserializer extends StdDeserializer<MicroT
         return switch (fieldName) {
             case "BASE", "EAST" -> ObisCode.POSITIVE_ACTIVE_ENERGY;
             case "PAPP", "SINSTS" -> ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
+            case "PRM" -> ObisCode.DEVICE_ID_1;
             default -> ObisCode.UNKNOWN;
         };
     }

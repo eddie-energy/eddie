@@ -76,7 +76,7 @@ public enum StandardModeEntry {
     FPM3(ObisCode.UNKNOWN, UnitOfMeasurement.NONE, "FPM3", true),
     MSG1(ObisCode.UNKNOWN, UnitOfMeasurement.NONE, "MSG1", true),
     MSG2(ObisCode.UNKNOWN, UnitOfMeasurement.NONE, "MSG2", true),
-    PRM(ObisCode.UNKNOWN, UnitOfMeasurement.NONE, "PRM", true),
+    PRM(ObisCode.DEVICE_ID_1, UnitOfMeasurement.NONE, "PRM", true),
     RELAIS(ObisCode.UNKNOWN, UnitOfMeasurement.NONE, "RELAIS", true),
     NTARF(ObisCode.UNKNOWN, UnitOfMeasurement.NONE, "NTARF", true),
     NJOURF(ObisCode.UNKNOWN, UnitOfMeasurement.NONE, "NJOURF", true),
