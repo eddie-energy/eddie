@@ -1,24 +1,12 @@
 package energy.eddie.regionconnector.at.eda.permission.request.projections;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 import java.time.LocalDate;
 import java.util.Objects;
 
-@Entity
-@Table(schema = "at_eda", name = "meter_reading_timeframe")
 public class MeterReadingTimeframe {
-    @Id
-    @Column(name = "id")
     private final Long id;
-    @Column(name = "permission_id")
     private final String permissionId;
-    @Column(name = "meter_reading_start")
     private final LocalDate start;
-    @Column(name = "meter_reading_end")
     private final LocalDate end;
 
     public MeterReadingTimeframe(Long id, String permissionId, LocalDate start, LocalDate end) {
@@ -34,6 +22,10 @@ public class MeterReadingTimeframe {
         permissionId = null;
         start = null;
         end = null;
+    }
+
+    public Long id() {
+        return id;
     }
 
     public String permissionId() {
