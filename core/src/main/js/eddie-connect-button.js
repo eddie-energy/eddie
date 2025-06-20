@@ -134,6 +134,7 @@ class EddieConnectButton extends LitElement {
           ‘Segoe UI Symbol’;
         font-size: 16px;
         font-weight: normal;
+        text-align: left;
       }
 
       .eddie-connect-button {
