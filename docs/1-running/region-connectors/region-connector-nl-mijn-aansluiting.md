@@ -23,21 +23,10 @@ section [Configuration of the Region Connector](#configuration-of-the-region-con
 To create a Java Key Store see this [tutorial](https://docs.oracle.com/cd/E19509-01/820-3503/ggfen/index.html).
 The private key must use the RS256 key algorithm.
 
-The following table shows all the test users that are available on the acceptance environment provided by mijn
-aansluiting.
-
-| user login  | verify code | note      |
-|-------------|-------------|-----------|
-| Testuser 1  | 8           |           |
-| Testuser 3  | 19          | unusable  |
-| Testuser 4  | 145         |           |
-| Testuser 5  | 129         |           |
-| Testuser 6  | 1           |           |
-| Testuser 7  | 1           |           |
-| Testuser 8  | 11          |           |
-| Testuser 9  | 3107        |           |
-| Testuser 10 | 1807        |           |
-| Testuser 11 | 12          | preferred |
+For the available test users see [mijnenergiedata.nl](https://www.acc.mijnenergiedata.nl/docs/test-users.html).
+To test use the test users with the correct metering point for specific data.
+For data needs for electricity data pick the test users whose EAN starts with _ELK_, for gas the EAN needs to start with
+_GAS_.
 
 ## Prerequisites
 
