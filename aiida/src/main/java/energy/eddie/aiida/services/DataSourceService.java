@@ -60,6 +60,15 @@ public class DataSourceService {
         }
     }
 
+    public void startDataSource(DataSource dataSource) throws ModbusConnectionException {
+        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper);
+        dataSourceAdapters.add(dataSourceAdapter);
+
+        if (dataSource.enabled()) {
+            aggregator.addNewDataSourceAdapter(dataSourceAdapter);
+        }
+    }
+
     public Optional<DataSource> dataSourceById(UUID dataSourceId) {
         return repository.findById(dataSourceId);
     }
@@ -164,15 +173,6 @@ public class DataSourceService {
 
     public Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(Predicate<DataSourceAdapter<? extends DataSource>> predicate) {
         return dataSourceAdapters.stream().filter(predicate).findFirst();
-    }
-
-    private void startDataSource(DataSource dataSource) throws ModbusConnectionException {
-        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper);
-        dataSourceAdapters.add(dataSourceAdapter);
-
-        if (dataSource.enabled()) {
-            aggregator.addNewDataSourceAdapter(dataSourceAdapter);
-        }
     }
 
     private void closeDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {

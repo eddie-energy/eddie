@@ -18,9 +18,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "aiida_data_need", schema = "data_needs")
 @SuppressWarnings("NullAway")
-public class AiidaDataNeed extends TimeframedDataNeed implements AiidaDataNeedInterface {
-    public static final String DISCRIMINATOR_VALUE = "aiida";
-
+public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaDataNeedInterface {
     @Column(name = "transmission_schedule", nullable = false)
     @Convert(converter = CronExpressionConverter.class)
     @JsonProperty(required = true)
@@ -53,14 +51,6 @@ public class AiidaDataNeed extends TimeframedDataNeed implements AiidaDataNeedIn
             schema = "data_needs")
     @JsonProperty
     private Set<String> dataTags;
-
-    public AiidaDataNeed(Set<String> dataTags) {
-        this.dataTags = dataTags;
-    }
-
-    @SuppressWarnings("NullAway.Init")
-    protected AiidaDataNeed() {
-    }
 
     @Override
     public AiidaAsset asset() {

@@ -7,6 +7,8 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsDbService;
 import energy.eddie.dataneeds.web.management.DataNeedsManagementController;
 import io.swagger.v3.oas.models.media.Schema;
@@ -128,8 +130,11 @@ public class DataNeedsSpringConfig {
                                         ValidatedHistoricalDataDataNeed.class,
                                         ValidatedHistoricalDataDataNeed.DISCRIMINATOR_VALUE);
         addTypeWithDefaultValueToSchema(schemas,
-                                        AiidaDataNeed.class,
-                                        AiidaDataNeed.DISCRIMINATOR_VALUE);
+                                        InboundAiidaDataNeed.class,
+                                        InboundAiidaDataNeed.DISCRIMINATOR_VALUE);
+        addTypeWithDefaultValueToSchema(schemas,
+                                        OutboundAiidaDataNeed.class,
+                                        OutboundAiidaDataNeed.DISCRIMINATOR_VALUE);
         addTypeWithDefaultValueToSchema(schemas,
                                         AbsoluteDuration.class,
                                         AbsoluteDuration.DISCRIMINATOR_VALUE);

@@ -146,12 +146,13 @@ public class AiidaPermissionService {
     public MqttDto acceptPermission(
             String permissionId,
             UUID aiidaId
-    ) throws CredentialsAlreadyExistException, PermissionNotFoundException, PermissionStateTransitionException {
+    ) throws CredentialsAlreadyExistException, PermissionNotFoundException, PermissionStateTransitionException, DataNeedNotFoundException {
         checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, ACCEPTED);
 
         outbox.commit(new AiidaIdReceivedEvent(permissionId, ACCEPTED, aiidaId));
 
-        var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId);
+        var permissionDetails = detailsForPermission(permissionId);
+        var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId, permissionDetails.dataNeed());
 
         outbox.commit(new MqttCredentialsCreatedEvent(permissionId, mqttDto.username()));
 
