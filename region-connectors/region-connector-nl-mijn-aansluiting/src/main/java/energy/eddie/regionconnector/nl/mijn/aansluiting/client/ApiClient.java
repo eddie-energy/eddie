@@ -15,8 +15,10 @@ import java.util.List;
 @Component
 public class ApiClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiClient.class);
-    private final WebClient client = WebClient.create();
+    private final WebClient client;
     private Health health = Health.unknown().build();
+
+    public ApiClient(WebClient.Builder builder) {this.client = builder.build();}
 
     public Mono<List<MijnAansluitingResponse>> fetchConsumptionData(String singleSyncUri, String accessToken) {
         return fetch(singleSyncUri, accessToken)

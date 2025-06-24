@@ -1,0 +1,19 @@
+{
+  "meteringPoints": [
+    {
+      "ean": "871694840000000000",
+      "address": {
+        "postalCode": "9999AB",
+        "streetNumber": 11,
+        "street": "example street",
+        "city": "Amsterdam"
+      },
+      "product": "ELK",
+      "organisation": "ESDN",
+      "gridOperatorEan": "8716948000000",
+      "specialMeteringPoint": false,
+      "gridArea": "871694830000000000",
+      "bagId": "0010010000000000"
+    }
+  ]
+}
