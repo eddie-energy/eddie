@@ -1,10 +1,13 @@
 package energy.eddie.aiida.aggregator;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
+import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
+import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,11 +30,17 @@ public class Aggregator implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Aggregator.class);
     private final List<DataSourceAdapter<? extends DataSource>> dataSourceAdapters;
     private final Sinks.Many<AiidaRecord> combinedSink;
-    private final AiidaRecordRepository repository;
+    private final AiidaRecordRepository aiidaRecordRepository;
+    private final InboundRecordRepository inboundRecordRepository;
     private final HealthContributorRegistry healthContributorRegistry;
 
-    public Aggregator(AiidaRecordRepository repository, HealthContributorRegistry healthContributorRegistry) {
-        this.repository = repository;
+    public Aggregator(
+            AiidaRecordRepository aiidaRecordRepository,
+            InboundRecordRepository inboundRecordRepository,
+            HealthContributorRegistry healthContributorRegistry
+    ) {
+        this.aiidaRecordRepository = aiidaRecordRepository;
+        this.inboundRecordRepository = inboundRecordRepository;
         this.healthContributorRegistry = healthContributorRegistry;
 
         dataSourceAdapters = new ArrayList<>();
@@ -59,6 +68,11 @@ public class Aggregator implements AutoCloseable {
         dataSourceAdapter.start()
                          .subscribe(this::publishRecordToCombinedFlux,
                                     throwable -> handleError(throwable, dataSourceAdapter));
+
+        if (dataSourceAdapter instanceof InboundAdapter inboundAdapter) {
+            inboundAdapter.inboundRecordFlux()
+                          .subscribe(this::saveInboundRecordToDatabase);
+        }
     }
 
     /**
@@ -141,7 +155,12 @@ public class Aggregator implements AutoCloseable {
         for (AiidaRecordValue value : aiidaRecord.aiidaRecordValues()) {
             value.setAiidaRecord(aiidaRecord);
         }
-        repository.save(aiidaRecord);
+        aiidaRecordRepository.save(aiidaRecord);
+    }
+
+    private void saveInboundRecordToDatabase(InboundRecord inboundRecord) {
+        LOGGER.trace("Saving new raw record to db");
+        inboundRecordRepository.save(inboundRecord);
     }
 
     private void handleCombinedSinkError(Throwable throwable) {

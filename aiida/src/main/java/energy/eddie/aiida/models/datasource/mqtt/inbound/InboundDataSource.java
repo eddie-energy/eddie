@@ -1,9 +1,11 @@
 package energy.eddie.aiida.models.datasource.mqtt.inbound;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.models.permission.Permission;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -14,11 +16,15 @@ import java.util.UUID;
 @Entity
 @DiscriminatorValue(DataSourceType.Identifiers.INBOUND)
 public class InboundDataSource extends MqttDataSource {
+    @JsonProperty
+    protected String accessCode;
+
     @SuppressWarnings("NullAway")
     protected InboundDataSource() {}
 
     public InboundDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
         super(dto, userId, dataSourceMqttDto);
+        this.accessCode = SecretGenerator.generate();
     }
 
     public static class Builder  {
@@ -33,7 +39,7 @@ public class InboundDataSource extends MqttDataSource {
             var mqttStreamingConfig = Objects.requireNonNull(permission.mqttStreamingConfig());
 
             this.dataSourceDto = new DataSourceDto(
-                   null,
+                    null,
                     DataSourceType.INBOUND,
                     dataNeed.asset(),
                     permission.permissionId().toString(),
@@ -58,5 +64,9 @@ public class InboundDataSource extends MqttDataSource {
     @Override
     protected void updateMqttSubscribeTopic() {
         // Keep the subscribe topic as is, since it is set during the creation of the data source
+    }
+
+    public String accessCode() {
+        return accessCode;
     }
 }

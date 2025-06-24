@@ -12,7 +12,7 @@ import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
-import energy.eddie.aiida.models.datasource.mqtt.MqttSecretGenerator;
+import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -99,9 +99,9 @@ public class DataSourceService {
             var mqttSettingsDto = new DataSourceMqttDto(
                     mqttConfiguration.internalHost(),
                     mqttConfiguration.externalHost(),
-                    "aiida/" + MqttSecretGenerator.generate(),
-                    MqttSecretGenerator.generate(),
-                    MqttSecretGenerator.generate()
+                    "aiida/" + SecretGenerator.generate(),
+                    SecretGenerator.generate(),
+                    SecretGenerator.generate()
             );
             var dataSource = DataSource.createFromDto(dto, currentUserId, mqttSettingsDto);
 

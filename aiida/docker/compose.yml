@@ -2,6 +2,8 @@ name: aiida
 services:
   timescaledb:
     image: timescale/timescaledb:latest-pg12
+    ports:
+      - "5433:5432"
     environment:
       POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
       POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}

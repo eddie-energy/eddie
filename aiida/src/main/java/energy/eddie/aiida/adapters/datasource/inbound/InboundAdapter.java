@@ -2,13 +2,20 @@ package energy.eddie.aiida.adapters.datasource.inbound;
 
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.record.InboundRecord;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
+
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 
 public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundAdapter.class);
+    private final Sinks.Many<InboundRecord> inboundRecordSink;
 
     /**
      * Creates the adapter for the inbound data source. It connects to the specified MQTT broker and expects that the
@@ -18,6 +25,7 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
      */
     public InboundAdapter(InboundDataSource dataSource) {
         super(dataSource, LOGGER);
+        inboundRecordSink = Sinks.many().unicast().onBackpressureBuffer();
     }
 
     /**
@@ -31,7 +39,14 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     public void messageArrived(String topic, MqttMessage message) {
         LOGGER.trace("Topic {} new message: {}", topic, message);
 
-        // TODO: Store the message in plaintext format in the database.
+        var inboundRecord = new InboundRecord(
+                Instant.now(),
+                dataSource().asset(),
+                dataSource().userId(),
+                dataSource().id(),
+                new String(message.getPayload(), StandardCharsets.UTF_8)
+        );
+        inboundRecordSink.tryEmitNext(inboundRecord);
     }
 
     /**
@@ -47,5 +62,9 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
                 InboundAdapter.class.getName(),
                 token);
         throw new UnsupportedOperationException("The " + InboundAdapter.class.getName() + " mustn't publish any MQTT messages");
+    }
+
+    public Flux<InboundRecord> inboundRecordFlux() {
+        return inboundRecordSink.asFlux();
     }
 }
