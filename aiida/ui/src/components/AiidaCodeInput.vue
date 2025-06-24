@@ -1,6 +1,7 @@
 <script setup>
 import { useTemplateRef } from 'vue'
 import { addPermission } from '@/api.js'
+import QrCodeScanner from '@/components/QrCodeScanner.vue'
 
 /** @type {ShallowRef<HTMLInputElement>} */
 const aiidaCodeInput = useTemplateRef('aiidaCodeInput')
@@ -35,13 +36,18 @@ function handleAddPermission() {
     aiidaCodeInput.value.reportValidity()
   }
 }
+
+function handleQrCodeResult(result) {
+  aiidaCodeInput.value.value = btoa(result)
+  handleAddPermission()
+}
 </script>
 
 <template>
   <div>
     <sl-input ref="aiidaCodeInput" placeholder="AIIDA code"></sl-input>
-    <sl-button variant="primary" @click="handleAddPermission()">Add</sl-button>
-    <qr-code-scanner></qr-code-scanner>
+    <sl-button variant="primary" @click="handleAddPermission">Add</sl-button>
+    <QrCodeScanner @result="handleQrCodeResult"></QrCodeScanner>
   </div>
 </template>
 
