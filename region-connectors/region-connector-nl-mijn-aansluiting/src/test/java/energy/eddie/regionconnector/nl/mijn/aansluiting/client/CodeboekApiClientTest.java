@@ -38,11 +38,8 @@ class CodeboekApiClientTest {
     @Spy
     private final MijnAansluitingConfiguration config = new MijnAansluitingConfiguration(
             "continuous-id",
-            "single-id",
             "http://localhost",
             new ClientID("id"),
-            new ClientID("id"),
-            new Scope("scope"),
             new Scope("scope"),
             baseUri,
             "api-token",

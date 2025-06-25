@@ -89,7 +89,7 @@ class PermissionRequestServiceTest {
                         new Timeframe(now.minusDays(-10), now.minusDays(-1)),
                         new Timeframe(now, now)
                 ));
-        when(oAuthManager.createAuthorizationUrl(any(), any()))
+        when(oAuthManager.createAuthorizationUrl(any()))
                 .thenReturn(new OAuthRequestPayload(URI.create(""), "state", "codeVerifier"));
 
         // When
@@ -114,7 +114,7 @@ class PermissionRequestServiceTest {
         var now = LocalDate.now(NL_ZONE_ID);
         when(calculationService.calculate("dnid"))
                 .thenReturn(new AccountingPointDataNeedResult(new Timeframe(now, now)));
-        when(oAuthManager.createAuthorizationUrl(any(), any()))
+        when(oAuthManager.createAuthorizationUrl(any()))
                 .thenReturn(new OAuthRequestPayload(URI.create(""), "state", "codeVerifier"));
         var data = new MeteringPoints().meteringPoints(List.of(new MeteringPoint()));
         when(codeboekApiClient.meteringPoints("9999AB", "01"))
@@ -202,7 +202,7 @@ class PermissionRequestServiceTest {
     @Test
     void testReceiveResponse_acceptedResponse_returnsAccepted() throws UserDeniedAuthorizationException, JWTSignatureCreationException, OAuthException, ParseException, PermissionNotFoundException, InvalidValidationAddressException, IllegalTokenException, OAuthUnavailableException {
         // Given
-        when(oAuthManager.processCallback(any(), any(), any()))
+        when(oAuthManager.processCallback(any(), any()))
                 .thenReturn("pid");
         when(permissionRequestRepository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(createPermissionRequest()));
@@ -224,7 +224,7 @@ class PermissionRequestServiceTest {
             int times
     ) throws UserDeniedAuthorizationException, JWTSignatureCreationException, OAuthException, ParseException, PermissionNotFoundException, InvalidValidationAddressException, IllegalTokenException, OAuthUnavailableException {
         // Given
-        when(oAuthManager.processCallback(any(), any(), any()))
+        when(oAuthManager.processCallback(any(), any()))
                 .thenThrow(clazz);
         when(permissionRequestRepository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(createPermissionRequest()));

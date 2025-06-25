@@ -6,7 +6,6 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.ApiClient;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.CodeboekApiClient;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MeteringPoints;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MijnAansluitingResponse;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.Reading;
@@ -77,7 +76,7 @@ public class PollingService implements AutoCloseable, CommonPollingService<MijnA
             outbox.commit(new NlSimpleEvent(permissionId, PermissionProcessStatus.UNFULFILLABLE));
             return;
         }
-        var res = fetchAccessToken(permissionId, MijnAansluitingApi.SINGLE_CONSENT_API);
+        var res = fetchAccessToken(permissionId);
         if (res.isEmpty()) {
             return;
         }
@@ -120,7 +119,7 @@ public class PollingService implements AutoCloseable, CommonPollingService<MijnA
             LocalDate end
     ) {
         String permissionId = permissionRequest.permissionId();
-        var res = fetchAccessToken(permissionId, MijnAansluitingApi.CONTINUOUS_CONSENT_API);
+        var res = fetchAccessToken(permissionId);
         if (res.isEmpty()) {
             return Mono.empty();
         }
@@ -147,9 +146,9 @@ public class PollingService implements AutoCloseable, CommonPollingService<MijnA
         identifiableAccountingPointDataSink.tryEmitComplete();
     }
 
-    private Optional<AccessTokenAndSingleSyncUrl> fetchAccessToken(String permissionId, MijnAansluitingApi apiType) {
+    private Optional<AccessTokenAndSingleSyncUrl> fetchAccessToken(String permissionId) {
         try {
-            return Optional.of(oAuthManager.accessTokenAndSingleSyncUrl(permissionId, apiType));
+            return Optional.of(oAuthManager.accessTokenAndSingleSyncUrl(permissionId));
         } catch (OAuthTokenDetailsNotFoundException e) {
             LOGGER.error("Permission request {} does not have credentials", permissionId);
             return Optional.empty();

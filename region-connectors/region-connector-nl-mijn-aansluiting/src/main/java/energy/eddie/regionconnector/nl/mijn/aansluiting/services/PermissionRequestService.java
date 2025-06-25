@@ -9,7 +9,6 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.CodeboekApiClient;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.exceptions.NlValidationException;
@@ -83,8 +82,8 @@ public class PermissionRequestService {
             case AccountingPointDataNeedResult(Timeframe permissionTimeframe) ->
                     createAccountingPointDataPermissionRequest(permissionRequest, permissionTimeframe, permissionId);
             case ValidatedHistoricalDataDataNeedResult vhdResult -> {
-                var authorizationUrl = oAuthManager.createAuthorizationUrl(permissionRequest.verificationCode(),
-                                                                           MijnAansluitingApi.CONTINUOUS_CONSENT_API);
+                var authorizationUrl = oAuthManager.createAuthorizationUrl(permissionRequest.verificationCode()
+                );
                 outbox.commit(new NlValidatedEvent(permissionId,
                                                    authorizationUrl.state(),
                                                    authorizationUrl.codeVerifier(),
@@ -110,8 +109,8 @@ public class PermissionRequestService {
         }
         try {
             permissionId = oAuthManager.processCallback(fullUri,
-                                                        permissionId,
-                                                        MijnAansluitingApi.CONTINUOUS_CONSENT_API);
+                                                        permissionId
+            );
             LOGGER.info("Permission request {} accepted.", permissionId);
             status = PermissionProcessStatus.ACCEPTED;
         } catch (UserDeniedAuthorizationException e) {
@@ -165,8 +164,8 @@ public class PermissionRequestService {
             outbox.commit(new NlMalformedEvent(permissionId, List.of(error)));
             throw new NlValidationException(error);
         }
-        var authorizationUrl = oAuthManager.createAuthorizationUrl(houseNumber,
-                                                                   MijnAansluitingApi.CONTINUOUS_CONSENT_API);
+        var authorizationUrl = oAuthManager.createAuthorizationUrl(houseNumber
+        );
         outbox.commit(new NlAccountingPointValidatedEvent(
                 permissionId,
                 authorizationUrl.state(),
