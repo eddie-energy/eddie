@@ -1,4 +1,8 @@
 /**
+ * @typedef {import("vue").Ref} Ref
+ */
+
+/**
  * @typedef AiidaDataNeed
  * @prop {string} dataNeedId
  * @prop {string} name

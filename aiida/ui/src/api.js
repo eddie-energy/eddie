@@ -30,7 +30,7 @@ export function getPermissions() {
   return fetchJson('/permissions')
 }
 
-/** @returns {Promise<AiidaDataSource>} */
+/** @returns {Promise<AiidaDataSource[]>} */
 export function getDataSources() {
   return fetchJson('/datasources')
 }
@@ -58,6 +58,25 @@ export function addPermission(permission) {
       return json
     }),
   )
+}
+
+export function rejectPermission(permissionId) {
+  return fetch(`/permissions/${permissionId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      operation: 'REJECT',
+    })
+  })
+}
+
+export function acceptPermission(permissionId, dataSourceId) {
+  return fetch(`/permissions/${permissionId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      operation: 'ACCEPT',
+      dataSourceId,
+    })
+  })
 }
 
 export function revokePermission(permissionId) {

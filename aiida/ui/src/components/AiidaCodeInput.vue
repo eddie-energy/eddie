@@ -2,6 +2,9 @@
 import { useTemplateRef } from 'vue'
 import { addPermission } from '@/api.js'
 import QrCodeScanner from '@/components/QrCodeScanner.vue'
+import { usePermissionDialog } from '@/composables/usePermissionDialog.js'
+
+const { updatePermission } = usePermissionDialog()
 
 /** @type {ShallowRef<HTMLInputElement>} */
 const aiidaCodeInput = useTemplateRef('aiidaCodeInput')
@@ -27,10 +30,11 @@ function parseAiidaCode(aiidaCode) {
   }
 }
 
-function handleAddPermission() {
+async function handleAddPermission() {
   try {
-    const permission = parseAiidaCode(aiidaCodeInput.value.value)
-    confirm('Add permission?') && addPermission(permission)
+    const permissionRequest = parseAiidaCode(aiidaCodeInput.value.value)
+    const permission = await addPermission(permissionRequest)
+    updatePermission(permission)
   } catch ({ message }) {
     aiidaCodeInput.value.setCustomValidity(message)
     aiidaCodeInput.value.reportValidity()

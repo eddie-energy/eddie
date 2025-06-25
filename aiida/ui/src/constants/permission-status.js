@@ -43,22 +43,24 @@ export default {
   FAILED_TO_START: {
     title: 'Failed to Start',
     description: 'An error occurred and the permission could not be started.',
+    isError: true,
   },
   CREATED: {
     title: 'Created',
     description:
       'The permission has been created, but the details have not yet been fetched from the EDDIE framework.',
-    isActive: true,
+    isOpen: true,
   },
   FETCHED_DETAILS: {
     title: 'Fetched details',
     description: 'This permission waits for you to accept or reject it.',
-    isActive: true,
+    isOpen: true,
   },
   UNFULFILLABLE: {
     title: 'Unable to fulfill',
     description:
       'Your AIIDA instance is unable to fulfill the permission request, e.g. because the requested data is not available on your AIIDA instance.',
+    isError: true,
   },
   FETCHED_MQTT_CREDENTIALS: {
     title: 'Fetched MQTT details',
