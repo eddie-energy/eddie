@@ -7,24 +7,23 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.CodeboekApiClient;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.exceptions.NlValidationException;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthManager;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthRequestPayload;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.exceptions.*;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlCreatedEvent;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlMalformedEvent;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlSimpleEvent;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlValidatedEvent;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.net.URI;
 import java.time.ZonedDateTime;
@@ -40,27 +39,25 @@ public class PermissionRequestService {
     private static final String DATA_NEED_ID = "dataNeedId";
     private final OAuthManager oAuthManager;
     private final Outbox outbox;
-    private final DataNeedsService dataNeedService;
     private final NlPermissionRequestRepository permissionRequestRepository;
     private final DataNeedCalculationService<DataNeed> calculationService;
+    private final CodeboekApiClient codeboekApiClient;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    // The DataNeedsService is autowired from another spring context
     public PermissionRequestService(
             OAuthManager oAuthManager,
             Outbox outbox,
-            DataNeedsService dataNeedService,
             NlPermissionRequestRepository permissionRequestRepository,
-            DataNeedCalculationService<DataNeed> calculationService
+            DataNeedCalculationService<DataNeed> calculationService,
+            CodeboekApiClient codeboekApiClient
     ) {
         this.oAuthManager = oAuthManager;
         this.outbox = outbox;
-        this.dataNeedService = dataNeedService;
         this.permissionRequestRepository = permissionRequestRepository;
         this.calculationService = calculationService;
+        this.codeboekApiClient = codeboekApiClient;
     }
 
-    public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequest) throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequest) throws DataNeedNotFoundException, UnsupportedDataNeedException, NlValidationException {
         var permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating permission request with id {}", permissionId);
         ZonedDateTime now = ZonedDateTime.now(NL_ZONE_ID);
@@ -83,19 +80,8 @@ public class PermissionRequestService {
                                                    List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-            case AccountingPointDataNeedResult(Timeframe permissionTimeframe) -> {
-                var authorizationUrl = oAuthManager.createAuthorizationUrl(permissionRequest.verificationCode(),
-                                                                           MijnAansluitingApi.SINGLE_CONSENT_API);
-                outbox.commit(new NlValidatedEvent(
-                        permissionId,
-                        authorizationUrl.state(),
-                        authorizationUrl.codeVerifier(),
-                        null,
-                        permissionTimeframe.start(),
-                        permissionTimeframe.end()
-                ));
-                yield authorizationUrl;
-            }
+            case AccountingPointDataNeedResult(Timeframe permissionTimeframe) ->
+                    createAccountingPointDataPermissionRequest(permissionRequest, permissionTimeframe, permissionId);
             case ValidatedHistoricalDataDataNeedResult vhdResult -> {
                 var authorizationUrl = oAuthManager.createAuthorizationUrl(permissionRequest.verificationCode(),
                                                                            MijnAansluitingApi.CONTINUOUS_CONSENT_API);
@@ -122,9 +108,10 @@ public class PermissionRequestService {
             LOGGER.info("Got unknown permission request {}", permissionId);
             throw new PermissionNotFoundException(permissionId);
         }
-        var dataNeed = dataNeedService.getById(pr.get().dataNeedId());
         try {
-            permissionId = oAuthManager.processCallback(fullUri, permissionId, getApiType(dataNeed));
+            permissionId = oAuthManager.processCallback(fullUri,
+                                                        permissionId,
+                                                        MijnAansluitingApi.CONTINUOUS_CONSENT_API);
             LOGGER.info("Permission request {} accepted.", permissionId);
             status = PermissionProcessStatus.ACCEPTED;
         } catch (UserDeniedAuthorizationException e) {
@@ -156,10 +143,39 @@ public class PermissionRequestService {
         );
     }
 
-    private static MijnAansluitingApi getApiType(DataNeed dataNeed) {
-        return switch (dataNeed) {
-            case AccountingPointDataNeed ignored -> MijnAansluitingApi.SINGLE_CONSENT_API;
-            default -> MijnAansluitingApi.CONTINUOUS_CONSENT_API;
-        };
+    private OAuthRequestPayload createAccountingPointDataPermissionRequest(
+            PermissionRequestForCreation permissionRequest,
+            Timeframe permissionTimeframe,
+            String permissionId
+    ) throws NlValidationException {
+        if (permissionRequest.postalCode() == null) {
+            var error = new AttributeError("postalCode", "Missing postal code");
+            outbox.commit(new NlMalformedEvent(permissionId, List.of(error)));
+            throw new NlValidationException(error);
+        }
+        var houseNumber = permissionRequest.verificationCode();
+        var meteringPoints = codeboekApiClient.meteringPoints(permissionRequest.postalCode(), houseNumber)
+                                              .filter(res -> !res.getMeteringPoints().isEmpty())
+                                              .onErrorComplete(WebClientResponseException.NotFound.class)
+                                              .next()
+                                              .block();
+        if (meteringPoints == null) {
+            var error = new AttributeError("postalCode",
+                                           "No metering point exists at this postal code and house number");
+            outbox.commit(new NlMalformedEvent(permissionId, List.of(error)));
+            throw new NlValidationException(error);
+        }
+        var authorizationUrl = oAuthManager.createAuthorizationUrl(houseNumber,
+                                                                   MijnAansluitingApi.CONTINUOUS_CONSENT_API);
+        outbox.commit(new NlAccountingPointValidatedEvent(
+                permissionId,
+                authorizationUrl.state(),
+                authorizationUrl.codeVerifier(),
+                permissionTimeframe.start(),
+                permissionTimeframe.end(),
+                houseNumber,
+                permissionRequest.postalCode()
+        ));
+        return authorizationUrl;
     }
 }

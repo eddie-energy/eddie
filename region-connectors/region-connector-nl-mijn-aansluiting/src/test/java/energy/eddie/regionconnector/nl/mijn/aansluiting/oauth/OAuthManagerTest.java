@@ -116,7 +116,7 @@ class OAuthManagerTest {
             new ClientID("client-id"),
             new Scope("scope"),
             new Scope("scope"),
-            URI.create("https://localhost/callback")
+            URI.create("http://localhost"), "jwt", URI.create("https://localhost/callback")
     );
     @Mock
     private OIDCProviderMetadata providerMetadata;
@@ -221,8 +221,8 @@ class OAuthManagerTest {
                         ZonedDateTime.now(ZoneOffset.UTC),
                         null,
                         null,
-                        Granularity.P1D
-                )));
+                        Granularity.P1D,
+                        "11", "999AB")));
         server.enqueue(
                 new MockResponse()
                         .setBody(response)
@@ -264,8 +264,8 @@ class OAuthManagerTest {
                         ZonedDateTime.now(ZoneOffset.UTC),
                         null,
                         null,
-                        Granularity.P1D
-                )));
+                        Granularity.P1D,
+                        "11", "999AB")));
         server.enqueue(
                 new MockResponse()
                         .setBody("NOT JSON")
@@ -301,8 +301,8 @@ class OAuthManagerTest {
                         ZonedDateTime.now(ZoneOffset.UTC),
                         null,
                         null,
-                        Granularity.P1D
-                )));
+                        Granularity.P1D,
+                        "11", "999AB")));
         when(providerMetadata.getTokenEndpointURI())
                 .thenReturn(URI.create("https://localhost:9999/callback"));
 
@@ -330,8 +330,8 @@ class OAuthManagerTest {
                         ZonedDateTime.now(ZoneOffset.UTC),
                         null,
                         null,
-                        Granularity.P1D
-                )));
+                        Granularity.P1D,
+                        "11", "999AB")));
         server.enqueue(
                 new MockResponse()
                         .setBody(ERROR_RESPONSE)

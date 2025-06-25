@@ -22,8 +22,8 @@ public class JsonResourceObjectMapper<T> {
         return mapper.readValue(inputStream, this.model);
     }
 
-    public String loadRawTestJson(String fileName) throws IOException {
-        ClassLoader classLoader = this.getClass().getClassLoader();
+    public static String loadRawTestJson(String fileName) throws IOException {
+        ClassLoader classLoader = JsonResourceObjectMapper.class.getClassLoader();
         InputStream inputStream = classLoader.getResourceAsStream(fileName);
         if (inputStream == null) {
             throw new IOException("InputStream null");

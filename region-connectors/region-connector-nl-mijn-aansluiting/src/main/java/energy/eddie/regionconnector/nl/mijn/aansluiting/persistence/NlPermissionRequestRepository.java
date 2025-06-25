@@ -4,29 +4,29 @@ import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepo
 import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.persistence.StatusPermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 
+@org.springframework.stereotype.Repository
 public interface NlPermissionRequestRepository extends
-        JpaRepository<MijnAansluitingPermissionRequest, String>,
-        PermissionRequestRepository<NlPermissionRequest>,
+        Repository<MijnAansluitingPermissionRequest, String>,
+        PermissionRequestRepository<MijnAansluitingPermissionRequest>,
         StalePermissionRequestRepository<MijnAansluitingPermissionRequest>,
-        StatusPermissionRequestRepository<NlPermissionRequest> {
-    Optional<NlPermissionRequest> findByStateAndPermissionId(String state, String permissionId);
+        StatusPermissionRequestRepository<MijnAansluitingPermissionRequest> {
+    Optional<MijnAansluitingPermissionRequest> findByStateAndPermissionId(String state, String permissionId);
 
     @Override
-    List<NlPermissionRequest> findByStatus(PermissionProcessStatus status);
+    List<MijnAansluitingPermissionRequest> findByStatus(PermissionProcessStatus status);
 
     boolean existsByPermissionIdAndStatus(String permissionId, PermissionProcessStatus status);
 
     @Query(
-            value = "SELECT permission_id, connection_id, created, data_need_id, granularity, permission_start, permission_end, status, state, code_verifier " +
+            value = "SELECT * " +
                     "FROM nl_mijn_aansluiting.permission_request WHERE status = 'VALIDATED' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )

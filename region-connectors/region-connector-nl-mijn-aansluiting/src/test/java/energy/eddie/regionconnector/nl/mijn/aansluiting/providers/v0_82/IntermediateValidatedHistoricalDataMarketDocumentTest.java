@@ -8,7 +8,6 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MijnAansluitingResponse;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.IdentifiableMeteredData;
@@ -19,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URI;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,18 +37,18 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
             new ClientID("client-id"),
             new Scope(),
             new Scope(),
-            null
+            URI.create("http://localhost"), "jwt", null
     );
-    private final NlPermissionRequest pr = new MijnAansluitingPermissionRequest("pid",
-                                                                                "cid",
-                                                                                "dnid",
-                                                                                PermissionProcessStatus.ACCEPTED,
-                                                                                "",
-                                                                                "",
-                                                                                null,
-                                                                                null,
-                                                                                null,
-                                                                                null);
+    private final MijnAansluitingPermissionRequest pr = new MijnAansluitingPermissionRequest("pid",
+                                                                                             "cid",
+                                                                                             "dnid",
+                                                                                             PermissionProcessStatus.ACCEPTED,
+                                                                                             "",
+                                                                                             "",
+                                                                                             null,
+                                                                                             null,
+                                                                                             null,
+                                                                                             null, "11", "999AB");
 
     @Test
     @SuppressWarnings({"java:S5961"})

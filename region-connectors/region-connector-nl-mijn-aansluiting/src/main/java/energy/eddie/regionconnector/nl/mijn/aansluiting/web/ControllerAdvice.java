@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.web;
 
 import energy.eddie.api.agnostic.EddieApiError;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.exceptions.NlValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -26,5 +27,15 @@ public class ControllerAdvice {
         var errorMsg = "OAuth processing failed. Please contact service provider.";
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(errorMsg)));
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(NlValidationException.class)
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleNlValidationException(
+            NlValidationException exception
+    ) {
+        LOGGER.info("Failed to create permission request", exception);
+        var error = exception.error();
+        return ResponseEntity.badRequest()
+                             .body(Map.of(error.name(), List.of(new EddieApiError(error.message()))));
     }
 }

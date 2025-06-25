@@ -4,12 +4,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.ApiClient;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.CodeboekApiClient;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.ConsumptionData;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MeteringPoints;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MijnAansluitingResponse;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.AccessTokenAndSingleSyncUrl;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthManager;
@@ -29,6 +31,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -40,16 +43,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static energy.eddie.api.v0.PermissionProcessStatus.FULFILLED;
+import static energy.eddie.api.v0.PermissionProcessStatus.*;
+import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.NL_ZONE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PollingServiceTest {
     private final JsonResourceObjectMapper<List<MijnAansluitingResponse>> vhdMapper = new JsonResourceObjectMapper<>(new TypeReference<>() {});
-    private final JsonResourceObjectMapper<List<ConsumptionData>> apMapper = new JsonResourceObjectMapper<>(new TypeReference<>() {});
+    private final JsonResourceObjectMapper<MeteringPoints> codeboekMapper = new JsonResourceObjectMapper<>(new TypeReference<>() {});
     @Mock
     private OAuthManager oAuthManager;
     @Mock
@@ -60,6 +63,8 @@ class PollingServiceTest {
     private DataNeedsService dataNeedsService;
     @Mock
     private ValidatedHistoricalDataDataNeed dataNeed;
+    @Mock
+    private CodeboekApiClient codeboekApiClient;
     @InjectMocks
     private PollingService pollingService;
     @Captor
@@ -96,18 +101,10 @@ class PollingServiceTest {
         // Given
         when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
                 .thenThrow(exceptionClass);
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                "",
-                "",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                null,
-                null,
-                Granularity.P1D
-        );
+        var now = LocalDate.now(NL_ZONE_ID);
+        var start = now.minusDays(1);
+        var end = now.plusDays(1);
+        var pr = createPermissionRequest(start, end, PermissionProcessStatus.ACCEPTED, "11", "9999AB");
 
         // When
         pollingService.pollTimeSeriesData(pr);
@@ -126,18 +123,10 @@ class PollingServiceTest {
         // Given
         when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API))
                 .thenThrow(exceptionClass);
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                "",
-                "",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                null,
-                null,
-                Granularity.P1D
-        );
+        var now = LocalDate.now(NL_ZONE_ID);
+        var start = now.minusDays(1);
+        var end = now.plusDays(1);
+        var pr = createPermissionRequest(start, end, PermissionProcessStatus.ACCEPTED, "11", "9999AB");
 
         // When
         pollingService.pollTimeSeriesData(pr);
@@ -163,18 +152,8 @@ class PollingServiceTest {
                 .thenReturn(Optional.of(dataNeed));
         when(dataNeed.energyType())
                 .thenReturn(EnergyType.ELECTRICITY);
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                "",
-                "",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                LocalDate.of(2023, 5, 1),
-                LocalDate.of(2023, 5, 31),
-                Granularity.P1D
-        );
+        var pr = createPermissionRequest(LocalDate.of(2023, 5, 1), LocalDate.of(2023, 5, 31),
+                                         PermissionProcessStatus.ACCEPTED, "11", "9999AB");
 
         // When
         pollingService.pollTimeSeriesData(pr);
@@ -195,18 +174,8 @@ class PollingServiceTest {
                 .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
         when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
                 .thenReturn(Mono.just(List.of()));
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                "",
-                "",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                LocalDate.of(2023, 5, 1),
-                LocalDate.of(2023, 5, 31),
-                Granularity.P1D
-        );
+        var pr = createPermissionRequest(LocalDate.of(2023, 5, 1), LocalDate.of(2023, 5, 31),
+                                         PermissionProcessStatus.ACCEPTED, "11", "9999AB");
 
         // When
         pollingService.pollTimeSeriesData(pr);
@@ -234,18 +203,8 @@ class PollingServiceTest {
                 .thenReturn(Optional.of(dataNeed));
         when(dataNeed.energyType())
                 .thenReturn(energyType);
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                "",
-                "",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                LocalDate.of(2023, 5, 1),
-                LocalDate.of(2023, 5, 15),
-                Granularity.P1D
-        );
+        var pr = createPermissionRequest(LocalDate.of(2023, 5, 1), LocalDate.of(2023, 5, 15),
+                                         PermissionProcessStatus.ACCEPTED, "11", "9999AB");
 
         // When
         pollingService.pollTimeSeriesData(pr);
@@ -276,18 +235,8 @@ class PollingServiceTest {
                 .thenReturn(Mono.just(json));
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.empty());
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                "",
-                "",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                LocalDate.of(2023, 5, 1),
-                LocalDate.of(2023, 5, 31),
-                Granularity.P1D
-        );
+        var pr = createPermissionRequest(LocalDate.of(2023, 5, 1), LocalDate.of(2023, 5, 31),
+                                         PermissionProcessStatus.ACCEPTED, "11", "9999AB");
 
         // When
         pollingService.pollTimeSeriesData(pr);
@@ -309,18 +258,8 @@ class PollingServiceTest {
                 .thenReturn(Mono.just(json));
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.of(mock(AccountingPointDataNeed.class)));
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                "",
-                "",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                LocalDate.of(2023, 5, 1),
-                LocalDate.of(2023, 5, 31),
-                Granularity.P1D
-        );
+        var pr = createPermissionRequest(LocalDate.of(2023, 5, 1), LocalDate.of(2023, 5, 31),
+                                         PermissionProcessStatus.ACCEPTED, "11", "9999AB");
 
         // When
         pollingService.pollTimeSeriesData(pr);
@@ -345,18 +284,8 @@ class PollingServiceTest {
         when(dataNeed.energyType())
                 .thenReturn(EnergyType.ELECTRICITY);
         var start = LocalDate.of(2023, 5, 15);
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                "",
-                "",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                start,
-                LocalDate.of(2023, 5, 31),
-                Granularity.P1D
-        );
+        var end = LocalDate.of(2023, 5, 31);
+        var pr = createPermissionRequest(start, end, PermissionProcessStatus.ACCEPTED, "11", "9999AB");
 
         // When
         pollingService.pollTimeSeriesData(pr);
@@ -394,18 +323,7 @@ class PollingServiceTest {
                 .thenReturn(EnergyType.ELECTRICITY);
         var start = LocalDate.of(2023, 5, 15);
         var end = LocalDate.of(2023, 5, 31);
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                "",
-                "",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                start,
-                end,
-                Granularity.P1D
-        );
+        var pr = createPermissionRequest(start, end, PermissionProcessStatus.ACCEPTED, "11", "9999AB");
 
         // When
         pollingService.pollTimeSeriesData(pr);
@@ -432,23 +350,24 @@ class PollingServiceTest {
     @Test
     void testFetchAccountingPointData_emitsData() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
         // Given
-        var json = apMapper.loadTestJson("single_request.json");
+        var codeboekJson = codeboekMapper.loadTestJson("codeboek_response.json");
+        var json = vhdMapper.loadTestJson("single_consumption_data.json");
+        codeboekJson.getMeteringPoints()
+                    .getFirst()
+                    .setEan(json.getFirst()
+                                .getMarketEvaluationPoint()
+                                .getRegisterList()
+                                .getFirst()
+                                .getMeter()
+                                .getMRID());
         when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.SINGLE_CONSENT_API))
                 .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
-        when(apiClient.fetchSingleReading("singleSync", "accessToken"))
+        when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
                 .thenReturn(Mono.just(json));
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                "",
-                "",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                LocalDate.of(2023, 5, 1),
-                LocalDate.of(2023, 5, 31),
-                Granularity.P1D
-        );
+        when(codeboekApiClient.meteringPoints("9999AB", "11"))
+                .thenReturn(Flux.just(codeboekJson));
+        var pr = createPermissionRequest(LocalDate.of(2023, 5, 1), LocalDate.of(2023, 5, 31),
+                                         PermissionProcessStatus.ACCEPTED, "11", "9999AB");
 
         // When
         pollingService.fetchAccountingPointData(pr);
@@ -459,33 +378,136 @@ class PollingServiceTest {
                     .then(pollingService::close)
                     .assertNext(iap -> assertAll(
                             () -> assertEquals(pr, iap.permissionRequest()),
-                            () -> assertEquals(json, iap.payload())
+                            () -> assertEquals(codeboekJson.getMeteringPoints(), iap.payload())
                     ))
                     .verifyComplete();
     }
 
     @Test
-    void testFetchAccountingPointData_withInvalidToken_doesNotFetch() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
+    void testFetchAccountingPointData_withoutMeters_emitsUnfulfillable() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
         // Given
+        var codeboekJson = codeboekMapper.loadTestJson("codeboek_response.json");
+        var json = vhdMapper.loadTestJson("single_consumption_data.json");
         when(oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.SINGLE_CONSENT_API))
-                .thenThrow(OAuthException.class);
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                "",
-                "",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                LocalDate.of(2023, 5, 1),
-                LocalDate.of(2023, 5, 31),
-                Granularity.P1D
-        );
+                .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
+        when(codeboekApiClient.meteringPoints("9999AB", "11"))
+                .thenReturn(Flux.just(codeboekJson));
+        when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
+                .thenReturn(Mono.just(json));
+        var pr = createPermissionRequest(LocalDate.of(2023, 5, 1), LocalDate.of(2023, 5, 31),
+                                         PermissionProcessStatus.ACCEPTED, "11", "9999AB");
 
         // When
         pollingService.fetchAccountingPointData(pr);
 
         // Then
-        verify(apiClient, never()).fetchSingleReading(any(), any());
+        verify(outbox).commit(assertArg(event -> assertEquals(UNFULFILLABLE, event.status())));
+        StepVerifier.create(pollingService.identifiableAccountingPointDataFlux())
+                    .then(pollingService::close)
+                    .verifyComplete();
+    }
+
+    @ParameterizedTest
+    @MethodSource("testFetchAccountingPointData_withoutPostalCodeOrHouseNumber_emitsUnfulfillable")
+    void testFetchAccountingPointData_withoutPostalCodeOrHouseNumber_emitsUnfulfillable(MijnAansluitingPermissionRequest pr) {
+        // Given
+        // When
+        pollingService.fetchAccountingPointData(pr);
+
+        // Then
+        verify(outbox).commit(assertArg(event -> assertEquals(UNFULFILLABLE, event.status())));
+        StepVerifier.create(pollingService.identifiableAccountingPointDataFlux())
+                    .then(pollingService::close)
+                    .verifyComplete();
+    }
+
+    @Test
+    void isActiveAndNeedsToBeFetched_whenPermissionRequestNotAccepted_returnsFalse() {
+        // Given
+        var now = LocalDate.now(NL_ZONE_ID);
+        var pr = createPermissionRequest(now, now, VALIDATED, "11", "9999AB");
+
+        // When
+        var res = pollingService.isActiveAndNeedsToBeFetched(pr);
+
+        // Then
+        assertFalse(res);
+    }
+
+    @Test
+    void isActiveAndNeedsToBeFetched_whenPermissionRequestNotActive_returnsFalse() {
+        // Given
+        var tomorrow = LocalDate.now(NL_ZONE_ID).plusDays(1);
+        var pr = createPermissionRequest(tomorrow, tomorrow, ACCEPTED, "11", "9999AB");
+
+        // When
+        var res = pollingService.isActiveAndNeedsToBeFetched(pr);
+
+        // Then
+        assertFalse(res);
+    }
+
+    @Test
+    void isActiveAndNeedsToBeFetched_whenWrongDataNeed_returnsFalse() {
+        // Given
+        var yesterday = LocalDate.now(NL_ZONE_ID).minusDays(1);
+        var pr = createPermissionRequest(yesterday, yesterday, ACCEPTED, "11", "9999AB");
+        when(dataNeedsService.getById("dnid")).thenReturn(new AccountingPointDataNeed());
+
+        // When
+        var res = pollingService.isActiveAndNeedsToBeFetched(pr);
+
+        // Then
+        assertFalse(res);
+    }
+
+    @Test
+    void isActiveAndNeedsToBeFetched_whenActive_returnsTrue() {
+        // Given
+        var yesterday = LocalDate.now(NL_ZONE_ID).minusDays(1);
+        var pr = createPermissionRequest(yesterday, yesterday, ACCEPTED, "11", "9999AB");
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeed(new RelativeDuration(null, null, null),
+                                                                EnergyType.ELECTRICITY,
+                                                                Granularity.P1D,
+                                                                Granularity.P1M));
+
+        // When
+        var res = pollingService.isActiveAndNeedsToBeFetched(pr);
+
+        // Then
+        assertTrue(res);
+    }
+
+    private static Stream<Arguments> testFetchAccountingPointData_withoutPostalCodeOrHouseNumber_emitsUnfulfillable() {
+        var start = LocalDate.of(2023, 5, 1);
+        var end = LocalDate.of(2023, 5, 31);
+        return Stream.of(
+                Arguments.of(createPermissionRequest(start, end, ACCEPTED, null, "9999AB")),
+                Arguments.of(createPermissionRequest(start, end, ACCEPTED, "11", null))
+        );
+    }
+
+    private static MijnAansluitingPermissionRequest createPermissionRequest(
+            LocalDate start,
+            LocalDate end,
+            PermissionProcessStatus status,
+            String houseNumber,
+            String postalCode
+    ) {
+        return new MijnAansluitingPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                status,
+                "",
+                "",
+                ZonedDateTime.now(ZoneOffset.UTC),
+                start,
+                end,
+                Granularity.P1D,
+                houseNumber,
+                postalCode
+        );
     }
 }

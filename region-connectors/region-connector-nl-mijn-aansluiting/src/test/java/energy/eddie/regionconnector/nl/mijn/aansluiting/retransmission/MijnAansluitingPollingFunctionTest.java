@@ -110,6 +110,6 @@ class MijnAansluitingPollingFunctionTest {
                                                     ZonedDateTime.now(ZoneOffset.UTC),
                                                     LocalDate.now(ZoneOffset.UTC),
                                                     LocalDate.now(ZoneOffset.UTC),
-                                                    Granularity.PT15M);
+                                                    Granularity.PT15M, "11", "999AB");
     }
 }

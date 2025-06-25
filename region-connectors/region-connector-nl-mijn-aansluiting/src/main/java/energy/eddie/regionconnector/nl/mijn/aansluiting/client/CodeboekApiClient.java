@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class CodeboekApiClient {
+    private static final MeteringPoint.ProductEnum[] ALLOWED_PRODUCTS = {MeteringPoint.ProductEnum.ELK, MeteringPoint.ProductEnum.GAS};
     private final WebClient webClient;
     private Health health = Health.unknown().build();
 
@@ -23,8 +24,8 @@ public class CodeboekApiClient {
     }
 
     public Flux<MeteringPoints> meteringPoints(String postalCode, String streetNumber) {
-        return Flux.fromArray(MeteringPoint.ProductEnum.values())
-                   .flatMap(product -> meteringPoints(postalCode, streetNumber, product));
+        return Flux.fromArray(ALLOWED_PRODUCTS)
+                      .flatMap(product -> meteringPoints(postalCode, streetNumber, product));
     }
 
     public Mono<MeteringPoints> meteringPoints(
