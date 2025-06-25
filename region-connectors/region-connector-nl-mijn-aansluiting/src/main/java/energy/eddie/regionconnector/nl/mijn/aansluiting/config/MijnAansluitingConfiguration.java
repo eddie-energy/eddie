@@ -9,11 +9,8 @@ import java.net.URI;
 @ConfigurationProperties(value = "region-connector.nl.mijn.aansluiting")
 public record MijnAansluitingConfiguration(
         String continuousKeyId,
-        String singleKeyId,
         String issuerUrl,
         ClientID continuousClientId,
-        ClientID singleClientId,
-        Scope singleScope,
         Scope continuousScope,
         URI codeboekApi,
         String codeboekApiToken,

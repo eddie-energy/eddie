@@ -32,10 +32,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     private final MijnAansluitingConfiguration config = new MijnAansluitingConfiguration(
             "",
             "",
-            "",
             new ClientID("client-id"),
-            new ClientID("client-id"),
-            new Scope(),
             new Scope(),
             URI.create("http://localhost"), "jwt", null
     );

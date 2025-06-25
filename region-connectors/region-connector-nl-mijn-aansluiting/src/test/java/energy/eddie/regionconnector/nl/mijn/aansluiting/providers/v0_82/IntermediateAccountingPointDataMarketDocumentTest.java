@@ -184,11 +184,8 @@ class IntermediateAccountingPointDataMarketDocumentTest {
     private static MijnAansluitingConfiguration createConfig() {
         return new MijnAansluitingConfiguration(
                 "key-id",
-                "key-id",
                 "https://localhost",
                 new ClientID("client-id"),
-                new ClientID("client-id"),
-                new Scope(),
                 new Scope(),
                 URI.create("http://localhost"),
                 "api-token",
