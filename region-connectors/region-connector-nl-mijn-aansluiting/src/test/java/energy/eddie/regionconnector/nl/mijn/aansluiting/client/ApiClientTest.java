@@ -10,6 +10,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
@@ -35,13 +36,13 @@ class ApiClientTest {
     void testFetchConsumptionData_returnsConsumptionData() throws IOException {
         // Given
         var jsonMapper = new JsonResourceObjectMapper<>(new TypeReference<List<MijnAansluitingResponse>>() {});
-        var response = jsonMapper.loadRawTestJson("consumption_data.json");
+        var response = JsonResourceObjectMapper.loadRawTestJson("consumption_data.json");
         var expected = jsonMapper.loadTestJson("consumption_data.json");
         SERVER.enqueue(new MockResponse()
                                .setBody(response)
                                .addHeader("Content-Type", "application/json; charset=utf-8"));
         var singleSync = SERVER.url("/single-sync");
-        var apiClient = new ApiClient();
+        var apiClient = new ApiClient(WebClient.builder());
 
         // When
         var res = apiClient.fetchConsumptionData(singleSync.toString(), "ACCESS TOKEN");
@@ -57,13 +58,13 @@ class ApiClientTest {
     void testFetchSingleReading_returnsAccountingPointData() throws IOException {
         // Given
         var jsonMapper = new JsonResourceObjectMapper<>(new TypeReference<List<ConsumptionData>>() {});
-        var response = jsonMapper.loadRawTestJson("single_request.json");
+        var response = JsonResourceObjectMapper.loadRawTestJson("single_request.json");
         var expected = jsonMapper.loadTestJson("single_request.json");
         SERVER.enqueue(new MockResponse()
                                .setBody(response)
                                .addHeader("Content-Type", "application/json; charset=utf-8"));
         var singleSync = SERVER.url("/single-sync");
-        var apiClient = new ApiClient();
+        var apiClient = new ApiClient(WebClient.builder());
 
         // When
         var res = apiClient.fetchSingleReading(singleSync.toString(), "ACCESS TOKEN");
@@ -78,7 +79,7 @@ class ApiClientTest {
     @Test
     void testFetchConsumptionData_updatesHealth_ifDown() {
         // Given
-        var apiClient = new ApiClient();
+        var apiClient = new ApiClient(WebClient.builder());
 
         // When
         var res = apiClient.fetchConsumptionData("https://localhost:9999/", "ACCESS TOKEN");
@@ -94,7 +95,7 @@ class ApiClientTest {
     @Test
     void testFetchSingleReading_updatesHealth_ifDown() {
         // Given
-        var apiClient = new ApiClient();
+        var apiClient = new ApiClient(WebClient.builder());
 
         // When
         var res = apiClient.fetchSingleReading("https://localhost:9999/", "ACCESS TOKEN");
@@ -109,13 +110,12 @@ class ApiClientTest {
     @Test
     void testFetchConsumptionData_updatesHealth_ifUp() throws IOException {
         // Given
-        var jsonMapper = new JsonResourceObjectMapper<>(new TypeReference<List<MijnAansluitingResponse>>() {});
-        var response = jsonMapper.loadRawTestJson("consumption_data.json");
+        var response = JsonResourceObjectMapper.loadRawTestJson("consumption_data.json");
         SERVER.enqueue(new MockResponse()
                                .setBody(response)
                                .addHeader("Content-Type", "application/json; charset=utf-8"));
         var singleSync = SERVER.url("/single-sync");
-        var apiClient = new ApiClient();
+        var apiClient = new ApiClient(WebClient.builder());
 
         // When
         var res = apiClient.fetchConsumptionData(singleSync.toString(), "ACCESS TOKEN");
@@ -131,13 +131,12 @@ class ApiClientTest {
     @Test
     void testFetchSingleReading_updatesHealth_ifUp() throws IOException {
         // Given
-        var jsonMapper = new JsonResourceObjectMapper<>(new TypeReference<List<MijnAansluitingResponse>>() {});
-        var response = jsonMapper.loadRawTestJson("single_request.json");
+        var response = JsonResourceObjectMapper.loadRawTestJson("single_request.json");
         SERVER.enqueue(new MockResponse()
                                .setBody(response)
                                .addHeader("Content-Type", "application/json; charset=utf-8"));
         var singleSync = SERVER.url("/single-sync");
-        var apiClient = new ApiClient();
+        var apiClient = new ApiClient(WebClient.builder());
 
         // When
         var res = apiClient.fetchSingleReading(singleSync.toString(), "ACCESS TOKEN");

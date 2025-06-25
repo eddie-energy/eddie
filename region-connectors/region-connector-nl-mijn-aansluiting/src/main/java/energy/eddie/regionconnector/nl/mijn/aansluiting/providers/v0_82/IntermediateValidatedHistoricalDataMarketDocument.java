@@ -3,10 +3,10 @@ package energy.eddie.regionconnector.nl.mijn.aansluiting.providers.v0_82;
 import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.IdentifiableMeteredData;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
@@ -19,7 +19,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
 
     private final CommonInformationModelConfiguration cimConfig;
     private final MijnAansluitingConfiguration mijnAansluitingConfig;
-    private final NlPermissionRequest permissionRequest;
+    private final MijnAansluitingPermissionRequest permissionRequest;
     private final List<MijnAansluitingResponse> mijnAansluitingResponses;
 
     IntermediateValidatedHistoricalDataMarketDocument(

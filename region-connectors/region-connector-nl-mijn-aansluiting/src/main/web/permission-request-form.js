@@ -9,8 +9,22 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
+    coreUrl: { attribute: "core-url" },
     _isPermissionRequestCreated: { type: Boolean },
+    _dataNeed: {
+      type: {
+        type: String,
+      },
+    },
   };
+
+  async connectedCallback() {
+    super.connectedCallback();
+    const resp = await fetch(
+      `${this.coreUrl}/data-needs/api/${this.dataNeedId}`
+    );
+    this._dataNeed = await resp.json();
+  }
 
   handleSubmit(event) {
     event.preventDefault();
@@ -20,6 +34,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       connectionId: this.connectionId,
       dataNeedId: this.dataNeedId,
       verificationCode: formData.get("verificationCode"),
+      postalCode: formData.get("postalCode"),
     };
 
     this.createPermissionRequest(payload, {
@@ -43,6 +58,17 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             placeholder="House Number"
             required
           ></sl-input>
+          ${this._dataNeed.type === "account"
+            ? html` <sl-input
+                label="Postal Code"
+                type="text"
+                pattern="\\d{4}[A-Z]{2}"
+                helpText="This is the postal code of your address."
+                name="postalCode"
+                placeholder="Postal Code"
+                required=""
+              ></sl-input>`
+            : ``}
           <p>
             By clicking on this button, you will access your personal Mijn
             Aansluiting account where you can authorise Mijn Aansluiting to send

@@ -74,10 +74,6 @@ class CodeboekApiClientTest {
                                .setResponseCode(200)
                                .setHeader("Content-Type", "application/json")
                                .setBody(body));
-        SERVER.enqueue(new MockResponse()
-                               .setResponseCode(200)
-                               .setHeader("Content-Type", "application/json")
-                               .setBody(body));
         // When
         var res = client.meteringPoints("9999AB", "11");
 
@@ -103,7 +99,7 @@ class CodeboekApiClientTest {
                                 assertThat(address.getStreet()).isEqualTo("example street");
                                 assertThat(address.getCity()).isEqualTo("Amsterdam");
                             }))
-                    .expectNextCount(2)
+                    .expectNextCount(1)
                     .verifyComplete();
     }
 
