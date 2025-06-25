@@ -8,6 +8,7 @@ const { permission } = props
 
 const {
   dataNeed: { asset, dataTags, schemas, transmissionSchedule },
+  dataSource,
   eddieId,
   expirationTime,
   permissionId,
@@ -75,6 +76,11 @@ const {
           <br />
         </template>
       </dd>
+    </template>
+
+    <template v-if="dataSource">
+      <dt>Data Source</dt>
+      <dd>{{ dataSource.name }} ({{ dataSource.id }})</dd>
     </template>
   </dl>
 </template>

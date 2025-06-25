@@ -24,6 +24,7 @@
  * @prop {string} expirationTime
  * @prop {string} grantTime
  * @prop {AiidaDataNeed} dataNeed
+ * @prop {AiidaDataSource} dataSource
  * @prop {string} userId
  */
 
