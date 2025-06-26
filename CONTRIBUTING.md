@@ -2,7 +2,7 @@
 TODO:
   - Document and link code quality standards
   - Automate formatting on push, so we do not have to document it in the PR guidelines
-  - Merge in issue tracking (features, bugs) from https://github.com/eddie-energy/eddie/wiki/EDDIE-Development-&-Deployment-Strategy
+  - Merge in issue tracking (features, bugs) from old wiki and Sharepoint
 
 Inspiration:
   - https://shoelace.style/resources/contributing
