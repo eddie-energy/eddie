@@ -1,32 +1,31 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
-import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
-
 @Service
 public class HistoricalDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(HistoricalDataService.class);
     private final PollingService pollingService;
+    private final FrPermissionRequestRepository repository;
 
-    public HistoricalDataService(PollingService pollingService) {
+    public HistoricalDataService(PollingService pollingService, FrPermissionRequestRepository repository) {
         this.pollingService = pollingService;
+        this.repository = repository;
     }
 
     @Async
-    public void fetchHistoricalMeterReadings(FrEnedisPermissionRequest permissionRequest) {
-        LocalDate permissionStart = permissionRequest.start();
-
-        LocalDate now = LocalDate.now(ZONE_ID_FR);
-        String permissionId = permissionRequest.permissionId();
-        if (!permissionStart.isBefore(now)) {
-            LOGGER.info("Permission request '{}' is not yet active, skipping data fetch", permissionId);
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public void fetchHistoricalMeterReadings(String permissionId) {
+        LOGGER.info("Fetching historical readings for {}", permissionId);
+        var permissionRequest = repository.getByPermissionId(permissionId);
+        String permissionId1 = permissionRequest.permissionId();
+        if (!pollingService.isActiveAndNeedsToBeFetched(permissionRequest)) {
+            LOGGER.info("Permission request '{}' is not yet active, skipping data fetch", permissionId1);
             return;
         }
 
