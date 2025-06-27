@@ -8,6 +8,7 @@ import reactor.core.publisher.Sinks;
 import java.util.UUID;
 
 public abstract class AiidaStreamer implements AutoCloseable {
+    protected final UUID aiidaId;
     protected final Flux<AiidaRecord> recordFlux;
     protected final Sinks.One<UUID> terminationRequestSink;
 
@@ -17,10 +18,11 @@ public abstract class AiidaStreamer implements AutoCloseable {
      * should be opened and data streamed.
      *
      * @param recordFlux             Flux, where records that should be sent are available.
-     * @param terminationRequestSink Sink, to which the permissionId will be published, when the EP requests a
+     * @param terminationRequestSink Sink, to which the permissionId will be published when the EP requests a
      *                               termination.
      */
-    protected AiidaStreamer(Flux<AiidaRecord> recordFlux, Sinks.One<UUID> terminationRequestSink) {
+    protected AiidaStreamer(UUID aiidaId, Flux<AiidaRecord> recordFlux, Sinks.One<UUID> terminationRequestSink) {
+        this.aiidaId = aiidaId;
         this.recordFlux = recordFlux;
         this.terminationRequestSink = terminationRequestSink;
     }

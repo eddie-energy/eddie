@@ -29,42 +29,45 @@ import java.util.UUID;
 
 public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttStreamer.class);
+    private final MqttAsyncClient client;
+    private final FailedToSendRepository failedToSendRepository;
+    private final ObjectMapper mapper;
+    private boolean isBeingTerminated = false;
     private final Permission permission;
     private final MqttStreamingConfig streamingConfig;
-    private final MqttAsyncClient client;
-    private final ObjectMapper mapper;
-    private final FailedToSendRepository failedToSendRepository;
-    private boolean isBeingTerminated = false;
     @Nullable
     private Disposable subscription;
 
     /**
      * Creates a new MqttStreamer and initialized the client callback.
      *
+     * @param aiidaId                UUID of the AIIDA instance for which to create the AiidaStreamer.
+     * @param client                 {@link MqttAsyncClient} used to send to MQTT broker.
+     * @param failedToSendRepository Repository where messages that could not be transmitted are stored.
+     * @param mapper                 {@link ObjectMapper} used to transform the values to be sent into JSON strings.
+     * @param permission             Permission for which this streamer is created
      * @param recordFlux             Flux, where records that should be sent are published.
+     * @param streamingConfig        Necessary MQTT configuration values.
      * @param terminationRequestSink Sink, to which the ID of the permission will be published when the EP requests a
      *                               termination.
-     * @param streamingConfig        Necessary MQTT configuration values.
-     * @param client                 {@link MqttAsyncClient} used to send to MQTT broker.
-     * @param mapper                 {@link ObjectMapper} used to transform the values to be sent into JSON strings.
-     * @param failedToSendRepository Repository where messages that could not be transmitted are stored.
      */
     public MqttStreamer(
+            UUID aiidaId,
+            MqttAsyncClient client,
+            FailedToSendRepository failedToSendRepository,
+            ObjectMapper mapper,
             Permission permission,
             Flux<AiidaRecord> recordFlux,
-            Sinks.One<UUID> terminationRequestSink,
             MqttStreamingConfig streamingConfig,
-            MqttAsyncClient client,
-            ObjectMapper mapper,
-            FailedToSendRepository failedToSendRepository
+            Sinks.One<UUID> terminationRequestSink
     ) {
-        super(recordFlux, terminationRequestSink);
+        super(aiidaId, recordFlux, terminationRequestSink);
 
+        this.client = client;
+        this.failedToSendRepository = failedToSendRepository;
+        this.mapper = mapper;
         this.permission = permission;
         this.streamingConfig = streamingConfig;
-        this.client = client;
-        this.mapper = mapper;
-        this.failedToSendRepository = failedToSendRepository;
 
         client.setCallback(this);
     }

@@ -7,6 +7,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import energy.eddie.aiida.services.ApplicationInformationService;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,26 +22,33 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * The StreamerManager manages the lifecycle of {@link AiidaStreamer}. Other components should rely on the
- * StreamerManager for creating or stopping streamers.
+ * The StreamerManager manages the lifecycle of {@link AiidaStreamer}.
+ * Other components should rely on the StreamerManager for creating or stopping streamers.
  */
 @Component
 public class StreamerManager implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamerManager.class);
+    private final Aggregator aggregator;
+    private final UUID aiidaId;
+    private final FailedToSendRepository failedToSendRepository;
     private final ObjectMapper mapper;
     private final Map<UUID, AiidaStreamer> streamers;
-    private final Aggregator aggregator;
     private final Sinks.Many<UUID> terminationRequests;
-    private final FailedToSendRepository failedToSendRepository;
 
     /**
-     * The mapper is passed to the {@link AiidaStreamer} instances that which use it to convert POJOs to JSON. As the
-     * mapper is shared, make sure the used implementation is thread-safe and supports sharing.
+     * The mapper is passed to the {@link AiidaStreamer} instances that which use it to convert POJOs to JSON.
+     * As the mapper is shared, make sure the used implementation is thread-safe and supports sharing.
      */
     @Autowired
-    public StreamerManager(ObjectMapper mapper, Aggregator aggregator, FailedToSendRepository failedToSendRepository) {
+    public StreamerManager(
+            ObjectMapper mapper,
+            Aggregator aggregator,
+            ApplicationInformationService applicationInformationService,
+            FailedToSendRepository failedToSendRepository
+    ) {
         this.mapper = mapper;
         this.aggregator = aggregator;
+        this.aiidaId = applicationInformationService.applicationInformation().aiidaId();
         this.failedToSendRepository = failedToSendRepository;
 
         streamers = new HashMap<>();
@@ -48,8 +56,8 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Creates a new {@link AiidaStreamer} for the specified permission and stores it internally. The created streamer
-     * will receive any matching {@link AiidaRecord} as requested by the data need of the permission.
+     * Creates a new {@link AiidaStreamer} for the specified permission and stores it internally.
+     * The created streamer will receive any matching {@link AiidaRecord} as requested by the data need of the permission.
      *
      * @param permission Permission for which an AiidaStreamer should be created.
      * @throws IllegalArgumentException If an AiidaStreamer for the passed permission has already been created.
@@ -91,11 +99,12 @@ public class StreamerManager implements AutoCloseable {
                 }
             });
 
-            var streamer = StreamerFactory.getAiidaStreamer(permission,
-                                                            recordFlux,
-                                                            streamerTerminationRequestSink,
+            var streamer = StreamerFactory.getAiidaStreamer(aiidaId,
+                                                            failedToSendRepository,
                                                             mapper,
-                                                            failedToSendRepository);
+                                                            permission,
+                                                            recordFlux,
+                                                            streamerTerminationRequestSink);
             streamer.connect();
             streamers.put(id, streamer);
         } else {
@@ -104,8 +113,8 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Returns a Flux on which the ID of a permission is published, when the EP requests a termination for this
-     * permission. The Flux allows only one subscriber and buffers, ensuring no values get lost.
+     * Returns a Flux on which the ID of a permission is published when the EP requests a termination for this permission.
+     * The Flux allows only one subscriber and buffers, ensuring no values get lost.
      *
      * @return Flux of permissionIDs for which the EP requested termination.
      */
@@ -131,7 +140,7 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Closes all streamer to allow for an orderly shutdown. Note that this blocks until all streamers have finished
+     * Closes all streamers to allow for an orderly shutdown. Note that this blocks until all streamers have finished
      * closing, which may be indefinitely in the current implementation.
      */
     @Override
