@@ -5,6 +5,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.es.datadis.exceptions.EsValidationException;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -71,7 +72,7 @@ public class PermissionController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedPermissionRequest> requestPermission(
             @Valid @RequestBody PermissionRequestForCreation requestForCreation
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException, EsValidationException {
         var permissionRequest = service.createAndSendPermissionRequest(requestForCreation);
 
         var permissionId = permissionRequest.permissionId();

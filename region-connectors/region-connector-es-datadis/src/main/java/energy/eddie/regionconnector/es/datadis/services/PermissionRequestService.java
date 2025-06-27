@@ -13,12 +13,14 @@ import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsume
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.es.datadis.exceptions.EsValidationException;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsCreatedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsMalformedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsValidatedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
+import energy.eddie.regionconnector.es.datadis.validation.IdentifierValidator;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -89,11 +91,6 @@ public class PermissionRequestService {
                 );
     }
 
-    private EsPermissionRequest getPermissionRequestById(String permissionId) throws PermissionNotFoundException {
-        return repository.findByPermissionId(permissionId)
-                         .orElseThrow(() -> new PermissionNotFoundException(permissionId));
-    }
-
     public void rejectPermission(String permissionId) throws PermissionNotFoundException {
         var permissionRequest = getPermissionRequestById(permissionId);
         LOGGER.atInfo()
@@ -113,7 +110,7 @@ public class PermissionRequestService {
      */
     public CreatedPermissionRequest createAndSendPermissionRequest(
             PermissionRequestForCreation requestForCreation
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException, EsValidationException {
         LOGGER.info("Got request to create a new permission, request was: {}", requestForCreation);
         var permissionId = UUID.randomUUID().toString();
         var dataNeedId = requestForCreation.dataNeedId();
@@ -122,6 +119,12 @@ public class PermissionRequestService {
                                          dataNeedId,
                                          requestForCreation.nif(),
                                          requestForCreation.meteringPointId()));
+        var isValid = new IdentifierValidator().isValidIdentifier(requestForCreation.nif());
+        if (!isValid) {
+            var error = new AttributeError("nif", "Invalid NIF");
+            outbox.commit(new EsMalformedEvent(permissionId, List.of(error)));
+            throw new EsValidationException(error);
+        }
         var calculation = calculationService.calculate(dataNeedId);
         switch (calculation) {
             case DataNeedNotFoundResult ignored -> {
@@ -146,6 +149,16 @@ public class PermissionRequestService {
         }
         var accessToken = jwtUtil.createJwt(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
         return new CreatedPermissionRequest(permissionId, accessToken);
+    }
+
+    public void terminatePermission(String permissionId) throws PermissionNotFoundException {
+        var permissionRequest = getPermissionRequestById(permissionId);
+        outbox.commit(new EsSimpleEvent(permissionRequest.permissionId(), PermissionProcessStatus.TERMINATED));
+    }
+
+    private EsPermissionRequest getPermissionRequestById(String permissionId) throws PermissionNotFoundException {
+        return repository.findByPermissionId(permissionId)
+                         .orElseThrow(() -> new PermissionNotFoundException(permissionId));
     }
 
     private void handleValidatedHistoricalDataNeed(
@@ -188,10 +201,5 @@ public class PermissionRequestService {
             return AllowedGranularity.PT1H;
         }
         return AllowedGranularity.PT15M;
-    }
-
-    public void terminatePermission(String permissionId) throws PermissionNotFoundException {
-        var permissionRequest = getPermissionRequestById(permissionId);
-        outbox.commit(new EsSimpleEvent(permissionRequest.permissionId(), PermissionProcessStatus.TERMINATED));
     }
 }
