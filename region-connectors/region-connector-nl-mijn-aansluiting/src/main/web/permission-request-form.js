@@ -10,21 +10,9 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
     coreUrl: { attribute: "core-url" },
+    dataNeedType: { attribute: "data-need-type" },
     _isPermissionRequestCreated: { type: Boolean },
-    _dataNeed: {
-      type: {
-        type: String,
-      },
-    },
   };
-
-  async connectedCallback() {
-    super.connectedCallback();
-    const resp = await fetch(
-      `${this.coreUrl}/data-needs/api/${this.dataNeedId}`
-    );
-    this._dataNeed = await resp.json();
-  }
 
   handleSubmit(event) {
     event.preventDefault();
@@ -58,15 +46,15 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             placeholder="House Number"
             required
           ></sl-input>
-          ${this._dataNeed.type === "account"
-            ? html` <sl-input
+          ${this.dataNeedType === "account"
+            ? html`<sl-input
                 label="Postal Code"
                 type="text"
                 pattern="\\d{4}[A-Z]{2}"
                 helpText="This is the postal code of your address."
                 name="postalCode"
                 placeholder="Postal Code"
-                required=""
+                required
               ></sl-input>`
             : ``}
           <p>

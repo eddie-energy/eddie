@@ -82,8 +82,7 @@ public class PermissionRequestService {
             case AccountingPointDataNeedResult(Timeframe permissionTimeframe) ->
                     createAccountingPointDataPermissionRequest(permissionRequest, permissionTimeframe, permissionId);
             case ValidatedHistoricalDataDataNeedResult vhdResult -> {
-                var authorizationUrl = oAuthManager.createAuthorizationUrl(permissionRequest.verificationCode()
-                );
+                var authorizationUrl = oAuthManager.createAuthorizationUrl(permissionRequest.verificationCode());
                 outbox.commit(new NlValidatedEvent(permissionId,
                                                    authorizationUrl.state(),
                                                    authorizationUrl.codeVerifier(),
@@ -108,9 +107,7 @@ public class PermissionRequestService {
             throw new PermissionNotFoundException(permissionId);
         }
         try {
-            permissionId = oAuthManager.processCallback(fullUri,
-                                                        permissionId
-            );
+            permissionId = oAuthManager.processCallback(fullUri, permissionId);
             LOGGER.info("Permission request {} accepted.", permissionId);
             status = PermissionProcessStatus.ACCEPTED;
         } catch (UserDeniedAuthorizationException e) {
@@ -164,8 +161,7 @@ public class PermissionRequestService {
             outbox.commit(new NlMalformedEvent(permissionId, List.of(error)));
             throw new NlValidationException(error);
         }
-        var authorizationUrl = oAuthManager.createAuthorizationUrl(houseNumber
-        );
+        var authorizationUrl = oAuthManager.createAuthorizationUrl(houseNumber);
         outbox.commit(new NlAccountingPointValidatedEvent(
                 permissionId,
                 authorizationUrl.state(),
