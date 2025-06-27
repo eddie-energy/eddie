@@ -25,6 +25,7 @@ import reactor.core.scheduler.Schedulers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class MqttStreamer extends AiidaStreamer implements MqttCallback {
@@ -196,12 +197,14 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                      aiidaRecord);
 
         try {
-            var schemas = (permission.dataNeed() == null) ? List.of(AiidaSchema.SMART_METER_P1_RAW) : permission.dataNeed()
-                                                                                                                .schemas();
+            var schemas = Set.of(AiidaSchema.SMART_METER_P1_RAW);
+            if (permission.dataNeed() != null) {
+                schemas = permission.dataNeed().schemas();
+            }
 
             for (var schema : schemas) {
-                var schemaFormatter = SchemaFormatter.getFormatter(schema);
-                var messageData = schemaFormatter.toSchema(aiidaRecord, mapper);
+                var schemaFormatter = SchemaFormatter.getFormatter(aiidaId, schema);
+                var messageData = schemaFormatter.toSchema(aiidaRecord, mapper, permission);
                 publishMessage(streamingConfig.dataTopic(), messageData);
             }
         } catch (RuntimeException exception) {
@@ -223,8 +226,8 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         }
 
         try {
-            // if client is not connected, it will not save published messages to its persistence module, but instead
-            // throws an exception, therefore we need to manually save messages that failed to send
+            // If a client is not connected, it will not save published messages to its persistence module, but instead
+            // throws an exception. Therefore, we need to manually save messages that failed to send.
             client.publish(topic, payload, 1, false);
         } catch (MqttException exception) {
             LOGGER.atTrace()
