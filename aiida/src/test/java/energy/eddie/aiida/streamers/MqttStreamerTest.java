@@ -42,6 +42,7 @@ class MqttStreamerTest {
     private static final String EXPECTED_DATA_TOPIC = "aiida/v1/permission-id/data";
     private static final String EXPECTED_STATUS_TOPIC = "aiida/v1/permission-id/status";
     private static final String EXPECTED_TERMINATION_TOPIC = "aiida/v1/permission-id/termination";
+    private static final UUID aiidaId = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private final TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
@@ -97,13 +98,14 @@ class MqttStreamerTest {
         mqttStreamingConfig = new MqttStreamingConfig(permissionId, mqttDto);
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
 
-        streamer = new MqttStreamer(new Permission(),
-                                    recordPublisher.flux(),
-                                    terminationSink,
-                                    mqttStreamingConfig,
+        streamer = new MqttStreamer(aiidaId,
                                     mockClient,
+                                    mockRepository,
                                     mockMapper,
-                                    mockRepository);
+                                    new Permission(),
+                                    recordPublisher.flux(),
+                                    mqttStreamingConfig,
+                                    terminationSink);
     }
 
 

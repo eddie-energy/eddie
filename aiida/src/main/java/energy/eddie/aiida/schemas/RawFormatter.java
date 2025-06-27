@@ -2,12 +2,13 @@ package energy.eddie.aiida.schemas;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 
 public class RawFormatter extends SchemaFormatter {
 
     @Override
-    public byte[] toSchema(AiidaRecord aiidaRecord, ObjectMapper objectMapper)  {
+    public byte[] toSchema(AiidaRecord aiidaRecord, ObjectMapper objectMapper, Permission ignored) {
         try {
             return objectMapper.writeValueAsBytes(aiidaRecord);
         } catch (JsonProcessingException e) {
