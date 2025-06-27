@@ -1,0 +1,347 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+            elementFormDefault="qualified" targetNamespace="urn:entsoe.eu:wgedi:codelists:1.04">
+    <xsd:annotation>
+        <xsd:documentation>
+            <Version>91</Version>
+            <Titre>Complete compilation of ENTSO-E Code Lists used by ENTSO-E XML electronic documents and CIM XML
+                electronic documents.
+            </Titre>
+            <Release>0</Release>
+            <ReleaseDate>2023-12-14</ReleaseDate>
+        </xsd:documentation>
+    </xsd:annotation>
+    <xsd:simpleType name="LocalAllocationModeType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalAnalogType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalAssetType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalAuctionType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalBusinessType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalCategoryType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalClassificationType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalCodingSchemeType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="NAU">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Australia</Title>
+                            <Definition>The Commonwealth of Australia</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="NNZ">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>New Zealand</Title>
+                            <Definition>New Zealand</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="NUS">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>United States of America (the)</Title>
+                            <Definition>The United States of America</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="NCA">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Canada</Title>
+                            <Definition>Canada</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalCoordinateSystemType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalContractType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalCurrencyType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="BAM"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalCurveType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalDirectionType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalEicType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalEnergyProductType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="8716867000016"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalFuelType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalHVDCModeType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalIndicatorType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalMessageType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="Z01">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Permission administration document</Title>
+                            <Definition>Permission administration document</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="Z02">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Permission termination document</Title>
+                            <Definition>Permission termination document</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalMarketProductType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalObjectAggregationType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalPaymentTermsType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalPriceCategoryType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalPriceComponentType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalPriceDirectionType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalProcessType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalQualityType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalReasonCodeType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="Z01">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Fulfilled</Title>
+                            <Definition>The action is fulfilled.</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="Z02">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Cancelled user</Title>
+                            <Definition>The action is canceled by the user.</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="Z03">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Cancelled eligible party</Title>
+                            <Definition>The action is canceled by the eligible party.</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalRightsType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalRoleType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="Z01">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Competent Authority</Title>
+                            <Definition>Refer to role model definitions in the ENTSO-E Harmonised Role Model Document.
+                            </Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="Z02">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Identity Service Provider</Title>
+                            <Definition>Refer to role model definitions in the ENTSO-E Harmonised Role Model Document.
+                            </Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="Z03">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Permission administrator</Title>
+                            <Definition>Refer to role model definitions in the ENTSO-E Harmonised Role Model Document.
+                            </Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalStatusType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="Z01">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Fulfilled</Title>
+                            <Definition>The action is fuifilled.</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="Z02">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Cancelled user</Title>
+                            <Definition>The action is cancelled by the user.</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="Z03">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>Cancelled eligible party</Title>
+                            <Definition>The action is cancelled by the user.</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalTarifTypeType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalTimeframeType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalUnitMultiplier">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalUnitOfMeasureType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A59"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalUnitSymbol">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="AMP"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LocalDocumentType">
+        <xsd:restriction base="xsd:NMTOKEN">
+            <xsd:enumeration value="A01"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>
