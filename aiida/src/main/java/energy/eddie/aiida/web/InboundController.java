@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.UUID;
@@ -21,6 +22,8 @@ import java.util.UUID;
 @RequestMapping("/inbound")
 @Tag(name = "Inbound Controller")
 public class InboundController {
+    private static final String BEARER_PREFIX = "Bearer ";
+
     private final InboundService inboundService;
 
     public InboundController(InboundService inboundService) {
@@ -29,8 +32,16 @@ public class InboundController {
 
     @Operation(summary = "Get latest inbound record for data source")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = InboundRecord.class))})
-    @GetMapping(value = "/latest/{accessCode}/{dataSourceId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<InboundRecord> latestRecord(@PathVariable String accessCode, @PathVariable UUID dataSourceId) throws UnauthorizedException {
-        return ResponseEntity.ok(inboundService.latestRecord(accessCode, dataSourceId));
+    @GetMapping(value = "/latest/{dataSourceId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<InboundRecord> latestRecord(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable UUID dataSourceId
+    ) throws UnauthorizedException {
+        if (authorizationHeader != null && authorizationHeader.startsWith(BEARER_PREFIX)) {
+            var accessCode = authorizationHeader.replace(BEARER_PREFIX, "");
+            return ResponseEntity.ok(inboundService.latestRecord(accessCode, dataSourceId));
+        }
+
+        throw new UnauthorizedException("Authorization header is missing or invalid");
     }
 }

@@ -9,6 +9,7 @@ import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.models.permission.Permission;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -24,7 +25,7 @@ public class InboundDataSource extends MqttDataSource {
 
     public InboundDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
         super(dto, userId, dataSourceMqttDto);
-        this.accessCode = SecretGenerator.generate();
+        this.accessCode = BCrypt.hashpw(SecretGenerator.generate(), BCrypt.gensalt());
     }
 
     public static class Builder  {

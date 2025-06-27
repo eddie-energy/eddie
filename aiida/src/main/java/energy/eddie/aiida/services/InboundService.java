@@ -8,6 +8,7 @@ import energy.eddie.aiida.repositories.InboundRecordRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -31,7 +32,7 @@ public class InboundService {
                 .orElseThrow(() -> new EntityNotFoundException("Datasource not found with ID: " + dataSourceId));
 
         if (dataSource instanceof InboundDataSource inboundDataSource) {
-            if (!inboundDataSource.accessCode().equals(accessCode)) {
+            if (!BCrypt.checkpw(accessCode, inboundDataSource.accessCode())) {
                 throw new UnauthorizedException("Access code does not match for data source with ID: " + dataSourceId);
             }
 
