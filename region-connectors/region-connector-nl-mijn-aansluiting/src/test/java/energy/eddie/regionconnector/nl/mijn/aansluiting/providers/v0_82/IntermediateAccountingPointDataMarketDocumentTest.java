@@ -34,18 +34,16 @@ class IntermediateAccountingPointDataMarketDocumentTest {
 
     @ParameterizedTest
     @MethodSource("toAp_returnsAccountingPoints")
+    // Mapping code requires that many assertions
     @SuppressWarnings("java:S5961")
-        // Mapping code requires that many assertions
     void toAp_returnsAccountingPoints(MeteringPoint.ProductEnum product, CommodityKind commodity) throws IOException {
         // Given
         var meteringPoints = apMapper.loadTestJson("codeboek_response.json");
         meteringPoints.getMeteringPoints().getFirst().setProduct(product);
         var config = createConfig();
         var pr = createPermissionRequest();
-        var identifiableAccountingPointData = new IdentifiableAccountingPointData(pr,
-                                                                                  meteringPoints.getMeteringPoints());
-        var intermediateDoc = new IntermediateAccountingPointDataMarketDocument(identifiableAccountingPointData,
-                                                                                config);
+        var data = new IdentifiableAccountingPointData(pr, meteringPoints.getMeteringPoints());
+        var intermediateDoc = new IntermediateAccountingPointDataMarketDocument(data, config);
 
         // When
         var res = intermediateDoc.toAp();
@@ -101,10 +99,8 @@ class IntermediateAccountingPointDataMarketDocumentTest {
         var meteringPoints = apMapper.loadTestJson("codeboek_response_without_address.json");
         var config = createConfig();
         var pr = createPermissionRequest();
-        var identifiableAccountingPointData = new IdentifiableAccountingPointData(pr,
-                                                                                  meteringPoints.getMeteringPoints());
-        var intermediateDoc = new IntermediateAccountingPointDataMarketDocument(identifiableAccountingPointData,
-                                                                                config);
+        var data = new IdentifiableAccountingPointData(pr, meteringPoints.getMeteringPoints());
+        var intermediateDoc = new IntermediateAccountingPointDataMarketDocument(data, config);
 
         // When
         var res = intermediateDoc.toAp();
@@ -130,10 +126,8 @@ class IntermediateAccountingPointDataMarketDocumentTest {
         Objects.requireNonNull(meteringPoints.getMeteringPoints().getFirst().getAddress()).setStreetNumber(null);
         var config = createConfig();
         var pr = createPermissionRequest();
-        var identifiableAccountingPointData = new IdentifiableAccountingPointData(pr,
-                                                                                  meteringPoints.getMeteringPoints());
-        var intermediateDoc = new IntermediateAccountingPointDataMarketDocument(identifiableAccountingPointData,
-                                                                                config);
+        var data = new IdentifiableAccountingPointData(pr, meteringPoints.getMeteringPoints());
+        var intermediateDoc = new IntermediateAccountingPointDataMarketDocument(data, config);
 
         // When
         var res = intermediateDoc.toAp();
