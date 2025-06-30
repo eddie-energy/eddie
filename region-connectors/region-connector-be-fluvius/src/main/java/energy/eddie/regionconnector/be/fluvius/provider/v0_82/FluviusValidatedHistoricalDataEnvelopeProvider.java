@@ -27,7 +27,7 @@ public class FluviusValidatedHistoricalDataEnvelopeProvider implements Validated
         this.dataNeedsService = dataNeedsService;
     }
 
-    public IntermediateValidatedHistoricalDocument getIntermediateVHD(IdentifiableMeteringData identifiableMeteringData) {
+    private IntermediateValidatedHistoricalDocument getIntermediateVHD(IdentifiableMeteringData identifiableMeteringData) {
         return new IntermediateValidatedHistoricalDocument(fluviusConfig, identifiableMeteringData, dataNeedsService);
     }
 
