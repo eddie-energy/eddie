@@ -504,7 +504,11 @@ function renderDataSources() {
 
           <dt>MQTT Password:</dt>
           <dd>
-            <span hidden class="mqtt-password" id="mqtt-password-${dataSource.id}">
+            <span
+              hidden
+              class="mqtt-password"
+              id="mqtt-password-${dataSource.id}"
+            >
               ${dataSource.mqttSettings.password}
             </span>
             <span>********</span>
@@ -542,7 +546,7 @@ function renderDataSources() {
       ) {
         template.innerHTML = /* HTML */ `
           <sl-card>
-            <h3>${dataSource.name}</h3>
+            <h3>${dataSource.countryCode} - ${dataSource.name}</h3>
 
             <dl class="details-list">
               <dt>ID:</dt>
@@ -646,6 +650,14 @@ function openAddDataSourceDialog() {
       required
     ></sl-input>
     <br />
+    <sl-select
+      id="country-code-type"
+      name="countryCode"
+      label="Country"
+      required
+    >
+    </sl-select>
+    <br />
     <sl-checkbox name="enabled" checked>Enabled</sl-checkbox>
     <br />
     <br />
@@ -662,6 +674,14 @@ function openAddDataSourceDialog() {
     <div id="data-source-fields"></div>`;
 
   const dialog = document.getElementById("add-data-source-dialog");
+  const supportedCountryCodes = ["AT", "FR", "NL"];
+  const countryCodeSelect = document.getElementById("country-code-type");
+  countryCodeSelect.innerHTML = supportedCountryCodes
+    .map(
+      (countryCode) =>
+        `<sl-option value="${countryCode}">${countryCode}</sl-option>`
+    )
+    .join("");
   const dataSourceSelect = document.getElementById("data-source-type");
   const assetSelect = document.getElementById("asset-type");
 
@@ -762,6 +782,11 @@ function openEditDataSourceDialog(dataSourceId) {
               required
             ></sl-input>
             <br />
+            <input
+              name="countryCode"
+              value="${dataSource.countryCode}"
+              type="hidden"
+            />
             <sl-checkbox name="enabled" ${dataSource.enabled ? "checked" : ""}>
               Enabled
             </sl-checkbox>
@@ -949,6 +974,7 @@ document
 
     const newDataSource = {
       name: formData.get("name"),
+      countryCode: formData.get("countryCode"),
       enabled: formData.get("enabled") === "on",
       asset: document.getElementById("asset-type").value,
       dataSourceType: document.getElementById("data-source-type").value,
@@ -1006,6 +1032,7 @@ document
     const updatedDataSource = {
       id: dataSourceId,
       name: formData.get("name"),
+      countryCode: formData.get("countryCode"),
       enabled: formData.get("enabled") === "on",
       asset: document.getElementById("asset-select").value,
       dataSourceType: formData.get("dataSourceType"),
