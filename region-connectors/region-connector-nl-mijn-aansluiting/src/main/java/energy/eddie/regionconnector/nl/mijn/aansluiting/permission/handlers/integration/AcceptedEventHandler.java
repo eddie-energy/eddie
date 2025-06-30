@@ -6,7 +6,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -54,7 +54,7 @@ public class AcceptedEventHandler implements EventHandler<PermissionEvent> {
         }
     }
 
-    private void pollValidatedHistoricalData(NlPermissionRequest request) {
+    private void pollValidatedHistoricalData(MijnAansluitingPermissionRequest request) {
         if (request.start().isBefore(LocalDate.now(NL_ZONE_ID))) {
             LOGGER.atInfo()
                   .addArgument(request::permissionId)

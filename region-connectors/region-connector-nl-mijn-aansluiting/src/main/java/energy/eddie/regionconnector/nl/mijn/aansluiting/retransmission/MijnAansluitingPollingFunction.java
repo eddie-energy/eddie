@@ -5,7 +5,7 @@ import energy.eddie.api.agnostic.retransmission.result.DataNotAvailable;
 import energy.eddie.api.agnostic.retransmission.result.Failure;
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
 import energy.eddie.api.agnostic.retransmission.result.Success;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
 import energy.eddie.regionconnector.shared.retransmission.PollingFunction;
 import org.springframework.stereotype.Component;
@@ -15,14 +15,14 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 @Component
-public class MijnAansluitingPollingFunction implements PollingFunction<NlPermissionRequest> {
+public class MijnAansluitingPollingFunction implements PollingFunction<MijnAansluitingPermissionRequest> {
     private final PollingService pollingService;
 
     public MijnAansluitingPollingFunction(PollingService pollingService) {this.pollingService = pollingService;}
 
     @Override
     public Mono<RetransmissionResult> poll(
-            NlPermissionRequest permissionRequest,
+            MijnAansluitingPermissionRequest permissionRequest,
             RetransmissionRequest retransmissionRequest
     ) {
         var permissionId = permissionRequest.permissionId();

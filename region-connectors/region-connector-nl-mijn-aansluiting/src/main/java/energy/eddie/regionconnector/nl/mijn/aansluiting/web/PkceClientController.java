@@ -6,15 +6,18 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.exceptions.NlValidationException;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriTemplate;
@@ -35,11 +38,11 @@ public class PkceClientController {
         this.service = service;
     }
 
-    @PostMapping(PATH_PERMISSION_REQUEST)
+    @PostMapping(value = PATH_PERMISSION_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedPermissionRequest> permissionRequest(
-            @RequestBody PermissionRequestForCreation permissionRequest,
+            @RequestBody @Valid PermissionRequestForCreation permissionRequest,
             HttpServletResponse response
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, NlValidationException {
         var newPermission = service.createPermissionRequest(permissionRequest);
         URI location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
                 .expand(newPermission.permissionId());

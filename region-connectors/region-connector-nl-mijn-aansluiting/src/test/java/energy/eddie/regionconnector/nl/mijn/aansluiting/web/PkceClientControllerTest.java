@@ -97,6 +97,20 @@ class PkceClientControllerTest {
     }
 
     @Test
+    void testCreatePermissionRequest_onInvalidBody_returnsBadRequest() throws Exception {
+        // Given
+        var pr = new PermissionRequestForCreation("cid", "dnid", "12", "asdf");
+
+        // When
+        var content = mapper.writeValueAsString(pr);
+        mockMvc.perform(post("/permission-request")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(content))
+               // Then
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void testPermissionRequestStatus_returnsPermissionRequestStatus() throws Exception {
         // Given
         var timestamp = ZonedDateTime.of(2024, 4, 18, 0, 0, 0, 0, ZoneOffset.UTC);

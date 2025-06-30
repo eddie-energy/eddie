@@ -50,7 +50,7 @@ class InternalPollingHandlerTest {
                                                       now.minusDays(10),
                                                       today.minusDays(10),
                                                       today.minusDays(1),
-                                                      Granularity.P1D);
+                                                      Granularity.P1D, "11", "999AB");
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(pr));
 
         // When
@@ -79,7 +79,7 @@ class InternalPollingHandlerTest {
                                                       now.minusDays(10),
                                                       today.minusDays(10),
                                                       today.plusDays(1),
-                                                      Granularity.P1D);
+                                                      Granularity.P1D, "11", "999AB");
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(pr));
 
         // When

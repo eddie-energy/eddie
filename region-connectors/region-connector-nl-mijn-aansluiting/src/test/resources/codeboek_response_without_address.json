@@ -1,0 +1,14 @@
+{
+  "meteringPoints": [
+    {
+      "ean": "871694840000000000",
+      "address": null,
+      "product": "ELK",
+      "organisation": "ESDN",
+      "gridOperatorEan": "8716948000000",
+      "specialMeteringPoint": false,
+      "gridArea": "871694830000000000",
+      "bagId": "0010010000000000"
+    }
+  ]
+}
