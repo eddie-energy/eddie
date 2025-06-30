@@ -198,7 +198,7 @@ public class DataSourceService {
     }
 
     private void startDataSource(DataSource dataSource) throws ModbusConnectionException {
-        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper);
+        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper, mqttConfiguration);
         dataSourceAdapters.add(dataSourceAdapter);
 
         if (dataSource.enabled()) {

@@ -8,7 +8,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 public record MqttConfiguration(
         String internalHost,
         String externalHost,
-        int bCryptSaltRounds
+        int bCryptSaltRounds,
+        String username,
+        String password
 ) {
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
