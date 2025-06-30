@@ -10,24 +10,24 @@ import energy.eddie.regionconnector.be.fluvius.client.model.*;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
 import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 
 import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public final class IntermediateValidatedHistoricalDocument {
+final class IntermediateValidatedHistoricalDocument {
 
     private final FluviusOAuthConfiguration fluviusConfig;
     private final IdentifiableMeteringData identifiableMeteredData;
     private final FluviusPermissionRequest fluviusPermissionRequest;
     private final DataNeedsService dataNeedsService;
-    private final String EST = "EST";
-    private final String READ = "READ";
+    private static final String EST = "EST";
+    private static final String READ = "READ";
 
     IntermediateValidatedHistoricalDocument(
             FluviusOAuthConfiguration fluviusConfiguration,
@@ -42,72 +42,76 @@ public final class IntermediateValidatedHistoricalDocument {
 
     public List<ValidatedHistoricalDataEnvelope> getVHD() {
         GetEnergyResponseModel meteringData = identifiableMeteredData.payload().getData();
-        EnergyType type = ((ValidatedHistoricalDataDataNeed) dataNeedsService.getById(identifiableMeteredData.permissionRequest().dataNeedId())).energyType();
-
-        if (meteringData != null) {
-            switch (type) {
-                case ELECTRICITY -> {
-                    return getElectricityVHD(meteringData.getElectricityMeters(), meteringData.getFetchTime());
-                }
-                case NATURAL_GAS -> {
-                    return getGasVHD(meteringData.getGasMeters(), meteringData.getFetchTime());
-                }
-            }
+        
+        if (meteringData == null) {
+            return List.of();
         }
-        return null;
+        
+        EnergyType type = ((ValidatedHistoricalDataDataNeed) dataNeedsService.getById(identifiableMeteredData.permissionRequest().dataNeedId())).energyType();
+        return switch (type) {
+            case ELECTRICITY -> getElectricityVHD(meteringData.getElectricityMeters(), meteringData.getFetchTime());
+            case NATURAL_GAS -> getGasVHD(meteringData.getGasMeters(), meteringData.getFetchTime());
+            default -> throw new IllegalStateException("Unexpected energy type: " + type);
+        };
     }
 
     private List<ValidatedHistoricalDataEnvelope> getGasVHD(List<GasMeterResponseModel> gasMeteringData, OffsetDateTime fetchTime) {
-        List<ValidatedHistoricalDataEnvelope> vhds = new ArrayList<>();
-        if (gasMeteringData != null) {
-            gasMeteringData.forEach(meterResponse -> {
-                if (meterResponse.getSeqNumber() != null) {
-                    boolean offtakeDayValue = checkGDailyEnergyMeasurementValue(meterResponse.getDailyEnergy());
-                    boolean offtakeValue = checkGHourlyEnergyMeasurementValue(meterResponse.getHourlyEnergy());
-                    // No injection value in gas measurements
-                    DirectionTypeList flowDirection = getFlowDirection(offtakeDayValue, false, offtakeValue, false);
-                    String resolution = String.valueOf(getResolution(offtakeDayValue, false, offtakeValue, false));
-                    String seqNumber = meterResponse.getSeqNumber().toString();
-                    String meterId = meterResponse.getMeterID();
-                    Granularity granularity = fluviusPermissionRequest.granularity();
-                    UnitOfMeasureTypeList unit = UnitOfMeasureTypeList.fromValue(getUnit(granularity, meterResponse).toUpperCase());
-                    ESMPDateTimeIntervalComplexType periodIntervalTime = getPeriodTimeInterval(granularity, meterResponse);
-                    List<SeriesPeriodComplexType> seriesPeriods = getSeriesPeriods(granularity, meterResponse, resolution);
 
-                    ValidatedHistoricalDataMarketDocumentComplexType vhd = createVHD(flowDirection, fetchTime, seqNumber, meterId, unit, periodIntervalTime, seriesPeriods);
-                    vhds.add(new VhdEnvelope(vhd, identifiableMeteredData.permissionRequest()).wrap());
-                }
-            });
+        if(gasMeteringData == null) {
+            return List.of();
+        }
+
+        List<ValidatedHistoricalDataEnvelope> vhds = new ArrayList<>();
+        for(GasMeterResponseModel meterResponse : gasMeteringData ) {
+            if (meterResponse.getSeqNumber() != null) {
+                boolean offtakeDayValue = checkGDailyEnergyMeasurementValue(meterResponse.getDailyEnergy());
+                boolean offtakeValue = checkGHourlyEnergyMeasurementValue(meterResponse.getHourlyEnergy());
+                // No injection value in gas measurements
+                DirectionTypeList flowDirection = getFlowDirection(offtakeDayValue, false, offtakeValue, false);
+                String resolution = String.valueOf(getResolution(offtakeDayValue, false, offtakeValue, false));
+                String seqNumber = meterResponse.getSeqNumber().toString();
+                String meterId = meterResponse.getMeterID();
+                Granularity granularity = fluviusPermissionRequest.granularity();
+                UnitOfMeasureTypeList unit = UnitOfMeasureTypeList.fromValue(getUnit(granularity, meterResponse).toUpperCase());
+                ESMPDateTimeIntervalComplexType periodIntervalTime = getPeriodTimeInterval(granularity, meterResponse);
+                List<SeriesPeriodComplexType> seriesPeriods = getSeriesPeriods(granularity, meterResponse, resolution);
+
+                ValidatedHistoricalDataMarketDocumentComplexType vhd = createVHD(flowDirection, fetchTime, seqNumber, meterId, unit, periodIntervalTime, seriesPeriods);
+                vhds.add(new VhdEnvelope(vhd, identifiableMeteredData.permissionRequest()).wrap());
+            }
         }
         return vhds;
     }
 
     private List<ValidatedHistoricalDataEnvelope> getElectricityVHD(List<ElectricityMeterResponseModel> electricityMeteringData, OffsetDateTime fetchTime) {
-        List<ValidatedHistoricalDataEnvelope> vhds = new ArrayList<>();
-        if (electricityMeteringData != null) {
-            electricityMeteringData.forEach(meterResponse -> {
-                if (meterResponse.getSeqNumber() != null) {
-                    boolean offtakeDayValue = checkEDailyEnergyMeasurementValue(meterResponse.getDailyEnergy(), true);
-                    boolean injectionDayValue = checkEDailyEnergyMeasurementValue(meterResponse.getDailyEnergy(), false);
-                    boolean offtakeValue = checkEQuarterHourlyEnergyMeasurementValue(meterResponse.getQuarterHourlyEnergy(), true);
-                    boolean injectionValue = checkEQuarterHourlyEnergyMeasurementValue(meterResponse.getQuarterHourlyEnergy(), false);
-                    DirectionTypeList flowDirection = getFlowDirection(offtakeDayValue, injectionDayValue, offtakeValue, injectionValue);
-                    String resolution = String.valueOf(getResolution(offtakeDayValue, injectionDayValue, offtakeValue, injectionValue));
-                    String seqNumber = meterResponse.getSeqNumber().toString();
-                    String meterId = meterResponse.getMeterID();
-                    Granularity granularity = fluviusPermissionRequest.granularity();
-                    UnitOfMeasureTypeList unit = UnitOfMeasureTypeList.fromValue(getUnit(granularity, meterResponse).toUpperCase());
-                    ESMPDateTimeIntervalComplexType periodIntervalTime = getPeriodTimeInterval(granularity, meterResponse);
-                    boolean offtake = true;
-                    if (flowDirection != null && flowDirection.equals(DirectionTypeList.UP)) {
-                        offtake = false;
-                    }
-                    List<SeriesPeriodComplexType> seriesPeriods = getSeriesPeriods(granularity, meterResponse, resolution, offtake);
 
-                    ValidatedHistoricalDataMarketDocumentComplexType vhd = createVHD(flowDirection, fetchTime, seqNumber, meterId, unit, periodIntervalTime, seriesPeriods);
-                    vhds.add(new VhdEnvelope(vhd, identifiableMeteredData.permissionRequest()).wrap());
+        if(electricityMeteringData == null) {
+            return List.of();
+        }
+        
+        List<ValidatedHistoricalDataEnvelope> vhds = new ArrayList<>();
+        for(ElectricityMeterResponseModel meterResponse : electricityMeteringData) {
+            if (meterResponse.getSeqNumber() != null) {
+                boolean offtakeDayValue = checkEDailyEnergyMeasurementValue(meterResponse.getDailyEnergy(), true);
+                boolean injectionDayValue = checkEDailyEnergyMeasurementValue(meterResponse.getDailyEnergy(), false);
+                boolean offtakeValue = checkEQuarterHourlyEnergyMeasurementValue(meterResponse.getQuarterHourlyEnergy(), true);
+                boolean injectionValue = checkEQuarterHourlyEnergyMeasurementValue(meterResponse.getQuarterHourlyEnergy(), false);
+                DirectionTypeList flowDirection = getFlowDirection(offtakeDayValue, injectionDayValue, offtakeValue, injectionValue);
+                String resolution = String.valueOf(getResolution(offtakeDayValue, injectionDayValue, offtakeValue, injectionValue));
+                String seqNumber = meterResponse.getSeqNumber().toString();
+                String meterId = meterResponse.getMeterID();
+                Granularity granularity = fluviusPermissionRequest.granularity();
+                UnitOfMeasureTypeList unit = UnitOfMeasureTypeList.fromValue(getUnit(granularity, meterResponse).toUpperCase());
+                ESMPDateTimeIntervalComplexType periodIntervalTime = getPeriodTimeInterval(granularity, meterResponse);
+                boolean offtake = true;
+                if (flowDirection != null && flowDirection.equals(DirectionTypeList.UP)) {
+                    offtake = false;
                 }
-            });
+                List<SeriesPeriodComplexType> seriesPeriods = getSeriesPeriods(granularity, meterResponse, resolution, offtake);
+
+                ValidatedHistoricalDataMarketDocumentComplexType vhd = createVHD(flowDirection, fetchTime, seqNumber, meterId, unit, periodIntervalTime, seriesPeriods);
+                vhds.add(new VhdEnvelope(vhd, identifiableMeteredData.permissionRequest()).wrap());
+            }
         }
         return vhds;
     }
@@ -134,7 +138,7 @@ public final class IntermediateValidatedHistoricalDocument {
                 )
                 .withDescription(seqNumber)
                 .withPeriodTimeInterval(periodIntervalTime)
-                .withCreatedDateTime(fetchTime.toString())
+                .withCreatedDateTime(new EsmpDateTime(fetchTime.toZonedDateTime()).toString())
                 .withTimeSeriesList(
                         new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList()
                                 .withTimeSeries(
@@ -349,23 +353,19 @@ public final class IntermediateValidatedHistoricalDocument {
             nightValidationState = dailyMeasurement.getInjectionNightValidationState();
         }
 
-        if(dayValidationState != null && nightValidationState != null) {
-            if(dayValidationState.equals(EST) || nightValidationState.equals(EST)) {
-                return EST;
-            }
-        }
-
-        return READ;
+        return dayValidationState != null && nightValidationState != null &&
+               (dayValidationState.equals(EST) || nightValidationState.equals(EST))? EST :  READ;
     }
 
     private SeriesPeriodComplexType createSeriesPeriod(String resolution, OffsetDateTime timestampStart,
             OffsetDateTime timestampEnd) {
+        EsmpTimeInterval interval = new EsmpTimeInterval(timestampStart.toZonedDateTime(), timestampEnd.toZonedDateTime());
         return new SeriesPeriodComplexType()
                 .withResolution(resolution)
                 .withTimeInterval(
                         new ESMPDateTimeIntervalComplexType()
-                                .withStart(String.valueOf(timestampStart))
-                                .withEnd(String.valueOf(timestampEnd))
+                                .withStart(interval.start())
+                                .withEnd(interval.end())
                 );
     }
 
@@ -551,6 +551,7 @@ public final class IntermediateValidatedHistoricalDocument {
     }
 
     private ESMPDateTimeIntervalComplexType getPeriodTimeInterval(Granularity granularity, ElectricityMeterResponseModel electricityMeterResponse) {
+        ESMPDateTimeIntervalComplexType periodTimeInterval = new ESMPDateTimeIntervalComplexType();
         OffsetDateTime earliestTimestampStart = null;
         OffsetDateTime latestTimestampEnd = null;
 
@@ -592,12 +593,16 @@ public final class IntermediateValidatedHistoricalDocument {
             }
         }
 
-        return new ESMPDateTimeIntervalComplexType()
-                .withStart(String.valueOf(earliestTimestampStart))
-                .withEnd(String.valueOf(latestTimestampEnd));
+        if (earliestTimestampStart == null || latestTimestampEnd == null) {
+            return periodTimeInterval;
+        }
+
+        EsmpTimeInterval interval = new EsmpTimeInterval(earliestTimestampStart.toZonedDateTime(), latestTimestampEnd.toZonedDateTime());
+        return periodTimeInterval.withStart(interval.start()).withEnd(interval.end());
     }
 
     private ESMPDateTimeIntervalComplexType getPeriodTimeInterval(Granularity granularity, GasMeterResponseModel gasMeterResponse) {
+        ESMPDateTimeIntervalComplexType periodTimeInterval = new ESMPDateTimeIntervalComplexType();
         OffsetDateTime earliestTimestampStart = null;
         OffsetDateTime latestTimestampEnd = null;
 
@@ -639,8 +644,11 @@ public final class IntermediateValidatedHistoricalDocument {
             }
         }
 
-        return new ESMPDateTimeIntervalComplexType()
-                .withStart(String.valueOf(earliestTimestampStart))
-                .withEnd(String.valueOf(latestTimestampEnd));
+        if (earliestTimestampStart == null || latestTimestampEnd == null) {
+            return periodTimeInterval;
+        }
+
+        EsmpTimeInterval interval = new EsmpTimeInterval(earliestTimestampStart.toZonedDateTime(), latestTimestampEnd.toZonedDateTime());
+        return periodTimeInterval.withStart(interval.start()).withEnd(interval.end());
     }
 }
