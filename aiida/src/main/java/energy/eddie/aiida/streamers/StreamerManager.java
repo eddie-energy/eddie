@@ -41,10 +41,10 @@ public class StreamerManager implements AutoCloseable {
      */
     @Autowired
     public StreamerManager(
-            ObjectMapper mapper,
             Aggregator aggregator,
             ApplicationInformationService applicationInformationService,
-            FailedToSendRepository failedToSendRepository
+            FailedToSendRepository failedToSendRepository,
+            ObjectMapper mapper
     ) {
         this.mapper = mapper;
         this.aggregator = aggregator;

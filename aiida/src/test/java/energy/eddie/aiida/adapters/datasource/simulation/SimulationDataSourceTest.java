@@ -24,6 +24,7 @@ class SimulationDataSourceTest {
                               DataSourceType.SIMULATION,
                               AiidaAsset.SUBMETER,
                               "simulation",
+                              "AT",
                               true,
                               1,
                               null,

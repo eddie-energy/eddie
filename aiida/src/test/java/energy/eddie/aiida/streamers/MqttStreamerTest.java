@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.FailedToSendEntity;
+import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
@@ -11,6 +12,7 @@ import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -28,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static energy.eddie.aiida.models.record.UnitOfMeasurement.KILO_WATT_HOUR;
@@ -85,8 +88,9 @@ class MqttStreamerTest {
     private ConnectionStatusMessage mockStatusMessage;
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
+    private Permission permissionMock;
 
-    @BeforeEach
+    @BeforeEach()
     void setUp() {
         var mqttDto = new MqttDto("mqttUsername",
                                   "mqttPassword",
@@ -96,13 +100,14 @@ class MqttStreamerTest {
                                   EXPECTED_TERMINATION_TOPIC);
 
         mqttStreamingConfig = new MqttStreamingConfig(permissionId, mqttDto);
+        permissionMock = mock(Permission.class);
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
 
         streamer = new MqttStreamer(aiidaId,
                                     mockClient,
                                     mockRepository,
                                     mockMapper,
-                                    new Permission(),
+                                    permissionMock,
                                     recordPublisher.flux(),
                                     mqttStreamingConfig,
                                     terminationSink);
@@ -149,6 +154,8 @@ class MqttStreamerTest {
     @Test
     @SuppressWarnings("java:S2925")
     void givenAiidaRecord_sendsViaMqtt() throws MqttException, InterruptedException {
+        useReflectionToSetPermissionMock();
+
         // Given
         streamer.connect();
         // manually call callback
@@ -242,6 +249,8 @@ class MqttStreamerTest {
     @Test
     @SuppressWarnings("java:S2925")
     void givenExceptionWhileSending_savesToRepository() throws MqttException, InterruptedException, JsonProcessingException {
+        useReflectionToSetPermissionMock();
+
         // Given
         when(mockClient.publish(any(), any(), anyInt(), anyBoolean())).thenThrow(new MqttException(999));
         var json = "MyJson".getBytes(StandardCharsets.UTF_8);
@@ -294,5 +303,18 @@ class MqttStreamerTest {
         // Then
         verify(mockRepository).deleteAllById(any());
         verify(mockClient, times(1)).publish(anyString(), any(), anyInt(), anyBoolean());
+    }
+
+    private void useReflectionToSetPermissionMock() {
+        try {
+            var field = streamer.getClass().getDeclaredField("permission");
+            field.setAccessible(true);
+            var permissionReflection = (Permission) field.get(streamer);
+            var dataNeed = mock(AiidaLocalDataNeed.class);
+            when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
+            when(permissionReflection.dataNeed()).thenReturn(dataNeed);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
