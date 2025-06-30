@@ -3,8 +3,6 @@ package energy.eddie.regionconnector.aiida.mqtt;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
-import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
@@ -61,14 +59,14 @@ public class MqttService implements AutoCloseable {
      * @return MqttDto that contains the topics and the {@link MqttUser} with its password.
      * @throws IllegalArgumentException If there is already a MqttUser for the permissionId.
      */
-    public MqttDto createCredentialsAndAclForPermission(String permissionId, DataNeed dataNeed) throws CredentialsAlreadyExistException {
+    public MqttDto createCredentialsAndAclForPermission(String permissionId, boolean isInbound) throws CredentialsAlreadyExistException {
         LOGGER.info("Creating MQTT credentials and ACLs for permission {}", permissionId);
 
         if (userRepository.existsByPermissionId(permissionId))
             throw new CredentialsAlreadyExistException(permissionId);
 
         var wrapper = createAndSaveMqttUser(permissionId);
-        var topics = createAclsForUser(wrapper.user, dataNeed);
+        var topics = createAclsForUser(wrapper.user, isInbound);
 
         return new MqttDto(aiidaConfiguration.mqttServerUri(),
                            wrapper.user().username(),
@@ -99,13 +97,13 @@ public class MqttService implements AutoCloseable {
      * </ul>
      * No other ACLs are defined, make sure to properly configure your MQTT server with a deny-all for unmatched topics.
      */
-    private Topics createAclsForUser(MqttUser mqttUser, DataNeed dataNeed) {
+    private Topics createAclsForUser(MqttUser mqttUser, boolean isInbound) {
         var topics = new Topics(getTopicForPermission(mqttUser.permissionId(), TopicType.DATA),
                                 getTopicForPermission(mqttUser.permissionId(), TopicType.STATUS),
                                 getTopicForPermission(mqttUser.permissionId(), TopicType.TERMINATION));
 
         var dataAcl = new MqttAcl(mqttUser.username(),
-                                  dataNeed instanceof InboundAiidaDataNeed ? MqttAction.SUBSCRIBE : MqttAction.PUBLISH,
+                                  isInbound ? MqttAction.SUBSCRIBE : MqttAction.PUBLISH,
                                   MqttAclType.ALLOW,
                                   topics.publishTopic());
 

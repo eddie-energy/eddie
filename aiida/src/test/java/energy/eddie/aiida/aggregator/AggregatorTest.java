@@ -7,6 +7,7 @@ import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
+import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
@@ -79,7 +80,9 @@ class AggregatorTest {
     @Mock
     private Flux<AiidaRecord> mockFlux;
     @Mock
-    private AiidaRecordRepository mockRepository;
+    private AiidaRecordRepository mockAiidaRecordRepository;
+    @Mock
+    private InboundRecordRepository mockInboundRecordRepository;
 
     @BeforeEach
     void setUp() {
@@ -108,7 +111,7 @@ class AggregatorTest {
         expiration = Instant.now().plusSeconds(300_000);
         transmissionSchedule = CronExpression.parse("* * * * * *");
 
-        aggregator = new Aggregator(mockRepository, healthContributorRegistry);
+        aggregator = new Aggregator(mockAiidaRecordRepository, mockInboundRecordRepository, healthContributorRegistry);
     }
 
     @AfterEach
@@ -286,7 +289,7 @@ class AggregatorTest {
         publisher1.flux().blockLast(Duration.of(200, ChronoUnit.MILLIS));
         publisher2.flux().blockLast(Duration.of(200, ChronoUnit.MILLIS));
 
-        verify(mockRepository, times(2)).save(any(AiidaRecord.class));
+        verify(mockAiidaRecordRepository, times(2)).save(any(AiidaRecord.class));
     }
 
     /**

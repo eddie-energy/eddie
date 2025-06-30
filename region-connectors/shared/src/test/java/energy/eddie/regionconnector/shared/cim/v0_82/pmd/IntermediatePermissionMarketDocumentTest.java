@@ -39,7 +39,7 @@ class IntermediatePermissionMarketDocumentTest {
     public static Stream<Arguments> toPermissionMarketDocument_respectsDataNeed() {
         return Stream.of(
                 Arguments.of(new AccountingPointDataNeed(), ProcessTypeList.ACCOUNTINGPOINT_DATA),
-                Arguments.of(new AiidaDataNeed(Set.of()), ProcessTypeList.ACCESS_TO_METERED_DATA),
+                Arguments.of(new OutboundAiidaDataNeed(), ProcessTypeList.ACCESS_TO_METERED_DATA),
                 Arguments.of(new ValidatedHistoricalDataDataNeed(new RelativeDuration(Period.ofYears(1),
                                                                                       Period.ofYears(1),
                                                                                       null),

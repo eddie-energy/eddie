@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "aiida_data_need", schema = "data_needs")
 @SuppressWarnings("NullAway")
 public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaDataNeedInterface {
     @Column(name = "transmission_schedule", nullable = false)

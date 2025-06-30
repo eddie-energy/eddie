@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.aiida.mqtt;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
@@ -43,6 +44,8 @@ class MqttServiceTest {
     private AiidaPermissionRequest mockRequest;
     @Mock
     private AiidaConfiguration mockConfiguration;
+    @Mock
+    private AiidaDataNeed mockDataNeed;
     @Captor
     private ArgumentCaptor<MqttUser> mqttUserCaptor;
     @Captor
@@ -71,7 +74,7 @@ class MqttServiceTest {
 
         // When, Then
         assertThrows(CredentialsAlreadyExistException.class,
-                     () -> mqttService.createCredentialsAndAclForPermission("foo"));
+                     () -> mqttService.createCredentialsAndAclForPermission("foo", false));
     }
 
     @Test
@@ -87,7 +90,7 @@ class MqttServiceTest {
         when(mockConfiguration.mqttServerUri()).thenReturn(serverUri);
 
         // When
-        MqttDto dto = mqttService.createCredentialsAndAclForPermission(permissionId);
+        MqttDto dto = mqttService.createCredentialsAndAclForPermission(permissionId, false);
 
         // Then
         verify(mockUserRepository).save(mqttUserCaptor.capture());

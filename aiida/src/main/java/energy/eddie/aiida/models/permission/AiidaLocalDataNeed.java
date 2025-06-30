@@ -131,11 +131,9 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
         }
 
         public AiidaLocalDataNeed build() {
-            return switch (details.dataNeed().type()) {
-                case InboundAiidaDataNeed.DISCRIMINATOR_VALUE -> new InboundAiidaLocalDataNeed(details);
-                case OutboundAiidaDataNeed.DISCRIMINATOR_VALUE -> new OutboundAiidaLocalDataNeed(details);
-                default -> throw new IllegalArgumentException("Unknown data need type: " + details.dataNeed().type());
-            };
+            return details.dataNeed().type().equals(InboundAiidaDataNeed.DISCRIMINATOR_VALUE)
+                    ? new InboundAiidaLocalDataNeed(details)
+                    : new OutboundAiidaLocalDataNeed(details);
         }
     }
 }

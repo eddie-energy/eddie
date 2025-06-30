@@ -320,11 +320,14 @@ class AiidaPermissionServiceTest {
     }
 
     @Test
-    void givenValidInput_acceptPermission_subscribeToStatusTopic_throwsException() throws CredentialsAlreadyExistException, PermissionNotFoundException, PermissionStateTransitionException, MqttException {
+    void givenValidInput_acceptPermission_subscribeToStatusTopic_throwsException() throws CredentialsAlreadyExistException, PermissionNotFoundException, PermissionStateTransitionException, MqttException, DataNeedNotFoundException {
         // Given
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockViewRepository.findByPermissionId(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.dataNeedId()).thenReturn(dataNeedId);
+        when(mockDataNeedsService.findById(dataNeedId)).thenReturn(Optional.of(mockDataNeed));
         when(mockRequest.status()).thenReturn(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
-        when(mockMqttService.createCredentialsAndAclForPermission(permissionId)).thenReturn(mockMqttDto);
+        when(mockMqttService.createCredentialsAndAclForPermission(permissionId, false)).thenReturn(mockMqttDto);
         doThrow(MqttException.class).when(mockMqttService).subscribeToStatusTopic(permissionId);
 
         // When
@@ -336,11 +339,14 @@ class AiidaPermissionServiceTest {
     }
 
     @Test
-    void givenValidInput_acceptPermission_createsCredentials_andEmitsAcceptedAndCreatedCredentialsEvent() throws PermissionNotFoundException, PermissionStateTransitionException, CredentialsAlreadyExistException, MqttException, NoSuchFieldException, IllegalAccessException {
+    void givenValidInput_acceptPermission_createsCredentials_andEmitsAcceptedAndCreatedCredentialsEvent() throws PermissionNotFoundException, PermissionStateTransitionException, CredentialsAlreadyExistException, MqttException, NoSuchFieldException, IllegalAccessException, DataNeedNotFoundException {
         // Given
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockViewRepository.findByPermissionId(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.dataNeedId()).thenReturn(dataNeedId);
+        when(mockDataNeedsService.findById(dataNeedId)).thenReturn(Optional.of(mockDataNeed));
         when(mockRequest.status()).thenReturn(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
-        when(mockMqttService.createCredentialsAndAclForPermission(permissionId)).thenReturn(mockMqttDto);
+        when(mockMqttService.createCredentialsAndAclForPermission(permissionId, false)).thenReturn(mockMqttDto);
 
         // When
         service.acceptPermission(permissionId, aiidaId);

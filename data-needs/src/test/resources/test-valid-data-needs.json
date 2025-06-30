@@ -55,7 +55,7 @@
   },
   {
     "type": "outbound-aiida",
-    "id": "f7698978-b9fe-40c8-aebe-c997f7f58f2f",
+    "id": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
     "name": "FUTURE_NEAR_REALTIME_DATA",
     "description": "Inbound data read by AIIDA",
     "purpose": "purpose",

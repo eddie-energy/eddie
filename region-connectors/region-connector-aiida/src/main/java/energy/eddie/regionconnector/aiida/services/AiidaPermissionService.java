@@ -9,6 +9,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
@@ -152,7 +153,8 @@ public class AiidaPermissionService {
         outbox.commit(new AiidaIdReceivedEvent(permissionId, ACCEPTED, aiidaId));
 
         var permissionDetails = detailsForPermission(permissionId);
-        var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId, permissionDetails.dataNeed());
+        var dataNeed = permissionDetails.dataNeed();
+        var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId, dataNeed instanceof InboundAiidaDataNeed);
 
         outbox.commit(new MqttCredentialsCreatedEvent(permissionId, mqttDto.username()));
 

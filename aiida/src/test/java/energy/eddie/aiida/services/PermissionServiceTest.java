@@ -14,6 +14,7 @@ import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,7 +45,6 @@ import java.util.stream.Stream;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
 import static energy.eddie.aiida.models.permission.PermissionStatus.*;
-import static energy.eddie.dataneeds.needs.aiida.AiidaDataNeed.DISCRIMINATOR_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -90,6 +90,8 @@ class PermissionServiceTest {
     private MqttDto mockMqttDto;
     @Mock
     private AiidaLocalDataNeedService mockAiidaLocalDataNeedService;
+    @Mock
+    private DataSourceService mockDataSourceService;
     @Captor
     private ArgumentCaptor<Permission> permissionCaptor;
     private PermissionService service;
@@ -105,7 +107,8 @@ class PermissionServiceTest {
                                         mockHandshakeService,
                                         mockPermissionScheduler,
                                         mockAuthService,
-                                        mockAiidaLocalDataNeedService);
+                                        mockAiidaLocalDataNeedService,
+                                        mockDataSourceService);
     }
 
     @Test
@@ -180,7 +183,7 @@ class PermissionServiceTest {
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/23 * * * * *"));
         when(mockDataNeed.dataNeedId()).thenReturn(dataNeedId);
-        when(mockDataNeed.type()).thenReturn(DISCRIMINATOR_VALUE);
+        when(mockDataNeed.type()).thenReturn(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE);
         when(mockDataNeed.name()).thenReturn("My Name");
         when(mockDataNeed.purpose()).thenReturn("Some purpose");
         when(mockDataNeed.policyLink()).thenReturn("https://example.org");
@@ -210,7 +213,7 @@ class PermissionServiceTest {
         assertNotNull(dataNeed);
         assertEquals(dataNeedId, dataNeed.dataNeedId());
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
-        assertEquals(DISCRIMINATOR_VALUE, dataNeed.type());
+        assertEquals(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE, dataNeed.type());
         assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of("1.8.0", "2.7.0"));
         assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of(AiidaSchema.SMART_METER_P1_RAW));
     }
@@ -482,7 +485,8 @@ class PermissionServiceTest {
                                             mockHandshakeService,
                                             permissionScheduler,
                                             mockAuthService,
-                                            mockAiidaLocalDataNeedService);
+                                            mockAiidaLocalDataNeedService,
+                                            mockDataSourceService);
         }
 
         /**

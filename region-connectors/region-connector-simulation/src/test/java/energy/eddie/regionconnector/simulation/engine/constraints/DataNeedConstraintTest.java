@@ -5,7 +5,7 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.simulation.dtos.SimulatedValidatedHistoricalData;
 import energy.eddie.regionconnector.simulation.engine.constraints.results.ConstraintOk;
@@ -23,7 +23,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -80,7 +79,7 @@ class DataNeedConstraintTest {
         );
         var constraint = new DataNeedConstraint(dataNeedsService, ctx);
         when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(new AiidaDataNeed(Set.of())));
+                .thenReturn(Optional.of(new OutboundAiidaDataNeed()));
 
         // When
         var res = constraint.violatesConstraint(step);
