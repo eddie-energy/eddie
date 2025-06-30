@@ -16,6 +16,7 @@ class EsDatadisTest extends E2eTestSetup {
         page.getByLabel("CUPS").fill("bar");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
-        assertThat(page.locator("#nif")).hasJSProperty("validationMessage", "Invalid NIF");
+        var locator = page.getByText("Error: Invalid NIF");
+        assertThat(locator).isVisible();
     }
 }

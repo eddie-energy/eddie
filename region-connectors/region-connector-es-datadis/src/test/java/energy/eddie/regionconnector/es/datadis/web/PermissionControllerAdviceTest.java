@@ -41,6 +41,6 @@ class PermissionControllerAdviceTest {
                                 .content(new ObjectMapper().writeValueAsString(content)))
                // Then
                .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("$.nif.[0].message").value("msg"));
+               .andExpect(jsonPath("$.errors.[0].message").value("msg"));
     }
 }

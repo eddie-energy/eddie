@@ -62,91 +62,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       });
   }
 
-  validate() {
-    const nifInput = this.renderRoot.querySelector("#nif");
-    const nif = nifInput.value;
-    if (this.validateIdentifier(nif)) {
-      nifInput.setCustomValidity("");
-    } else {
-      nifInput.setCustomValidity("Invalid NIF");
-    }
-  }
-
-  /**
-   * Checks if identifier is a valid NIF or CIF
-   * @param {String} nif a NIF or CIF
-   */
-  validateIdentifier(nif) {
-    nif = nif.replaceAll(" ", "").toUpperCase();
-    return this.isNif(nif) || this.isCif(nif);
-  }
-
-  /**
-   * See https://es.wikipedia.org/wiki/N%C3%BAmero_de_identificaci%C3%B3n_fiscal#NIF_de_personas_f%C3%ADsicas
-   * @param {String} nif
-   * @return {Boolean} if valid Nif
-   */
-  isNif(nif) {
-    const nifLetters = "TRWAGMYFPDXBNJZSQVHLCKE";
-    const dniRegex = /^(\d{8})([A-HJ-NP-TV-Z])$/;
-    const dniRes = dniRegex.exec(nif);
-    if (dniRes) {
-      return nifLetters[parseInt(dniRes[1]) % 23] === dniRes[2];
-    }
-    const klmNif = /^[KLM](\d{7})([A-HJ-NP-TV-Z])$/;
-    const klmNifRes = klmNif.exec(nif);
-    if (klmNifRes) {
-      return nifLetters[parseInt(klmNifRes[1]) % 23] === klmNifRes[2];
-    }
-    const nieRegex = /^([XYZ])(\d{7})([A-HJ-NP-TV-Z])$/;
-    const nieRes = nieRegex.exec(nif);
-    if (nieRes) {
-      const prefix = nieRes[1].charCodeAt(0) - "X".charCodeAt(0);
-      const securityLetter = parseInt(`${prefix}${nieRes[2]}`) % 23;
-      return nifLetters[securityLetter] === nieRes[3];
-    }
-    return false;
-  }
-
-  /**
-   * See https://es.wikipedia.org/wiki/C%C3%B3digo_de_identificaci%C3%B3n_fiscal
-   * @param {String} cif
-   * @return {Boolean} if valid CIF
-   */
-  isCif(cif) {
-    const cifLetters = "JABCDEFGHI";
-    const numberType = "ABCDEFGHJUV";
-    const cifRegex = /^([ABCDEFGHJNPQRSUVW])(\d{7})(\d)$/;
-    const cifRes = cifRegex.exec(cif);
-    if (!cifRes) {
-      return false;
-    }
-    const type = cifRes[1];
-    const numbers = cifRes[2];
-    const securityValue = cifRes[3];
-    let evenSum = 0;
-    let oddSum = 0;
-    for (let i = 0; i < numbers.length; i++) {
-      const num = parseInt(numbers.charAt(i));
-      if ((i + 1) % 2 === 0) {
-        evenSum += num;
-      } else {
-        oddSum += (num * 2)
-          .toString()
-          .split("")
-          .reduce((sum, digit) => sum + parseInt(digit), 0);
-      }
-    }
-    const sum = evenSum + oddSum;
-    const sumStr = sum.toString();
-    const check = 10 - parseInt(sumStr.charAt(sumStr.length - 1));
-    if (numberType.includes(type)) {
-      return parseInt(securityValue) === check;
-    } else {
-      return securityValue === cifLetters.charAt(check);
-    }
-  }
-
   accepted() {
     fetch(`${this.requestUrl}/${this.permissionId}/accepted`, {
       method: "PATCH",
@@ -203,7 +118,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           placeholder="25744101M"
           help-text="We require the identification number you use to log into the Datadis web portal to request permission."
           required
-          @sl-change="${this.validate}"
         ></sl-input>
 
         <br />
