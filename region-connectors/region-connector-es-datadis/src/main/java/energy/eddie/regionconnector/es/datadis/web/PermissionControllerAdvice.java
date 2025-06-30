@@ -12,9 +12,9 @@ import java.util.Map;
 @RestControllerAdvice
 public class PermissionControllerAdvice {
     @ExceptionHandler(EsValidationException.class)
-    public ResponseEntity<Map<String, List<EddieApiError>>> handleEsValidationException(EsValidationException e) {
+    public ResponseEntity<Map<String,List<EddieApiError>>> handleEsValidationException(EsValidationException e) {
         var error = e.error();
         return ResponseEntity.badRequest()
-                             .body(Map.of(error.name(), List.of(new EddieApiError(error.message()))));
+                             .body(Map.of("errors", List.of(new EddieApiError(error.message()))));
     }
 }
