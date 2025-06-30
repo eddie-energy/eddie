@@ -8,11 +8,11 @@ import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
+import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.MqttSecretGenerator;
-import energy.eddie.aiida.errors.ModbusConnectionException;
-import energy.eddie.aiida.models.datasource.*;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -60,7 +60,7 @@ public class DataSourceService {
         }
     }
 
-    public Optional<DataSource> getDataSourceById(UUID dataSourceId) {
+    public Optional<DataSource> dataSourceById(UUID dataSourceId) {
         return repository.findById(dataSourceId);
     }
 

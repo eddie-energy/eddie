@@ -1,13 +1,13 @@
 package energy.eddie.aiida.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
-import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 
 class DataSourceServiceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-
+    private static final String COUNTRY_CODE = "AT";
     private static final UUID VENDOR_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private static final UUID MODEL_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     private static final UUID DEVICE_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
@@ -42,15 +42,21 @@ class DataSourceServiceTest {
     private DataSourceService dataSourceService;
     private UUID userId;
 
-    DataSourceDto createNewDataSourceDto(UUID id, DataSourceType type, String name, boolean enabled) {
-        return new DataSourceDto(id, type, AiidaAsset.SUBMETER, name, enabled, 1, null, null);
+    DataSourceDto createNewDataSourceDto(
+            UUID id,
+            DataSourceType type,
+            String name,
+            String countryCode,
+            boolean enabled
+    ) {
+        return new DataSourceDto(id, type, AiidaAsset.SUBMETER, name, countryCode, enabled, 1, null, null);
     }
 
     DataSource createNewDataSource(UUID id, DataSourceType type) {
         return DataSource.createFromDto(
-                createNewDataSourceDto(id, type, "Test", true),
+                createNewDataSourceDto(id, type, "Test", COUNTRY_CODE, true),
                 userId,
-                new DataSourceMqttDto("tcp://localhost:1883","tcp://localhost:1883","aiida/test", "user", "pw")
+                new DataSourceMqttDto("tcp://localhost:1883", "tcp://localhost:1883", "aiida/test", "user", "pw")
         );
     }
 
@@ -74,7 +80,7 @@ class DataSourceServiceTest {
         var dataSource = createNewDataSource(DATA_SOURCE_ID, DataSourceType.SMART_GATEWAYS_ADAPTER);
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(dataSource));
 
-        var result = dataSourceService.getDataSourceById(DATA_SOURCE_ID);
+        var result = dataSourceService.dataSourceById(DATA_SOURCE_ID);
 
         assertTrue(result.isPresent());
         assertEquals(DATA_SOURCE_ID, result.get().id());
@@ -85,7 +91,7 @@ class DataSourceServiceTest {
     void shouldReturnEmptyOptionalWhenDataSourceNotFound() {
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.empty());
 
-        var result = dataSourceService.getDataSourceById(DATA_SOURCE_ID);
+        var result = dataSourceService.dataSourceById(DATA_SOURCE_ID);
 
         assertTrue(result.isEmpty(), "Expected Optional to be empty when DataSource is not found.");
     }
@@ -110,6 +116,7 @@ class DataSourceServiceTest {
         dataSourceService.addDataSource(createNewDataSourceDto(DATA_SOURCE_ID,
                                                                DataSourceType.SMART_GATEWAYS_ADAPTER,
                                                                "Test",
+                                                               COUNTRY_CODE,
                                                                true));
 
         verify(repository, times(2)).save(any());
@@ -123,7 +130,7 @@ class DataSourceServiceTest {
                 MockedConstruction<ModbusTcpDataSourceAdapter> ignored = mockConstruction(ModbusTcpDataSourceAdapter.class)
         ) {
             mockedStatic.when(() -> ModbusDeviceService.loadConfig(any()))
-                    .thenReturn(ModbusDeviceTestHelper.setupModbusDevice());
+                        .thenReturn(ModbusDeviceTestHelper.setupModbusDevice());
             when(authService.getCurrentUserId()).thenReturn(userId);
 
             var modbusSettings = new DataSourceModbusDto(
@@ -138,6 +145,7 @@ class DataSourceServiceTest {
                     DataSourceType.MODBUS,
                     AiidaAsset.SUBMETER,
                     "Modbus DS",
+                    COUNTRY_CODE,
                     true,
                     1,
                     null,
@@ -159,6 +167,7 @@ class DataSourceServiceTest {
         dataSourceService.addDataSource(createNewDataSourceDto(DATA_SOURCE_ID,
                                                                DataSourceType.SMART_GATEWAYS_ADAPTER,
                                                                "Test",
+                                                               COUNTRY_CODE,
                                                                false));
 
         verify(repository, times(2)).save(any());
@@ -184,6 +193,7 @@ class DataSourceServiceTest {
         var updatedDataSourceDto = createNewDataSourceDto(DATA_SOURCE_ID,
                                                           DataSourceType.SMART_METER_ADAPTER,
                                                           "New Name",
+                                                          COUNTRY_CODE,
                                                           false);
 
         var savedDataSource = (OesterreichsEnergieDataSource) dataSourceService.updateDataSource(updatedDataSourceDto);

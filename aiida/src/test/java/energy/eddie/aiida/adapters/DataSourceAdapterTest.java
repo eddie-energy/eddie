@@ -2,14 +2,14 @@ package energy.eddie.aiida.adapters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
+import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
+import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpClient;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
-import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
-import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
+import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
@@ -49,7 +49,7 @@ class DataSourceAdapterTest {
         }
 
         return DataSource.createFromDto(
-                new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", true, 1, null, null),
+                new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", "AT", true, 1, null, null),
                 ID,
                 settings
         );

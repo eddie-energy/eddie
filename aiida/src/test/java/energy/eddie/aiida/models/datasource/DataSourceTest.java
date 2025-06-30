@@ -1,13 +1,13 @@
 package energy.eddie.aiida.models.datasource;
 
-import energy.eddie.aiida.dtos.DataSourceModbusDto;
-import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
-import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +16,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DataSourceTest {
+    private static final String COUNTRY_CODE = "AT";
     private static final UUID VENDOR_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private static final UUID MODEL_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     private static final UUID DEVICE_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
@@ -34,7 +35,7 @@ class DataSourceTest {
             null, VENDOR_ID, MODEL_ID, DEVICE_ID);
 
     DataSourceDto createNewDataSourceDto(DataSourceType type) {
-        return new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", true, 1, null, null);
+        return new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", COUNTRY_CODE, true, 1, null, null);
     }
 
     @Test
@@ -113,7 +114,15 @@ class DataSourceTest {
         var dto = createNewDataSourceDto(DataSourceType.MODBUS);
         var original = (ModbusDataSource) DataSource.createFromDto(dto, ID, MODBUS_DTO);
 
-        var updatedDto = new DataSourceDto(ID, DataSourceType.MODBUS, AiidaAsset.SUBMETER, "test-updated", true, 1, null, new DataSourceModbusDto("192.168.1.200", VENDOR_ID, MODEL_ID, DEVICE_ID));
+        var updatedDto = new DataSourceDto(ID,
+                                           DataSourceType.MODBUS,
+                                           AiidaAsset.SUBMETER,
+                                           "test-updated",
+                                           COUNTRY_CODE,
+                                           true,
+                                           1,
+                                           null,
+                                           new DataSourceModbusDto("192.168.1.200", VENDOR_ID, MODEL_ID, DEVICE_ID));
 
         DataSource merged = original.mergeWithDto(updatedDto, ID);
         assertInstanceOf(ModbusDataSource.class, merged);
@@ -126,7 +135,15 @@ class DataSourceTest {
         var original = (ModbusDataSource) DataSource.createFromDto(dto, ID, MODBUS_DTO_NO_IP);
 
 
-        var updatedDto = new DataSourceDto(ID, DataSourceType.MODBUS, AiidaAsset.SUBMETER, "test", true, 1, null, new DataSourceModbusDto(null, VENDOR_ID, MODEL_ID, DEVICE_ID));
+        var updatedDto = new DataSourceDto(ID,
+                                           DataSourceType.MODBUS,
+                                           AiidaAsset.SUBMETER,
+                                           "test",
+                                           COUNTRY_CODE,
+                                           true,
+                                           1,
+                                           null,
+                                           new DataSourceModbusDto(null, VENDOR_ID, MODEL_ID, DEVICE_ID));
 
         assertThrows(IllegalArgumentException.class, () -> original.mergeWithDto(updatedDto, ID));
     }
@@ -137,7 +154,15 @@ class DataSourceTest {
         var original = (ModbusDataSource) DataSource.createFromDto(dto, ID, MODBUS_DTO);
 
 
-        var updatedDto = new DataSourceDto(ID, DataSourceType.MODBUS, AiidaAsset.SUBMETER, "test", true,  1, null, new DataSourceModbusDto(null, VENDOR_ID, MODEL_ID, DEVICE_ID));
+        var updatedDto = new DataSourceDto(ID,
+                                           DataSourceType.MODBUS,
+                                           AiidaAsset.SUBMETER,
+                                           "test",
+                                           COUNTRY_CODE,
+                                           true,
+                                           1,
+                                           null,
+                                           new DataSourceModbusDto(null, VENDOR_ID, MODEL_ID, DEVICE_ID));
 
         // No exception should be thrown because original has a valid IP
         DataSource merged = original.mergeWithDto(updatedDto, ID);

@@ -25,6 +25,7 @@ import reactor.core.scheduler.Schedulers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -197,10 +198,8 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                      aiidaRecord);
 
         try {
-            var schemas = Set.of(AiidaSchema.SMART_METER_P1_RAW);
-            if (permission.dataNeed() != null) {
-                schemas = permission.dataNeed().schemas();
-            }
+            var dataNeed = Objects.requireNonNull(permission.dataNeed());
+            var schemas = Objects.requireNonNullElse(dataNeed.schemas(), Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
             for (var schema : schemas) {
                 var schemaFormatter = SchemaFormatter.getFormatter(aiidaId, schema);

@@ -45,6 +45,7 @@ class MicroTeleinfoV3AdapterTest {
                               DataSourceType.MICRO_TELEINFO,
                               AiidaAsset.SUBMETER,
                               "teleinfo",
+                              "FR",
                               true,
                               null,
                               null,

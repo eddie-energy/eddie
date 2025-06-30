@@ -1,6 +1,7 @@
 package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.aggregator.Aggregator;
+import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -47,6 +48,8 @@ class StreamerManagerTest {
     @Mock
     private ApplicationInformationService applicationInformationServiceMock;
     @Mock
+    private ApplicationInformation applicationInformationMock;
+    @Mock
     private FailedToSendRepository mockRepository;
     @Mock
     private ConnectionStatusMessage mockStatusMessage;
@@ -65,7 +68,13 @@ class StreamerManagerTest {
     @BeforeEach
     void setUp() {
         var mapper = new AiidaConfiguration().customObjectMapper().build();
-        manager = new StreamerManager(mapper, aggregatorMock, applicationInformationServiceMock, mockRepository);
+        when(applicationInformationMock.aiidaId()).thenReturn(UUID.randomUUID());
+        when(applicationInformationServiceMock.applicationInformation()).thenReturn(applicationInformationMock);
+
+        manager = new StreamerManager(aggregatorMock,
+                                      applicationInformationServiceMock,
+                                      mockRepository,
+                                      mapper);
     }
 
     @Test
