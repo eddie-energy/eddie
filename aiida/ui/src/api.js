@@ -35,6 +35,31 @@ export function getDataSources() {
   return fetchJson('/datasources')
 }
 
+/** @returns {Promise<AiidaDataSourceType[]>} */
+export function getDataSourceTypes() {
+  return fetchJson('/datasources/types')
+}
+
+/** @returns {Promise<{assets: string[]}>} */
+export function getAssetTypes() {
+  return fetchJson('/datasources/assets')
+}
+
+/** @returns {Promise<{id: string, name: string}[]>} */
+export function getModbusVendors() {
+  return fetchJson('/datasources/modbus/vendors')
+}
+
+/** @returns {Promise<{id: string, name: string, vendorId: string}[]>} */
+export function getModbusModels(vendorId) {
+  return fetchJson(`/datasources/modbus/vendors/${vendorId}/models`)
+}
+
+/** @returns {Promise<{id: string, name: string, modelId: string}[]>} */
+export function getModbusDevices(modelId) {
+  return fetchJson(`/datasources/modbus/models/${modelId}/devices`)
+}
+
 /** @returns {Promise<AiidaApplicationInformation>} */
 export function getApplicationInformation() {
   return fetchJson('/application-information')
@@ -65,7 +90,7 @@ export function rejectPermission(permissionId) {
     method: 'PATCH',
     body: JSON.stringify({
       operation: 'REJECT',
-    })
+    }),
   })
 }
 
@@ -75,7 +100,7 @@ export function acceptPermission(permissionId, dataSourceId) {
     body: JSON.stringify({
       operation: 'ACCEPT',
       dataSourceId,
-    })
+    }),
   })
 }
 
@@ -85,6 +110,31 @@ export function revokePermission(permissionId) {
     body: JSON.stringify({
       operation: 'REVOKE',
     }),
+  })
+}
+
+/**
+ * Create a new data source.
+ *
+ * @param {Omit<AiidaDataSource, id>} dataSource
+ */
+export function addDataSource(dataSource) {
+  return fetch(`/datasources`, {
+    method: 'POST',
+    body: JSON.stringify(dataSource),
+  })
+}
+
+/**
+ * Updates the data source with the given id with the provided contents.
+ *
+ * @param {string} dataSourceId
+ * @param {Omit<AiidaDataSource, id>} dataSource
+ */
+export function saveDataSource(dataSourceId, dataSource) {
+  return fetch(`/datasources/${dataSourceId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(dataSource),
   })
 }
 

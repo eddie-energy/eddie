@@ -38,14 +38,29 @@
  */
 
 /**
+ * @typedef AiidaModbusSettings
+ * @prop {string} modbusIp
+ * @prop {string} modbusVendor
+ * @prop {string} modbusModel
+ * @prop {string} modbusDevice
+ */
+
+/**
  * @typedef AiidaDataSource
  * @prop {string} id
  * @prop {string} dataSourceType
  * @prop {string} asset
  * @prop {string} name
  * @prop {boolean} enabled
- * @prop {number} simulationPeriod
- * @prop {AiidaMqttSettings} mqttSettings
+ * @prop [number] simulationPeriod
+ * @prop [AiidaMqttSettings] mqttSettings
+ * @prop [AiidaModbusSettings] modbusSettings
+ */
+
+/**
+ * @typedef AiidaDataSourceType
+ * @prop {string} identifier
+ * @prop {string} name
  */
 
 /**

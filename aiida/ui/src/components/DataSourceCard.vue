@@ -5,6 +5,8 @@ import PasswordToggle from '@/components/PasswordToggle.vue'
 /** @type {{ dataSource: AiidaDataSource }} */
 const { dataSource } = defineProps(['dataSource'])
 
+const emit = defineEmits(['edit'])
+
 const { asset, dataSourceType, enabled, id, mqttSettings, name, simulationPeriod } = dataSource
 
 function handleDelete() {
@@ -53,7 +55,7 @@ function handleDelete() {
     </dl>
 
     <br />
-    <sl-button :data-id="dataSource">Edit</sl-button>
+    <sl-button @click="emit('edit')">Edit</sl-button>
     <sl-button @click="handleDelete">Delete</sl-button>
   </sl-details>
 </template>
