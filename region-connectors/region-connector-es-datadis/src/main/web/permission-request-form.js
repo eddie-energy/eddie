@@ -118,6 +118,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           placeholder="25744101M"
           help-text="We require the identification number you use to log into the Datadis web portal to request permission."
           required
+          pattern="[a-zA-Z0-9]{9}"
         ></sl-input>
 
         <br />
