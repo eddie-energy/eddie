@@ -6,6 +6,7 @@ import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
@@ -50,12 +51,19 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
      * @param objectMapper The object mapper to use for deserialization.
      * @return The created {@code DataSourceAdapter}.
      */
-    public static DataSourceAdapter<? extends DataSource> create(DataSource dataSource, ObjectMapper objectMapper) {
+    public static DataSourceAdapter<? extends DataSource> create(
+            DataSource dataSource,
+            ObjectMapper objectMapper,
+            MqttConfiguration mqttConfiguration
+    ) {
         return switch (dataSource.dataSourceType()) {
-            case SMART_METER_ADAPTER ->
-                    new OesterreichsEnergieAdapter((OesterreichsEnergieDataSource) dataSource, objectMapper);
-            case MICRO_TELEINFO -> new MicroTeleinfoV3Adapter((MicroTeleinfoV3DataSource) dataSource, objectMapper);
-            case SMART_GATEWAYS_ADAPTER -> new SmartGatewaysAdapter((SmartGatewaysDataSource) dataSource);
+            case SMART_METER_ADAPTER -> new OesterreichsEnergieAdapter((OesterreichsEnergieDataSource) dataSource,
+                                                                       objectMapper,
+                                                                       mqttConfiguration);
+            case MICRO_TELEINFO ->
+                    new MicroTeleinfoV3Adapter((MicroTeleinfoV3DataSource) dataSource, objectMapper, mqttConfiguration);
+            case SMART_GATEWAYS_ADAPTER ->
+                    new SmartGatewaysAdapter((SmartGatewaysDataSource) dataSource, mqttConfiguration);
             case SIMULATION -> new SimulationAdapter((SimulationDataSource) dataSource);
             case MODBUS -> new ModbusTcpDataSourceAdapter((ModbusDataSource) dataSource);
         };

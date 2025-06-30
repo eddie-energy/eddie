@@ -117,6 +117,8 @@ When using Docker, most of these properties should be configured in the [.env](d
 | KEYCLOAK_CLIENT_SECRET     | The client secret for the Keycloak client                                                                                            |
 | KEYCLOAK_ADMIN_USERNAME    | Username of the Keycloak admin                                                                                                       |
 | KEYCLOAK_ADMIN_PASSWORD    | Password of the Keycloak admin                                                                                                       |
+| MQTT_USERNAME              | Username of MQTT broker                                                                                                              |
+| MQTT_PASSWORD              | Password of MQTT broker                                                                                                              |
 | MQTT_EXTERNAL_HOST         | Network-accessible host of the MQTT broker                                                                                           |
 | MQTT_INTERNAL_HOST         | Internal network host of the MQTT broker (e.g. inside Docker network)                                                                |
 | MQTT_BCRYPT_SALT_ROUNDS    | Number of rounds for bcrypt hashing of MQTT passwords (default: 12)                                                                  |

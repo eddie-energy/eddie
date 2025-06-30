@@ -34,6 +34,18 @@ authentication = [
     }
     # Replaced with .env file
     username = REPLACED_WITH_ENV
+  },
+  {
+    backend = built_in_database
+    mechanism = password_based
+    password_hash_algorithm {
+      name = bcrypt
+      salt_rounds = "10"
+    }
+    user_id_type = username
+
+    bootstrap_file = "/opt/init_user.json"
+    bootstrap_type = plain
   }
 ]
 authorization {

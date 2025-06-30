@@ -1,5 +1,6 @@
 package energy.eddie.aiida.adapters.datasource;
 
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.utils.MqttFactory;
@@ -22,6 +23,7 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
     private static final Integer DEFAULT_KEEP_ALIVE_INTERVAL = 60;
     private static final Duration DISCONNECT_TIMEOUT = Duration.ofSeconds(30);
     private final Logger logger;
+    private final MqttConfiguration mqttConfiguration;
     @Nullable
     protected MqttAsyncClient asyncClient;
     private Integer keepAliveInterval = DEFAULT_KEEP_ALIVE_INTERVAL;
@@ -31,9 +33,10 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
      *
      * @param dataSource The entity of the data source.
      */
-    protected MqttDataSourceAdapter(T dataSource, Logger childLogger) {
+    protected MqttDataSourceAdapter(T dataSource, Logger childLogger, MqttConfiguration mqttConfiguration) {
         super(dataSource);
         logger = childLogger;
+        this.mqttConfiguration = mqttConfiguration;
     }
 
     /**
@@ -156,8 +159,8 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
         options.setCleanStart(false);
         options.setAutomaticReconnect(true);
         options.setKeepAliveInterval(keepAliveInterval);
-        options.setUserName(dataSource().mqttUsername());
-        options.setPassword(dataSource().mqttPassword().getBytes(StandardCharsets.UTF_8));
+        options.setUserName(mqttConfiguration.username());
+        options.setPassword(mqttConfiguration.password().getBytes(StandardCharsets.UTF_8));
 
         return options;
     }
