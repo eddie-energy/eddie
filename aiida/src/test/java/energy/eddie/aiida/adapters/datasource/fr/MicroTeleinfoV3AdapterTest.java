@@ -72,7 +72,8 @@ class MicroTeleinfoV3AdapterTest {
                 "tcp://localhost:1883",
                 10,
                 "user",
-                "password"
+                "password",
+                ""
         );
         adapter = new MicroTeleinfoV3Adapter(DATA_SOURCE, mapper, mqttConfiguration);
 
