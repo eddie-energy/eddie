@@ -71,7 +71,8 @@ class OesterreichsEnergieAdapterTest {
                 "tcp://localhost:1883",
                 10,
                 "user",
-                "password"
+                "password",
+                ""
         );
         adapter = new OesterreichsEnergieAdapter(DATA_SOURCE, mapper, mqttConfiguration);
 

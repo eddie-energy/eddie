@@ -80,7 +80,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
         var ipAddressViaToxiproxy = toxiproxy.getHost();
         var portViaToxiproxy = toxiproxy.getMappedPort(8666);
         var serverURI = "tcp://" + ipAddressViaToxiproxy + ":" + portViaToxiproxy;
-        mqttConfiguration = new MqttConfiguration(serverURI, serverURI, 10, USERNAME, PASSWORD);
+        mqttConfiguration = new MqttConfiguration(serverURI, serverURI, 10, USERNAME, PASSWORD, "");
 
         dataSource = new OesterreichsEnergieDataSource(
                 new DataSourceDto(DATA_SOURCE_ID,

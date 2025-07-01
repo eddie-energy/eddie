@@ -10,7 +10,8 @@ public record MqttConfiguration(
         String externalHost,
         int bCryptSaltRounds,
         String username,
-        String password
+        String password,
+        String tlsCertificatePath
 ) {
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {

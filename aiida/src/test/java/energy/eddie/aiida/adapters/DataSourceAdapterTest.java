@@ -66,7 +66,8 @@ class DataSourceAdapterTest {
                 "tcp://localhost:1883",
                 10,
                 "user",
-                "password"
+                "password",
+                ""
         );
     }
 

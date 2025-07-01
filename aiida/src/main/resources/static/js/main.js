@@ -75,6 +75,9 @@ const PERMISSIONS_BASE_URL = document
 const DATASOURCES_BASE_URL = document
   .querySelector('meta[name="datasources-base-url"]')
   .getAttribute("content");
+const MQTT_BASE_URL = document
+  .querySelector('meta[name="mqtt-base-url"]')
+  .getAttribute("content");
 
 const permissionDialog = document.getElementById("permission-dialog");
 const permissionDialogContent = document.getElementById(
@@ -508,6 +511,12 @@ function renderDataSources() {
               Regenerate
             </sl-button>
           </dd>
+          <dt>Certificate:</dt>
+          <dd>
+            <sl-button variant="default" size="small" onclick="window.downloadTlsCertificate()">
+              Download
+            </sl-button>
+          </dd>
         `;
 
         appendDataSourceToChild(
@@ -757,6 +766,20 @@ function regenerateEphemeralDataSource(dataSourceId) {
       console.error("Failed to regenerate ephemeral data:", error);
       alert(`Failed to regenerate ephemeral data: ${error.message}`);
     });
+}
+
+function downloadTlsCertificate() {
+  const url = `${MQTT_BASE_URL}/download/tls-certificate`;
+
+  fetch(url, { method: 'HEAD' })
+    .then(async (response) => {
+      if (!response.ok) {
+        alert('No TLS certificate found!');
+        return;
+      }
+
+      window.location.href = url;
+    })
 }
 
 function openEphemeralDataSourceDialog(dataSourceEphemeral) {
@@ -1141,3 +1164,4 @@ window.closeAddDataSourceDialog = closeAddDataSourceDialog;
 window.closeEditDataSourceDialog = closeEditDataSourceDialog;
 window.closeEphemeralDataSourceDialog = closeEphemeralDataSourceDialog;
 window.regenerateEphemeralDataSource = regenerateEphemeralDataSource;
+window.downloadTlsCertificate = downloadTlsCertificate;

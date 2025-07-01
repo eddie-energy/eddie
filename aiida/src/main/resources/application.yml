@@ -42,6 +42,7 @@ aiida:
     bcrypt-salt-rounds: ${MQTT_BCRYPT_SALT_ROUNDS:12}
     username: ${MQTT_USERNAME:aiida}
     password: ${MQTT_PASSWORD:REPLACE_ME_WITH_SAVE_PASSWORD}
+    tls-certificate-path: ${MQTT_TLS_CERTIFICATE_PATH:}
   keycloak:
     account-uri: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/account
     end-session-uri: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/logout
