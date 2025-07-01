@@ -1,4 +1,4 @@
-package energy.eddie.aiida.streamers;
+package energy.eddie.aiida.streamers.mqtt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,7 +88,6 @@ class MqttStreamerTest {
     private ConnectionStatusMessage mockStatusMessage;
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
-    private Permission permissionMock;
 
     @BeforeEach()
     void setUp() {
@@ -100,16 +99,16 @@ class MqttStreamerTest {
                                   EXPECTED_TERMINATION_TOPIC);
 
         mqttStreamingConfig = new MqttStreamingConfig(permissionId, mqttDto);
-        permissionMock = mock(Permission.class);
+        Permission permissionMock = mock(Permission.class);
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
+        var streamingContext = new MqttStreamingContext(mockClient, mqttStreamingConfig);
 
         streamer = new MqttStreamer(aiidaId,
-                                    mockClient,
                                     mockRepository,
                                     mockMapper,
                                     permissionMock,
                                     recordPublisher.flux(),
-                                    mqttStreamingConfig,
+                                    streamingContext,
                                     terminationSink);
     }
 

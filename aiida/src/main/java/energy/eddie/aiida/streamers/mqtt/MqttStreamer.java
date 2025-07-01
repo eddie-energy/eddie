@@ -1,4 +1,4 @@
-package energy.eddie.aiida.streamers;
+package energy.eddie.aiida.streamers.mqtt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +9,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.SchemaFormatter;
+import energy.eddie.aiida.streamers.AiidaStreamer;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.*;
@@ -34,9 +35,9 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private final MqttAsyncClient client;
     private final FailedToSendRepository failedToSendRepository;
     private final ObjectMapper mapper;
-    private boolean isBeingTerminated = false;
     private final Permission permission;
     private final MqttStreamingConfig streamingConfig;
+    private boolean isBeingTerminated = false;
     @Nullable
     private Disposable subscription;
 
@@ -44,32 +45,31 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
      * Creates a new MqttStreamer and initialized the client callback.
      *
      * @param aiidaId                UUID of the AIIDA instance for which to create the AiidaStreamer.
-     * @param client                 {@link MqttAsyncClient} used to send to MQTT broker.
      * @param failedToSendRepository Repository where messages that could not be transmitted are stored.
      * @param mapper                 {@link ObjectMapper} used to transform the values to be sent into JSON strings.
      * @param permission             Permission for which this streamer is created
      * @param recordFlux             Flux, where records that should be sent are published.
-     * @param streamingConfig        Necessary MQTT configuration values.
+     * @param streamingContext       Holds the {@link MqttAsyncClient} used to send to MQTT broker and the necessary
+     *                               MQTT configuration values.
      * @param terminationRequestSink Sink, to which the ID of the permission will be published when the EP requests a
      *                               termination.
      */
     public MqttStreamer(
             UUID aiidaId,
-            MqttAsyncClient client,
             FailedToSendRepository failedToSendRepository,
             ObjectMapper mapper,
             Permission permission,
             Flux<AiidaRecord> recordFlux,
-            MqttStreamingConfig streamingConfig,
+            MqttStreamingContext streamingContext,
             Sinks.One<UUID> terminationRequestSink
     ) {
         super(aiidaId, recordFlux, terminationRequestSink);
 
-        this.client = client;
+        this.client = streamingContext.client();
         this.failedToSendRepository = failedToSendRepository;
         this.mapper = mapper;
         this.permission = permission;
-        this.streamingConfig = streamingConfig;
+        this.streamingConfig = streamingContext.streamingConfig();
 
         client.setCallback(this);
     }
