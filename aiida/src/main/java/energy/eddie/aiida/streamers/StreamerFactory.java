@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import energy.eddie.aiida.streamers.mqtt.MqttStreamer;
+import energy.eddie.aiida.streamers.mqtt.MqttStreamingContext;
 import energy.eddie.aiida.utils.MqttFactory;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -48,13 +50,14 @@ public class StreamerFactory {
                                                             mqttFilePersistenceDirectory).expand(permission.eddieId(),
                                                                                                  permission.permissionId())
                                                                                          .getPath()));
+        var streamingContext = new MqttStreamingContext(client, streamingConfig);
+
         return new MqttStreamer(aiidaId,
-                                client,
                                 failedToSendRepository,
                                 mapper,
                                 permission,
                                 recordFlux,
-                                streamingConfig,
+                                streamingContext,
                                 terminationRequestSink);
     }
 }
