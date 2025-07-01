@@ -2,6 +2,7 @@ package energy.eddie.aiida.schemas;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.errors.formatter.CimFormatterException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
@@ -99,11 +100,24 @@ class SchemaTest {
             AiidaAsset.SUBMETER,
             userId,
             dataSourceId,
+            List.of(new AiidaRecordValue("BASE",
+                                         POSITIVE_ACTIVE_ENERGY,
+                                         "ten",
+                                         KILO_WATT_HOUR,
+                                         "ten",
+                                         KILO_WATT_HOUR)
+            )
+    );
+    private static final AiidaRecord aiidaRecordWithUnsupportedQuantityType = new AiidaRecord(
+            timestamp,
+            AiidaAsset.SUBMETER,
+            userId,
+            dataSourceId,
             List.of(new AiidaRecordValue("PAPP",
-                                         POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
-                                         "ten",
+                                         POSITIVE_REACTIVE_INSTANTANEOUS_POWER,
+                                         "10",
                                          VOLT_AMPERE,
-                                         "ten",
+                                         "1ß",
                                          VOLT_AMPERE)
             )
     );
@@ -151,7 +165,9 @@ class SchemaTest {
 
         var cimFormatter = SchemaFormatter.getFormatter(aiidaId, AiidaSchema.SMART_METER_P1_CIM);
         assertDoesNotThrow(() -> cimFormatter.toSchema(aiidaRecordAT, objectMapper, permissionMock));
-        assertThrows(CimFormatter.CimFormatterException.class,
+        assertThrows(CimFormatterException.class,
                      () -> cimFormatter.toSchema(aiidaRecordWithFaultyRecord, objectMapper, permissionMock));
+        assertThrows(CimFormatterException.class,
+                     () -> cimFormatter.toSchema(aiidaRecordWithUnsupportedQuantityType, objectMapper, permissionMock));
     }
 }

@@ -3,6 +3,7 @@ package energy.eddie.aiida.streamers.mqtt;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
+import energy.eddie.aiida.errors.formatter.FormatterException;
 import energy.eddie.aiida.models.FailedToSendEntity;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
@@ -47,7 +48,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
      * @param aiidaId                UUID of the AIIDA instance for which to create the AiidaStreamer.
      * @param failedToSendRepository Repository where messages that could not be transmitted are stored.
      * @param mapper                 {@link ObjectMapper} used to transform the values to be sent into JSON strings.
-     * @param permission             Permission for which this streamer is created
+     * @param permission             Permission for which this streamer is created.
      * @param recordFlux             Flux, where records that should be sent are published.
      * @param streamingContext       Holds the {@link MqttAsyncClient} used to send to MQTT broker and the necessary
      *                               MQTT configuration values.
@@ -206,7 +207,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                 var messageData = schemaFormatter.toSchema(aiidaRecord, mapper, permission);
                 publishMessage(streamingConfig.dataTopic(), messageData);
             }
-        } catch (RuntimeException exception) {
+        } catch (FormatterException exception) {
             LOGGER.error("MqttStreamer for permission {} cannot convert AiidaRecord {} to JSON, will ignore it",
                          streamingConfig.permissionId(),
                          aiidaRecord,

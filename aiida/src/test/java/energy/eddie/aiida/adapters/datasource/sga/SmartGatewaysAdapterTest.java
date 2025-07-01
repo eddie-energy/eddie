@@ -159,13 +159,15 @@ class SmartGatewaysAdapterTest {
                         })
                         .expectNextMatches(aiidaRecord ->
                                                    aiidaRecord.aiidaRecordValues()
-                                                 .stream()
-                                                 .anyMatch(v -> v.dataTag()
-                                                                 .equals(POSITIVE_ACTIVE_ENERGY) && v.value().equals("45"))
+                                                              .stream()
+                                                              .anyMatch(v ->
+                                                                                v.dataTag() == POSITIVE_ACTIVE_ENERGY
+                                                                                && v.value().equals("45"))
                                                    && aiidaRecord.aiidaRecordValues()
-                                                    .stream()
-                                                    .anyMatch(v -> v.dataTag()
-                                                                    .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) && v.value().equals("45"))
+                                                                 .stream()
+                                                                 .anyMatch(v ->
+                                                                                   v.dataTag() == POSITIVE_ACTIVE_INSTANTANEOUS_POWER
+                                                                                   && v.value().equals("45"))
                         )
                         .then(adapter::close)
                         .expectComplete()
