@@ -2,7 +2,7 @@
 import STATUS from '@/constants/permission-status.js'
 import { revokePermission } from '@/api.js'
 import PermissionDetails from '@/components/PermissionDetails.vue'
-import { usePermissionDialog } from '@/composables/usePermissionDialog.js'
+import { usePermissionDialog } from '@/composables/permission-dialog.js'
 
 /** @type {{ permission: AiidaPermission }} */
 const { permission } = defineProps(['permission'])

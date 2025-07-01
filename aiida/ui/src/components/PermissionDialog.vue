@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { acceptPermission, getDataSources, rejectPermission } from '@/api.js'
 import PermissionDetails from '@/components/PermissionDetails.vue'
-import { usePermissionDialog } from '@/composables/usePermissionDialog.js'
+import { usePermissionDialog } from '@/composables/permission-dialog.js'
 
 const { permission, open } = usePermissionDialog()
 
@@ -34,7 +34,12 @@ function hide() {
 </script>
 
 <template>
-  <sl-dialog label="Accept or reject permission" :open="open" v-if="permission">
+  <sl-dialog
+    label="Accept or reject permission"
+    :open="open"
+    v-if="permission"
+    @sl-hide="$event.target === $event.currentTarget && hide()"
+  >
     <PermissionDetails :permission />
 
     <sl-select label="Data Source" :value="selectedDataSource">

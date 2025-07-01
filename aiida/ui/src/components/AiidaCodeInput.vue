@@ -2,7 +2,7 @@
 import { useTemplateRef } from 'vue'
 import { addPermission } from '@/api.js'
 import QrCodeScanner from '@/components/QrCodeScanner.vue'
-import { usePermissionDialog } from '@/composables/usePermissionDialog.js'
+import { usePermissionDialog } from '@/composables/permission-dialog.js'
 
 const { updatePermission } = usePermissionDialog()
 
