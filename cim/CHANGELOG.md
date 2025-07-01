@@ -24,3 +24,8 @@ For more information, see [Common Information Model Client Libraries](https://ed
 
 - Change artifact ID to `cim` from `cim-test`
 - Set correct version for the artifact
+
+## 2.1.0 - 2025-06-30
+
+- Add (near) real-time data for CIM version `1.04`.
+- AIIDA now depends on this version of the CIM.

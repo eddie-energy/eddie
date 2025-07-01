@@ -32,7 +32,15 @@ class SmartGatewaysAdapterTest {
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
 
     private static final SmartGatewaysDataSource DATA_SOURCE = new SmartGatewaysDataSource(
-            new DataSourceDto(DATA_SOURCE_ID, DataSourceType.SMART_GATEWAYS_ADAPTER, AiidaAsset.SUBMETER, "sma", true, null, null, null),
+            new DataSourceDto(DATA_SOURCE_ID,
+                              DataSourceType.SMART_GATEWAYS_ADAPTER,
+                              AiidaAsset.SUBMETER,
+                              "sma",
+                              "AT",
+                              true,
+                              null,
+                              null,
+                              null),
             USER_ID,
             new DataSourceMqttDto("tcp://localhost:1883", "tcp://localhost:1883", "aiida/test", "user", "password")
     );
@@ -149,15 +157,17 @@ class SmartGatewaysAdapterTest {
                                 }
                             }
                         })
-                        .expectNextMatches(record ->
-                                           record.aiidaRecordValues()
-                                                 .stream()
-                                                 .anyMatch(v -> v.dataTag()
-                                                                 .equals(POSITIVE_ACTIVE_ENERGY) && v.value().equals("45"))
-                                           && record.aiidaRecordValues()
-                                                    .stream()
-                                                    .anyMatch(v -> v.dataTag()
-                                                                    .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) && v.value().equals("45"))
+                        .expectNextMatches(aiidaRecord ->
+                                                   aiidaRecord.aiidaRecordValues()
+                                                              .stream()
+                                                              .anyMatch(v ->
+                                                                                v.dataTag() == POSITIVE_ACTIVE_ENERGY
+                                                                                && v.value().equals("45"))
+                                                   && aiidaRecord.aiidaRecordValues()
+                                                                 .stream()
+                                                                 .anyMatch(v ->
+                                                                                   v.dataTag() == POSITIVE_ACTIVE_INSTANTANEOUS_POWER
+                                                                                   && v.value().equals("45"))
                         )
                         .then(adapter::close)
                         .expectComplete()

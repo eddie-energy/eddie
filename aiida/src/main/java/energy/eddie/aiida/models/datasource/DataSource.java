@@ -5,10 +5,10 @@ import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.dtos.DataSourceProtocolSettings;
+import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
-import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -33,6 +33,8 @@ public abstract class DataSource {
     @JsonProperty
     protected String name;
     @JsonProperty
+    protected String countryCode;
+    @JsonProperty
     protected boolean enabled;
     @JsonProperty
     @Enumerated(EnumType.STRING)
@@ -49,6 +51,7 @@ public abstract class DataSource {
         this.name = dto.name();
         this.enabled = dto.enabled();
         this.dataSourceType = dto.dataSourceType();
+        this.countryCode = dto.countryCode();
     }
 
     public static DataSource createFromDto(DataSourceDto dto, UUID userId, @Nullable DataSourceProtocolSettings settings) {
@@ -108,6 +111,10 @@ public abstract class DataSource {
         return name;
     }
 
+    public String countryCode() {
+        return countryCode;
+    }
+
     public boolean enabled() {
         return enabled;
     }
@@ -121,6 +128,6 @@ public abstract class DataSource {
     }
 
     public DataSourceDto toDto() {
-        return new DataSourceDto(id, dataSourceType, asset, name, enabled, null, null, null);
+        return new DataSourceDto(id, dataSourceType, asset, name, countryCode, enabled, null, null, null);
     }
 }

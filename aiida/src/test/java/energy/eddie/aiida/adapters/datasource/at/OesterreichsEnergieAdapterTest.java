@@ -44,6 +44,7 @@ class OesterreichsEnergieAdapterTest {
                               DataSourceType.SMART_METER_ADAPTER,
                               AiidaAsset.SUBMETER,
                               "sma",
+                              "AT",
                               true,
                               null,
                               null,

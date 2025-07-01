@@ -157,7 +157,7 @@ public class DataSourceController {
     public ResponseEntity<DataSourceDto> getDataSourceById(@PathVariable("id") UUID dataSourceId) {
         LOGGER.info("Fetching datasource with ID: {}", dataSourceId);
 
-        return service.getDataSourceById(dataSourceId)
+        return service.dataSourceById(dataSourceId)
                       .map(dataSource -> ResponseEntity.ok(dataSource.toDto()))
                       .orElseGet(() -> ResponseEntity.notFound().build());
     }

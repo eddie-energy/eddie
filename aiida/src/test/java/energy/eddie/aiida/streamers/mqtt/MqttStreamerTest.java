@@ -1,9 +1,10 @@
-package energy.eddie.aiida.streamers;
+package energy.eddie.aiida.streamers.mqtt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.FailedToSendEntity;
+import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
@@ -11,6 +12,7 @@ import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -28,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static energy.eddie.aiida.models.record.UnitOfMeasurement.KILO_WATT_HOUR;
@@ -42,6 +45,7 @@ class MqttStreamerTest {
     private static final String EXPECTED_DATA_TOPIC = "aiida/v1/permission-id/data";
     private static final String EXPECTED_STATUS_TOPIC = "aiida/v1/permission-id/status";
     private static final String EXPECTED_TERMINATION_TOPIC = "aiida/v1/permission-id/termination";
+    private static final UUID aiidaId = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private final TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
@@ -85,7 +89,7 @@ class MqttStreamerTest {
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
 
-    @BeforeEach
+    @BeforeEach()
     void setUp() {
         var mqttDto = new MqttDto("mqttUsername",
                                   "mqttPassword",
@@ -95,15 +99,17 @@ class MqttStreamerTest {
                                   EXPECTED_TERMINATION_TOPIC);
 
         mqttStreamingConfig = new MqttStreamingConfig(permissionId, mqttDto);
+        Permission permissionMock = mock(Permission.class);
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
+        var streamingContext = new MqttStreamingContext(mockClient, mqttStreamingConfig);
 
-        streamer = new MqttStreamer(new Permission(),
-                                    recordPublisher.flux(),
-                                    terminationSink,
-                                    mqttStreamingConfig,
-                                    mockClient,
+        streamer = new MqttStreamer(aiidaId,
+                                    mockRepository,
                                     mockMapper,
-                                    mockRepository);
+                                    permissionMock,
+                                    recordPublisher.flux(),
+                                    streamingContext,
+                                    terminationSink);
     }
 
 
@@ -147,6 +153,8 @@ class MqttStreamerTest {
     @Test
     @SuppressWarnings("java:S2925")
     void givenAiidaRecord_sendsViaMqtt() throws MqttException, InterruptedException {
+        useReflectionToSetPermissionMock();
+
         // Given
         streamer.connect();
         // manually call callback
@@ -240,6 +248,8 @@ class MqttStreamerTest {
     @Test
     @SuppressWarnings("java:S2925")
     void givenExceptionWhileSending_savesToRepository() throws MqttException, InterruptedException, JsonProcessingException {
+        useReflectionToSetPermissionMock();
+
         // Given
         when(mockClient.publish(any(), any(), anyInt(), anyBoolean())).thenThrow(new MqttException(999));
         var json = "MyJson".getBytes(StandardCharsets.UTF_8);
@@ -292,5 +302,18 @@ class MqttStreamerTest {
         // Then
         verify(mockRepository).deleteAllById(any());
         verify(mockClient, times(1)).publish(anyString(), any(), anyInt(), anyBoolean());
+    }
+
+    private void useReflectionToSetPermissionMock() {
+        try {
+            var field = streamer.getClass().getDeclaredField("permission");
+            field.setAccessible(true);
+            var permissionReflection = (Permission) field.get(streamer);
+            var dataNeed = mock(AiidaLocalDataNeed.class);
+            when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
+            when(permissionReflection.dataNeed()).thenReturn(dataNeed);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -4,8 +4,8 @@ import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
-import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.modbus.ModbusDevice;
+import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.services.ModbusDeviceService;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -13,11 +13,11 @@ import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
@@ -61,6 +61,7 @@ class ModbusTcpDataSourceAdapterTest {
                 DataSourceType.MODBUS,
                 AiidaAsset.DEDICATED_MEASUREMENT_DEVICE,
                 "test-datasource",
+                "AT",
                 true,
                 1,
                 null,

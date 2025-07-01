@@ -1,14 +1,16 @@
-package energy.eddie.aiida.streamers;
+package energy.eddie.aiida.streamers.mqtt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
+import energy.eddie.aiida.errors.formatter.FormatterException;
 import energy.eddie.aiida.models.FailedToSendEntity;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.SchemaFormatter;
+import energy.eddie.aiida.streamers.AiidaStreamer;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.*;
@@ -25,15 +27,17 @@ import reactor.core.scheduler.Schedulers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttStreamer.class);
+    private final MqttAsyncClient client;
+    private final FailedToSendRepository failedToSendRepository;
+    private final ObjectMapper mapper;
     private final Permission permission;
     private final MqttStreamingConfig streamingConfig;
-    private final MqttAsyncClient client;
-    private final ObjectMapper mapper;
-    private final FailedToSendRepository failedToSendRepository;
     private boolean isBeingTerminated = false;
     @Nullable
     private Disposable subscription;
@@ -41,30 +45,32 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     /**
      * Creates a new MqttStreamer and initialized the client callback.
      *
+     * @param aiidaId                UUID of the AIIDA instance for which to create the AiidaStreamer.
+     * @param failedToSendRepository Repository where messages that could not be transmitted are stored.
+     * @param mapper                 {@link ObjectMapper} used to transform the values to be sent into JSON strings.
+     * @param permission             Permission for which this streamer is created.
      * @param recordFlux             Flux, where records that should be sent are published.
+     * @param streamingContext       Holds the {@link MqttAsyncClient} used to send to MQTT broker and the necessary
+     *                               MQTT configuration values.
      * @param terminationRequestSink Sink, to which the ID of the permission will be published when the EP requests a
      *                               termination.
-     * @param streamingConfig        Necessary MQTT configuration values.
-     * @param client                 {@link MqttAsyncClient} used to send to MQTT broker.
-     * @param mapper                 {@link ObjectMapper} used to transform the values to be sent into JSON strings.
-     * @param failedToSendRepository Repository where messages that could not be transmitted are stored.
      */
     public MqttStreamer(
+            UUID aiidaId,
+            FailedToSendRepository failedToSendRepository,
+            ObjectMapper mapper,
             Permission permission,
             Flux<AiidaRecord> recordFlux,
-            Sinks.One<UUID> terminationRequestSink,
-            MqttStreamingConfig streamingConfig,
-            MqttAsyncClient client,
-            ObjectMapper mapper,
-            FailedToSendRepository failedToSendRepository
+            MqttStreamingContext streamingContext,
+            Sinks.One<UUID> terminationRequestSink
     ) {
-        super(recordFlux, terminationRequestSink);
+        super(aiidaId, recordFlux, terminationRequestSink);
 
-        this.permission = permission;
-        this.streamingConfig = streamingConfig;
-        this.client = client;
-        this.mapper = mapper;
+        this.client = streamingContext.client();
         this.failedToSendRepository = failedToSendRepository;
+        this.mapper = mapper;
+        this.permission = permission;
+        this.streamingConfig = streamingContext.streamingConfig();
 
         client.setCallback(this);
     }
@@ -193,15 +199,15 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                      aiidaRecord);
 
         try {
-            var schemas = (permission.dataNeed() == null) ? List.of(AiidaSchema.SMART_METER_P1_RAW) : permission.dataNeed()
-                                                                                                                .schemas();
+            var dataNeed = Objects.requireNonNull(permission.dataNeed());
+            var schemas = Objects.requireNonNullElse(dataNeed.schemas(), Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
             for (var schema : schemas) {
-                var schemaFormatter = SchemaFormatter.getFormatter(schema);
-                var messageData = schemaFormatter.toSchema(aiidaRecord, mapper);
+                var schemaFormatter = SchemaFormatter.getFormatter(aiidaId, schema);
+                var messageData = schemaFormatter.toSchema(aiidaRecord, mapper, permission);
                 publishMessage(streamingConfig.dataTopic(), messageData);
             }
-        } catch (RuntimeException exception) {
+        } catch (FormatterException exception) {
             LOGGER.error("MqttStreamer for permission {} cannot convert AiidaRecord {} to JSON, will ignore it",
                          streamingConfig.permissionId(),
                          aiidaRecord,
@@ -220,8 +226,8 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         }
 
         try {
-            // if client is not connected, it will not save published messages to its persistence module, but instead
-            // throws an exception, therefore we need to manually save messages that failed to send
+            // If a client is not connected, it will not save published messages to its persistence module, but instead
+            // throws an exception. Therefore, we need to manually save messages that failed to send.
             client.publish(topic, payload, 1, false);
         } catch (MqttException exception) {
             LOGGER.atTrace()

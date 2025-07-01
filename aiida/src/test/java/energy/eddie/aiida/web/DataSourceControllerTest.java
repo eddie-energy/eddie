@@ -36,6 +36,7 @@ class DataSourceControllerTest {
                               DataSourceType.SIMULATION,
                               AiidaAsset.SUBMETER,
                               "simulation",
+                              "AT",
                               true,
                               1,
                               null,
@@ -149,19 +150,19 @@ class DataSourceControllerTest {
     @Test
     @WithMockUser
     void getDataSourceById_shouldReturnDataSource() throws Exception {
-        when(service.getDataSourceById(DATA_SOURCE_ID)).thenReturn(Optional.of(DATA_SOURCE));
+        when(service.dataSourceById(DATA_SOURCE_ID)).thenReturn(Optional.of(DATA_SOURCE));
 
         mockMvc.perform(get("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
 
-        verify(service, times(1)).getDataSourceById(DATA_SOURCE_ID);
+        verify(service, times(1)).dataSourceById(DATA_SOURCE_ID);
     }
 
     @Test
     @WithMockUser
     void getDataSourceById_shouldReturn404IfNotFound() throws Exception {
-        when(service.getDataSourceById(DATA_SOURCE_ID)).thenReturn(Optional.empty());
+        when(service.dataSourceById(DATA_SOURCE_ID)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .accept(MediaType.APPLICATION_JSON))
