@@ -81,4 +81,22 @@ public class Query {
         return findFirstBySelfLinkAndTitle(selfLink, title)
                 .map(res -> unmarshal(res, clazz));
     }
+
+    public List<SyndEntry> findEveryRelatedOfType(SyndEntry entry, String type) {
+        var links = new HashSet<String>();
+        for (var link : entry.getLinks()) {
+            if (link.getType().equals(type) && link.getRel().equals("related")) {
+                links.add(link.getHref());
+            }
+        }
+        var entries = new ArrayList<SyndEntry>();
+        for (var feedEntry : feed.getEntries()) {
+            var selfLink = feedEntry.findRelatedLink("self").getHref();
+            var upLink = feedEntry.findRelatedLink("up").getHref();
+            if (links.contains(selfLink) || links.contains(upLink)) {
+                entries.add(feedEntry);
+            }
+        }
+        return entries;
+    }
 }
