@@ -35,5 +35,6 @@ public class PublishService implements AutoCloseable {
     @Override
     public void close() {
         vhdFeeds.tryEmitComplete();
+        apFeeds.tryEmitComplete();
     }
 }

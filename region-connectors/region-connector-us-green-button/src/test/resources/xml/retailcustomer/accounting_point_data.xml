@@ -41,6 +41,7 @@
                 </Organisation>
                 <kind>other</kind>
                 <customerName>HEATHER HOMEOWNER</customerName>
+                <pucNumber>1234</pucNumber>
             </Customer>
         </content>
         <dc:date>2025-07-02T06:01:39Z</dc:date>

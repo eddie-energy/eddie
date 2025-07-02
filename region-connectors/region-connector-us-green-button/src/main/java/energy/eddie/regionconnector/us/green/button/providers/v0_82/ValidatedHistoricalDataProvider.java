@@ -11,6 +11,8 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 @Component
 public class ValidatedHistoricalDataProvider implements ValidatedHistoricalDataEnvelopeProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedHistoricalDataProvider.class);
@@ -31,15 +33,14 @@ public class ValidatedHistoricalDataProvider implements ValidatedHistoricalDataE
                         cimConfig,
                         greenButtonConfiguration
                 ))
-                .mapNotNull(vhd -> {
+                .flatMapIterable(vhd -> {
                     try {
                         return vhd.toVhd();
                     } catch (UnsupportedUnitException e) {
                         LOGGER.warn("Got exception when mapping to validated historical data market document", e);
-                        return null;
+                        return List.of();
                     }
-                })
-                .flatMap(Flux::fromIterable);
+                });
     }
 
     @Override
