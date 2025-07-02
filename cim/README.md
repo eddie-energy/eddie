@@ -1,5 +1,7 @@
 # Information on adding a new CIM schema
 
+**IMPORTANT**: Update the version attribute in the cim `build.gradle.kts`.
+
 ## Look for imports
 
 1. If there are imports inside the xsd file (e.g.
