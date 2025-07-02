@@ -51,11 +51,6 @@ getApplicationInformation().then((data) => {
         Account settings
       </sl-button>
 
-      <sl-button variant="primary" outline href="/installer">
-        <sl-icon slot="prefix" name="box-arrow-in-down"></sl-icon>
-        Installer
-      </sl-button>
-
       <sl-button variant="danger" outline @click="keycloak.logout()">
         <sl-icon slot="prefix" name="box-arrow-in-right"></sl-icon>
         Logout

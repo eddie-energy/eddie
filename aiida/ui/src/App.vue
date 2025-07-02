@@ -20,11 +20,11 @@ function isActive(path) {
   <PermissionDialog />
 
   <header>
-    <RouterLink to="/">
-      <h1>
+    <h1>
+      <RouterLink to="/">
         <img alt="AIIDA" src="@/assets/logo.svg" height="64" />
-      </h1>
-    </RouterLink>
+      </RouterLink>
+    </h1>
 
     <UserProfile />
 
@@ -47,5 +47,10 @@ function isActive(path) {
 nav {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+img {
+  max-width: 100%;
 }
 </style>
