@@ -21,7 +21,8 @@ public class UsRawDataProvider implements RawDataProvider {
 
     @Override
     public Flux<RawDataMessage> getRawDataStream() {
-        return publishService.flux()
+        return publishService.validatedHistoricalData()
+                             .mergeWith(publishService.accountingPointData())
                              .flatMap(this::serializePayload);
     }
 

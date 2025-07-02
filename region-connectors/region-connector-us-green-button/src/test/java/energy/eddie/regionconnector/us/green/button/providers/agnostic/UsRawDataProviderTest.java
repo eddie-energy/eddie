@@ -51,8 +51,10 @@ class UsRawDataProviderTest {
                                                           .setCompanyId("cid")
                                                           .build();
         var identifiableSyndFeed = new IdentifiableSyndFeed(pr, xml);
-        when(publishService.flux())
+        when(publishService.validatedHistoricalData())
                 .thenReturn(Flux.just(identifiableSyndFeed));
+        when(publishService.accountingPointData())
+                .thenReturn(Flux.just());
 
         // When
         var flux = provider.getRawDataStream();

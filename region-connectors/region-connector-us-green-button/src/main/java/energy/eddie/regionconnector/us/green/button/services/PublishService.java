@@ -9,21 +9,31 @@ import reactor.core.publisher.Sinks;
 
 @Service
 public class PublishService implements AutoCloseable {
-    private final Sinks.Many<IdentifiablePayload<UsGreenButtonPermissionRequest, SyndFeed>> feeds = Sinks.many()
-                                                                                                         .multicast()
-                                                                                                         .onBackpressureBuffer();
+    private final Sinks.Many<IdentifiablePayload<UsGreenButtonPermissionRequest, SyndFeed>> vhdFeeds = Sinks.many()
+                                                                                                            .multicast()
+                                                                                                            .onBackpressureBuffer();
+    private final Sinks.Many<IdentifiablePayload<UsGreenButtonPermissionRequest, SyndFeed>> apFeeds = Sinks.many()
+                                                                                                            .multicast()
+                                                                                                            .onBackpressureBuffer();
 
-    public void publish(IdentifiablePayload<UsGreenButtonPermissionRequest, SyndFeed> identifiablePayload) {
-        feeds.tryEmitNext(identifiablePayload);
+    public void publishValidatedHistoricalData(IdentifiablePayload<UsGreenButtonPermissionRequest, SyndFeed> identifiablePayload) {
+        vhdFeeds.tryEmitNext(identifiablePayload);
     }
 
-    public Flux<IdentifiablePayload<UsGreenButtonPermissionRequest, SyndFeed>> flux() {
-        return feeds.asFlux();
+    public Flux<IdentifiablePayload<UsGreenButtonPermissionRequest, SyndFeed>> validatedHistoricalData() {
+        return vhdFeeds.asFlux();
     }
 
+    public void publishAccountingPointData(IdentifiablePayload<UsGreenButtonPermissionRequest, SyndFeed> identifiablePayload) {
+        apFeeds.tryEmitNext(identifiablePayload);
+    }
+
+    public Flux<IdentifiablePayload<UsGreenButtonPermissionRequest, SyndFeed>> accountingPointData() {
+        return apFeeds.asFlux();
+    }
 
     @Override
     public void close() {
-        feeds.tryEmitComplete();
+        vhdFeeds.tryEmitComplete();
     }
 }

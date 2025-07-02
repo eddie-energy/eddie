@@ -60,14 +60,6 @@ class PermissionRequestCreationServiceTest {
     @InjectMocks
     private PermissionRequestCreationService creationService;
 
-    public static Stream<Arguments> createPermissionRequest_withUnsupportedDataNeed_throws() {
-        var now = LocalDate.now(ZoneOffset.UTC);
-        return Stream.of(
-                Arguments.of(new DataNeedNotSupportedResult("")),
-                Arguments.of(new AccountingPointDataNeedResult(new Timeframe(now, now)))
-        );
-    }
-
     @Test
     void findConnectionStatusMessageById_returnsConnectionStatusMessage() {
         // Given
@@ -101,18 +93,12 @@ class PermissionRequestCreationServiceTest {
         assertTrue(res.isEmpty());
     }
 
-    @Test
-    void createPermissionRequest_returnsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException, MissingCredentialsException {
+    @ParameterizedTest
+    @MethodSource("createPermissionRequest_returnsPermissionRequest")
+    void createPermissionRequest_returnsPermissionRequest(DataNeedCalculationResult calc) throws DataNeedNotFoundException, UnsupportedDataNeedException, MissingCredentialsException {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate("dnid"))
-                .thenReturn(
-                        new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.PT15M),
-                                new Timeframe(now, now),
-                                new Timeframe(now.minusDays(10), now.minusDays(1))
-                        )
-                );
+                .thenReturn(calc);
 
         // When
         var res = creationService.createPermissionRequest(new PermissionRequestForCreation(
@@ -152,12 +138,11 @@ class PermissionRequestCreationServiceTest {
         verify(outbox).commit(isA(UsMalformedEvent.class));
     }
 
-    @ParameterizedTest
-    @MethodSource
-    void createPermissionRequest_withUnsupportedDataNeed_throws(DataNeedCalculationResult calc) {
+    @Test
+    void createPermissionRequest_withUnsupportedDataNeed_throws() {
         // Given
         when(calculationService.calculate("dnid"))
-                .thenReturn(calc);
+                .thenReturn(new DataNeedNotSupportedResult(""));
 
         var permissionRequestForCreation = new PermissionRequestForCreation(
                 "cid",
@@ -179,15 +164,6 @@ class PermissionRequestCreationServiceTest {
     @ValueSource(strings = {"only-id", "only-secret", "missing-token"})
     void createPermissionRequest_throwsOnInvalidConfiguration(String company) {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        when(calculationService.calculate("dnid"))
-                .thenReturn(
-                        new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.PT15M),
-                                new Timeframe(now, now),
-                                new Timeframe(now.minusDays(10), now.minusDays(1))
-                        )
-                );
         var permissionRequestForCreation = new PermissionRequestForCreation(
                 "cid",
                 "dnid",
@@ -216,6 +192,20 @@ class PermissionRequestCreationServiceTest {
         assertThat(res)
                 .isPresent()
                 .contains("dnid");
+    }
+
+    private static Stream<Arguments> createPermissionRequest_returnsPermissionRequest() {
+        var now = LocalDate.now(ZoneOffset.UTC);
+        return Stream.of(
+                Arguments.of(
+                        new ValidatedHistoricalDataDataNeedResult(
+                                List.of(Granularity.PT15M),
+                                new Timeframe(now, now),
+                                new Timeframe(now.minusDays(10), now.minusDays(1))
+                        )
+                ),
+                Arguments.of(new AccountingPointDataNeedResult(new Timeframe(now, now)))
+        );
     }
 
     private static GreenButtonPermissionRequest getPermissionRequest() {

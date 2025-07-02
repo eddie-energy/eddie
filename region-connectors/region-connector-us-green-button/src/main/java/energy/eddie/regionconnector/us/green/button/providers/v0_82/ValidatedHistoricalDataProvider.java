@@ -20,11 +20,11 @@ public class ValidatedHistoricalDataProvider implements ValidatedHistoricalDataE
     public ValidatedHistoricalDataProvider(
             PublishService publishService,
             Jaxb2Marshaller jaxb2Marshaller,
-            CommonInformationModelConfiguration cimConfig,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig,
             GreenButtonConfiguration greenButtonConfiguration
     ) {
         validatedHistoricalDataEnvelopes = publishService
-                .flux()
+                .validatedHistoricalData()
                 .map(id -> new IntermediateValidatedHistoricalDataMarketDocument(
                         id,
                         jaxb2Marshaller,

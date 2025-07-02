@@ -37,7 +37,7 @@ public class PermissionUpdateService {
         this.outbox = outbox;
         this.unmarshaller = marshaller.createUnmarshaller();
         this.meterReadingRepository = meterReadingRepository;
-        publishService.flux()
+        publishService.validatedHistoricalData()
                       .subscribe(this::updatePermissionRequest);
     }
 

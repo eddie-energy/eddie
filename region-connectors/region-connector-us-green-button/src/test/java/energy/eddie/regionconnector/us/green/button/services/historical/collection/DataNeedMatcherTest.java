@@ -3,8 +3,8 @@ package energy.eddie.regionconnector.us.green.button.services.historical.collect
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.duration.RelativeDuration;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
@@ -27,6 +27,7 @@ import java.time.Period;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -217,7 +218,7 @@ class DataNeedMatcherTest {
         when(repository.findByAuthUid("1111"))
                 .thenReturn(PERMISSION_REQUEST);
         when(dataNeedsService.getById("dnid"))
-                .thenReturn(new AccountingPointDataNeed());
+                .thenReturn(new AiidaDataNeed(Set.of()));
 
         // When
         var res = dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(data);
