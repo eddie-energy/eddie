@@ -8,7 +8,7 @@ import {
   getModbusVendors,
   saveDataSource,
 } from '@/api.js'
-import { onMounted, ref, useTemplateRef } from 'vue'
+import { onMounted, ref, useTemplateRef, watch } from 'vue'
 
 /** @type {ShallowRef<HTMLFormElement>} */
 const form = useTemplateRef('form')
@@ -20,7 +20,21 @@ const props = defineProps(['open', 'dataSource'])
 const emit = defineEmits(['hide'])
 
 /** @type {Ref<AiidaDataSource>} */
-const dataSource = props.dataSource ? ref(props.dataSource) : ref({ enabled: true })
+const dataSource = ref({ enabled: false })
+
+watch(props, async () => {
+  dataSource.value = props.dataSource ?? { enabled: true }
+
+  if (dataSource.value.modbusSettings) {
+    const { modbusVendor, modbusModel } = dataSource.value.modbusSettings
+
+    if (!modbusVendors.value) {
+      modbusVendors.value = await getModbusVendors()
+    }
+    modbusModels.value = await getModbusModels(modbusVendor)
+    modbusDevices.value = await getModbusDevices(modbusModel)
+  }
+})
 
 const modbusVendors = ref([])
 const modbusModels = ref([])
@@ -77,7 +91,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <sl-dialog label="Add Data Source" :open="props.open" @sl-hide="hide">
+  <sl-dialog label="Add Data Source" :open="open || undefined" @sl-hide="hide">
     <form ref="form" id="data-source-form">
       <sl-input
         name="name"

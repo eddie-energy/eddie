@@ -1,6 +1,5 @@
 <script setup>
 import PermissionList from '@/components/PermissionList.vue'
-import DataSourceList from '@/components/DataSourceList.vue'
 import AiidaCodeInput from '@/components/AiidaCodeInput.vue'
 </script>
 
@@ -18,21 +17,4 @@ import AiidaCodeInput from '@/components/AiidaCodeInput.vue'
       <p>Fetching permissions...</p>
     </template>
   </Suspense>
-
-  <h2>Data sources</h2>
-
-  <Suspense>
-    <DataSourceList />
-
-    <template #fallback>
-      <p>Fetching data sources...</p>
-    </template>
-  </Suspense>
 </template>
-
-<style scoped>
-h2 {
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-</style>

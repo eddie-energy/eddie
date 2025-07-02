@@ -1,21 +1,40 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 import UserProfile from '@/components/UserProfile.vue'
 import PermissionDialog from '@/components/PermissionDialog.vue'
+
+const paths = [
+  ['/', 'Permissions', 'key'],
+  ['/data-sources', 'Data Sources', 'outlet'],
+  ['/services', 'Services', 'boxes'],
+]
+
+const route = useRoute()
+
+function isActive(path) {
+  return route.matched.some((matched) => matched.path === path)
+}
 </script>
 
 <template>
   <PermissionDialog />
 
   <header>
-    <h1>
-      <img alt="AIIDA" src="@/assets/logo.svg" height="64" />
-    </h1>
+    <RouterLink to="/">
+      <h1>
+        <img alt="AIIDA" src="@/assets/logo.svg" height="64" />
+      </h1>
+    </RouterLink>
 
     <UserProfile />
 
     <nav>
-      <RouterLink to="/">Dashboard</RouterLink>
+      <RouterLink :to="path" v-for="[path, name, icon] in paths">
+        <sl-button :variant="isActive(path) ? 'primary' : 'default'">
+          <sl-icon slot="prefix" :name="icon"></sl-icon>
+          {{ name }}
+        </sl-button>
+      </RouterLink>
     </nav>
   </header>
 
@@ -24,4 +43,9 @@ import PermissionDialog from '@/components/PermissionDialog.vue'
   </main>
 </template>
 
-<style scoped></style>
+<style scoped>
+nav {
+  display: flex;
+  gap: 0.5rem;
+}
+</style>
