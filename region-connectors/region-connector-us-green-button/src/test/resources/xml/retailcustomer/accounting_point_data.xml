@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns="http://www.w3.org/2005/Atom">
+    <title>RetailCustomer</title>
+    <link rel="alternate" href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Batch/RetailCustomer/521009"/>
+    <link rel="self" type="cust-feed/RetailCustomer"
+          href="https://utilityapi.com/DataCustodian/espi/1_1/resource/Batch/RetailCustomer/521009"/>
+    <link rel="related" type="text/html"
+          href="https://cert.greenbuttonalliance.org/certificate/52df5b79-f375-54b4-9eca-3ab0fa6fd45b"/>
+    <id>urn:uuid:4969c644-ade5-529e-a35b-d5fc76f1d6c9</id>
+    <updated>2025-07-02T05:56:49Z</updated>
+    <dc:date>2025-07-02T05:56:49Z</dc:date>
+    <entry>
+        <title>Customer</title>
+        <link rel="self" type="cust-entry/Customer"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271"/>
+        <link rel="up" type="cust-feed/Customer"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer"/>
+        <link rel="related" type="cust-feed/CustomerAccount"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount"/>
+        <link rel="related" type="cust-entry/LocalTimeParameters"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters/TIMEZONE_521009_1902731"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:2a410e3c-dcf8-5b1b-94fe-5bc36837e6f2</id>
+        <updated>2025-07-02T05:56:49Z</updated>
+        <published>2025-07-02T06:01:39Z</published>
+        <content type="atom+xml">
+            <Customer xmlns="http://naesb.org/espi/customer">
+                <Organisation>
+                    <streetAddress>
+                        <streetDetail>
+                            <addressGeneral>111 ANYWHERE ST</addressGeneral>
+                        </streetDetail>
+                        <townDetail>
+                            <name>ANYTOWN</name>
+                            <stateOrProvince>NY</stateOrProvince>
+                        </townDetail>
+                        <postalCode>12345</postalCode>
+                    </streetAddress>
+                </Organisation>
+                <kind>other</kind>
+                <customerName>HEATHER HOMEOWNER</customerName>
+            </Customer>
+        </content>
+        <dc:date>2025-07-02T06:01:39Z</dc:date>
+    </entry>
+    <entry>
+        <title>CustomerAccount</title>
+        <link rel="self" type="cust-entry/CustomerAccount"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f"/>
+        <link rel="up" type="cust-feed/CustomerAccount"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount"/>
+        <link rel="related" type="cust-feed/CustomerAgreement"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement"/>
+        <link rel="related" type="cust-entry/Customer"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:32eb283f-01b4-5f64-a265-a929af82ac28</id>
+        <updated>2025-07-02T05:56:49Z</updated>
+        <published>2025-07-02T06:01:39Z</published>
+        <content type="atom+xml">
+            <CustomerAccount xmlns="http://naesb.org/espi/customer">
+                <contactInfo>
+                    <streetAddress>
+                        <streetDetail>
+                            <addressGeneral>111 ANYWHERE ST</addressGeneral>
+                        </streetDetail>
+                        <townDetail>
+                            <name>ANYTOWN</name>
+                            <stateOrProvince>NY</stateOrProvince>
+                        </townDetail>
+                        <postalCode>12345</postalCode>
+                    </streetAddress>
+                </contactInfo>
+                <accountId>111111111-1</accountId>
+            </CustomerAccount>
+        </content>
+        <dc:date>2025-07-02T06:01:39Z</dc:date>
+    </entry>
+    <entry>
+        <title>CustomerAgreement</title>
+        <link rel="self" type="cust-entry/CustomerAgreement"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731"/>
+        <link rel="up" type="cust-feed/CustomerAgreement"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement"/>
+        <link rel="related" type="cust-feed/ServiceSupplier"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731/ServiceSupplier"/>
+        <link rel="related" type="cust-feed/ProgramDateIdMappings"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731/ProgramDateIdMappings"/>
+        <link rel="related" type="cust-feed/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731/ServiceLocation"/>
+        <link rel="related" type="cust-entry/CustomerAccount"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:eefb30d6-28c1-50d4-893e-49e4f971c30a</id>
+        <updated>2025-07-02T05:56:49Z</updated>
+        <published>2025-07-02T06:04:28Z</published>
+        <content type="atom+xml">
+            <CustomerAgreement xmlns="http://naesb.org/espi/customer">
+                <agreementId>11300-00000</agreementId>
+            </CustomerAgreement>
+        </content>
+        <dc:date>2025-07-02T06:04:28Z</dc:date>
+    </entry>
+    <entry>
+        <title>ServiceLocation</title>
+        <link rel="self" type="cust-entry/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731/ServiceLocation/940aa573-0754-5e52-a076-8e08a0e8c12b"/>
+        <link rel="up" type="cust-feed/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731/ServiceLocation"/>
+        <link rel="related" type="cust-feed/Meter"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731/ServiceLocation/940aa573-0754-5e52-a076-8e08a0e8c12b/Meter"/>
+        <link rel="related" type="cust-feed/EndDevice"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731/ServiceLocation/940aa573-0754-5e52-a076-8e08a0e8c12b/EndDevice"/>
+        <link rel="related" type="cust-entry/LocalTimeParameters"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters/TIMEZONE_521009_1902731"/>
+        <link rel="related" type="cust-entry/CustomerAgreement"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:2e8f0ce8-b66e-5fc4-8b5a-80f1a0dc92ac</id>
+        <updated>2025-07-02T05:56:49Z</updated>
+        <published>2025-07-02T06:04:28Z</published>
+        <content type="atom+xml">
+            <ServiceLocation xmlns="http://naesb.org/espi/customer">
+                <mainAddress>
+                    <streetDetail>
+                        <addressGeneral>111 ANYWHERE ST</addressGeneral>
+                    </streetDetail>
+                    <townDetail>
+                        <name>ANYTOWN</name>
+                        <stateOrProvince>NY</stateOrProvince>
+                    </townDetail>
+                    <postalCode>12345</postalCode>
+                </mainAddress>
+                <UsagePoints>
+                    <UsagePoint>
+                        https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/521009/UsagePoint/1902731
+                    </UsagePoint>
+                </UsagePoints>
+            </ServiceLocation>
+        </content>
+        <dc:date>2025-07-02T06:04:28Z</dc:date>
+    </entry>
+    <entry>
+        <title>Meter</title>
+        <link rel="self" type="cust-entry/Meter"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731/ServiceLocation/940aa573-0754-5e52-a076-8e08a0e8c12b/Meter/d0c821e4-4173-522b-902b-f81767c7d77c"/>
+        <link rel="up" type="cust-feed/Meter"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731/ServiceLocation/940aa573-0754-5e52-a076-8e08a0e8c12b/Meter"/>
+        <link rel="related" type="cust-entry/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731/ServiceLocation/940aa573-0754-5e52-a076-8e08a0e8c12b"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:5819753b-da9b-54f1-867d-7abf7f4b0de3</id>
+        <updated>2025-07-02T05:56:49Z</updated>
+        <published>2025-07-02T06:04:28Z</published>
+        <content type="atom+xml">
+            <Meter xmlns="http://naesb.org/espi/customer">
+                <serialNumber>1130000000</serialNumber>
+            </Meter>
+        </content>
+        <dc:date>2025-07-02T06:04:28Z</dc:date>
+    </entry>
+    <entry>
+        <title>LocalTimeParameters</title>
+        <link rel="self" type="cust-entry/LocalTimeParameters"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters/TIMEZONE_521009_1902731"/>
+        <link rel="up" type="cust-feed/LocalTimeParameters"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters"/>
+        <link rel="related" type="cust-entry/Customer"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271"/>
+        <link rel="related" type="cust-entry/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902731/ServiceLocation/940aa573-0754-5e52-a076-8e08a0e8c12b"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:ff0c2a4c-da41-5f33-a3fa-10ac6ca56e7f</id>
+        <updated>2025-07-02T06:01:39Z</updated>
+        <published>2025-07-02T06:01:39Z</published>
+        <content type="atom+xml">
+            <LocalTimeParameters xmlns="http://naesb.org/espi/customer">
+                <dstEndRule>B40E2000</dstEndRule>
+                <dstOffset>3600</dstOffset>
+                <dstStartRule>360E2000</dstStartRule>
+                <tzOffset>-18000</tzOffset>
+            </LocalTimeParameters>
+        </content>
+        <dc:date>2025-07-02T06:01:39Z</dc:date>
+    </entry>
+    <entry>
+        <title>CustomerAgreement</title>
+        <link rel="self" type="cust-entry/CustomerAgreement"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730"/>
+        <link rel="up" type="cust-feed/CustomerAgreement"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement"/>
+        <link rel="related" type="cust-feed/ServiceSupplier"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730/ServiceSupplier"/>
+        <link rel="related" type="cust-feed/ProgramDateIdMappings"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730/ProgramDateIdMappings"/>
+        <link rel="related" type="cust-feed/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730/ServiceLocation"/>
+        <link rel="related" type="cust-entry/CustomerAccount"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:e4ff42ca-13a8-525b-a890-d03a5fe339ce</id>
+        <updated>2025-07-02T05:57:52Z</updated>
+        <published>2025-07-02T06:03:20Z</published>
+        <content type="atom+xml">
+            <CustomerAgreement xmlns="http://naesb.org/espi/customer">
+                <agreementId>11200-00000</agreementId>
+            </CustomerAgreement>
+        </content>
+        <dc:date>2025-07-02T06:03:20Z</dc:date>
+    </entry>
+    <entry>
+        <title>ServiceLocation</title>
+        <link rel="self" type="cust-entry/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730/ServiceLocation/b80a1e92-99cd-5ab5-891e-193a7628ad48"/>
+        <link rel="up" type="cust-feed/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730/ServiceLocation"/>
+        <link rel="related" type="cust-feed/Meter"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730/ServiceLocation/b80a1e92-99cd-5ab5-891e-193a7628ad48/Meter"/>
+        <link rel="related" type="cust-feed/EndDevice"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730/ServiceLocation/b80a1e92-99cd-5ab5-891e-193a7628ad48/EndDevice"/>
+        <link rel="related" type="cust-entry/LocalTimeParameters"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters/TIMEZONE_521009_1902730"/>
+        <link rel="related" type="cust-entry/CustomerAgreement"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:6f2ef71d-2382-57d6-ab0e-8b6090cb7090</id>
+        <updated>2025-07-02T05:57:52Z</updated>
+        <published>2025-07-02T06:03:20Z</published>
+        <content type="atom+xml">
+            <ServiceLocation xmlns="http://naesb.org/espi/customer">
+                <mainAddress>
+                    <streetDetail>
+                        <addressGeneral>111 ANYWHERE ST</addressGeneral>
+                    </streetDetail>
+                    <townDetail>
+                        <name>ANYTOWN</name>
+                        <stateOrProvince>NY</stateOrProvince>
+                    </townDetail>
+                    <postalCode>12345</postalCode>
+                </mainAddress>
+                <UsagePoints>
+                    <UsagePoint>
+                        https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/521009/UsagePoint/1902730
+                    </UsagePoint>
+                </UsagePoints>
+            </ServiceLocation>
+        </content>
+        <dc:date>2025-07-02T06:03:20Z</dc:date>
+    </entry>
+    <entry>
+        <title>Meter</title>
+        <link rel="self" type="cust-entry/Meter"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730/ServiceLocation/b80a1e92-99cd-5ab5-891e-193a7628ad48/Meter/158d8650-51c2-51aa-bb2f-93d6b54bc84c"/>
+        <link rel="up" type="cust-feed/Meter"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730/ServiceLocation/b80a1e92-99cd-5ab5-891e-193a7628ad48/Meter"/>
+        <link rel="related" type="cust-entry/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730/ServiceLocation/b80a1e92-99cd-5ab5-891e-193a7628ad48"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:270a77b7-12ff-5edc-9a5d-1ac7c9ad8743</id>
+        <updated>2025-07-02T05:57:52Z</updated>
+        <published>2025-07-02T06:03:20Z</published>
+        <content type="atom+xml">
+            <Meter xmlns="http://naesb.org/espi/customer">
+                <serialNumber>1120000000</serialNumber>
+            </Meter>
+        </content>
+        <dc:date>2025-07-02T06:03:20Z</dc:date>
+    </entry>
+    <entry>
+        <title>LocalTimeParameters</title>
+        <link rel="self" type="cust-entry/LocalTimeParameters"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters/TIMEZONE_521009_1902730"/>
+        <link rel="up" type="cust-feed/LocalTimeParameters"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters"/>
+        <link rel="related" type="cust-entry/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902730/ServiceLocation/b80a1e92-99cd-5ab5-891e-193a7628ad48"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:9d145c91-ccfc-5e6b-a7f2-14593808e897</id>
+        <updated>2025-07-02T06:01:39Z</updated>
+        <published>2025-07-02T06:01:39Z</published>
+        <content type="atom+xml">
+            <LocalTimeParameters xmlns="http://naesb.org/espi/customer">
+                <dstEndRule>B40E2000</dstEndRule>
+                <dstOffset>3600</dstOffset>
+                <dstStartRule>360E2000</dstStartRule>
+                <tzOffset>-18000</tzOffset>
+            </LocalTimeParameters>
+        </content>
+        <dc:date>2025-07-02T06:01:39Z</dc:date>
+    </entry>
+    <entry>
+        <title>CustomerAgreement</title>
+        <link rel="self" type="cust-entry/CustomerAgreement"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729"/>
+        <link rel="up" type="cust-feed/CustomerAgreement"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement"/>
+        <link rel="related" type="cust-feed/ServiceSupplier"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729/ServiceSupplier"/>
+        <link rel="related" type="cust-feed/ProgramDateIdMappings"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729/ProgramDateIdMappings"/>
+        <link rel="related" type="cust-feed/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729/ServiceLocation"/>
+        <link rel="related" type="cust-entry/CustomerAccount"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:c127dbaa-df76-529c-9bfc-66df132179e1</id>
+        <updated>2025-07-02T05:56:49Z</updated>
+        <published>2025-07-02T06:01:39Z</published>
+        <content type="atom+xml">
+            <CustomerAgreement xmlns="http://naesb.org/espi/customer">
+                <agreementId>11100-00000</agreementId>
+            </CustomerAgreement>
+        </content>
+        <dc:date>2025-07-02T06:01:39Z</dc:date>
+    </entry>
+    <entry>
+        <title>ServiceLocation</title>
+        <link rel="self" type="cust-entry/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729/ServiceLocation/50b50fd5-9d0c-542f-ac24-69e955a359fa"/>
+        <link rel="up" type="cust-feed/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729/ServiceLocation"/>
+        <link rel="related" type="cust-feed/Meter"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729/ServiceLocation/50b50fd5-9d0c-542f-ac24-69e955a359fa/Meter"/>
+        <link rel="related" type="cust-feed/EndDevice"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729/ServiceLocation/50b50fd5-9d0c-542f-ac24-69e955a359fa/EndDevice"/>
+        <link rel="related" type="cust-entry/LocalTimeParameters"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters/TIMEZONE_521009_1902729"/>
+        <link rel="related" type="cust-entry/CustomerAgreement"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:a46b9d9f-e048-5452-97e9-b0e6ce325060</id>
+        <updated>2025-07-02T05:56:49Z</updated>
+        <published>2025-07-02T06:01:39Z</published>
+        <content type="atom+xml">
+            <ServiceLocation xmlns="http://naesb.org/espi/customer">
+                <mainAddress>
+                    <streetDetail>
+                        <addressGeneral>111 ANYWHERE ST</addressGeneral>
+                    </streetDetail>
+                    <townDetail>
+                        <name>ANYTOWN</name>
+                        <stateOrProvince>NY</stateOrProvince>
+                    </townDetail>
+                    <postalCode>12345</postalCode>
+                </mainAddress>
+                <UsagePoints>
+                    <UsagePoint>
+                        https://utilityapi.com/DataCustodian/espi/1_1/resource/Subscription/521009/UsagePoint/1902729
+                    </UsagePoint>
+                </UsagePoints>
+            </ServiceLocation>
+        </content>
+        <dc:date>2025-07-02T06:01:39Z</dc:date>
+    </entry>
+    <entry>
+        <title>Meter</title>
+        <link rel="self" type="cust-entry/Meter"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729/ServiceLocation/50b50fd5-9d0c-542f-ac24-69e955a359fa/Meter/0d9b8a43-3f5d-5705-981a-fe64949100f8"/>
+        <link rel="up" type="cust-feed/Meter"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729/ServiceLocation/50b50fd5-9d0c-542f-ac24-69e955a359fa/Meter"/>
+        <link rel="related" type="cust-entry/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729/ServiceLocation/50b50fd5-9d0c-542f-ac24-69e955a359fa"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:2e2ea8ba-d62c-533e-accc-e3f573d1eb00</id>
+        <updated>2025-07-02T05:56:49Z</updated>
+        <published>2025-07-02T06:01:39Z</published>
+        <content type="atom+xml">
+            <Meter xmlns="http://naesb.org/espi/customer">
+                <serialNumber>1110000000</serialNumber>
+            </Meter>
+        </content>
+        <dc:date>2025-07-02T06:01:39Z</dc:date>
+    </entry>
+    <entry>
+        <title>LocalTimeParameters</title>
+        <link rel="self" type="cust-entry/LocalTimeParameters"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters/TIMEZONE_521009_1902729"/>
+        <link rel="up" type="cust-feed/LocalTimeParameters"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/LocalTimeParameters"/>
+        <link rel="related" type="cust-entry/ServiceLocation"
+              href="https://utilityapi.com/DataCustodian/espi/1_1/resource/RetailCustomer/521009/Customer/7277ce18-ecb7-5cd8-b343-7ff4f429e271/CustomerAccount/cdef9fe8-19ec-5fe5-a95f-3d1be85a748f/CustomerAgreement/1902729/ServiceLocation/50b50fd5-9d0c-542f-ac24-69e955a359fa"/>
+        <author>
+            <name/>
+        </author>
+        <id>urn:uuid:0202e5eb-5d39-5965-b88b-633d7f5fbc8f</id>
+        <updated>2025-07-02T06:01:39Z</updated>
+        <published>2025-07-02T06:01:39Z</published>
+        <content type="atom+xml">
+            <LocalTimeParameters xmlns="http://naesb.org/espi/customer">
+                <dstEndRule>B40E2000</dstEndRule>
+                <dstOffset>3600</dstOffset>
+                <dstStartRule>360E2000</dstStartRule>
+                <tzOffset>-18000</tzOffset>
+            </LocalTimeParameters>
+        </content>
+        <dc:date>2025-07-02T06:01:39Z</dc:date>
+    </entry>
+</feed>
