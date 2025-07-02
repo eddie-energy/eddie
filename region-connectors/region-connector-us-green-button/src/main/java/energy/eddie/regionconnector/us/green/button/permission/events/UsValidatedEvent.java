@@ -36,6 +36,19 @@ public class UsValidatedEvent extends PersistablePermissionEvent {
         this.scope = scope;
     }
 
+    public UsValidatedEvent(
+            String permissionId,
+            LocalDate start,
+            LocalDate end,
+            String scope
+    ) {
+        super(permissionId, PermissionProcessStatus.VALIDATED);
+        this.start = start;
+        this.end = end;
+        this.granularity = null;
+        this.scope = scope;
+    }
+
     protected UsValidatedEvent() {
         super();
         this.start = null;

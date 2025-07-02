@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.us.green.button.services.historical.collection;
 
 import energy.eddie.api.agnostic.data.needs.EnergyType;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
@@ -51,6 +52,9 @@ public class DataNeedMatcher {
     public boolean isRelevantEnergyType(Meter meter, UsGreenButtonPermissionRequest permissionRequest) {
         var dataNeedId = permissionRequest.dataNeedId();
         var dataNeed = dataNeedsService.getById(dataNeedId);
+        if (dataNeed instanceof AccountingPointDataNeed) {
+            return true;
+        }
         if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed vhdDataNeed)) {
             return false;
         }

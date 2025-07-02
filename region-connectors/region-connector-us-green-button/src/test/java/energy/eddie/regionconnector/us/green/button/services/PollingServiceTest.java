@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.us.green.button.oauth.persistence.OAuthToken
 import energy.eddie.regionconnector.us.green.button.permission.events.PollingStatus;
 import energy.eddie.regionconnector.us.green.button.permission.request.meter.reading.MeterReading;
 import energy.eddie.regionconnector.us.green.button.persistence.UsPermissionRequestRepository;
+import energy.eddie.regionconnector.us.green.button.providers.IdentifiableSyndFeed;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -50,7 +51,7 @@ class PollingServiceTest {
     @InjectMocks
     private PollingService pollingService;
 
-    public static Stream<Arguments> pollWithException_doesNothing() {
+    public static Stream<Arguments> pollValidatedHistoricalDataWithException_doesNothing() {
         return Stream.of(
                 Arguments.of(new Exception()),
                 Arguments.of(WebClientResponseException.create(HttpStatus.UNAUTHORIZED, "", null, null, null, null))
@@ -58,7 +59,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void pollOfValidatedHistoricalData_publishes() {
+    void pollValidatedHistoricalDataOfValidatedHistoricalData_publishes() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var start = now.minusDays(10);
@@ -85,14 +86,14 @@ class PollingServiceTest {
                 .thenReturn(Flux.just(new SyndFeedImpl()));
 
         // When
-        pollingService.poll("pid");
+        pollingService.pollValidatedHistoricalData("pid");
 
         // Then
-        verify(publishService).publish(any());
+        verify(publishService).publishValidatedHistoricalData(any());
     }
 
     @Test
-    void pollOfValidatedHistoricalData_forFuture_publishes() {
+    void pollValidatedHistoricalDataOfValidatedHistoricalData_forFuture_publishes() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var start = now.minusDays(10);
@@ -119,14 +120,14 @@ class PollingServiceTest {
                 .thenReturn(Flux.just(new SyndFeedImpl()));
 
         // When
-        pollingService.poll("pid");
+        pollingService.pollValidatedHistoricalData("pid");
 
         // Then
-        verify(publishService).publish(any());
+        verify(publishService).publishValidatedHistoricalData(any());
     }
 
     @Test
-    void pollOfValidatedHistoricalData_whereSomeDataAlreadyHasBeenPolled() {
+    void pollValidatedHistoricalDataOfValidatedHistoricalData_whereSomeDataAlreadyHasBeenPolled() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var start = now.minusDays(10);
@@ -159,14 +160,14 @@ class PollingServiceTest {
                 .thenReturn(Flux.just(new SyndFeedImpl(), new SyndFeedImpl()));
 
         // When
-        pollingService.poll("pid");
+        pollingService.pollValidatedHistoricalData("pid");
 
         // Then
-        verify(publishService, times(2)).publish(any());
+        verify(publishService, times(2)).publishValidatedHistoricalData(any());
     }
 
     @Test
-    void pollOfInactivePermission_doesNothing() {
+    void pollValidatedHistoricalDataOfInactivePermission_doesNothing() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
@@ -177,15 +178,15 @@ class PollingServiceTest {
                 .thenReturn(pr);
 
         // When
-        pollingService.poll("pid");
+        pollingService.pollValidatedHistoricalData("pid");
 
         // Then
         verify(api, never()).batchSubscription(any(), any(), any(), any(), any());
-        verify(publishService, never()).publish(any());
+        verify(publishService, never()).publishValidatedHistoricalData(any());
     }
 
     @Test
-    void pollWithCredentialsWithoutRefreshToken_emitsUnfulfillableEvent() {
+    void pollValidatedHistoricalDataWithCredentialsWithoutRefreshToken_emitsUnfulfillableEvent() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
@@ -197,16 +198,16 @@ class PollingServiceTest {
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.error(new NoRefreshTokenException()));
 
         // When
-        pollingService.poll("pid");
+        pollingService.pollValidatedHistoricalData("pid");
 
         // Then
         verify(api, never()).batchSubscription(any(), any(), any(), any(), any());
-        verify(publishService, never()).publish(any());
+        verify(publishService, never()).publishValidatedHistoricalData(any());
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, event.status())));
     }
 
     @Test
-    void pollWithUnknownExceptionDoesNothing() {
+    void pollValidatedHistoricalDataWithUnknownExceptionDoesNothing() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
@@ -218,16 +219,16 @@ class PollingServiceTest {
         when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.error(new Exception()));
 
         // When
-        pollingService.poll("pid");
+        pollingService.pollValidatedHistoricalData("pid");
 
         // Then
         verify(api, never()).batchSubscription(any(), any(), any(), any(), any());
-        verify(publishService, never()).publish(any());
+        verify(publishService, never()).publishValidatedHistoricalData(any());
         verify(outbox, never()).commit(any());
     }
 
     @Test
-    void poll_withForbidden_revokesPermissionRequest() {
+    void pollValidatedHistoricalData_withForbidden_revokesPermissionRequest() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
@@ -240,14 +241,14 @@ class PollingServiceTest {
                 WebClientResponseException.create(HttpStatus.FORBIDDEN, "", null, null, null, null)));
 
         // When
-        pollingService.poll("pid");
+        pollingService.pollValidatedHistoricalData("pid");
 
         // Then
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
     }
 
     @Test
-    void pollWithForbidden_revokesPermissionRequest() {
+    void pollValidatedHistoricalDataWithForbidden_revokesPermissionRequest() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
@@ -271,16 +272,16 @@ class PollingServiceTest {
                                                                          null)));
 
         // When
-        pollingService.poll("pid");
+        pollingService.pollValidatedHistoricalData("pid");
 
         // Then
-        verify(publishService, never()).publish(any());
+        verify(publishService, never()).publishValidatedHistoricalData(any());
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
     }
 
     @ParameterizedTest
     @MethodSource
-    void pollWithException_doesNothing(Exception e) {
+    void pollValidatedHistoricalDataWithException_doesNothing(Exception e) {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
@@ -300,10 +301,80 @@ class PollingServiceTest {
                 .thenReturn(Flux.error(e));
 
         // When
-        pollingService.poll("pid");
+        pollingService.pollValidatedHistoricalData("pid");
 
         // Then
-        verify(publishService, never()).publish(any());
+        verify(publishService, never()).publishValidatedHistoricalData(any());
         verify(outbox, never()).commit(any());
+    }
+
+    @Test
+    void pollAccountingPointData_emitsAccountingPointData() {
+        // Given
+        var pr = new GreenButtonPermissionRequestBuilder().
+                setPermissionId("pid")
+                .setAuthUid("1111")
+                .build();
+        var credentials = new OAuthTokenDetails("pid",
+                                                "token",
+                                                Instant.now(Clock.systemUTC()),
+                                                Instant.now(Clock.systemUTC()),
+                                                "token",
+                                                "1111");
+        when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.just(credentials));
+        var feed = new SyndFeedImpl();
+        when(api.retailCustomer("1111", "token"))
+                .thenReturn(Mono.just(feed));
+
+        // When
+        pollingService.pollAccountingPointData(pr);
+
+        // Then
+        verify(publishService).publishAccountingPointData(new IdentifiableSyndFeed(pr, feed));
+    }
+
+    @Test
+    void pollAccountingPointData_withForbidden_revokesPermissionRequest() {
+        // Given
+        var pr = new GreenButtonPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .build();
+        when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.error(
+                WebClientResponseException.create(HttpStatus.FORBIDDEN, "", null, null, null, null)));
+
+        // When
+        pollingService.pollAccountingPointData(pr);
+
+        // Then
+        verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
+    }
+
+    @Test
+    void pollAccountingPointDataWithForbidden_revokesPermissionRequest() {
+        // Given
+        var pr = new GreenButtonPermissionRequestBuilder()
+                .setAuthUid("1111")
+                .setPermissionId("pid")
+                .build();
+        var credentials = new OAuthTokenDetails("pid",
+                                                "token",
+                                                Instant.now(Clock.systemUTC()),
+                                                Instant.now(Clock.systemUTC()),
+                                                "token",
+                                                "1111");
+        when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.just(credentials));
+        when(api.retailCustomer("1111", "token"))
+                .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.FORBIDDEN.value(),
+                                                                         "",
+                                                                         null,
+                                                                         null,
+                                                                         null)));
+
+        // When
+        pollingService.pollAccountingPointData(pr);
+
+        // Then
+        verify(publishService, never()).publishValidatedHistoricalData(any());
+        verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
     }
 }

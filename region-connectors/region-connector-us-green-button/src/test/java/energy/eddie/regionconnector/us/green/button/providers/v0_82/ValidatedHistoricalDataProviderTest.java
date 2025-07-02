@@ -59,7 +59,7 @@ class ValidatedHistoricalDataProviderTest {
                 .build();
 
         // When
-        publishService.publish(new IdentifiableSyndFeed(permissionRequest, feed));
+        publishService.publishValidatedHistoricalData(new IdentifiableSyndFeed(permissionRequest, feed));
 
         // Then
         StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
