@@ -3,9 +3,8 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.errors.*;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.permission.*;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -81,6 +80,8 @@ class PermissionServiceTest {
     @Mock
     private AiidaLocalDataNeed mockAiidaDataNeed;
     @Mock
+    private InboundAiidaLocalDataNeed mockInboundAiidaLocalDataNeed;
+    @Mock
     private AuthService mockAuthService;
     @Mock
     private Permission mockPermission;
@@ -118,8 +119,8 @@ class PermissionServiceTest {
         when(mockPermissionRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.connectionId()).thenReturn(connectionId);
-        when(mockPermission.dataNeed()).thenReturn(mockAiidaDataNeed);
-        when(mockAiidaDataNeed.dataNeedId()).thenReturn(dataNeedId);
+        when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
+        when(mockPermission.dataSource()).thenReturn(mockDataSource);
 
         // When
         testPublisher.next(permissionId);
@@ -131,6 +132,7 @@ class PermissionServiceTest {
         verify(mockPermission).setStatus(TERMINATED);
         verify(mockPermission).setRevokeTime(any());
         verify(mockPermissionRepository).save(any());
+        verify(mockDataSourceService).deleteDataSource(any());
     }
 
     @Test
@@ -390,6 +392,29 @@ class PermissionServiceTest {
     }
 
     @Test
+    void givenValidInboundPermission_createsAndStartsDataSource() throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
+        // Given
+        when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
+        when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
+        when(mockDataSourceRepository.findById(dataSourceId)).thenReturn(Optional.of(mockDataSource));
+        when(mockPermission.status()).thenReturn(FETCHED_DETAILS);
+        when(mockPermission.mqttStreamingConfig()).thenReturn(mock(MqttStreamingConfig.class));
+        when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
+        when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
+        when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
+        when(mockPermission.userId()).thenReturn(userId);
+        when(mockPermission.permissionId()).thenReturn(permissionId);
+
+        // When
+        service.acceptPermission(permissionId, dataSourceId);
+
+        // Then
+        verify(mockDataSourceRepository).save(any(InboundDataSource.class));
+        verify(mockPermission).setDataSource(any(InboundDataSource.class));
+        verify(mockDataSourceService).startDataSource(any(InboundDataSource.class));
+    }
+
+    @Test
     void givenInvalidUser_getPermissions_throws() throws InvalidUserException {
         // Given
         when(mockAuthService.getCurrentUserId()).thenThrow(InvalidUserException.class);
@@ -429,9 +454,9 @@ class PermissionServiceTest {
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.connectionId()).thenReturn("connectionId");
-        when(mockPermission.dataNeed()).thenReturn(mockAiidaDataNeed);
-        when(mockAiidaDataNeed.dataNeedId()).thenReturn(dataNeedId);
+        when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
         when(mockPermission.status()).thenReturn(STREAMING_DATA);
+        when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.permissionId()).thenReturn(permissionId);
 
         // When
@@ -443,6 +468,7 @@ class PermissionServiceTest {
         verify(mockPermission).setRevokeTime(fixedInstant);
         verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == REVOKED));
         verify(mockPermissionRepository).save(any());
+        verify(mockDataSourceService).deleteDataSource(any());
     }
 
     @Nested

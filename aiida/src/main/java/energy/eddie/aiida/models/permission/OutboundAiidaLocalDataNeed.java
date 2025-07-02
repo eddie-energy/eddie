@@ -1,6 +1,6 @@
 package energy.eddie.aiida.models.permission;
 
-import energy.eddie.aiida.dtos.PermissionDetailsDto;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -13,7 +13,7 @@ public class OutboundAiidaLocalDataNeed extends AiidaLocalDataNeed {
     protected OutboundAiidaLocalDataNeed() {
     }
 
-    public OutboundAiidaLocalDataNeed(PermissionDetailsDto details) {
-        super(details);
+    public OutboundAiidaLocalDataNeed(AiidaDataNeed dataNeed) {
+        super(dataNeed);
     }
 }

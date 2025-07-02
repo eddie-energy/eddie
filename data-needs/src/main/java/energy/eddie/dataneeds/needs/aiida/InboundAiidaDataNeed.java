@@ -12,6 +12,7 @@ public class InboundAiidaDataNeed extends AiidaDataNeed {
     public static final String DISCRIMINATOR_VALUE = "inbound-aiida";
 
     @SuppressWarnings("NullAway.Init")
-    protected InboundAiidaDataNeed() {
+    public InboundAiidaDataNeed() {
+        // Default constructor for JPA
     }
 }

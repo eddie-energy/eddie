@@ -9,6 +9,7 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.RegionConnectorFilter;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
@@ -51,7 +52,7 @@ class DataNeedCalculationServiceImplTest {
     @Mock
     private AccountingPointDataNeed accountingPointDataNeed;
     @Mock
-    private AiidaDataNeed aiidaDataNeed;
+    private OutboundAiidaDataNeed aiidaDataNeed;
 
     @Test
     void givenUnknownDataNeedId_returnsDataNeedNotFoundResult() {
@@ -114,7 +115,7 @@ class DataNeedCalculationServiceImplTest {
         // Then
         assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
         assertEquals(
-                "Data need type \"AiidaDataNeed\" not supported, region connector supports data needs of types ValidatedHistoricalDataDataNeed, AccountingPointDataNeed",
+                "Data need type \"OutboundAiidaDataNeed\" not supported, region connector supports data needs of types ValidatedHistoricalDataDataNeed, AccountingPointDataNeed",
                 ((DataNeedNotSupportedResult) res).message()
         );
     }

@@ -11,7 +11,7 @@ VALUES ('6609a9b3-0718-4082-935d-6a98c0f8c5a2',
         'https://example.com/toc',
         'purpose',
         '*/5 * * * * *',
-        'aiida');
+        'outbound-aiida');
 
 INSERT INTO public.permission (permission_id,
                                eddie_id,

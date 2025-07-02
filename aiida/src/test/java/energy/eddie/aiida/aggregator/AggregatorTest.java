@@ -1,11 +1,15 @@
 package energy.eddie.aiida.aggregator;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
+import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.utils.TestUtils;
@@ -45,6 +49,7 @@ class AggregatorTest {
     private static final String DATASOURCE_NAME_1 = "test-1";
     private static final UUID DATA_SOURCE_ID_1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID DATA_SOURCE_ID_2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID DATA_SOURCE_ID_3 = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56607");
     private static final SimulationDataSource DATA_SOURCE_1 = new SimulationDataSource(new DataSourceDto(
             DATA_SOURCE_ID_1,
@@ -66,6 +71,23 @@ class AggregatorTest {
             null,
             null,
             null), USER_ID);
+    private static final InboundDataSource INBOUND_DATA_SOURCE = new InboundDataSource(
+            new DataSourceDto(DATA_SOURCE_ID_3,
+                              DataSourceType.SMART_METER_ADAPTER,
+                              AiidaAsset.SUBMETER,
+                              "sma",
+                              "AT",
+                              true,
+                              null,
+                              null,
+                              null),
+            USER_ID,
+            new DataSourceMqttDto("tcp://localhost:1883",
+                                  "tcp://localhost:1883",
+                                  "aiida/test",
+                                  "user",
+                                  "password")
+    );
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
     private Aggregator aggregator;
     private AiidaAsset wantedAsset;
@@ -406,6 +428,25 @@ class AggregatorTest {
         TestUtils.verifyErrorLogStartsWith("Error from datasource %s".formatted(DATASOURCE_NAME_1),
                                            LOG_CAPTOR,
                                            IOException.class);
+    }
+
+    @Test
+    void givenInboundDataSource_savedToInboundRepository() {
+        TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
+        TestPublisher<InboundRecord> inboundPublisher = TestPublisher.create();
+
+        var mockAdapter = mock(InboundAdapter.class);
+        when(mockAdapter.dataSource()).thenReturn(INBOUND_DATA_SOURCE);
+        when(mockAdapter.inboundRecordFlux()).thenReturn(inboundPublisher.flux());
+        when(mockAdapter.start()).thenReturn(recordPublisher.flux());
+
+        aggregator.addNewDataSourceAdapter(mockAdapter);
+
+        inboundPublisher.next(new InboundRecord(Instant.now(), AiidaAsset.SUBMETER, USER_ID, DATA_SOURCE_ID_3, "Test"));
+        inboundPublisher.complete();
+        recordPublisher.complete();
+
+        verify(mockInboundRecordRepository, times(1)).save(any(InboundRecord.class));
     }
 
     private boolean containsExpectedAiidaRecordValue(AiidaRecord actual, AiidaRecordValue expectedValue) {

@@ -24,8 +24,12 @@ public class InboundDataSource extends MqttDataSource {
     protected InboundDataSource() {}
 
     public InboundDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
+        this(dto, userId, dataSourceMqttDto, BCrypt.hashpw(SecretGenerator.generate(), BCrypt.gensalt()));
+    }
+
+    public InboundDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto, String accessCode) {
         super(dto, userId, dataSourceMqttDto);
-        this.accessCode = BCrypt.hashpw(SecretGenerator.generate(), BCrypt.gensalt());
+        this.accessCode = accessCode;
     }
 
     public static class Builder  {
@@ -44,6 +48,7 @@ public class InboundDataSource extends MqttDataSource {
                     DataSourceType.INBOUND,
                     dataNeed.asset(),
                     permission.permissionId().toString(),
+                    "",
                     true,
                     null, null, null
             );

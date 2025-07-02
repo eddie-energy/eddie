@@ -346,7 +346,10 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         if (aiidaLocalDataNeed.isPresent()) {
             permission.setDataNeed(aiidaLocalDataNeed.get());
         } else {
-            permission.setDataNeed(new AiidaLocalDataNeed.Builder(details).build());
+            var localDataNeed = new AiidaLocalDataNeed
+                    .Builder(details.dataNeed())
+                    .build();
+            permission.setDataNeed(localDataNeed);
         }
 
         if (!isPermissionFulfillable(permission)) {

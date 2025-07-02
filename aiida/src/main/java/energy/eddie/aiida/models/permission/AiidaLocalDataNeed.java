@@ -3,7 +3,6 @@ package energy.eddie.aiida.models.permission;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.dataneeds.needs.aiida.*;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
@@ -77,16 +76,16 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     protected AiidaLocalDataNeed() {
     }
 
-    protected AiidaLocalDataNeed(PermissionDetailsDto details) {
-        this.dataNeedId = details.dataNeed().dataNeedId();
-        this.type = details.dataNeed().type();
-        this.name = details.dataNeed().name();
-        this.purpose = details.dataNeed().purpose();
-        this.policyLink = details.dataNeed().policyLink();
-        this.transmissionSchedule = details.dataNeed().transmissionSchedule();
-        this.schemas = details.dataNeed().schemas();
-        this.asset = details.dataNeed().asset();
-        this.dataTags = requireNonNullElse(details.dataNeed().dataTags(), Set.of());
+    protected AiidaLocalDataNeed(AiidaDataNeed dataNeed) {
+        this.dataNeedId = dataNeed.dataNeedId();
+        this.type = dataNeed.type();
+        this.name = dataNeed.name();
+        this.purpose = dataNeed.purpose();
+        this.policyLink = dataNeed.policyLink();
+        this.transmissionSchedule = dataNeed.transmissionSchedule();
+        this.schemas = dataNeed.schemas();
+        this.asset = dataNeed.asset();
+        this.dataTags = requireNonNullElse(dataNeed.dataTags(), Set.of());
     }
 
     public String name() {
@@ -124,16 +123,16 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     }
 
     public static class Builder {
-        private final PermissionDetailsDto details;
+        private final AiidaDataNeed dataNeed;
 
-        public Builder(PermissionDetailsDto details) {
-            this.details = details;
+        public Builder(AiidaDataNeed dataNeed) {
+            this.dataNeed = dataNeed;
         }
 
         public AiidaLocalDataNeed build() {
-            return details.dataNeed().type().equals(InboundAiidaDataNeed.DISCRIMINATOR_VALUE)
-                    ? new InboundAiidaLocalDataNeed(details)
-                    : new OutboundAiidaLocalDataNeed(details);
+            return dataNeed.type().equals(InboundAiidaDataNeed.DISCRIMINATOR_VALUE)
+                    ? new InboundAiidaLocalDataNeed(dataNeed)
+                    : new OutboundAiidaLocalDataNeed(dataNeed);
         }
     }
 }
