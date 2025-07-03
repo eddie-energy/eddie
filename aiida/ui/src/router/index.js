@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import PermissionView from '@/views/PermissionView.vue'
 import DataSourceView from '@/views/DataSourceView.vue'
 
 const router = createRouter({
@@ -8,7 +8,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: PermissionView,
     },
     {
       path: '/data-sources',
