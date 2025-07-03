@@ -1,4 +1,4 @@
-package energy.eddie.aiida.models.permission;
+package energy.eddie.aiida.models.permission.dataneed;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -120,19 +120,5 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @Override
     public String type() {
         return type;
-    }
-
-    public static class Builder {
-        private final AiidaDataNeed dataNeed;
-
-        public Builder(AiidaDataNeed dataNeed) {
-            this.dataNeed = dataNeed;
-        }
-
-        public AiidaLocalDataNeed build() {
-            return dataNeed.type().equals(InboundAiidaDataNeed.DISCRIMINATOR_VALUE)
-                    ? new InboundAiidaLocalDataNeed(dataNeed)
-                    : new OutboundAiidaLocalDataNeed(dataNeed);
-        }
     }
 }

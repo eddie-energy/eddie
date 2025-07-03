@@ -1,6 +1,6 @@
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.repositories.AiidaLocalDataNeedRepository;
 import org.springframework.stereotype.Service;
 

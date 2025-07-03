@@ -1,4 +1,4 @@
-package energy.eddie.aiida.models.permission;
+package energy.eddie.aiida.models.permission.dataneed;
 
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;

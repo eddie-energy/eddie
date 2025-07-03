@@ -1,7 +1,7 @@
 package energy.eddie.aiida.utils;
 
 import energy.eddie.aiida.dtos.AiidaRecordStreamingDto;
-import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;

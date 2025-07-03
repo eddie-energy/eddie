@@ -5,6 +5,8 @@ import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.errors.*;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.*;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -346,9 +348,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         if (aiidaLocalDataNeed.isPresent()) {
             permission.setDataNeed(aiidaLocalDataNeed.get());
         } else {
-            var localDataNeed = new AiidaLocalDataNeed
-                    .Builder(details.dataNeed())
-                    .build();
+            var localDataNeed = AiidaLocalDataNeedFactory.create(details.dataNeed());
             permission.setDataNeed(localDataNeed);
         }
 
