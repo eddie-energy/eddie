@@ -6,7 +6,6 @@ import PermissionDialog from '@/components/PermissionDialog.vue'
 const paths = [
   ['/', 'Permissions', 'key'],
   ['/data-sources', 'Data Sources', 'outlet'],
-  ['/services', 'Services', 'boxes'],
 ]
 
 const route = useRoute()
