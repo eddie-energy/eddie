@@ -142,23 +142,23 @@
       </div>
     </sl-dialog>
 
-    <sl-dialog id="ephemeral-data-source-dialog" label="MQTT Password">
+    <sl-dialog id="secrets-data-source-dialog" label="MQTT Password">
       <div>
         <p>
           Make sure to copy the password now. You won't be able to see it again.
         </p>
 
-        <span hidden class="mqtt-password" id="ephemeral-data-source-password"></span>
+        <span hidden class="mqtt-password" id="secrets-data-source-password"></span>
         <span>********</span>
         <sl-icon
-          id="ephemeral-data-source-toggle-password"
+          id="secrets-data-source-toggle-password"
           style="cursor: pointer"
           name="eye"
         ></sl-icon>
       </div>
 
       <div slot="footer">
-        <sl-button type="button" variant="neutral" onclick="window.closeEphemeralDataSourceDialog()">Close</sl-button>
+        <sl-button type="button" variant="neutral" onclick="window.closeSecretsDataSourceDialog()">Close</sl-button>
       </div>
     </sl-dialog>
 

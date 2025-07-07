@@ -507,7 +507,7 @@ function renderDataSources() {
 
           <dt>MQTT Password:</dt>
           <dd>
-            <sl-button variant="default" size="small" onclick="window.regenerateEphemeralDataSource('${dataSource.id}')">
+            <sl-button variant="default" size="small" onclick="window.regenerateSecretsDataSource('${dataSource.id}')">
               Regenerate
             </sl-button>
           </dd>
@@ -742,8 +742,8 @@ function closeAddDataSourceDialog() {
   document.getElementById("add-data-source-dialog").hide();
 }
 
-function regenerateEphemeralDataSource(dataSourceId) {
-  fetch(`${DATASOURCES_BASE_URL}/${dataSourceId}/regenerate-ephemeral`, {
+function regenerateSecretsDataSource(dataSourceId) {
+  fetch(`${DATASOURCES_BASE_URL}/${dataSourceId}/regenerate-secrets`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -754,17 +754,17 @@ function regenerateEphemeralDataSource(dataSourceId) {
       if (!response.ok) {
         const errorMessage = await response.text();
         throw new Error(
-          `Failed to regenerate ephemeral data: [${response.status}] ${errorMessage}`
+          `Failed to regenerate secrets: [${response.status}] ${errorMessage}`
         );
       }
       return response.json();
     })
-    .then((dataSourceEphemeral) => {
-      openEphemeralDataSourceDialog(dataSourceEphemeral)
+    .then((dataSourceSecrets) => {
+      openSecretsDataSourceDialog(dataSourceSecrets)
     })
     .catch((error) => {
-      console.error("Failed to regenerate ephemeral data:", error);
-      alert(`Failed to regenerate ephemeral data: ${error.message}`);
+      console.error("Failed to regenerate secrets:", error);
+      alert(`Failed to regenerate secrets: ${error.message}`);
     });
 }
 
@@ -782,15 +782,15 @@ function downloadTlsCertificate() {
     })
 }
 
-function openEphemeralDataSourceDialog(dataSourceEphemeral) {
+function openSecretsDataSourceDialog(dataSourceSecrets) {
   closeAddDataSourceDialog();
   renderDataSources();
 
-  if(dataSourceEphemeral && dataSourceEphemeral.plaintextPassword) {
-    const passwordSpan = document.getElementById(`ephemeral-data-source-password`);
-    const toggleIcon = document.getElementById(`ephemeral-data-source-toggle-password`);
+  if(dataSourceSecrets && dataSourceSecrets.plaintextPassword) {
+    const passwordSpan = document.getElementById(`secrets-data-source-password`);
+    const toggleIcon = document.getElementById(`secrets-data-source-toggle-password`);
 
-    passwordSpan.innerText = dataSourceEphemeral.plaintextPassword;
+    passwordSpan.innerText = dataSourceSecrets.plaintextPassword;
 
     if (toggleIcon) {
       toggleIcon.addEventListener("click", () => {
@@ -799,13 +799,13 @@ function openEphemeralDataSourceDialog(dataSourceEphemeral) {
       });
     }
 
-    document.getElementById("ephemeral-data-source-dialog").show();
+    document.getElementById("secrets-data-source-dialog").show();
 
   }
 }
 
-function closeEphemeralDataSourceDialog() {
-  document.getElementById("ephemeral-data-source-dialog").hide();
+function closeSecretsDataSourceDialog() {
+  document.getElementById("secrets-data-source-dialog").hide();
 }
 
 function openEditDataSourceDialog(dataSourceId) {
@@ -1066,8 +1066,8 @@ document
         }
         return response.json();
       })
-      .then((dataSourceEphemeral) => {
-        openEphemeralDataSourceDialog(dataSourceEphemeral)
+      .then((dataSourceSecrets) => {
+        openSecretsDataSourceDialog(dataSourceSecrets)
       })
       .catch((error) => {
         console.error("Failed to add data source:", error);
@@ -1162,6 +1162,6 @@ window.hideUserDrawer = () => userDrawer.hide();
 window.openAddDataSourceDialog = openAddDataSourceDialog;
 window.closeAddDataSourceDialog = closeAddDataSourceDialog;
 window.closeEditDataSourceDialog = closeEditDataSourceDialog;
-window.closeEphemeralDataSourceDialog = closeEphemeralDataSourceDialog;
-window.regenerateEphemeralDataSource = regenerateEphemeralDataSource;
+window.closeSecretsDataSourceDialog = closeSecretsDataSourceDialog;
+window.regenerateSecretsDataSource = regenerateSecretsDataSource;
 window.downloadTlsCertificate = downloadTlsCertificate;

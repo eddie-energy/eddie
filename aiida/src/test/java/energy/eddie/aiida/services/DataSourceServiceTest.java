@@ -254,11 +254,11 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldRegenerateEphemeral() {
+    void shouldRegenerateSecrets() {
         MqttDataSource dataSource = (MqttDataSource) createNewDataSource(DATA_SOURCE_ID, DataSourceType.SMART_METER_ADAPTER);
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(dataSource));
 
-        var result = dataSourceService.regenerateEphemeral(DATA_SOURCE_ID);
+        var result = dataSourceService.regenerateSecrets(DATA_SOURCE_ID);
 
         assertNotNull(result.plaintextPassword());
         assertNotEquals(dataSource.mqttPassword(), result.plaintextPassword());
@@ -267,11 +267,11 @@ class DataSourceServiceTest {
         verify(repository, times(1)).save(any(MqttDataSource.class));
     }
 
-    @Test void shouldNotRegenerateEphemeralIfNotMqtt() {
+    @Test void shouldNotRegenerateSecretsIfNotMqtt() {
         var dataSource = createNewDataSource(DATA_SOURCE_ID, DataSourceType.SIMULATION);
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(dataSource));
 
-        var result = dataSourceService.regenerateEphemeral(DATA_SOURCE_ID);
+        var result = dataSourceService.regenerateSecrets(DATA_SOURCE_ID);
 
         assertNull(result.plaintextPassword());
         verify(bCryptPasswordEncoder, never()).encode(any());
