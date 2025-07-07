@@ -9,6 +9,7 @@ const { permission, open } = usePermissionDialog()
 /** @type {Ref<AiidaDataSource[]>} */
 const dataSources = ref([])
 
+/** @type {Ref<string>} */
 const selectedDataSource = ref('')
 
 onMounted(() => {
@@ -28,21 +29,28 @@ function reject() {
   hide()
 }
 
-function hide() {
-  open.value = false
+function hide(event) {
+  // avoid conflict with hide event from Shoelace's select element
+  if (event.target === event.currentTarget) {
+    open.value = false
+  }
 }
 </script>
 
 <template>
   <sl-dialog
     label="Accept or reject permission"
-    :open="open"
-    v-if="permission"
+    :open="open || undefined"
     @sl-hide="$event.target === $event.currentTarget && hide()"
+    v-if="permission"
   >
     <PermissionDetails :permission />
 
-    <sl-select label="Data Source" :value="selectedDataSource">
+    <sl-select
+      label="Data Source"
+      :value="selectedDataSource"
+      @sl-input="selectedDataSource = $event.target.value"
+    >
       <sl-option v-for="{ name, id } in dataSources" :value="id">{{ name }} ({{ id }})</sl-option>
     </sl-select>
 
