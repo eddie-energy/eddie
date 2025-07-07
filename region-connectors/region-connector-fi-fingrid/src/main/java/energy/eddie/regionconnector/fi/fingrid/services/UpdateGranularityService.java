@@ -5,8 +5,8 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.fi.fingrid.client.EventReason;
-import energy.eddie.regionconnector.fi.fingrid.client.TimeSeriesResponse;
+import energy.eddie.regionconnector.fi.fingrid.client.model.EventReason;
+import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.UpdateGranularityEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -34,14 +35,26 @@ public class UpdateGranularityService {
         this.calculationService = calculationService;
     }
 
-    public Mono<TimeSeriesResponse> updateGranularity(
+    public Mono<List<TimeSeriesResponse>> updateGranularity(
+            List<TimeSeriesResponse> timeSeriesResponses,
+            FingridPermissionRequest permissionRequest
+    ) {
+        for (var seriesResponse : timeSeriesResponses) {
+            if(isEmpty(seriesResponse, permissionRequest)) {
+                return Mono.empty();
+            }
+        }
+        return Mono.just(timeSeriesResponses);
+    }
+
+    private boolean isEmpty(
             TimeSeriesResponse timeSeriesResponse,
             FingridPermissionRequest permissionRequest
     ) {
         var transaction = timeSeriesResponse.data().transaction();
         if (transaction.timeSeries() != null
             || !Objects.equals(transaction.reasonCode(), EventReason.EMPTY_RESPONSE_REASON)) {
-            return Mono.just(timeSeriesResponse);
+            return false;
         }
         var permissionId = permissionRequest.permissionId();
         LOGGER.info("Retrying permission request {} with higher granularity", permissionId);
@@ -53,7 +66,7 @@ public class UpdateGranularityService {
             LOGGER.info("Found higher granularity for permission request {}", permissionId);
             outbox.commit(new UpdateGranularityEvent(permissionId, granularity));
         }
-        return Mono.empty();
+        return true;
     }
 
     @Nullable

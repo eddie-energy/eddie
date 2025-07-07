@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.fi.fingrid.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
+import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequestBuilder;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -30,18 +30,17 @@ class PermissionRequestServiceTest {
         // Given
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(
-                        new FingridPermissionRequest(
-                                "pid",
-                                "cid",
-                                "dnid",
-                                PermissionProcessStatus.CREATED,
-                                ZonedDateTime.now(ZoneOffset.UTC),
-                                null,
-                                null,
-                                "identifier",
-                                "mid",
-                                Granularity.PT1H, null
-                        )
+                        new FingridPermissionRequestBuilder().setPermissionId("pid")
+                                                             .setConnectionId("cid")
+                                                             .setDataNeedId("dnid")
+                                                             .setStatus(PermissionProcessStatus.CREATED)
+                                                             .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                             .setStart(null)
+                                                             .setEnd(null)
+                                                             .setCustomerIdentification("identifier")
+                                                             .setGranularity(Granularity.PT1H)
+                                                             .setLastMeterReadings(null)
+                                                             .createFingridPermissionRequest()
                 ));
 
         // When

@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.fi.fingrid;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
+import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequestBuilder;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.jetbrains.annotations.NotNull;
@@ -69,18 +70,16 @@ class FingridRegionConnectorTest {
 
     private static @NotNull FingridPermissionRequest getPermissionRequest(PermissionProcessStatus status) {
         var now = LocalDate.now(ZoneOffset.UTC);
-        return new FingridPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                status,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                now,
-                now,
-                "cid",
-                "ean",
-                Granularity.PT15M,
-                null
-        );
+        return new FingridPermissionRequestBuilder().setPermissionId("pid")
+                                                    .setConnectionId("cid")
+                                                    .setDataNeedId("dnid")
+                                                    .setStatus(status)
+                                                    .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                    .setStart(now)
+                                                    .setEnd(now)
+                                                    .setCustomerIdentification("cid")
+                                                    .setGranularity(Granularity.PT15M)
+                                                    .setLastMeterReadings(null)
+                                                    .createFingridPermissionRequest();
     }
 }
