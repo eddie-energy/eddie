@@ -82,7 +82,6 @@ public class GreenButtonClient implements GreenButtonApi {
     public Mono<SyndFeed> retailCustomer(String authId, String accessToken) {
         return webClient.get()
                         .uri(builder -> builder
-                                //.path("/DataCustodian/espi/1_1/resource/Batch/Subscription/{authId}")
                                 .path("/DataCustodian/espi/1_1/resource/Batch/RetailCustomer/{authId}")
                                 .build(authId)
                         )

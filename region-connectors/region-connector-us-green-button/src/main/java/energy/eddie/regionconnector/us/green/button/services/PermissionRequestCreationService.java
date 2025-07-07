@@ -93,7 +93,6 @@ public class PermissionRequestCreationService {
             }
             case AccountingPointDataNeedResult apResult ->
                     handlePermissionRequest(permissionRequestForCreation, apResult, permissionId, clientId);
-
             case ValidatedHistoricalDataDataNeedResult vhdResult ->
                     handlePermissionRequest(permissionRequestForCreation, vhdResult, permissionId, clientId);
         };

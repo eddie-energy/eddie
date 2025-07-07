@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @Component
-public class AccountingPointDataProvider  implements AccountingPointEnvelopeProvider {
+public class AccountingPointDataProvider implements AccountingPointEnvelopeProvider {
     private final Flux<AccountingPointEnvelope> accountingPointEnvelopeFlux;
 
     public AccountingPointDataProvider(PublishService publishService, Jaxb2Marshaller marshaller) {
