@@ -1,7 +1,7 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceEphemeralDto;
+import energy.eddie.aiida.dtos.DataSourceSecretsDto;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
@@ -90,7 +90,7 @@ class DataSourceControllerTest {
     @Test
     @WithMockUser
     void addDataSource_shouldReturn201() throws Exception {
-        doReturn(new DataSourceEphemeralDto(PLAIN_TEXT_PASSWORD))
+        doReturn(new DataSourceSecretsDto(PLAIN_TEXT_PASSWORD))
                 .when(service).addDataSource(any(DataSourceDto.class));
 
         mockMvc.perform(post("/datasources")
@@ -175,16 +175,16 @@ class DataSourceControllerTest {
 
     @Test
     @WithMockUser
-    void regenerateEphemeral_shouldReturn200() throws Exception {
-        doReturn(new DataSourceEphemeralDto(PLAIN_TEXT_PASSWORD))
-                .when(service).regenerateEphemeral(DATA_SOURCE_ID);
+    void regenerateSecrets_shouldReturn200() throws Exception {
+        doReturn(new DataSourceSecretsDto(PLAIN_TEXT_PASSWORD))
+                .when(service).regenerateSecrets(DATA_SOURCE_ID);
 
-        mockMvc.perform(post("/datasources/%s/regenerate-ephemeral".formatted(DATA_SOURCE_ID))
+        mockMvc.perform(post("/datasources/%s/regenerate-secrets".formatted(DATA_SOURCE_ID))
                                 .accept(MediaType.APPLICATION_JSON)
                                 .with(csrf()))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.plaintextPassword").value(PLAIN_TEXT_PASSWORD));
 
-        verify(service, times(1)).regenerateEphemeral(DATA_SOURCE_ID);
+        verify(service, times(1)).regenerateSecrets(DATA_SOURCE_ID);
     }
 }

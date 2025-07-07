@@ -72,10 +72,10 @@ public class DataSourceService {
         return repository.findByUserId(currentUserId);
     }
 
-    public DataSourceEphemeralDto addDataSource(DataSourceDto dto) throws InvalidUserException {
+    public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
 
-        var dataSourceEphemeral = new DataSourceEphemeralDto(null);
+        var dataSourceSecrets = new DataSourceSecretsDto(null);
 
         if (dto.dataSourceType().equals(DataSourceType.MODBUS)) {
             var modbusSettings = dto.modbusSettings();
@@ -91,14 +91,14 @@ public class DataSourceService {
                 repository.save(dataSource);
             }
         } else {
-            dataSourceEphemeral = new DataSourceEphemeralDto(MqttSecretGenerator.generate());
+            dataSourceSecrets = new DataSourceSecretsDto(MqttSecretGenerator.generate());
 
             var mqttSettingsDto = new DataSourceMqttDto(
                     mqttConfiguration.internalHost(),
                     mqttConfiguration.externalHost(),
                     "aiida/" + MqttSecretGenerator.generate(),
                     MqttSecretGenerator.generate(),
-                    bCryptPasswordEncoder.encode(dataSourceEphemeral.plaintextPassword())
+                    bCryptPasswordEncoder.encode(dataSourceSecrets.plaintextPassword())
             );
             var dataSource = DataSource.createFromDto(dto, currentUserId, mqttSettingsDto);
 
@@ -112,7 +112,7 @@ public class DataSourceService {
             startDataSource(dataSource);
         }
 
-        return dataSourceEphemeral;
+        return dataSourceSecrets;
     }
 
     public void deleteDataSource(UUID dataSourceId) {
@@ -165,16 +165,16 @@ public class DataSourceService {
         repository.save(dataSource);
     }
 
-    public DataSourceEphemeralDto regenerateEphemeral(UUID dataSourceId) throws EntityNotFoundException {
+    public DataSourceSecretsDto regenerateSecrets(UUID dataSourceId) throws EntityNotFoundException {
         DataSource dataSource = repository.findById(dataSourceId)
                                           .orElseThrow(() -> new EntityNotFoundException(
                                                   "Datasource not found with ID: " + dataSourceId));
 
-        var dataSourceEphemeral = new DataSourceEphemeralDto(null);
+        var dataSourceSecrets = new DataSourceSecretsDto(null);
 
         if(dataSource instanceof MqttDataSource mqttDataSource) {
-            dataSourceEphemeral = new DataSourceEphemeralDto(MqttSecretGenerator.generate());
-            mqttDataSource.setMqttPassword(bCryptPasswordEncoder.encode(dataSourceEphemeral.plaintextPassword()));
+            dataSourceSecrets = new DataSourceSecretsDto(MqttSecretGenerator.generate());
+            mqttDataSource.setMqttPassword(bCryptPasswordEncoder.encode(dataSourceSecrets.plaintextPassword()));
 
             findDataSourceAdapter(dataSourceId).ifPresentOrElse(
                     adapter -> updateDataSourceAdapterState(
@@ -186,7 +186,7 @@ public class DataSourceService {
 
             repository.save(dataSource);
         }
-        return dataSourceEphemeral;
+        return dataSourceSecrets;
     }
 
     public Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(UUID dataSourceId) {

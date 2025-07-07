@@ -40,7 +40,7 @@ authentication = [
     mechanism = password_based
     password_hash_algorithm {
       name = bcrypt
-      salt_rounds = "10"
+      salt_rounds = "12"
     }
     user_id_type = username
 
