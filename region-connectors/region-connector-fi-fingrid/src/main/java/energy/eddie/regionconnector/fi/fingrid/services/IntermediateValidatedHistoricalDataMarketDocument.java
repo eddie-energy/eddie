@@ -2,24 +2,32 @@ package energy.eddie.regionconnector.fi.fingrid.services;
 
 import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.vhd.*;
-import energy.eddie.regionconnector.fi.fingrid.client.Observation;
-import energy.eddie.regionconnector.fi.fingrid.client.TimeSeries;
-import energy.eddie.regionconnector.fi.fingrid.client.TimeSeriesData;
-import energy.eddie.regionconnector.fi.fingrid.client.TimeSeriesResponse;
+import energy.eddie.regionconnector.fi.fingrid.client.model.Observation;
+import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeries;
+import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesData;
+import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
 
-record IntermediateValidatedHistoricalDataMarketDocument(TimeSeriesResponse timeSeriesResponse) {
+final class IntermediateValidatedHistoricalDataMarketDocument {
+    private final List<TimeSeriesResponse> timeSeriesResponses;
+
+    IntermediateValidatedHistoricalDataMarketDocument(List<TimeSeriesResponse> timeSeriesResponses) {this.timeSeriesResponses = timeSeriesResponses;}
+
+    public List<ValidatedHistoricalDataMarketDocumentComplexType> toVhds() {
+        List<ValidatedHistoricalDataMarketDocumentComplexType> vhds = new ArrayList<>();
+        for (var timeSeriesResponse : timeSeriesResponses) {
+            vhds.add(toSingleVhd(timeSeriesResponse));
+        }
+        return vhds;
+    }
 
     @SuppressWarnings("NullAway")
     // NullAway cannot handle the ternary operator combined with the boolean expressions
-    public ValidatedHistoricalDataMarketDocumentComplexType toVhd() {
+    private ValidatedHistoricalDataMarketDocumentComplexType toSingleVhd(TimeSeriesResponse timeSeriesResponse) {
         var data = timeSeriesResponse.data();
         var timeSeries = data.transaction().timeSeries();
         var hasTimeSeries = timeSeries != null && !timeSeries.isEmpty();

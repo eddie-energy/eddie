@@ -7,18 +7,19 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class IntermediateValidatedHistoricalDataMarketDocumentTest {
     @Test
-    void toVhd_withErrors_returnsVhdWithErrors() throws IOException {
+    void toVhd_withErrors_returnsVhdsWithErrors() throws IOException {
         // Given
         var response = TestResourceProvider.readTimeSeriesFromFile(TestResourceProvider.TIME_SERIES_WITH_ERRORS);
-        var intermediateVHD = new IntermediateValidatedHistoricalDataMarketDocument(response);
+        var intermediateVHD = new IntermediateValidatedHistoricalDataMarketDocument(List.of(response));
 
         // When
-        var res = intermediateVHD.toVhd();
+        var res = intermediateVHD.toVhds().getFirst();
 
         // Then
         assertAll(
@@ -41,13 +42,13 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
 
     @Test
     @SuppressWarnings("java:S5961")
-    void toVhd_withValues_returnsVhdWithTimeSeries() throws IOException {
+    void toVhd_withValues_returnsVhdsWithTimeSeries() throws IOException {
         // Given
         var response = TestResourceProvider.readTimeSeriesFromFile(TestResourceProvider.TIME_SERIES_WITH_VALUES);
-        var intermediateVHD = new IntermediateValidatedHistoricalDataMarketDocument(response);
+        var intermediateVHD = new IntermediateValidatedHistoricalDataMarketDocument(List.of(response));
 
         // When
-        var res = intermediateVHD.toVhd();
+        var res = intermediateVHD.toVhds().getFirst();
 
         // Then
         assertAll(

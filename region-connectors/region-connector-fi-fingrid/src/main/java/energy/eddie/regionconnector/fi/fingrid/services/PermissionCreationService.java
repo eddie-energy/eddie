@@ -10,10 +10,7 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnectorMetadata;
 import energy.eddie.regionconnector.fi.fingrid.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.fi.fingrid.permission.events.CreatedEvent;
-import energy.eddie.regionconnector.fi.fingrid.permission.events.MalformedEvent;
-import energy.eddie.regionconnector.fi.fingrid.permission.events.SimpleEvent;
-import energy.eddie.regionconnector.fi.fingrid.permission.events.ValidatedEvent;
+import energy.eddie.regionconnector.fi.fingrid.permission.events.*;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
@@ -58,10 +55,10 @@ public class PermissionCreationService {
         outbox.commit(new CreatedEvent(permissionId,
                                        permissionRequest.connectionId(),
                                        dataNeedId,
-                                       permissionRequest.customerIdentification(),
-                                       permissionRequest.meteringPointEAN()));
+                                       permissionRequest.customerIdentification()
+                          ));
         var calculation = dataNeedCalculationService.calculate(dataNeedId);
-        var res = switch (calculation) {
+        var validatedEvent = switch (calculation) {
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(
                         permissionId,
@@ -73,21 +70,21 @@ public class PermissionCreationService {
                 outbox.commit(new MalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-            case AccountingPointDataNeedResult ignored -> {
-                outbox.commit(new MalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, AP_ERROR))));
-                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, AP_ERROR);
-            }
-            case ValidatedHistoricalDataDataNeedResult vhdResult -> vhdResult;
+            case AccountingPointDataNeedResult(Timeframe permissionTimeframe) -> new ValidatedEvent(
+                    permissionId,
+                    permissionTimeframe.start(),
+                    permissionTimeframe.end()
+            );
+            case ValidatedHistoricalDataDataNeedResult vhdResult -> new ValidatedEvent(
+                    permissionId,
+                    vhdResult.granularities().getFirst(),
+                    vhdResult.energyTimeframe().start(),
+                    vhdResult.energyTimeframe().end()
+            );
         };
 
-        outbox.commit(new ValidatedEvent(permissionId,
-                                         res.granularities().getFirst(),
-                                         res.energyTimeframe().start(),
-                                         res.energyTimeframe().end()
-        ));
-
+        outbox.commit(validatedEvent);
         var accessToken = jwtUtil.createJwt(FingridRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
-
         return new CreatedPermissionRequest(permissionId, accessToken);
     }
 
@@ -108,6 +105,10 @@ public class PermissionCreationService {
                                                          pr.status());
         }
         outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
-        outbox.commit(new SimpleEvent(permissionId, status));
+        if(status == PermissionProcessStatus.REJECTED) {
+            outbox.commit(new SimpleEvent(permissionId, status));
+        } else {
+            outbox.commit(new AcceptedEvent(permissionId));
+        }
     }
 }
