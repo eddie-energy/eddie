@@ -1,0 +1,24 @@
+{
+  "RetrieveCustomerResponse": {
+    "Header": {
+      "Identification": "42dc2ce2-9ce7-49eb-8e01-92600414883d",
+      "Creation": "2025-07-03T09:29:07.384Z",
+      "PhysicalSenderParty": {
+        "Identification": "6430076050014"
+      },
+      "JuridicalSenderParty": {
+        "Identification": "6430076050014"
+      },
+      "PhysicalReceiverParty": {
+        "Identification": "9110016551685"
+      },
+      "JuridicalReceiverParty": {
+        "Identification": "9110016551685"
+      },
+      "ProcessRole": "MIA",
+      "DocumentType": "CUS.DIF",
+      "OrganisationUser": "9110016551685.THP"
+    },
+    "Transaction": {}
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "RetrieveCustomerResponse": {
+    "Header": {
+      "Identification": "42dc2ce2-9ce7-49eb-8e01-92600414883d",
+      "Creation": "2025-07-03T09:29:07.384Z",
+      "PhysicalSenderParty": {
+        "Identification": "6430076050014"
+      },
+      "JuridicalSenderParty": {
+        "Identification": "6430076050014"
+      },
+      "PhysicalReceiverParty": {
+        "Identification": "9110016551685"
+      },
+      "JuridicalReceiverParty": {
+        "Identification": "9110016551685"
+      },
+      "ProcessRole": "MIA",
+      "DocumentType": "CUS.DIF",
+      "OrganisationUser": "9110016551685.THP"
+    },
+    "Transaction": {
+      "CustomerIdentification": "6808503-9",
+      "CustomerIdentificationType": "AA01",
+      "CustomerType": "AB01",
+      "CustomerSubtype": "BF01",
+      "EmailAddress": "tepa@gridmail.fi",
+      "TelephoneNumber": "+35891001001",
+      "Language": "fi",
+      "IsInformationRestricted": false,
+      "CompanyName": "Askel Oyj",
+      "Agreements": [
+        {
+          "AgreementType": "AP01",
+          "AgreementStatus": "CFD",
+          "AgreementStartDate": "2025-07-02T21:00:00Z",
+          "AgreementEndDate": "2025-07-03T21:00:00Z",
+          "MeteringPoint": {
+            "MeteringPointEAN": "642502030590623827",
+            "MeteringPointStatus": "AE01",
+            "MeteringPointAddress": {
+              "StreetName": "Pakkahuoneenaukio",
+              "BuildingNumber": "7-16",
+              "PostalCode": "96700",
+              "Apartment": "96",
+              "StairwellIdentification": "F",
+              "PostOffice": "ROVANIEMI",
+              "CountryCode": "FI",
+              "Language": "fi"
+            }
+          }
+        }
+      ],
+      "CustomerPostalAddress": {
+        "StreetName": "Pakkahuoneenaukio",
+        "BuildingNumber": "7-16",
+        "StairwellIdentification": "F",
+        "Apartment": "96",
+        "PostalCode": "96700",
+        "PostOffice": "ROVANIEMI",
+        "CountryCode": "FI"
+      }
+    }
+  }
+}
