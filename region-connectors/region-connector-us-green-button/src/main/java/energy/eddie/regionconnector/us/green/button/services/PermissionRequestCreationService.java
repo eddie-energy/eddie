@@ -38,7 +38,7 @@ import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConn
 @Service
 @SuppressWarnings("NullAway")
 public class PermissionRequestCreationService {
-    public static final String AP_ERROR = "Accounting point data not supported";
+    public static final String SCOPE = "scope";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestCreationService.class);
     private static final String DATA_NEED_ID = "dataNeedId";
     private final UsPermissionRequestRepository repository;
@@ -69,8 +69,16 @@ public class PermissionRequestCreationService {
                                          permissionRequestForCreation.jumpOffUrl(),
                                          dataSourceInformation));
 
+        var companyId = permissionRequestForCreation.companyId();
+        String clientId;
+        try {
+            clientId = validateUsConfigurationAndGetClientId(companyId);
+        } catch (MissingClientIdException | MissingClientSecretException | MissingApiTokenException e) {
+            outbox.commit(new UsMalformedEvent(permissionId, List.of(new AttributeError("companyId", e.getMessage()))));
+            throw e;
+        }
         var calculation = calculationService.calculate(dataNeedId);
-        var res = switch (calculation) {
+        var redirectUri = switch (calculation) {
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new UsMalformedEvent(
                         permissionId,
@@ -83,48 +91,13 @@ public class PermissionRequestCreationService {
                                                    List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-            case AccountingPointDataNeedResult ignored -> {
-                outbox.commit(new UsMalformedEvent(permissionId,
-                                                   List.of(new AttributeError(DATA_NEED_ID, AP_ERROR))));
-                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, AP_ERROR);
-            }
-            case ValidatedHistoricalDataDataNeedResult vhdResult -> vhdResult;
+            case AccountingPointDataNeedResult apResult ->
+                    handlePermissionRequest(permissionRequestForCreation, apResult, permissionId, clientId);
+            case ValidatedHistoricalDataDataNeedResult vhdResult ->
+                    handlePermissionRequest(permissionRequestForCreation, vhdResult, permissionId, clientId);
         };
 
-        var companyId = permissionRequestForCreation.companyId();
-        String clientId;
-        try {
-            clientId = validateUsConfigurationAndGetClientId(companyId);
-        } catch (MissingClientIdException | MissingClientSecretException | MissingApiTokenException e) {
-            outbox.commit(new UsMalformedEvent(permissionId, List.of(new AttributeError("companyId", e.getMessage()))));
-            throw e;
-        }
-
-        Scope scope;
-        try {
-            scope = new Scope.ScopeBuilder().addDataField(Scope.DataField.INTERVALS)
-                                            .withHistoricalDataStart(res.energyTimeframe().start())
-                                            .withOngoingDataEnd(res.energyTimeframe().end())
-                                            .withGranularity(res.granularities().getFirst())
-                                            .build();
-        } catch (IllegalStateException e) {
-            outbox.commit(new UsMalformedEvent(permissionId, List.of(new AttributeError("scope", e.getMessage()))));
-            throw e;
-        }
-
-        String scopeString = scope.toString();
-        outbox.commit(new UsValidatedEvent(permissionId,
-                                           res.energyTimeframe().start(),
-                                           res.energyTimeframe().end(),
-                                           res.granularities().getFirst(),
-                                           scopeString));
-
-        URI redirectUri = buildRedirectUri(permissionId,
-                                           permissionRequestForCreation.jumpOffUrl(),
-                                           clientId,
-                                           scopeString);
-        LOGGER.info("Redirect URI: {}", redirectUri);
-
+        LOGGER.info("Permission request {} validated", permissionId);
         return new CreatedPermissionRequest(permissionId, redirectUri);
     }
 
@@ -142,6 +115,68 @@ public class PermissionRequestCreationService {
                          .map(PermissionRequest::dataNeedId);
     }
 
+    private URI handlePermissionRequest(
+            PermissionRequestForCreation permissionRequest,
+            AccountingPointDataNeedResult apDataNeed,
+            String permissionId,
+            String clientId
+    ) {
+        var start = apDataNeed.permissionTimeframe().start();
+        var end = apDataNeed.permissionTimeframe().end();
+        Scope scope;
+        try {
+            scope = new Scope.ScopeBuilder()
+                    .addDataField(Scope.DataField.ACCOUNT_DETAILS)
+                    .addDataField(Scope.DataField.INTERVALS)
+                    .addDataField(Scope.DataField.BILLS)
+                    .withHistoricalDataStart(start)
+                    .withOngoingDataEnd(end)
+                    .build();
+        } catch (IllegalStateException e) {
+            outbox.commit(new UsMalformedEvent(permissionId, List.of(new AttributeError(SCOPE, e.getMessage()))));
+            throw e;
+        }
+
+        var scopeString = scope.toString();
+        outbox.commit(new UsValidatedEvent(permissionId, start, end, scopeString));
+
+        return buildRedirectUri(permissionId,
+                                permissionRequest.jumpOffUrl(),
+                                clientId,
+                                scopeString);
+    }
+
+    private URI handlePermissionRequest(
+            PermissionRequestForCreation permissionRequest,
+            ValidatedHistoricalDataDataNeedResult dataNeed,
+            String permissionId,
+            String clientId
+    ) {
+        Scope scope;
+        try {
+            scope = new Scope.ScopeBuilder().addDataField(Scope.DataField.INTERVALS)
+                                            .withHistoricalDataStart(dataNeed.energyTimeframe().start())
+                                            .withOngoingDataEnd(dataNeed.energyTimeframe().end())
+                                            .withGranularity(dataNeed.granularities().getFirst())
+                                            .build();
+        } catch (IllegalStateException e) {
+            outbox.commit(new UsMalformedEvent(permissionId, List.of(new AttributeError(SCOPE, e.getMessage()))));
+            throw e;
+        }
+
+        String scopeString = scope.toString();
+        outbox.commit(new UsValidatedEvent(permissionId,
+                                           dataNeed.energyTimeframe().start(),
+                                           dataNeed.energyTimeframe().end(),
+                                           dataNeed.granularities().getFirst(),
+                                           scopeString));
+
+        return buildRedirectUri(permissionId,
+                                permissionRequest.jumpOffUrl(),
+                                clientId,
+                                scopeString);
+    }
+
     private String validateUsConfigurationAndGetClientId(String companyId) throws MissingClientIdException, MissingClientSecretException, MissingApiTokenException {
         configuration.getClientSecretOrThrow(companyId);
         configuration.throwOnMissingToken(companyId);
@@ -149,14 +184,14 @@ public class PermissionRequestCreationService {
     }
 
     private URI buildRedirectUri(String permissionId, String jumpOffUrl, String clientId, String scope) {
-        return UriComponentsBuilder.fromHttpUrl(jumpOffUrl)
+        return UriComponentsBuilder.fromUri(URI.create(jumpOffUrl))
                                    .path("/oauth/authorize")
                                    .queryParam("response_type", UriUtils.encode("code", StandardCharsets.UTF_8))
                                    .queryParam("client_id", UriUtils.encode(clientId, StandardCharsets.UTF_8))
                                    .queryParam("state", UriUtils.encode(permissionId, StandardCharsets.UTF_8))
                                    .queryParam("redirect_uri",
                                                UriUtils.encode(configuration.redirectUri(), StandardCharsets.UTF_8))
-                                   .queryParam("scope", UriUtils.encode(scope, StandardCharsets.UTF_8))
+                                   .queryParam(SCOPE, UriUtils.encode(scope, StandardCharsets.UTF_8))
                                    .build(true)
                                    .toUri();
     }

@@ -58,7 +58,8 @@ class GreenButtonClientTest {
             List.of(),
             List.of(),
             List.of(),
-            List.of());
+            List.of()
+    );
     private static MockWebServer mockBackEnd;
 
     private static String basePath;
@@ -176,6 +177,32 @@ class GreenButtonClientTest {
         StepVerifier.create(res)
                     .expectError(NoSuchElementException.class)
                     .verify();
+    }
+
+    @Test
+    void retailCustomer_fetchesDataAndParsesIt() {
+        // Given
+        var client = WebClient.create(basePath);
+        mockBackEnd.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader("Content-Type", "application/xml")
+                        .setBody(XmlLoader.xmlFromResource("/xml/retailcustomer/accounting_point_data.xml"))
+        );
+        var api = new GreenButtonClient(client, getConfig());
+
+        // When
+        var res = api.retailCustomer("1111", "token");
+
+        // Then
+        StepVerifier.create(res)
+                    .assertNext(syndFeed -> assertAll(
+                            () -> assertEquals(14, syndFeed.getEntries().size()),
+                            () -> assertEquals(1, syndFeed.getEntries().getFirst().getContents().size()),
+                            () -> assertEquals("atom+xml",
+                                               syndFeed.getEntries().getFirst().getContents().getFirst().getType())
+                    ))
+                    .verifyComplete();
     }
 
     @Test

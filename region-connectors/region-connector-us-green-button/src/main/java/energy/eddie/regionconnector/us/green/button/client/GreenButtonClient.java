@@ -79,6 +79,18 @@ public class GreenButtonClient implements GreenButtonApi {
     }
 
     @Override
+    public Mono<SyndFeed> retailCustomer(String authId, String accessToken) {
+        return webClient.get()
+                        .uri(builder -> builder
+                                .path("/DataCustodian/espi/1_1/resource/Batch/RetailCustomer/{authId}")
+                                .build(authId)
+                        )
+                        .header("Authorization", bearerToken(accessToken))
+                        .exchangeToMono(response -> response.bodyToMono(String.class))
+                        .flatMap(this::parsePayload);
+    }
+
+    @Override
     public Mono<HistoricalCollectionResponse> collectHistoricalData(List<String> meterIds, String company) {
         LOGGER.info("Triggering historical data collection for meters {}", meterIds);
         if (meterIds.isEmpty()) {
@@ -149,9 +161,13 @@ public class GreenButtonClient implements GreenButtonApi {
         }
     }
 
+    private static String bearerToken(@Nullable String accessToken) {
+        return "Bearer " + accessToken;
+    }
+
     private WebClient.RequestHeadersSpec<?> withBearerToken(WebClient.RequestHeadersSpec<?> spec, String company) {
         var token = config.tokens().get(company);
-        return spec.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+        return spec.header(HttpHeaders.AUTHORIZATION, bearerToken(token));
     }
 
     private Mono<SyndFeed> batchSubscription(
@@ -206,7 +222,7 @@ public class GreenButtonClient implements GreenButtonApi {
                                                                    DateTimeFormatter.ISO_OFFSET_DATE_TIME))
                                                .build()
                         )
-                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Authorization", bearerToken(accessToken))
                         .exchangeToMono(response -> response.bodyToMono(String.class)
                                                             .map(rawResponse -> new ResponseWithHeaders(
                                                                     rawResponse,
@@ -229,6 +245,7 @@ public class GreenButtonClient implements GreenButtonApi {
             SyndFeed feed = input.build(new StringReader(payload));
             return Mono.just(feed);
         } catch (Exception e) {
+            LOGGER.error("Got an error while parsing payload\n {}\n", payload, e);
             return Mono.error(e);
         }
     }

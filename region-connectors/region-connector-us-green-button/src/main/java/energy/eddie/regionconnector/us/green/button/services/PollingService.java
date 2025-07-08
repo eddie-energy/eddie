@@ -46,7 +46,7 @@ public class PollingService {
 
     // To force Hibernate to discard the first level cache
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    public void poll(String permissionId) {
+    public void pollValidatedHistoricalData(String permissionId) {
         LOGGER.info("Polling for permission request {}", permissionId);
         var permissionRequest = permissionRequestRepository.getByPermissionId(permissionId);
         if (permissionRequest.start().isAfter(LocalDate.now(ZoneOffset.UTC))) {
@@ -56,6 +56,20 @@ public class PollingService {
         credentialService.retrieveAccessToken(permissionRequest)
                          .subscribe(credentials -> pollValidatedHistoricalData(permissionRequest, credentials),
                                     throwable -> handleAccessTokenError(throwable, permissionId));
+    }
+
+    public void pollAccountingPointData(UsGreenButtonPermissionRequest pr) {
+        credentialService.retrieveAccessToken(pr)
+                         .subscribe(credentials -> pollAccountingPointData(pr, credentials),
+                                    throwable -> handleAccessTokenError(throwable, pr.permissionId()));
+    }
+
+    private void pollAccountingPointData(UsGreenButtonPermissionRequest pr, OAuthTokenDetails credentials) {
+        var permissionId = pr.permissionId();
+        LOGGER.info("Polling accounting point data for permission request {}", permissionId);
+        api.retailCustomer(pr.authorizationUid(), credentials.accessToken())
+           .map(res -> new IdentifiableSyndFeed(pr, res))
+           .subscribe(publishService::publishAccountingPointData, throwable -> handlePollingError(throwable, permissionId));
     }
 
     private void pollValidatedHistoricalData(
@@ -79,7 +93,7 @@ public class PollingService {
                               energyDataStart,
                               energyDataEnd)
            .map(res -> new IdentifiableSyndFeed(permissionRequest, res))
-           .subscribe(publishService::publish,
+           .subscribe(publishService::publishValidatedHistoricalData,
                       throwable -> handlePollingError(throwable, permissionId));
     }
 
