@@ -60,7 +60,7 @@ class SandboxFluviusApiClientTest {
                 ));
         when(dataNeedsService.getById("dnid"))
                 .thenReturn(createDataNeed());
-        when(api.mockMandate("pid", now, now, "541440110000000001"))
+        when(api.mockMandate("pid", now, now, "541440110000000001", Granularity.PT15M))
                 .thenReturn(Mono.just(new CreateMandateResponseModelApiDataResponse()));
         when(api.shortUrlIdentifier("pid", Flow.B2B, now, now, Granularity.PT15M))
                 .thenReturn(Mono.just(new FluviusSessionCreateResultResponseModelApiDataResponse()));
