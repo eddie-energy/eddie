@@ -6,6 +6,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
@@ -28,8 +29,14 @@ public class HomeController {
         this.keycloakConfiguration = keycloakConfiguration;
     }
 
-    @GetMapping("/")
-    public String home(Model model, HttpServletRequest request, HttpServletResponse response, Authentication auth) {
+    @GetMapping({"/", "/data-sources"})
+    public String home(
+            Model model,
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication auth,
+            @Value("${aiida.public.url}") String aiidaPublicUrl
+    ) {
         model.addAttribute("isAuthenticated", auth != null && auth.isAuthenticated());
 
         if (auth != null && auth.getPrincipal() instanceof OidcUser oidcUser) {
@@ -43,6 +50,8 @@ public class HomeController {
         connectionId = createCookie(response, connectionId);
 
         model.addAttribute(CONNECTION_ID_COOKIE_NAME, connectionId);
+        model.addAttribute("aiidaPublicUrl", aiidaPublicUrl);
+
         return "index";
     }
 

@@ -56,6 +56,22 @@ tasks.register<PnpmTask>("pnpmBuildAdminConsole") {
     }
 }
 
+tasks.register<PnpmTask>("pnpmBuildAiidaUi") {
+    group = "build"
+    description = "builds and bundles the AIIDA UI"
+    dependsOn("pnpmInstall")
+    pnpmCommand.set(listOf("run", "aiida:build"))
+    environment = System.getenv()
+
+    doLast {
+        copy {
+            from("aiida/ui/dist")
+            into("aiida/src/main/resources/public")
+        }
+        file("aiida/src/main/resources/public/index.html").renameTo(file("aiida/src/main/resources/templates/index.html"))
+    }
+}
+
 tasks.register<PnpmTask>("pnpmBuildDocs") {
     group = "documentation"
     description = "builds the eddie framework documentation"

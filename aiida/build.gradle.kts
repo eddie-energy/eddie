@@ -98,6 +98,10 @@ tasks.register<Test>("integrationTest") {
     }
 }
 
+tasks.withType<JavaCompile>().configureEach {
+    dependsOn(":pnpmBuildAiidaUi")
+}
+
 jib {
     from {
         image = "eclipse-temurin:21"

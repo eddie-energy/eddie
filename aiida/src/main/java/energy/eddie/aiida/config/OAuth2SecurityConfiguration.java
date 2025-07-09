@@ -49,6 +49,9 @@ public class OAuth2SecurityConfiguration {
                 })
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
+                                "/",
+                                "/assets/**",
+                                "/favicon.svg",
                                 "/login",
                                 "/mqtt-auth/**",
                                 "/actuator/health/**",
