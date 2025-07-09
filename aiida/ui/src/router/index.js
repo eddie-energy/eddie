@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PermissionView from '@/views/PermissionView.vue'
-import DataSourceView from '@/views/DataSourceView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,7 +12,7 @@ const router = createRouter({
     {
       path: '/data-sources',
       name: 'data-sources',
-      component: DataSourceView,
+      component: () => import('../views/DataSourceView.vue'),
     },
   ],
 })
