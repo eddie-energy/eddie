@@ -144,7 +144,7 @@ class FluviusApiClientTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.mockMandate("pid", now, now, "541440110000000011");
+        var res = api.mockMandate("pid", now, now, "541440110000000011", Granularity.PT15M);
 
         // Then
         StepVerifier.create(res)
@@ -164,7 +164,7 @@ class FluviusApiClientTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.mockMandate("pid", now, now, "541440110000000011");
+        var res = api.mockMandate("pid", now, now, "541440110000000011", Granularity.PT15M);
 
         // Then
         StepVerifier.create(res)

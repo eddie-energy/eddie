@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.be.fluvius.permission.handlers;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.be.fluvius.permission.events.MeterReadingUpdatedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.request.MeterReading;
@@ -8,7 +9,6 @@ import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequ
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -40,23 +40,17 @@ class MeterReadingUpdatedEventHandlerTest {
     @SuppressWarnings("unused")
     private MeterReadingUpdatedEventHandler handler;
 
-    public static Stream<Arguments> testAccept_notAllMeterReadingsAfterEnd_emitsNothing() {
-        return Stream.of(
-                Arguments.of(ZonedDateTime.of(2025, 1, 30, 0, 0, 0, 0, ZoneOffset.UTC)),
-                Arguments.of((Object) null)
-        );
-    }
-
-    @Test
-    void testAccept_allMeterReadingsAfterEnd_emitsFulfilledEvent() {
+    @ParameterizedTest
+    @MethodSource("testAccept_allMeterReadingsAfterEnd_emitsFulfilledEvent")
+    void testAccept_allMeterReadingsAfterEnd_emitsFulfilledEvent(ZonedDateTime end, Granularity granularity) {
         // Given
-        var end = ZonedDateTime.of(2025, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
         var readingEnd = end.plusDays(1);
         var pr = new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
                 .addMeterReadings(new MeterReading("pid", "001", end))
                 .addMeterReadings(new MeterReading("pid", "002", readingEnd))
                 .end(end.toLocalDate())
+                .granularity(granularity)
                 .build();
         when(repository.getByPermissionId("pid")).thenReturn(pr);
 
@@ -71,14 +65,15 @@ class MeterReadingUpdatedEventHandlerTest {
     }
 
     @ParameterizedTest
-    @MethodSource
-    void testAccept_notAllMeterReadingsAfterEnd_emitsNothing(ZonedDateTime readingEnd) {
+    @MethodSource("testAccept_notAllMeterReadingsAfterEnd_emitsNothing")
+    void testAccept_notAllMeterReadingsAfterEnd_emitsNothing(ZonedDateTime readingEnd, Granularity granularity) {
         // Given
         var end = ZonedDateTime.of(2025, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
         var pr = new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
                 .addMeterReadings(new MeterReading("pid", "001", readingEnd))
                 .end(end.toLocalDate())
+                .granularity(granularity)
                 .build();
         when(repository.getByPermissionId("pid")).thenReturn(pr);
 
@@ -87,5 +82,20 @@ class MeterReadingUpdatedEventHandlerTest {
 
         // Then
         verify(outbox, never()).commit(any());
+    }
+
+    private static Stream<Arguments> testAccept_allMeterReadingsAfterEnd_emitsFulfilledEvent() {
+        return Stream.of(
+                Arguments.of(ZonedDateTime.of(2025, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC), Granularity.PT15M),
+                Arguments.of(ZonedDateTime.of(2025, 1, 31, 22, 0, 0, 0, ZoneOffset.UTC), Granularity.P1D)
+        );
+    }
+
+    private static Stream<Arguments> testAccept_notAllMeterReadingsAfterEnd_emitsNothing() {
+        return Stream.of(
+                Arguments.of(ZonedDateTime.of(2025, 1, 30, 0, 0, 0, 0, ZoneOffset.UTC), Granularity.PT15M),
+                Arguments.of(null, Granularity.PT15M),
+                Arguments.of(ZonedDateTime.of(2025, 1, 29, 22, 0, 0, 0, ZoneOffset.UTC), Granularity.P1D)
+        );
     }
 }

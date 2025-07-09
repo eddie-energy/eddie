@@ -53,7 +53,7 @@ public class SandboxFluviusApiClient implements FluviusApi {
         LOGGER.info("Using ean {} for sandbox environment for permission request {}", ean, permissionId);
         return api.shortUrlIdentifier(permissionId, flow, from, to, granularity)
                   .flatMap(resp ->
-                                   mockMandate(permissionId, from, to, ean.toString())
+                                   mockMandate(permissionId, from, to, ean.toString(), granularity)
                                            .map(ignored -> resp)
                   );
     }
@@ -68,9 +68,10 @@ public class SandboxFluviusApiClient implements FluviusApi {
             String permissionId,
             ZonedDateTime from,
             ZonedDateTime to,
-            String ean
+            String ean,
+            Granularity granularity
     ) {
-        return api.mockMandate(permissionId, from, to, ean);
+        return api.mockMandate(permissionId, from, to, ean, granularity);
     }
 
     @Override

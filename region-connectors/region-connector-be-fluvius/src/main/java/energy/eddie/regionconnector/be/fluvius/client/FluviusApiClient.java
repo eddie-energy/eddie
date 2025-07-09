@@ -54,7 +54,7 @@ public class FluviusApiClient implements FluviusApi {
             Granularity granularity
     ) {
         return fetchAccessToken()
-                .flatMap(token -> shortUrlIdentifier(permissionId, flow, from, to, token));
+                .flatMap(token -> shortUrlIdentifier(permissionId, flow, from, to, granularity, token));
     }
 
     @Override
@@ -68,10 +68,11 @@ public class FluviusApiClient implements FluviusApi {
             String permissionId,
             ZonedDateTime from,
             ZonedDateTime to,
-            String ean
+            String ean,
+            Granularity granularity
     ) {
         return fetchAccessToken()
-                .flatMap(token -> mockMandate(permissionId, ean, from, to, token));
+                .flatMap(token -> mockMandate(permissionId, ean, from, to, granularity, token));
     }
 
     @Override
@@ -133,6 +134,7 @@ public class FluviusApiClient implements FluviusApi {
             Flow flow,
             ZonedDateTime from,
             ZonedDateTime to,
+            Granularity granularity,
             String token
     ) {
         var start = from.format(DateTimeFormatter.ISO_DATE_TIME);
@@ -144,7 +146,7 @@ public class FluviusApiClient implements FluviusApi {
                 .flow(flow.name())
                 .addDataServicesItem(
                         new FluviusSessionRequestDataServiceModel()
-                                .dataServiceType(DataServiceType.QUARTER_HOURLY.value())
+                                .dataServiceType(DataServiceType.from(granularity).value())
                                 .dataPeriodFrom(start)
                                 .dataPeriodTo(end)
                 )
@@ -199,6 +201,7 @@ public class FluviusApiClient implements FluviusApi {
             String ean,
             ZonedDateTime from,
             ZonedDateTime to,
+            Granularity granularity,
             String token
     ) {
         var start = from.format(DateTimeFormatter.ISO_DATE_TIME);
@@ -206,7 +209,7 @@ public class FluviusApiClient implements FluviusApi {
         LOGGER.info("Mocking mandates is enabled, creating a new mock mandate");
         var request = new CreateMandateRequestModel()
                 .referenceNumber(transformPermissionId(permissionId))
-                .dataServiceType(DataServiceType.QUARTER_HOURLY.value())
+                .dataServiceType(DataServiceType.from(granularity).value())
                 .dataPeriodFrom(start)
                 .dataPeriodTo(end)
                 .status("Approved")
