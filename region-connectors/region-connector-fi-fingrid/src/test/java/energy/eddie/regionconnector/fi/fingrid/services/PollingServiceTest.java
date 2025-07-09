@@ -70,7 +70,7 @@ class PollingServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT1H)
                                                       .setLastMeterReadings(null)
-                                                      .createFingridPermissionRequest();
+                                                      .build();
 
         // When
         pollingService.pollTimeSeriesData(pr);
@@ -94,7 +94,7 @@ class PollingServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT1H)
                                                       .setLastMeterReadings(Map.of())
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         var customerData = readCustomerDataFromFile(CUSTOMER_DATA_JSON);
         when(api.getCustomerData("cid")).thenReturn(Mono.just(customerData));
         var data = new TimeSeriesResponse(null);
@@ -126,7 +126,7 @@ class PollingServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT1H)
                                                       .setLastMeterReadings(Map.of())
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         var customerData = readCustomerDataFromFile(CUSTOMER_DATA_JSON);
         when(api.getCustomerData("cid")).thenReturn(Mono.just(customerData));
         var data = new TimeSeriesResponse(null);
@@ -164,7 +164,7 @@ class PollingServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT1H)
                                                       .setLastMeterReadings(Map.of())
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         var data = new TimeSeriesResponse(null);
         var resp = Mono.just(data);
         when(api.getTimeSeriesData(any(), eq("cid"), any(), any(), eq("PT1H"), eq(null)))
@@ -204,7 +204,7 @@ class PollingServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT1H)
                                                       .setLastMeterReadings(Map.of("mid", latestMeteringData))
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         var data = new TimeSeriesResponse(null);
         var resp = Mono.just(data);
         when(api.getTimeSeriesData(eq("mid"), eq("cid"), any(), any(), eq("PT1H"), eq(null)))
@@ -246,7 +246,7 @@ class PollingServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT1H)
                                                       .setLastMeterReadings(Map.of("mid", latestMeteringData))
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         var resp = Mono.just(new TimeSeriesResponse(null));
         when(api.getTimeSeriesData(eq("mid"), eq("cid"), any(), any(), eq("PT1H"), eq(null)))
                 .thenReturn(resp);
@@ -281,7 +281,7 @@ class PollingServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT1H)
                                                       .setLastMeterReadings(Map.of("mid", latestMeteringData))
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         when(api.getTimeSeriesData(eq("mid"), eq("cid"), any(), any(), eq("PT1H"), eq(null)))
                 .thenReturn(Mono.error(new RuntimeException()));
 
@@ -302,7 +302,7 @@ class PollingServiceTest {
                                                       .setDataNeedId("dnid")
                                                       .setStatus(PermissionProcessStatus.ACCEPTED)
                                                       .setCustomerIdentification("cid")
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         var data = readCustomerDataFromFile(CUSTOMER_DATA_JSON);
         when(api.getCustomerData("cid")).thenReturn(Mono.just(data));
         // When
@@ -320,7 +320,7 @@ class PollingServiceTest {
                                                       .setDataNeedId("dnid")
                                                       .setStatus(PermissionProcessStatus.ACCEPTED)
                                                       .setCustomerIdentification("cid")
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         var exception = WebClientResponseException.create(
                 status.value(),
                 "",
@@ -344,7 +344,7 @@ class PollingServiceTest {
                                                       .setDataNeedId("dnid")
                                                       .setStatus(PermissionProcessStatus.ACCEPTED)
                                                       .setCustomerIdentification("cid")
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         var data = TestResourceProvider.readCustomerDataFromFile(EMPTY_CUSTOMER_DATA_JSON);
         when(api.getCustomerData("cid")).thenReturn(Mono.just(data));
 

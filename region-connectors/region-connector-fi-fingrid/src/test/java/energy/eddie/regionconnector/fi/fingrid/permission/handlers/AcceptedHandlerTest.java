@@ -46,7 +46,7 @@ class AcceptedHandlerTest {
                 .setPermissionId("pid")
                 .setDataNeedId("dnid")
                 .setStatus(PermissionProcessStatus.ACCEPTED)
-                .createFingridPermissionRequest();
+                .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         var dn = new ValidatedHistoricalDataDataNeed(new RelativeDuration(null, null, null),
@@ -69,7 +69,7 @@ class AcceptedHandlerTest {
                 .setPermissionId("pid")
                 .setDataNeedId("dnid")
                 .setStatus(PermissionProcessStatus.ACCEPTED)
-                .createFingridPermissionRequest();
+                .build();
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         when(dataNeedsService.getById("dnid")).thenReturn(new AccountingPointDataNeed());
 
@@ -87,7 +87,7 @@ class AcceptedHandlerTest {
                 .setPermissionId("pid")
                 .setDataNeedId("dnid")
                 .setStatus(PermissionProcessStatus.ACCEPTED)
-                .createFingridPermissionRequest();
+                .build();
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         when(dataNeedsService.getById("dnid")).thenReturn(new AiidaDataNeed(Set.of()));
 

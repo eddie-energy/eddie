@@ -47,7 +47,7 @@ class UpdateGranularityEventHandlerTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.P1D)
                                                       .setLastMeterReadings(null)
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
         // When
