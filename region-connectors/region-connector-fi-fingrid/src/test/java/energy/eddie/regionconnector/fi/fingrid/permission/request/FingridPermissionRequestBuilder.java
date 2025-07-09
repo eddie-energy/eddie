@@ -69,7 +69,7 @@ public class FingridPermissionRequestBuilder {
         return this;
     }
 
-    public FingridPermissionRequest createFingridPermissionRequest() {
+    public FingridPermissionRequest build() {
         return new FingridPermissionRequest(permissionId,
                                             connectionId,
                                             dataNeedId,

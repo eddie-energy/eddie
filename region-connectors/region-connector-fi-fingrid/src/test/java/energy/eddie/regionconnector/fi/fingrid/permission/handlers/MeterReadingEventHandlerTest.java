@@ -53,7 +53,7 @@ class MeterReadingEventHandlerTest {
                 .setPermissionId("pid")
                 .setDataNeedId("dnid")
                 .setCreated(now)
-                .createFingridPermissionRequest();
+                .build();
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         when(calculationService.calculate("dnid", now))
                 .thenReturn(new DataNeedNotFoundResult());
@@ -75,7 +75,7 @@ class MeterReadingEventHandlerTest {
                 .setPermissionId("pid")
                 .setDataNeedId("dnid")
                 .setCreated(now)
-                .createFingridPermissionRequest();
+                .build();
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         when(calculationService.calculate("dnid", now))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.P1D),
@@ -100,7 +100,7 @@ class MeterReadingEventHandlerTest {
                 .setPermissionId("pid")
                 .setDataNeedId("dnid")
                 .setCreated(now)
-                .createFingridPermissionRequest();
+                .build();
         when(repository.getByPermissionId("pid")).thenReturn(pr);
         when(calculationService.calculate("dnid", now))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.P1D),

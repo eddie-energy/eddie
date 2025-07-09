@@ -80,6 +80,6 @@ class FingridRegionConnectorTest {
                                                     .setCustomerIdentification("cid")
                                                     .setGranularity(Granularity.PT15M)
                                                     .setLastMeterReadings(null)
-                                                    .createFingridPermissionRequest();
+                                                    .build();
     }
 }

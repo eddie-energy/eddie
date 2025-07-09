@@ -14,7 +14,6 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -39,7 +38,7 @@ class EnergyDataServiceTest {
     private ArgumentCaptor<MeterReadingEvent> eventCaptor;
 
     @Test
-    void publishEmitsNewLatestMeterReading() throws IOException {
+    void publishEmitsNewLatestMeterReading() {
         // Given
         var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
                                                       .setConnectionId("cid")
@@ -51,7 +50,7 @@ class EnergyDataServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT15M)
                                                       .setLastMeterReadings(null)
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         var resp = TestResourceProvider.readTimeSeriesFromFile(TestResourceProvider.TIME_SERIES_WITH_VALUES);
         var end = ZonedDateTime.parse("2024-07-27T23:00:00Z");
 
@@ -64,7 +63,7 @@ class EnergyDataServiceTest {
     }
 
     @Test
-    void publishEmitsNoMeterReadingEvent_whenResponseEmpty() throws IOException {
+    void publishEmitsNoMeterReadingEvent_whenResponseEmpty() {
         // Given
         var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
                                                       .setConnectionId("cid")
@@ -76,7 +75,7 @@ class EnergyDataServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT15M)
                                                       .setLastMeterReadings(null)
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         var resp = TestResourceProvider.readTimeSeriesFromFile(TestResourceProvider.TIME_SERIES_WITH_ERRORS);
 
         // When
@@ -87,7 +86,7 @@ class EnergyDataServiceTest {
     }
 
     @Test
-    void publishEmitsRawData() throws IOException {
+    void publishEmitsRawData() {
         // Given
         var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
                                                       .setConnectionId("cid")
@@ -99,7 +98,7 @@ class EnergyDataServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT15M)
                                                       .setLastMeterReadings(null)
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         var resp = TestResourceProvider.readTimeSeriesFromFile(TestResourceProvider.TIME_SERIES_WITH_VALUES);
 
         // When
@@ -113,7 +112,7 @@ class EnergyDataServiceTest {
     }
 
     @Test
-    void publishEmitsVHD() throws IOException {
+    void publishEmitsVHD() {
         // Given
         var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
                                                       .setConnectionId("cid")
@@ -125,7 +124,7 @@ class EnergyDataServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT15M)
                                                       .setLastMeterReadings(null)
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         var resp = TestResourceProvider.readTimeSeriesFromFile(TestResourceProvider.TIME_SERIES_WITH_VALUES);
 
         // When

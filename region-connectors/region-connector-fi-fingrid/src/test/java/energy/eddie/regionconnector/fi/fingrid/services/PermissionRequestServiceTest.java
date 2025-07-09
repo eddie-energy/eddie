@@ -40,7 +40,7 @@ class PermissionRequestServiceTest {
                                                              .setCustomerIdentification("identifier")
                                                              .setGranularity(Granularity.PT1H)
                                                              .setLastMeterReadings(null)
-                                                             .createFingridPermissionRequest()
+                                                             .build()
                 ));
 
         // When

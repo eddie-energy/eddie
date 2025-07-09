@@ -98,7 +98,7 @@ class UpdateGranularityServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT15M)
                                                       .setLastMeterReadings(null)
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         // When
         var res = updateGranularityService.updateGranularity(List.of(response), pr);
 
@@ -127,7 +127,7 @@ class UpdateGranularityServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT15M)
                                                       .setLastMeterReadings(null)
-                                                      .createFingridPermissionRequest();
+                                                      .build();
 
         var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT5M, Granularity.PT15M, Granularity.PT1H),
@@ -167,7 +167,7 @@ class UpdateGranularityServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT1H)
                                                       .setLastMeterReadings(null)
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         when(calculationService.calculate("dnid"))
                 .thenReturn(calc);
 
@@ -200,7 +200,7 @@ class UpdateGranularityServiceTest {
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT15M)
                                                       .setLastMeterReadings(null)
-                                                      .createFingridPermissionRequest();
+                                                      .build();
 
         var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT5M, Granularity.PT15M),

@@ -129,7 +129,7 @@ class PermissionCreationServiceTest {
                                                       .setCustomerIdentification("identifier")
                                                       .setGranularity(Granularity.PT1H)
                                                       .setLastMeterReadings(null)
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         when(permissionRequestRepository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(pr));
 
@@ -164,7 +164,7 @@ class PermissionCreationServiceTest {
                                                       .setCustomerIdentification("identifier")
                                                       .setGranularity(Granularity.PT1H)
                                                       .setLastMeterReadings(null)
-                                                      .createFingridPermissionRequest();
+                                                      .build();
         when(permissionRequestRepository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(pr));
 
