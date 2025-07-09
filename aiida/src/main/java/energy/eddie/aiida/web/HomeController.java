@@ -29,13 +29,18 @@ public class HomeController {
         this.keycloakConfiguration = keycloakConfiguration;
     }
 
-    @GetMapping({"/", "/data-sources"})
+    @GetMapping("/vue/**")
+    public String vue(Model model, @Value("${aiida.public.url}") String aiidaPublicUrl) {
+        model.addAttribute("aiidaPublicUrl", aiidaPublicUrl);
+        return "vue";
+    }
+
+    @GetMapping("/")
     public String home(
             Model model,
             HttpServletRequest request,
             HttpServletResponse response,
-            Authentication auth,
-            @Value("${aiida.public.url}") String aiidaPublicUrl
+            Authentication auth
     ) {
         model.addAttribute("isAuthenticated", auth != null && auth.isAuthenticated());
 
@@ -50,7 +55,6 @@ public class HomeController {
         connectionId = createCookie(response, connectionId);
 
         model.addAttribute(CONNECTION_ID_COOKIE_NAME, connectionId);
-        model.addAttribute("aiidaPublicUrl", aiidaPublicUrl);
 
         return "index";
     }

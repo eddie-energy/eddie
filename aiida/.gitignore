@@ -1,7 +1,7 @@
 # Vue build output
 src/main/resources/public/
 # Generated Vue entrypoint
-src/main/resources/templates/index.html
+src/main/resources/templates/vue.html
 
 # Compiled class file
 *.class

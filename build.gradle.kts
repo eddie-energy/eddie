@@ -68,7 +68,7 @@ tasks.register<PnpmTask>("pnpmBuildAiidaUi") {
             from("aiida/ui/dist")
             into("aiida/src/main/resources/public")
         }
-        file("aiida/src/main/resources/public/index.html").renameTo(file("aiida/src/main/resources/templates/index.html"))
+        file("aiida/src/main/resources/public/index.html").renameTo(file("aiida/src/main/resources/templates/vue.html"))
     }
 }
 
