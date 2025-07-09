@@ -1,6 +1,6 @@
 import { keycloak } from '@/keycloak.js'
 
-const BASE_URL =
+export const BASE_URL =
   THYMELEAF_AIIDA_PUBLIC_URL ?? import.meta.env.VITE_AIIDA_PUBLIC_URL ?? 'http://localhost:8080'
 
 /**

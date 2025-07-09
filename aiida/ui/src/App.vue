@@ -2,6 +2,7 @@
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import UserProfile from '@/components/UserProfile.vue'
 import PermissionDialog from '@/components/PermissionDialog.vue'
+import { BASE_URL } from '@/api.js'
 
 const paths = [
   ['/', 'Permissions', 'key'],
@@ -34,6 +35,10 @@ function isActive(path) {
           {{ name }}
         </sl-button>
       </RouterLink>
+      <sl-button :href="BASE_URL + '/installer'">
+        <sl-icon slot="prefix" name="boxes"></sl-icon>
+        Services
+      </sl-button>
     </nav>
   </header>
 
