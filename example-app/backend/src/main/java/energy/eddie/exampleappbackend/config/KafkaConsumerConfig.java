@@ -2,10 +2,10 @@ package energy.eddie.exampleappbackend.config;
 
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
-import energy.eddie.outbound.kafka.CustomDeserializer;
-import energy.eddie.outbound.shared.serde.MessageSerde;
-import energy.eddie.outbound.shared.serde.SerdeFactory;
-import energy.eddie.outbound.shared.serde.SerdeInitializationException;
+import energy.eddie.exampleappbackend.kafka.util.CustomDeserializer;
+import energy.eddie.exampleappbackend.kafka.util.MessageSerde;
+import energy.eddie.exampleappbackend.kafka.util.SerdeFactory;
+import energy.eddie.exampleappbackend.kafka.util.SerdeInitializationException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;

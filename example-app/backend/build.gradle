@@ -35,8 +35,6 @@ repositories {
 dependencies {
 	implementation(project(":api"))
 	implementation(project(":cim"))
-	implementation(project(":outbound-connectors:outbound-shared"))
-	implementation(project(":outbound-connectors:outbound-kafka"))
 
 	implementation 'energy.eddie:cim:0.0.0'
 
