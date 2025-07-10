@@ -5,6 +5,7 @@ import energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke.EdaCMRevokeI
 import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord.EdaConsumptionRecordInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cpnotification.EdaCPNotificationInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.EdaMasterDataInboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.MultiMasterDataInboundMessageFactory;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 
@@ -122,9 +124,16 @@ public class InboundMessageFactoryCollection {
 
     private Optional<EdaMasterDataInboundMessageFactory> findActiveMasterDataFactory() {
         LocalDate now = LocalDate.now(AT_ZONE_ID);
-        return inboundMasterDataFactories.stream()
-                                         .filter(factory -> factory.isActive(now))
-                                         .findFirst();
+        var factories = inboundMasterDataFactories.stream()
+                                                  .filter(factory -> factory.isActive(now))
+                                                  .collect(Collectors.toSet());
+        if (factories.isEmpty()) {
+            return Optional.empty();
+        }
+        if (factories.size() != 1) {
+            return Optional.of(new MultiMasterDataInboundMessageFactory(factories));
+        }
+        return factories.stream().findFirst();
     }
 
     private Optional<EdaCMNotificationInboundMessageFactory> findActiveCMNotificationFactory() {
