@@ -16,7 +16,7 @@ public class ValidatedHistoricalDataConsumer {
     private final ValidatedHistoricalDataService validatedHistoricalDataService;
 
     @Transactional
-    @KafkaListener(topics = "ep.eddie-demo-hardening.cim_0_82.validated-historical-data-md", containerFactory = "validatedHistoricalDataEnvelopeListenerContainerFactory")
+    @KafkaListener(topics = "ep.${example-app.eddie-id}.${example-app.kafka-validated-historical-data-cim-version}.validated-historical-data-md", containerFactory = "validatedHistoricalDataEnvelopeListenerContainerFactory")
     public void listen(ConsumerRecord<String, ValidatedHistoricalDataEnvelope> consumerRecord) {
         log.info("Received a new Validated Historical Data Message! Processing ...");
         if (consumerRecord.value() == null) {

@@ -6,6 +6,7 @@ import energy.eddie.exampleappbackend.kafka.util.CustomDeserializer;
 import energy.eddie.exampleappbackend.kafka.util.MessageSerde;
 import energy.eddie.exampleappbackend.kafka.util.SerdeFactory;
 import energy.eddie.exampleappbackend.kafka.util.SerdeInitializationException;
+import lombok.AllArgsConstructor;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -17,10 +18,13 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
 @Configuration
+@AllArgsConstructor
 public class KafkaConsumerConfig {
+    private final ExampleAppConfig exampleAppConfig;
+
     @Bean
     public MessageSerde serde() throws SerdeInitializationException {
-        return SerdeFactory.getInstance().create("xml");
+        return SerdeFactory.getInstance().create(exampleAppConfig.kafkaMessageFormat());
     }
 
     @Bean

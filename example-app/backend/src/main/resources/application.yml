@@ -21,8 +21,8 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER:eddie-demo.projekte.fh-hagenberg.at:5005}
     consumer:
-      group-id: kafka-client-group-p43043-01
-      client-id: kafka-client-group-p43043
+      group-id: ${KAFKA_GROUP_ID:kafka-client-group}
+      client-id: ${KAFKA_CLIENT_ID:kafka-client-group}
       properties:
         sasl:
           mechanism: SCRAM-SHA-512
@@ -34,5 +34,12 @@ spring:
     security:
       protocol: SASL_SSL
 
+example-app:
+  eddie-id: eddie-demo-hardening
+  eddie-public-url: ${EDDIE_PUBLIC_URL:https://eddie-demo.projekte.fh-hagenberg.at/hardening/eddie}
+  kafka-message-format: xml
+  kafka-permission-cim-version: cim_0_82
+  kafka-validated-historical-data-cim-version: cim_0_82
+
 dataNeeds:
-  url: https://eddie-demo.projekte.fh-hagenberg.at/hardening/eddie/data-needs
+  url: ${example-app.eddie-public-url}/data-needs
