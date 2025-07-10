@@ -30,8 +30,17 @@ public class HomeController {
     }
 
     @GetMapping("/vue/**")
-    public String vue(Model model, @Value("${aiida.public.url}") String aiidaPublicUrl) {
+    public String vue(
+            Model model,
+            @Value("${aiida.public.url}") String aiidaPublicUrl,
+            @Value("${aiida.keycloak.url}") String keycloakUrl,
+            @Value("${aiida.keycloak.realm}") String keycloakRealm,
+            @Value("${aiida.keycloak.client}") String keycloakClient
+    ) {
         model.addAttribute("aiidaPublicUrl", aiidaPublicUrl);
+        model.addAttribute("keycloakUrl", keycloakUrl);
+        model.addAttribute("keycloakRealm", keycloakRealm);
+        model.addAttribute("keycloakClient", keycloakClient);
         return "vue";
     }
 
