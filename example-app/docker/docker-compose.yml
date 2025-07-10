@@ -1,0 +1,18 @@
+name: eddie-example-app
+services:
+  db:
+    image: timescale/timescaledb:latest-pg17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: example-app
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+
+volumes:
+  db_data:

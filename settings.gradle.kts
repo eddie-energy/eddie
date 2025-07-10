@@ -63,6 +63,9 @@ findProject(":examples:example-app")?.name = "example-app"
 include("e2e-tests")
 findProject("e2e-tests")?.name = "e2e-tests"
 
+include("example-app")
+findProject("example-app")?.name = "example-app"
+
 include("data-needs")
 
 include("aiida")
@@ -72,5 +75,9 @@ include("european-masterdata")
 include("admin-console")
 
 include("examples:new-example-app")
+
+include("example-app:backend")
+
 include("outbound-connectors:outbound-shared")
+
 findProject(":outbound-connectors:outbound-shared")?.name = "outbound-shared"

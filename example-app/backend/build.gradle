@@ -1,0 +1,109 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.4'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id "org.openapi.generator" version "7.11.0"
+}
+
+group = 'energy.eddie'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		url = uri("https://maven.pkg.github.com/eddie-energy/eddie")
+		credentials {
+			username = project.findProperty("gpr.user") ?: System.getenv("GPR_USER")
+			password = project.findProperty("gpr.key") ?: System.getenv("GPR_TOKEN")
+		}
+	}
+}
+
+dependencies {
+	implementation(project(":api"))
+	implementation(project(":cim"))
+	implementation(project(":outbound-connectors:outbound-shared"))
+	implementation(project(":outbound-connectors:outbound-kafka"))
+
+	implementation 'energy.eddie:cim:0.0.0'
+
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.kafka:spring-kafka'
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.2.1'
+
+	implementation 'org.postgresql:postgresql:42.7.5'
+	implementation 'org.flywaydb:flyway-core:11.10.1'
+	implementation "org.flywaydb:flyway-database-postgresql:11.10.1"
+
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+	implementation "org.openapitools:jackson-databind-nullable:0.2.6"
+
+	implementation(libs.jaxb.runtime)
+	implementation(libs.jackson.databind)
+	implementation(libs.jackson.datatype.jsr310)
+	implementation(libs.jackson.datatype.jdk8)
+	implementation(libs.jackson.dataformat.xml)
+	implementation(libs.jackson.jakarta.xmlbind.annotations)
+	implementation(libs.jackson.core)
+	implementation(libs.jakarta.annotation.api)
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+var generateDataNeedsClientDir = "${project.layout.buildDirectory.asFile.get()}/generated/data-needs-api"
+
+sourceSets {
+	main {
+		java {
+			srcDir generateDataNeedsClientDir + "/src/main/java"
+		}
+	}
+	test {
+		java {
+			srcDir generateDataNeedsClientDir + "/src/main/java"
+		}
+	}
+}
+
+tasks.register('generateDataNeedsClient', GenerateTask) {
+	generatorName = "spring"
+	inputSpec = "$projectDir/src/main/swagger/eddie-data-needs-api.yml"
+	outputDir = generateDataNeedsClientDir
+	apiPackage = "energy.eddie.data-needs.generated.api"
+	modelPackage = "energy.eddie.data-needs.generated.model"
+	artifacts {
+		id = "data-needs-client"
+		groupId = "energy.eddie.data-needs.generated"
+	}
+	additionalProperties = [
+			useTags       : "true",
+			useSpringBoot3: "true",
+			library       : "spring-cloud"
+	]
+}
+
+tasks.named("compileJava").configure {
+	dependsOn(tasks.named("generateDataNeedsClient"))
+}

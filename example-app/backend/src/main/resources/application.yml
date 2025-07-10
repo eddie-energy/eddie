@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: example-app-backend
+
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/example-app}
+    username: ${POSTGRES_USER:admin}
+    password: ${POSTGRES_PASSWORD:admin}
+
+  jpa:
+    properties:
+      hibernate:
+        default_schema: example-app
+      jakarta.persistence.validation.mode: none
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    schemas: example-app
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER:eddie-demo.projekte.fh-hagenberg.at:5005}
+    consumer:
+      group-id: kafka-client-group-p43043-01
+      client-id: kafka-client-group-p43043
+      properties:
+        sasl:
+          mechanism: SCRAM-SHA-512
+          jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username='${KAFKA_USERNAME}' password='${KAFKA_PASSWORD}';
+
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+    security:
+      protocol: SASL_SSL
+
+dataNeeds:
+  url: https://eddie-demo.projekte.fh-hagenberg.at/hardening/eddie/data-needs
