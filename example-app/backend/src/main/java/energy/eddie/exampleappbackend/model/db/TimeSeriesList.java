@@ -3,6 +3,7 @@ package energy.eddie.exampleappbackend.model.db;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import energy.eddie.cim.v0_82.vhd.SeriesPeriodComplexType;
 import energy.eddie.cim.v0_82.vhd.TimeSeriesComplexType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,22 +46,26 @@ public class TimeSeriesList {
     @OneToMany(mappedBy = "timeSeriesList", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TimeSeries> timeSeries;
 
+    @Schema(hidden = true)
     public void setUnitIfEmpty(TimeSeriesComplexType cimTimeSeries) {
         if (getUnit() == null) {
             setUnit(cimTimeSeries.getEnergyMeasurementUnitName().name());
         }
     }
 
+    @Schema(hidden = true)
     public boolean hasEqualUnitAs(TimeSeriesComplexType cimTimeSeries) {
         return getUnit().equals(cimTimeSeries.getEnergyMeasurementUnitName().name());
     }
 
+    @Schema(hidden = true)
     public void setTemporalResolutionIfEmpty(SeriesPeriodComplexType cimSeriesPeriod) {
         if (getTemporalResolution() == null) {
             setTemporalResolution(cimSeriesPeriod.getResolution());
         }
     }
 
+    @Schema(hidden = true)
     public boolean hasEqualTemporalResolutionAs(SeriesPeriodComplexType cimSeriesPeriod) {
         return getTemporalResolution().equals(cimSeriesPeriod.getResolution());
     }
