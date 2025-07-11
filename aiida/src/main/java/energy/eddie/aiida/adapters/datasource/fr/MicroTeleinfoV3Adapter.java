@@ -13,6 +13,7 @@ import energy.eddie.aiida.adapters.datasource.fr.transformer.history.MicroTelein
 import energy.eddie.aiida.adapters.datasource.fr.transformer.standard.MicroTeleinfoV3AdapterStandardModeMeasurement;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.standard.MicroTeleinfoV3StandardModeJson;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.standard.StandardModeEntry;
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
@@ -40,12 +41,17 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
      * adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be assigned a
      * Unix timestamp of 0.
      *
-     * @param dataSource The entity of the data source.
-     * @param mapper     {@link ObjectMapper} that is used to deserialize the JSON messages. A
-     *                   {@link MicroTeleinfoV3DataFieldDeserializer} will be registered to this mapper.
+     * @param dataSource        The entity of the data source.
+     * @param mapper            {@link ObjectMapper} that is used to deserialize the JSON messages. A
+     *                          {@link MicroTeleinfoV3DataFieldDeserializer} will be registered to this mapper.
+     * @param mqttConfiguration The MQTT configuration that is used to connect to the MQTT broker.
      */
-    public MicroTeleinfoV3Adapter(MicroTeleinfoV3DataSource dataSource, ObjectMapper mapper) {
-        super(dataSource, LOGGER);
+    public MicroTeleinfoV3Adapter(
+            MicroTeleinfoV3DataSource dataSource,
+            ObjectMapper mapper,
+            MqttConfiguration mqttConfiguration
+    ) {
+        super(dataSource, LOGGER, mqttConfiguration);
 
         this.mapper = mapper;
 

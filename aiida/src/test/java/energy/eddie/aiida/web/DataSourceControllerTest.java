@@ -1,6 +1,7 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceSecretsDto;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
@@ -43,6 +44,7 @@ class DataSourceControllerTest {
                               null),
             USER_ID
     );
+    private static final String PLAIN_TEXT_PASSWORD = "SUPER_SAFE";
 
     @Autowired
     private MockMvc mockMvc;
@@ -88,13 +90,15 @@ class DataSourceControllerTest {
     @Test
     @WithMockUser
     void addDataSource_shouldReturn201() throws Exception {
-        doNothing().when(service).addDataSource(any(DataSourceDto.class));
+        doReturn(new DataSourceSecretsDto(PLAIN_TEXT_PASSWORD))
+                .when(service).addDataSource(any(DataSourceDto.class));
 
         mockMvc.perform(post("/datasources")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"name\":\"Test Source\",\"dataSourceType\":\"SIMULATION\"}")
                                 .with(csrf()))
-               .andExpect(status().isCreated());
+               .andExpect(status().isCreated())
+               .andExpect(jsonPath("$.plaintextPassword").value(PLAIN_TEXT_PASSWORD));
 
         verify(service, times(1)).addDataSource(any(DataSourceDto.class));
     }
@@ -167,5 +171,20 @@ class DataSourceControllerTest {
         mockMvc.perform(get("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    void regenerateSecrets_shouldReturn200() throws Exception {
+        doReturn(new DataSourceSecretsDto(PLAIN_TEXT_PASSWORD))
+                .when(service).regenerateSecrets(DATA_SOURCE_ID);
+
+        mockMvc.perform(post("/datasources/%s/regenerate-secrets".formatted(DATA_SOURCE_ID))
+                                .accept(MediaType.APPLICATION_JSON)
+                                .with(csrf()))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.plaintextPassword").value(PLAIN_TEXT_PASSWORD));
+
+        verify(service, times(1)).regenerateSecrets(DATA_SOURCE_ID);
     }
 }

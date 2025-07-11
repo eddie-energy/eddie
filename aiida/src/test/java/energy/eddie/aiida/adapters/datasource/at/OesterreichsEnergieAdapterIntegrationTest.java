@@ -2,6 +2,7 @@ package energy.eddie.aiida.adapters.datasource.at;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
@@ -48,6 +49,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
     private static final UUID USER_ID = UUID.fromString("9211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final String USERNAME = "testUser";
     private static final String PASSWORD = "testPassword";
+    private MqttConfiguration mqttConfiguration;
 
     public static Network network = Network.newNetwork();
     @Container
@@ -78,6 +80,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
         var ipAddressViaToxiproxy = toxiproxy.getHost();
         var portViaToxiproxy = toxiproxy.getMappedPort(8666);
         var serverURI = "tcp://" + ipAddressViaToxiproxy + ":" + portViaToxiproxy;
+        mqttConfiguration = new MqttConfiguration(serverURI, serverURI, 10, USERNAME, PASSWORD, "");
 
         dataSource = new OesterreichsEnergieDataSource(
                 new DataSourceDto(DATA_SOURCE_ID,
@@ -113,7 +116,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
     void givenSampleJsonViaMqtt_recordsArePublishedToFlux() {
         var sampleJson = "{\"0-0:96.1.0\":{\"value\":\"90296857\"},\"0-0:1.0.0\":{\"value\":0,\"time\":1697623015},\"1-0:1.8.0\":{\"value\":83403,\"time\":1697623015},\"1-0:2.8.0\":{\"value\":16564,\"time\":1697623015},\"1-0:1.7.0\":{\"value\":40,\"time\":1697623015},\"1-0:2.7.0\":{\"value\":0,\"time\":1697623015},\"0-0:2.0.0\":{\"value\":481,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2435.7}";
 
-        var adapter = new OesterreichsEnergieAdapter(dataSource, mapper);
+        var adapter = new OesterreichsEnergieAdapter(dataSource, mapper, mqttConfiguration);
 
         StepVerifier.create(adapter.start())
                     .then(() -> publishSampleMqttMessage(dataSource.mqttSubscribeTopic(), sampleJson))
@@ -158,7 +161,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
         var expectedValue = String.valueOf(value / 1000f);
         var json = "{\"1-0:2.7.0\":{\"value\":" + value + ",\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";
 
-        var adapter = new OesterreichsEnergieAdapter(dataSource, mapper);
+        var adapter = new OesterreichsEnergieAdapter(dataSource, mapper, mqttConfiguration);
         adapter.setKeepAliveInterval(1);
 
         var scheduler = Executors.newSingleThreadScheduledExecutor();
