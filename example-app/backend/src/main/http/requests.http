@@ -1,0 +1,7 @@
+### Get all Permissions for user
+GET {{baseUrl}}/permissions
+Authorization: Bearer {{$auth.token("example-app")}}
+
+### Get specific permission by id
+GET {{baseUrl}}/permissions/37
+Authorization: Bearer {{$auth.token("example-app")}}
