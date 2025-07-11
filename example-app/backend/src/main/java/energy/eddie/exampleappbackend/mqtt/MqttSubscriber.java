@@ -1,54 +1,28 @@
 package energy.eddie.exampleappbackend.mqtt;
 
 import energy.eddie.cim.v1_04.RTDEnvelope;
-import energy.eddie.exampleappbackend.config.ExampleAppMqttConfig;
 import energy.eddie.exampleappbackend.serialization.DeserializationException;
 import energy.eddie.exampleappbackend.serialization.MessageSerde;
 import energy.eddie.exampleappbackend.serialization.SerdeFactory;
 import energy.eddie.exampleappbackend.serialization.SerdeInitializationException;
 import energy.eddie.exampleappbackend.service.RealTimeDataService;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttCallback;
-import org.eclipse.paho.mqttv5.client.MqttClient;
-import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.regex.Pattern;
-
-@Component
 @Slf4j
+@Component
 public class MqttSubscriber implements MqttCallback {
-    private static final Pattern PERMISSION_TOPIC_PATTERN = Pattern.compile("^aiida/v1/([\\w-]+)/data$");
-    private final MqttConnectionOptions mqttConnectionOptions;
-    private final ExampleAppMqttConfig exampleAppMqttConfig;
     private final RealTimeDataService realTimeDataService;
-    private final MessageSerde messageSerde = SerdeFactory.getInstance().create("json");
+    private final MessageSerde messageSerde = SerdeFactory.getInstance().create("json"); // AIIDA currently only supports json
 
-    public MqttSubscriber(MqttConnectionOptions mqttConnectionOptions, ExampleAppMqttConfig exampleAppMqttConfig, RealTimeDataService realTimeDataService) throws SerdeInitializationException {
-        this.mqttConnectionOptions = mqttConnectionOptions;
-        this.exampleAppMqttConfig = exampleAppMqttConfig;
+    public MqttSubscriber(RealTimeDataService realTimeDataService) throws SerdeInitializationException {
         this.realTimeDataService = realTimeDataService;
-    }
-
-
-    @PostConstruct
-    public void init() {
-        try {
-            var client = new MqttClient(exampleAppMqttConfig.serverUri(), exampleAppMqttConfig.clientId());
-            client.setCallback(this);
-            client.connect(mqttConnectionOptions);
-            client.subscribe("aiida/v1/+/data", 0);
-            log.info("Connected to MQTT broker and subscribed to 'aiida/v1/+/data'!");
-
-        } catch (MqttException e) {
-            log.error("Failed to initialize MQTT subscriber", e);
-        }
     }
 
     @Override
@@ -83,6 +57,7 @@ public class MqttSubscriber implements MqttCallback {
 
     @Override
     public void authPacketArrived(int i, MqttProperties mqttProperties) {
+        // No advanced security required
     }
 
     @Override
