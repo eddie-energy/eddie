@@ -50,6 +50,8 @@ dependencies {
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 	implementation "org.openapitools:jackson-databind-nullable:0.2.6"
 
+	implementation "org.eclipse.paho:org.eclipse.paho.mqttv5.client:1.2.5"
+
 	implementation(libs.jaxb.runtime)
 	implementation(libs.jackson.databind)
 	implementation(libs.jackson.datatype.jsr310)

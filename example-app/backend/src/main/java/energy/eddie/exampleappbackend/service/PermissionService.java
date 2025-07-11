@@ -50,6 +50,12 @@ public class PermissionService {
             log.info("Updated permission {} with eddie permission id {}. New status is {}.", eddiePermissionId, updatedPermission.getEddiePermissionId(), status.get());
         } else {
             var now = Instant.now();
+            String country = switch (permissionType) {
+                case VALIDATED_HISTORICAL_DATA -> messageDocumentHeaderMetaInformation.getMessageDocumentHeaderRegion().getCountry().value();
+                case REAL_TIME_DATA -> "AIIDA";
+                default -> throw new IllegalStateException("Unexpected value: " + permissionType);
+            };
+
             var permission = Permission.builder()
                     .name(generateName(eddiePermissionId, now))
                     .userId(messageDocumentHeaderMetaInformation.getConnectionid())
@@ -57,7 +63,7 @@ public class PermissionService {
                     .meterResourceId(permissionMarketDocument.getMRID())
                     .status(status.get())
                     .eddieConnectorIdentifier(messageDocumentHeaderMetaInformation.getMessageDocumentHeaderRegion().getConnector())
-                    .eddieConnectorCountry(messageDocumentHeaderMetaInformation.getMessageDocumentHeaderRegion().getCountry().value())
+                    .eddieConnectorCountry(country)
                     .eddiePermissionId(eddiePermissionId)
                     .eddieDataNeedId(eddieDataNeedId)
                     .permissionType(permissionType)

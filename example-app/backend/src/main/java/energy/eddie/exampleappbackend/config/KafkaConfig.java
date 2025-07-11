@@ -19,12 +19,12 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
 @Configuration
 @AllArgsConstructor
-public class KafkaConsumerConfig {
-    private final ExampleAppConfig exampleAppConfig;
+public class KafkaConfig {
+    private final ExampleAppKafkaConfig exampleAppKafkaConfig;
 
     @Bean
     public MessageSerde serde() throws SerdeInitializationException {
-        return SerdeFactory.getInstance().create(exampleAppConfig.kafkaMessageFormat());
+        return SerdeFactory.getInstance().create(exampleAppKafkaConfig.messageFormat());
     }
 
     @Bean
