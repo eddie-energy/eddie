@@ -1,5 +1,6 @@
 package energy.eddie.aiida.adapters.datasource.sga;
 
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
@@ -32,17 +33,34 @@ class SmartGatewaysAdapterTest {
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
 
     private static final SmartGatewaysDataSource DATA_SOURCE = new SmartGatewaysDataSource(
-            new DataSourceDto(DATA_SOURCE_ID, DataSourceType.SMART_GATEWAYS_ADAPTER, AiidaAsset.SUBMETER, "sma", true, null, null, null),
+            new DataSourceDto(DATA_SOURCE_ID,
+                              DataSourceType.SMART_GATEWAYS_ADAPTER,
+                              AiidaAsset.SUBMETER,
+                              "sma",
+                              "AT",
+                              true,
+                              null,
+                              null,
+                              null),
             USER_ID,
             new DataSourceMqttDto("tcp://localhost:1883", "tcp://localhost:1883", "aiida/test", "user", "password")
     );
 
     private SmartGatewaysAdapter adapter;
+    private MqttConfiguration mqttConfiguration;
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
-        adapter = new SmartGatewaysAdapter(DATA_SOURCE);
+        mqttConfiguration = new MqttConfiguration(
+                "tcp://localhost:1883",
+                "tcp://localhost:1883",
+                10,
+                "user",
+                "password",
+                ""
+        );
+        adapter = new SmartGatewaysAdapter(DATA_SOURCE, mqttConfiguration);
     }
 
     @AfterEach
@@ -108,22 +126,6 @@ class SmartGatewaysAdapterTest {
     }
 
     @Test
-    void verify_usernameAndPassword_isUsedByAdapter() {
-        var spiedDataSource = spy(DATA_SOURCE);
-        adapter = new SmartGatewaysAdapter(spiedDataSource);
-
-        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
-            var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(any(), any(), any())).thenReturn(mockClient);
-
-            adapter.start().subscribe();
-
-            verify(spiedDataSource, atLeastOnce()).mqttUsername();
-            verify(spiedDataSource, atLeastOnce()).mqttPassword();
-        }
-    }
-
-    @Test
     void givenErrorDuringStart_errorPublishedOnFlux() throws MqttException {
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
@@ -149,15 +151,17 @@ class SmartGatewaysAdapterTest {
                                 }
                             }
                         })
-                        .expectNextMatches(record ->
-                                           record.aiidaRecordValues()
-                                                 .stream()
-                                                 .anyMatch(v -> v.dataTag()
-                                                                 .equals(POSITIVE_ACTIVE_ENERGY) && v.value().equals("45"))
-                                           && record.aiidaRecordValues()
-                                                    .stream()
-                                                    .anyMatch(v -> v.dataTag()
-                                                                    .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) && v.value().equals("45"))
+                        .expectNextMatches(aiidaRecord ->
+                                                   aiidaRecord.aiidaRecordValues()
+                                                              .stream()
+                                                              .anyMatch(v ->
+                                                                                v.dataTag() == POSITIVE_ACTIVE_ENERGY
+                                                                                && v.value().equals("45"))
+                                                   && aiidaRecord.aiidaRecordValues()
+                                                                 .stream()
+                                                                 .anyMatch(v ->
+                                                                                   v.dataTag() == POSITIVE_ACTIVE_INSTANTANEOUS_POWER
+                                                                                   && v.value().equals("45"))
                         )
                         .then(adapter::close)
                         .expectComplete()

@@ -12,6 +12,7 @@ public record DataSourceDto(
         @JsonProperty DataSourceType dataSourceType,
         @JsonProperty AiidaAsset asset,
         @JsonProperty String name,
+        @JsonProperty String countryCode,
         @JsonProperty boolean enabled,
         @Nullable @JsonProperty Integer simulationPeriod,
         @Nullable @JsonProperty DataSourceMqttDto mqttSettings,

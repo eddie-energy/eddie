@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
@@ -44,6 +45,7 @@ class OesterreichsEnergieAdapterTest {
                               DataSourceType.SMART_METER_ADAPTER,
                               AiidaAsset.SUBMETER,
                               "sma",
+                              "AT",
                               true,
                               null,
                               null,
@@ -57,13 +59,22 @@ class OesterreichsEnergieAdapterTest {
     );
     private OesterreichsEnergieAdapter adapter;
     private ObjectMapper mapper;
+    private MqttConfiguration mqttConfiguration;
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
         mapper = new AiidaConfiguration().customObjectMapper().build();
-        adapter = new OesterreichsEnergieAdapter(DATA_SOURCE, mapper);
+        mqttConfiguration = new MqttConfiguration(
+                "tcp://localhost:1883",
+                "tcp://localhost:1883",
+                10,
+                "user",
+                "password",
+                ""
+        );
+        adapter = new OesterreichsEnergieAdapter(DATA_SOURCE, mapper, mqttConfiguration);
 
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
@@ -151,23 +162,6 @@ class OesterreichsEnergieAdapterTest {
             adapter.start().subscribe();
 
             verify(mockClient).connect(any());
-        }
-    }
-
-    @Test
-    void verify_usernameAndPassword_isUsedByAdapter() {
-        var spiedDataSource = spy(DATA_SOURCE);
-        adapter = new OesterreichsEnergieAdapter(spiedDataSource, mapper);
-
-        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
-            var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
-                           .thenReturn(mockClient);
-
-            adapter.start().subscribe();
-
-            verify(spiedDataSource, atLeastOnce()).mqttUsername();
-            verify(spiedDataSource, atLeastOnce()).mqttPassword();
         }
     }
 

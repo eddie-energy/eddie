@@ -2,9 +2,10 @@ package energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request;
 
 import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.MijnAansluitingDataSourceInformation;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -12,10 +13,12 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 
+import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.oldestDateTime;
+
 @Entity
 @Table(schema = "nl_mijn_aansluiting", name = "permission_request")
 @SuppressWarnings({"NullAway", "unused"})
-public class MijnAansluitingPermissionRequest implements NlPermissionRequest {
+public class MijnAansluitingPermissionRequest implements MeterReadingPermissionRequest {
     @Id
     private final String permissionId;
     private final String connectionId;
@@ -39,10 +42,16 @@ public class MijnAansluitingPermissionRequest implements NlPermissionRequest {
     @MapKeyJoinColumn(name = "permission_id", referencedColumnName = "permission_id")
     @CollectionTable(name = "last_meter_readings", joinColumns = @JoinColumn(name = "permission_id"), schema = "nl_mijn_aansluiting")
     private final Map<String, ZonedDateTime> lastMeterReadings = Map.of();
+    @Column(name = "house_number")
+    @Nullable
+    private final String houseNumber;
+    @Column(name = "postal_code")
+    @Nullable
+    private final String postalCode;
 
     // Needed for JPA
     protected MijnAansluitingPermissionRequest() {
-        this(null, null, null, null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     @SuppressWarnings({"java:S107"}) // Permission Requests require a lot of parameters
@@ -56,7 +65,9 @@ public class MijnAansluitingPermissionRequest implements NlPermissionRequest {
             ZonedDateTime created,
             LocalDate start,
             LocalDate end,
-            Granularity granularity
+            Granularity granularity,
+            @Nullable String houseNumber,
+            @Nullable String postalCode
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -68,6 +79,8 @@ public class MijnAansluitingPermissionRequest implements NlPermissionRequest {
         this.start = start;
         this.end = end;
         this.granularity = granularity;
+        this.houseNumber = houseNumber;
+        this.postalCode = postalCode;
     }
 
     @Override
@@ -111,22 +124,29 @@ public class MijnAansluitingPermissionRequest implements NlPermissionRequest {
     }
 
     @Override
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return oldestDateTime(lastMeterReadings.values()).map(ZonedDateTime::toLocalDate);
+    }
+
     public String codeVerifier() {
         return codeVerifier;
     }
 
-    @Override
     public Granularity granularity() {
         return granularity;
     }
 
-    @Override
     public Map<String, ZonedDateTime> lastMeterReadings() {
         return lastMeterReadings;
     }
 
-    @Override
-    public Optional<LocalDate> latestMeterReadingEndDate() {
-        return Optional.ofNullable(end);
+    @Nullable
+    public String houseNumber() {
+        return houseNumber;
+    }
+
+    @Nullable
+    public String postalCode() {
+        return postalCode;
     }
 }

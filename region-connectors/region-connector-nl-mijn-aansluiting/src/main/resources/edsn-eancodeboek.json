@@ -1,0 +1,426 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "EANCodeBoek API",
+    "description": "\n            API for www.eancodeboek.nl allowing users to do searches via an API instead of\n            scraping www.eancodeboek.nl, see https://gateway.edsn.nl/eancodeboek/swagger-ui/index.html?configUrl=../v3/api-docs/swagger-config for documentation.\n        ",
+    "termsOfService": "https://www.edsn.nl/disclaimer/",
+    "contact": {
+      "name": "EDSN Service Desk",
+      "url": "https://edsn.nl",
+      "email": "servicedesk@edsn.nl"
+    },
+    "license": {
+      "name": "EDSN Disclaimer",
+      "url": "https://www.edsn.nl/disclaimer/"
+    },
+    "version": "1",
+    "x-date": "2021-06-01"
+  },
+  "externalDocs": {
+    "description": "API documentation",
+    "url": "https://gateway.edsn.nl/eancodeboek/swagger-ui/index.html?configUrl=../v3/api-docs/swagger-config"
+  },
+  "servers": [
+    {
+      "url": "https://gateway.edsn.nl/eancodeboek",
+      "description": "Server url"
+    }
+  ],
+  "paths": {
+    "/v1/gridoperator": {
+      "get": {
+        "tags": [
+          "grid-operator-controller"
+        ],
+        "summary": "retrieve the gridoperators by postalcode",
+        "description": "\n            This service retrieves given a postalCode a complete list of al the gridoperator that operate on this postalcode.\n            For every gridoperator the eancode, name and a set of product (ELK and/or GAS) is returned.\n",
+        "operationId": "getGridOperatorsByPostalCode",
+        "parameters": [
+          {
+            "name": "postalCode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "3818LH"
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/problem_json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (When not supplied with a valid API key)",
+            "content": {
+              "application/problem_json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (Should not occur)",
+            "content": {
+              "application/problem_json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/problem_json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GridOperatorsProducts"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ]
+      }
+    },
+    "/v1/ecbinfoset": {
+      "get": {
+        "tags": [
+          "metering-point-controller"
+        ],
+        "summary": "Get MeteringPoints by query",
+        "description": "\nSearch MeteringPoints with the given search parameters and api-token.<br><br>\n\nTo use this api you need to retrieve an api-token which is send by email after enrollment.<br>\nYou can Enroll <a href=\"../index.html\">here</a>.<br>\nAdd the token from the email in the header-parameter X-API-Key.<br><br>\n\n<b>Example (Curl):</b><pre>curl -X 'GET' '<<base-url>>/v1/ecbinfoset?product=ELK&streetNumber=10&postalCode=1234AB&limit=50&offset=500' \\\\\n        -H 'accept: application/json' \\\\\n        -H 'X-API-Key: <api-token>'</pre>\n\n<br> <b>Allowed parameter combinations</b>:<br>\nproduct + postalCode<br>\nproduct + streetNumber + postalCode<br>\nproduct + streetNumber + postalCode + streetNumberAddition<br>\nproduct + city + specialMeteringPoint<br>\nproduct + streetNumber + city + street<br>\nproduct + streetNumber + city + street + streetNumberAddition</br>\n\n<br> <b>Definition specialMeteringPoint</b>:<br>\n\nThe business logic rules described below are used to determine whether a MeteringPoint can be considered\n‘special’. Based on the BAG-ID and whether a MeteringPoint is a primary or secondary allocationpoint,\nthe specialMeteringPoint property will return either true or false when:</br></br>\n\nBAG-ID = Not Empty -> specialMeteringPoint = False</br>\nBAG-ID = Empty & MeteringPoint is a secondary allocationpoint ->  specialMeteringPoint = False</br>\nBAG-ID = Empty & MeteringPoint is not a secondary allocationpoint -> specialMeteringPoint = True</br>\n\n<br> <b>Paging</b>:<br>\nlimit: the size of the page. Default is 100, max is 100.<br>\noffset: the record offset to use. Default is 0.<br>\n",
+        "operationId": "getMeteringPoints",
+        "parameters": [
+          {
+            "name": "product",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ELK",
+                "GAS",
+                "H2"
+              ]
+            }
+          },
+          {
+            "name": "streetNumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "example": 8
+          },
+          {
+            "name": "streetNumberAddition",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "A"
+          },
+          {
+            "name": "postalCode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "3818LH"
+          },
+          {
+            "name": "street",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Barchman Wuytierslaan"
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Amersfoort"
+          },
+          {
+            "name": "specialMeteringPoint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "example": 10
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "example": 0
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/problem_json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (When not supplied with a valid API key)",
+            "content": {
+              "application/problem_json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (Should not occur)",
+            "content": {
+              "application/problem_json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeteringPoints"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/problem_json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProblemDetail": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string",
+            "format": "uri"
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "GridOperatorProducts": {
+        "required": [
+          "gridOperatorEan",
+          "gridOperatorName",
+          "productTypes"
+        ],
+        "type": "object",
+        "properties": {
+          "gridOperatorEan": {
+            "type": "string"
+          },
+          "gridOperatorName": {
+            "type": "string"
+          },
+          "productTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ELK",
+                "GAS",
+                "H2"
+              ]
+            }
+          }
+        }
+      },
+      "GridOperatorsProducts": {
+        "required": [
+          "gridOperators"
+        ],
+        "type": "object",
+        "properties": {
+          "gridOperators": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GridOperatorProducts"
+            }
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "postalCode": {
+            "type": "string"
+          },
+          "streetNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "streetNumberAddition": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          }
+        }
+      },
+      "MeteringPoint": {
+        "required": [
+          "ean",
+          "gridOperatorEan"
+        ],
+        "type": "object",
+        "properties": {
+          "ean": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "product": {
+            "type": "string",
+            "enum": [
+              "ELK",
+              "GAS",
+              "H2"
+            ]
+          },
+          "organisation": {
+            "type": "string"
+          },
+          "gridOperatorEan": {
+            "type": "string"
+          },
+          "linkedPrimaryAccessPoint": {
+            "type": "string"
+          },
+          "specialMeteringPoint": {
+            "type": "boolean"
+          },
+          "gridArea": {
+            "type": "string"
+          },
+          "bagId": {
+            "type": "string"
+          }
+        }
+      },
+      "MeteringPoints": {
+        "required": [
+          "meteringPoints"
+        ],
+        "type": "object",
+        "properties": {
+          "meteringPoints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MeteringPoint"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "api-key": {
+        "type": "apiKey",
+        "name": "X-API-Key",
+        "in": "header"
+      }
+    }
+  }
+}

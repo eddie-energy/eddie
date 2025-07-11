@@ -6,18 +6,17 @@ import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.CodeboekApiClient;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MeteringPoint;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MeteringPoints;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.exceptions.NlValidationException;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthManager;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthRequestPayload;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.exceptions.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.MijnAansluitingDataSourceInformation;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlCreatedEvent;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlMalformedEvent;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlSimpleEvent;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlValidatedEvent;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -32,6 +31,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -48,25 +48,13 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestServiceTest {
-    public static final MijnAansluitingPermissionRequest PERMISSION_REQUEST = new MijnAansluitingPermissionRequest("pid",
-                                                                                                                   "cid",
-                                                                                                                   "dnid",
-                                                                                                                   PermissionProcessStatus.VALIDATED,
-                                                                                                                   "state",
-                                                                                                                   "verifier",
-                                                                                                                   ZonedDateTime.now(
-                                                                                                                           ZoneOffset.UTC),
-                                                                                                                   LocalDate.now(
-                                                                                                                           ZoneOffset.UTC),
-                                                                                                                   LocalDate.now(
-                                                                                                                           ZoneOffset.UTC),
-                                                                                                                   Granularity.PT15M);
+
     @Mock
     private OAuthManager oAuthManager;
     @Mock
     private Outbox outbox;
     @Mock
-    private DataNeedsService dataNeedsService;
+    private CodeboekApiClient codeboekApiClient;
     @Mock
     private NlPermissionRequestRepository permissionRequestRepository;
     @Mock
@@ -77,6 +65,8 @@ class PermissionRequestServiceTest {
     private ArgumentCaptor<NlCreatedEvent> createdCaptor;
     @Captor
     private ArgumentCaptor<NlValidatedEvent> validatedCaptor;
+    @Captor
+    private ArgumentCaptor<NlAccountingPointValidatedEvent> accountingPointValidatedCaptor;
     @Captor
     private ArgumentCaptor<NlSimpleEvent> simpleCaptor;
 
@@ -89,7 +79,7 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void testCreatePermissionRequest_forValidatedHistoricalData_emitsCreatedAndValidatedEvent() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    void testCreatePermissionRequest_forValidatedHistoricalData_emitsCreatedAndValidatedEvent() throws DataNeedNotFoundException, UnsupportedDataNeedException, NlValidationException {
         // Given
         var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
         var now = LocalDate.now(NL_ZONE_ID);
@@ -99,7 +89,7 @@ class PermissionRequestServiceTest {
                         new Timeframe(now.minusDays(-10), now.minusDays(-1)),
                         new Timeframe(now, now)
                 ));
-        when(oAuthManager.createAuthorizationUrl(any(), any()))
+        when(oAuthManager.createAuthorizationUrl(any()))
                 .thenReturn(new OAuthRequestPayload(URI.create(""), "state", "codeVerifier"));
 
         // When
@@ -118,30 +108,66 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void testCreatePermissionRequest_forAccountingPointData_emitsCreatedAndValidatedEvent() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    void testCreatePermissionRequest_forAccountingPointData_emitsCreatedAndValidatedEvent() throws DataNeedNotFoundException, UnsupportedDataNeedException, NlValidationException {
         // Given
-        var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
+        var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01", "9999AB");
         var now = LocalDate.now(NL_ZONE_ID);
         when(calculationService.calculate("dnid"))
                 .thenReturn(new AccountingPointDataNeedResult(new Timeframe(now, now)));
-        when(oAuthManager.createAuthorizationUrl(any(), any()))
+        when(oAuthManager.createAuthorizationUrl(any()))
                 .thenReturn(new OAuthRequestPayload(URI.create(""), "state", "codeVerifier"));
+        var data = new MeteringPoints().meteringPoints(List.of(new MeteringPoint()));
+        when(codeboekApiClient.meteringPoints("9999AB", "01"))
+                .thenReturn(Flux.just(data));
 
         // When
         permissionRequestService.createPermissionRequest(permissionRequest);
 
         // Then
         verify(outbox).commit(createdCaptor.capture());
-        verify(outbox).commit(validatedCaptor.capture());
+        verify(outbox).commit(accountingPointValidatedCaptor.capture());
         var created = createdCaptor.getValue();
-        var validated = validatedCaptor.getValue();
+        var validated = accountingPointValidatedCaptor.getValue();
         assertAll(
                 () -> assertEquals("cid", created.connectionId()),
                 () -> assertEquals("dnid", created.dataNeedId()),
                 () -> assertEquals(now, validated.start()),
                 () -> assertEquals(now, validated.end()),
-                () -> assertNull(validated.granularity())
+                () -> assertEquals("01", validated.houseNumber()),
+                () -> assertEquals("9999AB", validated.postalCode())
         );
+    }
+
+    @Test
+    void testCreatePermissionRequest_forAccountingPointData_withInvalidPayload_throws() {
+        // Given
+        var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01", null);
+        var now = LocalDate.now(NL_ZONE_ID);
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new AccountingPointDataNeedResult(new Timeframe(now, now)));
+
+        // When & Then
+        assertThrows(NlValidationException.class,
+                     () -> permissionRequestService.createPermissionRequest(permissionRequest));
+        verify(outbox).commit(createdCaptor.capture());
+        verify(outbox).commit(isA(NlMalformedEvent.class));
+    }
+
+    @Test
+    void testCreatePermissionRequest_forAccountingPointData_withoutMeter_throws() {
+        // Given
+        var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01", "9999AB");
+        var now = LocalDate.now(NL_ZONE_ID);
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new AccountingPointDataNeedResult(new Timeframe(now, now)));
+        var data = new MeteringPoints();
+        when(codeboekApiClient.meteringPoints("9999AB", "01")).thenReturn(Flux.just(data));
+
+        // When & Then
+        assertThrows(NlValidationException.class,
+                     () -> permissionRequestService.createPermissionRequest(permissionRequest));
+        verify(outbox).commit(createdCaptor.capture());
+        verify(outbox).commit(isA(NlMalformedEvent.class));
     }
 
     @Test
@@ -151,8 +177,7 @@ class PermissionRequestServiceTest {
         when(calculationService.calculate("dnid"))
                 .thenReturn(new DataNeedNotSupportedResult(""));
 
-        // When
-        // Then
+        // When & Then
         assertThrows(UnsupportedDataNeedException.class,
                      () -> permissionRequestService.createPermissionRequest(permissionRequest));
         verify(outbox).commit(isA(NlCreatedEvent.class));
@@ -177,12 +202,10 @@ class PermissionRequestServiceTest {
     @Test
     void testReceiveResponse_acceptedResponse_returnsAccepted() throws UserDeniedAuthorizationException, JWTSignatureCreationException, OAuthException, ParseException, PermissionNotFoundException, InvalidValidationAddressException, IllegalTokenException, OAuthUnavailableException {
         // Given
-        when(oAuthManager.processCallback(any(), any(), any()))
+        when(oAuthManager.processCallback(any(), any()))
                 .thenReturn("pid");
         when(permissionRequestRepository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(PERMISSION_REQUEST));
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(new AccountingPointDataNeed());
+                .thenReturn(Optional.of(createPermissionRequest()));
 
         // When
         var res = permissionRequestService.receiveResponse(URI.create(""), "pid");
@@ -201,13 +224,10 @@ class PermissionRequestServiceTest {
             int times
     ) throws UserDeniedAuthorizationException, JWTSignatureCreationException, OAuthException, ParseException, PermissionNotFoundException, InvalidValidationAddressException, IllegalTokenException, OAuthUnavailableException {
         // Given
-        when(oAuthManager.processCallback(any(), any(), any()))
+        when(oAuthManager.processCallback(any(), any()))
                 .thenThrow(clazz);
         when(permissionRequestRepository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(PERMISSION_REQUEST));
-
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(new AccountingPointDataNeed());
+                .thenReturn(Optional.of(createPermissionRequest()));
 
         // When
         var res = permissionRequestService.receiveResponse(URI.create(""), "pid");
@@ -246,8 +266,8 @@ class PermissionRequestServiceTest {
         // Given
         var pr = new MijnAansluitingPermissionRequest(
                 "pid", "cid", "dnid", PermissionProcessStatus.ACCEPTED,
-                null, null, null, null, null, null
-        );
+                null, null, null, null, null, null,
+                "11", "999AB");
         when(permissionRequestRepository.findByPermissionId(any()))
                 .thenReturn(Optional.of(pr));
 
@@ -261,6 +281,23 @@ class PermissionRequestServiceTest {
                 () -> assertEquals("dnid", res.dataNeedId()),
                 () -> assertEquals(PermissionProcessStatus.ACCEPTED, res.status()),
                 () -> assertEquals(new MijnAansluitingDataSourceInformation(), res.dataSourceInformation())
+        );
+    }
+
+    private static MijnAansluitingPermissionRequest createPermissionRequest() {
+        return new MijnAansluitingPermissionRequest(
+                "pid",
+                "cid",
+                "dnid",
+                PermissionProcessStatus.VALIDATED,
+                "state",
+                "verifier",
+                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                Granularity.PT15M,
+                "11",
+                "999AB"
         );
     }
 }

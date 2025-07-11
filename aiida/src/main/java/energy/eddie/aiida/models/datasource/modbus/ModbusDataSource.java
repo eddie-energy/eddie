@@ -76,6 +76,7 @@ public class ModbusDataSource extends IntervalBasedDataSource {
                 dataSourceType,
                 asset,
                 name,
+                countryCode,
                 enabled,
                 pollingInterval,
                 null,

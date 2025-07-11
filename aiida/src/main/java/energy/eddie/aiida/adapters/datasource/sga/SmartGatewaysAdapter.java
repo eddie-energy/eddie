@@ -1,6 +1,7 @@
 package energy.eddie.aiida.adapters.datasource.sga;
 
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysTopic;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
@@ -37,8 +38,8 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
      *
      * @param dataSource The entity of the data source.
      */
-    public SmartGatewaysAdapter(SmartGatewaysDataSource dataSource) {
-        super(dataSource, LOGGER);
+    public SmartGatewaysAdapter(SmartGatewaysDataSource dataSource, MqttConfiguration mqttConfiguration) {
+        super(dataSource, LOGGER, mqttConfiguration);
         this.topicPrefix = topicPrefixOf(dataSource.mqttSubscribeTopic());
         this.expectedTopics = Arrays.stream(SmartGatewaysTopic.values())
                                     .filter(SmartGatewaysTopic::isExpected)

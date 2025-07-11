@@ -13,6 +13,7 @@ import energy.eddie.regionconnector.us.green.button.oauth.persistence.OAuthToken
 import energy.eddie.regionconnector.us.green.button.oauth.request.AccessTokenWithCodeRequest;
 import energy.eddie.regionconnector.us.green.button.oauth.request.AccessTokenWithRefreshTokenRequest;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -35,6 +36,7 @@ public class CredentialService {
         this.factory = factory;
     }
 
+    @Transactional(Transactional.TxType.REQUIRED)
     public Mono<OAuthTokenDetails> retrieveAccessToken(UsGreenButtonPermissionRequest permissionRequest) {
         var permissionId = permissionRequest.permissionId();
         //noinspection BlockingMethodInNonBlockingContext

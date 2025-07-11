@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3Mode;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3ModeNotSupportedException;
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
@@ -45,6 +46,7 @@ class MicroTeleinfoV3AdapterTest {
                               DataSourceType.MICRO_TELEINFO,
                               AiidaAsset.SUBMETER,
                               "teleinfo",
+                              "FR",
                               true,
                               null,
                               null,
@@ -58,13 +60,23 @@ class MicroTeleinfoV3AdapterTest {
     );
     private MicroTeleinfoV3Adapter adapter;
     private ObjectMapper mapper;
+    private MqttConfiguration mqttConfiguration;
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
         mapper = new AiidaConfiguration().customObjectMapper().build();
-        adapter = new MicroTeleinfoV3Adapter(DATA_SOURCE, mapper);
+        mqttConfiguration = new MqttConfiguration(
+                "tcp://localhost:1883",
+                "tcp://localhost:1883",
+                10,
+                "user",
+                "password",
+                ""
+        );
+        adapter = new MicroTeleinfoV3Adapter(DATA_SOURCE, mapper, mqttConfiguration);
+
         LOG_CAPTOR.resetLogLevel();
     }
 
@@ -133,23 +145,6 @@ class MicroTeleinfoV3AdapterTest {
             adapter.start().subscribe();
 
             verify(mockClient).connect(any());
-        }
-    }
-
-    @Test
-    void verify_usernameAndPassword_isUsedByAdapter() {
-        var spiedDataSource = spy(DATA_SOURCE);
-        adapter = new MicroTeleinfoV3Adapter(spiedDataSource, mapper);
-
-        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
-            var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
-                           .thenReturn(mockClient);
-
-            adapter.start().subscribe();
-
-            verify(spiedDataSource, atLeastOnce()).mqttUsername();
-            verify(spiedDataSource, atLeastOnce()).mqttPassword();
         }
     }
 

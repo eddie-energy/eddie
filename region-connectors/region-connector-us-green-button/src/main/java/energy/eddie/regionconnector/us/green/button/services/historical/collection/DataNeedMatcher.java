@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.us.green.button.services.historical.collection;
 
 import energy.eddie.api.agnostic.data.needs.EnergyType;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
@@ -51,21 +52,24 @@ public class DataNeedMatcher {
     public boolean isRelevantEnergyType(Meter meter, UsGreenButtonPermissionRequest permissionRequest) {
         var dataNeedId = permissionRequest.dataNeedId();
         var dataNeed = dataNeedsService.getById(dataNeedId);
-        if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed vhdDataNeed)) {
-            return false;
-        }
-        return anyMeterBlockMatchesEnergyTypeOfDataNeed(meter, vhdDataNeed);
+        return switch (dataNeed) {
+            case AccountingPointDataNeed ignored -> true;
+            case ValidatedHistoricalDataDataNeed vhdDataNeed ->
+                    anyMeterBlockMatchesEnergyTypeOfDataNeed(meter, vhdDataNeed);
+            default -> false;
+        };
     }
 
     private static boolean anyMeterBlockMatchesEnergyTypeOfDataNeed(
             Meter meter,
             ValidatedHistoricalDataDataNeed vhdDataNeed
     ) {
-        var matchesAny = false;
         for (var block : meter.meterBlocks().values()) {
-            matchesAny = matchesAny || matchesEnergyType(block.serviceClass(), vhdDataNeed.energyType());
+            if (matchesEnergyType(block.serviceClass(), vhdDataNeed.energyType())) {
+                return true;
+            }
         }
-        return matchesAny;
+        return false;
     }
 
     private static boolean matchesEnergyType(String serviceClass, EnergyType energyType) {

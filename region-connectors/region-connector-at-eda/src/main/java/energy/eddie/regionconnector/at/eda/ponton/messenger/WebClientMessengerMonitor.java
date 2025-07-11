@@ -45,6 +45,7 @@ public class WebClientMessengerMonitor implements MessengerMonitor {
                 date,
                 messageId
         );
+        LOGGER.info("Resending failed message {} from {}", messageId, date);
         Mono.defer(() -> tokenProvider
                     .getToken()
                     .flatMap(token -> postResend(token, request))

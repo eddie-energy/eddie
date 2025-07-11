@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import jakarta.annotation.Nullable;
@@ -19,7 +20,7 @@ public class GreenButtonRegionConnectorMetadata implements RegionConnectorMetada
     public static final Period PERIOD_LATEST_END = Period.ofMonths(36);
     public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.PT15M, Granularity.P1D);
     public static final ZoneId US_ZONE_ID = ZoneId.of("America/New_York");
-    public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(ValidatedHistoricalDataDataNeed.class);
+    public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class);
 
     @Nullable
     private static GreenButtonRegionConnectorMetadata instance = null;

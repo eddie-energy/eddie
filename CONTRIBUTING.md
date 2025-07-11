@@ -2,7 +2,7 @@
 TODO:
   - Document and link code quality standards
   - Automate formatting on push, so we do not have to document it in the PR guidelines
-  - Merge in issue tracking (features, bugs) from https://github.com/eddie-energy/eddie/wiki/EDDIE-Development-&-Deployment-Strategy
+  - Merge in issue tracking (features, bugs) from old wiki and Sharepoint
 
 Inspiration:
   - https://shoelace.style/resources/contributing
@@ -14,8 +14,15 @@ Inspiration:
 # Contributing
 
 This guide aims to help you set up your development environment and contribute to the EDDIE Framework.
+If you are part of the development team, please also consider the instructions found on the project [Sharepoint](https://fhooe.sharepoint.com/teams/tm-EDDIE--FHO-fue/_layouts/15/Doc.aspx?sourcedoc=%7B98eb20e0-6eee-410c-850e-9ac571970c72%7D&action=edit&wd=target%28EDDIE+Onboarding.one%7C4f14475e-d4dc-4564-9412-6029c38f11f0%2FDevelopment++Deployment+Strategy%7Cccc36407-cd52-4130-94e5-70fba8d7de30%2F%29&wdorigin=703&wdpartid=%7B43090baf-1462-4283-bc9b-529b18ece6e6%7D%7B229%7D&wdsectionfileid=5d516d37-5133-466c-8ede-223ad88ab4d8).
 
-## Prerequisites
+## Issues
+
+The first step in contributing to the EDDIE Framework is by reporting a bug or suggesting a change.
+
+## Development
+
+### Prerequisites
 
 Development on the EDDIE Framework requires at least the following software:
 
@@ -24,7 +31,7 @@ Development on the EDDIE Framework requires at least the following software:
 
 While our tooling does not depend on a specific IDE, we recommend using [IntelliJ IDEA](https://www.jetbrains.com/idea/) for a consistent developer experience.
 
-### Web development
+#### Web development
 
 Gradle will automatically install the required Node.js and pnpm versions to build all frontend applications.
 
@@ -42,7 +49,7 @@ To make tooling like Prettier available to the IDE, their packages have to be in
 pnpm install
 ```
 
-## Running
+### Running
 
 The following instructions are for local development on the EDDIE Framework.
 For AIIDA, please refer to its own [README](./aiida/README.md) instead.
@@ -77,28 +84,43 @@ However, they do not build external dependencies such as web resources.
 
 All run configurations enable the `dev` and `local` Spring profiles to load `application-dev.properties` and `application-local.properties` respectively.
 
-## Configuration & Testing
+### Configuration
 
 The [operation manual](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/OPERATION.html#configuration) includes detailed instructions on how to configure the EDDIE Framework.
 
-If you want to test a specific regional implementation, you will need to enable and configure its region connector. This usually includes the configuration of secrets and access to test accounts. As a developer on the EDDIE team, you will have access to many configurations through our [Vaultwarden](https://vaultwarden-eddie.projekte.fh-hagenberg.at).
+If you want to test a specific regional implementation, you will need to enable and configure its region connector.
+This usually includes the configuration of secrets and access to test accounts.
+As a developer on the EDDIE team, you will have access to many configurations through our [Vaultwarden](https://vaultwarden-eddie.projekte.fh-hagenberg.at) and [Sharepoint](https://fhooe.sharepoint.com/teams/tm-EDDIE--FHO-fue/_layouts/15/Doc.aspx?sourcedoc=%7B98eb20e0-6eee-410c-850e-9ac571970c72%7D&action=edit&wd=target%28EDDIE+Onboarding.one%7C4f14475e-d4dc-4564-9412-6029c38f11f0%2FRegion+Connector+Configuration%7C27bd18f0-f800-4d0a-bd3f-81eabc37995e%2F%29&wdorigin=703&wdpartid=%7B04ecb667-e25d-43ec-81e6-41ca207f3659%7D%7B17%7D&wdsectionfileid=5d516d37-5133-466c-8ede-223ad88ab4d8).
 
 ## Documentation
 
 The documentation of EDDIE projects is split into architecture, project, and API documentation.
 
-- [Architecture](https://eddie-web.projekte.fh-hagenberg.at/architecture/) documents abstract architectural concepts across EDDIE projects.
-- [Framework](https://eddie-web.projekte.fh-hagenberg.at/framework/) documents how to operate, extend, and contribute to the EDDIE Framework.
+- [Architecture](https://eddie-web.projekte.fh-hagenberg.at/architecture/) documents abstract architectural concepts across EDDIE projects for stakeholders and developers.
+- [Framework](https://eddie-web.projekte.fh-hagenberg.at/framework/) documents how to operate, integrate, and extend the EDDIE Framework, acting as our operation manual.
 - [Javadoc](https://eddie-web.projekte.fh-hagenberg.at/javadoc/) documents Java classes of the EDDIE Framework and is generated on code changes.
+
+The framework documentation is managed in the [`docs`](./docs) folder of this repository.
+The architecture documentation has its own repository with [eddie-energy/architecture](https://github.com/eddie-energy/architecture).
 
 ## Code Style
 
 ### Static Analysis
 
-We are using SonarQube to analyze or code in the IDE and on pull requests.
+We use SonarQube to analyze our code in the IDE and on pull requests.
 When first opening the project, your IDE should ask you to set up the SonarQube plugin.
-If you are not sure if SonarQube was installed,
-please follow the [instructions](https://docs.sonarsource.com/sonarqube-for-ide/intellij/getting-started/installation/) for your IDE.
+If you are not sure if SonarQube was installed, please follow the [instructions](https://docs.sonarsource.com/sonarqube-for-ide/intellij/getting-started/installation/) for your IDE.
+
+### Guidelines
+
+We follow the [SonarRules for Java](https://rules.sonarsource.com/java/), most of which will be highlighted by Sonar.
+Please also consider the following guidelines:
+
+- Avoid abbreviations in variable names.
+- Use constructor injection for dependencies.
+- Use `@Mock` annotations over static `mock(...)` methods.
+- Use `@JsonProperty` and `@Column` on all required fields, instead of relying on Spring or other _magic_.
+- `TODO` comments and hacks should always include a ticket number.
 
 ### Formatting
 
@@ -161,6 +183,81 @@ For example:
 
 - `re1/1187-development-guide`
 - `arde/1187/development-guide` (for Arthur Dent)
+
+## Automations, containers, and client packages 
+
+We use [GitHub Actions](https://docs.github.com/en/actions) to continuously integrate and deliver software increments.
+Each change added to the main branch triggers the following steps (if needed):
+
+- **Static Code Analysis**: Runs SonarQube to ensure static code quality.
+- **Builds**: Compiles and builds the latest changes and reports errors.
+- **Tests**: Executes unit tests and reports failures.
+- **E2E Tests**: Executes E2E tests with screenshots and container logs.
+- **Containerization**: Builds Docker images for the EDDIE Framework and AIIDA.
+- **Publishing**: Publishes the Docker images to the GitHub container registry.
+- **Client libraries**: Publishes client libraries for integrating the EDDIE Framework.
+- **Documentation**: Rebuilds the Javadoc and framework documentation websites.
+
+For a complete overview, take a look at the [_Actions_](https://github.com/eddie-energy/eddie/actions) tab of the repository.
+
+## Releases
+
+A new version of the EDDIE Framework is released every three weeks.
+The latest and previous versions are found in the [releases](https://github.com/eddie-energy/eddie/releases) section of the repository and include a summary of all implemented changes.
+
+> [!WARNING]
+> The EDDIE Framework is still undergoing major changes regularly.
+> Each release may break existing deployments!
+
+### Backporting strategy in Git
+
+Backporting is the process of applying specific commits from a more recent version of your project to an older version or a release branch.
+The simplest backporting strategy involves the following steps:
+
+1. **Identify the target release branch**  
+   This is the branch where you want to apply the backport, usually a stable or release branch like `release/1.x`.
+
+2. **Create a new branch from the target release branch**  
+   If you haven't already, create a new branch from the target release branch to keep your backport changes isolated.
+
+3. **Identify the commits to backport**  
+   Find the specific commits from your main development branch (`main`) that need to be backported to the release branch.
+
+4. **Cherry-pick the commits**  
+   Use the `git cherry-pick` command to apply each of the selected commits to your backport branch.
+
+5. **Test the backport**  
+   Ensure the backport works correctly with the release branch by testing the changes in context.
+
+6. **Push the backport branch**  
+   Push the backport branch to your remote repository.
+
+7. **Create a pull request**  
+   Open a pull request from the backport branch to the target release branch, get it reviewed, and merge it.
+
+```mermaid
+gitGraph
+   commit id: "Feature A" tag: "release-1.x"
+   branch release-1.x
+   checkout main
+   commit id: "Feature B"
+   commit id: "Bugfix"
+   commit id: "Feature C"
+   checkout release-1.x
+   branch backport-1.x
+   cherry-pick id: "Bugfix"
+   checkout release-1.x
+   merge backport-1.x
+```
+
+## Tests
+
+- **Unit Tests** execute upon each commit on the main branch or when updating a pull request.
+  All Java code is to be tested with a recommended coverage 80 percent.
+- **E2E Integration Tests** also execute on each commit, but simulate user interactions. 
+  They function as integration tests and depend on external services.
+  While this dependency makes individual tests less reliable, they can find problems that are hard to detect with unit tests.
+- **Demo Environments** are hosted by the development team for manual tests, and by demonstrators that implement a data-driven services to test the capabilities of the EDDIE Framework in a realistic environment.
 
 ## Developer Experience
 

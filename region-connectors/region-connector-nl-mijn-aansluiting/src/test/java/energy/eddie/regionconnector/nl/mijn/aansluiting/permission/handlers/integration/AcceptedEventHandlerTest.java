@@ -74,7 +74,7 @@ class AcceptedEventHandlerTest {
                                                       ZonedDateTime.now(ZoneOffset.UTC),
                                                       LocalDate.now(ZoneOffset.UTC).minusDays(10),
                                                       null,
-                                                      Granularity.P1D);
+                                                      Granularity.P1D, "11", "999AB");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
 
@@ -99,7 +99,7 @@ class AcceptedEventHandlerTest {
                                                       ZonedDateTime.now(ZoneOffset.UTC),
                                                       LocalDate.now(ZoneOffset.UTC).minusDays(10),
                                                       null,
-                                                      Granularity.P1D);
+                                                      Granularity.P1D, "11", "999AB");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
 
@@ -124,7 +124,7 @@ class AcceptedEventHandlerTest {
                                                       ZonedDateTime.now(ZoneOffset.UTC),
                                                       LocalDate.now(ZoneOffset.UTC).plusDays(10),
                                                       null,
-                                                      Granularity.P1D);
+                                                      Granularity.P1D, "11", "999AB");
         when(repository.getByPermissionId("pid"))
                 .thenReturn(pr);
 

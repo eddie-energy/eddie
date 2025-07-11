@@ -23,49 +23,38 @@ section [Configuration of the Region Connector](#configuration-of-the-region-con
 To create a Java Key Store see this [tutorial](https://docs.oracle.com/cd/E19509-01/820-3503/ggfen/index.html).
 The private key must use the RS256 key algorithm.
 
-The following table shows all the test users that are available on the acceptance environment provided by mijn
-aansluiting.
-
-| user login  | verify code | note      |
-|-------------|-------------|-----------|
-| Testuser 1  | 8           |           |
-| Testuser 3  | 19          | unusable  |
-| Testuser 4  | 145         |           |
-| Testuser 5  | 129         |           |
-| Testuser 6  | 1           |           |
-| Testuser 7  | 1           |           |
-| Testuser 8  | 11          |           |
-| Testuser 9  | 3107        |           |
-| Testuser 10 | 1807        |           |
-| Testuser 11 | 12          | preferred |
+For the available test users see [mijnenergiedata.nl](https://www.acc.mijnenergiedata.nl/docs/test-users.html).
+To test use the test users with the correct metering point for specific data.
+For data needs for electricity data pick the test users whose EAN starts with _ELK_, for gas the EAN needs to start with
+_GAS_.
 
 ## Prerequisites
 
 - Register a user with Mijn Aansluiting here: https://www.acc.mijnenergiedata.nl/toestemmingen/welkom
 - Get the client-id and client-secret
 - Generate a JKS key pair and register your public key with Mijn Aansluiting.
+- Request an API token for the [EAN codeboek API](https://www.eancodeboek.nl/), this can be done [here](https://gateway.edsn.nl/eancodeboek/).
 
 ## Configuration of the Region Connector
 
 The region connector needs a set of configuration values to be able to function correctly, how you provide these values
 depends on the way you deploy the region connector.
 
-| Configuration values                                        | Description                                                                                                                                                                     |
-|-------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `region-connector.nl.mijn.aansluiting.issuer-url`           | The Issuer Url of the authorization server. You can get this information from the portal where you registered the user.                                                         |
-| `region-connector.nl.mijn.aansluiting.continuous-client-id` | The Client-ID needed to facilitate the OAuth flow. Must be the Client-ID for the continuous API.                                                                                |
-| `region-connector.nl.mijn.aansluiting.continuous-scope`     | The scope of the energy data that is requested, `24_maanden_dagstanden` allows to access up to two year old energy data.                                                        |
-| `region-connector.nl.mijn.aansluiting.continuous-key-id`    | The ID of the key for Mijn Aansluiting continuous API.                                                                                                                          |
-| `region-connector.nl.mijn.aansluiting.single-client-id`     | The Client-ID needed to facilitate the OAuth flow. Must be the Client-ID for the single permission API.                                                                         |
-| `region-connector.nl.mijn.aansluiting.single-scope`         | The scope of the accounting point data that is requested, `consumption_data` allows to access accounting point data.                                                            |
-| `region-connector.nl.mijn.aansluiting.single-key-id`        | The ID of the key for Mijn Aansluiting single permission API.                                                                                                                   |
-| `region-connector.nl.mijn.aansluiting.redirect-url`         | The redirect URL that will be used by the authorization server to redirect the final customer to. Should be `domain + /nl-mijn-aansluiting/oauth2/code/mijn-aansluiting`        |
-| `region-connector.nl.mijn-aansluting.polling`               | Used to configure when future data should be polled, uses Spring cron syntax. The default is 17 o'clock every day.                                                              |
-| `spring.ssl.bundle.jks.nl.keystore.location`                | Path to the keystore, which contains the private key needed to create OAuth Requests. It is recommended to create a keystore for each key to simplify key rotation and updates. |
-| `spring.ssl.bundle.jks.nl.keystore.password`                | Password to access the keystore.                                                                                                                                                |
-| `spring.ssl.bundle.jks.nl.key.alias`                        | The alias under which the key is saved in the keystore.                                                                                                                         |
-| `spring.ssl.bundle.jks.nl.key.password`                     | Password to access the key in the keystore                                                                                                                                      |
-| `spring.ssl.bundle.jks.nl.keystore.type`                    | The keystore type. Should always be set to `JKS`                                                                                                                                |
+| Configuration values                                        | Description                                                                                                                                                                                                                                                                                |
+|-------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `region-connector.nl.mijn.aansluiting.issuer-url`           | The Issuer Url of the authorization server. You can get this information from the portal where you registered the user.                                                                                                                                                                    |
+| `region-connector.nl.mijn.aansluiting.redirect-url`         | The redirect URL that will be used by the authorization server to redirect the final customer to. Should be `domain + /nl-mijn-aansluiting/oauth2/code/mijn-aansluiting`                                                                                                                   |
+| `region-connector.nl.mijn.aansluiting.continuous-client-id` | The Client-ID needed to facilitate the OAuth flow. Must be the Client-ID for the continuous API.                                                                                                                                                                                           |
+| `region-connector.nl.mijn.aansluiting.continuous-scope`     | The scope of the energy data that is requested, `24_maanden_dagstanden` allows to access up to two year old energy data.                                                                                                                                                                   |
+| `region-connector.nl.mijn.aansluiting.continuous-key-id`    | The ID of the key for Mijn Aansluiting continuous API.                                                                                                                                                                                                                                     |
+| `region-connector.nl.mijn.aansluiting.codeboek-api`         | The API endpoint of the codeboek API. Should always be `https://gateway.edsn.nl/eancodeboek/v1/ecbinfoset`. For information see the [docs](https://gateway.edsn.nl/eancodeboek/swagger-ui/index.html?configUrl=../v3/api-docs/swagger-config#/metering-point-controller/getMeteringPoints) |
+| `region-connector.nl.mijn.aansluiting.codeboek-api-token`   | The API token for the codeboek API, which was previously requested [here](https://gateway.edsn.nl/eancodeboek/).                                                                                                                                                                           |
+| `region-connector.nl.mijn-aansluting.polling`               | Used to configure when future data should be polled, uses Spring cron syntax. The default is 17 o'clock every day.                                                                                                                                                                         |
+| `spring.ssl.bundle.jks.nl.keystore.location`                | Path to the keystore, which contains the private key needed to create OAuth Requests. It is recommended to create a keystore for each key to simplify key rotation and updates.                                                                                                            |
+| `spring.ssl.bundle.jks.nl.keystore.password`                | Password to access the keystore.                                                                                                                                                                                                                                                           |
+| `spring.ssl.bundle.jks.nl.key.alias`                        | The alias under which the key is saved in the keystore.                                                                                                                                                                                                                                    |
+| `spring.ssl.bundle.jks.nl.key.password`                     | Password to access the key in the keystore                                                                                                                                                                                                                                                 |
+| `spring.ssl.bundle.jks.nl.keystore.type`                    | The keystore type. Should always be set to `JKS`                                                                                                                                                                                                                                           |
 
 The region connector can be configured using Spring properties or environment variables.
 When using environment variables, the configuration values need to be converted in the following way:
@@ -74,20 +63,24 @@ When using environment variables, the configuration values need to be converted 
 - Optionally convert all letters to upper case
 
 ```properties :spring
+region-connector.nl.mijn.aansluiting.issuer-url=https://www.acc.mijnenergiedata.nl/autorisatieregister
+region-connector.nl.mijn.aansluiting.redirect-url=https://example.com/callback
+# Continuous API
+region-connector.nl.mijn.aansluiting.continuous-client-id=client-id
+region-connector.nl.mijn.aansluiting.continuous-scope=24_maanden_dagstanden
+region-connector.nl.mijn.aansluiting.continuous-key-id=key-id
+# Codeboek API
+region-connector.nl.mijn.aansluiting.codeboek-api=https://gateway.edsn.nl/eancodeboek/v1/ecbinfoset
+region-connector.nl.mijn.aansluiting.codeboek-api-token=replace-me
+
+region-connector.nl.mijn.aansluiting.polling=0 0 17 * * *
+
 # Key Store Config
 spring.ssl.bundle.jks.nl.keystore.location=./mijn-aansluiting.jks
 spring.ssl.bundle.jks.nl.keystore.password=password
 spring.ssl.bundle.jks.nl.keystore.type=JKS
 spring.ssl.bundle.jks.nl.key.alias=mijn-aansluiting
 spring.ssl.bundle.jks.nl.key.password=password
-
-# Other configuration
-region-connector.nl.mijn.aansluiting.key-id=id
-region-connector.nl.mijn.aansluiting.issuer-url=https://example.com
-region-connector.nl.mijn.aansluiting.client-id=client-id
-region-connector.nl.mijn.aansluiting.scope=24_maanden_dagstanden
-region-connector.nl.mijn.aansluiting.redirect-url=https://example.com/callback
-region-connector.nl.mijn.aansluiting.polling=0 0 17 * * *
 ```
 
 ## Running the Region Connector via EDDIE

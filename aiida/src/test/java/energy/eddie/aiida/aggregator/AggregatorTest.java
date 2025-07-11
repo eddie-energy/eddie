@@ -40,6 +40,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AggregatorTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(Aggregator.class);
+    private static final String COUNTRY_CODE = "AT";
     private static final String DATASOURCE_NAME_1 = "test-1";
     private static final UUID DATA_SOURCE_ID_1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID DATA_SOURCE_ID_2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -49,6 +50,7 @@ class AggregatorTest {
             DataSourceType.SIMULATION,
             AiidaAsset.SUBMETER,
             DATASOURCE_NAME_1,
+            COUNTRY_CODE,
             true,
             null,
             null,
@@ -57,6 +59,7 @@ class AggregatorTest {
             DATA_SOURCE_ID_2,
             DataSourceType.SIMULATION,
             AiidaAsset.SUBMETER,
+            "AT",
             "test-2",
             true,
             null,

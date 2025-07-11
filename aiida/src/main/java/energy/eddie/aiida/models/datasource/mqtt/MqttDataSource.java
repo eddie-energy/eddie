@@ -65,6 +65,7 @@ public abstract class MqttDataSource extends DataSource {
                 dataSourceType,
                 asset,
                 name,
+                countryCode,
                 enabled,
                 null,
                 toMqttDto(),
@@ -90,6 +91,10 @@ public abstract class MqttDataSource extends DataSource {
 
     public String mqttPassword() {
         return mqttPassword;
+    }
+
+    public void setMqttPassword(String mqttPassword) {
+        this.mqttPassword = mqttPassword;
     }
 
     public DataSourceMqttDto toMqttDto() {

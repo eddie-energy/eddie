@@ -15,6 +15,7 @@ import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
 import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
+import energy.eddie.regionconnector.es.datadis.exceptions.EsValidationException;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsCreatedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsMalformedEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsValidatedEvent;
@@ -198,9 +199,9 @@ class PermissionRequestServiceTest {
 
     @ParameterizedTest
     @MethodSource
-    void createAndSendPermissionRequest_emitsCreatedAndValidated(List<Granularity> granularities) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
+    void createAndSendPermissionRequest_emitsCreatedAndValidated(List<Granularity> granularities) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException, EsValidationException {
         // Given
-        var creationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
+        var creationRequest = new PermissionRequestForCreation("cid", "dnid", "00000000T", "mid");
         var now = LocalDate.now(ZONE_ID_SPAIN);
         when(calculationService.calculate("dnid"))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(
@@ -223,11 +224,11 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void createAndSendPermissionRequest_emitsCreatedAndValidated_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
+    void createAndSendPermissionRequest_emitsCreatedAndValidated_forAccountingPointDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException, EsValidationException {
         // Given
         ArgumentCaptor<EsCreatedEvent> createdCaptor = ArgumentCaptor.forClass(EsCreatedEvent.class);
         ArgumentCaptor<EsValidatedEvent> validatedCaptor = ArgumentCaptor.forClass(EsValidatedEvent.class);
-        var creationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
+        var creationRequest = new PermissionRequestForCreation("cid", "dnid", "00000000T", "mid");
         var today = LocalDate.now(ZONE_ID_SPAIN);
         var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate("dnid"))
@@ -249,7 +250,7 @@ class PermissionRequestServiceTest {
     @Test
     void createAndSendPermissionRequest_withUnknownDataNeed_throws() {
         // Given
-        var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
+        var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "00000000T", "mid");
         when(calculationService.calculate("dnid")).thenReturn(new DataNeedNotFoundResult());
 
         // When, Then
@@ -260,9 +261,21 @@ class PermissionRequestServiceTest {
     }
 
     @Test
+    void createAndSendPermissionRequest_withInvalidNif_throws() {
+        // Given
+        var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "10000000T", "mid");
+
+        // When, Then
+        assertThrows(EsValidationException.class,
+                     () -> service.createAndSendPermissionRequest(mockCreationRequest));
+        verify(outbox).commit(isA(EsCreatedEvent.class));
+        verify(outbox).commit(isA(EsMalformedEvent.class));
+    }
+
+    @Test
     void createAndSendPermissionRequest_withInvalidDataNeed_throws() {
         // Given
-        var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "nif", "mid");
+        var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "00000000T", "mid");
         when(calculationService.calculate("dnid"))
                 .thenReturn(new DataNeedNotSupportedResult(""));
         // When, Then

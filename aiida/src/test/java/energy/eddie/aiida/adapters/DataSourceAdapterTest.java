@@ -2,14 +2,15 @@ package energy.eddie.aiida.adapters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
+import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
+import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpClient;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
-import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
-import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
+import energy.eddie.aiida.config.MqttConfiguration;
+import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
@@ -38,6 +39,7 @@ class DataSourceAdapterTest {
     private static final UUID DEVICE_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
     private static final UUID ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private ObjectMapper mapper;
+    private MqttConfiguration mqttConfiguration;
 
     DataSource createNewDataSource(DataSourceType type) {
         DataSourceProtocolSettings settings;
@@ -49,7 +51,7 @@ class DataSourceAdapterTest {
         }
 
         return DataSource.createFromDto(
-                new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", true, 1, null, null),
+                new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", "AT", true, 1, null, null),
                 ID,
                 settings
         );
@@ -59,6 +61,14 @@ class DataSourceAdapterTest {
     @BeforeEach
     void setUp() {
         mapper = new AiidaConfiguration().customObjectMapper().build();
+        mqttConfiguration = new MqttConfiguration(
+                "tcp://localhost:1883",
+                "tcp://localhost:1883",
+                10,
+                "user",
+                "password",
+                ""
+        );
     }
 
     @Test
@@ -67,7 +77,7 @@ class DataSourceAdapterTest {
         var dataSource = createNewDataSource(DataSourceType.SMART_METER_ADAPTER);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper);
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
 
         // Then
         assertInstanceOf(OesterreichsEnergieAdapter.class, adapter);
@@ -79,7 +89,7 @@ class DataSourceAdapterTest {
         var dataSource = createNewDataSource(DataSourceType.MICRO_TELEINFO);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper);
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
 
         // Then
         assertInstanceOf(MicroTeleinfoV3Adapter.class, adapter);
@@ -91,7 +101,7 @@ class DataSourceAdapterTest {
         var dataSource = createNewDataSource(DataSourceType.SMART_GATEWAYS_ADAPTER);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper);
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
 
         // Then
         assertInstanceOf(SmartGatewaysAdapter.class, adapter);
@@ -103,7 +113,7 @@ class DataSourceAdapterTest {
         var dataSource = createNewDataSource(DataSourceType.SIMULATION);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper);
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
 
         // Then
         assertInstanceOf(SimulationAdapter.class, adapter);
@@ -120,7 +130,7 @@ class DataSourceAdapterTest {
 
             var dataSource = createNewDataSource(DataSourceType.MODBUS);
 
-            var adapter = DataSourceAdapter.create(dataSource, mapper);
+            var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
 
             assertInstanceOf(ModbusTcpDataSourceAdapter.class, adapter);
         }

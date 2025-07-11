@@ -46,7 +46,8 @@ A self-hosted runner that is on the FH network is used so that the Ponton XP mes
 The self-hosted runner is started in a docker container, which shares its working directory as a volume with the host.
 Currently, only one runner is available at the same time, therefore only 1 job can be processed simultaneously.
 For a workflow to run on a self-hosted runner, the corresponding labels of the runner have to be specified in the
-workflow file, e.g. `runs-on: [ self-hosted, fh-server ]`. If one uses a label, that is used by a self-hosted as well as
+workflow file, e.g.
+`runs-on: [ self-hosted, fh-server, dind ]`. If one uses a label, that is used by a self-hosted as well as
 a GitHub-hosted runner, e.g. `ubuntu-22.04`, then GitHub will send the job to a self-hosted runner if one is available,
 and otherwise will use a GitHub-hosted one.
 

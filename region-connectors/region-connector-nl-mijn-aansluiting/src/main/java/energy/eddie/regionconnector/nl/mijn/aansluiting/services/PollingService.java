@@ -4,9 +4,9 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.ApiClient;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.CodeboekApiClient;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MeteringPoints;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MijnAansluitingResponse;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.Reading;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.Register;
@@ -17,6 +17,8 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthManager;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.exceptions.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlInternalPollingEvent;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.NlSimpleEvent;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.tasks.AccountingPointFilterTask;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.oauth.NoRefreshTokenException;
 import energy.eddie.regionconnector.shared.services.CommonPollingService;
@@ -32,15 +34,17 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.NL_ZONE_ID;
 import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
 
 @Service
-public class PollingService implements AutoCloseable, CommonPollingService<NlPermissionRequest> {
+public class PollingService implements AutoCloseable, CommonPollingService<MijnAansluitingPermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     private final Outbox outbox;
     private final OAuthManager oAuthManager;
     private final ApiClient apiClient;
     private final DataNeedsService dataNeedsService;
+    private final CodeboekApiClient codeboekApiClient;
 
     private final Sinks.Many<IdentifiableMeteredData> identifiableMeteredDataSink = Sinks.many()
                                                                                          .multicast()
@@ -55,48 +59,67 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
             Outbox outbox,
             OAuthManager oAuthManager,
             ApiClient apiClient,
-            DataNeedsService dataNeedsService
+            DataNeedsService dataNeedsService,
+            CodeboekApiClient codeboekApiClient
     ) {
         this.outbox = outbox;
         this.oAuthManager = oAuthManager;
         this.apiClient = apiClient;
         this.dataNeedsService = dataNeedsService;
+        this.codeboekApiClient = codeboekApiClient;
     }
 
-    public void fetchAccountingPointData(NlPermissionRequest permissionRequest) {
-        String permissionId = permissionRequest.permissionId();
-        var res = fetchAccessToken(permissionId, MijnAansluitingApi.SINGLE_CONSENT_API);
+    public void fetchAccountingPointData(MijnAansluitingPermissionRequest permissionRequest) {
+        var permissionId = permissionRequest.permissionId();
+        if (permissionRequest.postalCode() == null || permissionRequest.houseNumber() == null) {
+            LOGGER.warn("No postal code or house number found for permission id: {}", permissionId);
+            outbox.commit(new NlSimpleEvent(permissionId, PermissionProcessStatus.UNFULFILLABLE));
+            return;
+        }
+        var res = fetchAccessToken(permissionId);
         if (res.isEmpty()) {
             return;
         }
-        var accessTokenAndSingleSyncUrl = res.get();
         LOGGER.info("Fetching accounting point data for permission request {}", permissionId);
-        apiClient.fetchSingleReading(accessTokenAndSingleSyncUrl.singleSync(),
-                                     accessTokenAndSingleSyncUrl.accessToken())
-                 .map(apData -> new IdentifiableAccountingPointData(permissionRequest, apData))
-                 .subscribe(this::consume);
+        Mono.zip(
+                    apiClient.fetchConsumptionData(res.get().singleSync(), res.get().accessToken()),
+                    codeboekApiClient.meteringPoints(permissionRequest.postalCode(), permissionRequest.houseNumber())
+                                     .flatMapIterable(MeteringPoints::getMeteringPoints)
+                                     .collectList()
+            )
+            .map(new AccountingPointFilterTask())
+            .map(apData -> new IdentifiableAccountingPointData(permissionRequest, apData.getT2()))
+            .subscribe(this::consume);
     }
 
     @Override
-    public void pollTimeSeriesData(NlPermissionRequest permissionRequest) {
-        pollTimeSeriesData(permissionRequest, permissionRequest.start(), permissionRequest.end())
+    public void pollTimeSeriesData(MijnAansluitingPermissionRequest permissionRequest) {
+        var start = permissionRequest.latestMeterReadingEndDate().orElse(permissionRequest.start());
+        var today = LocalDate.now(NL_ZONE_ID);
+        var end = permissionRequest.end().isAfter(today) ? today : permissionRequest.end();
+        pollTimeSeriesData(permissionRequest, start, end)
                 .subscribe(res -> outbox.commit(new NlInternalPollingEvent(permissionRequest.permissionId(), res)));
     }
 
     @Override
-    public boolean isActiveAndNeedsToBeFetched(NlPermissionRequest permissionRequest) {
+    public boolean isActiveAndNeedsToBeFetched(MijnAansluitingPermissionRequest permissionRequest) {
+        var today = LocalDate.now(NL_ZONE_ID);
+        if (permissionRequest.status() != PermissionProcessStatus.ACCEPTED
+            || !permissionRequest.start().isBefore(today)) {
+            return false;
+        }
         var dataNeedId = permissionRequest.dataNeedId();
         var dataNeed = dataNeedsService.getById(dataNeedId);
         return dataNeed instanceof ValidatedHistoricalDataDataNeed;
     }
 
     public Mono<Map<String, ZonedDateTime>> pollTimeSeriesData(
-            NlPermissionRequest permissionRequest,
+            MijnAansluitingPermissionRequest permissionRequest,
             LocalDate start,
             LocalDate end
     ) {
         String permissionId = permissionRequest.permissionId();
-        var res = fetchAccessToken(permissionId, MijnAansluitingApi.CONTINUOUS_CONSENT_API);
+        var res = fetchAccessToken(permissionId);
         if (res.isEmpty()) {
             return Mono.empty();
         }
@@ -123,9 +146,9 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
         identifiableAccountingPointDataSink.tryEmitComplete();
     }
 
-    private Optional<AccessTokenAndSingleSyncUrl> fetchAccessToken(String permissionId, MijnAansluitingApi apiType) {
+    private Optional<AccessTokenAndSingleSyncUrl> fetchAccessToken(String permissionId) {
         try {
-            return Optional.of(oAuthManager.accessTokenAndSingleSyncUrl(permissionId, apiType));
+            return Optional.of(oAuthManager.accessTokenAndSingleSyncUrl(permissionId));
         } catch (OAuthTokenDetailsNotFoundException e) {
             LOGGER.error("Permission request {} does not have credentials", permissionId);
             return Optional.empty();
@@ -143,9 +166,14 @@ public class PollingService implements AutoCloseable, CommonPollingService<NlPer
     }
 
     private void consume(IdentifiableAccountingPointData identifiableAccountingPointData) {
+        var permissionId = identifiableAccountingPointData.permissionRequest().permissionId();
+        if (identifiableAccountingPointData.payload().isEmpty()) {
+            LOGGER.info("No metering points found for permission request {}", permissionId);
+            outbox.commit(new NlSimpleEvent(permissionId, PermissionProcessStatus.UNFULFILLABLE));
+            return;
+        }
         identifiableAccountingPointDataSink.tryEmitNext(identifiableAccountingPointData);
-        var event = new NlSimpleEvent(identifiableAccountingPointData.permissionRequest().permissionId(),
-                                      PermissionProcessStatus.FULFILLED);
+        var event = new NlSimpleEvent(permissionId, PermissionProcessStatus.FULFILLED);
         outbox.commit(event);
     }
 

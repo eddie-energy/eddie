@@ -12,7 +12,6 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.exceptions.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.persistence.OAuthTokenDetails;
@@ -111,12 +110,9 @@ class OAuthManagerTest {
     private final MijnAansluitingConfiguration config = new MijnAansluitingConfiguration(
             "",
             "",
-            "",
-            new ClientID("client-id"),
             new ClientID("client-id"),
             new Scope("scope"),
-            new Scope("scope"),
-            URI.create("https://localhost/callback")
+            URI.create("http://localhost"), "jwt", URI.create("https://localhost/callback")
     );
     @Mock
     private OIDCProviderMetadata providerMetadata;
@@ -138,10 +134,8 @@ class OAuthManagerTest {
 
     public static Stream<Arguments> testProcessCallback_withAuthorizationCode() {
         return Stream.of(
-                Arguments.of(ACCESS_TOKEN_RESPONSE, MijnAansluitingApi.CONTINUOUS_CONSENT_API),
-                Arguments.of(ACCESS_TOKEN_RESPONSE, MijnAansluitingApi.SINGLE_CONSENT_API),
-                Arguments.of(REFRESH_AND_ACCESS_TOKEN_RESPONSE, MijnAansluitingApi.CONTINUOUS_CONSENT_API),
-                Arguments.of(REFRESH_AND_ACCESS_TOKEN_RESPONSE, MijnAansluitingApi.SINGLE_CONSENT_API)
+                Arguments.of(ACCESS_TOKEN_RESPONSE),
+                Arguments.of(REFRESH_AND_ACCESS_TOKEN_RESPONSE)
         );
     }
 
@@ -167,7 +161,7 @@ class OAuthManagerTest {
                 .thenReturn(URI.create("https://localhost:8080"));
 
         // When
-        var res = oAuthManager.createAuthorizationUrl("12", MijnAansluitingApi.CONTINUOUS_CONSENT_API);
+        var res = oAuthManager.createAuthorizationUrl("12");
 
         // Then
         assertAll(
@@ -185,7 +179,7 @@ class OAuthManagerTest {
 
         // When, Then
         assertThrows(exceptionClass,
-                     () -> oAuthManager.processCallback(callbackUri, "pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API));
+                     () -> oAuthManager.processCallback(callbackUri, "pid"));
     }
 
     @Test
@@ -197,15 +191,12 @@ class OAuthManagerTest {
 
         // When, Then
         assertThrows(PermissionNotFoundException.class,
-                     () -> oAuthManager.processCallback(callbackUri, "pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API));
+                     () -> oAuthManager.processCallback(callbackUri, "pid"));
     }
 
     @ParameterizedTest
     @MethodSource
-    void testProcessCallback_withAuthorizationCode(
-            String response,
-            MijnAansluitingApi apiType
-    ) throws IOException, UserDeniedAuthorizationException, JWTSignatureCreationException, OAuthUnavailableException, OAuthException, ParseException, PermissionNotFoundException, InvalidValidationAddressException, IllegalTokenException, BadJOSEException, JOSEException {
+    void testProcessCallback_withAuthorizationCode(String response) throws IOException, UserDeniedAuthorizationException, JWTSignatureCreationException, OAuthUnavailableException, OAuthException, ParseException, PermissionNotFoundException, InvalidValidationAddressException, IllegalTokenException, BadJOSEException, JOSEException {
         // Given
         var server = new MockWebServer();
         var callbackUri = URI.create("https://localhost/callback?state=asdf&code=authcode");
@@ -221,8 +212,8 @@ class OAuthManagerTest {
                         ZonedDateTime.now(ZoneOffset.UTC),
                         null,
                         null,
-                        Granularity.P1D
-                )));
+                        Granularity.P1D,
+                        "11", "999AB")));
         server.enqueue(
                 new MockResponse()
                         .setBody(response)
@@ -238,7 +229,7 @@ class OAuthManagerTest {
                                     .build());
 
         // When
-        var res = oAuthManager.processCallback(callbackUri, "pid", apiType);
+        var res = oAuthManager.processCallback(callbackUri, "pid");
 
         // Then
         assertEquals("pid", res);
@@ -264,8 +255,9 @@ class OAuthManagerTest {
                         ZonedDateTime.now(ZoneOffset.UTC),
                         null,
                         null,
-                        Granularity.P1D
-                )));
+                        Granularity.P1D,
+                        "11", "999AB")));
+        //noinspection JsonStandardCompliance
         server.enqueue(
                 new MockResponse()
                         .setBody("NOT JSON")
@@ -279,7 +271,7 @@ class OAuthManagerTest {
 
         // Then
         assertThrows(IllegalTokenException.class,
-                     () -> oAuthManager.processCallback(callbackUri, "pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API));
+                     () -> oAuthManager.processCallback(callbackUri, "pid"));
 
         // Clean-Up
         server.close();
@@ -301,8 +293,8 @@ class OAuthManagerTest {
                         ZonedDateTime.now(ZoneOffset.UTC),
                         null,
                         null,
-                        Granularity.P1D
-                )));
+                        Granularity.P1D,
+                        "11", "999AB")));
         when(providerMetadata.getTokenEndpointURI())
                 .thenReturn(URI.create("https://localhost:9999/callback"));
 
@@ -310,7 +302,7 @@ class OAuthManagerTest {
 
         // Then
         assertThrows(OAuthUnavailableException.class,
-                     () -> oAuthManager.processCallback(callbackUri, "pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API));
+                     () -> oAuthManager.processCallback(callbackUri, "pid"));
     }
 
     @Test
@@ -330,8 +322,8 @@ class OAuthManagerTest {
                         ZonedDateTime.now(ZoneOffset.UTC),
                         null,
                         null,
-                        Granularity.P1D
-                )));
+                        Granularity.P1D,
+                        "11", "999AB")));
         server.enqueue(
                 new MockResponse()
                         .setBody(ERROR_RESPONSE)
@@ -346,7 +338,7 @@ class OAuthManagerTest {
 
         // Then
         assertThrows(OAuthException.class,
-                     () -> oAuthManager.processCallback(callbackUri, "pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API));
+                     () -> oAuthManager.processCallback(callbackUri, "pid"));
 
         // Clean-Up
         server.close();
@@ -376,7 +368,7 @@ class OAuthManagerTest {
                                     .build());
 
         // When
-        var res = oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API);
+        var res = oAuthManager.accessTokenAndSingleSyncUrl("pid");
 
         // Then
         assertAll(
@@ -420,7 +412,7 @@ class OAuthManagerTest {
         when(providerMetadata.getTokenEndpointURI())
                 .thenReturn(server.url("/tokens").uri());
         // When
-        var res = oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API);
+        var res = oAuthManager.accessTokenAndSingleSyncUrl("pid");
 
         // Then
         assertAll(
@@ -448,6 +440,6 @@ class OAuthManagerTest {
                 .thenReturn(Optional.of(details));
         // When, Then
         assertThrows(NoRefreshTokenException.class,
-                     () -> oAuthManager.accessTokenAndSingleSyncUrl("pid", MijnAansluitingApi.CONTINUOUS_CONSENT_API));
+                     () -> oAuthManager.accessTokenAndSingleSyncUrl("pid"));
     }
 }

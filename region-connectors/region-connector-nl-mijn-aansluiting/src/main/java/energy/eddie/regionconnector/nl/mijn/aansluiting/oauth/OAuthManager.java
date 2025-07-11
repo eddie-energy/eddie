@@ -10,14 +10,12 @@ import com.nimbusds.jwt.proc.JWTProcessor;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.PrivateKeyJWT;
-import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.pkce.CodeChallengeMethod;
 import com.nimbusds.oauth2.sdk.pkce.CodeVerifier;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.oauth2.sdk.token.Tokens;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.client.MijnAansluitingApi;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.exceptions.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.persistence.OAuthTokenDetails;
@@ -69,12 +67,12 @@ public class OAuthManager {
      * @param verificationCode the house number or verification code
      * @return a redirect URI
      */
-    public OAuthRequestPayload createAuthorizationUrl(String verificationCode, MijnAansluitingApi apiType) {
+    public OAuthRequestPayload createAuthorizationUrl(String verificationCode) {
         // Pass random state instead of permission id to authorization server
         State state = new State();
         CodeVerifier codeVerifier = new CodeVerifier();
-        var clientId = getClientID(apiType);
-        var scope = getScope(apiType);
+        var clientId = configuration.continuousClientId();
+        var scope = configuration.continuousScope();
         AuthorizationRequest request = new AuthorizationRequest.Builder(
                 new ResponseType(ResponseType.Value.CODE), clientId)
                 .redirectionURI(configuration.redirectUrl())
@@ -110,8 +108,7 @@ public class OAuthManager {
      */
     public String processCallback(
             URI callbackUri,
-            String permissionId,
-            MijnAansluitingApi apiType
+            String permissionId
     ) throws ParseException,
              OAuthException,
              PermissionNotFoundException,
@@ -160,14 +157,14 @@ public class OAuthManager {
         var codeGrant = new AuthorizationCodeGrant(authorizationCode,
                                                    configuration.redirectUrl(),
                                                    new CodeVerifier(nlPermissionRequest.codeVerifier()));
-        var clientAuthentication = createSignedJwt(apiType);
-        var scope = getScope(apiType);
+        var clientAuthentication = createSignedJwt();
+        var scope = configuration.continuousScope();
         var request = new TokenRequest(providerMetadata.getTokenEndpointURI(),
                                        clientAuthentication,
                                        codeGrant,
                                        scope,
                                        null,
-                                       Map.of(CLIENT_ID, List.of(getClientID(apiType).getValue())));
+                                       Map.of(CLIENT_ID, List.of(configuration.continuousClientId().getValue())));
         getTokens(request, permissionId);
         return permissionId;
     }
@@ -184,7 +181,7 @@ public class OAuthManager {
      *                                       token cannot be refreshed
      * @throws OAuthUnavailableException     when the OAuth server is not available
      */
-    public AccessTokenAndSingleSyncUrl accessTokenAndSingleSyncUrl(String permissionId, MijnAansluitingApi apiType)
+    public AccessTokenAndSingleSyncUrl accessTokenAndSingleSyncUrl(String permissionId)
             throws OAuthException, JWTSignatureCreationException, IllegalTokenException, NoRefreshTokenException, OAuthUnavailableException {
         LOGGER.debug("Fetching access token for permission request {}", permissionId);
         var credentials = repository.findById(permissionId)
@@ -197,14 +194,14 @@ public class OAuthManager {
                 throw new NoRefreshTokenException();
             }
             var refreshTokenGrant = new RefreshTokenGrant(new RefreshToken(credentials.refreshToken()));
-            var clientAuthentication = createSignedJwt(apiType);
-            var scope = getScope(apiType);
+            var clientAuthentication = createSignedJwt();
+            var scope = configuration.continuousScope();
             var request = new TokenRequest(providerMetadata.getTokenEndpointURI(),
                                            clientAuthentication,
                                            refreshTokenGrant,
                                            scope,
                                            null,
-                                           Map.of(CLIENT_ID, List.of(getClientID(apiType).getValue())));
+                                           Map.of(CLIENT_ID, List.of(configuration.continuousClientId().getValue())));
 
             accessToken = getTokens(request, permissionId).accessToken();
         }
@@ -213,23 +210,9 @@ public class OAuthManager {
             var singleSync = getSingleSyncUrl(claimsSet);
             return new AccessTokenAndSingleSyncUrl(accessToken, singleSync);
         } catch (java.text.ParseException | BadJOSEException | JOSEException e) {
-            throw new OAuthException("Unable to process access token for permission request %s permission id.".formatted(
-                    permissionId));
+            throw new OAuthException("Unable to process access token for permission request %s permission id."
+                                             .formatted(permissionId));
         }
-    }
-
-    private Scope getScope(MijnAansluitingApi apiType) {
-        return switch (apiType) {
-            case SINGLE_CONSENT_API -> configuration.singleScope();
-            case CONTINUOUS_CONSENT_API -> configuration.continuousScope();
-        };
-    }
-
-    private ClientID getClientID(MijnAansluitingApi apiType) {
-        return switch (apiType) {
-            case SINGLE_CONSENT_API -> configuration.singleClientId();
-            case CONTINUOUS_CONSENT_API -> configuration.continuousClientId();
-        };
     }
 
     /**
@@ -238,23 +221,16 @@ public class OAuthManager {
      * @return a signed private key JWT
      * @throws JWTSignatureCreationException when the token could not be signed or created
      */
-    private ClientAuthentication createSignedJwt(MijnAansluitingApi apiType) throws JWTSignatureCreationException {
+    private ClientAuthentication createSignedJwt() throws JWTSignatureCreationException {
         try {
-            var keyId = getKeyId(apiType);
-            var clientId = getClientID(apiType);
+            var keyId = configuration.continuousKeyId();
+            var clientId = configuration.continuousClientId();
             return new PrivateKeyJWT(clientId, providerMetadata.getTokenEndpointURI(),
                                      JWSAlgorithm.RS256, privateKey, keyId, null);
         } catch (JOSEException exception) {
             LOGGER.warn("Error while creating signed JWT", exception);
             throw new JWTSignatureCreationException();
         }
-    }
-
-    private String getKeyId(MijnAansluitingApi apiType) {
-        return switch (apiType) {
-            case SINGLE_CONSENT_API -> configuration.singleKeyId();
-            case CONTINUOUS_CONSENT_API -> configuration.continuousKeyId();
-        };
     }
 
     /**

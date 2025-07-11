@@ -1,6 +1,10 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
+import energy.eddie.api.agnostic.process.model.validation.AttributeError;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.exceptions.NlValidationException;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PermissionRequestService;
 import jakarta.servlet.http.Cookie;
@@ -9,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -18,6 +23,8 @@ import java.security.PrivateKey;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
@@ -52,5 +59,21 @@ class ControllerAdviceTest {
                                 .cookie(new Cookie("EDDIE-SESSION-ID", "asdf")))
                // Then
                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testNlValidationException_returnsBadRequest() throws Exception {
+        // Given
+        when(controller.permissionRequest(any(), any()))
+                .thenThrow(new NlValidationException(new AttributeError("postalCode", "msg")));
+        var content = new PermissionRequestForCreation("cid", "dnid", "11");
+
+        // When
+        mockMvc.perform(post("/permission-request")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(new ObjectMapper().writeValueAsString(content)))
+               // Then
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.postalCode.[0].message").value("msg"));
     }
 }

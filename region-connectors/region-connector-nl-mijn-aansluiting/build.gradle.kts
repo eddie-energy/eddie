@@ -97,13 +97,13 @@ sourceSets {
 
 val packagePrefix = "energy.eddie.regionconnector.nl.mijn.aansluiting.client"
 val openApiSpecs = mapOf(
-    "single-request-api" to "/src/main/resources/ConsumptionDataApi.yaml",
     "continuous-request-api" to "/src/main/resources/ReadingSeriesRetrieval_v0_3_1.json",
+    "ean-codeboek-api" to "/src/main/resources/edsn-eancodeboek.json",
 )
 openApiSpecs.forEach { (name, spec) ->
     tasks.register<GenerateTask>(name) {
         group = "openapi tools"
-        description = "Generates Java classes for single API of Mijn Aansluiting"
+        description = "Generates Java classes for $name of Mijn Aansluiting"
 
         generatorName.set("java")
         inputSpec.set("${projectDir.invariantSeparatorsPath}${spec}")

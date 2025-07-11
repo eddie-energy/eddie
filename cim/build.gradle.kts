@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "energy.eddie"
-version = "2.0.1"
+version = "2.1.0"
 
 repositories {
     mavenCentral()
@@ -96,6 +96,12 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
         File(cimSchemaFiles, "/v0_91_08/urn-entsoe-eu-wgedi-components.xsd"),
         File(cimSchemaFiles, "/v0_91_08/urn-entsoe-eu-local-extension-types.xsd"),
         File(cimSchemaFiles, "/v0_91_08/urn-entsoe-eu-wgedi-codelists.xsd"),
+        // V1.04: Near Real Time Data
+        File(cimSchemaFiles, "/v1_04/RealTimeData Document_v1.04.xsd"),
+        File(cimSchemaFiles, "/v1_04/RealTimeData Document_v1.04_Annotated.xsd"),
+        File(cimSchemaFiles, "/v1_04/urn-entsoe-eu-wgedi-components.xsd"),
+        File(cimSchemaFiles, "/v1_04/urn-entsoe-eu-local-extension-types.xsd"),
+        File(cimSchemaFiles, "/v1_04/urn-entsoe-eu-wgedi-codelists.xsd"),
     )
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed

@@ -6,6 +6,7 @@ import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterJson;
 import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterValueDeserializer;
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
@@ -27,12 +28,17 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
      * that the adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be
      * assigned a Unix timestamp of 0.
      *
-     * @param dataSource The entity of the data source.
-     * @param mapper     {@link ObjectMapper} that is used to deserialize the JSON messages. A
-     *                   {@link OesterreichsEnergieAdapterValueDeserializer} will be registered to this mapper.
+     * @param dataSource        The entity of the data source.
+     * @param mapper            {@link ObjectMapper} that is used to deserialize the JSON messages. A
+     *                          {@link OesterreichsEnergieAdapterValueDeserializer} will be registered to this mapper.
+     * @param mqttConfiguration The MQTT configuration that is used to connect to the MQTT broker.
      */
-    public OesterreichsEnergieAdapter(OesterreichsEnergieDataSource dataSource, ObjectMapper mapper) {
-        super(dataSource, LOGGER);
+    public OesterreichsEnergieAdapter(
+            OesterreichsEnergieDataSource dataSource,
+            ObjectMapper mapper,
+            MqttConfiguration mqttConfiguration
+    ) {
+        super(dataSource, LOGGER, mqttConfiguration);
         this.mapper = mapper;
     }
 

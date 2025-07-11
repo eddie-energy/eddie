@@ -29,7 +29,8 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
             Map.of("company", "client-secret"),
             Map.of("company", "token"),
             "http://localhost",
-            "secret");
+            "secret"
+    );
 
     @Test
     @SuppressWarnings("java:S5961")
@@ -84,7 +85,8 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                                                timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
                             () -> assertEquals(CommodityKind.ELECTRICITYSECONDARYMETERED,
                                                timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
-                            () -> assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR, timeSeries.getEnergyMeasurementUnitName()),
+                            () -> assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR,
+                                               timeSeries.getEnergyMeasurementUnitName()),
                             () -> assertEquals(CodingSchemeTypeList.CGM,
                                                timeSeries.getMarketEvaluationPointMRID().getCodingScheme()),
                             () -> assertEquals("1669851", timeSeries.getMarketEvaluationPointMRID().getValue()),

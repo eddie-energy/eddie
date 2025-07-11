@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:element name="MeteringPoints">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="MeteringPoint" type="MeteringPointType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="MeteringPointType">
+        <xs:sequence>
+            <xs:element name="ean" type="xs:string"/>
+            <xs:element name="address" type="AddressType" minOccurs="0"/>
+            <xs:element name="product" type="ProductEnum" minOccurs="0"/>
+            <xs:element name="organisation" type="xs:string" minOccurs="0"/>
+            <xs:element name="gridOperatorEan" type="xs:string"/>
+            <xs:element name="linkedPrimaryAccessPoint" type="xs:string" minOccurs="0"/>
+            <xs:element name="specialMeteringPoint" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="gridArea" type="xs:string" minOccurs="0"/>
+            <xs:element name="bagId" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="AddressType">
+        <xs:sequence>
+            <xs:element name="postalCode" type="xs:string" minOccurs="0"/>
+            <xs:element name="streetNumber" type="xs:int" minOccurs="0"/>
+            <xs:element name="streetNumberAddition" type="xs:string" minOccurs="0"/>
+            <xs:element name="street" type="xs:string" minOccurs="0"/>
+            <xs:element name="city" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="ProductEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ELK"/>
+            <xs:enumeration value="GAS"/>
+            <xs:enumeration value="H2"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

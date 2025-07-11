@@ -1,4 +1,6 @@
 package energy.eddie.api.agnostic.process.model.validation;
 
-public record AttributeError(String name, String message) {
+import java.io.Serializable;
+
+public record AttributeError(String name, String message) implements Serializable {
 }

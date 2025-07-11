@@ -17,6 +17,22 @@
   },
   {
     "type": "validated",
+    "id": "782bb69e-9316-4f17-8507-66614c9b24bf",
+    "name": "LAST_AND_NEXT_3_MONTHS",
+    "description": "Historical validated consumption data for the last three and next months",
+    "purpose": "Some purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "-P3M",
+      "end": "P3M"
+    },
+    "energyType": "ELECTRICITY",
+    "minGranularity": "PT15M",
+    "maxGranularity": "P1D"
+  },
+  {
+    "type": "validated",
     "id": "dcbc1c74-37bd-4c5b-ab2e-fd0be9c1edf3",
     "name": "NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY",
     "description": "Historical validated consumption data for the next 10 days, one measurement per day",

@@ -24,8 +24,8 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.api.NlPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
@@ -153,7 +153,7 @@ public class MijnAansluitingBeanConfig {
     }
 
     @Bean
-    public ConnectionStatusMessageHandler<NlPermissionRequest> connectionStatusMessageHandler(
+    public ConnectionStatusMessageHandler<MijnAansluitingPermissionRequest> connectionStatusMessageHandler(
             NlPermissionRequestRepository nlPermissionRequestRepository,
             EventBus eventBus
     ) {
@@ -161,7 +161,7 @@ public class MijnAansluitingBeanConfig {
     }
 
     @Bean
-    public PermissionMarketDocumentMessageHandler<NlPermissionRequest> permissionMarketDocumentMessageHandler(
+    public PermissionMarketDocumentMessageHandler<MijnAansluitingPermissionRequest> permissionMarketDocumentMessageHandler(
             EventBus eventBus,
             NlPermissionRequestRepository repository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
@@ -180,7 +180,7 @@ public class MijnAansluitingBeanConfig {
     }
 
     @Bean
-    public CommonFutureDataService<NlPermissionRequest> commonFutureDataService(
+    public CommonFutureDataService<MijnAansluitingPermissionRequest> commonFutureDataService(
             PollingService pollingService,
             NlPermissionRequestRepository repository,
             @Value("${region-connector.nl.mijn.aansluiting.polling:0 0 17 * * *}") String cronExpr,
