@@ -5,13 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.regionconnector.fi.fingrid.client.model.CustomerDataResponse;
 import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.MeterReadingEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
+import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
 import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
@@ -27,7 +30,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @Service
-public class EnergyDataService implements RawDataProvider, ValidatedHistoricalDataEnvelopeProvider {
+public class EnergyDataService implements RawDataProvider, ValidatedHistoricalDataEnvelopeProvider, AccountingPointEnvelopeProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnergyDataService.class);
     private final Sinks.Many<RawDataMessage> rawData = Sinks.many().multicast().onBackpressureBuffer();
     private final ObjectMapper objectMapper;
@@ -35,6 +38,9 @@ public class EnergyDataService implements RawDataProvider, ValidatedHistoricalDa
     private final Sinks.Many<ValidatedHistoricalDataEnvelope> vhds = Sinks.many()
                                                                           .multicast()
                                                                           .onBackpressureBuffer();
+    private final Sinks.Many<AccountingPointEnvelope> aps = Sinks.many()
+                                                                 .multicast()
+                                                                 .onBackpressureBuffer();
 
     public EnergyDataService(
             ObjectMapper objectMapper,
@@ -71,6 +77,11 @@ public class EnergyDataService implements RawDataProvider, ValidatedHistoricalDa
     public void close() {
         rawData.tryEmitComplete();
         vhds.tryEmitComplete();
+    }
+
+    @Override
+    public Flux<AccountingPointEnvelope> getAccountingPointEnvelopeFlux() {
+        return aps.asFlux();
     }
 
     @Override
@@ -123,6 +134,7 @@ public class EnergyDataService implements RawDataProvider, ValidatedHistoricalDa
             CustomerDataResponse accountingPointData,
             FingridPermissionRequest permissionRequest
     ) {
-        // TODO
+        var ap = new IntermediateAccountingPointDataMarketDocument(accountingPointData).toAp();
+        aps.tryEmitNext(new APEnvelope(ap, permissionRequest).wrap());
     }
 }
