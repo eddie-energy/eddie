@@ -2,8 +2,8 @@ package energy.eddie.exampleappbackend.service;
 
 import energy.eddie.cim.v1_04.QuantityTypeKind;
 import energy.eddie.cim.v1_04.RTDEnvelope;
-import energy.eddie.exampleappbackend.model.TimeSeries;
-import energy.eddie.exampleappbackend.model.TimeSeriesList;
+import energy.eddie.exampleappbackend.model.db.TimeSeries;
+import energy.eddie.exampleappbackend.model.db.TimeSeriesList;
 import energy.eddie.exampleappbackend.persistence.PermissionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -3,8 +3,9 @@ package energy.eddie.exampleappbackend.service;
 import energy.eddie.cim.v0_82.pmd.MktActivityRecordComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionMarketDocumentComplexType;
-import energy.eddie.exampleappbackend.model.Permission;
-import energy.eddie.exampleappbackend.model.PermissionType;
+import energy.eddie.exampleappbackend.model.PermissionIdTypeAndName;
+import energy.eddie.exampleappbackend.model.db.Permission;
+import energy.eddie.exampleappbackend.model.db.PermissionType;
 import energy.eddie.exampleappbackend.persistence.PermissionRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -23,6 +25,18 @@ public class PermissionService {
     private final PermissionRepository permissionRepository;
     private final DataNeedsService dataNeedsService;
     private final ValidatedHistoricalDataService validatedHistoricalDataService;
+
+    public List<PermissionIdTypeAndName> getAllPermissionIdAndNameForUser() {
+        var userId = "9d26dc97-a58e-4ca8-a951-0a334f3c58bd";
+        return permissionRepository.findByUserId(userId)
+                .stream()
+                .map((PermissionIdTypeAndName::new))
+                .toList();
+    }
+
+    public Optional<Permission> getPermissionById(Long permissionId) {
+        return permissionRepository.findById(permissionId);
+    }
 
     public void handlePermissionEnvelope(PermissionEnvelope permissionEnvelope) {
         var messageDocumentHeaderMetaInformation = permissionEnvelope.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();

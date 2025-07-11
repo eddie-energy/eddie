@@ -2,7 +2,7 @@ package energy.eddie.exampleappbackend.service;
 
 import energy.eddie.data_needs.generated.api.DataNeedsApiClient;
 import energy.eddie.exampleappbackend.exception.FailedToFetchDataNeedException;
-import energy.eddie.exampleappbackend.model.PermissionType;
+import energy.eddie.exampleappbackend.model.db.PermissionType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

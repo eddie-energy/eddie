@@ -1,5 +1,6 @@
-package energy.eddie.exampleappbackend.model;
+package energy.eddie.exampleappbackend.model.db;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,6 +27,7 @@ public class TimeSeries {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "time_series_list_id")
     private TimeSeriesList timeSeriesList;

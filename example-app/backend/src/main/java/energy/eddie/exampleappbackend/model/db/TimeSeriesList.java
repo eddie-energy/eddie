@@ -1,5 +1,6 @@
-package energy.eddie.exampleappbackend.model;
+package energy.eddie.exampleappbackend.model.db;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import energy.eddie.cim.v0_82.vhd.SeriesPeriodComplexType;
 import energy.eddie.cim.v0_82.vhd.TimeSeriesComplexType;
 import jakarta.persistence.CascadeType;
@@ -32,6 +33,7 @@ public class TimeSeriesList {
 
     @OneToOne
     @JoinColumn(name = "permission_id")
+    @JsonIgnore
     private Permission permission;
 
     @Column(name = "temporal_resolution")

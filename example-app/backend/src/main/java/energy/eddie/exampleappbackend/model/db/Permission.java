@@ -1,4 +1,4 @@
-package energy.eddie.exampleappbackend.model;
+package energy.eddie.exampleappbackend.model.db;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
