@@ -1,4 +1,4 @@
-package energy.eddie.exampleappbackend.kafka.util;
+package energy.eddie.exampleappbackend.serialization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

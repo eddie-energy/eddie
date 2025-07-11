@@ -1,4 +1,4 @@
-package energy.eddie.exampleappbackend.kafka.util;
+package energy.eddie.exampleappbackend.serialization;
 
 
 /**

@@ -1,9 +1,13 @@
 package energy.eddie.exampleappbackend.mqtt;
 
+import energy.eddie.cim.v1_04.RTDEnvelope;
 import energy.eddie.exampleappbackend.config.ExampleAppMqttConfig;
-import energy.eddie.exampleappbackend.persistence.PermissionRepository;
+import energy.eddie.exampleappbackend.serialization.DeserializationException;
+import energy.eddie.exampleappbackend.serialization.MessageSerde;
+import energy.eddie.exampleappbackend.serialization.SerdeFactory;
+import energy.eddie.exampleappbackend.serialization.SerdeInitializationException;
+import energy.eddie.exampleappbackend.service.RealTimeDataService;
 import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttCallback;
@@ -15,17 +19,23 @@ import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
 @Slf4j
-@AllArgsConstructor
 public class MqttSubscriber implements MqttCallback {
     private static final Pattern PERMISSION_TOPIC_PATTERN = Pattern.compile("^aiida/v1/([\\w-]+)/data$");
-    private MqttConnectionOptions mqttConnectionOptions;
-    private ExampleAppMqttConfig exampleAppMqttConfig;
-    private PermissionRepository permissionRepository;
+    private final MqttConnectionOptions mqttConnectionOptions;
+    private final ExampleAppMqttConfig exampleAppMqttConfig;
+    private final RealTimeDataService realTimeDataService;
+    private final MessageSerde messageSerde = SerdeFactory.getInstance().create("json");
+
+    public MqttSubscriber(MqttConnectionOptions mqttConnectionOptions, ExampleAppMqttConfig exampleAppMqttConfig, RealTimeDataService realTimeDataService) throws SerdeInitializationException {
+        this.mqttConnectionOptions = mqttConnectionOptions;
+        this.exampleAppMqttConfig = exampleAppMqttConfig;
+        this.realTimeDataService = realTimeDataService;
+    }
+
 
     @PostConstruct
     public void init() {
@@ -43,30 +53,17 @@ public class MqttSubscriber implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        var payload = new String(message.getPayload());
-        log.info(payload);
-
         if (message.getPayload() == null) {
             log.warn("Received empty MQTT message on topic: {}", topic);
             return;
         }
 
-        Matcher matcher = PERMISSION_TOPIC_PATTERN.matcher(topic);
-        if (!matcher.matches()) {
-            log.warn("Received message in MQTT topic, which does not match AIIDA topics!");
-            return;
+        try {
+            var rtdEnvelope = messageSerde.deserialize(message.getPayload(), RTDEnvelope.class);
+            realTimeDataService.handelRealTimeDataEnvelope(rtdEnvelope);
+        } catch (DeserializationException e) {
+            log.info("Failed to deserialize RTD envelope from message on topic {}! Ignoring Message -- could have other format than XML!", topic);
         }
-
-        var eddiePermissionId = matcher.group(1);
-        permissionRepository.findByEddiePermissionId(eddiePermissionId).ifPresentOrElse((permission) -> {
-            if (permission.getTimeSeriesList() == null) {
-
-            } else {
-
-            }
-        }, () -> {
-            log.debug("Received message for permission with EDDIE permissionId: {}, which is not registered! Ignoring message", eddiePermissionId);
-        });
     }
 
     @Override
