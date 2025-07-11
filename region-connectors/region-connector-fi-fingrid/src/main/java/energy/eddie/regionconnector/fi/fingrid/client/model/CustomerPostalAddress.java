@@ -12,5 +12,5 @@ public record CustomerPostalAddress(
         @JsonProperty(value = "PostOffice", required = true) String postOffice,
         @JsonProperty("StairwellIdentification") String stairwellIdentification,
         @JsonProperty("StreetName") String streetName
-) {
+) implements Address {
 }
