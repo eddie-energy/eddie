@@ -15,6 +15,13 @@ spring:
     hibernate:
       ddl-auto: validate
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:https://eddie-demo.projekte.fh-hagenberg.at/iam/realms/EDDIE}
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:https://eddie-demo.projekte.fh-hagenberg.at/iam/realms/EDDIE/protocol/openid-connect/certs}
+
   flyway:
     schemas: example-app
 

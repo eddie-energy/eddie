@@ -9,7 +9,9 @@ import energy.eddie.exampleappbackend.model.db.PermissionType;
 import energy.eddie.exampleappbackend.persistence.PermissionRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -25,9 +27,10 @@ public class PermissionService {
     private final PermissionRepository permissionRepository;
     private final DataNeedsService dataNeedsService;
     private final ValidatedHistoricalDataService validatedHistoricalDataService;
+    private final AuthService authService;
 
     public List<PermissionIdTypeAndName> getAllPermissionIdAndNameForUser() {
-        var userId = "9d26dc97-a58e-4ca8-a951-0a334f3c58bd";
+        var userId = authService.getCurrentUserId().toString();
         return permissionRepository.findByUserId(userId)
                 .stream()
                 .map((PermissionIdTypeAndName::new))
@@ -35,7 +38,14 @@ public class PermissionService {
     }
 
     public Optional<Permission> getPermissionById(Long permissionId) {
-        return permissionRepository.findById(permissionId);
+        var permission = permissionRepository.findById(permissionId);
+        if (permission.isPresent()) {
+            var userId = authService.getCurrentUserId().toString();
+            if (!permission.get().getUserId().equals(userId)) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            }
+        }
+        return permission;
     }
 
     public void handlePermissionEnvelope(PermissionEnvelope permissionEnvelope) {
