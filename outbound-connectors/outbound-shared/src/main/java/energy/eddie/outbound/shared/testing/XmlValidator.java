@@ -55,8 +55,9 @@ public class XmlValidator {
         return validateXMLSchema(xsd, xml);
     }
 
-    public static boolean validateV09208ValidatedHistoricalDataMarketDocument(byte[] xml) {
-        var xsd = XmlValidator.class.getResource("/cim/xsd/v0_92_08/ValidateHistoricalData Document_Annotated.xsd");
+    public static boolean validateV104ValidatedHistoricalDataMarketDocument(byte[] xml) {
+        var xsd = XmlValidator.class.getResource(
+                "/cim/xsd/v1_04/vhd/ValidatedHistoricalData Document_v1.04_annotated.xsd");
         return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
     }
 }

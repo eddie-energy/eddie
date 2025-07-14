@@ -30,6 +30,7 @@ For more information, see [Common Information Model Client Libraries](https://ed
 - Add (near) real-time data for CIM version `1.04`.
 - AIIDA now depends on this version of the CIM.
 
-## 3.0.0 - 2025-06-02
+## 3.0.0 - 2025-07-14
 
-- Replace validated historical data market document version `0.91.08` with version `0.92.08`
+- Replace validated historical data market document version `0.91.08` with version `1.04`
+- Move realtime data schemas to its own package and folder
