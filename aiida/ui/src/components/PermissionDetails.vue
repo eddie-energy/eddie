@@ -1,6 +1,6 @@
 <script setup>
 import cronstrue from 'cronstrue'
-import STATUS from '@/constants/permission-status.js'
+import PermissionStatusBadge from '@/components/PermissionStatusBadge.vue'
 
 /** @type {{ permission: AiidaPermission }} */
 const props = defineProps(['permission'])
@@ -25,21 +25,7 @@ const {
 
     <dt>Status</dt>
     <dd>
-      <sl-tooltip :content="STATUS[status].description">
-        <sl-badge
-          :variant="
-            STATUS[status].isActive
-              ? 'success'
-              : STATUS[status].isOpen
-                ? 'primary'
-                : STATUS[status].isError
-                  ? 'danger'
-                  : 'neutral'
-          "
-        >
-          {{ STATUS[status].title }}
-        </sl-badge>
-      </sl-tooltip>
+      <PermissionStatusBadge :status />
     </dd>
 
     <dt>EDDIE Application</dt>
