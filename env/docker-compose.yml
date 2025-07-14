@@ -1,20 +1,30 @@
 name: eddie-test
 services:
   db:
-    image: postgres
+    image: postgres:17.5-bookworm
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_PASSWORD: "test"
-      POSTGRES_USER: "test"
-      POSTGRES_DB: "eddie"
+      EMQX_DATABASE_PASSWORD: ${EMQX_DATABASE_PASSWORD}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
     restart: "always"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgres/create-emqx-user.sql:/tmp/create-emqx-user.sql
+      - ./postgres/replace-password-with-env.sh:/docker-entrypoint-initdb.d/00-replace_password_with_env.sh
       - ./create-example-app-db.sql:/docker-entrypoint-initdb.d/create_database.sql
       - ./create-new-example-app-db.sql:/docker-entrypoint-initdb.d/create_new_example_app_db.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   eddie:
+    profiles:
+      - dockerized-eddie
     image: ghcr.io/eddie-energy/eddie:latest
     build:
       dockerfile: src/main/docker/Dockerfile
@@ -29,14 +39,16 @@ services:
       - db
 
   eddie-example-app:
+    profiles:
+      - dockerized-eddie
     image: ghcr.io/eddie-energy/eddie-example-app:latest
     build:
       dockerfile: src/main/docker/Dockerfile
       context: ../examples/example-app
     environment:
-      JDBC_URL: "jdbc:postgresql://db:5432/example_app"
-      JDBC_USER: "test"
-      JDBC_PASSWORD: "test"
+      JDBC_URL: ${JDBC_URL}
+      JDBC_USER: ${JDBC_USER}
+      JDBC_PASSWORD: ${JDBC_PASSWORD}
       EDDIE_PUBLIC_URL: ${PUBLIC_CONTEXT_PATH}
       PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
@@ -73,18 +85,27 @@ services:
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
 
   emqx:
-    image: emqx/emqx:5.6.0
+    image: emqx/emqx:5.8
     container_name: emqx
     ports:
       - "1883:1883"
       - "8883:8883"
       - "18083:18083" # management web interface
     environment:
-      EMQX_NAME: example_emqx_node
-      EMQX_HOST: 127.0.0.1
+      REGION_CONNECTOR_AIIDA_MQTT_PASSWORD: ${REGION_CONNECTOR_AIIDA_MQTT_PASSWORD}
+      EMQX_AUTHENTICATION__1__DATABASE: ${DATABASE_NAME}
+      EMQX_AUTHENTICATION__1__SERVER: ${DATABASE_HOST}:${DATABASE_PORT}
+      EMQX_AUTHENTICATION__1__PASSWORD: ${EMQX_DATABASE_PASSWORD}
+      EMQX_AUTHORIZATION__SOURCES__1__DATABASE: ${DATABASE_NAME}
+      EMQX_AUTHORIZATION__SOURCES__1__SERVER: ${DATABASE_HOST}:${DATABASE_PORT}
+      EMQX_AUTHORIZATION__SOURCES__1__PASSWORD: ${EMQX_DATABASE_PASSWORD}
     restart: always
     volumes:
       - emqx_data:/opt/emqx/data
+      - ./emqx/emqx.hocon:/opt/emqx/etc/base.hocon
+      - ./emqx/init-user.json:/tmp/init-user.json
+      - ./emqx/replace-password-with-env.sh:/tmp/replace-password-with-env.sh
+    entrypoint: [ "/bin/sh", "/tmp/replace-password-with-env.sh" ]
 
   caddy:
     image: caddy:alpine

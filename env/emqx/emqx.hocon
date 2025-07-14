@@ -1,0 +1,91 @@
+authentication = [
+  {
+    backend = postgresql
+    # Replaced with .env file
+    database = REPLACED_WITH_ENV
+    disable_prepared_statements = false
+    enable = true
+    mechanism = password_based
+    # Replaced with .env file
+    password = REPLACED_WITH_ENV
+    password_hash_algorithm {
+      name = bcrypt
+    }
+    pool_size = 8
+    query = """~
+      SELECT password_hash
+       FROM aiida.aiida_mqtt_user
+       WHERE username = ${username} LIMIT 1;~"""
+    # Replaced with .env file
+    server = "REPLACED_WITH_ENV:5432"
+    ssl {
+      ciphers = []
+      depth = 10
+      enable = false
+      hibernate_after = "5s"
+      log_level = notice
+      reuse_sessions = true
+      secure_renegotiate = true
+      verify = verify_peer
+      versions = [
+        "tlsv1.3",
+        "tlsv1.2"
+      ]
+    }
+    username = emqx
+  }
+  {
+    backend = built_in_database
+    mechanism = password_based
+    password_hash_algorithm {
+      name = bcrypt
+    }
+    user_id_type = username
+
+    bootstrap_file = "/opt/emqx/data/init-user.json"
+    bootstrap_type = plain
+  }
+]
+authorization {
+  cache {
+    enable = true
+    excludes = []
+    max_size = 32
+    ttl = "1m"
+  }
+  deny_action = disconnect
+  no_match = deny
+  sources = [
+    {
+      # Replaced with .env file
+      database = REPLACED_WITH_ENV
+      disable_prepared_statements = false
+      enable = true
+      # Replaced with .env file
+      password = REPLACED_WITH_ENV
+      pool_size = 8
+      query = """~
+        SELECT LOWER(action) AS action, LOWER(acl_type) AS permission, topic
+         FROM aiida.aiida_mqtt_acl
+         WHERE username = ${username};~"""
+      # Replaced with .env file
+      server = "REPLACED_WITH_ENV:5432"
+      ssl {
+        ciphers = []
+        depth = 10
+        enable = false
+        hibernate_after = "5s"
+        log_level = notice
+        reuse_sessions = true
+        secure_renegotiate = true
+        verify = verify_peer
+        versions = [
+          "tlsv1.3",
+          "tlsv1.2"
+        ]
+      }
+      type = postgresql
+      username = emqx
+    }
+  ]
+}
