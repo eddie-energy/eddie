@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke.EdaCMRevokeI
 import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord.EdaConsumptionRecordInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cpnotification.EdaCPNotificationInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.EdaMasterDataInboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.MultiMasterDataInboundMessageFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -153,13 +154,37 @@ class InboundMessageFactoryCollectionTest {
                 List.of(simpleEdaCPNotificationFactory(true))
         );
 
-        assertEquals(masterDataFactory1, collection.activeMasterDataFactory());
+        assertInstanceOf(MultiMasterDataInboundMessageFactory.class, collection.activeMasterDataFactory());
 
         // When
         collection.updateActiveFactories();
 
         // Then
         assertEquals(masterDataFactory2, collection.activeMasterDataFactory());
+    }
+
+    @Test
+    void updateActiveFactory_updatesMasterDataFactory_withMultiMasterDataInboundMessageFactory() {
+        // Given
+        EdaMasterDataInboundMessageFactory masterDataFactory1 = mock(EdaMasterDataInboundMessageFactory.class);
+        when(masterDataFactory1.isActive(any())).thenReturn(true);
+
+        EdaMasterDataInboundMessageFactory masterDataFactory2 = mock(EdaMasterDataInboundMessageFactory.class);
+        when(masterDataFactory2.isActive(any())).thenReturn(true);
+
+        var collection = new InboundMessageFactoryCollection(
+                List.of(simpleEdaConsumptionRecordFactory(true)),
+                List.of(masterDataFactory1, masterDataFactory2),
+                List.of(simpleEdaCMNotificationFactory(true)),
+                List.of(simpleEdaCMRevokeFactory(true)),
+                List.of(simpleEdaCPNotificationFactory(true))
+        );
+
+        // When
+        collection.updateActiveFactories();
+
+        // Then
+        assertInstanceOf(MultiMasterDataInboundMessageFactory.class, collection.activeMasterDataFactory());
     }
 
     @Test
@@ -317,7 +342,8 @@ class InboundMessageFactoryCollectionTest {
 
         assertAll(
                 () -> assertEquals(consumptionRecordFactory1, collection.activeConsumptionRecordFactory()),
-                () -> assertEquals(masterDataFactory1, collection.activeMasterDataFactory()),
+                () -> assertInstanceOf(MultiMasterDataInboundMessageFactory.class,
+                                       collection.activeMasterDataFactory()),
                 () -> assertEquals(notificationFactory1, collection.activeCMNotificationFactory()),
                 () -> assertEquals(revokeFactory1, collection.activeCMRevokeFactory()),
                 () -> assertEquals(cpNotificationFactory1, collection.activeCPNotificationFactory())
