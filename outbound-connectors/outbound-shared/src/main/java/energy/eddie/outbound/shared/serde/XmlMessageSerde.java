@@ -5,7 +5,7 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
-import energy.eddie.cim.v0_92_08.VHDEnvelope;
+import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
@@ -28,6 +28,7 @@ public class XmlMessageSerde implements MessageSerde {
             PermissionEnvelope.class,
             ValidatedHistoricalDataEnvelope.class,
             AccountingPointEnvelope.class,
+            RTREnvelope.class,
             VHDEnvelope.class
     );
     private final Marshaller marshaller;
