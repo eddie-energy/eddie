@@ -39,7 +39,7 @@ spring:
 
 aiida:
   public:
-    url: ${AIIDA_EXTERNAL_HOST:http://localhost:8080}
+    url: ${AIIDA_EXTERNAL_HOST:http://localhost:${server.port}}
   installer:
     host: http://aiida-installer:8010
   mqtt:
