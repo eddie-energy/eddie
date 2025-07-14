@@ -144,3 +144,21 @@ export function deleteDataSource(dataSourceId) {
     method: 'DELETE',
   })
 }
+
+/**
+ * Generates a new password for the MQTT data source of the given id.
+ *
+ * @param dataSourceId
+ * @returns {Promise<{ plaintextPassword: string }>}
+ */
+export function regenerateDataSourceSecrets(dataSourceId) {
+  return fetch(`/datasources/${dataSourceId}/regenerate-secrets`, {
+    method: 'POST',
+  }).then((response) => {
+    return response.ok
+      ? response.json()
+      : response.text().then((error) => {
+          throw new Error(`Failed to regenerate secrets: ${error}`)
+        })
+  })
+}

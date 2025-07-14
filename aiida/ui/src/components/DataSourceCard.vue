@@ -1,11 +1,10 @@
 <script setup>
-import { deleteDataSource } from '@/api.js'
-import PasswordToggle from '@/components/PasswordToggle.vue'
+import { BASE_URL, deleteDataSource } from '@/api.js'
 
 /** @type {{ dataSource: AiidaDataSource }} */
 const { dataSource } = defineProps(['dataSource'])
 
-const emit = defineEmits(['edit'])
+const emit = defineEmits(['edit', 'reset'])
 
 const { asset, dataSourceType, enabled, id, mqttSettings, name, simulationPeriod } = dataSource
 
@@ -46,7 +45,17 @@ function handleDelete() {
         <dd>{{ mqttSettings.username }}</dd>
         <dt>MQTT Password:</dt>
         <dd>
-          <PasswordToggle>{{ mqttSettings.password }}</PasswordToggle>
+          <sl-button size="small" @click="emit('reset')">Reset password</sl-button>
+        </dd>
+        <dt>MQTT Certificate</dt>
+        <dd>
+          <sl-button
+            size="small"
+            :href="BASE_URL + '/mqtt/download/tls-certificate'"
+            download="certificate.pem"
+            target="_blank"
+            >Download certificate
+          </sl-button>
         </dd>
       </template>
 
