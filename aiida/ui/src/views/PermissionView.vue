@@ -4,11 +4,11 @@ import AiidaCodeInput from '@/components/AiidaCodeInput.vue'
 </script>
 
 <template>
-  <h2>Add new permission</h2>
+  <h2>Permissions</h2>
+
+  <h3>Add new permission</h3>
 
   <AiidaCodeInput />
-
-  <h2>Permissions</h2>
 
   <Suspense>
     <PermissionList />
