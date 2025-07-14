@@ -5,3 +5,7 @@ Authorization: Bearer {{$auth.token("example-app")}}
 ### Get specific permission by id
 GET {{baseUrl}}/permissions/37
 Authorization: Bearer {{$auth.token("example-app")}}
+
+### Get websocket secret
+GET {{baseUrl}}/websocket-secret/real-time-data?permissionId=38
+Authorization: Bearer {{$auth.token("example-app")}}

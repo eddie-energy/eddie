@@ -23,6 +23,7 @@ import java.time.Instant;
 @Setter
 @Entity(name = "time_series")
 public class TimeSeries {
+    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

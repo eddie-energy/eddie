@@ -1,14 +1,20 @@
 package energy.eddie.exampleappbackend.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.cim.v1_04.QuantityTypeKind;
 import energy.eddie.cim.v1_04.RTDEnvelope;
 import energy.eddie.exampleappbackend.model.db.TimeSeries;
 import energy.eddie.exampleappbackend.model.db.TimeSeriesList;
 import energy.eddie.exampleappbackend.persistence.PermissionRepository;
+import energy.eddie.exampleappbackend.websocket.WebSocketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,29 +23,57 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class RealTimeDataService {
+    private static final String RTD_WEBSOCKET_TOPIC_PREFIX = "/topic/real-time-data/";
     private final PermissionRepository permissionRepository;
+    private final WebSocketService webSocketService;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final AuthService authService;
+    private final ObjectMapper objectMapper;
+
+    public String createNewSecretForRTDWebSocketTopic(Long permissionId) {
+        var userId = authService.getCurrentUserId();
+        var permission = permissionRepository.findById(permissionId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (!permission.getUserId().equals(userId.toString())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        return webSocketService.createNewSecretForTopic(RTD_WEBSOCKET_TOPIC_PREFIX + permissionId);
+    }
 
     @Transactional
     public void handelRealTimeDataEnvelope(RTDEnvelope rtdEnvelope) {
         var eddiePermissionId = rtdEnvelope.getMessageDocumentHeaderMetaInformationPermissionId();
         permissionRepository.findByEddiePermissionId(eddiePermissionId).ifPresentOrElse((permission) -> {
+            List<TimeSeries> newTimeSeries;
             if (permission.getTimeSeriesList() == null) {
                 var timeSeriesList = TimeSeriesList.builder()
                         .temporalResolution("n/a")
                         .unit("KILOWATT_HOUR")
                         .permission(permission)
                         .build();
-                timeSeriesList.setTimeSeries(getTimeSeriesFromRTDEnvelope(rtdEnvelope, timeSeriesList));
+                newTimeSeries = getTimeSeriesFromRTDEnvelope(rtdEnvelope, timeSeriesList);
+                timeSeriesList.setTimeSeries(newTimeSeries);
                 permission.setTimeSeriesList(timeSeriesList);
                 permissionRepository.save(permission);
-                log.info("Created new Time Series List for permission with EDDIE permission id {}", eddiePermissionId);
+                log.debug("Created new Time Series List for permission with EDDIE permission id {}", eddiePermissionId);
             } else {
-                permission.getTimeSeriesList().getTimeSeries().addAll(getTimeSeriesFromRTDEnvelope(rtdEnvelope, permission.getTimeSeriesList()));
+                newTimeSeries = getTimeSeriesFromRTDEnvelope(rtdEnvelope, permission.getTimeSeriesList());
+                permission.getTimeSeriesList().getTimeSeries().addAll(newTimeSeries);
                 permissionRepository.save(permission);
-                log.info("Added new Time Series for permission with EDDIE permission id {}", eddiePermissionId);
+                log.debug("Added new Time Series for permission with EDDIE permission id {}", eddiePermissionId);
+            }
+            var websocketTopic = RTD_WEBSOCKET_TOPIC_PREFIX + permission.getId();
+            if (webSocketService.topicHasActiveSession(websocketTopic)) {
+                try {
+                    messagingTemplate.convertAndSend(websocketTopic, objectMapper.writeValueAsString(newTimeSeries));
+                    log.debug("Published new Time Series for permission with permission id {} on websocket topic!", permission.getId());
+                } catch (JsonProcessingException e) {
+                    log.warn("Failed to published new Time Series for permission with permission id {} on websocket topic due to a serialization error!", permission.getId());
+                }
             }
         }, () -> {
-            log.info("Received message for EDDIE permission id {}, which is not tracked! Ignoring Message!", eddiePermissionId);
+            log.debug("Received message for EDDIE permission id {}, which is not tracked! Ignoring Message!", eddiePermissionId);
         });
 
     }
