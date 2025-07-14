@@ -60,10 +60,19 @@ function hide(event) {
       permission.
     </p>
 
-    <sl-button slot="footer" variant="primary" @click="confirm">Confirm</sl-button>
-    <sl-button slot="footer" variant="danger" @click="reject">Reject</sl-button>
-    <sl-button slot="footer" outline @click="hide">Close</sl-button>
+    <footer slot="footer">
+      <sl-button variant="primary" @click="confirm">Confirm</sl-button>
+      <sl-button variant="danger" @click="reject">Reject</sl-button>
+      <sl-button outline @click="hide">Close</sl-button>
+    </footer>
   </sl-dialog>
 </template>
 
-<style scoped></style>
+<style scoped>
+footer {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: end;
+}
+</style>
