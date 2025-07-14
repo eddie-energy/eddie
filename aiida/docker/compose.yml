@@ -2,6 +2,8 @@ name: aiida
 services:
   timescaledb:
     image: timescale/timescaledb:latest-pg12
+    ports:
+      - "5433:5432"
     environment:
       POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
       POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
@@ -56,7 +58,7 @@ services:
     volumes:
       - emqx_data:/opt/emqx/data
       - ./emqx/emqx.hocon:/opt/emqx/etc/base.hocon
-      - ./emqx/init_user.json:/opt/init_user.json
+      - ./emqx/init-user.json:/opt/init-user.json
     healthcheck:
       test: [ "CMD", "/opt/emqx/bin/emqx", "ctl", "status" ]
       interval: 5s
