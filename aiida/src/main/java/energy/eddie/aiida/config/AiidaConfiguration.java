@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterJson;
 import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterValueDeserializer;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3DataField;
@@ -42,6 +43,7 @@ public class AiidaConfiguration {
                 .failOnUnknownProperties(true)
                 .modules(
                         new JavaTimeModule(),
+                        new JakartaXmlBindAnnotationModule(),
                         new Hibernate6Module().enable(Hibernate6Module.Feature.FORCE_LAZY_LOADING)
                                               .disable(Hibernate6Module.Feature.USE_TRANSIENT_ANNOTATION),
                         new SimpleModule().addDeserializer(OesterreichsEnergieAdapterJson.AdapterValue.class,
