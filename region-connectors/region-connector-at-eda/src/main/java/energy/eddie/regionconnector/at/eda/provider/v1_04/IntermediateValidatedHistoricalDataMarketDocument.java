@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.provider.v1_04;
 
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v1_04.*;
 import energy.eddie.cim.v1_04.vhd.*;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;

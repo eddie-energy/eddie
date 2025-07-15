@@ -1,4 +1,4 @@
-package energy.eddie.api.v0_82.cim.config;
+package energy.eddie.api.cim.config;
 
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 

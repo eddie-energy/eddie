@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.cds.providers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
 import energy.eddie.regionconnector.cds.persistence.CdsPermissionRequestRepository;

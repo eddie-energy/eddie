@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.us.green.button;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -33,9 +33,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.ZoneOffset;
 import java.util.List;
-
-import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata.SUPPORTED_DATA_NEEDS;
-import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata.US_ZONE_ID;
 
 @Configuration
 @Import(ObjectMapperConfig.class)

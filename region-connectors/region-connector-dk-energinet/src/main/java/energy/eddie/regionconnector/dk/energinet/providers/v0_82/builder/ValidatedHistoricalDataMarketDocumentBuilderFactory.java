@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder;
 
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 
 public record ValidatedHistoricalDataMarketDocumentBuilderFactory(
         CommonInformationModelConfiguration commonInformationModelConfiguration,
