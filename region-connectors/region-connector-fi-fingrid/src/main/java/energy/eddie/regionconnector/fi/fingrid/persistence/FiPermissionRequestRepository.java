@@ -15,7 +15,7 @@ public interface FiPermissionRequestRepository extends
         org.springframework.data.repository.Repository<FingridPermissionRequest, String> {
 
     @Query(
-            value = "SELECT permission_id, connection_id, created, data_need_id, granularity, permission_start, permission_end, status, customer_identification, metering_point, latest_meter_reading " +
+            value = "SELECT permission_id, connection_id, created, data_need_id, granularity, permission_start, permission_end, status, customer_identification " +
                     "FROM fi_fingrid.permission_request WHERE status = 'VALIDATED' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )

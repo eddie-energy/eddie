@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.fi.fingrid.client;
 
 import energy.eddie.cim.v0_82.vhd.EnergyProductTypeList;
+import energy.eddie.regionconnector.fi.fingrid.client.model.CustomerDataResponse;
+import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
 import energy.eddie.regionconnector.fi.fingrid.config.FingridConfiguration;
 import jakarta.annotation.Nullable;
 import org.springframework.boot.actuate.health.Health;
@@ -47,16 +49,28 @@ public class FingridApiClient {
                         )
                         .retrieve()
                         .bodyToMono(TimeSeriesResponse.class)
-                        .doOnError(Exception.class, err -> health = Health.down(err).build())
+                        .doOnError(err -> health = Health.down(err).build())
                         .doOnSuccess(ignored -> health = Health.up().build());
+    }
+
+    public Mono<CustomerDataResponse> getCustomerData(String customerIdentification) {
+        return webClient.get()
+                        .uri("GetCustomerData",
+                             uriBuilder -> uriBuilder.queryParam("organisationUser", configuration.organisationUser())
+                                                     .queryParam("customerIdentification", customerIdentification)
+                                                     .build())
+                        .retrieve()
+                        .bodyToMono(CustomerDataResponse.class)
+                        .doOnError(err -> health = Health.down(err).build())
+                        .doOnSuccess(ignored -> health = Health.up().build());
+    }
+
+    public Health health() {
+        return health;
     }
 
     private static boolean isNotActiveOrReactiveEnergy(@Nullable EnergyProductTypeList productType) {
         return productType != null
                && (productType != EnergyProductTypeList.ACTIVE_ENERGY && productType != EnergyProductTypeList.REACTIVE_ENERGY);
-    }
-
-    public Health health() {
-        return health;
     }
 }

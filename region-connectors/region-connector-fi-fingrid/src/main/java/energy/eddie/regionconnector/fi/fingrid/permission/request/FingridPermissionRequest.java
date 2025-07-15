@@ -5,12 +5,15 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fi.fingrid.permission.FingridDataSourceInformation;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+
+import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.oldestDateTime;
 
 @Entity
 @Table(schema = "fi_fingrid", name = "permission_request")
@@ -31,17 +34,17 @@ public class FingridPermissionRequest implements MeterReadingPermissionRequest {
     @Column(name = "permission_end")
     private final LocalDate end;
     private final String customerIdentification;
-    @Column(name = "metering_point")
-    private final String meteringPointEAN;
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
     private final Granularity granularity;
-    @Nullable
-    private final ZonedDateTime latestMeterReading;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @MapKeyJoinColumn(name = "permission_id", referencedColumnName = "permission_id")
+    @CollectionTable(name = "last_meter_readings", joinColumns = @JoinColumn(name = "permission_id"), schema = "fi_fingrid")
+    private final Map<String, ZonedDateTime> lastMeterReadings;
 
     // Too many parameters, but the permission requests require those
     @SuppressWarnings("java:S107")
-    public FingridPermissionRequest(
+    FingridPermissionRequest(
             String permissionId,
             String connectionId,
             String dataNeedId,
@@ -50,9 +53,8 @@ public class FingridPermissionRequest implements MeterReadingPermissionRequest {
             LocalDate start,
             LocalDate end,
             String customerIdentification,
-            String meteringPointEAN,
             Granularity granularity,
-            @Nullable ZonedDateTime latestMeterReading
+            Map<String, ZonedDateTime> lastMeterReadings
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -62,9 +64,8 @@ public class FingridPermissionRequest implements MeterReadingPermissionRequest {
         this.start = start;
         this.end = end;
         this.customerIdentification = customerIdentification;
-        this.meteringPointEAN = meteringPointEAN;
         this.granularity = granularity;
-        this.latestMeterReading = latestMeterReading;
+        this.lastMeterReadings = lastMeterReadings;
     }
 
     protected FingridPermissionRequest() {
@@ -76,9 +77,8 @@ public class FingridPermissionRequest implements MeterReadingPermissionRequest {
         start = null;
         end = null;
         customerIdentification = null;
-        meteringPointEAN = null;
         granularity = null;
-        latestMeterReading = null;
+        lastMeterReadings = Map.of();
     }
 
     @Override
@@ -125,20 +125,20 @@ public class FingridPermissionRequest implements MeterReadingPermissionRequest {
         return customerIdentification;
     }
 
-    public String meteringPointEAN() {
-        return meteringPointEAN;
-    }
-
     public Granularity granularity() {
         return granularity;
     }
 
-    public Optional<ZonedDateTime> latestMeterReading() {
-        return Optional.ofNullable(latestMeterReading);
-    }
-
     @Override
     public Optional<LocalDate> latestMeterReadingEndDate() {
-        return latestMeterReading().map(ZonedDateTime::toLocalDate);
+        return oldestDateTime(lastMeterReadings.values()).map(ZonedDateTime::toLocalDate);
+    }
+
+    public Optional<ZonedDateTime> latestMeterReading(String meterEAN) {
+        return Optional.ofNullable(lastMeterReadings.get(meterEAN));
+    }
+
+    public Set<String> meterEANs() {
+        return lastMeterReadings.keySet();
     }
 }

@@ -3,6 +3,8 @@ package energy.eddie.regionconnector.fi.fingrid.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.cim.v0_82.vhd.EnergyProductTypeList;
+import energy.eddie.regionconnector.fi.fingrid.TestResourceProvider;
+import energy.eddie.regionconnector.fi.fingrid.client.model.*;
 import energy.eddie.regionconnector.fi.fingrid.config.FingridConfiguration;
 import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import okhttp3.mockwebserver.MockResponse;
@@ -25,8 +27,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class FingridApiClientTest {
@@ -90,6 +91,54 @@ class FingridApiClientTest {
                     .verifyComplete();
     }
 
+    @Test
+    void getCustomerData_returnsData() throws JsonProcessingException {
+        // Given
+        var resp = TestResourceProvider.readCustomerDataFromFile(TestResourceProvider.CUSTOMER_DATA_JSON);
+        mockBackEnd.enqueue(
+                new MockResponse()
+                        .setBody(objectMapper.writeValueAsString(resp))
+                        .addHeader("Content-Type", "application/json")
+        );
+
+        // When
+        var res = apiClient.getCustomerData("cid");
+
+        // Then
+        StepVerifier.create(res)
+                    .assertNext(content -> assertEquals(resp, content))
+                    .verifyComplete();
+    }
+
+    @Test
+    void getCustomerData_forEmptyTransaction_returnsNullTransaction() throws JsonProcessingException {
+        // Given
+        var resp = TestResourceProvider.readCustomerDataFromFile(TestResourceProvider.EMPTY_CUSTOMER_DATA_JSON);
+        mockBackEnd.enqueue(
+                new MockResponse()
+                        .setBody(objectMapper.writeValueAsString(resp))
+                        .addHeader("Content-Type", "application/json")
+        );
+
+        // When
+        var res = apiClient.getCustomerData("cid");
+
+        // Then
+        StepVerifier.create(res)
+                    .assertNext(content -> assertNull(content.customerData().transaction()))
+                    .verifyComplete();
+    }
+
+    @Test
+    void health_returnsUnknown() {
+        // Given
+        // When
+        Health res = apiClient.health();
+
+        // Then
+        assertEquals(Health.unknown().build(), res);
+    }
+
     private static TimeSeriesResponse timeSeriesResponse(ZonedDateTime now) {
         var sender = new Party("sender");
         var receiver = new Party("receiver");
@@ -105,19 +154,8 @@ class FingridApiClientTest {
         return new TimeSeriesResponse(
                 new TimeSeriesData(
                         header,
-                        new Transaction(null, null, List.of())
+                        new TimeSeriesTransaction(null, null, List.of())
                 )
         );
-    }
-
-
-    @Test
-    void health_returnsUnknown() {
-        // Given
-        // When
-        Health res = apiClient.health();
-
-        // Then
-        assertEquals(Health.unknown().build(), res);
     }
 }

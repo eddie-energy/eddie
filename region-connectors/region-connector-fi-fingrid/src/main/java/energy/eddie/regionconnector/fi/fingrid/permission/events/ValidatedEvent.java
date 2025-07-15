@@ -27,6 +27,13 @@ public class ValidatedEvent extends PersistablePermissionEvent {
         this.end = end;
     }
 
+    public ValidatedEvent(String permissionId, LocalDate start, LocalDate end) {
+        super(permissionId, PermissionProcessStatus.VALIDATED);
+        this.granularity = null;
+        this.start = start;
+        this.end = end;
+    }
+
     protected ValidatedEvent() {
         this.granularity = null;
         this.start = null;
