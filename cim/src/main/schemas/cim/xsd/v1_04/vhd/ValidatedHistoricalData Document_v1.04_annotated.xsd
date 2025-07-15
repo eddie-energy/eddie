@@ -1,0 +1,712 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:TargetNamespace="https//eddie.energy/CIM/VHD_v1.04" xmlns:ecl="urn:entsoe.eu:wgedi:codelists:1.04"
+           xmlns:sawsdl="http://www.w3.org/ns/sawsdl" xmlns:cimp="http://www.iec.ch/cimprofile"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+           elementFormDefault="qualified" targetNamespace="https//eddie.energy/CIM/VHD_v1.04">
+    <xs:import schemaLocation="../urn-entsoe-eu-wgedi-codelists.xsd" namespace="urn:entsoe.eu:wgedi:codelists:1.04"/>
+    <xs:element name="VHD_Envelope" type="TargetNamespace:VHD_Envelope"/>
+    <xs:simpleType name="Position_Integer" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Integer">
+        <xs:restriction base="xs:integer">
+            <xs:maxInclusive value="999999"/>
+            <xs:minInclusive value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="QuantityTypeKind"
+                   sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#QuantityTypeKind">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="0">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">TotalActiveEnergyConsumed_import_kWh</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">TotalActiveEnergyProduced_export_kWh</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">InstantaneousActivePowerConsumption_import__kW
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="3">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">InstantaneousActivePowerGeneration_export_kW
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">InstantaneousVoltage_V_on_phaseL1</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="5">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">InstantaneousVoltage_V_on_phaseL2</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="6">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">InstantaneousVoltage_V_on_phaseL3</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="7">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">InstantaneousCurrent_A_on_phaseL1</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="8">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">InstantaneousCurrent_A_on_phaseL2</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="9">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">InstantaneousCurrent_A_on_phaseL3</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="10">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">PowerFactor</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Quality_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="ecl:QualityTypeList"/>
+    </xs:simpleType>
+    <xs:complexType name="Point" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Point">
+        <xs:sequence>
+            <xs:element minOccurs="1" maxOccurs="1" name="position" type="TargetNamespace:Position_Integer"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Point.position">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="energy_Quantity.quantity" type="xs:decimal"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Quantity.quantity">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="energy_Quantity.type" type="TargetNamespace:QuantityTypeKind"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Quantity.type">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="energy_Quantity.quality" type="TargetNamespace:Quality_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Quantity.quality">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="energyQuality_Quantity.quantity" type="xs:decimal"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Quantity.quantity">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="energyQuality_Quantity.type"
+                        type="TargetNamespace:QuantityTypeKind"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Quantity.type">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="energyQuality_Quantity.quality"
+                        type="TargetNamespace:Quality_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Quantity.quality">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="ReasonCode_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="ecl:ReasonCodeTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="ReasonText_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="512"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="YMDHM_DateTime" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#DateTime">
+        <xs:restriction base="xs:string">
+            <xs:pattern
+                    value="((([0-9]{4})[\-](0[13578]|1[02])[\-](0[1-9]|[12][0-9]|3[01])|([0-9]{4})[\-]((0[469])|(11))[\-](0[1-9]|[12][0-9]|30))T(([01][0-9]|2[0-3]):[0-5][0-9])Z)|(([13579][26][02468][048]|[13579][01345789](0)[48]|[13579][01345789][2468][048]|[02468][048][02468][048]|[02468][1235679](0)[48]|[02468][1235679][2468][048]|[0-9][0-9][13579][26])[\-](02)[\-](0[1-9]|1[0-9]|2[0-9])T(([01][0-9]|2[0-3]):[0-5][0-9])Z)|(([13579][26][02468][1235679]|[13579][01345789](0)[01235679]|[13579][01345789][2468][1235679]|[02468][048][02468][1235679]|[02468][1235679](0)[01235679]|[02468][1235679][2468][1235679]|[0-9][0-9][13579][01345789])[\-](02)[\-](0[1-9]|1[0-9]|2[0-8])T(([01][0-9]|2[0-3]):[0-5][0-9])Z)"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="ESMP_DateTimeInterval"
+                    sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#DateTimeInterval">
+        <xs:sequence>
+            <xs:element minOccurs="1" maxOccurs="1" name="start" type="TargetNamespace:YMDHM_DateTime"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#DateTimeInterval.start">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="end" type="TargetNamespace:YMDHM_DateTime"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#DateTimeInterval.end">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Series_Period" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Period">
+        <xs:sequence>
+            <xs:element minOccurs="1" maxOccurs="1" name="resolution" type="xs:duration"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Period.resolution">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="timeInterval" type="TargetNamespace:ESMP_DateTimeInterval"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Period.timeInterval">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="unbounded" name="Point" type="TargetNamespace:Point"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Period.Point">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="reason.code" type="TargetNamespace:ReasonCode_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Reason.code">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="reason.text" type="TargetNamespace:ReasonText_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Reason.text">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="ID_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="60"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ESMPVersion_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[1-9]([0-9]){0,2}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="BusinessKind_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="ecl:BusinessTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="EnergyProductKind_String"
+                   sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="ecl:EnergyProductTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="MeasurementUnitKind_String"
+                   sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="ecl:UnitOfMeasureTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="DirectionKind_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="ecl:DirectionTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="ResourceID_String-base"
+                   sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="60"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="ResourceID_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:simpleContent>
+            <xs:extension base="TargetNamespace:ResourceID_String-base">
+                <xs:attribute name="codingScheme" type="ecl:CodingSchemeTypeList" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:simpleType name="Fuel_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Fuel_String">
+        <xs:restriction base="ecl:FuelTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="CoordinateSystemKind_String"
+                   sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="ecl:CoordinateSystemTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="PsrType_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="ecl:AssetTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="MeasurementPointID_String-base"
+                   sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="60"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="MeasurementPointID_String"
+                    sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:simpleContent>
+            <xs:extension base="TargetNamespace:MeasurementPointID_String-base">
+                <xs:attribute name="codingScheme" type="ecl:CodingSchemeTypeList" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:simpleType name="AccumulationKind"
+                   sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#AccumulationKind">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="0">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">none</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">bulkQuantity</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">continuousCumulative</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="3">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">cumulative</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">deltaData</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="6">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">indicating</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="9">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">summation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="10">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">timeDelay</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="12">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">instantaneous</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="13">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">latchingQuantity</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="14">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">boundedQuantity</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AggregateKind" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#AggregateKind">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="0">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">none</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">average</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">excess</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="5">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">highThreshold</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="7">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">lowThreshold</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="8">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">maximum</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="9">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">minimum</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="11">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">nominal</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="12">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">normal</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="16">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">secondMaximum</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="17">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">secondMinimum</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="23">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">thirdMaximum</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="24">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">fourthMaximum</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="25">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">fifthMaximum</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="26">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">sum</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="CommodityKind" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#CommodityKind">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="26">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">H2</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="0">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">none</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">electricitySecondaryMetered</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">electricityPrimaryMetered</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="3">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">communication</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">air</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="5">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">insulativeGas</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="6">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">insulativeOil</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="7">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">naturalGas</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="8">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">propane</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="9">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">potableWater</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="10">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">steam</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="11">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">wasteWater</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="12">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">heatingFluid</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="13">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">coolingFluid</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="14">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">nonpotableWater</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="15">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">nox</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="16">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">so2</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="17">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">ch4</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="18">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">co2</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="19">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">carbon</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="20">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">hch</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="21">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">pfc</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="22">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">sf6</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="23">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">tvLicence</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="24">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">internet</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="25">
+                <xs:annotation>
+                    <xs:documentation cimp:category="enumValue">refuse</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="TimeSeries" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#TimeSeries">
+        <xs:sequence>
+            <xs:element minOccurs="1" maxOccurs="1" name="version" type="TargetNamespace:ESMPVersion_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#TimeSeries.version">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="mRID" type="TargetNamespace:ID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#IdentifiedObject.mRID">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="businessType" type="TargetNamespace:BusinessKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#TimeSeries.businessType">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="product" type="TargetNamespace:EnergyProductKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#TimeSeries.product">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="dateAndOrTime.dateTime" type="xs:dateTime"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#DateAndOrTime.dateTime">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="energy_Measurement_Unit.name"
+                        type="TargetNamespace:MeasurementUnitKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Unit.name">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="flowDirection.direction"
+                        type="TargetNamespace:DirectionKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#FlowDirection.direction">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="unbounded" name="Period" type="TargetNamespace:Series_Period"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#TimeSeries.Period">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.mRID"
+                        type="TargetNamespace:ResourceID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#IdentifiedObject.mRID">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.name" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#IdentifiedObject.name">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.description" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#IdentifiedObject.description">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.fuel.fuel"
+                        type="TargetNamespace:Fuel_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Fuel.fuel">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.location.mRID" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#IdentifiedObject.mRID">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.location.type" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Location.type">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.location.coordinateSystem.crsUrn"
+                        type="TargetNamespace:CoordinateSystemKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#CoordinateSystem.crsUrn">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.location.positionPoints.sequenceNumber"
+                        type="xs:integer"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#PositionPoint.sequenceNumber">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.location.positionPoints.xPosition"
+                        type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#PositionPoint.xPosition">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.location.positionPoints.yPosition"
+                        type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#PositionPoint.yPosition">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.location.positionPoints.zPosition"
+                        type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#PositionPoint.zPosition">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.pSRType.psrType"
+                        type="TargetNamespace:PsrType_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#MktPSRType.psrType">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="marketEvaluationPoint.mRID"
+                        type="TargetNamespace:MeasurementPointID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#IdentifiedObject.mRID">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="marketEvaluationPoint.meterReadings.mRID"
+                        type="TargetNamespace:ResourceID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#IdentifiedObject.mRID">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="marketEvaluationPoint.meterReadings.readings.mRID"
+                        type="TargetNamespace:ResourceID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#IdentifiedObject.mRID">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1"
+                        name="marketEvaluationPoint.meterReadings.readings.readingType.accumulation"
+                        type="TargetNamespace:AccumulationKind"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#ReadingType.accumulation">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1"
+                        name="marketEvaluationPoint.meterReadings.readings.readingType.aggregate"
+                        type="TargetNamespace:AggregateKind"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#ReadingType.aggregate">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1"
+                        name="marketEvaluationPoint.meterReadings.readings.readingType.commodity"
+                        type="TargetNamespace:CommodityKind"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#ReadingType.commodity">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="marketEvaluationPoint.usagePointLocation.geoInfoReference"
+                        type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Location.geoInfoReference">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="reason.code" type="TargetNamespace:ReasonCode_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Reason.code">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="reason.text" type="TargetNamespace:ReasonText_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Reason.text">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="energyQuality_Measurement_Unit.name"
+                        type="TargetNamespace:MeasurementUnitKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Unit.name">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="MessageKind_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="ecl:MessageTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="ESMP_DateTime" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#DateTime">
+        <xs:restriction base="xs:dateTime">
+            <xs:pattern
+                    value="((([0-9]{4})[\-](0[13578]|1[02])[\-](0[1-9]|[12][0-9]|3[01])|([0-9]{4})[\-]((0[469])|(11))[\-](0[1-9]|[12][0-9]|30))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])Z)|(([13579][26][02468][048]|[13579][01345789](0)[48]|[13579][01345789][2468][048]|[02468][048][02468][048]|[02468][1235679](0)[48]|[02468][1235679][2468][048]|[0-9][0-9][13579][26])[\-](02)[\-](0[1-9]|1[0-9]|2[0-9])T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])Z)|(([13579][26][02468][1235679]|[13579][01345789](0)[01235679]|[13579][01345789][2468][1235679]|[02468][048][02468][1235679]|[02468][1235679](0)[01235679]|[02468][1235679][2468][1235679]|[0-9][0-9][13579][01345789])[\-](02)[\-](0[1-9]|1[0-9]|2[0-8])T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])Z)"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="VHD_Envelope" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Envelope">
+        <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="1" name="messageDocumentHeader.creationDateTime"
+                        type="TargetNamespace:ESMP_DateTime"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#MessageDocumentHeader.creationDateTime">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="messageDocumentHeader.metaInformation.connectionId"
+                        type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#MetaInformation.connectionId">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="messageDocumentHeader.metaInformation.dataNeedId"
+                        type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#MetaInformation.dataNeedId">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="messageDocumentHeader.metaInformation.documentType"
+                        type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#MetaInformation.documentType">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="messageDocumentHeader.metaInformation.permissionId"
+                        type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#MetaInformation.permissionId">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="messageDocumentHeader.metaInformation.region.connector"
+                        type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Region.connector">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="messageDocumentHeader.metaInformation.region.country"
+                        type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Region.country">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="MarketDocument" type="TargetNamespace:VHD_MarketDocument"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Envelope.MarketDocument">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="PartyID_String-base" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="16"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="PartyID_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:simpleContent>
+            <xs:extension base="TargetNamespace:PartyID_String-base">
+                <xs:attribute name="codingScheme" type="ecl:CodingSchemeTypeList" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:simpleType name="MarketRoleKind_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="ecl:RoleTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="ProcessKind_String" sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#String">
+        <xs:restriction base="ecl:ProcessTypeList"/>
+    </xs:simpleType>
+    <xs:complexType name="VHD_MarketDocument"
+                    sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#MarketDocument">
+        <xs:sequence>
+            <xs:element minOccurs="1" maxOccurs="1" name="mRID" type="TargetNamespace:ID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#IdentifiedObject.mRID">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="revisionNumber" type="TargetNamespace:ESMPVersion_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Document.revisionNumber">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="description" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#IdentifiedObject.description">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="type" type="TargetNamespace:MessageKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Document.type">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="createdDateTime" type="TargetNamespace:ESMP_DateTime"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Document.createdDateTime">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="sender_MarketParticipant.mRID"
+                        type="TargetNamespace:PartyID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#IdentifiedObject.mRID">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="sender_MarketParticipant.marketRole.type"
+                        type="TargetNamespace:MarketRoleKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#MarketRole.type">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="receiver_MarketParticipant.mRID"
+                        type="TargetNamespace:PartyID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#IdentifiedObject.mRID">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="receiver_MarketParticipant.marketRole.type"
+                        type="TargetNamespace:MarketRoleKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#MarketRole.type">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="period.timeInterval"
+                        type="TargetNamespace:ESMP_DateTimeInterval"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Period.timeInterval">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="process.processType" type="TargetNamespace:ProcessKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#Process.processType">
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="unbounded" name="TimeSeries" type="TargetNamespace:TimeSeries"
+                        sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#MarketDocument.TimeSeries">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

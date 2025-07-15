@@ -4,7 +4,7 @@
            xmlns:TargetNamespace="https://eddie.energy/CIM/RTD_v1.04" xmlns:xs="http://www.w3.org/2001/XMLSchema"
            attributeFormDefault="unqualified" elementFormDefault="qualified"
            targetNamespace="https://eddie.energy/CIM/RTD_v1.04">
-    <xs:import schemaLocation="./urn-entsoe-eu-wgedi-codelists.xsd" namespace="urn:entsoe.eu:wgedi:codelists:1.04"/>
+    <xs:import schemaLocation="../urn-entsoe-eu-wgedi-codelists.xsd" namespace="urn:entsoe.eu:wgedi:codelists:1.04"/>
     <xs:element name="RTD_Envelope" type="TargetNamespace:RTD_Envelope"/>
     <xs:simpleType name="QuantityTypeKind"
                    sawsdl:modelReference="http://iec.ch/TC57/2010/CIM-schema-cim15#QuantityTypeKind">

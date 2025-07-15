@@ -1,4 +1,4 @@
-package energy.eddie.cim.v0_91_08.extensions;
+package energy.eddie.cim.v1_04.extensions;
 
 import org.junit.jupiter.api.Test;
 
