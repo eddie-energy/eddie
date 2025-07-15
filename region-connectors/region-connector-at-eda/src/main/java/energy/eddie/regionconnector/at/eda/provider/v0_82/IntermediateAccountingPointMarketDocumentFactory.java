@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.provider.v0_82;
 
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import org.springframework.stereotype.Component;
 

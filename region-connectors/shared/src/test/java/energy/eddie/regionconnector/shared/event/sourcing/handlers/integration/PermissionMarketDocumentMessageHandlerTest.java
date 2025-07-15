@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.shared.event.sourcing.handlers.integration;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
+import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;

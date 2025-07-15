@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.providers.v0_82;
 
 import energy.eddie.api.CommonInformationModelVersions;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
