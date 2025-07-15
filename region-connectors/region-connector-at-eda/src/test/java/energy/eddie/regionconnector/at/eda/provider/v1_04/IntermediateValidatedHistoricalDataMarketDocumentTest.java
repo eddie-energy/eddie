@@ -3,38 +3,40 @@ package energy.eddie.regionconnector.at.eda.provider.v1_04;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
-import energy.eddie.cim.v1_04.*;
-import energy.eddie.cim.v1_04.vhd.*;
+import energy.eddie.cim.v1_04.StandardDirectionTypeList;
+import energy.eddie.cim.v1_04.StandardQualityTypeList;
 import energy.eddie.outbound.shared.serde.SerdeInitializationException;
 import energy.eddie.outbound.shared.serde.SerializationException;
 import energy.eddie.outbound.shared.serde.XmlMessageSerde;
 import energy.eddie.outbound.shared.testing.XmlValidator;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.*;
-import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.xmlunit.builder.DiffBuilder;
 
 import javax.xml.datatype.DatatypeFactory;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IntermediateValidatedHistoricalDataMarketDocumentTest {
+
+    private final XmlMessageSerde serde = new XmlMessageSerde();
+
+    IntermediateValidatedHistoricalDataMarketDocumentTest() throws SerdeInitializationException {}
 
     @ParameterizedTest
     @MethodSource("meterCodeAndMeteringModeSource")
@@ -45,15 +47,69 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
             StandardDirectionTypeList expectedDirection,
             String meteringMode,
             StandardQualityTypeList expectedQuality
-    ) {
+    ) throws SerializationException {
         // Given
+        var ignoredNames = Set.of(
+                "ns5:messageDocumentHeader.creationDateTime",
+                "ns5:createdDateTime",
+                "ns5:dateAndOrTime.dateTime"
+        );
+        // language=XML
+        var expected = """
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <ns5:VHD_Envelope xmlns="http://www.eddie.energy/Consent/EDD02/20240125"
+                	xmlns:ns5="https//eddie.energy/CIM/VHD_v1.04">
+                	<ns5:messageDocumentHeader.creationDateTime>2025-07-15T10:36:40Z</ns5:messageDocumentHeader.creationDateTime>
+                	<ns5:messageDocumentHeader.metaInformation.connectionId>cid</ns5:messageDocumentHeader.metaInformation.connectionId>
+                	<ns5:messageDocumentHeader.metaInformation.dataNeedId>dnid</ns5:messageDocumentHeader.metaInformation.dataNeedId>
+                	<ns5:messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document</ns5:messageDocumentHeader.metaInformation.documentType>
+                	<ns5:messageDocumentHeader.metaInformation.permissionId>pid</ns5:messageDocumentHeader.metaInformation.permissionId>
+                	<ns5:messageDocumentHeader.metaInformation.region.connector>at-eda</ns5:messageDocumentHeader.metaInformation.region.connector>
+                	<ns5:messageDocumentHeader.metaInformation.region.country>AT</ns5:messageDocumentHeader.metaInformation.region.country>
+                	<ns5:MarketDocument>
+                		<ns5:mRID>messageId</ns5:mRID>
+                		<ns5:createdDateTime>2024-12-31T23:00:00Z</ns5:createdDateTime>
+                		<ns5:sender_MarketParticipant.mRID codingScheme="NAT">eda</ns5:sender_MarketParticipant.mRID>
+                		<ns5:sender_MarketParticipant.marketRole.type>A26</ns5:sender_MarketParticipant.marketRole.type>
+                		<ns5:receiver_MarketParticipant.mRID codingScheme="NAT">eddie</ns5:receiver_MarketParticipant.mRID>
+                		<ns5:receiver_MarketParticipant.marketRole.type>A13</ns5:receiver_MarketParticipant.marketRole.type>
+                		<ns5:period.timeInterval>
+                			<ns5:start>2024-12-31T23:00Z</ns5:start>
+                			<ns5:end>2025-01-01T23:00Z</ns5:end>
+                		</ns5:period.timeInterval>
+                		<ns5:process.processType>A16</ns5:process.processType>
+                		<ns5:TimeSeries>
+                			<ns5:version>1</ns5:version>
+                			<ns5:dateAndOrTime.dateTime>2024-12-31T23:00:00Z</ns5:dateAndOrTime.dateTime>
+                			<ns5:energy_Measurement_Unit.name>KWH</ns5:energy_Measurement_Unit.name>
+                			<ns5:flowDirection.direction>%s</ns5:flowDirection.direction>
+                			<ns5:Period>
+                				<ns5:resolution>P0Y0M1DT0H0M0.000S</ns5:resolution>
+                				<ns5:timeInterval>
+                					<ns5:start>2024-12-31T23:00Z</ns5:start>
+                					<ns5:end>2025-01-02T22:59Z</ns5:end>
+                				</ns5:timeInterval>
+                				<ns5:Point>
+                					<ns5:position>1</ns5:position>
+                					<ns5:energy_Quantity.quantity>1</ns5:energy_Quantity.quantity>
+                					<ns5:energy_Quantity.quality>%s</ns5:energy_Quantity.quality>
+                				</ns5:Point>
+                			</ns5:Period>
+                			<ns5:registeredResource.mRID codingScheme="NAT">%s</ns5:registeredResource.mRID>
+                			<ns5:marketEvaluationPoint.mRID codingScheme="NAT">%s</ns5:marketEvaluationPoint.mRID>
+                			<ns5:reason.code>999</ns5:reason.code>
+                			<ns5:reason.text>reason</ns5:reason.text>
+                			<ns5:energyQuality_Measurement_Unit.name>C62</ns5:energyQuality_Measurement_Unit.name>
+                		</ns5:TimeSeries>
+                	</ns5:MarketDocument>
+                </ns5:VHD_Envelope>
+                """.formatted(expectedDirection.value(), expectedQuality.value(), meterCode, meterCode);
         var pr = new SimplePermissionRequest("pid", "cid", "dnid");
         var start = LocalDate.of(2025, 1, 1);
         var end = LocalDate.of(2025, 1, 2);
         var now = ZonedDateTime.now(AT_ZONE_ID);
         var cal = DatatypeFactory.newDefaultInstance()
                                  .newXMLGregorianCalendar(GregorianCalendar.from(now));
-        var codingScheme = StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value();
         var simpleRecord = new SimpleEdaConsumptionRecord()
                 .setMessageId("messageId")
                 .setConversationId("conversationId")
@@ -89,92 +145,19 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         var res = doc.toVhd();
 
         // Then
-        assertThat(res)
-                .singleElement()
-                // asserts for VHDEnvelope
-                .satisfies(document -> {
-                    assertThat(document.getMessageDocumentHeaderCreationDateTime()).isNotNull();
-                    assertThat(document.getMessageDocumentHeaderMetaInformationConnectionId()).isEqualTo("cid");
-                    assertThat(document.getMessageDocumentHeaderMetaInformationDocumentType()).isEqualTo(
-                            "validated-historical-data-market-document");
-                    assertThat(document.getMessageDocumentHeaderMetaInformationDataNeedId()).isEqualTo("dnid");
-                    assertThat(document.getMessageDocumentHeaderMetaInformationPermissionId()).isEqualTo("pid");
-                    assertThat(document.getMessageDocumentHeaderMetaInformationRegionConnector()).isEqualTo("at-eda");
-                    assertThat(document.getMessageDocumentHeaderMetaInformationRegionCountry()).isEqualTo("AT");
-                })
-                // asserts for the market document
-                .extracting(VHDEnvelope::getMarketDocument)
-                .satisfies(document -> {
-                    assertThat(document.getMRID()).isEqualTo("messageId");
-                    assertThat(document.getCreatedDateTime()).isEqualTo(now);
-                    assertThat(document.getReceiverMarketParticipantMarketRoleType()).isEqualTo(StandardRoleTypeList.CONSUMER.value());
-                    assertThat(document.getReceiverMarketParticipantMRID())
-                            .satisfies(partyId -> {
-                                assertThat(partyId.getCodingScheme()).isEqualTo(codingScheme);
-                                assertThat(partyId.getValue()).isEqualTo("eddie");
-                            });
-                    assertThat(document.getSenderMarketParticipantMarketRoleType()).isEqualTo(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value());
-                    assertThat(document.getSenderMarketParticipantMRID())
-                            .satisfies(partyId -> {
-                                assertThat(partyId.getCodingScheme()).isEqualTo(codingScheme);
-                                assertThat(partyId.getValue()).isEqualTo("eda");
-                            });
-                    assertThat(document.getPeriodTimeInterval())
-                            .satisfies(interval -> {
-                                assertThat(interval.getStart()).isEqualTo("2024-12-31T23:00Z");
-                                assertThat(interval.getEnd()).isEqualTo("2025-01-01T23:00Z");
-                            });
-                    assertThat(document.getProcessProcessType()).isEqualTo(StandardProcessTypeList.REALISED.value());
-                })
-                // asserts for time series
-                .extracting(VHDMarketDocument::getTimeSeries)
-                .asInstanceOf(InstanceOfAssertFactories.list(TimeSeries.class))
-                .singleElement()
-                .satisfies(document -> {
-                    assertThat(document.getVersion()).isEqualTo("1");
-                    assertThat(document.getDateAndOrTimeDateTime()).isCloseTo(now, within(1, ChronoUnit.MILLIS));
-                    assertThat(document.getMarketEvaluationPointMRID())
-                            .satisfies(pointId -> {
-                                assertThat(pointId.getCodingScheme()).isEqualTo(codingScheme);
-                                assertThat(pointId.getValue()).isEqualTo(meterCode);
-                            });
-                    assertThat(document.getEnergyMeasurementUnitName()).isEqualTo(StandardUnitOfMeasureTypeList.KILOWATT_HOUR.value());
-                    assertThat(document.getReasonCode()).isEqualTo(StandardReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED.value());
-                    assertThat(document.getReasonText()).isEqualTo("reason");
-                    assertThat(document.getRegisteredResourceMRID())
-                            .satisfies(resourceId -> {
-                                assertThat(resourceId.getCodingScheme()).isEqualTo(codingScheme);
-                                assertThat(resourceId.getValue()).isEqualTo(meterCode);
-                            });
-                    assertThat(document.getFlowDirectionDirection()).isEqualTo(expectedDirection.value());
-                })
-                // asserts for periods
-                .extracting(TimeSeries::getPeriods)
-                .asInstanceOf(InstanceOfAssertFactories.list(SeriesPeriod.class))
-                .singleElement()
-                .satisfies(period -> {
-                    var granularity = DatatypeFactory.newDefaultInstance()
-                                                     .newDuration(Duration.ofDays(1).toMillis());
-                    assertThat(period.getResolution()).isEqualTo(granularity);
-                    assertThat(period.getTimeInterval())
-                            .satisfies(interval -> {
-                                assertThat(interval.getStart()).isEqualTo("2024-12-31T23:00Z");
-                                assertThat(interval.getEnd()).isEqualTo("2025-01-02T22:59Z");
-                            });
-                })
-                // asserts for point
-                .extracting(SeriesPeriod::getPoints)
-                .asInstanceOf(InstanceOfAssertFactories.list(Point.class))
-                .singleElement()
-                .satisfies(point -> {
-                    assertThat(point.getPosition()).isEqualTo(1);
-                    assertThat(point.getEnergyQuantityQuantity()).isEqualTo(BigDecimal.ONE);
-                    assertThat(point.getEnergyQuantityQuality()).isEqualTo(expectedQuality.value());
-                });
+        var testXml = new String(serde.serialize(res.getFirst()), StandardCharsets.UTF_8);
+        var myDiff = DiffBuilder.compare(expected)
+                                .withTest(testXml)
+                                .ignoreWhitespace()
+                                .ignoreComments()
+                                .checkForSimilar()
+                                .withNodeFilter(node -> !ignoredNames.contains(node.getNodeName()))
+                                .build();
+        assertFalse(myDiff.hasDifferences(), myDiff.fullDescription());
     }
 
     @Test
-    void toVhd_producesValidXml() throws SerdeInitializationException, SerializationException {
+    void toVhd_producesValidXml() throws SerializationException {
         // Given
         var pr = new SimplePermissionRequest("pid", "cid", "dnid");
         var start = LocalDate.of(2025, 1, 1);
@@ -217,9 +200,10 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         var res = doc.toVhd();
 
         // Then
-        var xmlDoc = new String(new XmlMessageSerde().serialize(res.getFirst()), StandardCharsets.UTF_8);
-        assertTrue(XmlValidator.validateV104ValidatedHistoricalDataMarketDocument(xmlDoc.getBytes(StandardCharsets.UTF_8)),
-                   "Failed to validate XML, see:\n" + xmlDoc);
+        var xmlDoc = serde.serialize(res.getFirst());
+        var xmlStr = new String(xmlDoc, StandardCharsets.UTF_8);
+        assertTrue(XmlValidator.validateV104ValidatedHistoricalDataMarketDocument(xmlDoc),
+                   "Failed to validate XML, see:\n" + xmlStr);
     }
 
     private static Stream<Arguments> meterCodeAndMeteringModeSource() {

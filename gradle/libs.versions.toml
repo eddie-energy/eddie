@@ -58,6 +58,7 @@ jackson-databind-nullable-version = "0.2.6"
 google-jib = "3.4.0"
 
 testcontainers = "1.20.4"
+xmlunit = "2.10.3"
 
 j2mod = "3.2.1"
 mvel2 = "2.5.2.Final"
@@ -109,6 +110,8 @@ reactor-netty-core = { module = "io.projectreactor.netty:reactor-netty-core", ve
 netty-codec-http = { module = "io.netty:netty-codec-http", version.ref = "netty-codec-http" }
 
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
+
+xmlunit-core = { module = "org.xmlunit:xmlunit-core", version.ref = "xmlunit" }
 
 # dependencies required by outbound-connectors
 jackson-jakarta-xmlbind-annotations = { module = "com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations", version.ref = "jackson" }
