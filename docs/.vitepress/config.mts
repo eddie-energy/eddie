@@ -106,6 +106,10 @@ export default withMermaid(
                   text: "AMQP",
                   link: "/1-running/outbound-connectors/outbound-connector-amqp.md",
                 },
+                {
+                  text: "REST",
+                  link: "/1-running/outbound-connectors/outbound-connector-rest.md",
+                },
               ],
             },
             { text: "Admin Console", link: "/1-running/admin-console" },
