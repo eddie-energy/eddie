@@ -38,11 +38,17 @@ public class TopicConfiguration {
     /**
      * Endpoint for CIM validated historical data market documents.
      * Used to emit messages to the eligible party.
+     *
+     * @param cimVersion the version of the CIM that's used
+     * @throws IllegalArgumentException if the cimVersion is not {@code CIM_0_82} or {@code CIM_1_04}
      */
-    public String validatedHistoricalDataMarketDocument() {
-        return toTopic(TopicStructure.Direction.EP,
-                       TopicStructure.DataModels.CIM_0_82,
-                       TopicStructure.DocumentTypes.VALIDATED_HISTORICAL_DATA_MD);
+    public String validatedHistoricalDataMarketDocument(TopicStructure.DataModels cimVersion) {
+        return switch (cimVersion) {
+            case CIM_0_82, CIM_1_04 -> toTopic(TopicStructure.Direction.EP,
+                                               cimVersion,
+                                               TopicStructure.DocumentTypes.VALIDATED_HISTORICAL_DATA_MD);
+            default -> throw new IllegalArgumentException("Invalid cim version: " + cimVersion);
+        };
     }
 
     /**

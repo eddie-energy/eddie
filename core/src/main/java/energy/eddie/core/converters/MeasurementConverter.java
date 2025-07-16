@@ -28,8 +28,16 @@ public class MeasurementConverter {
         LOGGER.info("Applying converters to validated historical data market document");
         var doc = convertee.getValidatedHistoricalDataMarketDocument();
         var convertedTimeSeries = new ArrayList<TimeSeriesComplexType>();
+        if (doc.getTimeSeriesList() == null) {
+            LOGGER.atWarn()
+                  .addArgument(() -> convertee.getMessageDocumentHeader()
+                                              .getMessageDocumentHeaderMetaInformation()
+                                              .getPermissionid())
+                  .log("TimeSeries list is null for permission request {}");
+            return convertee;
+        }
         for (var calculation : calculations) {
-            if (containsTargetUnit(calculation, doc)) {
+            if (doesNotContainTargetUnit(calculation, doc)) {
                 convert(doc, convertedTimeSeries, calculation);
             }
         }
@@ -37,7 +45,7 @@ public class MeasurementConverter {
         return convertee;
     }
 
-    private boolean containsTargetUnit(
+    private boolean doesNotContainTargetUnit(
             MeasurementCalculation calculation,
             ValidatedHistoricalDataMarketDocumentComplexType convertee
     ) {

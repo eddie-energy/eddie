@@ -16,7 +16,7 @@ import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.util.Set;
 
 /**
  * A {@link MessageSerde} implementation that produces CIM compliant XML.
@@ -24,11 +24,14 @@ import java.util.List;
  * Uses the JAXB for CIM documents and {@link ObjectMapper} as fallback.
  */
 public class XmlMessageSerde implements MessageSerde {
-    private static final List<Class<?>> CIM_TYPES = List.of(
+    private static final Set<Class<?>> CIM_CLASSES = Set.of(
+            // CIM v0.82
             PermissionEnvelope.class,
             ValidatedHistoricalDataEnvelope.class,
             AccountingPointEnvelope.class,
+            // CIM v0.91.08
             RTREnvelope.class,
+            // CIM v1.04
             VHDEnvelope.class
     );
     private final Marshaller marshaller;
@@ -37,13 +40,7 @@ public class XmlMessageSerde implements MessageSerde {
 
     public XmlMessageSerde() throws SerdeInitializationException {
         try {
-            var ctx = JAXBContext.newInstance(
-                    PermissionEnvelope.class,
-                    AccountingPointEnvelope.class,
-                    ValidatedHistoricalDataEnvelope.class,
-                    RTREnvelope.class,
-                    VHDEnvelope.class
-            );
+            var ctx = JAXBContext.newInstance(CIM_CLASSES.toArray(new Class<?>[0]));
             marshaller = ctx.createMarshaller();
             unmarshaller = ctx.createUnmarshaller();
         } catch (JAXBException e) {
@@ -55,14 +52,11 @@ public class XmlMessageSerde implements MessageSerde {
     @Override
     public byte[] serialize(Object message) throws SerializationException {
         try {
-            return switch (message) {
-                case ValidatedHistoricalDataEnvelope ignored -> serializeCimMessage(message);
-                case PermissionEnvelope ignored -> serializeCimMessage(message);
-                case AccountingPointEnvelope ignored -> serializeCimMessage(message);
-                case RTREnvelope ignored -> serializeCimMessage(message);
-                case VHDEnvelope ignored -> serializeCimMessage(message);
-                default -> objectMapper.writeValueAsBytes(message);
-            };
+            if (CIM_CLASSES.contains(message.getClass())) {
+                return serializeCimMessage(message);
+            } else {
+                return objectMapper.writeValueAsBytes(message);
+            }
         } catch (Exception e) {
             throw new SerializationException(e);
         }
@@ -80,7 +74,7 @@ public class XmlMessageSerde implements MessageSerde {
     }
 
     private boolean isCimType(Class<?> type) {
-        return CIM_TYPES.stream().anyMatch(type::isAssignableFrom);
+        return CIM_CLASSES.stream().anyMatch(type::isAssignableFrom);
     }
 
     private byte[] serializeCimMessage(Object message) throws JAXBException {

@@ -6,6 +6,7 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
+import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.outbound.shared.serde.MessageSerde;
 import energy.eddie.outbound.shared.serde.SerializationException;
 import jakarta.annotation.Nullable;
@@ -27,11 +28,15 @@ class CustomSerializer implements Serializer<Object> {
     @Nullable
     public byte[] serialize(String topic, Object data) {
         return switch (data) {
+            // Agnostic
             case ConnectionStatusMessage ignored -> serialize(data);
+            case RawDataMessage ignored -> serialize(data);
+            // CIM v0.82
             case ValidatedHistoricalDataEnvelope ignored -> serialize(data);
             case PermissionEnvelope ignored -> serialize(data);
-            case RawDataMessage ignored -> serialize(data);
             case AccountingPointEnvelope ignored -> serialize(data);
+            // CIM v0.91.08
+            case VHDEnvelope ignored -> serialize(data);
             case RTREnvelope ignored -> serialize(data);
             case null -> null;
             default -> {

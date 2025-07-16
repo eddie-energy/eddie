@@ -41,7 +41,7 @@ class TopicConfigurationTest {
     void testValidatedHistoricalDataMarketDocument_returnsCorrectTopicName() {
         // Given
         // When
-        var res = config.validatedHistoricalDataMarketDocument();
+        var res = config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_0_82);
 
         // Then
         assertEquals("ep.e123.cim_0_82.validated-historical-data-md", res);
