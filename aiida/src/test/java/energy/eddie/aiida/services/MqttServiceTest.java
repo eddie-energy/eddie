@@ -8,13 +8,13 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MqttServiceTest {
     @Test
     void tlsCertificate_returnsTlsCertificate() throws MqttTlsCertificateNotFoundException, IOException {
         // Given
-        var mqttConfiguration = new MqttConfiguration("","", 10, "", "", "src/test/resources/mqtt/cert.pem");
+        var mqttConfiguration = new MqttConfiguration("", "", 10, "", "src/test/resources/mqtt/cert.pem");
         var mqttService = new MqttService(mqttConfiguration);
 
         // When
@@ -27,7 +27,7 @@ class MqttServiceTest {
     @Test
     void tlsCertificate_noPath_throwsMqttTlsCertificateNotFoundException() {
         // Given
-        var mqttConfiguration = new MqttConfiguration("", "", 10, "", "", "");
+        var mqttConfiguration = new MqttConfiguration("", "", 10, "", "");
         var mqttService = new MqttService(mqttConfiguration);
 
         // When, Then
@@ -37,7 +37,7 @@ class MqttServiceTest {
     @Test
     void tlsCertificate_fileNotFound_throwsMqttTlsCertificateNotFoundException() {
         // Given
-        var mqttConfiguration = new MqttConfiguration("","", 10, "", "", "/path/to/tls/certificate");
+        var mqttConfiguration = new MqttConfiguration("", "", 10, "", "/path/to/tls/certificate");
         var mqttService = new MqttService(mqttConfiguration);
 
         // When, Then

@@ -1,13 +1,18 @@
 name: aiida
 services:
   timescaledb:
-    image: timescale/timescaledb:latest-pg12
+    image: timescale/timescaledb:latest-pg17
+    ports:
+      - "5433:5432"
     environment:
+      EMQX_DATABASE_PASSWORD: ${EMQX_DATABASE_PASSWORD}
       POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
       POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       POSTGRES_DB: ${SPRING_DATASOURCE_DATABASE}
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./postgres/create-emqx-user.sql:/tmp/create-emqx-user.sql
+      - ./postgres/replace-password-with-env.sh:/docker-entrypoint-initdb.d/00-replace_password_with_env.sh
     restart: always
     healthcheck:
       test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${SPRING_DATASOURCE_USERNAME} -d ${SPRING_DATASOURCE_DATABASE}'" ]
@@ -16,6 +21,8 @@ services:
       retries: 3
 
   aiida:
+    profiles:
+      - dockerized-aiida
     image: ghcr.io/eddie-energy/aiida:latest
     build:
       dockerfile: docker/Dockerfile
@@ -44,19 +51,20 @@ services:
       - "8884:8883"
       - "18084:18083"
     environment:
+      AIIDA_MQTT_PASSWORD: ${MQTT_PASSWORD}
       EMQX_AUTHENTICATION__1__DATABASE: ${SPRING_DATASOURCE_DATABASE}
       EMQX_AUTHENTICATION__1__SERVER: ${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}
-      EMQX_AUTHENTICATION__1__USERNAME: ${EMQX_DATASOURCE_USERNAME}
-      EMQX_AUTHENTICATION__1__PASSWORD: ${EMQX_DATASOURCE_PASSWORD}
+      EMQX_AUTHENTICATION__1__PASSWORD: ${EMQX_DATABASE_PASSWORD}
       EMQX_AUTHORIZATION__SOURCES__1__DATABASE: ${SPRING_DATASOURCE_DATABASE}
       EMQX_AUTHORIZATION__SOURCES__1__SERVER: ${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}
-      EMQX_AUTHORIZATION__SOURCES__1__USERNAME: ${EMQX_DATASOURCE_USERNAME}
-      EMQX_AUTHORIZATION__SOURCES__1__PASSWORD: ${EMQX_DATASOURCE_PASSWORD}
+      EMQX_AUTHORIZATION__SOURCES__1__PASSWORD: ${EMQX_DATABASE_PASSWORD}
     restart: always
     volumes:
       - emqx_data:/opt/emqx/data
       - ./emqx/emqx.hocon:/opt/emqx/etc/base.hocon
-      - ./emqx/init_user.json:/opt/init_user.json
+      - ./emqx/init-user.json:/tmp/init-user.json
+      - ./emqx/replace-password-with-env.sh:/tmp/replace-password-with-env.sh
+    entrypoint: [ "/bin/sh", "/tmp/replace-password-with-env.sh" ]
     healthcheck:
       test: [ "CMD", "/opt/emqx/bin/emqx", "ctl", "status" ]
       interval: 5s

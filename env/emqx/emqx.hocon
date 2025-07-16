@@ -13,9 +13,9 @@ authentication = [
     }
     pool_size = 8
     query = """~
-      SELECT mqtt_password AS password_hash
-       FROM public.data_source
-       WHERE mqtt_username = ${username} LIMIT 1;~"""
+      SELECT password_hash
+       FROM aiida.aiida_mqtt_user
+       WHERE username = ${username} LIMIT 1;~"""
     # Replaced with .env file
     server = "REPLACED_WITH_ENV:5432"
     ssl {
@@ -33,7 +33,7 @@ authentication = [
       ]
     }
     username = emqx
-  },
+  }
   {
     backend = built_in_database
     mechanism = password_based
@@ -65,9 +65,9 @@ authorization {
       password = REPLACED_WITH_ENV
       pool_size = 8
       query = """~
-        SELECT LOWER(action) AS action, LOWER(acl_type) AS permission, mqtt_subscribe_topic AS topic
-         FROM public.data_source
-         WHERE mqtt_username = ${username};~"""
+        SELECT LOWER(action) AS action, LOWER(acl_type) AS permission, topic
+         FROM aiida.aiida_mqtt_acl
+         WHERE username = ${username};~"""
       # Replaced with .env file
       server = "REPLACED_WITH_ENV:5432"
       ssl {

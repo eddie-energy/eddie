@@ -1,7 +1,7 @@
 [
   {
     "user_id": "aiida",
-    "password": "REPLACE_ME_WITH_SAVE_PASSWORD",
+    "password": "testPassword",
     "is_superuser": true
   }
 ]

@@ -39,7 +39,6 @@ ACLs and authentication ensure that only the permitted AIIDA instance may publis
 | `region-connector.aiida.customer.id`     | A unique ID of the eligible party, should not be changed.                                                                                                                                                                                                                                                                                                                                                                     |
 | `region-connector.aiida.bcrypt.strength` | Strength to be used by the BCryptPasswordEncoder instance used to hash the passwords for the MQTT user accounts for the AIIDA instances. It should be configured to a value that the hashing of a password takes around ~1 second. See also <a href="https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/crypto/bcrypt/BCrypt.html">Spring documentation for BCryptPasswordEncoder</a>. |
 | `region-connector.aiida.mqtt.server.uri` | URI of the MQTT server which the AIIDA instances and the region connector use for communication.                                                                                                                                                                                                                                                                                                                              |
-| `region-connector.aiida.mqtt.username`   | (Optional) Username to use when connecting to the MQTT broker (if not supplied, no username is used).                                                                                                                                                                                                                                                                                                                         |
 | `region-connector.aiida.mqtt.password`   | (Optional) Password to use when connecting to the MQTT broker (if not supplied, no password is used).                                                                                                                                                                                                                                                                                                                         |
 
 The region connector can be configured using Spring properties or environment variables.
@@ -52,7 +51,6 @@ When using environment variables, the configuration values need to be converted 
 region-connector.aiida.customer.id=my-unique-id
 region-connector.aiida.bcrypt.strength=14
 region-connector.aiida.mqtt.server.uri=tcp://localhost:1883
-region-connector.aiida.mqtt.username=testAccount
 region-connector.aiida.mqtt.password=superSafe
 ```
 
@@ -79,59 +77,44 @@ broker.
 
 ## EMQX MQTT broker
 
-Please ensure, that you use a dedicated database user for the EMQX broker, and that you grant this user read permissions
-to the `aiida.aiida_mqtt_user` and `aiida.aiida_mqtt_acl` tables.
-
-```SQL
-CREATE USER emqx WITH PASSWORD 'REPLACE_ME_WITH_SAFE_PASSWORD';
-GRANT USAGE ON SCHEMA aiida TO emqx;
-GRANT SELECT ON aiida.aiida_mqtt_acl TO emqx;
-GRANT SELECT ON aiida.aiida_mqtt_user TO emqx;
-GRANT CONNECT ON DATABASE eddie TO emqx;
-```
-
 EMQX MQTT broker supports authentication and authorization using PostgreSQL as backend, which should use a dedicated
-user as seen above.
-In order to add the EDDIE database for authentication and authorization, visit the dashboard of the broker
-(by default running on port 18083).
-Add the EDDIE database as source for authentication and authorization.
+EMQX user for the PostgreSQL database.
+A dedicated user is created for the EDDIE AIIDA region connector, to authenticate at the EMQX MQTT broker.
 
-### Authentication
+## PostgreSQL: EMQX User Configuration
 
-Select the **Authentication** tab, select **password-based** and then **PostgresDB**.
-It is necessary to fill out the server address of the database, the database name and the credentials of the dedicated
-user with which EMQX should connect.
-For authentication, it is necessary to choose the **password hash** to be **bcrypt**.
-Lastly, add the following SQL query to fetch the password hash for the given username.
+The PostgreSQL user `emqx` for the EMQX broker is created on the first startup of the EDDIE database.
+If you would like to change the password for this user, you have to adapt the following value EDDIE's `.env` file:
 
-```SQL
-SELECT password_hash
-FROM aiida.aiida_mqtt_user
-WHERE username = ${username}
-LIMIT 1;
+```
+EMQX_DATABASE_PASSWORD=REPLACE_ME_WITH_SAFE_PASSWORD
 ```
 
-### Authorization
+## EMQX: AIIDA Region Connector User Configuration
 
-Select the **Authorization** tab and select **PostgresDB**.
-It is necessary to fill out the server address of the database, the database name and the credentials of the dedicated
-user with which EMQX should connect.
-Lastly, add the following SQL query to fetch the permissions for the given username.
+The EMQX user `eddie` for the AIIDA region connector is created on the first startup of the EMQX MQTT broker.
+If you would like to change the password for this user, you have to adapt the following value EDDIE's `.env` file:
 
-```SQL
-SELECT LOWER(action) AS action, LOWER(acl_type) AS permission, topic
-FROM aiida.aiida_mqtt_acl
-WHERE username = ${username};
+```
+REGION_CONNECTOR_AIIDA_MQTT_PASSWORD=REPLACE_ME_WITH_SAFE_PASSWORD
 ```
 
-Note that while enums are often used in uppercase, EMQX requires the `action` and `acl_type` to be in lowercase and
-named `action` and `permission` respectively.
+This has to be done before the first startup of the EMQX MQTT broker, otherwise the user is created with the default password.
 
-### Troubleshooting
+## Authentication
 
-When the EDDIE framework tries to connect to the MQTT broker anonymously, it is possible that the connection is refused.
-To prevent this, it is possible to create a dedicated EMQX user for the EDDIE framework, which is used for the connection.
-You can create the user by visiting the EMQX dashboard. Select the **Authentication** tab, select **password-based** and
-then **Built-in Database
-**. Here it is now possible to create user which can then be used by the AIIDA Region Connector by
-adding it to the `region-connector.aiida.mqtt.username` and `region-connector.aiida.mqtt.password` configuration values.
+The Authentication is done using a password-based approach via the EDDIE's PostgreSQL database.
+For each permission a dedicated user is saved in the `aiida_mqtt_user` table, which contains the `permissionId` as
+username and the hash of a randomly generated password as password. The passwords are hashed using BCrypt.
+The actual password remains on AIIDA's side and is transferred when AIIDA and EDDIE perform the handshake.
+
+## Authorization
+
+For each permission there are ACLs for dedicated topics created in the `aiida_mqtt_acl` table.
+The ACLs are used to authorize the AIIDA instance to publish and subscribe.
+
+| topic_name                            | action      | acl_type |
+|---------------------------------------|-------------|----------|
+| `aiida/v1/<permissionId>/data`        | `publish`   | `allow`  |
+| `aiida/v1/<permissionId>/status`      | `publish`   | `allow`  |
+| `aiida/v1/<permissionId>/termination` | `subscribe` | `allow`  |

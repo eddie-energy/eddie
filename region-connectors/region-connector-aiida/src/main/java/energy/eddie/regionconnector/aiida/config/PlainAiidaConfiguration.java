@@ -7,6 +7,11 @@ public record PlainAiidaConfiguration(
         int bCryptStrength,
         String handshakeUrl,
         String mqttServerUri,
-        @Nullable String mqttUsername,
         @Nullable String mqttPassword
-) implements AiidaConfiguration {}
+) implements AiidaConfiguration {
+    private static final String USERNAME = "eddie";
+
+    public String mqttUsername() {
+        return USERNAME;
+    }
+}

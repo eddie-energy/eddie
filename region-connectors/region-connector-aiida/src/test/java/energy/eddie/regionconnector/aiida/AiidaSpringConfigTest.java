@@ -14,7 +14,6 @@ class AiidaSpringConfigTest {
                                                                                5,
                                                                                "http://localhost:1234",
                                                                                "fooBar",
-                                                                               null,
                                                                                null);
 
         // Then
@@ -31,11 +30,9 @@ class AiidaSpringConfigTest {
                                                                                5,
                                                                                "http://localhost:1234",
                                                                                "fooBar",
-                                                                               "",
                                                                                "   ");
 
         // Then
-        assertNull(config.mqttUsername());
         assertNull(config.mqttPassword());
     }
 }

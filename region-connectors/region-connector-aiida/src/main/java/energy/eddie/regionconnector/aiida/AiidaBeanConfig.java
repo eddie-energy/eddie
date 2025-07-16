@@ -53,14 +53,10 @@ public class AiidaBeanConfig {
             @Value("${" + BCRYPT_STRENGTH + "}") int bCryptStrength,
             @Value("${" + EDDIE_PUBLIC_URL + "}") String eddiePublicUrl,
             @Value("${" + MQTT_SERVER_URI + "}") String mqttServerUri,
-            @Value("${" + MQTT_USERNAME + ":}") String mqttUsername,
             @Value("${" + MQTT_PASSWORD + ":}") String mqttPassword
     ) {
         String eddieUrl = eddiePublicUrl.endsWith("/") ? eddiePublicUrl : eddiePublicUrl + "/";
         String handshakeUrl = eddieUrl + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + REGION_CONNECTOR_ID + PATH_HANDSHAKE_PERMISSION_REQUEST;
-
-        if (mqttUsername != null && mqttUsername.trim().isEmpty())
-            mqttUsername = null;
 
         if (mqttPassword != null && mqttPassword.trim().isEmpty())
             mqttPassword = null;
@@ -69,7 +65,6 @@ public class AiidaBeanConfig {
                                            bCryptStrength,
                                            handshakeUrl,
                                            mqttServerUri,
-                                           mqttUsername,
                                            mqttPassword);
     }
 
