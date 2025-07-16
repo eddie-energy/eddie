@@ -25,6 +25,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.sql.Connection;
 import java.time.Clock;
@@ -41,10 +42,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @MockitoBean(types = {ClientRegistrationRepository.class, OAuth2SecurityConfiguration.class, CorsConfigurationSource.class})
 @Testcontainers
 class PermissionServiceIntegrationTest {
+    private static final String TIMESCALEDB_IMAGE = "timescale/timescaledb:latest-pg17";
+    private static final String TIMESCALEDB_CREATE_AIIDA_DB_AND_EMQX_USER_FILE =
+            "timescaledb/create-aiida-db-and-emqx-user.sql";
+    private static final String TIMESCALEDB_CONTAINER_PATH =
+            "/docker-entrypoint-initdb.d/" + TIMESCALEDB_CREATE_AIIDA_DB_AND_EMQX_USER_FILE.split("/")[1];
+
     @Container
     @ServiceConnection
-    static final PostgreSQLContainer<?> timescale = new PostgreSQLContainer<>(DockerImageName.parse(
-            "timescale/timescaledb:latest-pg12").asCompatibleSubstituteFor("postgres"));
+    static final PostgreSQLContainer<?> timescale =
+            new PostgreSQLContainer<>(
+                    DockerImageName.parse(TIMESCALEDB_IMAGE)
+                                   .asCompatibleSubstituteFor("postgres"))
+                    .withCopyFileToContainer(
+                            MountableFile.forClasspathResource(TIMESCALEDB_CREATE_AIIDA_DB_AND_EMQX_USER_FILE),
+                            TIMESCALEDB_CONTAINER_PATH
+                    );
     private final UUID permissionId = UUID.fromString("8609a9b3-0718-4082-935d-6a98c0f8c5a2");
     @Autowired
     Clock clock;

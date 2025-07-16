@@ -56,7 +56,6 @@ class SmartGatewaysAdapterTest {
                 "tcp://localhost:1883",
                 "tcp://localhost:1883",
                 10,
-                "user",
                 "password",
                 ""
         );

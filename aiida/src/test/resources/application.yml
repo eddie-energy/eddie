@@ -35,7 +35,6 @@ aiida:
     token: "Test123!"
   mqtt:
     bcrypt-salt-rounds: 12
-    username: aiida
     password: Test123!
   keycloak:
     account-uri: https://auth.aiida.energy/account

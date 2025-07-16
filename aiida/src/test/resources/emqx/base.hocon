@@ -1,0 +1,13 @@
+authentication = [
+  {
+    backend = built_in_database
+    mechanism = password_based
+    password_hash_algorithm {
+      name = bcrypt
+    }
+    user_id_type = username
+
+    bootstrap_file = "/opt/emqx/data/init-user.json"
+    bootstrap_type = plain
+  }
+]
