@@ -21,12 +21,12 @@ onMounted(() => {
 
 function confirm() {
   acceptPermission(permission.value.permissionId, selectedDataSource.value)
-  hide()
+  open.value = false
 }
 
 function reject() {
   rejectPermission(permission.value.permissionId)
-  hide()
+  open.value = false
 }
 
 function hide(event) {
@@ -41,7 +41,7 @@ function hide(event) {
   <sl-dialog
     label="Accept or reject permission"
     :open="open || undefined"
-    @sl-hide="$event.target === $event.currentTarget && hide()"
+    @sl-hide="hide"
     v-if="permission"
   >
     <PermissionDetails :permission />
