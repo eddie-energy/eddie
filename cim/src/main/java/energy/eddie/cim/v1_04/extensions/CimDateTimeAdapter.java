@@ -4,6 +4,7 @@ import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
@@ -16,6 +17,9 @@ public class CimDateTimeAdapter extends XmlAdapter<String, ZonedDateTime> {
 
     @Override
     public String marshal(ZonedDateTime value) {
-        return value != null ? ISO_DATE_TIME.format(value.withZoneSameInstant(ZoneOffset.UTC)) : null;
+        if (value == null) {
+            return null;
+        }
+        return ISO_DATE_TIME.format(value.truncatedTo(ChronoUnit.SECONDS).withZoneSameInstant(ZoneOffset.UTC));
     }
 }

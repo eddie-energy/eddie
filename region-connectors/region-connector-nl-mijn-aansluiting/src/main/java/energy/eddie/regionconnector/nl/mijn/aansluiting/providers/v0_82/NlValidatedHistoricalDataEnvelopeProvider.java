@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.providers.v0_82;
 
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.IdentifiableMeteredData;

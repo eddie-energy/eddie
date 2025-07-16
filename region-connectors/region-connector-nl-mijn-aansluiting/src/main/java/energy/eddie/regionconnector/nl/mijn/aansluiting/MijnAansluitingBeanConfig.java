@@ -21,7 +21,7 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;

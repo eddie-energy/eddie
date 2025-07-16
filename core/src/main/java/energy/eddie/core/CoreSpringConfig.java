@@ -2,9 +2,9 @@ package energy.eddie.core;
 
 import eddie.energy.europeanmasterdata.EuropeanMasterDataSpringConfig;
 import energy.eddie.OpenApiDocs;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.api.utils.Shared;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.DataNeedsSpringConfig;
 import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
@@ -35,8 +35,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
+import static energy.eddie.api.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
+import static energy.eddie.api.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor.enableSpringDoc;
 
 @SpringBootApplication(

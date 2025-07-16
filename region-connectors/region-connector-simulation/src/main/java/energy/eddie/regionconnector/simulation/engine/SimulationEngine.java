@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.simulation.engine;
 
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.simulation.dtos.ScenarioMetadata;
 import energy.eddie.regionconnector.simulation.engine.results.SimulationConstraintViolations;

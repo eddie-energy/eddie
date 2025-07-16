@@ -7,7 +7,7 @@ import de.ponton.xp.adapter.api.ConnectionException;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;

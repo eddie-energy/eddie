@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
 import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;

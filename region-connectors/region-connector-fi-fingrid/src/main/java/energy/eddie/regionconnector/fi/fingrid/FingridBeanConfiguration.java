@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fi.fingrid;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.config.FingridConfiguration;
