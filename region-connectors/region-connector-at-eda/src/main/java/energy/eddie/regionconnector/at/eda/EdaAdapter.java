@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda;
 
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
@@ -10,8 +9,6 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestResult;
 import reactor.core.publisher.Flux;
-
-import java.util.Map;
 
 
 /**
@@ -83,6 +80,4 @@ public interface EdaAdapter extends AutoCloseable {
      * @throws TransmissionException If the connection to EDA could not be established.
      */
     void start() throws TransmissionException;
-
-    Map<String, HealthState> health();
 }

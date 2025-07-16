@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda.ponton;
 
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
@@ -11,8 +10,6 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestResult;
 import reactor.core.publisher.Flux;
-
-import java.util.Map;
 
 public class NoOpEdaAdapter implements EdaAdapter {
     @Override
@@ -58,11 +55,6 @@ public class NoOpEdaAdapter implements EdaAdapter {
     @Override
     public void start() {
         // NoOp
-    }
-
-    @Override
-    public Map<String, HealthState> health() {
-        return Map.of();
     }
 
     @Override

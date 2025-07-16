@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.at.eda.ponton;
 import de.ponton.xp.adapter.api.ConnectionException;
 import de.ponton.xp.adapter.api.domainvalues.InboundStatusEnum;
 import de.ponton.xp.adapter.api.messages.OutboundMessageStatusUpdate;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
@@ -30,7 +29,9 @@ import reactor.core.publisher.Sinks;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static de.ponton.xp.adapter.api.domainvalues.OutboundStatusEnum.*;
@@ -38,7 +39,6 @@ import static de.ponton.xp.adapter.api.domainvalues.OutboundStatusEnum.*;
 
 public class PontonXPAdapter implements EdaAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(PontonXPAdapter.class);
-    private static final String PONTON_HOST = "pontonHost";
     private final Sinks.Many<CMRequestStatus> requestStatusSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<IdentifiableConsumptionRecord> consumptionRecordSink = Sinks.many()
                                                                                          .multicast()
@@ -158,20 +158,6 @@ public class PontonXPAdapter implements EdaAdapter {
         } catch (de.ponton.xp.adapter.api.TransmissionException e) {
             throw new TransmissionException(e);
         }
-    }
-
-    @Override
-    public Map<String, HealthState> health() {
-        Map<String, HealthState> healthChecks = new HashMap<>();
-        var status = pontonMessengerConnection.messengerStatus();
-        healthChecks.put(PONTON_HOST, status.ok() ? HealthState.UP : HealthState.DOWN);
-        status.healthChecks()
-              .values()
-              .forEach(healthCheck -> healthChecks.put(
-                      PONTON_HOST + "." + healthCheck.name(),
-                      healthCheck.ok() ? HealthState.UP : HealthState.DOWN
-              ));
-        return healthChecks;
     }
 
     private void outboundMessageStatusUpdateHandler(OutboundMessageStatusUpdate outboundMessageStatusUpdate) {
