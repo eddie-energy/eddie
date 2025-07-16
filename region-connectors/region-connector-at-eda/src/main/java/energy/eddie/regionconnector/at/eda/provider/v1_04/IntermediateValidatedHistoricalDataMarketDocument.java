@@ -66,7 +66,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         return docs;
     }
 
-    private ArrayList<TimeSeries> timeSeriesList() {
+    private List<TimeSeries> timeSeriesList() {
         var timeSeriesList = new ArrayList<TimeSeries>();
         for (var energy : consumptionRecord.energy()) {
             for (var energyData : energy.energyData()) {

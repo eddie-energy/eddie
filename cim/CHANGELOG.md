@@ -37,4 +37,4 @@ For more information, see [Common Information Model Client Libraries](https://ed
 
 ## 3.0.1 - 2025-07-15
 
-- Truncate datetime to seconds as required by ESMP datetime
+- Truncate datetime to seconds as required by CIM's ESMP datetime
