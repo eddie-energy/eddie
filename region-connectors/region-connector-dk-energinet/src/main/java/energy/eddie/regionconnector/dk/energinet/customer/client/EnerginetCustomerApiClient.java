@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.*;
 import energy.eddie.regionconnector.dk.energinet.customer.invoker.ApiClient;
@@ -19,14 +18,12 @@ import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 
 @Component
 public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
-    private static final String IS_ALIVE_API = "isAliveApi";
     // Request period must not exceed the maximum number of days of 730
     private static final int MAX_REQUEST_PERIOD = 730;
     private final ApiClient apiClient;
@@ -126,17 +123,5 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
 
     private void setApiKey(String token) {
         apiClient.setApiKey("Bearer " + token);
-    }
-
-    @Override
-    public Mono<Map<String, HealthState>> health() {
-        return isAlive()
-                .map(isAlive -> Map.of(
-                             IS_ALIVE_API,
-                             Boolean.TRUE.equals(isAlive)
-                                     ? HealthState.UP
-                                     : HealthState.DOWN
-                     )
-                );
     }
 }
