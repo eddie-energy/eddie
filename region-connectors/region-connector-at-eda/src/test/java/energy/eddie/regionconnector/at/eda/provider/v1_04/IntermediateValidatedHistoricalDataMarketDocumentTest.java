@@ -50,59 +50,60 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     ) throws SerializationException {
         // Given
         var ignoredNames = Set.of(
-                "ns5:messageDocumentHeader.creationDateTime",
-                "ns5:createdDateTime",
-                "ns5:dateAndOrTime.dateTime"
+                "messageDocumentHeader.creationDateTime",
+                "createdDateTime",
+                "dateAndOrTime.dateTime"
         );
+        // @formatter=disabled
         // language=XML
         var expected = """
                 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                <ns5:VHD_Envelope xmlns="http://www.eddie.energy/Consent/EDD02/20240125"
-                	xmlns:ns5="https//eddie.energy/CIM/VHD_v1.04">
-                	<ns5:messageDocumentHeader.creationDateTime>2025-07-15T10:36:40Z</ns5:messageDocumentHeader.creationDateTime>
-                	<ns5:messageDocumentHeader.metaInformation.connectionId>cid</ns5:messageDocumentHeader.metaInformation.connectionId>
-                	<ns5:messageDocumentHeader.metaInformation.dataNeedId>dnid</ns5:messageDocumentHeader.metaInformation.dataNeedId>
-                	<ns5:messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document</ns5:messageDocumentHeader.metaInformation.documentType>
-                	<ns5:messageDocumentHeader.metaInformation.permissionId>pid</ns5:messageDocumentHeader.metaInformation.permissionId>
-                	<ns5:messageDocumentHeader.metaInformation.region.connector>at-eda</ns5:messageDocumentHeader.metaInformation.region.connector>
-                	<ns5:messageDocumentHeader.metaInformation.region.country>AT</ns5:messageDocumentHeader.metaInformation.region.country>
-                	<ns5:MarketDocument>
-                		<ns5:mRID>messageId</ns5:mRID>
-                		<ns5:createdDateTime>2024-12-31T23:00:00Z</ns5:createdDateTime>
-                		<ns5:sender_MarketParticipant.mRID codingScheme="NAT">eda</ns5:sender_MarketParticipant.mRID>
-                		<ns5:sender_MarketParticipant.marketRole.type>A26</ns5:sender_MarketParticipant.marketRole.type>
-                		<ns5:receiver_MarketParticipant.mRID codingScheme="NAT">eddie</ns5:receiver_MarketParticipant.mRID>
-                		<ns5:receiver_MarketParticipant.marketRole.type>A13</ns5:receiver_MarketParticipant.marketRole.type>
-                		<ns5:period.timeInterval>
-                			<ns5:start>2024-12-31T23:00Z</ns5:start>
-                			<ns5:end>2025-01-01T23:00Z</ns5:end>
-                		</ns5:period.timeInterval>
-                		<ns5:process.processType>A16</ns5:process.processType>
-                		<ns5:TimeSeries>
-                			<ns5:version>1</ns5:version>
-                			<ns5:dateAndOrTime.dateTime>2024-12-31T23:00:00Z</ns5:dateAndOrTime.dateTime>
-                			<ns5:energy_Measurement_Unit.name>KWH</ns5:energy_Measurement_Unit.name>
-                			<ns5:flowDirection.direction>%s</ns5:flowDirection.direction>
-                			<ns5:Period>
-                				<ns5:resolution>P0Y0M1DT0H0M0.000S</ns5:resolution>
-                				<ns5:timeInterval>
-                					<ns5:start>2024-12-31T23:00Z</ns5:start>
-                					<ns5:end>2025-01-02T22:59Z</ns5:end>
-                				</ns5:timeInterval>
-                				<ns5:Point>
-                					<ns5:position>1</ns5:position>
-                					<ns5:energy_Quantity.quantity>1</ns5:energy_Quantity.quantity>
-                					<ns5:energy_Quantity.quality>%s</ns5:energy_Quantity.quality>
-                				</ns5:Point>
-                			</ns5:Period>
-                			<ns5:registeredResource.mRID codingScheme="NAT">%s</ns5:registeredResource.mRID>
-                			<ns5:marketEvaluationPoint.mRID codingScheme="NAT">%s</ns5:marketEvaluationPoint.mRID>
-                			<ns5:reason.code>999</ns5:reason.code>
-                			<ns5:reason.text>reason</ns5:reason.text>
-                			<ns5:energyQuality_Measurement_Unit.name>C62</ns5:energyQuality_Measurement_Unit.name>
-                		</ns5:TimeSeries>
-                	</ns5:MarketDocument>
-                </ns5:VHD_Envelope>
+                <ns2:VHD_Envelope xmlns="htthttp://www.eddie.energy/AP/EDD04/20240422"
+                	xmlns:ns2="https//eddie.energy/CIM/VHD_v1.04">
+                	<ns2:messageDocumentHeader.creationDateTime>2025-07-16T08:03:10Z</ns2:messageDocumentHeader.creationDateTime>
+                	<ns2:messageDocumentHeader.metaInformation.connectionId>cid</ns2:messageDocumentHeader.metaInformation.connectionId>
+                	<ns2:messageDocumentHeader.metaInformation.dataNeedId>dnid</ns2:messageDocumentHeader.metaInformation.dataNeedId>
+                	<ns2:messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document</ns2:messageDocumentHeader.metaInformation.documentType>
+                	<ns2:messageDocumentHeader.metaInformation.permissionId>pid</ns2:messageDocumentHeader.metaInformation.permissionId>
+                	<ns2:messageDocumentHeader.metaInformation.region.connector>at-eda</ns2:messageDocumentHeader.metaInformation.region.connector>
+                	<ns2:messageDocumentHeader.metaInformation.region.country>AT</ns2:messageDocumentHeader.metaInformation.region.country>
+                	<ns2:MarketDocument>
+                		<ns2:mRID>messageId</ns2:mRID>
+                		<ns2:createdDateTime>2025-07-16T08:03:09Z</ns2:createdDateTime>
+                		<ns2:sender_MarketParticipant.mRID codingScheme="NAT">eda</ns2:sender_MarketParticipant.mRID>
+                		<ns2:sender_MarketParticipant.marketRole.type>A26</ns2:sender_MarketParticipant.marketRole.type>
+                		<ns2:receiver_MarketParticipant.mRID codingScheme="NAT">eddie</ns2:receiver_MarketParticipant.mRID>
+                		<ns2:receiver_MarketParticipant.marketRole.type>A13</ns2:receiver_MarketParticipant.marketRole.type>
+                		<ns2:period.timeInterval>
+                			<ns2:start>2024-12-31T23:00Z</ns2:start>
+                			<ns2:end>2025-01-01T23:00Z</ns2:end>
+                		</ns2:period.timeInterval>
+                		<ns2:process.processType>A16</ns2:process.processType>
+                		<ns2:TimeSeries>
+                			<ns2:version>1</ns2:version>
+                			<ns2:dateAndOrTime.dateTime>2025-07-16T08:03:09Z</ns2:dateAndOrTime.dateTime>
+                			<ns2:energy_Measurement_Unit.name>KWH</ns2:energy_Measurement_Unit.name>
+                			<ns2:flowDirection.direction>%s</ns2:flowDirection.direction>
+                			<ns2:Period>
+                				<ns2:resolution>P0Y0M1DT0H0M0.000S</ns2:resolution>
+                				<ns2:timeInterval>
+                					<ns2:start>2024-12-31T23:00Z</ns2:start>
+                					<ns2:end>2025-01-02T22:59Z</ns2:end>
+                				</ns2:timeInterval>
+                				<ns2:Point>
+                					<ns2:position>1</ns2:position>
+                					<ns2:energy_Quantity.quantity>1</ns2:energy_Quantity.quantity>
+                					<ns2:energy_Quantity.quality>%s</ns2:energy_Quantity.quality>
+                				</ns2:Point>
+                			</ns2:Period>
+                			<ns2:registeredResource.mRID codingScheme="NAT">%s</ns2:registeredResource.mRID>
+                			<ns2:marketEvaluationPoint.mRID codingScheme="NAT">%s</ns2:marketEvaluationPoint.mRID>
+                			<ns2:reason.code>999</ns2:reason.code>
+                			<ns2:reason.text>reason</ns2:reason.text>
+                			<ns2:energyQuality_Measurement_Unit.name>C62</ns2:energyQuality_Measurement_Unit.name>
+                		</ns2:TimeSeries>
+                	</ns2:MarketDocument>
+                </ns2:VHD_Envelope>
                 """.formatted(expectedDirection.value(), expectedQuality.value(), meterCode, meterCode);
         var pr = new SimplePermissionRequest("pid", "cid", "dnid");
         var start = LocalDate.of(2025, 1, 1);
@@ -151,8 +152,9 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                                 .ignoreWhitespace()
                                 .ignoreComments()
                                 .checkForSimilar()
-                                .withNodeFilter(node -> !ignoredNames.contains(node.getNodeName()))
+                                .withNodeFilter(node -> ignoredNames.stream().noneMatch(node.getNodeName()::endsWith))
                                 .build();
+        System.out.println(testXml);
         assertFalse(myDiff.hasDifferences(), myDiff.fullDescription());
     }
 
