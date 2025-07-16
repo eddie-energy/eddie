@@ -9,8 +9,8 @@ import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpClient;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
-import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
@@ -65,7 +65,6 @@ class DataSourceAdapterTest {
                 "tcp://localhost:1883",
                 "tcp://localhost:1883",
                 10,
-                "user",
                 "password",
                 ""
         );

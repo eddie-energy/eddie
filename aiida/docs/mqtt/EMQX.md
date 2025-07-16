@@ -3,19 +3,23 @@
 EMQX was decided to be used as the MQTT broker for AIIDA as it can handle the authentication and authorization more easily than NanoMQ.
 NanoMQ used HTTP for authentication and authorization, which had limitations.
 
-EMQX uses the `timescaledb` and the `public.data_source` table for authentication and authorization.
+EMQX MQTT broker supports authentication and authorization using PostgreSQL as backend, which should use a dedicated EMQX user for the PostgreSQL database.
+A dedicated user is created for the AIIDA, to authenticate at the EMQX MQTT broker.
 
-The necessary things to do are:
+## PostgreSQL: EMQX User Configuration
 
-1. Create a user for the EMQX broker with read access to the `public.data_source` table.
-   ```postgresql
-   CREATE USER emqx WITH PASSWORD 'REPLACE_ME_WITH_SAFE_PASSWORD';
-   GRANT USAGE ON SCHEMA public TO emqx;
-   GRANT SELECT ON public.data_source TO emqx;
-   GRANT CONNECT ON DATABASE aiida TO emqx;
-   ```
-2. Set the environment variables in the .env for the emqx username and password
-   ```text
-   EMQX_DATASOURCE_USERNAME=emqx
-   EMQX_DATASOURCE_PASSWORD=REPLACE_ME
-   ```
+The PostgreSQL user `emqx` for the EMQX broker is created on the first startup of the EDDIE database.
+If you would like to change the password for this user, you have to adapt the following value in AIIDA's `.env` file:
+
+```
+EMQX_DATABASE_PASSWORD=REPLACE_ME_WITH_SAFE_PASSWORD
+```
+
+## EMQX: AIIDA User Configuration
+
+The EMQX user `aiida` for AIIDA is created on the first startup of the EMQX MQTT broker.
+If you would like to change the password for this user, you have to adapt the following value in AIIDA's `.env` file:
+
+```
+MQTT_PASSWORD=REPLACE_ME_WITH_SAFE_PASSWORD
+```

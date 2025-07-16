@@ -32,8 +32,7 @@ authentication = [
         "tlsv1.2"
       ]
     }
-    # Replaced with .env file
-    username = REPLACED_WITH_ENV
+    username = emqx
   },
   {
     backend = built_in_database
@@ -43,7 +42,7 @@ authentication = [
     }
     user_id_type = username
 
-    bootstrap_file = "/opt/init_user.json"
+    bootstrap_file = "/opt/emqx/data/init-user.json"
     bootstrap_type = plain
   }
 ]
@@ -86,8 +85,7 @@ authorization {
         ]
       }
       type = postgresql
-      # Replaced with .env file
-      username = REPLACED_WITH_ENV
+      username = emqx
     }
   ]
 }

@@ -71,7 +71,6 @@ class MicroTeleinfoV3AdapterTest {
                 "tcp://localhost:1883",
                 "tcp://localhost:1883",
                 10,
-                "user",
                 "password",
                 ""
         );

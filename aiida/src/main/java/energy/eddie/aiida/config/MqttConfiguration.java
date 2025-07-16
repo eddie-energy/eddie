@@ -9,12 +9,17 @@ public record MqttConfiguration(
         String internalHost,
         String externalHost,
         int bCryptSaltRounds,
-        String username,
         String password,
         String tlsCertificatePath
 ) {
+    private static final String USERNAME = "aiida";
+
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder(bCryptSaltRounds());
+    }
+
+    public String username() {
+        return USERNAME;
     }
 }

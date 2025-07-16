@@ -117,7 +117,6 @@ When using Docker, most of these properties should be configured in the [.env](d
 | KEYCLOAK_CLIENT_SECRET     | The client secret for the Keycloak client                                                                                            |
 | KEYCLOAK_ADMIN_USERNAME    | Username of the Keycloak admin                                                                                                       |
 | KEYCLOAK_ADMIN_PASSWORD    | Password of the Keycloak admin                                                                                                       |
-| MQTT_USERNAME              | Username for MQTT broker                                                                                                             |
 | MQTT_PASSWORD              | Password for MQTT broker                                                                                                             |
 | MQTT_TLS_CERTIFICATE_PATH  | Filepath of TLS certificate for MQTT broker (can be mounted to Docker container)                                                     |
 | MQTT_EXTERNAL_HOST         | Network-accessible host of the MQTT broker                                                                                           |

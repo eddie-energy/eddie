@@ -47,24 +47,35 @@ class OesterreichsEnergieAdapterIntegrationTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("9211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final String USERNAME = "testUser";
+    private static final String USERNAME = "aiida";
     private static final String PASSWORD = "testPassword";
-    private MqttConfiguration mqttConfiguration;
+
+    private static final String EMQX_IMAGE = "emqx/emqx:5.8.6";
+    private static final String EMQX_BASE_CONFIG_FILE = "emqx/base.hocon";
+    private static final String EMQX_INIT_USER_FILE = "emqx/init-user.json";
+    private static final String EMQX_BASE_CONFIG_CONTAINER_PATH = "/opt/emqx/etc/" + EMQX_BASE_CONFIG_FILE.split("/")[1];
+    private static final String EMQX_INIT_USER_CONTAINER_PATH = "/opt/emqx/data/" + EMQX_INIT_USER_FILE.split("/")[1];
+
+    private static final String TOXIPROXY_IMAGE = "ghcr.io/shopify/toxiproxy:2.5.0";
 
     public static Network network = Network.newNetwork();
     @Container
     // lifecycle is handled by @Testcontainers
     @SuppressWarnings("resource")
-    public static GenericContainer<?> mqtt = new GenericContainer<>(DockerImageName.parse("emqx/nanomq:0.20.0"))
+    public static GenericContainer<?> mqtt = new GenericContainer<>(DockerImageName.parse(EMQX_IMAGE))
             .withExposedPorts(1883)
             .withNetwork(network)
-            .withCopyFileToContainer(MountableFile.forClasspathResource("nanomq/nanomq_pwd.conf"),
-                                     "/etc/nanomq_pwd.conf")
-            .withCopyFileToContainer(MountableFile.forClasspathResource("nanomq/nanomq.conf"), "/etc/nanomq.conf")
+            .withCopyFileToContainer(
+                    MountableFile.forClasspathResource(EMQX_BASE_CONFIG_FILE),
+                    EMQX_BASE_CONFIG_CONTAINER_PATH)
+            .withCopyFileToContainer(
+                    MountableFile.forClasspathResource(EMQX_INIT_USER_FILE),
+                    EMQX_INIT_USER_CONTAINER_PATH)
             .withNetworkAliases("mqtt");
     @Container
-    public static ToxiproxyContainer toxiproxy = new ToxiproxyContainer("ghcr.io/shopify/toxiproxy:2.5.0")
+    public static ToxiproxyContainer toxiproxy = new ToxiproxyContainer(TOXIPROXY_IMAGE)
             .withNetwork(network);
+    private MqttConfiguration mqttConfiguration;
     private ObjectMapper mapper;
     private Proxy proxy;
     private OesterreichsEnergieDataSource dataSource;
@@ -80,7 +91,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
         var ipAddressViaToxiproxy = toxiproxy.getHost();
         var portViaToxiproxy = toxiproxy.getMappedPort(8666);
         var serverURI = "tcp://" + ipAddressViaToxiproxy + ":" + portViaToxiproxy;
-        mqttConfiguration = new MqttConfiguration(serverURI, serverURI, 10, USERNAME, PASSWORD, "");
+        mqttConfiguration = new MqttConfiguration(serverURI, serverURI, 10, PASSWORD, "");
 
         dataSource = new OesterreichsEnergieDataSource(
                 new DataSourceDto(DATA_SOURCE_ID,
@@ -126,33 +137,6 @@ class OesterreichsEnergieAdapterIntegrationTest {
                     .verify(Duration.ofSeconds(33));    // internal timeout for .close is 30 seconds
     }
 
-    /**
-     * Blockingly publishes the msg <b>directly</b> to the server, i.e. without the proxy.
-     */
-    @SuppressWarnings("FutureReturnValueIgnored")
-    private void publishSampleMqttMessage(String topic, String msg) {
-        var directServerURI = "tcp://" + mqtt.getHost() + ":" + mqtt.getMappedPort(1883);
-
-        try (var executor = Executors.newSingleThreadExecutor()) {
-            executor.submit(() -> {
-                try {
-                    var client = new MqttClient(directServerURI, UUID.randomUUID().toString());
-                    var options = new MqttConnectionOptions();
-                    options.setAutomaticReconnect(false);
-                    options.setCleanStart(true);
-                    options.setUserName(USERNAME);
-                    options.setPassword(PASSWORD.getBytes(StandardCharsets.UTF_8));
-                    client.connect(options);
-                    client.publish(topic, msg.getBytes(StandardCharsets.UTF_8), 2, false);
-                    client.disconnect();
-                    client.close();
-                } catch (MqttException ignored) {
-                    // ignored, timeout should cause testcase to fail
-                }
-            });
-        }
-    }
-
     @Test
     // adapter is closed by StepVerifier
     @SuppressWarnings({"resource", "FutureReturnValueIgnored"})
@@ -181,6 +165,33 @@ class OesterreichsEnergieAdapterIntegrationTest {
 
         assertTrue(LOG_CAPTOR.getInfoLogs().stream().anyMatch(s -> s.endsWith("was from automatic reconnect is true")));
         assertThat(LOG_CAPTOR.getWarnLogs()).contains("Disconnected from MQTT broker");
+    }
+
+    /**
+     * Blockingly publishes the msg <b>directly</b> to the server, i.e. without the proxy.
+     */
+    @SuppressWarnings("FutureReturnValueIgnored")
+    private void publishSampleMqttMessage(String topic, String msg) {
+        var directServerURI = "tcp://" + mqtt.getHost() + ":" + mqtt.getMappedPort(1883);
+
+        try (var executor = Executors.newSingleThreadExecutor()) {
+            executor.submit(() -> {
+                try {
+                    var client = new MqttClient(directServerURI, UUID.randomUUID().toString());
+                    var options = new MqttConnectionOptions();
+                    options.setAutomaticReconnect(false);
+                    options.setCleanStart(true);
+                    options.setUserName(USERNAME);
+                    options.setPassword(PASSWORD.getBytes(StandardCharsets.UTF_8));
+                    client.connect(options);
+                    client.publish(topic, msg.getBytes(StandardCharsets.UTF_8), 2, false);
+                    client.disconnect();
+                    client.close();
+                } catch (MqttException ignored) {
+                    // ignored, timeout should cause testcase to fail
+                }
+            });
+        }
     }
 
     private void cutConnection() {
