@@ -6,6 +6,8 @@ services:
       POSTGRES_PASSWORD: "test"
       POSTGRES_USER: "test"
       POSTGRES_DB: "eddie"
+    volumes:
+      - ./postgres/create-emqx-user.sql:/docker-entrypoint-initdb.d/create-emqx-user.sql
     restart: "always"
 
   eddie:
