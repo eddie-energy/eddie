@@ -43,7 +43,5 @@ class CimUnitConverter {
         };
     }
 
-    private record ConversionFactor(UnitOfMeasureTypeList unit, BigDecimal conversionFactor) {
-
-    }
+    private record ConversionFactor(UnitOfMeasureTypeList unit, BigDecimal conversionFactor) {}
 }

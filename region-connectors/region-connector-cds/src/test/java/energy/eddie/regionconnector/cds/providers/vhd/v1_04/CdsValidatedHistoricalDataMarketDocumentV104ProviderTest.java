@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.cds.providers.vhd;
+package energy.eddie.regionconnector.cds.providers.vhd.v1_04;
 
 import energy.eddie.regionconnector.cds.openapi.model.*;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
@@ -12,13 +12,13 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
-class CdsValidatedHistoricalDataMarketDocumentProviderTest {
+class CdsValidatedHistoricalDataMarketDocumentV104ProviderTest {
 
     @Test
     void testValidatedHistoricalDataMarketDocument_returnsDocuments() {
         // Given
         var streams = new IdentifiableDataStreams();
-        var provider = new CdsValidatedHistoricalDataMarketDocumentProvider(streams);
+        var provider = new CdsValidatedHistoricalDataMarketDocumentV104Provider(streams);
         var account = new AccountsEndpoint200ResponseAllOfAccountsInner()
                 .customerNumber("customer-number")
                 .cdsAccountId("cds-account-id");
