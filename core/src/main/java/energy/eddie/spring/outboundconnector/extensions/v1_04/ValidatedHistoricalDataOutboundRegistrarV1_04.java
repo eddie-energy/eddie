@@ -5,10 +5,12 @@ import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutb
 import energy.eddie.core.services.v1_04.ValidatedHistoricalDataMarketDocumentService;
 import org.springframework.beans.factory.ObjectProvider;
 
+// Warning because of the V1_04 postfix, but is required to distinguish the different versions of the same registrar.
+@SuppressWarnings("java:S101")
 @OutboundConnectorExtension
-public class ValidatedHistoricalDataOutboundRegistrar {
+public class ValidatedHistoricalDataOutboundRegistrarV1_04 {
 
-    public ValidatedHistoricalDataOutboundRegistrar(
+    public ValidatedHistoricalDataOutboundRegistrarV1_04(
             ObjectProvider<ValidatedHistoricalDataMarketDocumentOutboundConnector> vhdConnector,
             ValidatedHistoricalDataMarketDocumentService cimService
     ) {
