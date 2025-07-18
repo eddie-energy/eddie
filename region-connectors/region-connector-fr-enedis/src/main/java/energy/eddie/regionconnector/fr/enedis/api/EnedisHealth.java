@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.fr.enedis.api;
 
-import energy.eddie.api.v0.HealthState;
+import org.springframework.boot.actuate.health.Health;
 
 import java.util.Map;
 
 public interface EnedisHealth {
-    Map<String, HealthState> health();
+    Map<String, Health> health();
 }

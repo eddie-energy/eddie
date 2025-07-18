@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisHealth;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisMeterReadingApi;
@@ -12,6 +11,7 @@ import energy.eddie.regionconnector.fr.enedis.dto.identity.CustomerIdentity;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.boot.actuate.health.Health;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -45,19 +45,19 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
     private static final String IDENTITY_ENDPOINT = "customers_i/v5/identity";
     private static final String ADDRESS_ENDPOINT = "customers_upa/v5/usage_points/addresses";
     private final EnedisTokenProvider tokenProvider;
-    private final Map<String, HealthState> healthChecks = new HashMap<>();
+    private final Map<String, Health> healthChecks = new HashMap<>();
     private final WebClient webClient;
 
 
     public EnedisApiClient(EnedisTokenProvider tokenProvider, WebClient webClient) {
         this.tokenProvider = tokenProvider;
         this.webClient = webClient;
-        healthChecks.put(AUTHENTICATION_API, HealthState.UP);
-        healthChecks.put(METERING_POINT_API, HealthState.UP);
-        healthChecks.put(CONTRACT_API, HealthState.UP);
-        healthChecks.put(CONTACT_API, HealthState.UP);
-        healthChecks.put(IDENTITY_API, HealthState.UP);
-        healthChecks.put(ADDRESS_API, HealthState.UP);
+        healthChecks.put(AUTHENTICATION_API, Health.unknown().build());
+        healthChecks.put(METERING_POINT_API, Health.unknown().build());
+        healthChecks.put(CONTRACT_API, Health.unknown().build());
+        healthChecks.put(CONTACT_API, Health.unknown().build());
+        healthChecks.put(IDENTITY_API, Health.unknown().build());
+        healthChecks.put(ADDRESS_API, Health.unknown().build());
     }
 
     @Override
@@ -78,63 +78,6 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
             Granularity granularity
     ) {
         return getMeterReading(usagePointId, start, end, granularity, MeterReadingType.PRODUCTION);
-    }
-
-    private Mono<MeterReading> getMeterReading(
-            String usagePointId,
-            LocalDate start,
-            LocalDate end,
-            Granularity granularity,
-            MeterReadingType type
-    ) {
-        return getFromUri(
-                uriBuilder -> uriBuilder
-                        .path(granularityToPath(granularity, type))
-                        .queryParam(USAGE_POINT_ID_PARAM, usagePointId)
-                        .queryParam("start", start.format(DateTimeFormatter.ISO_DATE))
-                        .queryParam("end", end.format(DateTimeFormatter.ISO_DATE))
-                        .build(),
-                METERING_POINT_API,
-                MeterReading.class
-        );
-    }
-
-    private <T> Mono<T> getFromUri(
-            Function<UriBuilder, URI> uriFunction, String healthCheckKey, Class<T> responseType
-    ) {
-        return token()
-                .flatMap(token -> webClient
-                        .get()
-                        .uri(uriFunction)
-                        .headers(headers -> headers.setBearerAuth(token))
-                        .headers(headers -> headers.setAccept(List.of(MediaType.APPLICATION_JSON)))
-                        .retrieve()
-                        .bodyToMono(responseType)
-                        .doOnSuccess(o -> healthChecks.put(healthCheckKey, HealthState.UP))
-                        .doOnError(throwable -> healthChecks.put(healthCheckKey, HealthState.DOWN))
-                );
-    }
-
-    private String granularityToPath(Granularity granularity, MeterReadingType type) {
-        return switch (type) {
-            case CONSUMPTION -> switch (granularity) {
-                case PT30M -> METERING_DATA_CLC_V_5_CONSUMPTION_LOAD_CURVE;
-                case P1D -> METERING_DATA_DC_V_5_DAILY_CONSUMPTION;
-                default -> throw new IllegalArgumentException("Unsupported granularity: " + granularity);
-            };
-            case PRODUCTION -> switch (granularity) {
-                case PT30M -> METERING_DATA_PLC_V_5_PRODUCTION_LOAD_CURVE;
-                case P1D -> METERING_DATA_DP_V_5_DAILY_PRODUCTION;
-                default -> throw new IllegalArgumentException("Unsupported granularity: " + granularity);
-            };
-        };
-    }
-
-    private @NotNull Mono<String> token() {
-        return tokenProvider
-                .getToken()
-                .doOnSuccess(token -> healthChecks.put(AUTHENTICATION_API, HealthState.UP))
-                .doOnError(throwable -> healthChecks.put(AUTHENTICATION_API, HealthState.DOWN));
     }
 
     @Override
@@ -174,7 +117,64 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
     }
 
     @Override
-    public Map<String, HealthState> health() {
+    public Map<String, Health> health() {
         return healthChecks;
+    }
+
+    private Mono<MeterReading> getMeterReading(
+            String usagePointId,
+            LocalDate start,
+            LocalDate end,
+            Granularity granularity,
+            MeterReadingType type
+    ) {
+        return getFromUri(
+                uriBuilder -> uriBuilder
+                        .path(granularityToPath(granularity, type))
+                        .queryParam(USAGE_POINT_ID_PARAM, usagePointId)
+                        .queryParam("start", start.format(DateTimeFormatter.ISO_DATE))
+                        .queryParam("end", end.format(DateTimeFormatter.ISO_DATE))
+                        .build(),
+                METERING_POINT_API,
+                MeterReading.class
+        );
+    }
+
+    private <T> Mono<T> getFromUri(
+            Function<UriBuilder, URI> uriFunction, String healthCheckKey, Class<T> responseType
+    ) {
+        return token()
+                .flatMap(token -> webClient
+                        .get()
+                        .uri(uriFunction)
+                        .headers(headers -> headers.setBearerAuth(token))
+                        .headers(headers -> headers.setAccept(List.of(MediaType.APPLICATION_JSON)))
+                        .retrieve()
+                        .bodyToMono(responseType)
+                        .doOnSuccess(o -> healthChecks.put(healthCheckKey, Health.up().build()))
+                        .doOnError(throwable -> healthChecks.put(healthCheckKey, Health.down().build()))
+                );
+    }
+
+    private String granularityToPath(Granularity granularity, MeterReadingType type) {
+        return switch (type) {
+            case CONSUMPTION -> switch (granularity) {
+                case PT30M -> METERING_DATA_CLC_V_5_CONSUMPTION_LOAD_CURVE;
+                case P1D -> METERING_DATA_DC_V_5_DAILY_CONSUMPTION;
+                default -> throw new IllegalArgumentException("Unsupported granularity: " + granularity);
+            };
+            case PRODUCTION -> switch (granularity) {
+                case PT30M -> METERING_DATA_PLC_V_5_PRODUCTION_LOAD_CURVE;
+                case P1D -> METERING_DATA_DP_V_5_DAILY_PRODUCTION;
+                default -> throw new IllegalArgumentException("Unsupported granularity: " + granularity);
+            };
+        };
+    }
+
+    private @NotNull Mono<String> token() {
+        return tokenProvider
+                .getToken()
+                .doOnSuccess(token -> healthChecks.put(AUTHENTICATION_API, Health.up().build()))
+                .doOnError(throwable -> healthChecks.put(AUTHENTICATION_API, Health.down().build()));
     }
 }

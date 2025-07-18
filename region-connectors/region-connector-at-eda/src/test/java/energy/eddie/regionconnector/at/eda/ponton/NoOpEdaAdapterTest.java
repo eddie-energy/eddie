@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("ReactiveStreamsUnusedPublisher")
 class NoOpEdaAdapterTest {
@@ -54,11 +53,6 @@ class NoOpEdaAdapterTest {
     @Test
     void start() {
         assertDoesNotThrow(noOpEdaAdapter::start);
-    }
-
-    @Test
-    void health() {
-        assertTrue(noOpEdaAdapter.health().isEmpty());
     }
 
     @Test

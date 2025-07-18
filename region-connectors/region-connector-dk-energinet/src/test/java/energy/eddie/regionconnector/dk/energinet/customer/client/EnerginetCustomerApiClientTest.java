@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.customer.api.IsAliveApi;
 import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
@@ -27,7 +26,6 @@ import reactor.test.StepVerifier;
 import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -71,48 +69,6 @@ class EnerginetCustomerApiClientTest {
         return Stream.of(
                 Arguments.of(true),
                 Arguments.of(false)
-        );
-    }
-
-    @SuppressWarnings("DataFlowIssue")
-    @Test
-    void health_returnHealthUpState() {
-        // Given
-        when(config.customerBasePath()).thenReturn("path");
-
-        var client = new EnerginetCustomerApiClient(config, WebClient.create());
-        var spy = spy(client);
-        doReturn(Mono.just(true)).when(spy).isAlive();
-
-        // When
-        Map<String, HealthState> actualHealth = spy.health().block();
-
-        // Then
-        assertAll(
-                () -> assertNotNull(actualHealth),
-                () -> assertTrue(actualHealth.containsKey("isAliveApi")),
-                () -> assertEquals(HealthState.UP, actualHealth.get("isAliveApi"))
-        );
-    }
-
-    @SuppressWarnings("DataFlowIssue")
-    @Test
-    void health_returnHealthDownState() {
-        // Given
-        when(config.customerBasePath()).thenReturn("path");
-
-        var client = new EnerginetCustomerApiClient(config, WebClient.create());
-        var spy = spy(client);
-        doReturn(Mono.just(false)).when(spy).isAlive();
-
-        // When
-        Map<String, HealthState> actualHealth = spy.health().block();
-
-        // Then
-        assertAll(
-                () -> assertNotNull(actualHealth),
-                () -> assertTrue(actualHealth.containsKey("isAliveApi")),
-                () -> assertEquals(HealthState.DOWN, actualHealth.get("isAliveApi"))
         );
     }
 
