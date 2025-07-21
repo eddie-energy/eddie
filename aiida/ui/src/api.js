@@ -1,68 +1,130 @@
 import { keycloak } from '@/keycloak.js'
+import { notify } from '@/util/toast.js'
 
 export const BASE_URL = THYMELEAF_AIIDA_PUBLIC_URL ?? import.meta.env.VITE_AIIDA_PUBLIC_URL
 
+const FALLBACK_ERROR_MESSAGES = {
+  400: 'This action was declined as invalid. Please check your input.',
+  401: 'Authorization failed. Please log in again.',
+  403: 'Access was denied. The action might not be available anymore. Please try and reload this page.',
+  404: 'The target resource was not found. It might have been removed. Please try and reload this page.',
+  500: 'Something went wrong. Please try again.',
+}
+
 /**
- * Wrapper for {@link window.fetch} preconfigured with base url, content-type and authorization.
+ * Wrapper for {@link window.fetch} preconfigured with base url, content-type, authorization, and error response handling.
  *
  * @param path {string}
  * @param init {RequestInit?}
- * @returns {Promise<Response>}
+ * @returns {Promise<any>}
+ * @throws {{message: string, cause: Response}} Error message and response as cause for HTTP status codes outside the 2xx range.
  */
-function fetch(path, init) {
-  return keycloak.updateToken(5).then(() =>
-    window.fetch(BASE_URL + path, {
+async function fetch(path, init) {
+  try {
+    await keycloak.updateToken(5)
+  } catch (error) {
+    notify('Failed to update authentication token. Please reload this page.', 'danger')
+    throw error
+  }
+
+  const response = await window
+    .fetch(BASE_URL + path, {
       headers: {
         Authorization: `Bearer ${keycloak.token}`,
         'Content-Type': 'application/json',
       },
       ...init,
-    }),
-  )
+    })
+    .catch((error) => {
+      notify('Network error. Please check your connection.', 'danger')
+      throw error
+    })
+
+  if (!response.ok) {
+    const message =
+      (await parseErrorResponse(response)) ??
+      FALLBACK_ERROR_MESSAGES[response.status] ??
+      'An unexpected error occurred. Please try again.'
+    notify(message, 'danger')
+    throw new Error(message, {
+      cause: response,
+    })
+  }
+
+  if (response.headers.get('content-type')?.includes('application/json')) {
+    return response.json()
+  }
+
+  return response.text()
 }
 
-function fetchJson(path) {
-  return fetch(path).then((response) => response.json())
+/**
+ * Helper for parsing error messages from response objects.
+ * TODO: Simplify by enforcing a single format for all error messages on the backend.
+ *
+ * @param {Response} response
+ * @returns {Promise<string>}
+ */
+async function parseErrorResponse(response) {
+  // Check if response is JSON
+  if (!response.headers.get('content-type')?.includes('application/json')) {
+    return response.text()
+  }
+
+  const json = await response.json()
+
+  // EDDIE-style error messages
+  if (json.errors && json.errors.length > 0) {
+    return json.errors.map(({ message }) => message).join(' ')
+  }
+
+  // AIIDA-style error messages
+  if (json.message) {
+    return json.message
+  }
+
+  // Fallback for other formats
+  return JSON.stringify(json)
 }
 
 /** @returns {Promise<AiidaPermission[]>} */
 export function getPermissions() {
-  return fetchJson('/permissions')
+  return fetch('/permissions')
 }
 
 /** @returns {Promise<AiidaDataSource[]>} */
 export function getDataSources() {
-  return fetchJson('/datasources')
+  return fetch('/datasources')
 }
 
 /** @returns {Promise<AiidaDataSourceType[]>} */
 export function getDataSourceTypes() {
-  return fetchJson('/datasources/types')
+  return fetch('/datasources/types')
 }
 
 /** @returns {Promise<{assets: string[]}>} */
 export function getAssetTypes() {
-  return fetchJson('/datasources/assets')
+  return fetch('/datasources/assets')
 }
 
 /** @returns {Promise<{id: string, name: string}[]>} */
 export function getModbusVendors() {
-  return fetchJson('/datasources/modbus/vendors')
+  return fetch('/datasources/modbus/vendors')
 }
 
 /** @returns {Promise<{id: string, name: string, vendorId: string}[]>} */
 export function getModbusModels(vendorId) {
-  return fetchJson(`/datasources/modbus/vendors/${vendorId}/models`)
+  return fetch(`/datasources/modbus/vendors/${vendorId}/models`)
 }
 
 /** @returns {Promise<{id: string, name: string, modelId: string}[]>} */
 export function getModbusDevices(modelId) {
-  return fetchJson(`/datasources/modbus/models/${modelId}/devices`)
+  return fetch(`/datasources/modbus/models/${modelId}/devices`)
 }
 
 /** @returns {Promise<AiidaApplicationInformation>} */
 export function getApplicationInformation() {
-  return fetchJson('/application-information')
+  return fetch('/application-information')
 }
 
 /**
@@ -75,42 +137,45 @@ export function addPermission(permission) {
   return fetch('/permissions', {
     method: 'POST',
     body: JSON.stringify(permission),
-  }).then((response) =>
-    response.json().then((json) => {
-      if (!response.ok) {
-        throw new Error(`Failed to add permission: ${json.errors[0].message}`)
-      }
-      return json
-    }),
-  )
+  })
 }
 
-export function rejectPermission(permissionId) {
-  return fetch(`/permissions/${permissionId}`, {
+export async function rejectPermission(permissionId) {
+  const result = await fetch(`/permissions/${permissionId}`, {
     method: 'PATCH',
     body: JSON.stringify({
       operation: 'REJECT',
     }),
   })
+  notify('Permission request rejected.', 'success')
+  return result
 }
 
-export function acceptPermission(permissionId, dataSourceId) {
-  return fetch(`/permissions/${permissionId}`, {
+/**
+ * Accepts an existing permission request and assigns a data source.
+ * @param {string} permissionId Id of the permission to update.
+ * @param {string} dataSourceId Data source to use to provide data for this permission.
+ * @returns {Promise<void>}
+ */
+export async function acceptPermission(permissionId, dataSourceId) {
+  await fetch(`/permissions/${permissionId}`, {
     method: 'PATCH',
     body: JSON.stringify({
       operation: 'ACCEPT',
       dataSourceId,
     }),
   })
+  notify('Permission request accepted.', 'success')
 }
 
-export function revokePermission(permissionId) {
-  return fetch(`/permissions/${permissionId}`, {
+export async function revokePermission(permissionId) {
+  await fetch(`/permissions/${permissionId}`, {
     method: 'PATCH',
     body: JSON.stringify({
       operation: 'REVOKE',
     }),
   })
+  notify('The permission for this service was revoked.', 'success')
 }
 
 /**
@@ -118,11 +183,13 @@ export function revokePermission(permissionId) {
  *
  * @param {Omit<AiidaDataSource, id>} dataSource
  */
-export function addDataSource(dataSource) {
-  return fetch(`/datasources`, {
+export async function addDataSource(dataSource) {
+  const result = await fetch(`/datasources`, {
     method: 'POST',
     body: JSON.stringify(dataSource),
   })
+  notify('Data source created.', 'success')
+  return result
 }
 
 /**
@@ -131,17 +198,19 @@ export function addDataSource(dataSource) {
  * @param {string} dataSourceId
  * @param {Omit<AiidaDataSource, id>} dataSource
  */
-export function saveDataSource(dataSourceId, dataSource) {
-  return fetch(`/datasources/${dataSourceId}`, {
+export async function saveDataSource(dataSourceId, dataSource) {
+  await fetch(`/datasources/${dataSourceId}`, {
     method: 'PATCH',
     body: JSON.stringify(dataSource),
   })
+  notify('Changes to this data source have been saved.', 'success')
 }
 
-export function deleteDataSource(dataSourceId) {
-  return fetch(`/datasources/${dataSourceId}`, {
+export async function deleteDataSource(dataSourceId) {
+  await fetch(`/datasources/${dataSourceId}`, {
     method: 'DELETE',
   })
+  notify('Data source deleted successfully.', 'success')
 }
 
 /**
@@ -153,11 +222,5 @@ export function deleteDataSource(dataSourceId) {
 export function regenerateDataSourceSecrets(dataSourceId) {
   return fetch(`/datasources/${dataSourceId}/regenerate-secrets`, {
     method: 'POST',
-  }).then((response) => {
-    return response.ok
-      ? response.json()
-      : response.text().then((error) => {
-          throw new Error(`Failed to regenerate secrets: ${error}`)
-        })
   })
 }
