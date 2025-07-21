@@ -9,7 +9,7 @@
         "hourlyEnergy": [
           {
             "timestampStart": "2024-12-01T00:00:00Z",
-            "timestampEnd": "2024-12-01T01:00:00Z",
+            "timestampEnd": "2024-12-01T00:15:00Z",
             "measurement": [
               {
                 "unit": "m3",
