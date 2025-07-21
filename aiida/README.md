@@ -26,6 +26,16 @@ AIIDA has to be configured over the [application.properties](src/main/resources/
 - `./gradlew bootRun`
 
 The permissions REST API will be exposed on the [default Spring Boot port (localhost:8080)](http://localhost:8080)
+The web UI is deployed with the Spring application on the same port.
+For local development, the web UI can be run separately from its own folder:
+
+```shell
+cd ui
+pnpm run dev
+```
+
+Instead of the environment variables provided to the Spring application, the local development server will use a separate set of environment variables which is defined in [`ui/.env`](ui/.env).
+The default configuration assumes the Docker Compose setup.
 
 ### Run with Docker
 
@@ -105,7 +115,7 @@ When using Docker, most of these properties should be configured in the [.env](d
 
 | Property                   | Description                                                                                                                          |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| AIIDA_EXTERNAL_HOST        | Network-accessible host of the AIIDA instance                                                                                        |
+| AIIDA_EXTERNAL_HOST        | Network-accessible host of the AIIDA instance (defaults to http://localhost:8080)                                                    |
 | AIIDA_CORS_ALLOWED_ORIGINS | The origins that are allowed to communicate with AIIDA (necessary for deployments with reverse proxies)                              |
 | AIIDA_KEYCLOAK_ACCOUNT_URI | Specifies the URI to which users are redirected for account settings. By default, this points to Keycloak's account management page. |
 | SPRING_DATASOURCE_USERNAME | Username to authenticate to the TimescaleDB                                                                                          |
