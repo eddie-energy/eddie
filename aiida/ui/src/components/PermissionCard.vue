@@ -3,6 +3,7 @@ import STATUS from '@/constants/permission-status.js'
 import { revokePermission } from '@/api.js'
 import PermissionDetails from '@/components/PermissionDetails.vue'
 import { usePermissionDialog } from '@/composables/permission-dialog.js'
+import { fetchPermissions } from '@/stores/permissions.js'
 
 /** @type {{ permission: AiidaPermission }} */
 const { permission } = defineProps(['permission'])
@@ -12,7 +13,7 @@ const { updatePermission } = usePermissionDialog()
 function handleRevoke() {
   confirm(
     'This action will revoke the given permission. The eligible party will no longer be able to receive data for this entry.',
-  ) && revokePermission(permissionId)
+  ) && revokePermission(permissionId).then(() => fetchPermissions())
 }
 
 function handleUpdate() {

@@ -10,11 +10,5 @@ import AiidaCodeInput from '@/components/AiidaCodeInput.vue'
 
   <AiidaCodeInput />
 
-  <Suspense>
-    <PermissionList />
-
-    <template #fallback>
-      <p>Fetching permissions...</p>
-    </template>
-  </Suspense>
+  <PermissionList />
 </template>

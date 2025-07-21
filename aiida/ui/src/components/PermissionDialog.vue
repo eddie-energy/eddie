@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { acceptPermission, getDataSources, rejectPermission } from '@/api.js'
 import PermissionDetails from '@/components/PermissionDetails.vue'
 import { usePermissionDialog } from '@/composables/permission-dialog.js'
+import { fetchPermissions } from '@/stores/permissions.js'
 
 const { permission, open } = usePermissionDialog()
 
@@ -22,11 +23,13 @@ onMounted(() => {
 function confirm() {
   acceptPermission(permission.value.permissionId, selectedDataSource.value)
   open.value = false
+  fetchPermissions()
 }
 
 function reject() {
   rejectPermission(permission.value.permissionId)
   open.value = false
+  fetchPermissions()
 }
 
 function hide(event) {

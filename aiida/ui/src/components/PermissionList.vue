@@ -1,16 +1,11 @@
 <script setup>
-import { getPermissions } from '@/api.js'
 import PermissionCard from '@/components/PermissionCard.vue'
 import STATUS from '@/constants/permission-status.js'
+import { computed, onMounted } from 'vue'
+import { fetchPermissions, permissions } from '@/stores/permissions.js'
 
-const permissions = await getPermissions()
-
-const groups = Object.groupBy(permissions, (permission) => {
-  const status = STATUS[permission.status]
-  if (status.isOpen) return 'open'
-  if (status.isActive) return 'active'
-  if (status.isError) return 'error'
-  return 'complete'
+onMounted(() => {
+  fetchPermissions()
 })
 
 const labels = [
@@ -19,6 +14,16 @@ const labels = [
   { key: 'error', label: 'Failed' },
   { key: 'complete', label: 'Complete' },
 ]
+
+const groups = computed(() => {
+  return Object.groupBy(permissions.value, (permission) => {
+    const status = STATUS[permission.status]
+    if (status.isOpen) return 'open'
+    if (status.isActive) return 'active'
+    if (status.isError) return 'error'
+    return 'complete'
+  })
+})
 </script>
 
 <template>
