@@ -26,7 +26,7 @@ function fetchJson(path) {
   return fetch(path).then((response) => response.json())
 }
 
-/** @returns {Promise<AiidaPermission>} */
+/** @returns {Promise<AiidaPermission[]>} */
 export function getPermissions() {
   return fetchJson('/permissions')
 }
