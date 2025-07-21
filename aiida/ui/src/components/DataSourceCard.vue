@@ -1,19 +1,15 @@
 <script setup>
-import { BASE_URL, deleteDataSource } from '@/api.js'
+import { BASE_URL } from '@/api.js'
 
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
 /** @type {{ dataSource: AiidaDataSource }} */
 const { dataSource } = defineProps(['dataSource'])
 
-const emit = defineEmits(['edit', 'reset'])
+const emit = defineEmits(['edit', 'delete', 'reset'])
 
 const { countryCode, asset, dataSourceType, enabled, id, mqttSettings, name, simulationPeriod } =
   dataSource
-
-function handleDelete() {
-  confirm('This action will remove the given data source.') && deleteDataSource(id)
-}
 </script>
 
 <template>
@@ -71,7 +67,7 @@ function handleDelete() {
 
     <br />
     <sl-button @click="emit('edit')">Edit</sl-button>
-    <sl-button @click="handleDelete">Delete</sl-button>
+    <sl-button @click="emit('delete')">Delete</sl-button>
   </sl-details>
 </template>
 

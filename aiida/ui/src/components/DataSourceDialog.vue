@@ -8,7 +8,8 @@ import {
   getModbusVendors,
   saveDataSource,
 } from '@/api.js'
-import { onMounted, ref, useTemplateRef, watch } from 'vue'
+import { onMounted, ref, toRaw, useTemplateRef, watch } from 'vue'
+import { fetchDataSources } from '@/stores/dataSources.js'
 
 const SUPPORTED_COUNTRY_CODES = ['AT', 'FR', 'NL']
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
@@ -26,7 +27,7 @@ const emit = defineEmits(['hide'])
 const dataSource = ref({ enabled: false })
 
 watch(props, async () => {
-  dataSource.value = props.dataSource ?? { enabled: true }
+  dataSource.value = props.dataSource ? { ...toRaw(props.dataSource) } : { enabled: true }
 
   if (dataSource.value.modbusSettings) {
     const { modbusVendor, modbusModel } = dataSource.value.modbusSettings
@@ -77,12 +78,18 @@ function hide(event) {
   }
 }
 
-function save() {
-  if (props.dataSource) {
-    return saveDataSource(props.dataSource.id, dataSource.value)
-  }
+function save(event) {
+  event.preventDefault()
 
-  return addDataSource(dataSource.value)
+  const promise = props.dataSource
+    ? saveDataSource(props.dataSource.id, dataSource.value)
+    : addDataSource(dataSource.value)
+
+  promise.then(() => {
+    fetchDataSources()
+  })
+
+  emit('hide')
 }
 
 onMounted(() => {

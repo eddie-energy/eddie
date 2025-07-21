@@ -26,11 +26,5 @@ function edit(target) {
 
   <sl-button variant="primary" @click="add">Add Data Source</sl-button>
 
-  <Suspense>
-    <DataSourceList @edit="edit" />
-
-    <template #fallback>
-      <p>Fetching data sources...</p>
-    </template>
-  </Suspense>
+  <DataSourceList @edit="edit" />
 </template>
