@@ -49,13 +49,14 @@ class IntermediateValidatedHistoricalDocument {
         OffsetDateTime fetchTime = meteringData.getFetchTime();
         EnergyType type = dataNeed.energyType();
         return switch (type) {
-            case ELECTRICITY -> getElectricityVHD(meteringData.getElectricityMeters(), fetchTime);
-            case NATURAL_GAS -> getGasVHD(meteringData.getGasMeters(), fetchTime);
+            case ELECTRICITY -> getElectricityVHD(meteringData.getElectricityMeters(), fetchTime, CommodityKind.ELECTRICITYPRIMARYMETERED);
+            case NATURAL_GAS -> getGasVHD(meteringData.getGasMeters(), fetchTime, CommodityKind.NATURALGAS);
             default -> throw new IllegalStateException("Unexpected energy type: " + type);
         };
     }
 
-    private List<ValidatedHistoricalDataEnvelope> getGasVHD(List<GasMeterResponseModel> gasMeteringData, OffsetDateTime fetchTime) {
+    private List<ValidatedHistoricalDataEnvelope> getGasVHD(List<GasMeterResponseModel> gasMeteringData,
+            OffsetDateTime fetchTime, CommodityKind type) {
 
         if(gasMeteringData == null) {
             return List.of();
@@ -71,14 +72,15 @@ class IntermediateValidatedHistoricalDocument {
             String seqNumber = String.valueOf(meterResponse.getSeqNumber());
             Granularity granularity = fluviusPermissionRequest.granularity();
             ESMPDateTimeIntervalComplexType periodIntervalTime = getPeriodTimeInterval(granularity, meterResponse);
-            ValidatedHistoricalDataMarketDocumentComplexType vhd = createVHD(fetchTime, seqNumber , periodIntervalTime,
-                    getTimeSeries(granularity, meterResponse, resolution, flowDirection));
+            ValidatedHistoricalDataMarketDocumentComplexType vhd = createVHD(fetchTime, seqNumber, periodIntervalTime,
+                    getTimeSeries(granularity, type, meterResponse, resolution, flowDirection));
             vhds.add(new VhdEnvelope(vhd, identifiableMeteredData.permissionRequest()).wrap());
         }
         return vhds;
     }
 
-    private List<ValidatedHistoricalDataEnvelope> getElectricityVHD(List<ElectricityMeterResponseModel> electricityMeteringData, OffsetDateTime fetchTime) {
+    private List<ValidatedHistoricalDataEnvelope> getElectricityVHD(List<ElectricityMeterResponseModel> electricityMeteringData,
+            OffsetDateTime fetchTime, CommodityKind type) {
 
         if(electricityMeteringData == null) {
             return List.of();
@@ -99,8 +101,8 @@ class IntermediateValidatedHistoricalDocument {
             if (flowDirection != null && flowDirection.equals(DirectionTypeList.UP)) {
                 offtake = false;
             }
-            ValidatedHistoricalDataMarketDocumentComplexType vhd = createVHD(fetchTime, seqNumber , periodIntervalTime,
-                    getTimeSeries(granularity, meterResponse, resolution, flowDirection, offtake));
+            ValidatedHistoricalDataMarketDocumentComplexType vhd = createVHD(fetchTime, seqNumber, periodIntervalTime,
+                    getTimeSeries(granularity, type, meterResponse, resolution, flowDirection, offtake));
             vhds.add(new VhdEnvelope(vhd, identifiableMeteredData.permissionRequest()).wrap());
         }
         return vhds;
@@ -135,7 +137,7 @@ class IntermediateValidatedHistoricalDocument {
     }
 
     private List<TimeSeriesComplexType> createTimeSeriesList(Map<String, SeriesPeriodComplexType> unitSeriesPeriodMap,
-            DirectionTypeList flowDirection, String meterId) {
+            CommodityKind type, DirectionTypeList flowDirection, String meterId) {
         List<TimeSeriesComplexType> timeSeriesList = new ArrayList<>();
         for(Map.Entry<String, SeriesPeriodComplexType> entry : unitSeriesPeriodMap.entrySet()) {
             timeSeriesList.add(
@@ -143,7 +145,7 @@ class IntermediateValidatedHistoricalDocument {
                             .withMRID(UUID.randomUUID().toString())
                             .withBusinessType(getBusinessType(flowDirection))
                             .withProduct(EnergyProductTypeList.ACTIVE_ENERGY)
-                            .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED)
+                            .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(type)
                             .withFlowDirectionDirection(flowDirection)
                             .withEnergyMeasurementUnitName(UnitOfMeasureTypeList.fromValue(getUnitCIM(entry.getKey())))
                             .withMarketEvaluationPointMRID(
@@ -176,7 +178,7 @@ class IntermediateValidatedHistoricalDocument {
         };
     }
 
-    private List<TimeSeriesComplexType> getTimeSeries(Granularity granularity,
+    private List<TimeSeriesComplexType> getTimeSeries(Granularity granularity, CommodityKind type,
             ElectricityMeterResponseModel electricityMeterResponse, String resolution, DirectionTypeList flowDirection, boolean offtake) {
 
         if (granularity.equals(Granularity.P1D)) {
@@ -187,7 +189,7 @@ class IntermediateValidatedHistoricalDocument {
                     Map<String, List<PointComplexType>> unitPointsMap = getPoints(dailyEnergyItem, offtake);
                     Map<String, SeriesPeriodComplexType> unitSeriesPeriodMap = getSeriesPeriods(resolution,
                             dailyEnergyItem.getTimestampStart(), dailyEnergyItem.getTimestampEnd(), unitPointsMap);
-                    timeSeriesList.addAll(createTimeSeriesList(unitSeriesPeriodMap, flowDirection, electricityMeterResponse.getMeterID()));
+                    timeSeriesList.addAll(createTimeSeriesList(unitSeriesPeriodMap, type, flowDirection, electricityMeterResponse.getMeterID()));
                 }
                 return timeSeriesList;
             }
@@ -201,7 +203,7 @@ class IntermediateValidatedHistoricalDocument {
                     Map<String, List<PointComplexType>> unitPointsMap = getPoints(quarterHourlyEnergyItem, offtake);
                     Map<String, SeriesPeriodComplexType> unitSeriesPeriodMap = getSeriesPeriods(resolution,
                             quarterHourlyEnergyItem.getTimestampStart(), quarterHourlyEnergyItem.getTimestampEnd(), unitPointsMap);
-                    timeSeriesList.addAll(createTimeSeriesList(unitSeriesPeriodMap, flowDirection, electricityMeterResponse.getMeterID()));
+                    timeSeriesList.addAll(createTimeSeriesList(unitSeriesPeriodMap, type, flowDirection, electricityMeterResponse.getMeterID()));
                 }
                 return timeSeriesList;
             }
@@ -210,7 +212,7 @@ class IntermediateValidatedHistoricalDocument {
         return List.of();
     }
 
-    private List<TimeSeriesComplexType> getTimeSeries(Granularity granularity,
+    private List<TimeSeriesComplexType> getTimeSeries(Granularity granularity, CommodityKind type,
             GasMeterResponseModel gasMeterResponse, String resolution, DirectionTypeList flowDirection) {
 
         if (granularity.equals(Granularity.P1D)) {
@@ -221,21 +223,21 @@ class IntermediateValidatedHistoricalDocument {
                     Map<String, List<PointComplexType>> unitPointsMap = getPoints(dailyEnergyItem);
                     Map<String, SeriesPeriodComplexType> unitSeriesPeriodMap = getSeriesPeriods(resolution,
                             dailyEnergyItem.getTimestampStart(), dailyEnergyItem.getTimestampEnd(), unitPointsMap);
-                    timeSeriesList.addAll(createTimeSeriesList(unitSeriesPeriodMap, flowDirection, gasMeterResponse.getMeterID()));
+                    timeSeriesList.addAll(createTimeSeriesList(unitSeriesPeriodMap, type, flowDirection, gasMeterResponse.getMeterID()));
                 }
                 return timeSeriesList;
             }
         }
 
-        if(granularity.equals(Granularity.PT1H)) {
-            List<GHourlyEnergyItemResponseModel> hourlyEnergyList = gasMeterResponse.getHourlyEnergy();
-            if (hourlyEnergyList != null) {
+        if(granularity.equals(Granularity.PT15M)) {
+            List<GHourlyEnergyItemResponseModel> quarterHourlyEnergyList = gasMeterResponse.getHourlyEnergy();
+            if (quarterHourlyEnergyList != null) {
                 List<TimeSeriesComplexType> timeSeriesList = new ArrayList<>();
-                for (GHourlyEnergyItemResponseModel hourlyEnergyItem : hourlyEnergyList) {
-                    Map<String, List<PointComplexType>> unitPointsMap = getPoints(hourlyEnergyItem);
+                for (GHourlyEnergyItemResponseModel quarterHourlyEnergyItem : quarterHourlyEnergyList) {
+                    Map<String, List<PointComplexType>> unitPointsMap = getPoints(quarterHourlyEnergyItem);
                     Map<String, SeriesPeriodComplexType> unitSeriesPeriodMap = getSeriesPeriods(resolution,
-                            hourlyEnergyItem.getTimestampStart(), hourlyEnergyItem.getTimestampEnd(), unitPointsMap);
-                    timeSeriesList.addAll(createTimeSeriesList(unitSeriesPeriodMap, flowDirection, gasMeterResponse.getMeterID()));
+                            quarterHourlyEnergyItem.getTimestampStart(), quarterHourlyEnergyItem.getTimestampEnd(), unitPointsMap);
+                    timeSeriesList.addAll(createTimeSeriesList(unitSeriesPeriodMap, type, flowDirection, gasMeterResponse.getMeterID()));
                 }
                 return timeSeriesList;
             }
@@ -405,7 +407,7 @@ class IntermediateValidatedHistoricalDocument {
         }
 
         return dayValidationState != null && nightValidationState != null &&
-               (dayValidationState.equals(EST) || nightValidationState.equals(EST))? EST :  READ;
+               (dayValidationState.equals(EST) || nightValidationState.equals(EST))? EST : READ;
     }
 
     private SeriesPeriodComplexType createSeriesPeriod(String resolution, OffsetDateTime timestampStart,
@@ -641,7 +643,7 @@ class IntermediateValidatedHistoricalDocument {
             }
         }
 
-        if(granularity.equals(Granularity.PT1H)) {
+        if(granularity.equals(Granularity.PT15M)) {
             List<GHourlyEnergyItemResponseModel> responses = gasMeterResponse.getHourlyEnergy();
             if (responses == null) {
                 return periodTimeInterval;
