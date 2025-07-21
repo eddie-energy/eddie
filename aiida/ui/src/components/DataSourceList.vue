@@ -27,10 +27,6 @@ async function hideResetDialog() {
 onMounted(() => {
   fetchDataSources()
 })
-
-watch(dataSources, () => {
-  console.log('watch', dataSources)
-})
 </script>
 
 <template>
