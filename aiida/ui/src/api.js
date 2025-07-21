@@ -1,7 +1,6 @@
 import { keycloak } from '@/keycloak.js'
 
-export const BASE_URL =
-  THYMELEAF_AIIDA_PUBLIC_URL ?? import.meta.env.VITE_AIIDA_PUBLIC_URL ?? 'http://localhost:8080'
+export const BASE_URL = THYMELEAF_AIIDA_PUBLIC_URL ?? import.meta.env.VITE_AIIDA_PUBLIC_URL
 
 /**
  * Wrapper for {@link window.fetch} preconfigured with base url, content-type and authorization.
