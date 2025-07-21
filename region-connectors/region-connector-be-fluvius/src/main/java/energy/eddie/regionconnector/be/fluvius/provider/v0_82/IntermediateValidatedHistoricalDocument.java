@@ -229,17 +229,17 @@ class IntermediateValidatedHistoricalDocument {
             return timeSeriesList;
         }
 
-        if(granularity.equals(Granularity.PT15M)) {
-            List<GHourlyEnergyItemResponseModel> quarterHourlyEnergyList = gasMeterResponse.getHourlyEnergy();
-            if (quarterHourlyEnergyList == null) {
+        if(granularity.equals(Granularity.PT1H)) {
+            List<GHourlyEnergyItemResponseModel> hourlyEnergyList = gasMeterResponse.getHourlyEnergy();
+            if (hourlyEnergyList == null) {
                 return List.of();
             }
 
             List<TimeSeriesComplexType> timeSeriesList = new ArrayList<>();
-            for (GHourlyEnergyItemResponseModel quarterHourlyEnergyItem : quarterHourlyEnergyList) {
-                Map<String, List<PointComplexType>> unitPointsMap = getPoints(quarterHourlyEnergyItem);
+            for (GHourlyEnergyItemResponseModel hourlyEnergyItem : hourlyEnergyList) {
+                Map<String, List<PointComplexType>> unitPointsMap = getPoints(hourlyEnergyItem);
                 Map<String, SeriesPeriodComplexType> unitSeriesPeriodMap = getSeriesPeriods(granularity,
-                        quarterHourlyEnergyItem.getTimestampStart(), quarterHourlyEnergyItem.getTimestampEnd(), unitPointsMap);
+                        hourlyEnergyItem.getTimestampStart(), hourlyEnergyItem.getTimestampEnd(), unitPointsMap);
                 timeSeriesList.addAll(createTimeSeriesList(unitSeriesPeriodMap, CommodityKind.NATURALGAS,
                         DirectionTypeList.DOWN, gasMeterResponse.getMeterID()));
             }
@@ -488,7 +488,7 @@ class IntermediateValidatedHistoricalDocument {
 
         if(granularity.equals(Granularity.P1D)) {
             List<EDailyEnergyItemResponseModel> responses = electricityMeterResponse.getDailyEnergy();
-            if (responses == null) {
+            if (responses == null || responses.isEmpty()) {
                 return periodTimeInterval;
             }
 
@@ -507,7 +507,7 @@ class IntermediateValidatedHistoricalDocument {
 
         if(granularity.equals(Granularity.PT15M)) {
             List<EQuarterHourlyEnergyItemResponseModel> responses = electricityMeterResponse.getQuarterHourlyEnergy();
-            if (responses == null) {
+            if (responses == null || responses.isEmpty()) {
                 return periodTimeInterval;
             }
 
@@ -539,7 +539,7 @@ class IntermediateValidatedHistoricalDocument {
 
         if(granularity.equals(Granularity.P1D)) {
             List<GDailyEnergyItemResponseModel> responses = gasMeterResponse.getDailyEnergy();
-            if (responses == null) {
+            if (responses == null || responses.isEmpty()) {
                 return periodTimeInterval;
             }
 
@@ -556,9 +556,9 @@ class IntermediateValidatedHistoricalDocument {
             }
         }
 
-        if(granularity.equals(Granularity.PT15M)) {
+        if(granularity.equals(Granularity.PT1H)) {
             List<GHourlyEnergyItemResponseModel> responses = gasMeterResponse.getHourlyEnergy();
-            if (responses == null) {
+            if (responses == null || responses.isEmpty()) {
                 return periodTimeInterval;
             }
 

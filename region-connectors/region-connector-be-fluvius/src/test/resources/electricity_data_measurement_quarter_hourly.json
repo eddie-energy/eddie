@@ -14,14 +14,20 @@
             "measurement": [
               {
                 "unit": "kWh",
-                "offtakeValue": 0.008,
+                "offtakeValue": 0.009,
                 "offtakeValidationState": "EST",
                 "injectionValue": 0.0,
                 "injectionValidationState": "EST"
-              },
+              }
+            ]
+          },
+          {
+            "timestampStart": "2025-04-17T00:15:00Z",
+            "timestampEnd": "2025-04-17T00:30:00Z",
+            "measurement": [
               {
                 "unit": "kWh",
-                "offtakeValue": 0.009,
+                "offtakeValue": 0.008,
                 "offtakeValidationState": "EST",
                 "injectionValue": 0.0,
                 "injectionValidationState": "EST"
