@@ -10,6 +10,9 @@ import {
 } from '@/api.js'
 import { onMounted, ref, useTemplateRef, watch } from 'vue'
 
+const SUPPORTED_COUNTRY_CODES = ['AT', 'FR', 'NL']
+const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
+
 /** @type {ShallowRef<HTMLFormElement>} */
 const form = useTemplateRef('form')
 
@@ -111,6 +114,18 @@ onMounted(() => {
       <br />
       <br />
       <sl-select
+        name="countryCode"
+        label="Country"
+        required
+        :value="dataSource.countryCode"
+        @sl-input="dataSource.countryCode = $event.target.value"
+      >
+        <sl-option v-for="country in SUPPORTED_COUNTRY_CODES" :value="country">
+          {{ COUNTRY_NAMES.of(country) }}
+        </sl-option>
+      </sl-select>
+      <br />
+      <sl-select
         label="Asset Type"
         required
         :value="dataSource.asset"
@@ -200,11 +215,20 @@ onMounted(() => {
       </template>
     </form>
 
-    <sl-button slot="footer" type="submit" variant="primary" form="data-source-form"
-      >Save
-    </sl-button>
-    <sl-button slot="footer" type="button" variant="neutral" @click="hide">Cancel </sl-button>
+    <footer slot="footer">
+      <sl-button slot="footer" type="submit" variant="primary" form="data-source-form">
+        Save
+      </sl-button>
+      <sl-button slot="footer" type="button" variant="neutral" @click="hide">Cancel</sl-button>
+    </footer>
   </sl-dialog>
 </template>
 
-<style scoped></style>
+<style scoped>
+footer {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: end;
+}
+</style>

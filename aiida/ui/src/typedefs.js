@@ -51,6 +51,7 @@
  * @prop {string} dataSourceType
  * @prop {string} asset
  * @prop {string} name
+ * @prop {string} countryCode
  * @prop {boolean} enabled
  * @prop [number] simulationPeriod
  * @prop [AiidaMqttSettings] mqttSettings

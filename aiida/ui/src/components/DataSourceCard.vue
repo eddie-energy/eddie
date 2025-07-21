@@ -1,12 +1,15 @@
 <script setup>
 import { BASE_URL, deleteDataSource } from '@/api.js'
 
+const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
+
 /** @type {{ dataSource: AiidaDataSource }} */
 const { dataSource } = defineProps(['dataSource'])
 
 const emit = defineEmits(['edit', 'reset'])
 
-const { asset, dataSourceType, enabled, id, mqttSettings, name, simulationPeriod } = dataSource
+const { countryCode, asset, dataSourceType, enabled, id, mqttSettings, name, simulationPeriod } =
+  dataSource
 
 function handleDelete() {
   confirm('This action will remove the given data source.') && deleteDataSource(id)
@@ -24,6 +27,9 @@ function handleDelete() {
     <dl class="details-list">
       <dt>ID:</dt>
       <dd>{{ id }}</dd>
+
+      <dt>Country:</dt>
+      <dd>{{ COUNTRY_NAMES.of(countryCode) }}</dd>
 
       <dt>Asset:</dt>
       <dd>{{ asset }}</dd>
