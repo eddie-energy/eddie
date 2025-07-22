@@ -25,18 +25,26 @@ dependencies {
     implementation(project((":outbound-connectors:outbound-shared")))
 
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.websocket)
     implementation(libs.jakarta.annotation.api)
 
     implementation(libs.reactor.core)
     runtimeOnly(libs.slf4j.simple)
+    runtimeOnly(libs.jaxb.runtime)
 
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.reactor.test)
-    testImplementation(libs.testcontainers.kafka)
     testImplementation(libs.junit.mockito)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.junit)
+    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.flyway.postgresql)
+    testRuntimeOnly(libs.postgresql)
 }
 
 tasks.test {

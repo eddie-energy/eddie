@@ -1,0 +1,11 @@
+### GET connection status messages as json
+GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
+Accept: application/json
+
+### GET connection status messages as xml
+GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
+Accept: application/xml
+
+### Get connection status messages as event stream
+GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
+Accept: text/event-stream
