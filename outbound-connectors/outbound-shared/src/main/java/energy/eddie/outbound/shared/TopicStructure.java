@@ -14,6 +14,9 @@ public class TopicStructure {
     public static final String CIM_1_04_VALUE = "cim_1_04";
     public static final String CIM_0_91_08_VALUE = "cim_0_91_08";
     public static final String CIM_0_82_VALUE = "cim_0_82";
+    public static final String AGNOSTIC_VALUE = "agnostic";
+
+    public static final String CONNECTION_STATUS_MESSAGE_VALUE = "connection-status-message";
 
     private TopicStructure() {
         // No-Op
@@ -23,9 +26,9 @@ public class TopicStructure {
      * Creates a standard name for topics using a dot(".") as delimiter.
      *
      * @param direction Declares who the recipient of the document is.
-     * @param eddieId The ID of the eddie instance for the respective outbound connector.
-     * @param model The data model to which the document type belongs to.
-     * @param type The document type provided by the topic.
+     * @param eddieId   The ID of the eddie instance for the respective outbound connector.
+     * @param model     The data model to which the document type belongs to.
+     * @param type      The document type provided by the topic.
      * @return a string with the topic name
      */
     public static String toTopic(Direction direction, String eddieId, DataModels model, DocumentTypes type) {
@@ -69,7 +72,7 @@ public class TopicStructure {
         /**
          * Eddie's internal model.
          */
-        AGNOSTIC("agnostic", null);
+        AGNOSTIC(AGNOSTIC_VALUE, null);
 
         private final String value;
         @SuppressWarnings("FieldCanBeLocal")
@@ -108,7 +111,7 @@ public class TopicStructure {
         REDISTRIBUTION_TRANSACTION_RD(TopicStructure.REDISTRIBUTION_TRANSACTION_RD_VALUE),
         // AGNOSTIC
         RAW_DATA_MESSAGE("raw-data-message"),
-        CONNECTION_STATUS_MESSAGE("connection-status-message"),
+        CONNECTION_STATUS_MESSAGE(CONNECTION_STATUS_MESSAGE_VALUE),
         ;
         private final String value;
 
