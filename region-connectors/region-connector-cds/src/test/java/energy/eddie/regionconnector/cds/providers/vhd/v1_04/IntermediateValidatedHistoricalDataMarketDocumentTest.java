@@ -69,6 +69,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 	<ns5:messageDocumentHeader.metaInformation.region.country>us</ns5:messageDocumentHeader.metaInformation.region.country>
                 	<ns5:MarketDocument>
                 		<ns5:mRID>any</ns5:mRID>
+                		<ns5:revisionNumber>104</ns5:revisionNumber>
                 		<ns5:createdDateTime>2024-12-31T23:00:00Z</ns5:createdDateTime>
                 		<ns5:type>A45</ns5:type>
                 		<ns5:sender_MarketParticipant.mRID codingScheme="NUS">CDSC</ns5:sender_MarketParticipant.mRID>
@@ -94,6 +95,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 					<ns5:end>2025-01-01T00:00Z</ns5:end>
                 				</ns5:timeInterval>
                 				<ns5:Point>
+                				    <!-- TODO: Fix position integer in schema -->
                 					<ns5:position>1735689600</ns5:position>
                 					<ns5:energy_Quantity.quantity>%s</ns5:energy_Quantity.quantity>
                 					<ns5:energy_Quantity.quality>A04</ns5:energy_Quantity.quality>

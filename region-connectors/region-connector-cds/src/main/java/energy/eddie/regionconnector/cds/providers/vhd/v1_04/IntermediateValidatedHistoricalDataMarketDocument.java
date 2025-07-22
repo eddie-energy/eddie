@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.cds.providers.vhd.v1_04;
 
+import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.vhd.DirectionTypeList;
 import energy.eddie.cim.v1_04.*;
 import energy.eddie.cim.v1_04.vhd.*;
@@ -176,6 +177,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         var codingScheme = getCodingScheme();
         return new VHDMarketDocument()
                 .withMRID(UUID.randomUUID().toString())
+                .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
                 .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
                 .withCreatedDateTime(created)
                 .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value())
