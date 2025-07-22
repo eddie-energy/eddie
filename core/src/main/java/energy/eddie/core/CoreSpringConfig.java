@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springdoc.core.configuration.SpringDocConfiguration;
 import org.springdoc.core.properties.SpringDocConfigProperties;
-import org.springdoc.core.properties.SwaggerUiConfigParameters;
 import org.springdoc.core.properties.SwaggerUiConfigProperties;
 import org.springdoc.core.properties.SwaggerUiOAuthProperties;
 import org.springdoc.webmvc.core.configuration.MultipleOpenApiSupportConfiguration;
@@ -47,7 +46,6 @@ import static energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor.e
                 MultipleOpenApiSupportConfiguration.class,
                 SwaggerConfig.class,
                 SwaggerUiConfigProperties.class,
-                SwaggerUiConfigParameters.class,
                 SwaggerUiOAuthProperties.class,
                 SpringDocConfiguration.class,
                 SpringDocConfigProperties.class,
