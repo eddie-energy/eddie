@@ -1,7 +1,7 @@
 name: eddie-e2e-test
 services:
   db:
-    image: postgres
+    image: postgres:17.5-bookworm
     environment:
       POSTGRES_PASSWORD: "test"
       POSTGRES_USER: "test"
@@ -9,6 +9,8 @@ services:
     volumes:
       - ./postgres/create-emqx-user.sql:/docker-entrypoint-initdb.d/create-emqx-user.sql
     restart: "always"
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U test -d eddie'"]
 
   eddie:
     image: ghcr.io/eddie-energy/eddie:e2e-test
@@ -47,7 +49,7 @@ services:
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
 
   emqx:
-    image: emqx/emqx:5.6.0
+    image: emqx/emqx:5.8
     container_name: emqx
     ports:
       - "1883:1883"
