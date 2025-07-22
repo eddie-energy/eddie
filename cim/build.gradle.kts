@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "energy.eddie"
-version = "3.0.1"
+version = "3.1.0"
 
 repositories {
     mavenCentral()
@@ -92,6 +92,8 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
         // V1.04
         File(cimSchemaFiles, "/v1_04/vhd/ValidatedHistoricalData Document_v1.04_annotated.xsd"),
         File(cimSchemaFiles, "/v1_04/rtd/RealTimeData Document_v1.04_Annotated.xsd"),
+        File(cimSchemaFiles, "/v1_04/pmd/Permission Document_v1.04_annotated.xsd"),
+        File(cimSchemaFiles, "/v1_04/ap/AccountingPointData Document_v1.04_annotated.xsd"),
     )
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed
@@ -174,8 +176,8 @@ publishing {
     publications {
         create<MavenPublication>("cim") {
             pom {
-                name = "cim-test"
-                artifactId = "cim-test"
+                name = "cim"
+                artifactId = "cim"
                 version = project.version.toString()
                 description = "Generated CIM classes"
                 url = "https://github.com/eddie-energy/eddie"
