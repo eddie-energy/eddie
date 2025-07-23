@@ -10,6 +10,14 @@ Accept: application/xml
 GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
 Accept: text/event-stream
 
+### Get validated historical data market documents as json
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
+Accept: application/json
+
+### Get validated historical data market documents as xml
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
+Accept: application/xml
+
 ### Get validated historical data market documents as event stream
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
 Accept: text/event-stream
