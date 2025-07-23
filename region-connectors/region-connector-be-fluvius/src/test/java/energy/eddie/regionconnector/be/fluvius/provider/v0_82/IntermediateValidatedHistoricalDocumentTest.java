@@ -68,7 +68,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 ));
 
         // When
-        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).getVHD();
+        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).toVHD();
 
         // Then
         assertEquals(1, res.size());
@@ -179,7 +179,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 .build();
 
         // When
-        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).getVHD();
+        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).toVHD();
 
         // Then
         assertEquals(1, res.size());
@@ -225,7 +225,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 .build();
 
         // When
-        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).getVHD();
+        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).toVHD();
 
         // Then
         assertEquals(1, res.size());
@@ -254,7 +254,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 .build();
 
         // When
-        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).getVHD();
+        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).toVHD();
 
         // Then
         assertEquals(1, res.size());
@@ -300,7 +300,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 .build();
 
         // When
-        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).getVHD();
+        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).toVHD();
 
         // Then
         assertEquals(1, res.size());
@@ -330,7 +330,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 .build();
 
         // When
-        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).getVHD();
+        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).toVHD();
 
         // Then
         assertEquals(1, res.size());

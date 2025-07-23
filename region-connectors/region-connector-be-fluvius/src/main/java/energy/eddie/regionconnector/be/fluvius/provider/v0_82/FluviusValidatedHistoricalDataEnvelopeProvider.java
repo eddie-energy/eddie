@@ -35,7 +35,7 @@ public class FluviusValidatedHistoricalDataEnvelopeProvider implements Validated
     @Override
     public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return identifiableMeterReadings.map(this::getIntermediateVHD)
-                .flatMapIterable(IntermediateValidatedHistoricalDocument::getVHD);
+                .flatMapIterable(IntermediateValidatedHistoricalDocument::toVHD);
     }
 
     @Override
