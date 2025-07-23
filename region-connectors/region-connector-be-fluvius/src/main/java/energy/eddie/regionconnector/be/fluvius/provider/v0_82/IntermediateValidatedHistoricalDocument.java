@@ -18,6 +18,8 @@ import jakarta.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 class IntermediateValidatedHistoricalDocument {
 
@@ -84,10 +86,17 @@ class IntermediateValidatedHistoricalDocument {
         
         List<ValidatedHistoricalDataEnvelope> vhds = new ArrayList<>();
         for(ElectricityMeterResponseModel meterResponse : electricityMeteringData) {
-            boolean offtakeDayValue = checkEDailyEnergyMeasurementValue(meterResponse.getDailyEnergy(), true);
-            boolean injectionDayValue = checkEDailyEnergyMeasurementValue(meterResponse.getDailyEnergy(), false);
-            boolean offtakeValue = checkEQuarterHourlyEnergyMeasurementValue(meterResponse.getQuarterHourlyEnergy(), true);
-            boolean injectionValue = checkEQuarterHourlyEnergyMeasurementValue(meterResponse.getQuarterHourlyEnergy(), false);
+            boolean offtakeDayValue = checkEnergyMeasurementValue(meterResponse.getDailyEnergy(),
+                    EDailyEnergyItemResponseModel::getMeasurement, m ->
+                    checkDailyMeasurementValues(m.getOfftakeDayValue(), m.getOfftakeNightValue()));
+            boolean injectionDayValue = checkEnergyMeasurementValue(meterResponse.getDailyEnergy(),
+                    EDailyEnergyItemResponseModel::getMeasurement,m ->
+                    checkDailyMeasurementValues(m.getInjectionDayValue(), m.getInjectionNightValue()));
+            boolean offtakeValue = checkEnergyMeasurementValue(meterResponse.getQuarterHourlyEnergy(),
+                    EQuarterHourlyEnergyItemResponseModel::getMeasurement, m -> m.getOfftakeValue() != null);
+            boolean injectionValue = checkEnergyMeasurementValue(meterResponse.getQuarterHourlyEnergy(),
+                    EQuarterHourlyEnergyItemResponseModel::getMeasurement,
+                    m -> m.getInjectionValue() != null);
             DirectionTypeList flowDirection = getFlowDirection(offtakeDayValue, injectionDayValue, offtakeValue, injectionValue);
             String seqNumber = meterResponse.getSeqNumber() == null ? null : String.valueOf(meterResponse.getSeqNumber());
             Granularity granularity = fluviusPermissionRequest.granularity();
@@ -139,7 +148,7 @@ class IntermediateValidatedHistoricalDocument {
                             .withProduct(EnergyProductTypeList.ACTIVE_ENERGY)
                             .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(type)
                             .withFlowDirectionDirection(flowDirection)
-                            .withEnergyMeasurementUnitName(UnitOfMeasureTypeList.fromValue(getUnitCIM(entry.getKey())))
+                            .withEnergyMeasurementUnitName(getUnitCIM(entry.getKey()))
                             .withMarketEvaluationPointMRID(
                                     new MeasurementPointIDStringComplexType()
                                             .withCodingScheme(CodingSchemeTypeList.BELGIUM_NATIONAL_CODING_SCHEME)
@@ -163,8 +172,8 @@ class IntermediateValidatedHistoricalDocument {
         return timeSeriesList;
     }
 
-    private String getUnitCIM(String unit) {
-        return unit.equalsIgnoreCase("m3") ? "MTQ" : unit.toUpperCase(Locale.ROOT);
+    private UnitOfMeasureTypeList getUnitCIM(String unit) {
+        return unit.equalsIgnoreCase("m3") ? UnitOfMeasureTypeList.CUBIC_METRE : UnitOfMeasureTypeList.fromValue(unit.toUpperCase(Locale.ROOT));
     }
 
     private List<TimeSeriesComplexType> getTimeSeries(Granularity granularity, ElectricityMeterResponseModel electricityMeterResponse,
@@ -272,9 +281,7 @@ class IntermediateValidatedHistoricalDocument {
             OffsetDateTime timestampStart = response.getTimestampStart();
             Long position = timestampStart != null ? timestampStart.plusMinutes(15L * i).toEpochSecond() : null;
             String unit =  measurement.getUnit();
-            if(!pointsMap.containsKey(unit)) {
-                pointsMap.put(unit, new ArrayList<>());
-            }
+            pointsMap.putIfAbsent(unit, new ArrayList<>());
             pointsMap.get(unit).add(createPoint(position, getQuantity(measurement,offtake), getQuality(measurement, offtake)));
         }
 
@@ -294,9 +301,7 @@ class IntermediateValidatedHistoricalDocument {
             OffsetDateTime timestampStart = response.getTimestampStart();
             Long position = timestampStart != null ? timestampStart.plusDays(i).toEpochSecond() : null;
             String unit =  measurement.getUnit();
-            if(!pointsMap.containsKey(unit)) {
-                pointsMap.put(unit, new ArrayList<>());
-            }
+            pointsMap.putIfAbsent(unit, new ArrayList<>());
             pointsMap.get(unit).add(createPoint(position, getQuantity(measurement, offtake), getQuality(measurement, offtake)));
         }
 
@@ -316,9 +321,7 @@ class IntermediateValidatedHistoricalDocument {
             OffsetDateTime timestampStart = response.getTimestampStart();
             Long position = timestampStart != null ? timestampStart.plusHours(i).toEpochSecond() : null;
             String unit =  measurement.getUnit();
-            if(!pointsMap.containsKey(unit)) {
-                pointsMap.put(unit, new ArrayList<>());
-            }
+            pointsMap.putIfAbsent(unit, new ArrayList<>());
             pointsMap.get(unit).add(createPoint(position, measurement.getOfftakeValue(), getQuality(measurement.getOfftakeValidationState())));
         }
 
@@ -338,9 +341,7 @@ class IntermediateValidatedHistoricalDocument {
             OffsetDateTime timestampStart = response.getTimestampStart();
             Long position = timestampStart != null ? timestampStart.plusDays(i).toEpochSecond() : null;
             String unit =  measurement.getUnit();
-            if(!pointsMap.containsKey(unit)) {
-                pointsMap.put(unit, new ArrayList<>());
-            }
+            pointsMap.putIfAbsent(unit, new ArrayList<>());
             pointsMap.get(unit).add(createPoint(position, measurement.getOfftakeValue(), getQuality(measurement.getOfftakeValidationState())));
         }
 
@@ -415,24 +416,21 @@ class IntermediateValidatedHistoricalDocument {
         }
     }
 
-    private boolean checkEDailyEnergyMeasurementValue(List<EDailyEnergyItemResponseModel> response, boolean offtake) {
-        if(response == null) {
+    private <T, U> boolean checkEnergyMeasurementValue(List<T> response, Function<T, List<U>> measurementExtractor,
+            Predicate<U> valueChecker) {
+
+        if (response == null) {
             return false;
         }
 
-        for(EDailyEnergyItemResponseModel item : response) {
-            List<EMeasurementItemResponseModel> eMeasurements = item.getMeasurement();
-            if (eMeasurements == null) {
+        for (T item : response) {
+            List<U> measurements = measurementExtractor.apply(item);
+            if (measurements == null) {
                 continue;
             }
 
-            EMeasurementItemResponseModel eMeasurement = eMeasurements.getFirst();
-            if (offtake) {
-                if(eMeasurement.getOfftakeDayValue() != null && eMeasurement.getOfftakeNightValue() != null) {
-                    return true;
-                }
-            } else {
-                if(eMeasurement.getInjectionDayValue() != null && eMeasurement.getInjectionNightValue() != null) {
+            for (U measurement : measurements) {
+                if (valueChecker.test(measurement)) {
                     return true;
                 }
             }
@@ -441,34 +439,8 @@ class IntermediateValidatedHistoricalDocument {
         return false;
     }
 
-    private boolean checkEQuarterHourlyEnergyMeasurementValue(List<EQuarterHourlyEnergyItemResponseModel> response,
-                                                              boolean offtake) {
-        if(response == null) {
-            return false;
-        }
-
-        for(EQuarterHourlyEnergyItemResponseModel item : response) {
-            List<EMeasurementDetailItemResponseModel> eMeasurements = item.getMeasurement();
-            if (eMeasurements == null) {
-                continue;
-            }
-
-            for (EMeasurementDetailItemResponseModel eMeasurement : eMeasurements) {
-                if (offtake) {
-                    Double offtakeValue = eMeasurement.getOfftakeValue();
-                    if(offtakeValue != null) {
-                        return true;
-                    }
-                } else {
-                    Double injectionValue = eMeasurement.getInjectionValue();
-                    if(injectionValue != null) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
+    private boolean checkDailyMeasurementValues(Double dayVal, Double nightVal) {
+        return dayVal != null && nightVal != null;
     }
 
     @Nullable
@@ -495,11 +467,11 @@ class IntermediateValidatedHistoricalDocument {
             earliestTimestampStart = responses.getFirst().getTimestampStart();
             latestTimestampEnd = responses.getFirst().getTimestampEnd();
             for (EDailyEnergyItemResponseModel response : responses) {
-                if(checkTimestamp(response.getTimestampStart(), earliestTimestampStart, false)) {
+                if(checkEarliestTimestamp(response.getTimestampStart(), earliestTimestampStart)) {
                     earliestTimestampStart = response.getTimestampStart();
                 }
 
-                if(checkTimestamp(response.getTimestampEnd(), latestTimestampEnd, true)) {
+                if(checkLatestTimestamp(response.getTimestampEnd(), latestTimestampEnd)) {
                     latestTimestampEnd = response.getTimestampEnd();
                 }
             }
@@ -514,11 +486,11 @@ class IntermediateValidatedHistoricalDocument {
             earliestTimestampStart = responses.getFirst().getTimestampStart();
             latestTimestampEnd = responses.getFirst().getTimestampEnd();
             for (EQuarterHourlyEnergyItemResponseModel response : responses) {
-                if(checkTimestamp(response.getTimestampStart(), earliestTimestampStart, false)) {
+                if(checkEarliestTimestamp(response.getTimestampStart(), earliestTimestampStart)) {
                     earliestTimestampStart = response.getTimestampStart();
                 }
 
-                if(checkTimestamp(response.getTimestampEnd(), latestTimestampEnd, true)) {
+                if(checkLatestTimestamp(response.getTimestampEnd(), latestTimestampEnd)) {
                     latestTimestampEnd = response.getTimestampEnd();
                 }
             }
@@ -546,11 +518,11 @@ class IntermediateValidatedHistoricalDocument {
             earliestTimestampStart = responses.getFirst().getTimestampStart();
             latestTimestampEnd = responses.getFirst().getTimestampEnd();
             for (GDailyEnergyItemResponseModel response : responses) {
-                if(checkTimestamp(response.getTimestampStart(), earliestTimestampStart, false)) {
+                if(checkEarliestTimestamp(response.getTimestampStart(), earliestTimestampStart)) {
                     earliestTimestampStart = response.getTimestampStart();
                 }
 
-                if(checkTimestamp(response.getTimestampEnd(), latestTimestampEnd, true)) {
+                if(checkLatestTimestamp(response.getTimestampEnd(), latestTimestampEnd)) {
                     latestTimestampEnd = response.getTimestampEnd();
                 }
             }
@@ -565,11 +537,11 @@ class IntermediateValidatedHistoricalDocument {
             earliestTimestampStart = responses.getFirst().getTimestampStart();
             latestTimestampEnd = responses.getFirst().getTimestampEnd();
             for (GHourlyEnergyItemResponseModel response : responses) {
-                if(checkTimestamp(response.getTimestampStart(), earliestTimestampStart, false)) {
+                if(checkEarliestTimestamp(response.getTimestampStart(), earliestTimestampStart)) {
                     earliestTimestampStart = response.getTimestampStart();
                 }
 
-                if(checkTimestamp(response.getTimestampEnd(), latestTimestampEnd, true)) {
+                if(checkLatestTimestamp(response.getTimestampEnd(), latestTimestampEnd)) {
                     latestTimestampEnd = response.getTimestampEnd();
                 }
             }
@@ -583,11 +555,11 @@ class IntermediateValidatedHistoricalDocument {
         return periodTimeInterval.withStart(interval.start()).withEnd(interval.end());
     }
 
-    private boolean checkTimestamp(OffsetDateTime timestamp, OffsetDateTime timestampCheck, boolean latest) {
-        if(latest) {
-            return timestamp != null && timestamp.isAfter(timestampCheck);
-        } else {
-            return timestamp != null && timestamp.isBefore(timestampCheck);
-        }
+    private boolean checkEarliestTimestamp(OffsetDateTime timestamp, OffsetDateTime timestampCheck) {
+        return timestamp != null && timestamp.isBefore(timestampCheck);
+    }
+
+    private boolean checkLatestTimestamp(OffsetDateTime timestamp, OffsetDateTime timestampCheck) {
+        return timestamp != null && timestamp.isAfter(timestampCheck);
     }
 }

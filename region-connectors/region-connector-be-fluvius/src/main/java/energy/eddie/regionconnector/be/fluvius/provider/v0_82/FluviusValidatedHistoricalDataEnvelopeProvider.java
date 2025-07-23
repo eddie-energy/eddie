@@ -21,7 +21,8 @@ public class FluviusValidatedHistoricalDataEnvelopeProvider implements Validated
             FluviusOAuthConfiguration fluviusConfig,
             IdentifiableDataStreams identifiableDataStreams,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-            DataNeedsService dataNeedsService) {
+            DataNeedsService dataNeedsService
+            ) {
         this.fluviusConfig = fluviusConfig;
         this.identifiableMeterReadings = identifiableDataStreams.getMeteringData();
         this.dataNeedsService = dataNeedsService;

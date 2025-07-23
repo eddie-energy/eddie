@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class IntermediateValidatedHistoricalDocumentTest {
+class IntermediateValidatedHistoricalDocumentTest {
 
     private final ClassLoader classLoader = this.getClass().getClassLoader();
     private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule())
