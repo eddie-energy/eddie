@@ -1,14 +1,14 @@
 package energy.eddie.outbound.rest.tasks;
 
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
+import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
 import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
+import energy.eddie.outbound.rest.persistence.specifications.InsertionTimeSpecification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-
-import static energy.eddie.outbound.rest.persistence.specifications.ConnectionStatusMessageSpecification.insertedBeforeEquals;
 
 @Component
 public class ConnectionStatusMessageDeletionTask {
@@ -25,7 +25,8 @@ public class ConnectionStatusMessageDeletionTask {
 
     @Scheduled(cron = "${outbound-connector.rest.retention-removal:0 0 * * * *}")
     public void deleteConnectionStatusMessages() {
-        var where = insertedBeforeEquals(ZonedDateTime.now(ZoneOffset.UTC).plus(restConfig.retentionTime()));
+        var timestamp = ZonedDateTime.now(ZoneOffset.UTC).plus(restConfig.retentionTime());
+        var where = InsertionTimeSpecification.<ConnectionStatusMessageModel>insertedBeforeEquals(timestamp);
         repository.delete(where);
     }
 }

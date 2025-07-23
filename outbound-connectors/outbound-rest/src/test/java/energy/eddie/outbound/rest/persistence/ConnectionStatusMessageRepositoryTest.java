@@ -4,7 +4,7 @@ import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.outbound.rest.TestDataSourceInformation;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
-import energy.eddie.outbound.rest.persistence.specifications.ConnectionStatusMessageSpecification;
+import energy.eddie.outbound.rest.persistence.specifications.InsertionTimeSpecification;
 import energy.eddie.outbound.rest.persistence.specifications.JsonPathSpecification;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,8 +132,8 @@ class ConnectionStatusMessageRepositoryTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         var from = now.minusMinutes(1);
         var to = now.plusMinutes(1);
-        var spec = ConnectionStatusMessageSpecification.insertedAfterEquals(from)
-                                                       .and(ConnectionStatusMessageSpecification.insertedBeforeEquals(to));
+        var spec = InsertionTimeSpecification.<ConnectionStatusMessageModel>insertedAfterEquals(from)
+                                             .and(InsertionTimeSpecification.insertedBeforeEquals(to));
 
         // When
         var res = connectionStatusMessageRepository.findAll(spec);
@@ -161,8 +161,8 @@ class ConnectionStatusMessageRepositoryTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         var from = now.minusDays(1);
         var to = now.minusHours(1);
-        var spec = ConnectionStatusMessageSpecification.insertedAfterEquals(from)
-                                                       .and(ConnectionStatusMessageSpecification.insertedBeforeEquals(to));
+        var spec = InsertionTimeSpecification.<ConnectionStatusMessageModel>insertedAfterEquals(from)
+                                             .and(InsertionTimeSpecification.insertedBeforeEquals(to));
 
         // When
         var res = connectionStatusMessageRepository.findAll(spec);

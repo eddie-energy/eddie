@@ -4,7 +4,7 @@ import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
 import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
-import energy.eddie.outbound.rest.persistence.specifications.ConnectionStatusMessageSpecification;
+import energy.eddie.outbound.rest.persistence.specifications.InsertionTimeSpecification;
 import energy.eddie.outbound.rest.persistence.specifications.JsonPathSpecification;
 import energy.eddie.outbound.shared.TopicStructure;
 import org.springframework.data.jpa.domain.Specification;
@@ -88,8 +88,8 @@ public class AgnosticController {
                 regionConnectorId.map(rc -> new JsonPathSpecification<ConnectionStatusMessageModel>(List.of(
                         "dataSourceInformation",
                         "regionConnectorId"), rc)),
-                from.map(ConnectionStatusMessageSpecification::insertedAfterEquals),
-                to.map(ConnectionStatusMessageSpecification::insertedBeforeEquals)
+                from.map(InsertionTimeSpecification::<ConnectionStatusMessageModel>insertedAfterEquals),
+                to.map(InsertionTimeSpecification::<ConnectionStatusMessageModel>insertedBeforeEquals)
         );
         return Specification.allOf(
                 query.stream()
