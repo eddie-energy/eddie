@@ -1,0 +1,32 @@
+{
+  "data": {
+    "fetchTime": "2025-07-01T06:41:43Z",
+    "gasMeters": [
+      {
+        "seqNumber": 1,
+        "meterID": "0001",
+        "dailyEnergy": [],
+        "hourlyEnergy": [
+          {
+            "timestampStart": "2024-12-01T00:00:00Z",
+            "timestampEnd": "2024-12-01T01:00:00Z",
+            "measurement": [
+              {
+                "unit": "m3",
+                "offtakeValue": 0.008,
+                "offtakeValidationState": "EST"
+              },
+              {
+                "unit": "kWh",
+                "offtakeValue": 0.093,
+                "offtakeValidationState": "EST",
+                "offtakeUsedGCF": "D"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "electricityMeters": []
+  }
+}
