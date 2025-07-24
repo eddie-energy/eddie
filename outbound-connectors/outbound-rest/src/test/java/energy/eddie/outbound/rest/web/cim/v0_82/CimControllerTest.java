@@ -23,7 +23,7 @@ import java.util.List;
 import static org.mockito.BDDMockito.given;
 
 @WebFluxTest(CimController.class)
-@Import(WebTestConfig.class)
+@Import({WebTestConfig.class})
 class CimControllerTest {
     @Autowired
     private WebTestClient webTestClient;

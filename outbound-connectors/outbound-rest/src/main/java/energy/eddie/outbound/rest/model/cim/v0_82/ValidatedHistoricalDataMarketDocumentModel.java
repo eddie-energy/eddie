@@ -12,6 +12,7 @@ import java.time.ZonedDateTime;
 @SuppressWarnings("NullAway")
 public class ValidatedHistoricalDataMarketDocumentModel {
     @Column(name = "inserted_at", nullable = false, insertable = false, updatable = false)
+    @SuppressWarnings("unused")
     private final ZonedDateTime insertedAt;
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "payload", nullable = false, columnDefinition = "jsonb")
