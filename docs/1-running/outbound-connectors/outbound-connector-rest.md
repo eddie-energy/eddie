@@ -16,6 +16,10 @@ outbound-connector.rest.retention-removal=0 0 * * * *
 
 ## Endpoints
 
+The endpoints are documented via OpenAPI and are made available during the runtime under
+`<host>:<eddie.management.server.port>/outbound-connectors/rest/v3/api-docs`.
+They can be seen via the hosted swagger UI under `<host>:<server.port>/data-needs/swagger-ui/index.html`.
+
 ```http request
 <!--@include: ../../../outbound-connectors/outbound-rest/outbound-rest-requests.http-->
 ```
