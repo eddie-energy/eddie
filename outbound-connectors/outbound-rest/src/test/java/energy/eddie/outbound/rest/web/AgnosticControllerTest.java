@@ -10,6 +10,7 @@ import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -58,6 +59,7 @@ class AgnosticControllerTest {
                     .verifyComplete();
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void connectionStatusMessage_returnsMessages() {
         var msg = new ConnectionStatusMessageModel(statusMessage(PermissionProcessStatus.CREATED));
@@ -71,13 +73,13 @@ class AgnosticControllerTest {
                                   .exchange()
                                   .expectStatus()
                                   .isOk()
-                                  .returnResult(ConnectionStatusMessage.class)
+                                  .returnResult(new ParameterizedTypeReference<List<ConnectionStatusMessage>>() {})
                                   .getResponseBody();
 
         StepVerifier.create(result)
                     .assertNext(next -> {
-                        assertNotNull(msg.payload());
-                        assertEquals(msg.payload().status(), next.status());
+                        assertNotNull(next.getFirst());
+                        assertEquals(msg.payload().status(), next.getFirst().status());
                     })
                     .verifyComplete();
     }

@@ -1,6 +1,5 @@
 package energy.eddie.outbound.rest.web.cim.v0_82;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.outbound.rest.connectors.cim.v0_82.CimConnector;
 import energy.eddie.outbound.rest.model.cim.v0_82.ValidatedHistoricalDataMarketDocumentModel;
@@ -11,6 +10,7 @@ import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -68,7 +68,7 @@ class CimControllerTest {
                                   .exchange()
                                   .expectStatus()
                                   .isOk()
-                                  .returnResult(ConnectionStatusMessage.class)
+                                  .returnResult(new ParameterizedTypeReference<List<ValidatedHistoricalDataEnvelope>>() {})
                                   .getResponseBody();
 
         StepVerifier.create(result)

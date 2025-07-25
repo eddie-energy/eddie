@@ -1,14 +1,15 @@
 package energy.eddie.outbound.rest.dto;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.annotation.Nullable;
-import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlAnyElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.util.List;
 
 // Used by Jaxb2 Marshaller
 @SuppressWarnings("unused")
-@XmlRootElement(name = "CimCollection")
+@XmlRootElement(name = "Collection")
 public class CimCollection<T> {
     @Nullable
     private List<T> documents;
@@ -20,7 +21,8 @@ public class CimCollection<T> {
     }
 
     @Nullable
-    @XmlElement(name = "Document")
+    @XmlAnyElement(lax = true)
+    @JsonValue
     public List<T> getDocuments() {
         return documents;
     }

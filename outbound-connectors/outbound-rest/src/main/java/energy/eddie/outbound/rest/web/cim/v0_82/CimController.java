@@ -2,7 +2,7 @@ package energy.eddie.outbound.rest.web.cim.v0_82;
 
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.outbound.rest.connectors.cim.v0_82.CimConnector;
-import energy.eddie.outbound.rest.dto.CimCollection;
+import energy.eddie.outbound.rest.dto.ValidatedHistoricalDataMarketDocuments;
 import energy.eddie.outbound.rest.model.cim.v0_82.ValidatedHistoricalDataMarketDocumentModel;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.ValidatedHistoricalDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.specifications.InsertionTimeSpecification;
@@ -49,7 +49,7 @@ public class CimController {
     }
 
     @GetMapping(value = "/validated-historical-data-md", produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
-    public ResponseEntity<CimCollection<ValidatedHistoricalDataEnvelope>> validatedHistoricalDataMd(
+    public ResponseEntity<ValidatedHistoricalDataMarketDocuments> validatedHistoricalDataMd(
             @RequestParam(required = false) Optional<String> permissionId,
             @RequestParam(required = false) Optional<String> connectionId,
             @RequestParam(required = false) Optional<String> dataNeedId,
@@ -72,7 +72,7 @@ public class CimController {
             messages.add(payload);
         }
         return ResponseEntity.ok()
-                             .body(new CimCollection<>(messages));
+                             .body(new ValidatedHistoricalDataMarketDocuments(messages));
     }
 
     private static Specification<ValidatedHistoricalDataMarketDocumentModel> buildQuery(

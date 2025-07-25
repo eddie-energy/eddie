@@ -2,6 +2,7 @@ package energy.eddie.outbound.rest.web;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
+import energy.eddie.outbound.rest.dto.ConnectionStatusMessages;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
 import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
 import energy.eddie.outbound.rest.persistence.specifications.InsertionTimeSpecification;
@@ -43,7 +44,7 @@ public class AgnosticController {
     }
 
     @GetMapping(value = "/connection-status-messages", produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
-    public ResponseEntity<List<ConnectionStatusMessage>> connectionStatusMessages(
+    public ResponseEntity<ConnectionStatusMessages> connectionStatusMessages(
             @RequestParam(required = false) Optional<String> permissionId,
             @RequestParam(required = false) Optional<String> connectionId,
             @RequestParam(required = false) Optional<String> dataNeedId,
@@ -66,7 +67,7 @@ public class AgnosticController {
             messages.add(payload);
         }
         return ResponseEntity.ok()
-                             .body(messages);
+                             .body(new ConnectionStatusMessages(messages));
     }
 
     private static Specification<ConnectionStatusMessageModel> buildQuery(

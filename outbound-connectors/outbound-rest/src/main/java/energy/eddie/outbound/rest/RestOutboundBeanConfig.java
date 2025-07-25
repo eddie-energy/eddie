@@ -8,6 +8,9 @@ import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.dto.CimCollection;
+import energy.eddie.outbound.rest.dto.ConnectionStatusMessages;
+import energy.eddie.outbound.rest.dto.ValidatedHistoricalDataMarketDocuments;
+import energy.eddie.outbound.rest.mixins.ConnectionStatusMessageMixin;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +23,8 @@ public class RestOutboundBeanConfig {
     public ObjectMapper objectMapper(ObjectMapper objectMapper) {
         return objectMapper.registerModule(new JavaTimeModule())
                            .registerModule(new Jdk8Module())
-                           .registerModule(new JakartaXmlBindAnnotationModule());
+                           .registerModule(new JakartaXmlBindAnnotationModule())
+                           .addMixIn(ConnectionStatusMessages.class, ConnectionStatusMessageMixin.class);
     }
 
     @Bean
@@ -32,7 +36,8 @@ public class RestOutboundBeanConfig {
                 // CIM v0.82
                 ValidatedHistoricalDataEnvelope.class,
                 // DTOs
-                CimCollection.class
+                CimCollection.class,
+                ValidatedHistoricalDataMarketDocuments.class
         );
         return marshaller;
     }

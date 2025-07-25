@@ -29,8 +29,15 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         converters.removeIf(MappingJackson2HttpMessageConverter.class::isInstance);
+        var xmlConverter = converters.stream()
+                                     .filter(MappingJackson2XmlHttpMessageConverter.class::isInstance)
+                                     .map(MappingJackson2XmlHttpMessageConverter.class::cast)
+                                     .findFirst()
+                                     .orElseGet(MappingJackson2XmlHttpMessageConverter::new);
         converters.removeIf(MappingJackson2XmlHttpMessageConverter.class::isInstance);
+        var fallbackConverter = new FallbackXmlMessageConverter(new MarshallingHttpMessageConverter(marshaller),
+                                                                xmlConverter);
         converters.add(new MappingJackson2HttpMessageConverter(objectMapper));
-        converters.add(new MarshallingHttpMessageConverter(marshaller));
+        converters.add(fallbackConverter);
     }
 }

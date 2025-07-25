@@ -32,6 +32,7 @@ dependencies {
     implementation(libs.spring.oxm)
     implementation(libs.jakarta.annotation.api)
     implementation(libs.jackson.jakarta.xmlbind.annotations)
+    implementation(libs.jackson.dataformat.xml)
     implementation(libs.reactor.core)
     runtimeOnly(libs.slf4j.simple)
     runtimeOnly(libs.jaxb.runtime)
