@@ -118,7 +118,8 @@ public record IntermediateValidatedHistoricalDataMarketDocument(SimulatedMeterRe
                     .withEnergyQuantityQuality(
                             measurement.measurementType() == Measurement.MeasurementType.MEASURED
                                     ? QualityTypeList.AS_PROVIDED
-                                    : QualityTypeList.ADJUSTED);
+                                    : QualityTypeList.ADJUSTED
+                    );
             points.add(point);
             position++;
         }
@@ -132,7 +133,8 @@ public record IntermediateValidatedHistoricalDataMarketDocument(SimulatedMeterRe
                 .withPointList(
                         new SeriesPeriodComplexType.PointList()
                                 .withPoints(points)
-                );
+                )
+                .withReasonList(new SeriesPeriodComplexType.ReasonList());
         return List.of(seriesPeriod);
     }
 }

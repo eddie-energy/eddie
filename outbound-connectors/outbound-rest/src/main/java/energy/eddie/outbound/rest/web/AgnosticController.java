@@ -2,9 +2,10 @@ package energy.eddie.outbound.rest.web;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
+import energy.eddie.outbound.rest.dto.ConnectionStatusMessages;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
 import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
-import energy.eddie.outbound.rest.persistence.specifications.ConnectionStatusMessageSpecification;
+import energy.eddie.outbound.rest.persistence.specifications.InsertionTimeSpecification;
 import energy.eddie.outbound.rest.persistence.specifications.JsonPathSpecification;
 import energy.eddie.outbound.shared.TopicStructure;
 import org.springframework.data.jpa.domain.Specification;
@@ -43,7 +44,7 @@ public class AgnosticController {
     }
 
     @GetMapping(value = "/connection-status-messages", produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
-    public ResponseEntity<List<ConnectionStatusMessage>> connectionStatusMessages(
+    public ResponseEntity<ConnectionStatusMessages> connectionStatusMessages(
             @RequestParam(required = false) Optional<String> permissionId,
             @RequestParam(required = false) Optional<String> connectionId,
             @RequestParam(required = false) Optional<String> dataNeedId,
@@ -66,7 +67,7 @@ public class AgnosticController {
             messages.add(payload);
         }
         return ResponseEntity.ok()
-                             .body(messages);
+                             .body(new ConnectionStatusMessages(messages));
     }
 
     private static Specification<ConnectionStatusMessageModel> buildQuery(
@@ -88,8 +89,8 @@ public class AgnosticController {
                 regionConnectorId.map(rc -> new JsonPathSpecification<ConnectionStatusMessageModel>(List.of(
                         "dataSourceInformation",
                         "regionConnectorId"), rc)),
-                from.map(ConnectionStatusMessageSpecification::insertedAfterEquals),
-                to.map(ConnectionStatusMessageSpecification::insertedBeforeEquals)
+                from.map(InsertionTimeSpecification::<ConnectionStatusMessageModel>insertedAfterEquals),
+                to.map(InsertionTimeSpecification::<ConnectionStatusMessageModel>insertedBeforeEquals)
         );
         return Specification.allOf(
                 query.stream()

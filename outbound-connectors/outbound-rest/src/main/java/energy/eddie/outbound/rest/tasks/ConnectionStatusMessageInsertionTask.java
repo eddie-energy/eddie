@@ -22,7 +22,7 @@ public class ConnectionStatusMessageInsertionTask {
     }
 
     public void insert(ConnectionStatusMessage message) {
-        LOGGER.info("Inserting connection status message");
+        LOGGER.debug("Inserting connection status message");
         var model = new ConnectionStatusMessageModel(message);
         repository.save(model);
     }
