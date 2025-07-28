@@ -29,13 +29,14 @@ import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
 @RestController
 @RequestMapping(TopicStructure.CIM_0_82_VALUE)
-public class CimController {
+public class CimController implements CimSwagger {
     private final CimConnector cimConnector;
     private final ValidatedHistoricalDataMarketDocumentRepository vhdRepository;
     private final PermissionMarketDocumentRepository pmdRepository;
 
     public CimController(
-            CimConnector cimConnector, ValidatedHistoricalDataMarketDocumentRepository vhdRepository,
+            CimConnector cimConnector,
+            ValidatedHistoricalDataMarketDocumentRepository vhdRepository,
             PermissionMarketDocumentRepository pmdRepository
     ) {
         this.cimConnector = cimConnector;
