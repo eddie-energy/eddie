@@ -1,0 +1,41 @@
+package energy.eddie.outbound.rest.connectors.cim.v0_82;
+
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
+
+class CimConnectorTest {
+    private final CimConnector connector = new CimConnector();
+
+    @Test
+    void setVhd_producesVhds() {
+        // Given
+        var flux = Flux.just(new ValidatedHistoricalDataEnvelope());
+
+        // When
+        connector.setEddieValidatedHistoricalDataMarketDocumentStream(flux);
+
+        // Then
+        StepVerifier.create(connector.getHistoricalDataMarketDocumentStream())
+                    .then(connector::close)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void setPmd_producesPmds() {
+        // Given
+        var flux = Flux.just(new PermissionEnvelope());
+
+        // When
+        connector.setPermissionMarketDocumentStream(flux);
+
+        // Then
+        StepVerifier.create(connector.getPermissionMarketDocumentStream())
+                    .then(connector::close)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+}

@@ -11,7 +11,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "connection_status_message", schema = "rest")
 @SuppressWarnings("NullAway")
-public class ConnectionStatusMessageModel {
+public class ConnectionStatusMessageModel implements ModelWithJsonPayload<ConnectionStatusMessage> {
     @Column(name = "inserted_at", nullable = false, insertable = false, updatable = false)
     private final ZonedDateTime insertedAt;
     @JdbcTypeCode(SqlTypes.JSON)
@@ -43,6 +43,7 @@ public class ConnectionStatusMessageModel {
         this.payload = null;
     }
 
+    @Override
     public ConnectionStatusMessage payload() {
         return payload;
     }

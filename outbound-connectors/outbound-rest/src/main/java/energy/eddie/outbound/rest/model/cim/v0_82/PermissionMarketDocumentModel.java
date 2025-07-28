@@ -1,6 +1,6 @@
 package energy.eddie.outbound.rest.model.cim.v0_82;
 
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.outbound.rest.model.ModelWithJsonPayload;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -9,39 +9,39 @@ import org.hibernate.type.SqlTypes;
 import java.time.ZonedDateTime;
 
 @Entity
-@Table(name = "validated_historical_data_marked_document", schema = "rest")
+@Table(name = "permission_market_document", schema = "rest")
 @SuppressWarnings("NullAway")
-public class ValidatedHistoricalDataMarketDocumentModel implements ModelWithJsonPayload<ValidatedHistoricalDataEnvelope> {
+public class PermissionMarketDocumentModel implements ModelWithJsonPayload<PermissionEnvelope> {
     @Column(name = "inserted_at", nullable = false, insertable = false, updatable = false)
     @SuppressWarnings("unused")
     private final ZonedDateTime insertedAt;
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "payload", nullable = false, columnDefinition = "jsonb")
-    private final ValidatedHistoricalDataEnvelope payload;
+    private final PermissionEnvelope payload;
     @SuppressWarnings("unused")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    public ValidatedHistoricalDataMarketDocumentModel(
+    public PermissionMarketDocumentModel(
             ZonedDateTime insertedAt,
-            ValidatedHistoricalDataEnvelope payload
+            PermissionEnvelope payload
     ) {
         this.insertedAt = insertedAt;
         this.payload = payload;
     }
 
-    public ValidatedHistoricalDataMarketDocumentModel(ValidatedHistoricalDataEnvelope payload) {
+    public PermissionMarketDocumentModel(PermissionEnvelope payload) {
         this(null, payload);
     }
 
-    protected ValidatedHistoricalDataMarketDocumentModel() {
+    protected PermissionMarketDocumentModel() {
         this.insertedAt = null;
         this.payload = null;
     }
 
     @Override
-    public ValidatedHistoricalDataEnvelope payload() {
+    public PermissionEnvelope payload() {
         return payload;
     }
 }

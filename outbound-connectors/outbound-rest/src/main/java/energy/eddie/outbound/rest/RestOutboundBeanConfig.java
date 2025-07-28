@@ -5,10 +5,12 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.dto.CimCollection;
 import energy.eddie.outbound.rest.dto.ConnectionStatusMessages;
+import energy.eddie.outbound.rest.dto.PermissionMarketDocuments;
 import energy.eddie.outbound.rest.dto.ValidatedHistoricalDataMarketDocuments;
 import energy.eddie.outbound.rest.mixins.ConnectionStatusMessageMixin;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -35,9 +37,11 @@ public class RestOutboundBeanConfig {
                 ConnectionStatusMessage.class,
                 // CIM v0.82
                 ValidatedHistoricalDataEnvelope.class,
+                PermissionEnvelope.class,
                 // DTOs
                 CimCollection.class,
-                ValidatedHistoricalDataMarketDocuments.class
+                ValidatedHistoricalDataMarketDocuments.class,
+                PermissionMarketDocuments.class
         );
         return marshaller;
     }

@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.dto.ConnectionStatusMessages;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
+import energy.eddie.outbound.rest.model.ModelWithJsonPayload;
 import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
 import energy.eddie.outbound.rest.persistence.specifications.InsertionTimeSpecification;
 import energy.eddie.outbound.rest.persistence.specifications.JsonPathSpecification;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,11 +61,7 @@ public class AgnosticController {
                                        from,
                                        to);
         var all = repository.findAll(specification);
-        var messages = new ArrayList<ConnectionStatusMessage>();
-        for (var model : all) {
-            var payload = model.payload();
-            messages.add(payload);
-        }
+        var messages = ModelWithJsonPayload.payloadsOf(all);
         return ResponseEntity.ok()
                              .body(new ConnectionStatusMessages(messages));
     }

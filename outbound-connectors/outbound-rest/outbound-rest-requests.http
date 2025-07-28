@@ -21,3 +21,15 @@ Accept: application/xml
 ### Get validated historical data market documents as event stream
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
 Accept: text/event-stream
+
+### Get permission market documents as json
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/permission-md
+Accept: application/json
+
+### Get permission market documents as xml
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/permission-md
+Accept: application/xml
+
+### Get permission market documents as event stream
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/permission-md
+Accept: text/event-stream
