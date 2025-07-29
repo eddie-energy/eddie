@@ -1,0 +1,43 @@
+services:
+
+  collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    volumes:
+      - ./collector.yaml:/etc/collector.yaml
+    ports:
+      - "55678:55678"
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - loki
+      - prometheus
+      - jaeger
+    command: --config=/etc/collector.yaml
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9091:9090"
+    command: --config.file /etc/prometheus/prometheus.yml
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "14250:14250"
+      - "16686:16686"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./.env_grafana
+    volumes:
+      - ./grafana/:/etc/grafana/provisioning/datasources/
