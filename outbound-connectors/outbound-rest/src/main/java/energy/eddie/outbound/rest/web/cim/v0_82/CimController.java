@@ -1,12 +1,16 @@
 package energy.eddie.outbound.rest.web.cim.v0_82;
 
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.outbound.rest.connectors.cim.v0_82.CimConnector;
+import energy.eddie.outbound.rest.dto.AccountingPointDataMarketDocuments;
 import energy.eddie.outbound.rest.dto.PermissionMarketDocuments;
 import energy.eddie.outbound.rest.dto.ValidatedHistoricalDataMarketDocuments;
+import energy.eddie.outbound.rest.model.cim.v0_82.AccountingPointDataMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v0_82.PermissionMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v0_82.ValidatedHistoricalDataMarketDocumentModel;
+import energy.eddie.outbound.rest.persistence.cim.v0_82.AccountingPointDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.PermissionMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.ValidatedHistoricalDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.specifications.CimSpecification;
@@ -30,27 +34,30 @@ import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 @RestController
 @RequestMapping(TopicStructure.CIM_0_82_VALUE)
 public class CimController implements CimSwagger {
+    public static final String X_ACCEL_BUFFERING = "X-Accel-Buffering";
     private final CimConnector cimConnector;
     private final ValidatedHistoricalDataMarketDocumentRepository vhdRepository;
     private final PermissionMarketDocumentRepository pmdRepository;
+    private final AccountingPointDataMarketDocumentRepository apRepository;
 
     public CimController(
             CimConnector cimConnector,
             ValidatedHistoricalDataMarketDocumentRepository vhdRepository,
-            PermissionMarketDocumentRepository pmdRepository
+            PermissionMarketDocumentRepository pmdRepository,
+            AccountingPointDataMarketDocumentRepository apRepository
     ) {
         this.cimConnector = cimConnector;
         this.vhdRepository = vhdRepository;
         this.pmdRepository = pmdRepository;
+        this.apRepository = apRepository;
     }
 
     @Override
     @GetMapping(value = "/validated-historical-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<ValidatedHistoricalDataEnvelope>> validatedHistoricalDataMdSSE() {
-        //noinspection UastIncorrectHttpHeaderInspection
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
-                             .header("X-Accel-Buffering", "no")
+                             .header(X_ACCEL_BUFFERING, "no")
                              .body(cimConnector.getHistoricalDataMarketDocumentStream());
     }
 
@@ -83,10 +90,9 @@ public class CimController implements CimSwagger {
     @Override
     @GetMapping(value = "/permission-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<PermissionEnvelope>> permissionMdSSE() {
-        //noinspection UastIncorrectHttpHeaderInspection
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
-                             .header("X-Accel-Buffering", "no")
+                             .header(X_ACCEL_BUFFERING, "no")
                              .body(cimConnector.getPermissionMarketDocumentStream());
     }
 
@@ -114,5 +120,38 @@ public class CimController implements CimSwagger {
         var messages = payloadsOf(all);
         return ResponseEntity.ok()
                              .body(new PermissionMarketDocuments(messages));
+    }
+
+    @GetMapping(value = "/accounting-point-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<Flux<AccountingPointEnvelope>> accountingPointDataMdSSE() {
+        return ResponseEntity.ok()
+                             // Tell reverse proxies like Nginx not to buffer the response
+                             .header(X_ACCEL_BUFFERING, "no")
+                             .body(cimConnector.getAccountingPointDataMarketDocumentStream());
+    }
+
+    @GetMapping(value = "/accounting-point-data-md", produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
+    public ResponseEntity<AccountingPointDataMarketDocuments> accountingPointDataMd(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> countryCode,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    ) {
+        Specification<AccountingPointDataMarketDocumentModel> specification = CimSpecification.buildQueryForV0_82(
+                permissionId,
+                connectionId,
+                dataNeedId,
+                countryCode,
+                regionConnectorId,
+                from,
+                to
+        );
+        var all = apRepository.findAll(specification);
+        var messages = payloadsOf(all);
+        return ResponseEntity.ok()
+                             .body(new AccountingPointDataMarketDocuments(messages));
     }
 }
