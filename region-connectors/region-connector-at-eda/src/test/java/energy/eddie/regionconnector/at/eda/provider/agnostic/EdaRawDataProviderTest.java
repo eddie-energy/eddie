@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.at.eda.provider.agnostic;
 
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p40.ConsumptionRecord;
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p40.MarketParticipantDirectory;
-import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p40.ProcessDirectory;
+import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p41.ConsumptionRecord;
+import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p41.MarketParticipantDirectory;
+import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p41.ProcessDirectory;
 import at.ebutilities.schemata.customerprocesses.masterdata._01p32.MasterData;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
@@ -31,8 +31,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Import(MarshallerConfig.class)
 class EdaRawDataProviderTest {
     private final EdaConsumptionRecord mockConsumptionRecord = new SimpleEdaConsumptionRecord()
-            .setOriginalConsumptionRecord(new ConsumptionRecord().withProcessDirectory(new ProcessDirectory())
-                                                                 .withMarketParticipantDirectory(new MarketParticipantDirectory()));
+            .setOriginalConsumptionRecord(
+                    new ConsumptionRecord()
+                            .withProcessDirectory(new ProcessDirectory())
+                            .withMarketParticipantDirectory(new MarketParticipantDirectory())
+            );
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private Jaxb2Marshaller marshaller;
@@ -91,10 +94,6 @@ class EdaRawDataProviderTest {
         provider.close();
     }
 
-    private SimplePermissionRequest createPermissionRequest(String expected) {
-        return new SimplePermissionRequest(expected, expected, expected);
-    }
-
     @Test
     void getRawDataStream_whenReceivingIdentifiableMasterData_publishesRawDataMessage() {
         // Given
@@ -136,5 +135,9 @@ class EdaRawDataProviderTest {
 
         // Clean-Up
         provider.close();
+    }
+
+    private SimplePermissionRequest createPermissionRequest(String expected) {
+        return new SimplePermissionRequest(expected, expected, expected);
     }
 }
