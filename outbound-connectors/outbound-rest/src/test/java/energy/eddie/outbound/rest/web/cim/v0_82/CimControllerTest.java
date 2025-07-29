@@ -1,8 +1,11 @@
 package energy.eddie.outbound.rest.web.cim.v0_82;
 
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.outbound.rest.connectors.cim.v0_82.CimConnector;
+import energy.eddie.outbound.rest.model.cim.v0_82.PermissionMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v0_82.ValidatedHistoricalDataMarketDocumentModel;
+import energy.eddie.outbound.rest.persistence.cim.v0_82.PermissionMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.ValidatedHistoricalDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.web.WebTestConfig;
 import org.junit.jupiter.api.Test;
@@ -30,7 +33,9 @@ class CimControllerTest {
     @MockitoBean
     private CimConnector cimConnector;
     @MockitoBean
-    private ValidatedHistoricalDataMarketDocumentRepository repository;
+    private ValidatedHistoricalDataMarketDocumentRepository vhdRepository;
+    @MockitoBean
+    private PermissionMarketDocumentRepository pmdRepository;
 
     @Test
     void validatedHistoricalDataMdSSE_returnsDocuments() {
@@ -58,7 +63,7 @@ class CimControllerTest {
     @Test
     void validatedHistoricalDataMd_returnsDocuments() {
         var msg = new ValidatedHistoricalDataMarketDocumentModel(new ValidatedHistoricalDataEnvelope());
-        given(repository.findAll(ArgumentMatchers.<Specification<ValidatedHistoricalDataMarketDocumentModel>>any()))
+        given(vhdRepository.findAll(ArgumentMatchers.<Specification<ValidatedHistoricalDataMarketDocumentModel>>any()))
                 .willReturn(List.of(msg));
 
 
@@ -69,6 +74,50 @@ class CimControllerTest {
                                   .expectStatus()
                                   .isOk()
                                   .returnResult(new ParameterizedTypeReference<List<ValidatedHistoricalDataEnvelope>>() {})
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void permissionMdSSE_returnsDocuments() {
+        var message1 = new PermissionEnvelope();
+        var message2 = new PermissionEnvelope();
+
+        given(cimConnector.getPermissionMarketDocumentStream())
+                .willReturn(Flux.just(message1, message2));
+
+        var result = webTestClient.get()
+                                  .uri("/cim_0_82/permission-md")
+                                  .accept(MediaType.TEXT_EVENT_STREAM)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(PermissionEnvelope.class)
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .expectNextCount(2)
+                    .verifyComplete();
+    }
+
+
+    @Test
+    void permissionMd_returnsDocuments() {
+        var msg = new PermissionMarketDocumentModel(new PermissionEnvelope());
+        given(pmdRepository.findAll(ArgumentMatchers.<Specification<PermissionMarketDocumentModel>>any()))
+                .willReturn(List.of(msg));
+
+
+        var result = webTestClient.get()
+                                  .uri("/cim_0_82/permission-md")
+                                  .accept(MediaType.APPLICATION_JSON)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(new ParameterizedTypeReference<List<PermissionEnvelope>>() {})
                                   .getResponseBody();
 
         StepVerifier.create(result)

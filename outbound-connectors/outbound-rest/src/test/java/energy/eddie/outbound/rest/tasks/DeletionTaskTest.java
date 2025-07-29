@@ -1,8 +1,8 @@
-package energy.eddie.outbound.rest.tasks.cim.v0_82;
+package energy.eddie.outbound.rest.tasks;
 
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
-import energy.eddie.outbound.rest.model.cim.v0_82.ValidatedHistoricalDataMarketDocumentModel;
-import energy.eddie.outbound.rest.persistence.cim.v0_82.ValidatedHistoricalDataMarketDocumentRepository;
+import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
+import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -17,22 +17,22 @@ import java.time.Duration;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class ValidatedHistoricalDataMarketDocumentDeletionTaskTest {
+class DeletionTaskTest {
     @Spy
     @SuppressWarnings("unused")
     private final RestOutboundConnectorConfiguration config = new RestOutboundConnectorConfiguration(Duration.ZERO);
     @Mock
-    private ValidatedHistoricalDataMarketDocumentRepository repository;
+    private ConnectionStatusMessageRepository repository;
     @InjectMocks
-    private ValidatedHistoricalDataMarketDocumentDeletionTask task;
+    private DeletionTask<ConnectionStatusMessageModel> task;
 
     @Test
-    void deleteValidatedHistoricalData_deletes() {
+    void deleteConnectionStatusMessages_deletes() {
         // Given
         // When
         task.delete();
 
         // Then
-        verify(repository).delete(ArgumentMatchers.<Specification<ValidatedHistoricalDataMarketDocumentModel>>any());
+        verify(repository).delete(ArgumentMatchers.<Specification<ConnectionStatusMessageModel>>any());
     }
 }
