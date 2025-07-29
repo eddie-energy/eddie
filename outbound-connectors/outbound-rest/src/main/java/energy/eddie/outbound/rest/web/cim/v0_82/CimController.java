@@ -44,6 +44,7 @@ public class CimController implements CimSwagger {
         this.pmdRepository = pmdRepository;
     }
 
+    @Override
     @GetMapping(value = "/validated-historical-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<ValidatedHistoricalDataEnvelope>> validatedHistoricalDataMdSSE() {
         //noinspection UastIncorrectHttpHeaderInspection
@@ -53,6 +54,7 @@ public class CimController implements CimSwagger {
                              .body(cimConnector.getHistoricalDataMarketDocumentStream());
     }
 
+    @Override
     @GetMapping(value = "/validated-historical-data-md", produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
     public ResponseEntity<ValidatedHistoricalDataMarketDocuments> validatedHistoricalDataMd(
             @RequestParam(required = false) Optional<String> permissionId,
@@ -78,6 +80,7 @@ public class CimController implements CimSwagger {
                              .body(new ValidatedHistoricalDataMarketDocuments(messages));
     }
 
+    @Override
     @GetMapping(value = "/permission-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<PermissionEnvelope>> permissionMdSSE() {
         //noinspection UastIncorrectHttpHeaderInspection
@@ -87,6 +90,7 @@ public class CimController implements CimSwagger {
                              .body(cimConnector.getPermissionMarketDocumentStream());
     }
 
+    @Override
     @GetMapping(value = "/permission-md", produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
     public ResponseEntity<PermissionMarketDocuments> permissionMd(
             @RequestParam(required = false) Optional<String> permissionId,
