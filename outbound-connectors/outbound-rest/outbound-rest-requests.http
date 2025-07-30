@@ -13,6 +13,18 @@ GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-me
 Accept: text/event-stream
 Authorization: Bearer {{$auth.token("keycloak")}}
 
+### GET raw data messages as json
+GET http://localhost:9090/outbound-connectors/rest/agnostic/raw-data-messages
+Accept: application/json
+
+### GET raw data messages as xml
+GET http://localhost:9090/outbound-connectors/rest/agnostic/raw-data-messages
+Accept: application/xml
+
+### Get raw data messages as event stream
+GET http://localhost:9090/outbound-connectors/rest/agnostic/raw-data-messages
+Accept: text/event-stream
+
 ### Get validated historical data market documents as json
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
 Accept: application/json
