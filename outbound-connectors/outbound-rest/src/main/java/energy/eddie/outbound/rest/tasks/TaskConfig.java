@@ -1,6 +1,7 @@
 package energy.eddie.outbound.rest.tasks;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
@@ -8,10 +9,12 @@ import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.connectors.cim.v0_82.CimConnector;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
+import energy.eddie.outbound.rest.model.RawDataMessageModel;
 import energy.eddie.outbound.rest.model.cim.v0_82.AccountingPointDataMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v0_82.PermissionMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v0_82.ValidatedHistoricalDataMarketDocumentModel;
 import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
+import energy.eddie.outbound.rest.persistence.RawDataMessageRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.AccountingPointDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.PermissionMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.ValidatedHistoricalDataMarketDocumentRepository;
@@ -92,5 +95,23 @@ public class TaskConfig {
         return new InsertionTask<>(agnosticConnector.getConnectionStatusMessageStream(),
                                    repository,
                                    ConnectionStatusMessageModel::new);
+    }
+
+    @Bean
+    DeletionTask<RawDataMessageModel> rdmDeletionTask(
+            RawDataMessageRepository repository,
+            RestOutboundConnectorConfiguration config
+    ) {
+        return new DeletionTask<>(repository, config);
+    }
+
+    @Bean
+    InsertionTask<RawDataMessage, RawDataMessageModel> rdmInsertionTask(
+            AgnosticConnector agnosticConnector,
+            RawDataMessageRepository repository
+    ) {
+        return new InsertionTask<>(agnosticConnector.getRawDataMessageStream(),
+                                   repository,
+                                   RawDataMessageModel::new);
     }
 }

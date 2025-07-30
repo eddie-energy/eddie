@@ -2,23 +2,23 @@ package energy.eddie.outbound.rest.dto;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.RawDataMessage;
 import jakarta.annotation.Nullable;
 
 import java.util.List;
 
-public class ConnectionStatusMessages {
+public class RawDataMessages {
     @Nullable
-    private final List<ConnectionStatusMessage> documents;
+    private final List<RawDataMessage> documents;
 
-    public ConnectionStatusMessages(@Nullable List<ConnectionStatusMessage> documents) {this.documents = documents;}
+    public RawDataMessages(@Nullable List<RawDataMessage> documents) {this.documents = documents;}
 
     // Required by jackson
     @SuppressWarnings("unused")
     @Nullable
     @JacksonXmlElementWrapper(useWrapping = false)
-    @JacksonXmlProperty(localName = "ConnectionStatusMessage")
-    public List<ConnectionStatusMessage> getMessages() {
+    @JacksonXmlProperty(localName = "RawDataMessage")
+    public List<RawDataMessage> getMessages() {
         return documents;
     }
 }
