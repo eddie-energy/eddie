@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
@@ -31,11 +32,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.BDDMockito.given;
 
 @WebFluxTest(value = AgnosticController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
-@Import(WebTestConfig.class)
+@Import({WebTestConfig.class, AgnosticConnector.class})
 class AgnosticControllerTest {
     @Autowired
     private WebTestClient webTestClient;
-    @MockitoBean
+    @Autowired
     private AgnosticConnector agnosticConnector;
     @MockitoBean
     private ConnectionStatusMessageRepository csmRepository;
@@ -43,12 +44,12 @@ class AgnosticControllerTest {
     private RawDataMessageRepository rawDataRepository;
 
     @Test
+    @DirtiesContext
     void connectionStatusMessageSSE_returnsMessages() {
         var message1 = statusMessage(PermissionProcessStatus.CREATED);
         var message2 = statusMessage(PermissionProcessStatus.VALIDATED);
 
-        given(agnosticConnector.getConnectionStatusMessageStream())
-                .willReturn(Flux.just(message1, message2));
+        agnosticConnector.setConnectionStatusMessageStream(Flux.just(message1, message2));
 
         var result = webTestClient.get()
                                   .uri("/agnostic/connection-status-messages")
@@ -60,6 +61,7 @@ class AgnosticControllerTest {
                                   .getResponseBody();
 
         StepVerifier.create(result)
+                    .then(agnosticConnector::close)
                     .expectNextMatches(message -> message1.status().equals(message.status()))
                     .expectNextMatches(message -> message2.status().equals(message.status()))
                     .verifyComplete();
@@ -91,12 +93,12 @@ class AgnosticControllerTest {
     }
 
     @Test
+    @DirtiesContext
     void rawDataMessageSSE_returnsMessages() {
         var message1 = new RawDataMessage("pid", "cid", "dnid", null, ZonedDateTime.now(ZoneOffset.UTC), "{}");
         var message2 = new RawDataMessage("other-pid", "cid", "dnid", null, ZonedDateTime.now(ZoneOffset.UTC), "[]");
 
-        given(agnosticConnector.getRawDataMessageStream())
-                .willReturn(Flux.just(message1, message2));
+        agnosticConnector.setRawDataStream(Flux.just(message1, message2));
 
         var result = webTestClient.get()
                                   .uri("/agnostic/raw-data-messages")
@@ -108,6 +110,7 @@ class AgnosticControllerTest {
                                   .getResponseBody();
 
         StepVerifier.create(result)
+                    .then(agnosticConnector::close)
                     .expectNextMatches(message -> message1.permissionId().equals(message.permissionId()))
                     .expectNextMatches(message -> message2.permissionId().equals(message.permissionId()))
                     .verifyComplete();

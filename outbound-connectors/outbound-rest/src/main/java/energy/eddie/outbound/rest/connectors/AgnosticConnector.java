@@ -13,7 +13,7 @@ import reactor.core.publisher.Sinks;
 import java.time.Duration;
 
 @Component
-public class AgnosticConnector implements ConnectionStatusMessageOutboundConnector, RawDataOutboundConnector {
+public class AgnosticConnector implements ConnectionStatusMessageOutboundConnector, RawDataOutboundConnector, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AgnosticConnector.class);
     private final Sinks.Many<ConnectionStatusMessage> csmSink = Sinks.many()
                                                                      .replay()
@@ -42,5 +42,11 @@ public class AgnosticConnector implements ConnectionStatusMessageOutboundConnect
         rawDataStream
                 .onErrorContinue((err, obj) -> LOGGER.warn("Got error while processing raw data", err))
                 .subscribe(rdSink::tryEmitNext);
+    }
+
+    @Override
+    public void close() {
+        csmSink.tryEmitComplete();
+        rdSink.tryEmitComplete();
     }
 }
