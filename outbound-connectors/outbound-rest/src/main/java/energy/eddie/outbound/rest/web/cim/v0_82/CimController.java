@@ -122,6 +122,7 @@ public class CimController implements CimSwagger {
                              .body(new PermissionMarketDocuments(messages));
     }
 
+    @Override
     @GetMapping(value = "/accounting-point-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<AccountingPointEnvelope>> accountingPointDataMdSSE() {
         return ResponseEntity.ok()
@@ -130,6 +131,7 @@ public class CimController implements CimSwagger {
                              .body(cimConnector.getAccountingPointDataMarketDocumentStream());
     }
 
+    @Override
     @GetMapping(value = "/accounting-point-data-md", produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
     public ResponseEntity<AccountingPointDataMarketDocuments> accountingPointDataMd(
             @RequestParam(required = false) Optional<String> permissionId,
