@@ -154,6 +154,7 @@ public class CimController implements CimSwagger {
                              .body(new AccountingPointDataMarketDocuments(messages));
     }
 
+    @Override
     @PostMapping(value = "termination-md", consumes = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
     public ResponseEntity<Void> terminationMd(@RequestBody PermissionEnvelope permissionEnvelope) {
         cimConnector.publish(permissionEnvelope);
