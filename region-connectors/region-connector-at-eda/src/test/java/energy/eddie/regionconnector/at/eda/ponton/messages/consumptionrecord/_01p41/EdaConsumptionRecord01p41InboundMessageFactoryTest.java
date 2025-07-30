@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p40;
+package energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p41;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.at.eda.dto.Energy;
@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = MarshallerConfig.class)
-class EdaConsumptionRecord01p40InboundMessageFactoryTest {
+class EdaConsumptionRecord01p41InboundMessageFactoryTest {
 
     @Autowired
     private Jaxb2Marshaller marshaller;
@@ -45,7 +45,7 @@ class EdaConsumptionRecord01p40InboundMessageFactoryTest {
             ZonedDateTime meterReadingEnd
     ) throws IOException {
         // Given
-        var factory = new EdaConsumptionRecord01p40InboundMessageFactory(marshaller);
+        var factory = new EdaConsumptionRecord01p41InboundMessageFactory(marshaller);
 
         // When
         var rec = factory.parseInputStream(inputStream);
@@ -61,8 +61,8 @@ class EdaConsumptionRecord01p40InboundMessageFactoryTest {
                 () -> assertNotNull(rec.originalConsumptionRecord()),
                 () -> assertEquals(documentCreationDateTime,
                                    rec.documentCreationDateTime()
-                                         .withZoneSameInstant(documentCreationDateTime.getZone())),
-                () -> assertEquals("01.40", rec.schemaVersion()),
+                                      .withZoneSameInstant(documentCreationDateTime.getZone())),
+                () -> assertEquals("01.41", rec.schemaVersion()),
                 () -> assertEquals("ATXXXXXX", rec.senderMessageAddress()),
                 () -> assertEquals("EPXXXXXX", rec.receiverMessageAddress()),
                 () -> assertEquals(conversationId, rec.conversationId()),
@@ -85,46 +85,34 @@ class EdaConsumptionRecord01p40InboundMessageFactoryTest {
 
 
     @Test
-    void isActive_on_07_04_2024_returnsFalse() {
+    void isActive_on_2025_10_05_returnsFalse() {
         // given
-        var factory = new EdaConsumptionRecord01p40InboundMessageFactory(marshaller);
+        var factory = new EdaConsumptionRecord01p41InboundMessageFactory(marshaller);
 
         // when
-        var active = factory.isActive(LocalDate.of(2024, 4, 7));
+        var active = factory.isActive(LocalDate.of(2025, 10, 5));
 
         // then
         assertFalse(active);
     }
 
     @Test
-    void isActive_on_2025_10_06_returnsFalse() {
+    void isActive_on_2025_10_06_returnsTrue() {
         // given
-        var factory = new EdaConsumptionRecord01p40InboundMessageFactory(marshaller);
+        var factory = new EdaConsumptionRecord01p41InboundMessageFactory(marshaller);
 
         // when
         var active = factory.isActive(LocalDate.of(2025, 10, 6));
-
-        // then
-        assertFalse(active);
-    }
-
-    @Test
-    void isActive_on_08_04_2024_returnsTrue() {
-        // given
-        var factory = new EdaConsumptionRecord01p40InboundMessageFactory(marshaller);
-
-        // when
-        var active = factory.isActive(LocalDate.of(2024, 4, 8));
 
         // then
         assertTrue(active);
     }
 
     private static Stream<Arguments> inputStreams() {
-        ClassLoader classLoader = EdaConsumptionRecord01p40InboundMessageFactoryTest.class.getClassLoader();
-        var daily = classLoader.getResourceAsStream("xsd/consumptionrecord/_01p40/consumptionrecord_daily.xml");
+        ClassLoader classLoader = EdaConsumptionRecord01p41InboundMessageFactoryTest.class.getClassLoader();
+        var daily = classLoader.getResourceAsStream("xsd/consumptionrecord/_01p41/consumptionrecord_daily.xml");
         var quarterHourly = classLoader.getResourceAsStream(
-                "xsd/consumptionrecord/_01p40/consumptionrecord_quater-hourly.xml");
+                "xsd/consumptionrecord/_01p41/consumptionrecord_quater-hourly.xml");
 
         return Stream.of(
                 Arguments.of(daily,
