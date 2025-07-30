@@ -1,6 +1,7 @@
 package energy.eddie.spring;
 
 import energy.eddie.api.agnostic.RegionConnector;
+import energy.eddie.api.agnostic.outbound.EnableSwaggerDoc;
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import energy.eddie.api.agnostic.outbound.OutboundConnectorExtension;
 import energy.eddie.outbound.shared.utils.CommonPaths;
@@ -27,11 +28,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor.enableSpringDoc;
+
 public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, Ordered {
     /**
      * Name of the Bean registered in the core context that holds a list of the IDs of the enabled outbound-connectors.
      */
     public static final String ENABLED_OUTBOUND_CONNECTOR_BEAN_NAME = "enabledOutboundConnectors";
+    /**
+     * Name of the Bean registered in the core context that holds a list of the IDs of the enabled outbound-connectors with a swagger endpoint.
+     */
+    public static final String SWAGGER_ENABLED_OUTBOUND_CONNECTOR_BEAN_NAME = "swaggerEnabledOutboundConnectors";
     /**
      * Base package under which all outbound-connectors are located.
      */
@@ -40,6 +47,18 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
     private final Environment environment;
 
     public OutboundConnectorRegistrationBeanPostProcessor(Environment environment) {this.environment = environment;}
+
+    public static Class<?> classForBeanDefinition(BeanDefinition definition) {
+        try {
+            return Class.forName(definition.getBeanClassName());
+        } catch (ClassNotFoundException e) {
+            throw new InitializationException(
+                    "Found outbound-connector bean definition for class '%s', but couldn't get the class for it, this must not happen, will abort launch"
+                            .formatted(definition.getBeanClassName()),
+                    e
+            );
+        }
+    }
 
     /**
      * Scans the {@value OUTBOUND_CONNECTORS_SCAN_BASE_PACKAGE} package for any classes that are annotated with
@@ -66,6 +85,7 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
         List<Class<?>> outboundConnectorProcessorClasses = findAllOutboundConnectorProcessorClasses(environment);
 
         List<String> enabledOutboundConnectorNames = new ArrayList<>();
+        List<String> swaggerEnabledOutboundConnectorNames = new ArrayList<>();
 
         for (Class<?> configClass : getEnabledOutboundConnectorConfigClasses()) {
             var outboundConnectorName = configClass.getAnnotation(OutboundConnector.class).name();
@@ -79,8 +99,12 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
             var beanDefinition = createOutboundConnectorBeanDefinition(applicationContext, outboundConnectorName);
 
             registry.registerBeanDefinition(outboundConnectorName, beanDefinition);
+            if (configClass.isAnnotationPresent(EnableSwaggerDoc.class)) {
+                swaggerEnabledOutboundConnectorNames.add(outboundConnectorName);
+            }
         }
-        registerEnabledOutboundConnectorsBeanDefinition(registry, enabledOutboundConnectorNames);
+        registerListBean(registry, enabledOutboundConnectorNames, ENABLED_OUTBOUND_CONNECTOR_BEAN_NAME);
+        registerListBean(registry, swaggerEnabledOutboundConnectorNames, SWAGGER_ENABLED_OUTBOUND_CONNECTOR_BEAN_NAME);
     }
 
     @Override
@@ -97,18 +121,6 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
     @Override
     public int getOrder() {
         return Integer.MAX_VALUE;
-    }
-
-    public static Class<?> classForBeanDefinition(BeanDefinition definition) {
-        try {
-            return Class.forName(definition.getBeanClassName());
-        } catch (ClassNotFoundException e) {
-            throw new InitializationException(
-                    "Found outbound-connector bean definition for class '%s', but couldn't get the class for it, this must not happen, will abort launch"
-                            .formatted(definition.getBeanClassName()),
-                    e
-            );
-        }
     }
 
     // Ignore warning to use .toList because it doesn't return a List<Class<?>> but a List<? extends Class<?>>
@@ -171,6 +183,9 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
         AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
         applicationContext.setId(outboundConnectorName);
         applicationContext.register(outboundConnectorConfigClass);
+        if (outboundConnectorConfigClass.isAnnotationPresent(EnableSwaggerDoc.class)) {
+            enableSpringDoc(applicationContext);
+        }
 
         // register any outbound-connector processor
         outboundConnectorProcessorClasses.forEach(applicationContext::register);
@@ -210,18 +225,15 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
     }
 
     /**
-     * Registers a List&lt;String&gt; containing the names of the enabled outbound-connectors.
+     * Registers a List&lt;String&gt; as a bean.
      */
-    private void registerEnabledOutboundConnectorsBeanDefinition(
-            BeanDefinitionRegistry registry,
-            List<String> enabledRegionConnectorNames
-    ) {
-        // copy list to prevent that modifications of enabledOutboundConnectorNames influence the Bean and thereby other application parts
-        List<String> copy = new ArrayList<>(enabledRegionConnectorNames);
+    private void registerListBean(BeanDefinitionRegistry registry, List<String> list, String beanName) {
+        // copy list to prevent that modifications of the list influence the Bean and thereby other application parts
+        List<String> copy = new ArrayList<>(list);
         AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
                 .genericBeanDefinition(List.class, () -> copy)
                 .getBeanDefinition();
-        registry.registerBeanDefinition(ENABLED_OUTBOUND_CONNECTOR_BEAN_NAME, beanDefinition);
+        registry.registerBeanDefinition(beanName, beanDefinition);
     }
 
     private Set<BeanDefinition> findAllSpringOutboundConnectorBeanDefinitions() {
@@ -231,10 +243,12 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
         return scanner.findCandidateComponents(OUTBOUND_CONNECTORS_SCAN_BASE_PACKAGE);
     }
 
+    // Sonar false positive
+    @SuppressWarnings("java:S5411")
     private boolean isOutboundConnectorEnabled(Class<?> configClass) {
         var outboundConnectorName = configClass.getAnnotation(OutboundConnector.class).name();
         var propertyName = "outbound-connector.%s.enabled".formatted(outboundConnectorName.replace('-', '.'));
-        var isEnabled = Boolean.TRUE.equals(environment.getProperty(propertyName, Boolean.class, false));
+        var isEnabled = environment.getProperty(propertyName, Boolean.class, false);
         if (!isEnabled) {
             LOGGER.info("Outbound connector {} not explicitly enabled by property, will not load it.",
                         outboundConnectorName);

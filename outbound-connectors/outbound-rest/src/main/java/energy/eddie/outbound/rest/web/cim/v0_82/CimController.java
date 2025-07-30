@@ -29,13 +29,14 @@ import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
 @RestController
 @RequestMapping(TopicStructure.CIM_0_82_VALUE)
-public class CimController {
+public class CimController implements CimSwagger {
     private final CimConnector cimConnector;
     private final ValidatedHistoricalDataMarketDocumentRepository vhdRepository;
     private final PermissionMarketDocumentRepository pmdRepository;
 
     public CimController(
-            CimConnector cimConnector, ValidatedHistoricalDataMarketDocumentRepository vhdRepository,
+            CimConnector cimConnector,
+            ValidatedHistoricalDataMarketDocumentRepository vhdRepository,
             PermissionMarketDocumentRepository pmdRepository
     ) {
         this.cimConnector = cimConnector;
@@ -43,6 +44,7 @@ public class CimController {
         this.pmdRepository = pmdRepository;
     }
 
+    @Override
     @GetMapping(value = "/validated-historical-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<ValidatedHistoricalDataEnvelope>> validatedHistoricalDataMdSSE() {
         //noinspection UastIncorrectHttpHeaderInspection
@@ -52,6 +54,7 @@ public class CimController {
                              .body(cimConnector.getHistoricalDataMarketDocumentStream());
     }
 
+    @Override
     @GetMapping(value = "/validated-historical-data-md", produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
     public ResponseEntity<ValidatedHistoricalDataMarketDocuments> validatedHistoricalDataMd(
             @RequestParam(required = false) Optional<String> permissionId,
@@ -77,6 +80,7 @@ public class CimController {
                              .body(new ValidatedHistoricalDataMarketDocuments(messages));
     }
 
+    @Override
     @GetMapping(value = "/permission-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<PermissionEnvelope>> permissionMdSSE() {
         //noinspection UastIncorrectHttpHeaderInspection
@@ -86,6 +90,7 @@ public class CimController {
                              .body(cimConnector.getPermissionMarketDocumentStream());
     }
 
+    @Override
     @GetMapping(value = "/permission-md", produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
     public ResponseEntity<PermissionMarketDocuments> permissionMd(
             @RequestParam(required = false) Optional<String> permissionId,

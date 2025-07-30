@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.SWAGGER_DOC_PATH;
+import static energy.eddie.spring.OutboundConnectorRegistrationBeanPostProcessor.SWAGGER_ENABLED_OUTBOUND_CONNECTOR_BEAN_NAME;
 import static energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor.ENABLED_REGION_CONNECTOR_BEAN_NAME;
 
 /**
@@ -27,7 +28,9 @@ public class OpenApiDocs {
     public SwaggerUiConfigProperties swaggerUiConfig(
             SwaggerUiConfigProperties config,
             @Value("${server.port}") int serverPort,
-            @Qualifier(ENABLED_REGION_CONNECTOR_BEAN_NAME) List<String> enabledRegionConnectors
+            @Value("${eddie.management.server.port}") int managementPort,
+            @Qualifier(ENABLED_REGION_CONNECTOR_BEAN_NAME) List<String> enabledRegionConnectors,
+            @Qualifier(SWAGGER_ENABLED_OUTBOUND_CONNECTOR_BEAN_NAME) List<String> enabledOutboundConnectors
     ) {
         var swaggerUrls = enabledRegionConnectors
                 .stream()
@@ -48,8 +51,27 @@ public class OpenApiDocs {
                                                                             name.toUpperCase(Locale.ENGLISH));
                 })
                 .collect(Collectors.toSet());
+        var outboundSwaggerUrls = enabledOutboundConnectors
+                .stream()
+                .map(name -> {
+                    // CVE-2024-22243 can be ignored, as we are not parsing an externally provided URL
+                    String docUrl = UriComponentsBuilder
+                            .newInstance()
+                            .scheme("http")
+                            .host("localhost")
+                            .port(managementPort)
+                            .pathSegment("outbound-connectors")
+                            .pathSegment(name)
+                            .path(SWAGGER_DOC_PATH)
+                            .toUriString();
 
+                    return new AbstractSwaggerUiConfigProperties.SwaggerUrl("outbound-connector-" + name,
+                                                                            docUrl,
+                                                                            name.toUpperCase(Locale.ENGLISH));
+                })
+                .collect(Collectors.toSet());
         swaggerUrls.add(getEuropeanMasterDataSwaggerUrl(serverPort));
+        swaggerUrls.addAll(outboundSwaggerUrls);
         config.setUrls(swaggerUrls);
         return config;
     }
