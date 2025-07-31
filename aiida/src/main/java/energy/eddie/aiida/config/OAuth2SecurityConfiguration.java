@@ -52,6 +52,7 @@ public class OAuth2SecurityConfiguration {
                                 "/assets/**",
                                 "/favicon.svg",
                                 "/vue",
+                                "/vue/**",
                                 "/login",
                                 "/mqtt-auth/**",
                                 "/actuator/health/**",
