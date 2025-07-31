@@ -1,7 +1,9 @@
 package energy.eddie.outbound.rest.connectors.cim.v0_82;
 
+import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import org.slf4j.Logger;
@@ -13,14 +15,11 @@ import reactor.core.publisher.Sinks;
 import java.time.Duration;
 
 @Component
-public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConnector, PermissionMarketDocumentOutboundConnector, AutoCloseable {
+public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConnector, PermissionMarketDocumentOutboundConnector, AccountingPointEnvelopeOutboundConnector, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(CimConnector.class);
-    private final Sinks.Many<ValidatedHistoricalDataEnvelope> vhdSink = Sinks.many()
-                                                                             .replay()
-                                                                             .limit(Duration.ofSeconds(10));
-    private final Sinks.Many<PermissionEnvelope> pmdSink = Sinks.many()
-                                                                .replay()
-                                                                .limit(Duration.ofSeconds(10));
+    private final Sinks.Many<ValidatedHistoricalDataEnvelope> vhdSink = createSink();
+    private final Sinks.Many<PermissionEnvelope> pmdSink = createSink();
+    private final Sinks.Many<AccountingPointEnvelope> apSink = createSink();
 
     @Override
     public void setEddieValidatedHistoricalDataMarketDocumentStream(Flux<ValidatedHistoricalDataEnvelope> marketDocumentStream) {
@@ -49,8 +48,28 @@ public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConn
     }
 
     @Override
+    public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
+        marketDocumentStream
+                .onErrorContinue((err, obj) -> LOGGER.warn(
+                        "Encountered error while processing accounting point data market document",
+                        err))
+                .subscribe(apSink::tryEmitNext);
+    }
+
+    public Flux<AccountingPointEnvelope> getAccountingPointDataMarketDocumentStream() {
+        return apSink.asFlux();
+    }
+
+    @Override
     public void close() {
         vhdSink.tryEmitComplete();
         pmdSink.tryEmitComplete();
+        apSink.tryEmitComplete();
+    }
+
+    private static <T> Sinks.Many<T> createSink() {
+        return Sinks.many()
+                    .replay()
+                    .limit(Duration.ofSeconds(10));
     }
 }

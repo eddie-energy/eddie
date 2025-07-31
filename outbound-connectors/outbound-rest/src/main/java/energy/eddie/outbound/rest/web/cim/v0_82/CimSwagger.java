@@ -1,7 +1,9 @@
 package energy.eddie.outbound.rest.web.cim.v0_82;
 
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.outbound.rest.dto.AccountingPointDataMarketDocuments;
 import energy.eddie.outbound.rest.dto.PermissionMarketDocuments;
 import energy.eddie.outbound.rest.dto.ValidatedHistoricalDataMarketDocuments;
 import io.swagger.v3.oas.annotations.Operation;
@@ -656,6 +658,371 @@ public interface CimSwagger {
             }
     )
     ResponseEntity<PermissionMarketDocuments> permissionMd(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> countryCode,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    );
+
+    @Operation(
+            operationId = "GET accounting point data market document stream",
+            summary = "GET accounting point data market document stream",
+            description = "Get all new accounting point data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream",
+                            schema = @Schema(
+                                    implementation = AccountingPointEnvelope.class
+                            ),
+                            examples = @ExampleObject(
+                                    // language=JSON
+                                    value = """
+                                            {
+                                              "MessageDocumentHeader": {
+                                                "creationDateTime": "2025-07-30T06:07:59Z",
+                                                "MessageDocumentHeader_MetaInformation": {
+                                                  "connectionid": "1",
+                                                  "permissionid": "1aa0ef01-98c3-4e5f-be51-af3d0ccbfffc",
+                                                  "dataNeedid": "8685eed4-ab97-4c57-9409-76295792ee1c",
+                                                  "dataType": "accounting-point-market-document",
+                                                  "MessageDocumentHeader_Region": {
+                                                    "connector": "cds",
+                                                    "country": "NUS"
+                                                  }
+                                                }
+                                              },
+                                              "AccountingPoint_MarketDocument": {
+                                                "mRID": "50e0a1b9-a10b-4114-b9de-9a1d0cb735aa",
+                                                "revisionNumber": "0.82",
+                                                "type": "B99",
+                                                "createdDateTime": "2025-07-30T06:07:59Z",
+                                                "description": "aacounting-point-market-document",
+                                                "sender_MarketParticipant.mRID": {
+                                                  "codingScheme": "NUS",
+                                                  "value": "CDSC"
+                                                },
+                                                "sender_MarketParticipant.marketRole.type": "A26",
+                                                "receiver_MarketParticipant.mRID": {
+                                                  "codingScheme": "NUS",
+                                                  "value": "meter-id"
+                                                },
+                                                "receiver_MarketParticipant.marketRole.type": "A13",
+                                                "AccountingPointList": {
+                                                  "AccountingPoint": [
+                                                    {
+                                                      "settlementMethod": null,
+                                                      "mRID": {
+                                                        "codingScheme": "NUS",
+                                                        "value": "c40798cd-35b8-5d92-850f-aeb01ca27375"
+                                                      },
+                                                      "meterReadingResolution": null,
+                                                      "gridAgreementType": null,
+                                                      "name": null,
+                                                      "administrativeStatus": null,
+                                                      "flexibilityContract": null,
+                                                      "resolution": null,
+                                                      "commodity": "2",
+                                                      "energyCommunity": null,
+                                                      "direction": null,
+                                                      "generationType": null,
+                                                      "loadProfileType": null,
+                                                      "supplyStatus": null,
+                                                      "tariffClassDSO": null,
+                                                      "ContractPartyList": {
+                                                        "ContractParty": [
+                                                          {
+                                                            "contractPartyRole": "contractPartner",
+                                                            "salutation": null,
+                                                            "surName": "Doe",
+                                                            "firstName": "Jane",
+                                                            "companyName": null,
+                                                            "Identification": null,
+                                                            "dateOfBirth": null,
+                                                            "dateOfDeath": null,
+                                                            "companyRegisterNumber": null,
+                                                            "VATnumber": null,
+                                                            "email": null
+                                                          }
+                                                        ]
+                                                      },
+                                                      "AddressList": {
+                                                        "Address": [
+                                                          {
+                                                            "addressRole": "delivery",
+                                                            "postalCode": "11111",
+                                                            "cityName": "Anytown",
+                                                            "streetName": "Main St - HOME",
+                                                            "buildingNumber": "123",
+                                                            "staircaseNumber": null,
+                                                            "floorNumber": null,
+                                                            "doorNumber": null,
+                                                            "addressSuffix": null
+                                                          },
+                                                          {
+                                                            "addressRole": "invoice",
+                                                            "postalCode": "11111",
+                                                            "cityName": "Anytown",
+                                                            "streetName": "Main St - HOME",
+                                                            "buildingNumber": "123",
+                                                            "staircaseNumber": null,
+                                                            "floorNumber": null,
+                                                            "doorNumber": null,
+                                                            "addressSuffix": null
+                                                          }
+                                                        ]
+                                                      },
+                                                      "BillingData": null
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<AccountingPointEnvelope>> accountingPointDataMdSSE();
+
+
+    @Operation(
+            operationId = "GET accounting point data market documents",
+            summary = "GET accounting point data market documents",
+            description = "Get all past accounting point data market documents",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = AccountingPointEnvelope.class)),
+                                    examples = @ExampleObject(
+                                            // language=JSON
+                                            value = """
+                                                            [{
+                                                      "MessageDocumentHeader": {
+                                                        "creationDateTime": "2025-07-30T06:07:59Z",
+                                                        "MessageDocumentHeader_MetaInformation": {
+                                                          "connectionid": "1",
+                                                          "permissionid": "1aa0ef01-98c3-4e5f-be51-af3d0ccbfffc",
+                                                          "dataNeedid": "8685eed4-ab97-4c57-9409-76295792ee1c",
+                                                          "dataType": "accounting-point-market-document",
+                                                          "MessageDocumentHeader_Region": {
+                                                            "connector": "cds",
+                                                            "country": "NUS"
+                                                          }
+                                                        }
+                                                      },
+                                                      "AccountingPoint_MarketDocument": {
+                                                        "mRID": "50e0a1b9-a10b-4114-b9de-9a1d0cb735aa",
+                                                        "revisionNumber": "0.82",
+                                                        "type": "B99",
+                                                        "createdDateTime": "2025-07-30T06:07:59Z",
+                                                        "description": "aacounting-point-market-document",
+                                                        "sender_MarketParticipant.mRID": {
+                                                          "codingScheme": "NUS",
+                                                          "value": "CDSC"
+                                                        },
+                                                        "sender_MarketParticipant.marketRole.type": "A26",
+                                                        "receiver_MarketParticipant.mRID": {
+                                                          "codingScheme": "NUS",
+                                                          "value": "meter-id"
+                                                        },
+                                                        "receiver_MarketParticipant.marketRole.type": "A13",
+                                                        "AccountingPointList": {
+                                                          "AccountingPoint": [
+                                                            {
+                                                              "settlementMethod": null,
+                                                              "mRID": {
+                                                                "codingScheme": "NUS",
+                                                                "value": "c40798cd-35b8-5d92-850f-aeb01ca27375"
+                                                              },
+                                                              "meterReadingResolution": null,
+                                                              "gridAgreementType": null,
+                                                              "name": null,
+                                                              "administrativeStatus": null,
+                                                              "flexibilityContract": null,
+                                                              "resolution": null,
+                                                              "commodity": "2",
+                                                              "energyCommunity": null,
+                                                              "direction": null,
+                                                              "generationType": null,
+                                                              "loadProfileType": null,
+                                                              "supplyStatus": null,
+                                                              "tariffClassDSO": null,
+                                                              "ContractPartyList": {
+                                                                "ContractParty": [
+                                                                  {
+                                                                    "contractPartyRole": "contractPartner",
+                                                                    "salutation": null,
+                                                                    "surName": "Doe",
+                                                                    "firstName": "Jane",
+                                                                    "companyName": null,
+                                                                    "Identification": null,
+                                                                    "dateOfBirth": null,
+                                                                    "dateOfDeath": null,
+                                                                    "companyRegisterNumber": null,
+                                                                    "VATnumber": null,
+                                                                    "email": null
+                                                                  }
+                                                                ]
+                                                              },
+                                                              "AddressList": {
+                                                                "Address": [
+                                                                  {
+                                                                    "addressRole": "delivery",
+                                                                    "postalCode": "11111",
+                                                                    "cityName": "Anytown",
+                                                                    "streetName": "Main St - HOME",
+                                                                    "buildingNumber": "123",
+                                                                    "staircaseNumber": null,
+                                                                    "floorNumber": null,
+                                                                    "doorNumber": null,
+                                                                    "addressSuffix": null
+                                                                  },
+                                                                  {
+                                                                    "addressRole": "invoice",
+                                                                    "postalCode": "11111",
+                                                                    "cityName": "Anytown",
+                                                                    "streetName": "Main St - HOME",
+                                                                    "buildingNumber": "123",
+                                                                    "staircaseNumber": null,
+                                                                    "floorNumber": null,
+                                                                    "doorNumber": null,
+                                                                    "addressSuffix": null
+                                                                  }
+                                                                ]
+                                                              },
+                                                              "BillingData": null
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }]
+                                                    """
+                                    )
+                            ),
+                            @Content(
+                                    mediaType = "application/xml",
+                                    schema = @Schema(implementation = PermissionMarketDocuments.class),
+                                    examples = @ExampleObject(
+                                            // language=XML
+                                            value = """
+                                                    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                                                    <AccountingPointDataMarketDocuments xmlns:ns3="htthttp://www.eddie.energy/AP/EDD04/20240422" >
+                                                        <ns3:AccountingPoint_Envelope>
+                                                            <ns3:MessageDocumentHeader>
+                                                                <ns3:creationDateTime>2025-07-30T07:57:15Z</ns3:creationDateTime>
+                                                                <ns3:MessageDocumentHeader_MetaInformation>
+                                                                    <ns3:connectionid>1</ns3:connectionid>
+                                                                    <ns3:permissionid>f08b5e93-3fbf-415b-8719-579e7c46c3ca</ns3:permissionid>
+                                                                    <ns3:dataNeedid>8685eed4-ab97-4c57-9409-76295792ee1c</ns3:dataNeedid>
+                                                                    <ns3:dataType>accounting-point-market-document</ns3:dataType>
+                                                                    <ns3:MessageDocumentHeader_Region>
+                                                                        <ns3:connector>cds</ns3:connector>
+                                                                        <ns3:country>NUS</ns3:country>
+                                                                    </ns3:MessageDocumentHeader_Region>
+                                                                </ns3:MessageDocumentHeader_MetaInformation>
+                                                            </ns3:MessageDocumentHeader>
+                                                            <ns3:AccountingPoint_MarketDocument>
+                                                                <ns3:mRID>436d9444-5f7f-4735-9c6c-b9ef624f43af</ns3:mRID>
+                                                                <ns3:revisionNumber>0.82</ns3:revisionNumber>
+                                                                <ns3:type>B99</ns3:type>
+                                                                <ns3:createdDateTime>2025-07-30T07:57:15Z</ns3:createdDateTime>
+                                                                <ns3:sender_MarketParticipant.mRID>
+                                                                    <ns3:codingScheme>NUS</ns3:codingScheme>
+                                                                    <ns3:value>CDSC</ns3:value>
+                                                                </ns3:sender_MarketParticipant.mRID>
+                                                                <ns3:sender_MarketParticipant.marketRole.type>A26</ns3:sender_MarketParticipant.marketRole.type>
+                                                                <ns3:receiver_MarketParticipant.mRID>
+                                                                    <ns3:codingScheme>NUS</ns3:codingScheme>
+                                                                </ns3:receiver_MarketParticipant.mRID>
+                                                                <ns3:receiver_MarketParticipant.marketRole.type>A13</ns3:receiver_MarketParticipant.marketRole.type>
+                                                                <ns3:AccountingPointList>
+                                                                    <ns3:AccountingPoint>
+                                                                        <ns3:mRID>
+                                                                            <ns3:codingScheme>NUS</ns3:codingScheme>
+                                                                            <ns3:value>8a681951-2c0a-5ad9-8938-b539b59d0075</ns3:value>
+                                                                        </ns3:mRID>
+                                                                        <ns3:commodity>2</ns3:commodity>
+                                                                        <ns3:ContractPartyList>
+                                                                            <ns3:ContractParty>
+                                                                                <ns3:contractPartyRole>contractPartner</ns3:contractPartyRole>
+                                                                                <ns3:surName>Doe</ns3:surName>
+                                                                                <ns3:firstName>Jane</ns3:firstName>
+                                                                            </ns3:ContractParty>
+                                                                        </ns3:ContractPartyList>
+                                                                        <ns3:AddressList>
+                                                                            <ns3:Address>
+                                                                                <ns3:addressRole>delivery</ns3:addressRole>
+                                                                                <ns3:postalCode>11111</ns3:postalCode>
+                                                                                <ns3:cityName>Anytown</ns3:cityName>
+                                                                                <ns3:streetName>Main St - HOME</ns3:streetName>
+                                                                                <ns3:buildingNumber>123</ns3:buildingNumber>
+                                                                            </ns3:Address>
+                                                                            <ns3:Address>
+                                                                                <ns3:addressRole>invoice</ns3:addressRole>
+                                                                                <ns3:addressSuffix>123 Main St - HOME</ns3:addressSuffix>
+                                                                            </ns3:Address>
+                                                                        </ns3:AddressList>
+                                                                    </ns3:AccountingPoint>
+                                                                </ns3:AccountingPointList>
+                                                            </ns3:AccountingPoint_MarketDocument>
+                                                        </ns3:AccountingPoint_Envelope>
+                                                    </AccountingPointDataMarketDocuments>
+                                                    """
+                                    )
+                            )
+                    }
+            ),
+            parameters = {
+                    @Parameter(
+                            name = "permissionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the accounting point data market documents by permission ID, use it only get the messages related to a single permission request",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "connectionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the accounting point data market documents by connectionId ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "dataNeedId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the accounting point data market documents by the data need ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "countryCode",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the accounting point data market documents by the country, is a uppercase two letter country code",
+                            schema = @Schema(implementation = String.class, pattern = "N[A-Z]{2}")
+                    ),
+                    @Parameter(
+                            name = "regionConnectorId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the accounting point data market documents by the region connector",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "from",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the accounting point data market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+                    @Parameter(
+                            name = "to",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the accounting point data market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+            }
+    )
+    ResponseEntity<AccountingPointDataMarketDocuments> accountingPointDataMd(
             @RequestParam(required = false) Optional<String> permissionId,
             @RequestParam(required = false) Optional<String> connectionId,
             @RequestParam(required = false) Optional<String> dataNeedId,

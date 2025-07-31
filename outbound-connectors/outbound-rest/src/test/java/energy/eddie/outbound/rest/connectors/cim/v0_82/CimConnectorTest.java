@@ -1,5 +1,6 @@
 package energy.eddie.outbound.rest.connectors.cim.v0_82;
 
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,21 @@ class CimConnectorTest {
 
         // Then
         StepVerifier.create(connector.getPermissionMarketDocumentStream())
+                    .then(connector::close)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void setAp_producesAps() {
+        // Given
+        var flux = Flux.just(new AccountingPointEnvelope());
+
+        // When
+        connector.setAccountingPointEnvelopeStream(flux);
+
+        // Then
+        StepVerifier.create(connector.getAccountingPointDataMarketDocumentStream())
                     .then(connector::close)
                     .expectNextCount(1)
                     .verifyComplete();
