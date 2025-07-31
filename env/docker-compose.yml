@@ -11,7 +11,6 @@ services:
       POSTGRES_DB: ${DATABASE_NAME}
     restart: "always"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
       - ./postgres/create-emqx-user.sql:/tmp/create-emqx-user.sql
       - ./postgres/replace-password-with-env.sh:/docker-entrypoint-initdb.d/00-replace_password_with_env.sh
       - ./create-example-app-db.sql:/docker-entrypoint-initdb.d/create_database.sql
@@ -105,21 +104,22 @@ services:
       - ./emqx/emqx.hocon:/opt/emqx/etc/base.hocon
       - ./emqx/init-user.json:/tmp/init-user.json
       - ./emqx/replace-password-with-env.sh:/tmp/replace-password-with-env.sh
-    entrypoint: [ "/bin/sh", "/tmp/replace-password-with-env.sh" ]
+    entrypoint: ["/bin/sh", "/tmp/replace-password-with-env.sh"]
 
-  # Only required for REST outbound connector
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    image: quay.io/keycloak/keycloak:26.3.2
     ports:
       - "8888:8080"
     environment:
+      KC_HOSTNAME: ${KEYCLOAK_EXTERNAL_HOST}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_HEALTH_ENABLED: true
-      KC_HOSTNAME: http://localhost:8888
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    command: start-dev --import-realm
     volumes:
-      - ./keycloak.json:/opt/keycloak/data/import/master-realm.json
-    command: -v start-dev --import-realm
+      - keycloak_data:/opt/keycloak/data
+      - ./keycloak/EDDIE-realm.json:/opt/keycloak/data/import/EDDIE-realm.json
+      - ../keycloak-eddie-theme/theme/eddie-theme:/opt/keycloak/themes/eddie-theme
 
   caddy:
     image: caddy:alpine
@@ -134,4 +134,5 @@ services:
 volumes:
   caddy_data:
   postgres_data:
+  keycloak_data:
   emqx_data:
