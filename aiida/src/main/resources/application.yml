@@ -18,15 +18,15 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${aiida.keycloak.url}/realms/${aiida.keycloak.realm}
-          jwk-set-uri: ${aiida.keycloak.url}/realms/${aiida.keycloak.realm}/protocol/openid-connect/certs
+          issuer-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}
+          jwk-set-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/protocol/openid-connect/certs
       client:
         provider:
           keycloak:
-            authorization-uri: ${aiida.keycloak.url}/realms/${aiida.keycloak.realm}/protocol/openid-connect/auth
-            token-uri: ${aiida.keycloak.url}/realms/${aiida.keycloak.realm}/protocol/openid-connect/token
-            user-info-uri: ${aiida.keycloak.url}/realms/${aiida.keycloak.realm}/protocol/openid-connect/userinfo
-            jwk-set-uri: ${aiida.keycloak.url}/realms/${aiida.keycloak.realm}/protocol/openid-connect/certs
+            authorization-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/protocol/openid-connect/auth
+            token-uri: ${aiida.keycloak.url.internal}/realms/${aiida.keycloak.realm}/protocol/openid-connect/token
+            user-info-uri: ${aiida.keycloak.url.internal}/realms/${aiida.keycloak.realm}/protocol/openid-connect/userinfo
+            jwk-set-uri: ${aiida.keycloak.url.internal}/realms/${aiida.keycloak.realm}/protocol/openid-connect/certs
             user-name-attribute: preferred_username
         registration:
           keycloak:
@@ -49,9 +49,11 @@ aiida:
     password: ${MQTT_PASSWORD:REPLACE_ME_WITH_SAVE_PASSWORD}
     tls-certificate-path: ${MQTT_TLS_CERTIFICATE_PATH:}
   keycloak:
-    url: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}
+    url:
+      internal: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8080}
+      external: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}
     realm: ${KEYCLOAK_REALM:EDDIE}
     client: ${KEYCLOAK_CLIENT:AIIDA}
     secret: ${KEYCLOAK_CLIENT_SECRET:REPLACE_ME}
-    account-uri: ${aiida.keycloak.url}/realms/${aiida.keycloak.realm}/account
-    end-session-uri: ${aiida.keycloak.url}/realms/${aiida.keycloak.realm}/protocol/openid-connect/logout
+    account-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/account
+    end-session-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/protocol/openid-connect/logout
