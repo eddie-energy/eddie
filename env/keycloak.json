@@ -1,0 +1,20 @@
+{
+  "realm": "master",
+  "enabled": true,
+  "defaultRoles": [
+    "manage-account"
+  ],
+  "clients": [
+    {
+      "id": "rest-client",
+      "clientId": "rest-client",
+      "secret": "client-secret",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true
+    }
+  ]
+}
