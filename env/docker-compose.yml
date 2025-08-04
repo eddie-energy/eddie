@@ -120,11 +120,6 @@ services:
     volumes:
       - ./keycloak.json:/opt/keycloak/data/import/master-realm.json
     command: -v start-dev --import-realm
-    healthcheck:
-      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost:9000\r\nConnection: close\r\n\r\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
   caddy:
     image: caddy:alpine
