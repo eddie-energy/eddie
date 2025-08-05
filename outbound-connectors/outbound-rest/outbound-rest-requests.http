@@ -1,47 +1,59 @@
 ### GET connection status messages as json
 GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
 Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### GET connection status messages as xml
 GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
 Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get connection status messages as event stream
 GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
 Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get validated historical data market documents as json
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
 Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get validated historical data market documents as xml
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
 Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get validated historical data market documents as event stream
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
 Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get permission market documents as json
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/permission-md
 Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get permission market documents as xml
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/permission-md
 Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get permission market documents as event stream
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/permission-md
 Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get accounting point data market documents as json
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/accounting-point-data-md
 Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get accounting point data market documents as xml
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/accounting-point-data-md
 Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get accounting point data market documents as event stream
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/accounting-point-data-md
 Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}

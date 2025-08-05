@@ -8,6 +8,7 @@ import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
@@ -26,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.BDDMockito.given;
 
-@WebFluxTest(AgnosticController.class)
+@WebFluxTest(value = AgnosticController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 @Import(WebTestConfig.class)
 class AgnosticControllerTest {
     @Autowired

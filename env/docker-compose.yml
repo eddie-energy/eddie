@@ -107,6 +107,20 @@ services:
       - ./emqx/replace-password-with-env.sh:/tmp/replace-password-with-env.sh
     entrypoint: [ "/bin/sh", "/tmp/replace-password-with-env.sh" ]
 
+  # Only required for REST outbound connector
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    ports:
+      - "8888:8080"
+    environment:
+      KC_HEALTH_ENABLED: true
+      KC_HOSTNAME: http://localhost:8888
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    volumes:
+      - ./keycloak.json:/opt/keycloak/data/import/master-realm.json
+    command: -v start-dev --import-realm
+
   caddy:
     image: caddy:alpine
     ports:
