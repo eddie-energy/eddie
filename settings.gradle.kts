@@ -75,3 +75,4 @@ include("examples:new-example-app")
 
 include("outbound-connectors:outbound-shared")
 include("outbound-connectors:outbound-rest")
+include("outbound-connectors:outbound-metric")

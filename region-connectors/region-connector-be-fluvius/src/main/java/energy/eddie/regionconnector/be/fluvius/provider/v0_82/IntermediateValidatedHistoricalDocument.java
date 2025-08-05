@@ -56,12 +56,10 @@ class IntermediateValidatedHistoricalDocument {
         return switch (type) {
             case ELECTRICITY -> getVHD(meteringData.getElectricityMeters(), fetchTime,
                     r -> r.getSeqNumber() == null ? null : String.valueOf(r.getSeqNumber()),
-                    this::getPeriodTimeIntervalFromMeterResponse, this::getElectricityTimeSeries
-            );
+                    this::getPeriodTimeIntervalFromMeterResponse, this::getElectricityTimeSeries);
             case NATURAL_GAS -> getVHD(meteringData.getGasMeters(), fetchTime,
                     r -> r.getSeqNumber() == null ? null : String.valueOf(r.getSeqNumber()),
-                    this::getPeriodTimeIntervalFromMeterResponse, this::getGasTimeSeries
-            );
+                    this::getPeriodTimeIntervalFromMeterResponse, this::getGasTimeSeries);
             default -> throw new IllegalStateException("Unexpected energy type: " + type);
         };
     }
@@ -193,10 +191,6 @@ class IntermediateValidatedHistoricalDocument {
                     ), CommodityKind.ELECTRICITYPRIMARYMETERED, flowDirection, electricityMeterResponse.getMeterID());
     }
 
-    private QualityTypeList getEQuarterHourlyQuality(EMeasurementDetailItemResponseModel m, boolean offtake) {
-        return getQualityType(offtake ? m.getOfftakeValidationState() : m.getInjectionValidationState());
-    }
-
     private List<TimeSeriesComplexType> getGasTimeSeries(GasMeterResponseModel gasMeterResponse) {
         return granularity.equals(Granularity.P1D) ?
              getTimeSeries(gasMeterResponse.getDailyEnergy(),
@@ -305,6 +299,10 @@ class IntermediateValidatedHistoricalDocument {
     private QualityTypeList getEDailyQuality(EMeasurementItemResponseModel m, boolean offtake) {
         return offtake ? getQualityType(m.getOfftakeDayValidationState(), m.getOfftakeNightValidationState())
                        : getQualityType(m.getInjectionDayValidationState(), m.getInjectionNightValidationState());
+    }
+
+    private QualityTypeList getEQuarterHourlyQuality(EMeasurementDetailItemResponseModel m, boolean offtake) {
+        return getQualityType(offtake ? m.getOfftakeValidationState() : m.getInjectionValidationState());
     }
 
     private QualityTypeList getQualityType(String... validationStates) {
