@@ -1,4 +1,5 @@
 import { LitElement } from "lit";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
 
 const TERMINAL_STATES = [
   "TERMINATED",
@@ -43,6 +44,11 @@ class PermissionRequestFormBase extends LitElement {
    * @type {string}
    */
   requestStatusUrl;
+
+  /**
+   * Bearer Token to access endpoints only meant after a permission request has been created.
+   */
+  bearerToken;
 
   connectedCallback() {
     super.connectedCallback();
@@ -154,7 +160,8 @@ class PermissionRequestFormBase extends LitElement {
           duration: 10000,
         });
 
-        const { permissionId } = data;
+        const { permissionId, bearerToken } = data;
+        this.bearerToken = bearerToken;
         this.pollRequestStatus(`${this.requestStatusUrl}/${permissionId}`);
       }
 
@@ -174,32 +181,38 @@ class PermissionRequestFormBase extends LitElement {
   }
 
   pollRequestStatus(location) {
-    const eventSource = new EventSource(location);
+    const abortController = new AbortController();
+    fetchEventSource(location, {
+      headers: {
+        Authorization: `Bearer ${this.bearerToken}`,
+      },
+      signal: abortController.signal,
+      onmessage: (event) => {
+        console.log(`Received event ${JSON.stringify(event)}`);
+        const data = JSON.parse(event.data);
 
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+        this.dispatchEvent(
+          new CustomEvent("eddie-request-status", {
+            detail: data,
+            bubbles: true,
+            composed: true,
+          })
+        );
 
-      this.dispatchEvent(
-        new CustomEvent("eddie-request-status", {
-          detail: data,
-          bubbles: true,
-          composed: true,
-        })
-      );
+        const status = data.status.toLowerCase().replaceAll("_", "-");
 
-      const status = data.status.toLowerCase().replaceAll("_", "-");
+        this.dispatchEvent(
+          new Event(`eddie-request-${status}`, {
+            bubbles: true,
+            composed: true,
+          })
+        );
 
-      this.dispatchEvent(
-        new Event(`eddie-request-${status}`, {
-          bubbles: true,
-          composed: true,
-        })
-      );
-
-      if (TERMINAL_STATES.includes(data.status)) {
-        eventSource.close();
-      }
-    };
+        if (TERMINAL_STATES.includes(data.status)) {
+          abortController.abort("Terminal state reached");
+        }
+      },
+    }).then();
   }
 }
 
