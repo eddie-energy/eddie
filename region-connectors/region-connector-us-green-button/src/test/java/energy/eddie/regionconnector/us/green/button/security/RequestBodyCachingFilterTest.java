@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +29,6 @@ class RequestBodyCachingFilterTest {
 
         // Then
         var res = mockChain.getRequest();
-        assertThat(res, instanceOf(CachedBodyHttpServletRequest.class));
+        assertThat(res, instanceOf(ContentCachingRequestWrapper.class));
     }
 }

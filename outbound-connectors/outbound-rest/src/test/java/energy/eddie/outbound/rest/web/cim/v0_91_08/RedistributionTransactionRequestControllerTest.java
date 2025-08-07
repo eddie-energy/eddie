@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ import java.util.stream.Stream;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@WebFluxTest(RedistributionTransactionRequestController.class)
+@WebFluxTest(value = RedistributionTransactionRequestController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 @Import({WebTestConfig.class})
 class RedistributionTransactionRequestControllerTest {
     @Autowired
@@ -50,6 +51,7 @@ class RedistributionTransactionRequestControllerTest {
                      .uri("/cim_0_91_08/redistribution-transaction-rd")
                      .bodyValue(doc)
                      .exchange()
+                     // Then
                      .expectStatus()
                      .isEqualTo(httpStatus);
     }
