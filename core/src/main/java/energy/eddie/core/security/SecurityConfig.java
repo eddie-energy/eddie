@@ -22,6 +22,7 @@ import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_C
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
 
 @Configuration
+@SuppressWarnings("java:S4502")
 public class SecurityConfig {
 
     @Bean
@@ -31,7 +32,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    @SuppressWarnings("java:S4502")
     public SecurityFilterChain regionConnectorSecurityFilterChain(
             @Qualifier("regionConnectorMvcRequestMatcher") MvcRequestMatcher.Builder mvcRequestMatcher,
             HttpSecurity http,
@@ -59,6 +59,30 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(new SecurityExceptionHandler(mapper))
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .build();
+    }
+
+    @Bean
+    public SecurityFilterChain connectionStatusMessageFilterChain(
+            HttpSecurity http,
+            JwtAuthorizationManager jwtHeaderAuthorizationManager,
+            CorsConfigurationSource corsConfigurationSource,
+            ObjectMapper mapper,
+            HandlerMappingIntrospector introspector
+    ) throws Exception {
+        MvcRequestMatcher.Builder mvcMatcherBuilder = new MvcRequestMatcher.Builder(introspector);
+
+        return http
+                .securityMatcher("/api/connection-status-messages/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(mvcMatcherBuilder.pattern("/api/connection-status-messages/{permissionId}"))
+                        .access(jwtHeaderAuthorizationManager)
+                        .anyRequest().denyAll()
+                )
+                .exceptionHandling(new SecurityExceptionHandler(mapper))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .build();
     }
