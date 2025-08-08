@@ -592,7 +592,13 @@ Extend the REST controller to include validation.
 In this code example, the REST controller validates the permission request, polls the data need, and depending on the result, sends a validated event or malformed event.
 That is everything needed to create and validate a permission request on EDDIE's side.
 
+> [!IMPORTANT] The `/permission-request` endpoint always needs to produce JSON and return a JSON document with a property called `permissionId`.
+> Based on the permission ID, EDDIE automatically creates a JWT, to secure certain endpoint, and adds them to the response of the endpoint for the frontend to use.
+> The token is also available on the frontend via the permission-request-form-base.
+
 ```java
+
+import java.util.UUID;
 
 @RestController
 public class PermissionRequestController {
