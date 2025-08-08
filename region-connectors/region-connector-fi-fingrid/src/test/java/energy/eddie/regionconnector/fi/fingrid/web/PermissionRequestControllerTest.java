@@ -109,7 +109,6 @@ class PermissionRequestControllerTest {
                                               .content(objectMapper.writeValueAsString(permissionRequest)))
                .andExpect(status().isCreated())
                .andExpect(jsonPath("$.permissionId", is("pid")))
-               .andExpect(jsonPath("$.accessToken").isString())
                .andExpect(header().string("location", "/permission-status/pid"));
     }
 

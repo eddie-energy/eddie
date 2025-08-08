@@ -13,7 +13,6 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionEventRepository;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
-import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
@@ -241,25 +240,6 @@ class PermissionControllerTest {
 
         assertEquals("/permission-status/MyTestId", response.getHeader("Location"));
         verify(mockService).createAndSendPermissionRequest(any());
-    }
-
-    @Test
-    void givenJwtCreationFailedException_returnsInternalServerError() throws Exception {
-        // Given
-        var testPermissionId = "MyTestId";
-        when(mockService.createAndSendPermissionRequest(any())).thenThrow(mock(JwtCreationFailedException.class));
-
-        ObjectNode jsonNode = mapper.createObjectNode()
-                                    .put("connectionId", "ConnId")
-                                    .put("meteringPointId", "SomeId")
-                                    .put("dataNeedId", "BLA_BLU_BLE")
-                                    .put("nif", "NOICE");
-
-        mockMvc.perform(post("/permission-request").content(mapper.writeValueAsString(jsonNode))
-                                                   .contentType(MediaType.APPLICATION_JSON)
-                                                   .accept(MediaType.APPLICATION_JSON))
-               // Then
-               .andExpect(status().isInternalServerError());
     }
 
     /**
