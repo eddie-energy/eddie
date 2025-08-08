@@ -5,7 +5,6 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 import energy.eddie.tests.e2e.E2eTestSetup;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
@@ -34,7 +33,6 @@ class DkEnerginetTest extends E2eTestSetup {
     @Test
     @EnabledIfEnvironmentVariable(named = "DK_ENERGINET_REFRESH_TOKEN", matches = ".*", disabledReason = "No refresh token set to test permission request.")
     @EnabledIfEnvironmentVariable(named = "DK_ENERGINET_METERING_POINT", matches = ".*", disabledReason = "No metering point set to test permission request.")
-    @Disabled("until new energinet access token is supplied")
     void givenValidInput_showsAcceptedInfo() {
         this.navigateToRegionConnector(null, "Denmark", null);
 
