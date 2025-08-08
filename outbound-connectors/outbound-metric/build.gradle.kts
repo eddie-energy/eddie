@@ -22,18 +22,14 @@ configurations.all {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":data-needs"))
+    implementation(project(":outbound-connectors:outbound-shared"))
 
     implementation(libs.spring.boot.starter.web)
-    implementation(libs.spring.boot.starter.webflux)
-    implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.jpa)
-    implementation(libs.spring.websocket)
-    implementation(libs.spring.oxm)
     implementation(libs.jakarta.annotation.api)
-
     implementation(libs.reactor.core)
     runtimeOnly(libs.slf4j.simple)
-    runtimeOnly(libs.jaxb.runtime)
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.boot.testcontainers)

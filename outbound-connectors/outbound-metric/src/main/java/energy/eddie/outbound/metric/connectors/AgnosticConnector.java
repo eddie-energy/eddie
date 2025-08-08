@@ -8,14 +8,11 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import java.time.Duration;
-
 @Component
 public class AgnosticConnector implements ConnectionStatusMessageOutboundConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(AgnosticConnector.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink = Sinks.many()
-                                                                                         .replay()
-                                                                                         .limit(Duration.ofSeconds(10));
+            .multicast().onBackpressureBuffer();
 
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
         return connectionStatusMessageSink.asFlux();

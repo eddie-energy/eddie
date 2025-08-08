@@ -24,8 +24,8 @@ public class PermissionRequestStatusDurationModel {
     @Column(name = "duration_milliseconds", nullable = false, updatable = false)
     private long duration;
 
-    @Column(name = "data_need_id", nullable = false, updatable = false)
-    private String dataNeedId;
+    @Column(name = "data_need_type", nullable = false, updatable = false)
+    private String dataNeedType;
 
     @Column(name = "permission_administrator_id", nullable = false, updatable = false)
     private String permissionAdministratorId;
@@ -39,11 +39,11 @@ public class PermissionRequestStatusDurationModel {
     public PermissionRequestStatusDurationModel() { }
 
     public PermissionRequestStatusDurationModel(String permissionId, PermissionProcessStatus status, long duration,
-            String dataNeedId, String permissionAdministratorId, String regionConnectorId, String countryCode) {
+            String dataNeedType, String permissionAdministratorId, String regionConnectorId, String countryCode) {
         this.permissionId = permissionId;
         this.status = status;
         this.duration = duration;
-        this.dataNeedId = dataNeedId;
+        this.dataNeedType = dataNeedType;
         this.permissionAdministratorId = permissionAdministratorId;
         this.regionConnectorId = regionConnectorId;
         this.countryCode = countryCode;
@@ -65,8 +65,8 @@ public class PermissionRequestStatusDurationModel {
         return duration;
     }
 
-    public String getDataNeedId() {
-        return dataNeedId;
+    public String getDataNeedType() {
+        return dataNeedType;
     }
 
     public String getPermissionAdministratorId() {

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -37,6 +38,8 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+
+import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
@@ -189,5 +192,10 @@ public class EnedisBeanConfig {
                 taskScheduler,
                 dataNeedCalculationService
         );
+    }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(FrPermissionEventRepository repo) {
+        return () -> repo;
     }
 }

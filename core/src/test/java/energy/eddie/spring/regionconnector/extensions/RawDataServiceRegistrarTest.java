@@ -72,6 +72,7 @@ class RawDataServiceRegistrarDisabledTest {
     private WebApplicationContext applicationContext;
     @MockitoBean
     private DataNeedsService unusedDataNeedsService;
+    @SuppressWarnings("unused")
     @MockitoBean
     private JwtUtil jwtUtil;
 
@@ -93,6 +94,7 @@ class RawDataServiceRegistrarEnabledTest {
     private WebApplicationContext applicationContext;
     @MockitoBean
     private DataNeedsService unusedDataNeedsService;
+    @SuppressWarnings("unused")
     @MockitoBean
     private JwtUtil jwtUtil;
 

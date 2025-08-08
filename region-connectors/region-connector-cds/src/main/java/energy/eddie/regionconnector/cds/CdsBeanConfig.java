@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.cds;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
@@ -18,6 +19,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.function.Supplier;
 
 @Configuration
 @EnableConfigurationProperties(value = CdsConfiguration.class)
@@ -50,5 +53,10 @@ public class CdsBeanConfig {
             CdsRegionConnectorMetadata metadata
     ) {
         return new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+    }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(CdsPermissionEventRepository repo) {
+        return () -> repo;
     }
 }

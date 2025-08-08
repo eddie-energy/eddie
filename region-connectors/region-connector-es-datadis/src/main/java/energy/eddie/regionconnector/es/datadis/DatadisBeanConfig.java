@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -41,6 +42,7 @@ import reactor.core.publisher.Sinks;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
@@ -188,5 +190,10 @@ public class DatadisBeanConfig {
                 taskScheduler,
                 dataNeedCalculationService
         );
+    }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(EsPermissionEventRepository repo) {
+        return () -> repo;
     }
 }
