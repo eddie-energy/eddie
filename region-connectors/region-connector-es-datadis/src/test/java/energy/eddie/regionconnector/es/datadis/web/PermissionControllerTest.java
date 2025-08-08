@@ -219,8 +219,8 @@ class PermissionControllerTest {
     void requestPermission_validInput_returnsCreatedAndSetsHeader() throws Exception {
         // Given
         var testPermissionId = "MyTestId";
-        when(mockService.createAndSendPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(testPermissionId,
-                                                                                                        ""));
+        when(mockService.createAndSendPermissionRequest(any()))
+                .thenReturn(new CreatedPermissionRequest(testPermissionId));
 
 
         ObjectNode jsonNode = mapper.createObjectNode()
