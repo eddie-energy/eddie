@@ -69,3 +69,67 @@ Authorization: Bearer {{$auth.token("keycloak")}}
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/accounting-point-data-md
 Accept: text/event-stream
 Authorization: Bearer {{$auth.token("keycloak")}}
+
+# Termination Market Documents
+
+### POST termination market document as json
+@permissionId=REPLACE_ME
+@region-connector-id=REPLACE_ME
+POST http://localhost:9090/outbound-connectors/rest/cim_0_82/termination-md
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+{
+  "Permission_MarketDocument": {
+    "mRID": "{{permissionId}}",
+    "type": "Z01",
+    "PermissionList": {
+      "Permission": [
+        {
+          "MktActivityRecordList": {
+            "MktActivityRecord": [
+              {
+                "type": "{{region-connector-id}}"
+              }
+            ]
+          },
+          "ReasonList": {
+            "Reason": [
+              {
+                "code": "Z03"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+### POST termination market document as xml
+POST http://localhost:9090/outbound-connectors/rest/cim_0_82/termination-md
+Content-Type: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Permission_Envelope xmlns="http://www.eddie.energy/Consent/EDD02/20240125">
+    <Permission_MarketDocument>
+        <mRID>{{permissionId}}</mRID>
+        <type>Z01</type>
+        <PermissionList>
+            <Permission>
+                <MktActivityRecordList>
+                    <MktActivityRecord>
+                        <type>{{region-connector-id}}</type>
+                    </MktActivityRecord>
+                </MktActivityRecordList>
+                <ReasonList>
+                    <Reason>
+                        <code>Z03</code>
+                    </Reason>
+                </ReasonList>
+            </Permission>
+        </PermissionList>
+    </Permission_MarketDocument>
+</Permission_Envelope>

@@ -174,4 +174,17 @@ class CimControllerTest {
                     .expectNextCount(1)
                     .verifyComplete();
     }
+
+    @Test
+    void terminationMd_returnsAccepted() {
+        var msg = new PermissionEnvelope();
+
+        webTestClient.post()
+                     .uri("/cim_0_82/termination-md")
+                     .contentType(MediaType.APPLICATION_JSON)
+                     .bodyValue(msg)
+                     .exchange()
+                     .expectStatus()
+                     .isAccepted();
+    }
 }

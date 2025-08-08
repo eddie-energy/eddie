@@ -54,4 +54,18 @@ class CimConnectorTest {
                     .expectNextCount(1)
                     .verifyComplete();
     }
+
+    @Test
+    void setPublish_producesTerminationDocument() {
+        // Given
+        var permissionEnvelope = new PermissionEnvelope();
+        // When
+        connector.publish(permissionEnvelope);
+
+        // Then
+        StepVerifier.create(connector.getTerminationMessages())
+                    .then(connector::close)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
 }

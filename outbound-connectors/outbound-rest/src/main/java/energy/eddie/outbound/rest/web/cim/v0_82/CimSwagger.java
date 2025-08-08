@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -1031,4 +1032,84 @@ public interface CimSwagger {
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
     );
+
+
+    @Operation(
+            operationId = "POST termination market document",
+            summary = "POST termination market document stream",
+            description = "POST a termination market document, that will terminate an already accepted permission request",
+            method = "POST",
+            responses = @ApiResponse(responseCode = "202"),
+            requestBody = @RequestBody(
+                    description = "The body indicates which permission request for which region connector needs to be terminated",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = PermissionEnvelope.class),
+                                    examples = @ExampleObject(
+                                            // language=JSON
+                                            """
+                                                    {
+                                                      "Permission_MarketDocument": {
+                                                        "mRID": "{{permissionId}}",
+                                                        "type": "Z01",
+                                                        "PermissionList": {
+                                                          "Permission": [
+                                                            {
+                                                              "MktActivityRecordList": {
+                                                                "MktActivityRecord": [
+                                                                  {
+                                                                    "type": "{{region-connector-id}}"
+                                                                  }
+                                                                ]
+                                                              },
+                                                              "ReasonList": {
+                                                                "Reason": [
+                                                                  {
+                                                                    "code": "Z03"
+                                                                  }
+                                                                ]
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                    """
+                                    )
+                            ),
+                            @Content(
+                                    mediaType = "application/xml",
+                                    schema = @Schema(implementation = PermissionEnvelope.class),
+                                    examples = @ExampleObject(
+                                            // language=XML
+                                            """
+                                                    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                                                    <Permission_Envelope xmlns="http://www.eddie.energy/Consent/EDD02/20240125">
+                                                        <Permission_MarketDocument>
+                                                            <mRID>{{permissionId}}</mRID>
+                                                            <type>Z01</type>
+                                                            <PermissionList>
+                                                                <Permission>
+                                                                    <MktActivityRecordList>
+                                                                        <MktActivityRecord>
+                                                                            <type>{{region-connector-id}}</type>
+                                                                        </MktActivityRecord>
+                                                                    </MktActivityRecordList>
+                                                                    <ReasonList>
+                                                                        <Reason>
+                                                                            <code>Z03</code>
+                                                                        </Reason>
+                                                                    </ReasonList>
+                                                                </Permission>
+                                                            </PermissionList>
+                                                        </Permission_MarketDocument>
+                                                    </Permission_Envelope>
+                                                    """
+                                    )
+                            ),
+                    }
+            )
+    )
+    ResponseEntity<Void> terminationMd(PermissionEnvelope permissionEnvelope);
 }
