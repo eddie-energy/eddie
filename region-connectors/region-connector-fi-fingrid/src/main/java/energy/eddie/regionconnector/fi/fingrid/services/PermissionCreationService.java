@@ -7,15 +7,12 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnectorMetadata;
 import energy.eddie.regionconnector.fi.fingrid.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.*;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import energy.eddie.regionconnector.shared.security.JwtUtil;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,27 +25,23 @@ import static energy.eddie.regionconnector.fi.fingrid.FingridRegionConnectorMeta
 
 @Service
 public class PermissionCreationService {
-    public static final String AP_ERROR = "Accounting point data not supported";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionCreationService.class);
     private static final String DATA_NEED_ID = "dataNeedId";
     private final Outbox outbox;
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     private final FiPermissionRequestRepository permissionRequestRepository;
-    private final JwtUtil jwtUtil;
 
     public PermissionCreationService(
             Outbox outbox,
             DataNeedCalculationService<DataNeed> dataNeedCalculationService,
-            FiPermissionRequestRepository permissionRequestRepository,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") JwtUtil jwtUtil
+            FiPermissionRequestRepository permissionRequestRepository
     ) {
         this.outbox = outbox;
         this.dataNeedCalculationService = dataNeedCalculationService;
         this.permissionRequestRepository = permissionRequestRepository;
-        this.jwtUtil = jwtUtil;
     }
 
-    public CreatedPermissionRequest createAndValidatePermissionRequest(PermissionRequestForCreation permissionRequest) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
+    public CreatedPermissionRequest createAndValidatePermissionRequest(PermissionRequestForCreation permissionRequest) throws DataNeedNotFoundException, UnsupportedDataNeedException {
         String permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating permission request with id {}", permissionId);
         var dataNeedId = permissionRequest.dataNeedId();
@@ -56,7 +49,7 @@ public class PermissionCreationService {
                                        permissionRequest.connectionId(),
                                        dataNeedId,
                                        permissionRequest.customerIdentification()
-                          ));
+        ));
         var calculation = dataNeedCalculationService.calculate(dataNeedId);
         var validatedEvent = switch (calculation) {
             case DataNeedNotFoundResult ignored -> {
@@ -84,8 +77,7 @@ public class PermissionCreationService {
         };
 
         outbox.commit(validatedEvent);
-        var accessToken = jwtUtil.createJwt(FingridRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
-        return new CreatedPermissionRequest(permissionId, accessToken);
+        return new CreatedPermissionRequest(permissionId);
     }
 
     @Transactional(value = Transactional.TxType.REQUIRES_NEW)
@@ -105,7 +97,7 @@ public class PermissionCreationService {
                                                          pr.status());
         }
         outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
-        if(status == PermissionProcessStatus.REJECTED) {
+        if (status == PermissionProcessStatus.REJECTED) {
             outbox.commit(new SimpleEvent(permissionId, status));
         } else {
             outbox.commit(new AcceptedEvent(permissionId));

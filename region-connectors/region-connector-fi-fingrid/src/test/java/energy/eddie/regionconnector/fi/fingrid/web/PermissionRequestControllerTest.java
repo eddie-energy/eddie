@@ -101,7 +101,7 @@ class PermissionRequestControllerTest {
                                                                  "identifier"
         );
         when(creationService.createAndValidatePermissionRequest(permissionRequest))
-                .thenReturn(new CreatedPermissionRequest("pid", ""));
+                .thenReturn(new CreatedPermissionRequest("pid"));
 
         // When
         mockMvc.perform(MockMvcRequestBuilders.post("/permission-request")
