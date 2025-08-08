@@ -50,7 +50,7 @@ public class PermissionRequestMetricsModel {
         this.countryCode = countryCode;
     }
 
-    public PermissionRequestMetricsModel() {
+    protected PermissionRequestMetricsModel() {
 
     }
 

@@ -10,6 +10,11 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+/**
+ * The {@code PermissionEventRepositoryRegistrar} should be added to each region connector's own context and will
+ * register the {@link PermissionEventRepository} of each region connector to the common {@link PermissionEventService}.
+ * Each region connector implementation is required to provide an implementation of the {@code PermissionEventRepository} interface.
+ */
 @RegionConnectorExtension
 public class PermissionEventRepositoryRegistrar {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionEventRepositoryRegistrar.class);

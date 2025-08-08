@@ -12,5 +12,12 @@ public interface PermissionEventRepository {
      * @return the saved permissionEvent.
      */
     PermissionEvent saveAndFlush(PermissionEvent permissionEvent);
+    /**
+     * Returns a list of two {@link PermissionEvent} representing the latest and previous permission events.
+     *
+     * @param permissionId permission identifier.
+     * @param eventCreated timestamp of the permission event.
+     * @return list permissionEvent.
+     */
     List<PermissionEvent> findTop2ByPermissionIdAndEventCreatedLessThanEqualOrderByEventCreatedDesc(String permissionId, ZonedDateTime eventCreated);
 }

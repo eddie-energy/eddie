@@ -17,14 +17,11 @@ public class PermissionEventService implements PermissionEventRepositories {
     }
 
     @Override
-    public PermissionEventRepository getPermissionEventRepositoryByCountryCode(String countryCode) {
-        String rcBeanName = RegionConnectorRepository.fromCountryCode(countryCode)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid region connector country: " + countryCode))
-                .getBeanName();
-        PermissionEventRepository repository = permissionEventRepositories.get(rcBeanName);
+    public PermissionEventRepository getPermissionEventRepositoryByRegionConnectorId(String regionConnectorId) {
+        PermissionEventRepository repository = permissionEventRepositories.get(regionConnectorId);
 
         if (repository == null) {
-            throw new IllegalArgumentException("No repository found for bean name: " + rcBeanName);
+            throw new IllegalArgumentException("No repository found for region connector: " + regionConnectorId);
         }
 
         return repository;

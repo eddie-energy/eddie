@@ -36,7 +36,7 @@ public class PermissionRequestStatusDurationModel {
     @Column(name = "country_code", nullable = false, updatable = false)
     private String countryCode;
 
-    public PermissionRequestStatusDurationModel() { }
+    protected PermissionRequestStatusDurationModel() { }
 
     public PermissionRequestStatusDurationModel(String permissionId, PermissionProcessStatus status, long duration,
             String dataNeedType, String permissionAdministratorId, String regionConnectorId, String countryCode) {

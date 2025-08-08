@@ -2,78 +2,43 @@ package energy.eddie.core.services;
 
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-
-import java.util.Optional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class PermissionEventServiceTest {
+
+    @Mock
+    private PermissionEventRepository permissionEventRepository;
+
     @Test
     void testRegisterPermissionEventRepository_success() {
         // Given
         PermissionEventService service = new PermissionEventService();
-        PermissionEventRepository permissionEventRepository = mock(PermissionEventRepository.class);
-        String beanName = "at-eda";
-        String countryCode = "AT";
-
-        RegionConnectorRepository rcRepository = mock(RegionConnectorRepository.class);
-        when(rcRepository.getBeanName()).thenReturn(beanName);
-
-        try (MockedStatic<RegionConnectorRepository> mockRepository = mockStatic(RegionConnectorRepository.class)) {
-            mockRepository.when(() -> RegionConnectorRepository.fromCountryCode(countryCode))
-                    .thenReturn(Optional.of(rcRepository));
-        }
+        String regionConnectorId = "at-eda";
 
         // When
-        service.registerPermissionEventRepository(permissionEventRepository, beanName);
-        PermissionEventRepository result = service.getPermissionEventRepositoryByCountryCode(countryCode);
+        service.registerPermissionEventRepository(permissionEventRepository, regionConnectorId);
+        PermissionEventRepository result = service.getPermissionEventRepositoryByRegionConnectorId(regionConnectorId);
 
         // Then
         assertSame(permissionEventRepository, result);
-    }
-
-
-    @Test
-    void testGetPermissionEventRepositoryByCountryCode_invalidCountryCode() {
-        // Given
-        PermissionEventService service = new PermissionEventService();
-        String countryCode = "XX";
-
-        try (MockedStatic<RegionConnectorRepository> mockRepository = mockStatic(RegionConnectorRepository.class)) {
-            mockRepository.when(() -> RegionConnectorRepository.fromCountryCode(countryCode))
-                    .thenReturn(Optional.empty());
-        }
-
-        // When
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                service.getPermissionEventRepositoryByCountryCode(countryCode));
-
-        // Then
-        assertTrue(ex.getMessage().contains("Invalid region connector country"));
     }
 
     @Test
     void testGetPermissionEventRepositoryByCountryCode_repositoryNotRegistered() {
         // Given
         PermissionEventService service = new PermissionEventService();
-        String beanName = "at-eda";
-        String countryCode = "AT";
-
-        RegionConnectorRepository rcRepository = mock(RegionConnectorRepository.class);
-        when(rcRepository.getBeanName()).thenReturn(beanName);
-
-        try (MockedStatic<RegionConnectorRepository> mockRepository = mockStatic(RegionConnectorRepository.class)) {
-            mockRepository.when(() -> RegionConnectorRepository.fromCountryCode(countryCode))
-                    .thenReturn(Optional.of(rcRepository));
-        }
+        String regionConnectorId = "at-eda";
 
         // When
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                service.getPermissionEventRepositoryByCountryCode(countryCode));
+                service.getPermissionEventRepositoryByRegionConnectorId(regionConnectorId));
 
         // Then
-        assertTrue(ex.getMessage().contains("No repository found for bean name"));
+        assertTrue(ex.getMessage().contains("No repository found for region connector"));
     }
 }

@@ -15,7 +15,6 @@ import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.publisher.TestPublisher;
 
@@ -25,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 public class PermissionRequestMetricsServiceTest {
@@ -45,44 +43,21 @@ public class PermissionRequestMetricsServiceTest {
     @Mock
     private PermissionEventRepositories repositories;
 
-    private final MockDataSourceInformation dataSourceInformation = new MockDataSourceInformation("AT",
-            "at-eda", "paId", "mdaId");
-
-    @Test
-    void getCurrentAndPreviousPermissionEvents_returnsTwoEvents() {
-        // Given
-        var permissionId = "pid";
-        var now = ZonedDateTime.now(ZoneOffset.UTC);
-        var countryCode = dataSourceInformation.countryCode();
-
-        PermissionEvent prevEvent = mock(PermissionEvent.class);
-        PermissionEvent currentEvent = mock(PermissionEvent.class);
-
-        PermissionEventRepository repo = mock(PermissionEventRepository.class);
-        when(repo.findTop2ByPermissionIdAndEventCreatedLessThanEqualOrderByEventCreatedDesc(permissionId, now))
-                .thenReturn(List.of(prevEvent, currentEvent));
-        when(repositories.getPermissionEventRepositoryByCountryCode(countryCode)).thenReturn(repo);
-
-        TestPublisher<ConnectionStatusMessage> csmPublisher = TestPublisher.create();
-        when(agnosticConnector.getConnectionStatusMessageStream()).thenReturn(csmPublisher.flux());
-        PermissionRequestMetricsService service = new PermissionRequestMetricsService(agnosticConnector,
-                metricsRepository, statusDurationRepository, dataNeedsService, repositories);
-
-        // When
-        List<PermissionEvent> result = service.getCurrentAndPreviousPermissionEvents(permissionId, now, countryCode);
-
-        // Then
-        assertThat(result).hasSize(2);
-        assertThat(result).containsExactly(prevEvent, currentEvent);
-    }
+    private final MockDataSourceInformation dataSourceInformation = new MockDataSourceInformation(
+            "AT",
+            "at-eda",
+            "paId",
+            "mdaId"
+    );
 
     @Test
     void upsertMetricTest() {
         // Given
-        var csm = mock(ConnectionStatusMessage.class);
+        var permissionId = "pid";
+        var regionConnectorId = dataSourceInformation.regionConnectorId();
         var now = ZonedDateTime.now(ZoneOffset.UTC);
-        var countryCode = dataSourceInformation.countryCode();
 
+        var csm = mock(ConnectionStatusMessage.class);
         when(csm.status()).thenReturn(PermissionProcessStatus.VALIDATED);
         when(csm.timestamp()).thenReturn(now);
         when(csm.permissionId()).thenReturn("pid");
@@ -96,29 +71,46 @@ public class PermissionRequestMetricsServiceTest {
         when(prevEvent.status()).thenReturn(PermissionProcessStatus.CREATED);
 
         var permissionEvents = List.of(currEvent, prevEvent);
+        var permissionEventRepository = mock(PermissionEventRepository.class);
+        when(permissionEventRepository.findTop2ByPermissionIdAndEventCreatedLessThanEqualOrderByEventCreatedDesc(permissionId,
+                now)).thenReturn(permissionEvents);
+        when(repositories.getPermissionEventRepositoryByRegionConnectorId(regionConnectorId))
+                .thenReturn(permissionEventRepository);
+
+        DataNeed dataNeed = mock(DataNeed.class);
+        when(dataNeed.type()).thenReturn("dnType");
+        when(dataNeedsService.getById("dnId")).thenReturn(dataNeed);
+
         when(metricsRepository.getPermissionRequestMetrics(any(), any(), any(), any(), any()))
                 .thenReturn(Optional.empty());
         when(statusDurationRepository.getMedianDurationMilliseconds(any(), any(), any(), any(), any()))
                 .thenReturn(100.0);
 
-        DataNeed dataNeed = mock(DataNeed.class);
-        when(dataNeed.type()).thenReturn("dnType");
-        when(dataNeedsService.findById("dnId")).thenReturn(Optional.of(dataNeed));
-
         TestPublisher<ConnectionStatusMessage> csmPublisher = TestPublisher.create();
         when(agnosticConnector.getConnectionStatusMessageStream()).thenReturn(csmPublisher.flux());
-        PermissionRequestMetricsService service = Mockito.spy(new PermissionRequestMetricsService(agnosticConnector,
-                metricsRepository, statusDurationRepository, dataNeedsService, repositories));
-        doReturn(permissionEvents).when(service).getCurrentAndPreviousPermissionEvents("pid", now, countryCode);
+        PermissionRequestMetricsService service = new PermissionRequestMetricsService(
+                agnosticConnector,
+                metricsRepository,
+                statusDurationRepository,
+                dataNeedsService,
+                repositories
+        );
 
         // When
         service.upsertMetric(csm);
 
         // Then
         verify(statusDurationRepository).save(any(PermissionRequestStatusDurationModel.class));
-        verify(metricsRepository).upsertPermissionRequestMetric(anyDouble(),eq(100.0), eq(1),
-                eq(PermissionProcessStatus.CREATED.name()), eq("dnType"), eq("paId"),
-                eq("at-eda"), eq(countryCode));
+        verify(metricsRepository).upsertPermissionRequestMetric(
+                anyDouble(),
+                eq(100.0),
+                eq(1),
+                eq(PermissionProcessStatus.CREATED.name()),
+                eq("dnType"),
+                eq("paId"),
+                eq("at-eda"),
+                eq("AT")
+        );
     }
 
     @Test
@@ -129,11 +121,21 @@ public class PermissionRequestMetricsServiceTest {
 
         @SuppressWarnings("unused")
         PermissionRequestMetricsService permissionRequestMetricsService = new PermissionRequestMetricsService(
-                agnosticConnector, metricsRepository, statusDurationRepository, dataNeedsService, repositories);
+                agnosticConnector,
+                metricsRepository,
+                statusDurationRepository,
+                dataNeedsService,
+                repositories
+        );
 
         // When
-        var csm = new ConnectionStatusMessage("cid", "pid", "dnId",
-                dataSourceInformation, PermissionProcessStatus.CREATED);
+        var csm = new ConnectionStatusMessage(
+                "cid",
+                "pid",
+                "dnId",
+                dataSourceInformation,
+                PermissionProcessStatus.CREATED
+        );
         csmPublisher.emit(csm);
 
         // Then

@@ -5,49 +5,58 @@ import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.core.services.PermissionEventService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class PermissionEventRepositoryTest {
+
+    @Mock
+    private PermissionEventService permissionEventService;
+
+    @Mock
+    private PermissionEventRepository permissionEventRepository;
+
+    @Mock
+    private RegionConnector regionConnector;
+
+    @Mock
+    private RegionConnectorMetadata metadata;
+
+    @Mock
+    private Supplier<PermissionEventRepository> supplier;
 
     @Test
     void testSupplierPresent_registersRepository() {
         // Given
-        PermissionEventService service = mock(PermissionEventService.class);
-        RegionConnector regionConnector = mock(RegionConnector.class);
-        RegionConnectorMetadata metadata = mock(RegionConnectorMetadata.class);
-        PermissionEventRepository repository = mock(PermissionEventRepository.class);
-        Supplier<PermissionEventRepository> supplier = mock(Supplier.class);
-
         when(regionConnector.getMetadata()).thenReturn(metadata);
         when(metadata.id()).thenReturn("at-eda");
-        when(supplier.get()).thenReturn(repository);
+        when(supplier.get()).thenReturn(permissionEventRepository);
 
         // When
-        new PermissionEventRepositoryRegistrar(Optional.of(supplier), regionConnector, service);
+        new PermissionEventRepositoryRegistrar(Optional.of(supplier), regionConnector, permissionEventService);
 
         // Then
         verify(supplier).get();
-        verify(service).registerPermissionEventRepository(repository, "at-eda");
+        verify(permissionEventService).registerPermissionEventRepository(permissionEventRepository, "at-eda");
     }
 
     @Test
     void testSupplierNotPresent_doesNotRegisterRepository() {
         // Given
-        PermissionEventService service = mock(PermissionEventService.class);
-        RegionConnector regionConnector = mock(RegionConnector.class);
-        RegionConnectorMetadata metadata = mock(RegionConnectorMetadata.class);
-
         when(regionConnector.getMetadata()).thenReturn(metadata);
         when(metadata.id()).thenReturn("at-eda");
 
         // When
-        new PermissionEventRepositoryRegistrar(Optional.empty(), regionConnector, service);
+        new PermissionEventRepositoryRegistrar(Optional.empty(), regionConnector, permissionEventService);
 
         // Then
-        verify(service, never()).registerPermissionEventRepository(any(), anyString());
+        verify(permissionEventService, never()).registerPermissionEventRepository(any(), anyString());
     }
 }

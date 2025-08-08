@@ -31,29 +31,53 @@ class PermissionRequestMetricsRepositoryTest {
     @Test
     void getPermissionRequestMetrics_withResult() {
         // Given
-        PermissionRequestMetricsModel prMetrics = new PermissionRequestMetricsModel(0.0, 0.0,
-                PermissionProcessStatus.CREATED, "dnType", "paId", "rcId", "CC");
+        PermissionRequestMetricsModel prMetrics = new PermissionRequestMetricsModel(
+                0.0,
+                0.0,
+                PermissionProcessStatus.CREATED,
+                "dnType",
+                "paId",
+                "rcId",
+                "CC"
+        );
         permissionRequestMetricsRepository.save(prMetrics);
 
         // When
-        var res = permissionRequestMetricsRepository.getPermissionRequestMetrics(PermissionProcessStatus.CREATED,
-                "dnType", "paId", "rcId", "CC");
+        var res = permissionRequestMetricsRepository.getPermissionRequestMetrics(
+                PermissionProcessStatus.CREATED,
+                "dnType",
+                "paId",
+                "rcId",
+                "CC"
+        );
 
         // Then
-        assertThat(res)
-                .isEqualTo(Optional.of(prMetrics));
+        assertThat(res).isEqualTo(Optional.of(prMetrics));
     }
 
     @Test
     void getPermissionRequestMetrics_noResult() {
         // Given
-        PermissionRequestMetricsModel prMetrics = new PermissionRequestMetricsModel(0.0, 0.0,
-                PermissionProcessStatus.CREATED, "dnType", "paId", "rcId", "CC");
+        PermissionRequestMetricsModel prMetrics = new PermissionRequestMetricsModel(
+                0.0,
+                0.0,
+                PermissionProcessStatus.CREATED,
+                "dnType",
+                "paId",
+                "rcId",
+                "CC"
+        );
         permissionRequestMetricsRepository.save(prMetrics);
 
         // When
-        var res = permissionRequestMetricsRepository.getPermissionRequestMetrics(PermissionProcessStatus.VALIDATED,
-                "dnType", "paId", "rcId", "CC");
+        var res = permissionRequestMetricsRepository.getPermissionRequestMetrics(
+                PermissionProcessStatus.VALIDATED,
+                "dnType",
+                "paId",
+                "rcId",
+                "CC"
+        );
+
         // Then
         assertThat(res).isEmpty();
     }
@@ -61,14 +85,28 @@ class PermissionRequestMetricsRepositoryTest {
     @Test
     void upsertPermissionRequestMetric_exists() {
         // Given
-        PermissionRequestMetricsModel prMetrics = new PermissionRequestMetricsModel(90, 90,
-                PermissionProcessStatus.CREATED, "dnType", "paId", "rcId", "CC");
+        PermissionRequestMetricsModel prMetrics = new PermissionRequestMetricsModel(
+                90,
+                90,
+                PermissionProcessStatus.CREATED,
+                "dnType",
+                "paId",
+                "rcId",
+                "CC"
+        );
         permissionRequestMetricsRepository.save(prMetrics);
 
         // When
-        permissionRequestMetricsRepository.upsertPermissionRequestMetric(97.5, 97.5, 2,
-                PermissionProcessStatus.CREATED.name(), "dnType", "paId",
-                "rcId", "CC");
+        permissionRequestMetricsRepository.upsertPermissionRequestMetric(
+                97.5,
+                97.5,
+                2,
+                PermissionProcessStatus.CREATED.name(),
+                "dnType",
+                "paId",
+                "rcId",
+                "CC"
+        );
 
         // Then
         assertThat(permissionRequestMetricsRepository.findAll()).hasSize(1);
@@ -77,14 +115,28 @@ class PermissionRequestMetricsRepositoryTest {
     @Test
     void upsertPermissionRequestMetric_notExists() {
         // Given
-        PermissionRequestMetricsModel prMetrics = new PermissionRequestMetricsModel(90, 90,
-                PermissionProcessStatus.CREATED, "dnType", "paId", "rcId", "CC");
+        PermissionRequestMetricsModel prMetrics = new PermissionRequestMetricsModel(
+                90,
+                90,
+                PermissionProcessStatus.CREATED,
+                "dnType",
+                "paId",
+                "rcId",
+                "CC"
+        );
         permissionRequestMetricsRepository.save(prMetrics);
 
         // When
-        permissionRequestMetricsRepository.upsertPermissionRequestMetric(97.5, 97.5, 2,
-                PermissionProcessStatus.VALIDATED.name(), "dnType", "paId",
-                "rcId", "CC");
+        permissionRequestMetricsRepository.upsertPermissionRequestMetric(
+                97.5,
+                97.5,
+                2,
+                PermissionProcessStatus.VALIDATED.name(),
+                "dnType",
+                "paId",
+                "rcId",
+                "CC"
+        );
 
         // Then
         assertThat(permissionRequestMetricsRepository.findAll()).hasSize(2);

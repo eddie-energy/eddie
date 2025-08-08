@@ -5,9 +5,9 @@ import energy.eddie.api.agnostic.outbound.PermissionEventRepositories;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.outbound.metric.connectors.AgnosticConnector;
+import energy.eddie.outbound.metric.model.MeanCountRecord;
 import energy.eddie.outbound.metric.model.PermissionRequestMetricsModel;
 import energy.eddie.outbound.metric.model.PermissionRequestStatusDurationModel;
 import energy.eddie.outbound.metric.repositories.PermissionRequestMetricsRepository;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -49,42 +48,82 @@ public class PermissionRequestMetricsService {
             return;
         }
 
-        String countryCode = csm.dataSourceInformation().countryCode();
+        String regionConnectorId = csm.dataSourceInformation().regionConnectorId();
         String permissionId = csm.permissionId();
         ZonedDateTime eventCreated = csm.timestamp();
-        List<PermissionEvent> permissionEvents = getCurrentAndPreviousPermissionEvents(permissionId, eventCreated,
-                countryCode);
+        List<PermissionEvent> permissionEvents = getCurrentAndPreviousPermissionEvents(
+                permissionId,
+                eventCreated,
+                regionConnectorId
+        );
         ZonedDateTime currentPermissionEventCreated = permissionEvents.getFirst().eventCreated();
-        PermissionEvent prevPermissionEvent = permissionEvents.get(1);
+        PermissionEvent prevPermissionEvent = permissionEvents.getLast();
         long durationMilliseconds = Duration.between(prevPermissionEvent.eventCreated(), currentPermissionEventCreated)
                 .toMillis();
         PermissionProcessStatus prevEventStatus = prevPermissionEvent.status();
-        String dataNeedType = Objects.requireNonNull(dataNeedsService.findById(csm.dataNeedId())
-                .map(DataNeed::type).orElse(null));
+        String dataNeedType = dataNeedsService.getById(csm.dataNeedId()).type();
         String permissionAdministratorId = csm.dataSourceInformation().permissionAdministratorId();
-        String regionConnectorId = csm.dataSourceInformation().regionConnectorId();
-        PermissionRequestStatusDurationModel prStatusDuration =  new PermissionRequestStatusDurationModel(permissionId,
-            prevEventStatus, durationMilliseconds, dataNeedType, permissionAdministratorId, regionConnectorId, countryCode);
+        String countryCode = csm.dataSourceInformation().countryCode();
+        PermissionRequestStatusDurationModel prStatusDuration =  new PermissionRequestStatusDurationModel(
+                permissionId,
+                prevEventStatus,
+                durationMilliseconds,
+                dataNeedType,
+                permissionAdministratorId,
+                regionConnectorId,
+                countryCode
+        );
         statusDurationRepository.save(prStatusDuration);
-        Optional<PermissionRequestMetricsModel> prMetrics = metricsRepository.getPermissionRequestMetrics(prevEventStatus,
-                dataNeedType, permissionAdministratorId, regionConnectorId, countryCode);
+        Optional<PermissionRequestMetricsModel> prMetrics = metricsRepository.getPermissionRequestMetrics(
+                prevEventStatus,
+                dataNeedType,
+                permissionAdministratorId,
+                regionConnectorId,
+                countryCode
+        );
 
+        MeanCountRecord newMeanAndCount = getNewMeanAndCount(prMetrics, durationMilliseconds);
+        double median = statusDurationRepository.getMedianDurationMilliseconds(
+                prevEventStatus.name(),
+                dataNeedType,
+                permissionAdministratorId,
+                regionConnectorId,
+                countryCode
+        );
+
+        metricsRepository.upsertPermissionRequestMetric(
+                newMeanAndCount.mean(),
+                median,
+                newMeanAndCount.count(),
+                prevEventStatus.name(),
+                dataNeedType,
+                permissionAdministratorId,
+                regionConnectorId,
+                countryCode
+        );
+    }
+
+    private MeanCountRecord getNewMeanAndCount(
+            Optional<PermissionRequestMetricsModel> prMetrics,
+            long durationMilliseconds
+    ) {
         int currentCount = prMetrics.map(PermissionRequestMetricsModel::getPermissionRequestCount).orElse(0);
         int newCount = currentCount + 1;
         double currentMean = prMetrics.map(PermissionRequestMetricsModel::getMean).orElse(0.0);
         double newMean = ((currentMean * currentCount) + (double) durationMilliseconds) / (double) newCount;
-        double median = statusDurationRepository.getMedianDurationMilliseconds(prevEventStatus.name(), dataNeedType,
-                permissionAdministratorId, regionConnectorId, countryCode);
 
-        metricsRepository.upsertPermissionRequestMetric(newMean, median, newCount, prevEventStatus.name(), dataNeedType,
-                permissionAdministratorId, regionConnectorId, countryCode);
+        return new MeanCountRecord(newMean, newCount);
     }
 
-    public List<PermissionEvent> getCurrentAndPreviousPermissionEvents(String permissionId, ZonedDateTime eventCreated,
-                                                                       String countryCode) {
-        PermissionEventRepository repository = repositories.getPermissionEventRepositoryByCountryCode(
-                countryCode);
-        return repository.findTop2ByPermissionIdAndEventCreatedLessThanEqualOrderByEventCreatedDesc(permissionId,
-                eventCreated);
+    private List<PermissionEvent> getCurrentAndPreviousPermissionEvents(String permissionId,
+                                                                       ZonedDateTime eventCreated,
+                                                                       String regionConnectorId) {
+        PermissionEventRepository repository = repositories.getPermissionEventRepositoryByRegionConnectorId(
+                regionConnectorId
+        );
+        return repository.findTop2ByPermissionIdAndEventCreatedLessThanEqualOrderByEventCreatedDesc(
+                permissionId,
+                eventCreated
+        );
     }
 }
