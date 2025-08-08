@@ -46,9 +46,10 @@ class PermissionRequestFormBase extends LitElement {
   requestStatusUrl;
 
   /**
-   * Bearer Token to access endpoints only meant after a permission request has been created.
+   * Bearer Token to access endpoints which meant after a permission request has been created.
+   * @type {string | null}
    */
-  bearerToken;
+  bearerToken = null;
 
   connectedCallback() {
     super.connectedCallback();

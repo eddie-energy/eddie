@@ -16,10 +16,7 @@ import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
-import java.util.List;
-
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
 
 @Configuration
 @SuppressWarnings("java:S4502")
@@ -28,35 +25,21 @@ public class SecurityConfig {
     @Bean
     public MvcRequestMatcher.Builder regionConnectorMvcRequestMatcher(HandlerMappingIntrospector introspector) {
         return new MvcRequestMatcher.Builder(introspector)
-                .servletPath("/" + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/*");
+                .servletPath("/" + ALL_REGION_CONNECTORS_BASE_URL_PATH);
     }
 
     @Bean
     public SecurityFilterChain regionConnectorSecurityFilterChain(
             @Qualifier("regionConnectorMvcRequestMatcher") MvcRequestMatcher.Builder mvcRequestMatcher,
             HttpSecurity http,
-            JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper,
             JwtUtil util
     ) throws Exception {
-        var authPaths = List.of(PATH_PERMISSION_STATUS_WITH_PATH_PARAM,
-                                PATH_PERMISSION_ACCEPTED,
-                                PATH_PERMISSION_REJECTED);
         return http
-                .securityMatcher(mvcRequestMatcher.pattern("/*"))
+                .securityMatcher(mvcRequestMatcher.pattern("/**"))
                 .addFilterBefore(new JwtIssuerFilter(mapper, util), AnonymousAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> {
-                                           auth.requestMatchers(mvcRequestMatcher.pattern(PATH_PERMISSION_REQUEST))
-                                               .permitAll();
-
-                                           for (String path : authPaths) {
-                                               auth.requestMatchers(mvcRequestMatcher.pattern(path)).access(jwtHeaderAuthorizationManager);
-                                           }
-                                           auth.anyRequest().permitAll();
-                                       }
-                )
                 .exceptionHandling(new SecurityExceptionHandler(mapper))
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
