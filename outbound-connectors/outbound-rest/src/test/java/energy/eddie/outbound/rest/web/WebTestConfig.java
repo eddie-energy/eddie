@@ -3,7 +3,8 @@ package energy.eddie.outbound.rest.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.outbound.rest.dto.ConnectionStatusMessages;
-import energy.eddie.outbound.rest.mixins.ConnectionStatusMessageMixin;
+import energy.eddie.outbound.rest.dto.RawDataMessages;
+import energy.eddie.outbound.rest.mixins.AgnosticMessageMixin;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.reactive.accept.RequestedContentTypeResolver;
@@ -20,6 +21,7 @@ public class WebTestConfig {
     public ObjectMapper objectMapper() {
         return new ObjectMapper()
                 .registerModule(new JavaTimeModule())
-                .addMixIn(ConnectionStatusMessages.class, ConnectionStatusMessageMixin.class);
+                .addMixIn(ConnectionStatusMessages.class, AgnosticMessageMixin.class)
+                .addMixIn(RawDataMessages.class, AgnosticMessageMixin.class);
     }
 }

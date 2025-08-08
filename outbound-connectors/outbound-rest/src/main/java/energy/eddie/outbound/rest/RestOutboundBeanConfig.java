@@ -10,7 +10,7 @@ import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.dto.*;
-import energy.eddie.outbound.rest.mixins.ConnectionStatusMessageMixin;
+import energy.eddie.outbound.rest.mixins.AgnosticMessageMixin;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +24,8 @@ public class RestOutboundBeanConfig {
         return objectMapper.registerModule(new JavaTimeModule())
                            .registerModule(new Jdk8Module())
                            .registerModule(new JakartaXmlBindAnnotationModule())
-                           .addMixIn(ConnectionStatusMessages.class, ConnectionStatusMessageMixin.class);
+                           .addMixIn(ConnectionStatusMessages.class, AgnosticMessageMixin.class)
+                           .addMixIn(RawDataMessages.class, AgnosticMessageMixin.class);
     }
 
     @Bean

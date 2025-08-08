@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.List;
 
-public abstract class ConnectionStatusMessageMixin<T> {
+public abstract class AgnosticMessageMixin<T> {
 
     @JsonValue
-    public abstract List<T> getConnectionStatusMessage();
+    public abstract List<T> getMessages();
 }
