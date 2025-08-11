@@ -12,6 +12,7 @@ import energy.eddie.outbound.metric.model.PermissionRequestStatusDurationModel;
 import energy.eddie.outbound.metric.repositories.PermissionRequestMetricsRepository;
 import energy.eddie.outbound.metric.repositories.PermissionRequestStatusDurationRepository;
 import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
+import energy.eddie.outbound.shared.testing.MockPermissionEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -43,6 +44,15 @@ public class PermissionRequestMetricsServiceTest {
     @Mock
     private PermissionEventRepositories repositories;
 
+    @Mock
+    private PermissionEventRepository permissionEventRepository;
+
+    @Mock
+    private ConnectionStatusMessage csm;
+
+    @Mock
+    private DataNeed dataNeed;
+
     private final MockDataSourceInformation dataSourceInformation = new MockDataSourceInformation(
             "AT",
             "at-eda",
@@ -57,27 +67,20 @@ public class PermissionRequestMetricsServiceTest {
         var regionConnectorId = dataSourceInformation.regionConnectorId();
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
-        var csm = mock(ConnectionStatusMessage.class);
         when(csm.status()).thenReturn(PermissionProcessStatus.VALIDATED);
         when(csm.timestamp()).thenReturn(now);
         when(csm.permissionId()).thenReturn("pid");
         when(csm.dataNeedId()).thenReturn("dnId");
         when(csm.dataSourceInformation()).thenReturn(dataSourceInformation);
 
-        var prevEvent = mock(PermissionEvent.class);
-        var currEvent = mock(PermissionEvent.class);
-        when(prevEvent.eventCreated()).thenReturn(now.minusSeconds(2));
-        when(currEvent.eventCreated()).thenReturn(now);
-        when(prevEvent.status()).thenReturn(PermissionProcessStatus.CREATED);
+        var prevEvent = new MockPermissionEvent(permissionId, PermissionProcessStatus.CREATED, now.minusSeconds(2));
+        var currEvent = new MockPermissionEvent(permissionId, PermissionProcessStatus.VALIDATED);
+        List<PermissionEvent> permissionEvents = List.of(currEvent, prevEvent);
 
-        var permissionEvents = List.of(currEvent, prevEvent);
-        var permissionEventRepository = mock(PermissionEventRepository.class);
         when(permissionEventRepository.findTop2ByPermissionIdAndEventCreatedLessThanEqualOrderByEventCreatedDesc(permissionId,
                 now)).thenReturn(permissionEvents);
         when(repositories.getPermissionEventRepositoryByRegionConnectorId(regionConnectorId))
                 .thenReturn(permissionEventRepository);
-
-        DataNeed dataNeed = mock(DataNeed.class);
         when(dataNeed.type()).thenReturn("dnType");
         when(dataNeedsService.getById("dnId")).thenReturn(dataNeed);
 
