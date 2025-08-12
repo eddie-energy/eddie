@@ -50,12 +50,16 @@ public class PermissionRequestMetricsService {
 
         String regionConnectorId = csm.dataSourceInformation().regionConnectorId();
         String permissionId = csm.permissionId();
-        ZonedDateTime eventCreated = csm.timestamp();
         List<PermissionEvent> permissionEvents = getCurrentAndPreviousPermissionEvents(
                 permissionId,
-                eventCreated,
+                csm.timestamp(),
                 regionConnectorId
         );
+
+        if(permissionEvents.size() < 2) {
+            return;
+        }
+
         ZonedDateTime currentPermissionEventCreated = permissionEvents.getFirst().eventCreated();
         PermissionEvent prevPermissionEvent = permissionEvents.getLast();
         long durationMilliseconds = Duration.between(prevPermissionEvent.eventCreated(), currentPermissionEventCreated)
@@ -118,12 +122,17 @@ public class PermissionRequestMetricsService {
     private List<PermissionEvent> getCurrentAndPreviousPermissionEvents(String permissionId,
                                                                        ZonedDateTime eventCreated,
                                                                        String regionConnectorId) {
-        PermissionEventRepository repository = repositories.getPermissionEventRepositoryByRegionConnectorId(
+        Optional<PermissionEventRepository> repository = repositories.getPermissionEventRepositoryByRegionConnectorId(
                 regionConnectorId
         );
-        return repository.findTop2ByPermissionIdAndEventCreatedLessThanEqualOrderByEventCreatedDesc(
-                permissionId,
-                eventCreated
-        );
+
+        if(repository.isPresent()) {
+            return repository.get().findTop2ByPermissionIdAndEventCreatedLessThanEqualOrderByEventCreatedDesc(
+                    permissionId,
+                    eventCreated
+            );
+        }
+
+        return List.of();
     }
 }

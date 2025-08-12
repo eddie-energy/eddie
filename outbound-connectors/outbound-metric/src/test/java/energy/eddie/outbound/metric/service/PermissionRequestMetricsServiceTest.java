@@ -80,7 +80,7 @@ public class PermissionRequestMetricsServiceTest {
         when(permissionEventRepository.findTop2ByPermissionIdAndEventCreatedLessThanEqualOrderByEventCreatedDesc(permissionId,
                 now)).thenReturn(permissionEvents);
         when(repositories.getPermissionEventRepositoryByRegionConnectorId(regionConnectorId))
-                .thenReturn(permissionEventRepository);
+                .thenReturn(Optional.of(permissionEventRepository));
         when(dataNeed.type()).thenReturn("dnType");
         when(dataNeedsService.getById("dnId")).thenReturn(dataNeed);
 

@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -22,10 +24,11 @@ public class PermissionEventServiceTest {
 
         // When
         service.registerPermissionEventRepository(permissionEventRepository, regionConnectorId);
-        PermissionEventRepository result = service.getPermissionEventRepositoryByRegionConnectorId(regionConnectorId);
+        Optional<PermissionEventRepository> result = service.getPermissionEventRepositoryByRegionConnectorId(regionConnectorId);
 
         // Then
-        assertSame(permissionEventRepository, result);
+        assertTrue(result.isPresent());
+        assertEquals(permissionEventRepository, result.get());
     }
 
     @Test
@@ -35,10 +38,9 @@ public class PermissionEventServiceTest {
         String regionConnectorId = "at-eda";
 
         // When
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                service.getPermissionEventRepositoryByRegionConnectorId(regionConnectorId));
+        Optional<PermissionEventRepository> result = service.getPermissionEventRepositoryByRegionConnectorId(regionConnectorId);
 
         // Then
-        assertTrue(ex.getMessage().contains("No repository found for region connector"));
+        assertFalse(result.isPresent());
     }
 }

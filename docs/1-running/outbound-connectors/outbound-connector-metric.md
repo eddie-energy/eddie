@@ -5,11 +5,11 @@ When a new [ConnectionStatusMessage](../../../docs/2-integrating/messages/cim/co
 Then, the median duration, accumulative mean and count are updated and persisted in metric.permission_request_metrics, from which the metrics report is generated and periodically sent to the configured endpoint.
 
 
-| Parameter                            | Type                   | Default | Description                                                            |
-|--------------------------------------|------------------------|---------|------------------------------------------------------------------------|
-| `outbound-connector.metric.enabled`  | `true` or `false`      | `false` | Enables or disables the Metric outbound connector.                     |
-| `outbound-connector.metric.interval` | ISO-8601 for durations | `PT12H` | Interval to periodically retrieve and send the metrics (e.g., PT12H).  |
-| `outbound-connector.metric.endpoint` | URI                    |         | URL to which the metrics report is sent (e.g., https://eddie.energy/). |                                                                                          
+| Parameter                            | Type                   | Default | Description                                                    |
+|--------------------------------------|------------------------|---------|----------------------------------------------------------------|
+| `outbound-connector.metric.enabled`  | `true` or `false`      | `false` | Enables or disables the Metric outbound connector.             |
+| `outbound-connector.metric.interval` | ISO-8601 for durations | `PT12H` | Interval to periodically retrieve and send the metrics (e.g., PT12H). |
+| `outbound-connector.metric.endpoint` | URI                    |   https://eddie.energy/      | URL to which the metrics report is sent. |                                                                                          
 
 ```properties :spring
 outbound-connector.metric.enabled=true

@@ -24,9 +24,9 @@ public class PermissionEventRepositoryRegistrar {
         String regionConnectorId = regionconnector.getMetadata().id();
         if (supplier.isPresent()) {
             service.registerPermissionEventRepository(supplier.get().get(), regionConnectorId);
-            LOGGER.info("PermissionEventService: Registering PermissionEventRepository {}", regionConnectorId);
+            LOGGER.info("Registering PermissionEventRepository {}", regionConnectorId);
         } else {
-            LOGGER.info("PermissionEventService: No PermissionEventRepository was registered {}", regionConnectorId);
+            LOGGER.info("No PermissionEventRepository was registered {}", regionConnectorId);
         }
     }
 }

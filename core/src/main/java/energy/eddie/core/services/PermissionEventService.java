@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class PermissionEventService implements PermissionEventRepositories {
@@ -17,13 +18,8 @@ public class PermissionEventService implements PermissionEventRepositories {
     }
 
     @Override
-    public PermissionEventRepository getPermissionEventRepositoryByRegionConnectorId(String regionConnectorId) {
+    public Optional<PermissionEventRepository> getPermissionEventRepositoryByRegionConnectorId(String regionConnectorId) {
         PermissionEventRepository repository = permissionEventRepositories.get(regionConnectorId);
-
-        if (repository == null) {
-            throw new IllegalArgumentException("No repository found for region connector: " + regionConnectorId);
-        }
-
-        return repository;
+        return Optional.ofNullable(repository);
     }
 }

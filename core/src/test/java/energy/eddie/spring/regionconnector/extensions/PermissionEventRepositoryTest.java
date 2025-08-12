@@ -29,21 +29,17 @@ public class PermissionEventRepositoryTest {
     @Mock
     private RegionConnectorMetadata metadata;
 
-    @Mock
-    private Supplier<PermissionEventRepository> supplier;
-
     @Test
     void testSupplierPresent_registersRepository() {
         // Given
         when(regionConnector.getMetadata()).thenReturn(metadata);
         when(metadata.id()).thenReturn("at-eda");
-        when(supplier.get()).thenReturn(permissionEventRepository);
+        Supplier<PermissionEventRepository> supplier = () -> permissionEventRepository;
 
         // When
         new PermissionEventRepositoryRegistrar(Optional.of(supplier), regionConnector, permissionEventService);
 
         // Then
-        verify(supplier).get();
         verify(permissionEventService).registerPermissionEventRepository(permissionEventRepository, "at-eda");
     }
 
