@@ -1,0 +1,75 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
+
+:not(:defined) {
+  visibility: hidden;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  font-family: 'Poppins', Helvetica, sans-serif;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  padding: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+img {
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: bold;
+}
+
+h2 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+h3 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+b,
+strong {
+  font-weight: bold;
+}
+
+.details-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 2rem;
+
+  dt {
+    font-weight: bold;
+    color: var(--sl-color-neutral-500);
+    font-size: var(--sl-font-size-small);
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+
+    dd + dt {
+      margin-top: 0.5rem;
+    }
+  }
+}

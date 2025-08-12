@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://REPLACE_ME:5432/aiida
+    url: jdbc:postgresql://REPLACE_ME:5433/aiida
     username: REPLACE_ME
     password: REPLACE_ME
   jpa:
@@ -16,24 +16,30 @@ spring:
     locations: 'classpath:db/aiida/migration'
   security:
     oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}
+          jwk-set-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/protocol/openid-connect/certs
       client:
         provider:
           keycloak:
-            authorization-uri: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/auth
-            token-uri: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/token
-            user-info-uri: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/userinfo
-            jwk-set-uri: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/certs
+            authorization-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/protocol/openid-connect/auth
+            token-uri: ${aiida.keycloak.url.internal}/realms/${aiida.keycloak.realm}/protocol/openid-connect/token
+            user-info-uri: ${aiida.keycloak.url.internal}/realms/${aiida.keycloak.realm}/protocol/openid-connect/userinfo
+            jwk-set-uri: ${aiida.keycloak.url.internal}/realms/${aiida.keycloak.realm}/protocol/openid-connect/certs
             user-name-attribute: preferred_username
         registration:
           keycloak:
-            client-id: ${KEYCLOAK_CLIENT:AIIDA}
-            client-secret: ${KEYCLOAK_CLIENT_SECRET:REPLACE_ME}
+            client-id: ${aiida.keycloak.client}
+            client-secret: ${aiida.keycloak.secret}
             authorization-grant-type: authorization_code
-            redirect-uri: ${AIIDA_EXTERNAL_HOST:http://localhost:8080}/login/oauth2/code/keycloak
+            redirect-uri: ${aiida.public.url}/login/oauth2/code/keycloak
             scope: openid
             provider: keycloak
 
 aiida:
+  public:
+    url: ${AIIDA_EXTERNAL_HOST:http://localhost:${server.port}}
   installer:
     host: http://aiida-installer:8010
   mqtt:
@@ -43,5 +49,11 @@ aiida:
     password: ${MQTT_PASSWORD:REPLACE_ME_WITH_SAVE_PASSWORD}
     tls-certificate-path: ${MQTT_TLS_CERTIFICATE_PATH:}
   keycloak:
-    account-uri: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/account
-    end-session-uri: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}/realms/${KEYCLOAK_REALM:EDDIE}/protocol/openid-connect/logout
+    url:
+      internal: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8080}
+      external: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}
+    realm: ${KEYCLOAK_REALM:EDDIE}
+    client: ${KEYCLOAK_CLIENT:AIIDA}
+    secret: ${KEYCLOAK_CLIENT_SECRET:REPLACE_ME}
+    account-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/account
+    end-session-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/protocol/openid-connect/logout

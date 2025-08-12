@@ -12,10 +12,14 @@ spring:
     enabled: true
   security:
     oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://auth.aiida.energy/iam/realms/AIIDA
+          jwk-set-uri: https://auth.aiida.energy/iam/realms/AIIDA/protocol/openid-connect/certs
       client:
         provider:
           keycloak:
-            authorization-uri: https://auth.aiida.energy//auth
+            authorization-uri: https://auth.aiida.energy/auth
             token-uri: https://auth.aiida.energy/token
             user-info-uri: https://auth.aiida.energy/userinfo
             jwk-set-uri: https://auth.aiida.energy/certs

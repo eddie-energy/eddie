@@ -6,7 +6,8 @@
   "scripts": {
     "build": "pnpm -r --filter=./region-connectors/* --filter=./core run build",
     "docs:build": "pnpm -C ./docs run build",
-    "admin:build": "pnpm -C ./admin-console/ui run build --base=./"
+    "admin:build": "pnpm -C ./admin-console/ui run build --base=./",
+    "aiida:build": "pnpm -C ./aiida/ui run build"
   },
   "engines": {
     "node": ">=18.17.0",
