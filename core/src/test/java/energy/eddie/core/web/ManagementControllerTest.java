@@ -27,6 +27,7 @@ class ManagementControllerTest {
     private SupportedFeatureService service;
     @MockitoBean
     private RegionConnectorSupportedFeatureExtension extension;
+    @SuppressWarnings("unused")
     @MockitoBean
     private MetadataService metadataService;
 

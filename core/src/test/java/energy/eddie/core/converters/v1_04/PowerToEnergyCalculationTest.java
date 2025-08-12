@@ -103,6 +103,7 @@ class PowerToEnergyCalculationTest {
         assertNotEquals(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP), res);
     }
 
+    @SuppressWarnings("unused")
     private static Stream<Arguments> testIsTargetUnit_returns() {
         return Stream.of(
                 Arguments.of(KILOWATT_HOUR, true),
@@ -110,6 +111,7 @@ class PowerToEnergyCalculationTest {
         );
     }
 
+    @SuppressWarnings("unused")
     private static Stream<Arguments> testScaledUnit_returnsCorrect() {
         return Stream.of(
                 Arguments.of(KILOWATT, KILOWATT_HOUR, ACTIVE_ENERGY),
@@ -121,6 +123,7 @@ class PowerToEnergyCalculationTest {
         );
     }
 
+    @SuppressWarnings("unused")
     private static Stream<Arguments> testConverts_powerToEnergy() {
         return Stream.of(
                 Arguments.of(5, Duration.ofHours(1), 50),

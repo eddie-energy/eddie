@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.be.fluvius;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
@@ -38,6 +39,7 @@ import reactor.core.publisher.Sinks;
 
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.be.fluvius.FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
@@ -149,4 +151,10 @@ public class FluviusBeanConfig {
                                              taskScheduler,
                                              dataNeedCalculationService);
     }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(BePermissionEventRepository repo) {
+        return () -> repo;
+    }
+
 }

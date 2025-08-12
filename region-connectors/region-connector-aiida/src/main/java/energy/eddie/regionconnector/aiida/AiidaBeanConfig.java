@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -39,6 +40,7 @@ import reactor.core.publisher.Sinks;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.*;
 import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
@@ -188,5 +190,10 @@ public class AiidaBeanConfig {
     @Bean
     public MqttMessageCallback mqttMessageCallback(Sinks.Many<String> revocationSink, ObjectMapper objectMapper) {
         return new MqttMessageCallback(revocationSink, objectMapper);
+    }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(AiidaPermissionEventRepository repo) {
+        return () -> repo;
     }
 }
