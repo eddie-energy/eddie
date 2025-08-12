@@ -17,6 +17,7 @@ public class EdaConsumptionRecord01p40InboundMessageFactory implements EdaConsum
      * <p>From <a href="https://www.ebutilities.at/schemas/162">ebutilities</a>
      */
     private static final LocalDate ACTIVE_FROM = LocalDate.of(2024, 4, 8);
+    private static final LocalDate ACTIVE_UNTIL = LocalDate.of(2025, 10, 6);
     private final Jaxb2Marshaller marshaller;
 
     public EdaConsumptionRecord01p40InboundMessageFactory(Jaxb2Marshaller marshaller) {
@@ -25,7 +26,7 @@ public class EdaConsumptionRecord01p40InboundMessageFactory implements EdaConsum
 
     @Override
     public boolean isActive(LocalDate date) {
-        return !ACTIVE_FROM.isAfter(date);
+        return !ACTIVE_FROM.isAfter(date) && ACTIVE_UNTIL.isAfter(date);
     }
 
 

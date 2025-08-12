@@ -97,6 +97,18 @@ class EdaConsumptionRecord01p40InboundMessageFactoryTest {
     }
 
     @Test
+    void isActive_on_2025_10_06_returnsFalse() {
+        // given
+        var factory = new EdaConsumptionRecord01p40InboundMessageFactory(marshaller);
+
+        // when
+        var active = factory.isActive(LocalDate.of(2025, 10, 6));
+
+        // then
+        assertFalse(active);
+    }
+
+    @Test
     void isActive_on_08_04_2024_returnsTrue() {
         // given
         var factory = new EdaConsumptionRecord01p40InboundMessageFactory(marshaller);

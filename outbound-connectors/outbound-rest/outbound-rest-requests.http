@@ -1,0 +1,176 @@
+### GET connection status messages as json
+GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
+Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### GET connection status messages as xml
+GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
+Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get connection status messages as event stream
+GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
+Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### GET raw data messages as json
+GET http://localhost:9090/outbound-connectors/rest/agnostic/raw-data-messages
+Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### GET raw data messages as xml
+GET http://localhost:9090/outbound-connectors/rest/agnostic/raw-data-messages
+Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get raw data messages as event stream
+GET http://localhost:9090/outbound-connectors/rest/agnostic/raw-data-messages
+Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get validated historical data market documents as json
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
+Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get validated historical data market documents as xml
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
+Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get validated historical data market documents as event stream
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
+Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get permission market documents as json
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/permission-md
+Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get permission market documents as xml
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/permission-md
+Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get permission market documents as event stream
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/permission-md
+Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get accounting point data market documents as json
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/accounting-point-data-md
+Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get accounting point data market documents as xml
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/accounting-point-data-md
+Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get accounting point data market documents as event stream
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/accounting-point-data-md
+Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+# Termination Market Documents
+
+### POST termination market document as json
+@permissionId=REPLACE_ME
+@region-connector-id=REPLACE_ME
+POST http://localhost:9090/outbound-connectors/rest/cim_0_82/termination-md
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+{
+  "Permission_MarketDocument": {
+    "mRID": "{{permissionId}}",
+    "type": "Z01",
+    "PermissionList": {
+      "Permission": [
+        {
+          "MktActivityRecordList": {
+            "MktActivityRecord": [
+              {
+                "type": "{{region-connector-id}}"
+              }
+            ]
+          },
+          "ReasonList": {
+            "Reason": [
+              {
+                "code": "Z03"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+### POST termination market document as xml
+POST http://localhost:9090/outbound-connectors/rest/cim_0_82/termination-md
+Content-Type: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Permission_Envelope xmlns="http://www.eddie.energy/Consent/EDD02/20240125">
+    <Permission_MarketDocument>
+        <mRID>{{permissionId}}</mRID>
+        <type>Z01</type>
+        <PermissionList>
+            <Permission>
+                <MktActivityRecordList>
+                    <MktActivityRecord>
+                        <type>{{region-connector-id}}</type>
+                    </MktActivityRecord>
+                </MktActivityRecordList>
+                <ReasonList>
+                    <Reason>
+                        <code>Z03</code>
+                    </Reason>
+                </ReasonList>
+            </Permission>
+        </PermissionList>
+    </Permission_MarketDocument>
+</Permission_Envelope>
+
+# Redistribution Transaction Request
+
+### POST Redistribution Transaction Request as JSON
+POST http://localhost:9090/outbound-connectors/rest/cim_0_91_08/redistribution-transaction-rd
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+{
+  "messageDocumentHeader.creationDateTime": "2025-01-03T00:00:00Z",
+  "messageDocumentHeader.metaInformation.permissionId": "permissionId",
+  "messageDocumentHeader.metaInformation.region.connector": "rc-id",
+  "marketDocument.period.timeInterval": {
+    "start": "2025-01-01T01:01Z",
+    "end": "2025-01-02T00:00Z"
+  }
+}
+
+### POST Redistribution Transaction Request as XML
+POST http://localhost:9090/outbound-connectors/rest/cim_0_91_08/redistribution-transaction-rd
+Accept: application/json
+Content-Type: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns4:RTR_Envelope
+        xmlns:ns4="https://eddie.energy/CIM/RTR">
+    <ns4:messageDocumentHeader.creationDateTime>2025-01-03T00:00:00Z</ns4:messageDocumentHeader.creationDateTime>
+    <ns4:messageDocumentHeader.metaInformation.permissionId>permissionId
+    </ns4:messageDocumentHeader.metaInformation.permissionId>
+    <ns4:messageDocumentHeader.metaInformation.region.connector>rc-id
+    </ns4:messageDocumentHeader.metaInformation.region.connector>
+    <ns4:marketDocument.period.timeInterval>
+        <ns4:start>2025-01-01T01:01Z</ns4:start>
+        <ns4:end>2025-01-02T00:00Z</ns4:end>
+    </ns4:marketDocument.period.timeInterval>
+</ns4:RTR_Envelope>

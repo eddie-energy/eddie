@@ -8,7 +8,6 @@ public interface AiidaConfiguration {
     String CUSTOMER_ID = PREFIX + "customer.id";
     String BCRYPT_STRENGTH = PREFIX + "bcrypt.strength";
     String MQTT_SERVER_URI = PREFIX + "mqtt.server.uri";
-    String MQTT_USERNAME = PREFIX + "mqtt.username";
     String MQTT_PASSWORD = PREFIX + "mqtt.password";
     String EDDIE_PUBLIC_URL = "eddie.public.url";
 
@@ -42,9 +41,8 @@ public interface AiidaConfiguration {
     String mqttServerUri();
 
     /**
-     * Optional username to use to authenticate to the MQTT broker.
+     * Username to use to authenticate to the MQTT broker.
      */
-    @Nullable
     String mqttUsername();
 
     /**

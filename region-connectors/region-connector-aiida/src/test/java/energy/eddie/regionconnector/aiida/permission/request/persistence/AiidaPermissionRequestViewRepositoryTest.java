@@ -13,6 +13,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.MountableFile;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -27,10 +28,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Testcontainers
 @TestPropertySource(locations = "classpath:application-test.properties")
 class AiidaPermissionRequestViewRepositoryTest {
+    private static final String CREATE_EDDIE_DB_AND_EMQX_USER_FILE = "create-eddie-db-and-emqx-user.sql";
+    private static final String CONTAINER_PATH = "/docker-entrypoint-initdb.d/" + CREATE_EDDIE_DB_AND_EMQX_USER_FILE;
+
     @SuppressWarnings("unused")
     @Container
     @ServiceConnection
-    private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:15-alpine");
+    static PostgreSQLContainer<?> postgresqlContainer =
+            new PostgreSQLContainer<>("postgres:17.5-alpine")
+                    .withCopyFileToContainer(
+                            MountableFile.forClasspathResource(CREATE_EDDIE_DB_AND_EMQX_USER_FILE),
+                            CONTAINER_PATH
+                    );
 
     @Autowired
     private AiidaPermissionRequestViewRepository permissionRequestRepository;

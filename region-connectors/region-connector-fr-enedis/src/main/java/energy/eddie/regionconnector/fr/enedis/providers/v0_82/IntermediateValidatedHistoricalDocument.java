@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
 import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.utils.Pair;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiVersion;
@@ -10,9 +10,9 @@ import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.IntervalReading;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
-import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import jakarta.annotation.Nullable;
 
 import java.math.BigDecimal;

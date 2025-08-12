@@ -23,9 +23,23 @@ For more information, see [Common Information Model Client Libraries](https://ed
 ## 2.0.1 - 2025-05-27
 
 - Change artifact ID to `cim` from `cim-test`
-- Set correct version for the artifact
+- Set the correct version for the artifact
 
 ## 2.1.0 - 2025-06-30
 
 - Add (near) real-time data for CIM version `1.04`.
 - AIIDA now depends on this version of the CIM.
+
+## 3.0.0 - 2025-07-14
+
+- Replace validated historical data market document version `0.91.08` with version `1.04`
+- Move realtime data schemas to its own package and folder
+
+## 3.0.1 - 2025-07-15
+
+- Truncate datetime to seconds as required by CIM's ESMP datetime
+
+## 3.1.0 - 2025-07-22
+
+- Add Accounting Point Data Market Document Schema v1.04
+- Add Permission Market Document Schema v1.04

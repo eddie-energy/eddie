@@ -27,7 +27,8 @@ public interface FluviusApi {
             String permissionId,
             ZonedDateTime from,
             ZonedDateTime to,
-            String ean
+            String ean,
+            Granularity granularity
     );
 
     Mono<GetEnergyResponseModelApiDataResponse> energy(

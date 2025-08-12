@@ -1,58 +1,60 @@
 # ![AIIDA - Administrative Interface for In-house Data Access](docs/images/aiida-horizontal.svg)
 
-The Administrative Interface for In-house Data Access (AIIDA) 
+The Administrative Interface for In-house Data Access (AIIDA)
 connects to various metering devices such as smart meters and home automation systems,
 to stream near real-time energy data and other data to consumers like the EDDIE Framework.
 
-To learn more about the architecture of AIIDA, 
-you can visit its [architecture documentation](https://eddie-web.projekte.fh-hagenberg.at/architecture/aiida/aiida.html).
+To learn more about the architecture of AIIDA, you can visit its [architecture documentation](https://eddie-web.projekte.fh-hagenberg.at/architecture/aiida/aiida.html).
 If you want to contribute to this repository, please take a look at our [contributing guide](../CONTRIBUTING.md).
 
 ## Prerequisites
 
-In order for AIIDA to run, it is necessary to start a [TimescaleDB](https://www.timescale.com/) and a [Keycloak](https://www.keycloak.org/) instance. The predefined docker-compose.yml for starting
-those services can be found in the [docker](docker) folder.
+In order for AIIDA to run, it is necessary to start a [TimescaleDB](https://www.timescale.com/) and a [Keycloak](https://www.keycloak.org/) instance.
+The predefined docker-compose.yml for starting those services can be found in the [docker](docker) folder.
 To use data sources that use MQTT, an EMQX instance is required additionally, which is also included in the docker-compose.yml.
-Before starting the services, the environment variables in the [.env](docker/.env) file should be configured, especially the
-`SPRING_DATASOURCE_USERNAME` and
-`SPRING_DATASOURCE_PASSWORD`. This user will be used to authenticate to the TimescaleDB.
+Before starting the services, the environment variables in the [.env](docker/.env) file should be configured,
+especially the `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD`.
+This user will be used to authenticate to the TimescaleDB.
 
 ### Run with Gradle
 
-For local development, the ports for the TimescaleDB must be exposed in order for the local AIIDA instance to connect to it, while the default KeyCloak configuration is sufficient.
-AIIDA has to be configured over the [application.properties](src/main/resources/application.yml) file. Especially the
-`spring.datasource` properties have to be configured according to TimescaleDB.
+For local development, the ports for the TimescaleDB must be exposed in order for the local AIIDA instance to connect to it, while the default Keycloak configuration is sufficient.
+AIIDA has to be configured over the [application.properties](src/main/resources/application.yml) file.
+Especially the `spring.datasource` properties have to be configured according to TimescaleDB.
 
 - `./gradlew bootRun`
 
 The permissions REST API will be exposed on the [default Spring Boot port (localhost:8080)](http://localhost:8080)
+The web UI is deployed with the Spring application on the same port.
+For local development, the web UI can be run separately from its own folder:
+
+```shell
+cd ui
+pnpm run dev
+```
+
+Instead of the environment variables provided to the Spring application, the local development server will use a separate set of environment variables which is defined in [`ui/.env`](ui/.env).
+The default configuration assumes the Docker Compose setup.
 
 ### Run with Docker
 
-AIIDA is also available as a docker image at
-the [GitHub registry](https://github.com/eddie-energy/eddie/pkgs/container/aiida).
-The necessary configuration should be specified via [environment variables](docker/.env), and
-an [example docker compose file](docker/compose.yml)
-includes a TimescaleDB and Keycloak.
+AIIDA is also available as a docker image at the [GitHub registry](https://github.com/eddie-energy/eddie/pkgs/container/aiida).
+The necessary configuration should be specified via [environment variables](docker/.env),
+and an [example docker compose file](docker/compose.yml) includes a TimescaleDB and Keycloak.
 Once started, you can access the AIIDA Web-UI at the default location: http://localhost:8080
 
 ## Authentication with Keycloak
 
-The [example docker compose file](docker/compose.yml) includes a keycloak instance with a preconfigured user named
-`aiida`, with the password `aiida`.
+The [example docker compose file](docker/compose.yml) includes a keycloak instance with a preconfigured user named `aiida`, with the password `aiida`.
 
 The preconfigured keycloak includes an EDDIE realm with the AIIDA client, that is used for authentication.
-The client secret of the AIIDA client is set to `REPLACE_ME` and can be regenerated in the admin console, which is
-reachable at http://localhost:8888.
-The keycloak admin user is configured in the [.env](docker/.env) file and has by default the username `admin` and the
-password `admin`.
+The client secret of the AIIDA client is set to `REPLACE_ME` and can be regenerated in the admin console, which is reachable at http://localhost:8888.
+The keycloak admin user is configured in the [.env](docker/.env) file and has by default the username `admin` and the password `admin`.
 
-If a different keycloak instance should be used, it can be configured in the
-[application.yml](src/main/resources/application.yml) file or using environment variables.
+If a different keycloak instance should be used, it can be configured in the [application.yml](src/main/resources/application.yml) file or using environment variables.
 
-When AIIDA is started locally for development it can lead to unexpected logouts, since both the example app and AIIDA use the same session ID (JSESSIONID) per default.
-To overcome this issue, the property `server.servlet.session.cookie.name` can e.g. be set to
-`AIIDA_SESSION_ID`, which will fix the unexpected behaviour.  
+When AIIDA is started locally for development, it can lead to unexpected logouts, since both the example app and AIIDA use the same session ID (JSESSIONID) per default.
+To overcome this issue, the property `server.servlet.session.cookie.name` can be set to `AIIDA_SESSION_ID`, which will fix the unexpected behavior.  
 **Important:**
 This is only relevant during development, because usually AIIDA and EDDIE services are not deployed using the same host (localhost for the case of development).
 
@@ -65,7 +67,7 @@ Since this URI is not accessible from the Docker network, the required URIs must
 The following properties must be set in the `application.yml` file:
 
 | Property            | Description                                                   |
-|---------------------|---------------------------------------------------------------|
+| ------------------- | ------------------------------------------------------------- |
 | authorization-uri   | URI for redirecting users for authorization.                  |
 | token-uri           | URI to exchange the access code for an access token.          |
 | user-info-uri       | URI to fetch user information.                                |
@@ -96,7 +98,7 @@ For a production deployment setup these values can be configured as follows assu
 ### EDDIE Keycloak Theme
 
 The current version of the EDDIE keycloak theme includes some very simple modifications only for the login page.
-The source code and instructions can be found within the [keycloak eddie theme folder](../keycloak-eddie-theme).
+The source code and instructions can be found within the [`keycloak-eddie-theme` folder](../keycloak-eddie-theme).
 
 ## AIIDA Configuration
 
@@ -105,7 +107,7 @@ When using Docker, most of these properties should be configured in the [.env](d
 
 | Property                   | Description                                                                                                                          |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| AIIDA_EXTERNAL_HOST        | Network-accessible host of the AIIDA instance                                                                                        |
+| AIIDA_EXTERNAL_HOST        | Network-accessible host of the AIIDA instance (defaults to http://localhost:8080)                                                    |
 | AIIDA_CORS_ALLOWED_ORIGINS | The origins that are allowed to communicate with AIIDA (necessary for deployments with reverse proxies)                              |
 | AIIDA_KEYCLOAK_ACCOUNT_URI | Specifies the URI to which users are redirected for account settings. By default, this points to Keycloak's account management page. |
 | SPRING_DATASOURCE_USERNAME | Username to authenticate to the TimescaleDB                                                                                          |
@@ -117,15 +119,18 @@ When using Docker, most of these properties should be configured in the [.env](d
 | KEYCLOAK_CLIENT_SECRET     | The client secret for the Keycloak client                                                                                            |
 | KEYCLOAK_ADMIN_USERNAME    | Username of the Keycloak admin                                                                                                       |
 | KEYCLOAK_ADMIN_PASSWORD    | Password of the Keycloak admin                                                                                                       |
+| MQTT_PASSWORD              | Password for MQTT broker                                                                                                             |
+| MQTT_TLS_CERTIFICATE_PATH  | Filepath of TLS certificate for MQTT broker (can be mounted to Docker container)                                                     |
 | MQTT_EXTERNAL_HOST         | Network-accessible host of the MQTT broker                                                                                           |
 | MQTT_INTERNAL_HOST         | Internal network host of the MQTT broker (e.g. inside Docker network)                                                                |
+| MQTT_BCRYPT_SALT_ROUNDS    | Number of rounds for bcrypt hashing of MQTT passwords (default: 12)                                                                  |
 
 ### Reverse Proxy Deployment
 
 If you are running an AIIDA instance behind a reverse proxy (e.g. nginx) to make it accessible everywhere, it is necessary to add the origin of the AIIDA instance to the allowed origins.
 This can be done by setting the config `aiida.cors.allowed-origins` or using the `AIIDA_CORS_ALLOWED_ORIGINS` environment variable.
-For example if your AIIDA instance is reachable at the url `https://aiida.eddie.energy` you have to set the value of `AIIDA_CORS_ALLOWED_ORIGINS` to `https://aiida.eddie.energy`.
-To the best of our knowledge this is only necessary for reverse proxy deployments and not e.g. using Kubernetes.
+For example, if your AIIDA instance is reachable at the url `https://aiida.eddie.energy` you have to set the value of `AIIDA_CORS_ALLOWED_ORIGINS` to `https://aiida.eddie.energy`.
+To the best of our knowledge, this is only necessary for reverse proxy deployments and not e.g. using Kubernetes.
 
 ## API Documentation
 
@@ -135,8 +140,8 @@ SwaggerUI is also included and can be found here: http://localhost:8080/swagger-
 
 ## Supported Smart Meters
 
-Smart meters are the primary datasources and are gradually integrated in AIIDA. Data from all datasources is
-automatically persisted in the TimescaleDB.
+Smart meters are the primary data sources and are gradually integrated in AIIDA.
+Data from all data sources is automatically persisted in the TimescaleDB.
 
 Currently, the following countries are supported:
 

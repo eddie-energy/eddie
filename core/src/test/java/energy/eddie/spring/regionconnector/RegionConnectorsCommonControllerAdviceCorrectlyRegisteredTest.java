@@ -50,6 +50,7 @@ class RegionConnectorsCommonControllerAdviceCorrectlyRegisteredTest {
     private WebApplicationContext applicationContext;
     @MockitoBean
     private DataNeedsService unusedDataNeedsService;
+    @SuppressWarnings("unused")
     @MockitoBean
     private JwtUtil jwtUtil;
     private MockMvc mockMvc;

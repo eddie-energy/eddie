@@ -1,8 +1,10 @@
 package energy.eddie.regionconnector.be.fluvius.permission.handlers;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.be.fluvius.permission.events.MeterReadingUpdatedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.SimpleEvent;
+import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.permission.request.MeterReading;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -39,15 +41,25 @@ public class MeterReadingUpdatedEventHandler implements EventHandler<MeterReadin
         var meterReadings = permissionRequest.lastMeterReadings();
         var end = permissionRequest.end().atStartOfDay(ZoneOffset.UTC);
         var isFulfilled = meterReadings.stream()
-                                       .allMatch(reading -> readingIsAfter(reading, end));
+                                       .allMatch(reading -> readingIsAfter(reading, end, permissionRequest));
         if (isFulfilled) {
             LOGGER.info("Marking permission request {} as fulfilled", permissionId);
             outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.FULFILLED));
         }
     }
 
-    private static boolean readingIsAfter(MeterReading reading, ZonedDateTime end) {
+    private static boolean readingIsAfter(
+            MeterReading reading,
+            ZonedDateTime end,
+            FluviusPermissionRequest permissionRequest
+    ) {
         var readingTimestamp = reading.lastMeterReading();
-        return readingTimestamp != null && (readingTimestamp.isEqual(end) || readingTimestamp.isAfter(end));
+        if (readingTimestamp == null) {
+            return false;
+        }
+        if (permissionRequest.granularity() != Granularity.P1D) {
+            return !readingTimestamp.isBefore(end);
+        }
+        return !readingTimestamp.toLocalDate().isBefore(end.minusDays(1).toLocalDate());
     }
 }

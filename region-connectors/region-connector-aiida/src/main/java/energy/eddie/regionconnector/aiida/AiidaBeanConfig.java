@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
@@ -39,6 +40,7 @@ import reactor.core.publisher.Sinks;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.*;
 import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
@@ -53,14 +55,10 @@ public class AiidaBeanConfig {
             @Value("${" + BCRYPT_STRENGTH + "}") int bCryptStrength,
             @Value("${" + EDDIE_PUBLIC_URL + "}") String eddiePublicUrl,
             @Value("${" + MQTT_SERVER_URI + "}") String mqttServerUri,
-            @Value("${" + MQTT_USERNAME + ":}") String mqttUsername,
             @Value("${" + MQTT_PASSWORD + ":}") String mqttPassword
     ) {
         String eddieUrl = eddiePublicUrl.endsWith("/") ? eddiePublicUrl : eddiePublicUrl + "/";
         String handshakeUrl = eddieUrl + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + REGION_CONNECTOR_ID + PATH_HANDSHAKE_PERMISSION_REQUEST;
-
-        if (mqttUsername != null && mqttUsername.trim().isEmpty())
-            mqttUsername = null;
 
         if (mqttPassword != null && mqttPassword.trim().isEmpty())
             mqttPassword = null;
@@ -69,7 +67,6 @@ public class AiidaBeanConfig {
                                            bCryptStrength,
                                            handshakeUrl,
                                            mqttServerUri,
-                                           mqttUsername,
                                            mqttPassword);
     }
 
@@ -193,5 +190,10 @@ public class AiidaBeanConfig {
     @Bean
     public MqttMessageCallback mqttMessageCallback(Sinks.Many<String> revocationSink, ObjectMapper objectMapper) {
         return new MqttMessageCallback(revocationSink, objectMapper);
+    }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(AiidaPermissionEventRepository repo) {
+        return () -> repo;
     }
 }

@@ -16,20 +16,20 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  */
 @Configuration
 public class SwaggerController extends SwaggerWelcomeWebMvc {
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public SwaggerController(
             SwaggerUiConfigProperties swaggerUiConfig,
             SpringDocConfigProperties springDocConfigProperties,
-            SwaggerUiConfigParameters swaggerUiConfigParameters,
             SpringWebProvider springWebProvider
     ) {
-        super(swaggerUiConfig, springDocConfigProperties, swaggerUiConfigParameters, springWebProvider);
+        super(swaggerUiConfig, springDocConfigProperties, springWebProvider);
     }
 
     @Override
-    void buildFromCurrentContextPath(HttpServletRequest request) {
-        super.init();
+    void buildFromCurrentContextPath(SwaggerUiConfigParameters swaggerUiConfigParameters, HttpServletRequest request) {
+        super.init(swaggerUiConfigParameters);
         // default is request.getContextPath()
-        contextPath = request.getServletPath();
-        buildConfigUrl(ServletUriComponentsBuilder.fromCurrentContextPath());
+        swaggerUiConfigParameters.setContextPath(request.getServletPath());
+        buildConfigUrl(swaggerUiConfigParameters, ServletUriComponentsBuilder.fromCurrentContextPath());
     }
 }

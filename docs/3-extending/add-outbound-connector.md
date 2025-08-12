@@ -7,6 +7,7 @@ The starting point is a configuration class annotated with:
 - `@OutboundConnector(name = "outbound-connector-name")`
 
 The core module scans the classpath for all classes residing in the `energy.eddie` package and annotated with the `@OutboundConnector`-annotation.
+For the outbound connector to be on the classpath, it needs to be added as a dependency to the core module.
 Outbound connectors are started in their own spring context and dispatcher servlet, which is registered in the parent context (core module).
 The outbound connector will behave like it is its own spring application with a few deviations.
 First, all beans defined in the core module are available in the child contexts.

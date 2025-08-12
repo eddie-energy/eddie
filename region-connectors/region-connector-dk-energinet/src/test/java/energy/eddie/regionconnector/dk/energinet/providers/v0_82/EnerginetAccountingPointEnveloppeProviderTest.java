@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointDetailsCustomerDto;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointDetailsCustomerDtoResponseListApiResponse;

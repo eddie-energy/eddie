@@ -6,18 +6,22 @@ import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @Component
 public class DocumentStreams implements ValidatedHistoricalDataEnvelopeProvider, ConnectionStatusMessageProvider, PermissionMarketDocumentProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DocumentStreams.class);
     private final Sinks.Many<ValidatedHistoricalDataEnvelope> vhdSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<ConnectionStatusMessage> csmSink = Sinks.many().multicast()
                                                                      .onBackpressureBuffer();
     private final Sinks.Many<PermissionEnvelope> pmdSink = Sinks.many().multicast().onBackpressureBuffer();
 
     public synchronized void publish(ValidatedHistoricalDataEnvelope document) {
+        LOGGER.info("Publishing validated historical data market document");
         vhdSink.tryEmitNext(document);
     }
 

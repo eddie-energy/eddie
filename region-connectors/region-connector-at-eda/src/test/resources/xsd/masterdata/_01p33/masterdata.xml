@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns:MasterData xmlns:ns="http://www.ebutilities.at/schemata/customerprocesses/masterdata/01p33"
+               xmlns:ct="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20">
+    <ns:MarketParticipantDirectory DocumentMode="PROD" Duplicate="false" SchemaVersion="01.33">
+        <ct:RoutingHeader>
+            <ct:Sender AddressType="ECNumber">
+                <ct:MessageAddress>AT001000</ct:MessageAddress>
+            </ct:Sender>
+            <ct:Receiver AddressType="ECNumber">
+                <ct:MessageAddress>EP100000</ct:MessageAddress>
+            </ct:Receiver>
+            <ct:DocumentCreationDateTime>2025-07-10T04:43:11.296+02:00</ct:DocumentCreationDateTime>
+        </ct:RoutingHeader>
+        <ct:Sector>01</ct:Sector>
+        <ns:MessageCode>ANTWORT_GN</ns:MessageCode>
+    </ns:MarketParticipantDirectory>
+    <ns:ProcessDirectory>
+        <ct:MessageId>AT000000000000000000000000000000000</ct:MessageId>
+        <ct:ConversationId>EP00000000000000000000</ct:ConversationId>
+        <ct:ProcessDate>2025-07-09+02:00</ct:ProcessDate>
+        <ct:MeteringPoint>AT0000000000000000000000000000000</ct:MeteringPoint>
+        <ns:ContractPartner>
+            <ns:Name1 Changed="false">Max</ns:Name1>
+            <ns:Name2 Changed="false">Muster</ns:Name2>
+            <ns:DateOfBirth>1970-01-01+01:00</ns:DateOfBirth>
+            <ns:Email>example@domain.com</ns:Email>
+        </ns:ContractPartner>
+        <ns:DeliveryAddress>
+            <ns:Country>AT</ns:Country>
+            <ns:ZIP Changed="false">1234</ns:ZIP>
+            <ns:City Changed="false">Wien</ns:City>
+            <ns:Street Changed="false">Musterstrasse</ns:Street>
+            <ns:StreetNo Changed="false">1</ns:StreetNo>
+            <ns:DoorNumber Changed="false">1</ns:DoorNumber>
+            <ns:DeliveryAddressData Changed="false">1/1</ns:DeliveryAddressData>
+        </ns:DeliveryAddress>
+        <ns:BillingData>
+            <ns:ReferenceNumber>000000000000</ns:ReferenceNumber>
+            <ns:GridInvoiceRecipient Changed="false">CUSTOMER</ns:GridInvoiceRecipient>
+            <ns:BudgetBillingCycle Changed="false">01</ns:BudgetBillingCycle>
+            <ns:MeterReadingMonth Changed="false">02</ns:MeterReadingMonth>
+            <ns:ConsumptionBillingCycle Changed="false">12</ns:ConsumptionBillingCycle>
+            <ns:ConsumptionBillingMonth Changed="false">02</ns:ConsumptionBillingMonth>
+            <ns:YearMonthOfNextBill>202602</ns:YearMonthOfNextBill>
+        </ns:BillingData>
+        <ns:MeteringPointData>
+            <ns:DeviceType Changed="false">IMS</ns:DeviceType>
+            <ns:TransmissionCycle Changed="false">M</ns:TransmissionCycle>
+            <ns:SupStatus>ON</ns:SupStatus>
+            <ns:DSOTariffClass Changed="false">N</ns:DSOTariffClass>
+            <ns:EnergyDirection>CONSUMPTION</ns:EnergyDirection>
+            <ns:EnergyCommunity Changed="false">NONE</ns:EnergyCommunity>
+            <ns:TypeOfGeneration Changed="false">NONE</ns:TypeOfGeneration>
+            <ns:ForecastConsumption>200</ns:ForecastConsumption>
+            <ns:SupplyOfLastResort>false</ns:SupplyOfLastResort>
+            <ns:LoadProfileType Changed="false">H0</ns:LoadProfileType>
+            <ns:LocalID>00HK11-12796p</ns:LocalID>
+            <ns:RegionalID>00HK11</ns:RegionalID>
+            <ns:ElectricitySpecificData>
+                <ns:GridUsageLevel Changed="false">7</ns:GridUsageLevel>
+                <ns:GridLossLevel Changed="false">7</ns:GridLossLevel>
+            </ns:ElectricitySpecificData>
+        </ns:MeteringPointData>
+    </ns:ProcessDirectory>
+</ns:MasterData>

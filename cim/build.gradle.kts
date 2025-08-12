@@ -1,4 +1,5 @@
 import org.w3c.dom.Element
+import org.w3c.dom.NodeList
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
@@ -10,7 +11,7 @@ plugins {
 }
 
 group = "energy.eddie"
-version = "2.0.1"
+version = "3.1.0"
 
 repositories {
     mavenCentral()
@@ -80,28 +81,19 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
 
     // Path to XSD files
     val cimSchemaFiles = file("src/main/schemas/cim/xsd/")
-    // ordered schema files to prevent generation of Java classes without the correct bindings.
-    // Top-down order, first files are the ones are the ones that are not imported by any other XSD and import the others.
-    // Then, the ones that are imported by others and import other XSDs.
-    // Lastly, the ones that do not import any other file and are only imported by others.
-    val orderedSchemaFiles = listOf(
+    // ordered schema files to prevent repeated generation of Java classes.
+    val orderedSchemaFiles = setOf(
         // V0.82
         File(cimSchemaFiles, "/v0_82/vhd/ValidatedHistoricalData_MarketDocument_2024-06-21T12.10.53.xsd"),
         File(cimSchemaFiles, "/v0_82/ap/AccountingPoint_MarketDocument_2024-06-21T11.38.58.xsd"),
         File(cimSchemaFiles, "/v0_82/pmd/Permission_Envelope_2024-06-21T11.51.02.xsd"),
-        File(cimSchemaFiles, "/v0_82/pmd/Permission_Envelope_2024-06-21T11.51.02.xsd"),
-        // V0.92.08
+        // V0.91.08
         File(cimSchemaFiles, "/v0_91_08/RedistributionTransactionRequest Document_Annotated.xsd"),
-        File(cimSchemaFiles, "/v0_91_08/ValidateHistoricalData Document_Annotated.xsd"),
-        File(cimSchemaFiles, "/v0_91_08/urn-entsoe-eu-wgedi-components.xsd"),
-        File(cimSchemaFiles, "/v0_91_08/urn-entsoe-eu-local-extension-types.xsd"),
-        File(cimSchemaFiles, "/v0_91_08/urn-entsoe-eu-wgedi-codelists.xsd"),
-        // V1.04: Near Real Time Data
-        File(cimSchemaFiles, "/v1_04/RealTimeData Document_v1.04.xsd"),
-        File(cimSchemaFiles, "/v1_04/RealTimeData Document_v1.04_Annotated.xsd"),
-        File(cimSchemaFiles, "/v1_04/urn-entsoe-eu-wgedi-components.xsd"),
-        File(cimSchemaFiles, "/v1_04/urn-entsoe-eu-local-extension-types.xsd"),
-        File(cimSchemaFiles, "/v1_04/urn-entsoe-eu-wgedi-codelists.xsd"),
+        // V1.04
+        File(cimSchemaFiles, "/v1_04/vhd/ValidatedHistoricalData Document_v1.04_annotated.xsd"),
+        File(cimSchemaFiles, "/v1_04/rtd/RealTimeData Document_v1.04_Annotated.xsd"),
+        File(cimSchemaFiles, "/v1_04/pmd/Permission Document_v1.04_annotated.xsd"),
+        File(cimSchemaFiles, "/v1_04/ap/AccountingPointData Document_v1.04_annotated.xsd"),
     )
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed
@@ -114,7 +106,7 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
         file(generatedXJCJavaDir).mkdirs()
         val xsdToGenerate = ArrayList<Triple<File, File, File>>()
         // Copy all files first, so they exist in the target directory
-        for (srcFile in orderedSchemaFiles) {
+        for (srcFile in cimSchemaFiles.walkTopDown()) {
             if (!srcFile.isFile || srcFile.extension != xsdExtension) {
                 continue
             }
@@ -124,20 +116,18 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
             val xjbFile = temporaryDir.resolve(
                 srcFile.parentFile.resolve(xjbFileBasename).relativeTo(cimSchemaFiles)
             )
-            // generate the bindings file
-            logger.log(LogLevel.INFO, "Generating bindings for ${srcFile.name}")
-            generateBindingsFile(srcFile, xjbFile.absolutePath)
             xsdToGenerate.add(Triple(srcFile, tmpSrcFile, xjbFile))
         }
-        xsdToGenerate.forEach { files: Triple<File, File, File> ->
+        for (files in xsdToGenerate) {
             val srcFile = files.first
             val tmpSrcFile = files.second
             val xjbFile = files.third
-            val packageName = if (srcFile.parentFile.parentFile.name.equals("xsd")) {
-                "energy.eddie.cim." + srcFile.parentFile.name
-            } else {
-                "energy.eddie.cim." + srcFile.parentFile.parentFile.name + "." + srcFile.parentFile.name
+            if (!orderedSchemaFiles.contains(srcFile)) {
+                continue
             }
+            // generate the bindings file
+            logger.log(LogLevel.INFO, "Generating bindings for ${tmpSrcFile.name}")
+            generateBindingsFile(tmpSrcFile, xjbFile.absolutePath)
             logger.log(LogLevel.LIFECYCLE, "Generating for ${tmpSrcFile.name}")
             val execution = providers.exec {
                 executable(Path(System.getProperty("java.home"), "bin", "java"))
@@ -146,7 +136,6 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
                     "-cp", classpath, "com.sun.tools.xjc.XJCFacade",
                     "-d", generatedXJCJavaDir,
                     tmpSrcFile.absolutePath,
-                    "-p", packageName,
                     "-b", xjbFile.absolutePath,
                     "-mark-generated", "-npa", "-encoding", "UTF-8",
                     "-extension", "-Xfluent-api", "-Xannotate"
@@ -185,7 +174,7 @@ publishing {
     }
 
     publications {
-        create<MavenPublication>("mavenJava") {
+        create<MavenPublication>("cim") {
             pom {
                 name = "cim"
                 artifactId = "cim"
@@ -202,24 +191,40 @@ publishing {
                 scm {
                     url = "https://github.com/eddie-energy/eddie"
                 }
+                from(components["java"])
             }
         }
     }
 }
 
-// Generate a bindings file that customizes the generated code, so that the enums are usable and the root elements don't have the ComplexType suffix
-fun generateBindingsFile(xsdFile: File, bindingsFilePath: String) {
+fun generateBindingsFile(rootXsd: File, bindingsFilePath: String) {
     val documentBuilderFactory = DocumentBuilderFactory
         .newInstance()
     documentBuilderFactory.isNamespaceAware = true
-    val xsdDocument = documentBuilderFactory
-        .newDocumentBuilder()
-        .parse(xsdFile)
-    val schemaLocation = xsdFile.name
-
-    val xmlSchemaNs = "http://www.w3.org/2001/XMLSchema"
+    // Get all referenced XSDs
+    val xsdNs = "http://www.w3.org/2001/XMLSchema"
+    val nextXsds = ArrayDeque(listOf(rootXsd))
+    val visitedXsds = HashSet<File>()
+    logger.lifecycle("Finding all related XSDs to {}", rootXsd)
+    while (nextXsds.isNotEmpty()) {
+        val currentXsd = nextXsds.removeFirst()
+        logger.info("Continuing with {}", currentXsd)
+        if (visitedXsds.contains(currentXsd)) {
+            logger.lifecycle("Discarding {} as it already has been scanned for imports", currentXsd)
+            continue
+        }
+        logger.lifecycle("Scanning {}", currentXsd)
+        val xsdDocument = documentBuilderFactory
+            .newDocumentBuilder()
+            .parse(currentXsd)
+        val imports = xsdDocument.getElementsByTagNameNS(xsdNs, "import")
+        val includes = xsdDocument.getElementsByTagNameNS(xsdNs, "include")
+        nextXsds.addAll(getAllXsdReferences(imports, currentXsd))
+        nextXsds.addAll(getAllXsdReferences(includes, currentXsd))
+        visitedXsds.add(currentXsd)
+    }
+    logger.lifecycle("For {} found these XSDs: {}", rootXsd, visitedXsds)
     val bindings = StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-    bindings
         .append("<bindings xmlns=\"https://jakarta.ee/xml/ns/jaxb\" ")
         .append("xmlns:annox=\"http://annox.dev.java.net\" xmlns:jaxb=\"https://jakarta.ee/xml/ns/jaxb\" jaxb:extensionBindingPrefixes=\"xjc annox\" ")
         .append("xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" ")
@@ -229,9 +234,54 @@ fun generateBindingsFile(xsdFile: File, bindingsFilePath: String) {
         .append("           <xjc:simple/>\n") // Removes ComplexType Suffix from Root Elements
         .append("           <xjc:javaType name=\"java.time.ZonedDateTime\"\n")
         .append("                         xmlType=\"xs:dateTime\"\n")
-        .append("                         adapter=\"energy.eddie.cim.v0_91_08.extensions.CimDateTimeAdapter\"/>\n")
+        .append("                         adapter=\"energy.eddie.cim.v1_04.extensions.CimDateTimeAdapter\"/>\n")
         .append("    </globalBindings>\n")
+    for (file in visitedXsds) {
+        bindings.append(generateBindingsForReferencedFile(file))
+    }
+    bindings
+        .append("</bindings>\n")
+    File(bindingsFilePath).writeText(bindings.toString())
+}
+
+fun getAllXsdReferences(nodes: NodeList, relative: File): Set<File> {
+    val founds = HashSet<File>()
+    for (i in 0 until nodes.length) {
+        val element = nodes.item(i) as Element
+        val ref = element.getAttribute("schemaLocation")
+        if (ref.isNullOrBlank()) {
+            continue
+        }
+        val found = relative.resolveSibling(ref).canonicalFile
+        logger.lifecycle("Found {}", found)
+        if (!found.isFile) {
+            logger.lifecycle("Not a file {}", found)
+        }
+        founds.add(found)
+    }
+    return founds
+}
+
+// Generate a bindings file that customizes the generated code, so that the enums are usable and the root elements don't have the ComplexType suffix
+fun generateBindingsForReferencedFile(xsdFile: File): String {
+    val documentBuilderFactory = DocumentBuilderFactory
+        .newInstance()
+    documentBuilderFactory.isNamespaceAware = true
+    val xsdDocument = documentBuilderFactory
+        .newDocumentBuilder()
+        .parse(xsdFile)
+    val schemaLocation = xsdFile.absolutePath
+
+    val xmlSchemaNs = "http://www.w3.org/2001/XMLSchema"
+    val packageName = if (xsdFile.parentFile.parentFile.name.equals("generateCIMSchemaClasses")) {
+        "energy.eddie.cim." + xsdFile.parentFile.name
+    } else {
+        "energy.eddie.cim." + xsdFile.parentFile.parentFile.name + "." + xsdFile.parentFile.name
+    }
+    logger.info("Package name for {} is {}", xsdFile, packageName)
+    val bindings = StringBuilder()
         .append("    <bindings schemaLocation=\"${schemaLocation}\" node=\"/xs:schema\">\n")
+        .append("           <schemaBindings> <package name=\"${packageName}\"/> </schemaBindings>\n")
 
     if (xsdDocument.getElementsByTagName("DateAndOrTimeComplexType").length > 0) {
         // Add annotations to the date and time fields of the DateAndOrTimeComplexType
@@ -277,9 +327,7 @@ fun generateBindingsFile(xsdFile: File, bindingsFilePath: String) {
     }
 
     bindings.append("    </bindings>\n")
-    bindings.append("</bindings>\n")
-
-    File(bindingsFilePath).writeText(bindings.toString())
+    return bindings.toString()
 }
 
 fun String.toJavaEnumName(): String {

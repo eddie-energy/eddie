@@ -3,8 +3,8 @@ package energy.eddie.regionconnector.us.green.button.providers.v0_82;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import energy.eddie.api.CommonInformationModelVersions;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.XmlLoader;
@@ -29,7 +29,8 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
             Map.of("company", "client-secret"),
             Map.of("company", "token"),
             "http://localhost",
-            "secret");
+            "secret"
+    );
 
     @Test
     @SuppressWarnings("java:S5961")
@@ -84,7 +85,8 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                                                timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
                             () -> assertEquals(CommodityKind.ELECTRICITYSECONDARYMETERED,
                                                timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
-                            () -> assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR, timeSeries.getEnergyMeasurementUnitName()),
+                            () -> assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR,
+                                               timeSeries.getEnergyMeasurementUnitName()),
                             () -> assertEquals(CodingSchemeTypeList.CGM,
                                                timeSeries.getMarketEvaluationPointMRID().getCodingScheme()),
                             () -> assertEquals("1669851", timeSeries.getMarketEvaluationPointMRID().getValue()),

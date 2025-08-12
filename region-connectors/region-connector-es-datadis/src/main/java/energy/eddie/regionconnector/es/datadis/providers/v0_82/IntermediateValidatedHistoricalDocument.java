@@ -2,16 +2,16 @@ package energy.eddie.regionconnector.es.datadis.providers.v0_82;
 
 import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
-import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

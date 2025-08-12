@@ -3,8 +3,9 @@ package energy.eddie.regionconnector.be.fluvius;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusConfiguration;
@@ -15,6 +16,7 @@ import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionEventRepository;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
+import energy.eddie.regionconnector.be.fluvius.service.polling.PollingService;
 import energy.eddie.regionconnector.be.fluvius.streams.IdentifiableDataStreams;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
 import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
@@ -23,17 +25,21 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientSsl;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.be.fluvius.FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
@@ -58,10 +64,10 @@ public class FluviusBeanConfig {
             RegionConnectorMetadata metadata
     ) {
         return new DataNeedCalculationServiceImpl(dataNeedsService,
-                metadata,
-                new FluviusPermissionTimeframeStrategy(),
-                new FluviusEnergyTimeframeStrategy(metadata),
-                List.of());
+                                                  metadata,
+                                                  new FluviusPermissionTimeframeStrategy(),
+                                                  new FluviusEnergyTimeframeStrategy(metadata),
+                                                  List.of());
     }
 
     @Bean
@@ -128,4 +134,27 @@ public class FluviusBeanConfig {
                 ZoneOffset.UTC
         );
     }
+
+    @Bean
+    public CommonFutureDataService<FluviusPermissionRequest> commonFutureDataService(
+            PollingService pollingService,
+            BePermissionRequestRepository bePermissionRequestRepository,
+            @Value("${region-connector.be.fluvius.polling:0 0 17 * * *}") String cronExpr,
+            FluviusRegionConnectorMetadata fluviusRegionConnectorMetadata,
+            TaskScheduler taskScheduler,
+            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+    ) {
+        return new CommonFutureDataService<>(pollingService,
+                                             bePermissionRequestRepository,
+                                             cronExpr,
+                                             fluviusRegionConnectorMetadata,
+                                             taskScheduler,
+                                             dataNeedCalculationService);
+    }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(BePermissionEventRepository repo) {
+        return () -> repo;
+    }
+
 }

@@ -10,9 +10,9 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.fi.fingrid.FingridRegionConnectorMetadata;
 import energy.eddie.regionconnector.fi.fingrid.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.CreatedEvent;
-import energy.eddie.regionconnector.fi.fingrid.permission.events.SimpleEvent;
+import energy.eddie.regionconnector.fi.fingrid.permission.events.PersistablePermissionEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.ValidatedEvent;
-import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
+import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequestBuilder;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
@@ -57,28 +57,14 @@ class PermissionCreationServiceTest {
     @Captor
     private ArgumentCaptor<ValidatedEvent> validatedCaptor;
     @Captor
-    private ArgumentCaptor<SimpleEvent> simpleCaptor;
+    private ArgumentCaptor<PersistablePermissionEvent> simpleCaptor;
 
-    public static Stream<Arguments> createAndValidatePermissionRequest_throwsOnUnsupportedDataNeed() {
-        var today = LocalDate.now(ZoneOffset.UTC);
-        var timeframe = new Timeframe(today, today);
-        return Stream.of(
-                Arguments.of(new DataNeedNotSupportedResult("")),
-                Arguments.of(new AccountingPointDataNeedResult(timeframe))
-        );
-    }
-
-    @Test
-    void createAndValidatePermissionRequest_createsPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
+    @ParameterizedTest
+    @MethodSource("createAndValidatePermissionRequest_createsPermissionRequest")
+    void createAndValidatePermissionRequest_createsPermissionRequest(DataNeedCalculationResult calculationResult) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         // Given
-        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier", "mid");
-        var today = LocalDate.now(ZoneOffset.UTC);
-        when(dataNeedCalculationService.calculate("dnid"))
-                .thenReturn(new ValidatedHistoricalDataDataNeedResult(
-                        List.of(Granularity.PT1H),
-                        new Timeframe(today, today),
-                        new Timeframe(today.minusDays(10), today.minusDays(1))
-                ));
+        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
+        when(dataNeedCalculationService.calculate("dnid")).thenReturn(calculationResult);
         when(jwtUtil.createJwt(eq(FingridRegionConnectorMetadata.REGION_CONNECTOR_ID), anyString())).thenReturn("");
 
         // When
@@ -96,18 +82,18 @@ class PermissionCreationServiceTest {
     @Test
     void createAndValidatePermissionRequest_throwsOnUnknownDataNeed() {
         // Given
-        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier", "mid");
+        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
         when(dataNeedCalculationService.calculate("dnid")).thenReturn(new DataNeedNotFoundResult());
         // When, Then
         assertThrows(DataNeedNotFoundException.class,
                      () -> permissionCreationService.createAndValidatePermissionRequest(forCreation));
     }
 
-    @ParameterizedTest
-    @MethodSource
-    void createAndValidatePermissionRequest_throwsOnUnsupportedDataNeed(DataNeedCalculationResult calculation) {
+    @Test
+    void createAndValidatePermissionRequest_throwsOnUnsupportedDataNeed() {
         // Given
-        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier", "mid");
+        var calculation = new DataNeedNotSupportedResult("");
+        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
         when(dataNeedCalculationService.calculate("dnid"))
                 .thenReturn(calculation);
 
@@ -133,18 +119,17 @@ class PermissionCreationServiceTest {
         // Given
         var invalidState = PermissionProcessStatus.CREATED;
         var today = LocalDate.now(ZoneOffset.UTC);
-        var pr = new FingridPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                invalidState,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                today,
-                today,
-                "identifier",
-                "mid",
-                Granularity.PT1H, null
-        );
+        var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
+                                                      .setConnectionId("cid")
+                                                      .setDataNeedId("dnid")
+                                                      .setStatus(invalidState)
+                                                      .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                      .setStart(today)
+                                                      .setEnd(today)
+                                                      .setCustomerIdentification("identifier")
+                                                      .setGranularity(Granularity.PT1H)
+                                                      .setLastMeterReadings(null)
+                                                      .build();
         when(permissionRequestRepository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(pr));
 
@@ -169,18 +154,17 @@ class PermissionCreationServiceTest {
     void acceptOrReject_acceptsPermissionRequest(PermissionProcessStatus status) throws PermissionNotFoundException, PermissionStateTransitionException {
         // Given
         var today = LocalDate.now(ZoneOffset.UTC);
-        var pr = new FingridPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.VALIDATED,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                today,
-                today,
-                "identifier",
-                "mid",
-                Granularity.PT1H, null
-        );
+        var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
+                                                      .setConnectionId("cid")
+                                                      .setDataNeedId("dnid")
+                                                      .setStatus(PermissionProcessStatus.VALIDATED)
+                                                      .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                      .setStart(today)
+                                                      .setEnd(today)
+                                                      .setCustomerIdentification("identifier")
+                                                      .setGranularity(Granularity.PT1H)
+                                                      .setLastMeterReadings(null)
+                                                      .build();
         when(permissionRequestRepository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(pr));
 
@@ -189,10 +173,21 @@ class PermissionCreationServiceTest {
 
         // Then
         verify(outbox, times(2)).commit(simpleCaptor.capture());
-        assertAll(
-                () -> assertEquals(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
-                                   simpleCaptor.getAllValues().getFirst().status()),
-                () -> assertEquals(status, simpleCaptor.getValue().status())
+        assertEquals(status, simpleCaptor.getValue().status());
+    }
+
+    private static Stream<Arguments> createAndValidatePermissionRequest_createsPermissionRequest() {
+        var today = LocalDate.now(ZoneOffset.UTC);
+        var timeframe = new Timeframe(today, today);
+        return Stream.of(
+                Arguments.of(
+                        new ValidatedHistoricalDataDataNeedResult(
+                                List.of(Granularity.PT1H),
+                                timeframe,
+                                new Timeframe(today.minusDays(10), today.minusDays(1))
+                        )
+                ),
+                Arguments.of(new AccountingPointDataNeedResult(timeframe))
         );
     }
 }

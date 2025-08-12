@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.fr.enedis.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.fr.enedis.EnedisBeanConfig;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -10,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.boot.actuate.health.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
@@ -47,22 +47,22 @@ class EnedisApiClientHealthTest {
     }
 
     @Test
-    void health_returnsUp_whenInitialized() {
+    void health_returnsUnknown_whenInitialized() {
         // Given
         EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
         EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
 
         // Then
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.METERING_POINT_API));
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.CONTRACT_API));
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.CONTACT_API));
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.IDENTITY_API));
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.ADDRESS_API));
+        assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API).getStatus());
+        assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.METERING_POINT_API).getStatus());
+        assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.CONTRACT_API).getStatus());
+        assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.CONTACT_API).getStatus());
+        assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.IDENTITY_API).getStatus());
+        assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.ADDRESS_API).getStatus());
     }
 
     @Test
-    void health_returnsAUTHENTICATION_API_down_whenTokenFetchingFails() {
+    void health_returnsAUTHENTICATION_API_unknown_whenTokenFetchingFails() {
         // Given
         EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
         doReturn(Mono.error(WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
@@ -80,8 +80,8 @@ class EnedisApiClientHealthTest {
                  .verify(Duration.ofSeconds(5));
 
         // Then
-        assertEquals(HealthState.DOWN, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.METERING_POINT_API));
+        assertEquals(Status.DOWN, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API).getStatus());
+        assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.METERING_POINT_API).getStatus());
     }
 
     @ParameterizedTest
@@ -112,7 +112,7 @@ class EnedisApiClientHealthTest {
                  .verify(Duration.ofSeconds(5));
 
         // Then
-        assertEquals(HealthState.UP, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API));
-        assertEquals(HealthState.DOWN, enedisApi.health().get(api));
+        assertEquals(Status.UP, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API).getStatus());
+        assertEquals(Status.DOWN, enedisApi.health().get(api).getStatus());
     }
 }

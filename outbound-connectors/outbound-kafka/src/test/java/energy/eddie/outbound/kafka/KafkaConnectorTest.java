@@ -10,6 +10,7 @@ import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderComplexType;
 import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.Tag;
@@ -165,6 +166,28 @@ class KafkaConnectorTest {
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
         consumer.subscribe(Collections.singleton("ep.eddie.agnostic.raw-data-message"));
+
+        // When
+        var records = KafkaTestUtils.getRecords(consumer);
+
+        // Then
+        assertThat(records).hasSize(1);
+    }
+
+    @Test
+    void testCIM_v1_04_ValidatedHistoricalDataMarketDocuments_areProducedToKafka() {
+        // Given
+        var data = new VHDEnvelope()
+                .withMessageDocumentHeaderMetaInformationPermissionId("pid")
+                .withMessageDocumentHeaderMetaInformationConnectionId("cid")
+                .withMessageDocumentHeaderMetaInformationDataNeedId("dnid")
+                .withMessageDocumentHeaderMetaInformationDocumentType(DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA.name());
+        kafkaConnector.setValidatedHistoricalDataMarketDocumentStream(Flux.just(data));
+        var consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafka);
+        var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
+                                                         new StringDeserializer(),
+                                                         new StringDeserializer()).createConsumer();
+        consumer.subscribe(Collections.singleton("ep.eddie.cim_1_04.validated-historical-data-md"));
 
         // When
         var records = KafkaTestUtils.getRecords(consumer);

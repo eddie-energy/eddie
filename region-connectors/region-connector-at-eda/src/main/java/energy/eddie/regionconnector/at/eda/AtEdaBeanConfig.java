@@ -7,7 +7,7 @@ import de.ponton.xp.adapter.api.ConnectionException;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
@@ -16,6 +16,7 @@ import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.data.needs.calculation.strategies.EdaStrategy;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.at.eda.persistence.EdaPermissionEventRepository;
 import energy.eddie.regionconnector.at.eda.ponton.NoOpEdaAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
@@ -48,6 +49,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.TRANSMISSION_CYCLE;
@@ -205,5 +207,10 @@ public class AtEdaBeanConfig {
                 new EdaStrategy(),
                 List.of()
         );
+    }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(EdaPermissionEventRepository repo) {
+        return () -> repo;
     }
 }

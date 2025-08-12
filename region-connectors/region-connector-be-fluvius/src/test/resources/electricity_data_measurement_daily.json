@@ -1,0 +1,28 @@
+{
+  "data": {
+    "fetchTime": "2025-07-17T08:08:21Z",
+    "gasMeters": [],
+    "electricityMeters": [
+      {
+        "seqNumber": 1,
+        "meterID": "0001",
+        "dailyEnergy": [
+          {
+            "timestampStart": "2025-04-17T00:00:00Z",
+            "timestampEnd": "2025-04-18T00:00:00Z",
+            "measurement": [
+              {
+                "unit": "kWh",
+                "offtakeDayValue": 0.78,
+                "offtakeDayValidationState": "EST",
+                "injectionDayValue": 0.016,
+                "injectionDayValidationState": "EST"
+              }
+            ]
+          }
+        ],
+        "quarterHourlyEnergy": []
+      }
+    ]
+  }
+}

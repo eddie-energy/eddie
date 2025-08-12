@@ -1,7 +1,8 @@
 package energy.eddie.regionconnector.fi.fingrid;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.config.FingridConfiguration;
@@ -25,6 +26,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.function.Supplier;
 
 @Configuration
 @Import(ObjectMapperConfig.class)
@@ -107,5 +110,10 @@ public class FingridBeanConfiguration {
                 taskScheduler,
                 dataNeedCalculationService
         );
+    }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(FiPermissionEventRepository repo) {
+        return () -> repo;
     }
 }

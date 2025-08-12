@@ -11,6 +11,7 @@ import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
+import energy.eddie.outbound.shared.TopicStructure;
 import energy.eddie.outbound.shared.serde.XmlMessageSerde;
 import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.junit.jupiter.api.*;
@@ -229,7 +230,7 @@ class AmqpOutboundTest {
 
         // Then
         var consumer = connection.consumerBuilder()
-                                 .queue(config.validatedHistoricalDataMarketDocument())
+                                 .queue(config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_0_82))
                                  .messageHandler((ctx, msg) -> {
                                      assertAll(
                                              () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),

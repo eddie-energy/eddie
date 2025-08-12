@@ -6,7 +6,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
@@ -41,6 +42,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
 import reactor.core.publisher.Flux;
+
+import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID;
@@ -122,7 +125,7 @@ public class EnerginetBeanConfig {
             EventBus eventBus,
             DkPermissionRequestRepository repository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
-            CommonInformationModelConfiguration cimConfig
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(eventBus,
                                                             repository,
@@ -175,5 +178,10 @@ public class EnerginetBeanConfig {
                 taskScheduler,
                 dataNeedCalculationService
         );
+    }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(DkPermissionEventRepository repo) {
+        return () -> repo;
     }
 }

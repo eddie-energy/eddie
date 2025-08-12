@@ -21,11 +21,12 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
+import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.MijnAansluitingPermissionEventRepository;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
@@ -49,6 +50,7 @@ import java.net.MalformedURLException;
 import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.NL_ZONE_ID;
 import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.REGION_CONNECTOR_ID;
@@ -196,5 +198,10 @@ public class MijnAansluitingBeanConfig {
                 taskScheduler,
                 dataNeedCalculationService
         );
+    }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(MijnAansluitingPermissionEventRepository repo) {
+        return () -> repo;
     }
 }

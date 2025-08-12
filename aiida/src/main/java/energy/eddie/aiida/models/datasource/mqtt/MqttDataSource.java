@@ -93,6 +93,10 @@ public abstract class MqttDataSource extends DataSource {
         return mqttPassword;
     }
 
+    public void setMqttPassword(String mqttPassword) {
+        this.mqttPassword = mqttPassword;
+    }
+
     public DataSourceMqttDto toMqttDto() {
         return new DataSourceMqttDto(mqttInternalHost,
                                      mqttExternalHost,

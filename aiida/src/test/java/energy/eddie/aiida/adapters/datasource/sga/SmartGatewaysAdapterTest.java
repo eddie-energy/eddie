@@ -1,5 +1,6 @@
 package energy.eddie.aiida.adapters.datasource.sga;
 
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
@@ -46,11 +47,19 @@ class SmartGatewaysAdapterTest {
     );
 
     private SmartGatewaysAdapter adapter;
+    private MqttConfiguration mqttConfiguration;
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
-        adapter = new SmartGatewaysAdapter(DATA_SOURCE);
+        mqttConfiguration = new MqttConfiguration(
+                "tcp://localhost:1883",
+                "tcp://localhost:1883",
+                10,
+                "password",
+                ""
+        );
+        adapter = new SmartGatewaysAdapter(DATA_SOURCE, mqttConfiguration);
     }
 
     @AfterEach
@@ -112,22 +121,6 @@ class SmartGatewaysAdapterTest {
             adapter.start().subscribe();
 
             verify(mockClient).connect(any());
-        }
-    }
-
-    @Test
-    void verify_usernameAndPassword_isUsedByAdapter() {
-        var spiedDataSource = spy(DATA_SOURCE);
-        adapter = new SmartGatewaysAdapter(spiedDataSource);
-
-        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
-            var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(any(), any(), any())).thenReturn(mockClient);
-
-            adapter.start().subscribe();
-
-            verify(spiedDataSource, atLeastOnce()).mqttUsername();
-            verify(spiedDataSource, atLeastOnce()).mqttPassword();
         }
     }
 

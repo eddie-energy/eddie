@@ -1,7 +1,8 @@
 package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.v0.RegionConnector;
-import energy.eddie.core.services.TerminationRouter;
+import energy.eddie.core.services.v0_82.TerminationRouter;
+import energy.eddie.spring.regionconnector.extensions.v0_82.TerminationRouterRegistrar;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;

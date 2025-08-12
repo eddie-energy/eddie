@@ -35,7 +35,6 @@ class AuthorizationUpdateFinishedHandlerTest {
     @Mock
     private UsPermissionRequestRepository repository;
     @InjectMocks
-    @SuppressWarnings("unused")
     private AuthorizationUpdateFinishedHandler handler;
 
     @Test
@@ -78,13 +77,9 @@ class AuthorizationUpdateFinishedHandlerTest {
         when(repository.getByPermissionId("pid")).thenReturn(pr);
 
         // When
-        StepVerifier.create(eventBus.filteredFlux(UsAuthorizationUpdateFinishedEvent.class))
-                    .then(() -> eventBus.emit(event))
-                    .then(eventBus::close)
-                    // Then
-                    .expectNextCount(1)
-                    .verifyComplete();
+        handler.accept(event);
 
+        // Then
         verify(historicalCollectionService)
                 .triggerHistoricalDataCollection(assertArg(res -> assertEquals(1, res.size())), eq(pr));
         verify(permissionRequestService).removeUnfulfillablePermissionRequest("pid");

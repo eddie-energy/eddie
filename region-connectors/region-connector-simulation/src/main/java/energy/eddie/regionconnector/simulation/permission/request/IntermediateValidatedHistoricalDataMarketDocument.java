@@ -1,12 +1,12 @@
 package energy.eddie.regionconnector.simulation.permission.request;
 
 import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.*;
-import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import energy.eddie.regionconnector.simulation.SimulationConnectorMetadata;
 import energy.eddie.regionconnector.simulation.dtos.Measurement;
 import energy.eddie.regionconnector.simulation.dtos.SimulatedMeterReading;
@@ -118,7 +118,8 @@ public record IntermediateValidatedHistoricalDataMarketDocument(SimulatedMeterRe
                     .withEnergyQuantityQuality(
                             measurement.measurementType() == Measurement.MeasurementType.MEASURED
                                     ? QualityTypeList.AS_PROVIDED
-                                    : QualityTypeList.ADJUSTED);
+                                    : QualityTypeList.ADJUSTED
+                    );
             points.add(point);
             position++;
         }
@@ -132,7 +133,8 @@ public record IntermediateValidatedHistoricalDataMarketDocument(SimulatedMeterRe
                 .withPointList(
                         new SeriesPeriodComplexType.PointList()
                                 .withPoints(points)
-                );
+                )
+                .withReasonList(new SeriesPeriodComplexType.ReasonList());
         return List.of(seriesPeriod);
     }
 }

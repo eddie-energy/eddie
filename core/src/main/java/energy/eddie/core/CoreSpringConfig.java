@@ -2,9 +2,9 @@ package energy.eddie.core;
 
 import eddie.energy.europeanmasterdata.EuropeanMasterDataSpringConfig;
 import energy.eddie.OpenApiDocs;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.api.utils.Shared;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.DataNeedsSpringConfig;
 import energy.eddie.regionconnector.shared.timeout.TimeoutConfiguration;
@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springdoc.core.configuration.SpringDocConfiguration;
 import org.springdoc.core.properties.SpringDocConfigProperties;
-import org.springdoc.core.properties.SwaggerUiConfigParameters;
 import org.springdoc.core.properties.SwaggerUiConfigProperties;
 import org.springdoc.core.properties.SwaggerUiOAuthProperties;
 import org.springdoc.webmvc.core.configuration.MultipleOpenApiSupportConfiguration;
@@ -35,8 +34,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
-import static energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
+import static energy.eddie.api.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_FALLBACK_ID_KEY;
+import static energy.eddie.api.cim.config.CommonInformationModelConfiguration.ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY;
 import static energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor.enableSpringDoc;
 
 @SpringBootApplication(
@@ -47,7 +46,6 @@ import static energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor.e
                 MultipleOpenApiSupportConfiguration.class,
                 SwaggerConfig.class,
                 SwaggerUiConfigProperties.class,
-                SwaggerUiConfigParameters.class,
                 SwaggerUiOAuthProperties.class,
                 SpringDocConfiguration.class,
                 SpringDocConfigProperties.class,

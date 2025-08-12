@@ -4,9 +4,9 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.fi.fingrid.client.*;
+import energy.eddie.regionconnector.fi.fingrid.client.model.*;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.UpdateGranularityEvent;
-import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
+import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequestBuilder;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,7 +59,7 @@ class UpdateGranularityServiceTest {
                         new TimeSeriesResponse(
                                 new TimeSeriesData(
                                         HEADER,
-                                        new Transaction("unknown-reason", null, null)
+                                        new TimeSeriesTransaction("unknown-reason", null, null)
                                 )
                         )
                 ),
@@ -67,7 +67,7 @@ class UpdateGranularityServiceTest {
                         new TimeSeriesResponse(
                                 new TimeSeriesData(
                                         HEADER,
-                                        new Transaction(null, null, List.of())
+                                        new TimeSeriesTransaction(null, null, List.of())
                                 )
                         )
                 )
@@ -88,25 +88,23 @@ class UpdateGranularityServiceTest {
     void updateGranularityReturnsResponseAsIs_onValidResponse(TimeSeriesResponse response) {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        var pr = new FingridPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                now,
-                now,
-                "cid",
-                "00000",
-                Granularity.PT15M,
-                null
-        );
+        var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
+                                                      .setConnectionId("cid")
+                                                      .setDataNeedId("dnid")
+                                                      .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                      .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                      .setStart(now)
+                                                      .setEnd(now)
+                                                      .setCustomerIdentification("cid")
+                                                      .setGranularity(Granularity.PT15M)
+                                                      .setLastMeterReadings(null)
+                                                      .build();
         // When
-        var res = updateGranularityService.updateGranularity(response, pr);
+        var res = updateGranularityService.updateGranularity(List.of(response), pr);
 
         // Then
         StepVerifier.create(res)
-                    .assertNext(resp -> assertEquals(response, resp))
+                    .assertNext(resp -> assertEquals(List.of(response), resp))
                     .verifyComplete();
     }
 
@@ -116,22 +114,20 @@ class UpdateGranularityServiceTest {
         var response = new TimeSeriesResponse(
                 new TimeSeriesData(
                         HEADER,
-                        new Transaction(EventReason.EMPTY_RESPONSE_REASON, null, null)
+                        new TimeSeriesTransaction(EventReason.EMPTY_RESPONSE_REASON, null, null)
                 )
         );
-        var pr = new FingridPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                "cid",
-                "mid",
-                Granularity.PT15M,
-                null
-        );
+        var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
+                                                      .setConnectionId("cid")
+                                                      .setDataNeedId("dnid")
+                                                      .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                      .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                      .setStart(LocalDate.now(ZoneOffset.UTC))
+                                                      .setEnd(LocalDate.now(ZoneOffset.UTC))
+                                                      .setCustomerIdentification("cid")
+                                                      .setGranularity(Granularity.PT15M)
+                                                      .setLastMeterReadings(null)
+                                                      .build();
 
         var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT5M, Granularity.PT15M, Granularity.PT1H),
@@ -142,7 +138,7 @@ class UpdateGranularityServiceTest {
                 .thenReturn(calc);
 
         // When
-        var res = updateGranularityService.updateGranularity(response, pr);
+        var res = updateGranularityService.updateGranularity(List.of(response), pr);
 
         // Then
         StepVerifier.create(res)
@@ -158,32 +154,67 @@ class UpdateGranularityServiceTest {
         var response = new TimeSeriesResponse(
                 new TimeSeriesData(
                         HEADER,
-                        new Transaction(EventReason.EMPTY_RESPONSE_REASON, null, null)
+                        new TimeSeriesTransaction(EventReason.EMPTY_RESPONSE_REASON, null, null)
                 )
         );
-        var pr = new FingridPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                PermissionProcessStatus.ACCEPTED,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                "cid",
-                "mid",
-                Granularity.PT1H,
-                null
-        );
+        var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
+                                                      .setConnectionId("cid")
+                                                      .setDataNeedId("dnid")
+                                                      .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                      .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                      .setStart(LocalDate.now(ZoneOffset.UTC))
+                                                      .setEnd(LocalDate.now(ZoneOffset.UTC))
+                                                      .setCustomerIdentification("cid")
+                                                      .setGranularity(Granularity.PT1H)
+                                                      .setLastMeterReadings(null)
+                                                      .build();
         when(calculationService.calculate("dnid"))
                 .thenReturn(calc);
 
         // When
-        var res = updateGranularityService.updateGranularity(response, pr);
+        var res = updateGranularityService.updateGranularity(List.of(response), pr);
 
         // Then
         StepVerifier.create(res)
                     .verifyComplete();
         verify(outbox)
                 .commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, event.status())));
+    }
+
+    @Test
+    void updateGranularity_withNoHigherGranularityAvailable_emitsUnfulfillable() {
+        // Given
+        var response = new TimeSeriesResponse(
+                new TimeSeriesData(
+                        HEADER,
+                        new TimeSeriesTransaction(EventReason.EMPTY_RESPONSE_REASON, null, null)
+                )
+        );
+        var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
+                                                      .setConnectionId("cid")
+                                                      .setDataNeedId("dnid")
+                                                      .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                      .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                      .setStart(LocalDate.now(ZoneOffset.UTC))
+                                                      .setEnd(LocalDate.now(ZoneOffset.UTC))
+                                                      .setCustomerIdentification("cid")
+                                                      .setGranularity(Granularity.PT15M)
+                                                      .setLastMeterReadings(null)
+                                                      .build();
+
+        var calc = new ValidatedHistoricalDataDataNeedResult(
+                List.of(Granularity.PT5M, Granularity.PT15M),
+                null,
+                null
+        );
+        when(calculationService.calculate("dnid")).thenReturn(calc);
+
+        // When
+        var res = updateGranularityService.updateGranularity(List.of(response), pr);
+
+        // Then
+        StepVerifier.create(res)
+                    .verifyComplete();
+        verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, event.status())));
     }
 }

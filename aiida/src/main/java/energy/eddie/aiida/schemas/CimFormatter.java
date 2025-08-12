@@ -12,7 +12,8 @@ import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.UnitOfMeasurement;
 import energy.eddie.aiida.utils.CimUtils;
 import energy.eddie.aiida.utils.ObisCode;
-import energy.eddie.cim.v1_04.*;
+import energy.eddie.cim.v1_04.StandardQualityTypeList;
+import energy.eddie.cim.v1_04.rtd.*;
 import jakarta.annotation.Nullable;
 
 import java.math.BigDecimal;

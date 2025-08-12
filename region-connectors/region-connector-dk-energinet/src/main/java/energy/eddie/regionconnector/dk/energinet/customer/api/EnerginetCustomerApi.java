@@ -1,14 +1,12 @@
 package energy.eddie.regionconnector.dk.energinet.customer.api;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointDetailsCustomerDtoResponseListApiResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 
 public interface EnerginetCustomerApi {
@@ -51,6 +49,4 @@ public interface EnerginetCustomerApi {
             MeteringPointsRequest meteringPointsRequest,
             String accessToken
     );
-
-    Mono<Map<String, HealthState>> health();
 }

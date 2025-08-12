@@ -5,7 +5,6 @@ import de.ponton.xp.adapter.api.domainvalues.*;
 import de.ponton.xp.adapter.api.domainvalues.internal.StatusMetaDataImpl;
 import de.ponton.xp.adapter.api.messages.OutboundMessageStatusUpdate;
 import de.ponton.xp.adapter.api.messages.internal.OutboundMessageStatusUpdateImpl;
-import energy.eddie.api.v0.HealthState;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
@@ -13,7 +12,9 @@ import energy.eddie.regionconnector.at.eda.dto.*;
 import energy.eddie.regionconnector.at.eda.dto.masterdata.*;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.ConsentData;
-import energy.eddie.regionconnector.at.eda.ponton.messenger.*;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.CPNotificationMessageType;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageType;
+import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnectionTestImpl;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
@@ -39,7 +40,6 @@ import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -555,31 +555,6 @@ class PontonXPAdapterTest {
         pontonXPAdapter.close();
     }
 //endregion
-
-    @Test
-    void health() {
-        // Given
-        pontonMessengerConnection.setMessengerStatus(new MessengerStatus(
-                Map.of(
-                        "xxx", new HealthCheck("xxx", true, "xxx"),
-                        "yyy", new HealthCheck("yyy", false, "yyy")
-
-                ),
-                false
-        ));
-
-        // When
-        var health = pontonXPAdapter.health();
-
-        // Then
-        assertAll(
-                () -> assertEquals(3, health.size()),
-                () -> assertEquals(HealthState.DOWN, health.get("pontonHost")),
-                () -> assertEquals(HealthState.UP, health.get("pontonHost.xxx")),
-                () -> assertEquals(HealthState.DOWN, health.get("pontonHost.yyy"))
-        );
-        pontonXPAdapter.close();
-    }
 
     @Test
     void start_throwsTransmissionException() {

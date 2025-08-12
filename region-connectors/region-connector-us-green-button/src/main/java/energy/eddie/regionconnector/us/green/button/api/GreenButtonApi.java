@@ -26,6 +26,8 @@ public interface GreenButtonApi {
             ZonedDateTime publishedMax
     );
 
+    Mono<SyndFeed> retailCustomer(String authId, String accessToken);
+
     /**
      * Triggers historical data collection for the meters.
      *

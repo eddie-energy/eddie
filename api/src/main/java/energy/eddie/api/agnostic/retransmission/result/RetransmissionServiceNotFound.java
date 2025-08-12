@@ -2,13 +2,14 @@ package energy.eddie.api.agnostic.retransmission.result;
 
 import java.time.ZonedDateTime;
 
-public final class RetransmissionServiceNotFound extends RuntimeException implements RetransmissionResult {
+public final class RetransmissionServiceNotFound implements RetransmissionResult {
     private final String permissionId;
     private final String regionConnectorId;
     private final ZonedDateTime timestamp;
+    private final String reason;
 
     public RetransmissionServiceNotFound(String permissionId, String regionConnectorId, ZonedDateTime timestamp) {
-        super("Cant request retransmission for permissionId: '" + permissionId + "': No retransmission service found for regionConnectorId: '" + regionConnectorId + "'");
+        this.reason = "Cant request retransmission for permissionId: '" + permissionId + "': No retransmission service found for regionConnectorId: '" + regionConnectorId + "'";
         this.permissionId = permissionId;
         this.regionConnectorId = regionConnectorId;
         this.timestamp = timestamp;
@@ -27,5 +28,9 @@ public final class RetransmissionServiceNotFound extends RuntimeException implem
 
     public String regionConnectorId() {
         return regionConnectorId;
+    }
+
+    public String reason() {
+        return reason;
     }
 }

@@ -75,6 +75,9 @@ const PERMISSIONS_BASE_URL = document
 const DATASOURCES_BASE_URL = document
   .querySelector('meta[name="datasources-base-url"]')
   .getAttribute("content");
+const MQTT_BASE_URL = document
+  .querySelector('meta[name="mqtt-base-url"]')
+  .getAttribute("content");
 
 const permissionDialog = document.getElementById("permission-dialog");
 const permissionDialogContent = document.getElementById(
@@ -504,19 +507,15 @@ function renderDataSources() {
 
           <dt>MQTT Password:</dt>
           <dd>
-            <span
-              hidden
-              class="mqtt-password"
-              id="mqtt-password-${dataSource.id}"
-            >
-              ${dataSource.mqttSettings.password}
-            </span>
-            <span>********</span>
-            <sl-icon
-              id="toggle-mqtt-password-${dataSource.id}"
-              style="cursor: pointer"
-              name="eye"
-            ></sl-icon>
+            <sl-button variant="default" size="small" onclick="window.regenerateSecretsDataSource('${dataSource.id}')">
+              Regenerate
+            </sl-button>
+          </dd>
+          <dt>Certificate:</dt>
+          <dd>
+            <sl-button variant="default" size="small" onclick="window.downloadTlsCertificate()">
+              Download
+            </sl-button>
           </dd>
         `;
 
@@ -526,16 +525,6 @@ function renderDataSources() {
           dataSourceTypeDetails,
           dataSourceList
         );
-
-        const passwordSpan = document.getElementById(`mqtt-password-${dataSource.id}`);
-        const toggleIcon = document.getElementById(`toggle-mqtt-password-${dataSource.id}`);
-
-        if (toggleIcon) {
-          toggleIcon.addEventListener("click", () => {
-            const present = passwordSpan.toggleAttribute("hidden");
-            toggleIcon.setAttribute("name", present ? "eye" : "eye-slash");
-          });
-        }
       }
 
       function appendDataSourceToChild(
@@ -751,6 +740,72 @@ function updateDataSourceFields(type) {
 
 function closeAddDataSourceDialog() {
   document.getElementById("add-data-source-dialog").hide();
+}
+
+function regenerateSecretsDataSource(dataSourceId) {
+  fetch(`${DATASOURCES_BASE_URL}/${dataSourceId}/regenerate-secrets`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      [getCsrfHeader()]: getCsrfToken(),
+    },
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(
+          `Failed to regenerate secrets: [${response.status}] ${errorMessage}`
+        );
+      }
+      return response.json();
+    })
+    .then((dataSourceSecrets) => {
+      openSecretsDataSourceDialog(dataSourceSecrets)
+    })
+    .catch((error) => {
+      console.error("Failed to regenerate secrets:", error);
+      alert(`Failed to regenerate secrets: ${error.message}`);
+    });
+}
+
+function downloadTlsCertificate() {
+  const url = `${MQTT_BASE_URL}/download/tls-certificate`;
+
+  fetch(url, { method: 'HEAD' })
+    .then(async (response) => {
+      if (!response.ok) {
+        alert('No TLS certificate found!');
+        return;
+      }
+
+      window.location.href = url;
+    })
+}
+
+function openSecretsDataSourceDialog(dataSourceSecrets) {
+  closeAddDataSourceDialog();
+  renderDataSources();
+
+  if(dataSourceSecrets && dataSourceSecrets.plaintextPassword) {
+    const passwordSpan = document.getElementById(`secrets-data-source-password`);
+    const toggleIcon = document.getElementById(`secrets-data-source-toggle-password`);
+
+    passwordSpan.innerText = dataSourceSecrets.plaintextPassword;
+
+    if (toggleIcon) {
+      toggleIcon.addEventListener("click", () => {
+        const present = passwordSpan.toggleAttribute("hidden");
+        toggleIcon.setAttribute("name", present ? "eye" : "eye-slash");
+      });
+    }
+
+    document.getElementById("secrets-data-source-dialog").show();
+
+  }
+}
+
+function closeSecretsDataSourceDialog() {
+  document.getElementById("secrets-data-source-dialog").hide();
 }
 
 function openEditDataSourceDialog(dataSourceId) {
@@ -1009,11 +1064,10 @@ document
             `Failed to add data source: [${response.status}] ${errorMessage}`
           );
         }
-        return response;
+        return response.json();
       })
-      .then(() => {
-        closeAddDataSourceDialog();
-        renderDataSources();
+      .then((dataSourceSecrets) => {
+        openSecretsDataSourceDialog(dataSourceSecrets)
       })
       .catch((error) => {
         console.error("Failed to add data source:", error);
@@ -1108,3 +1162,6 @@ window.hideUserDrawer = () => userDrawer.hide();
 window.openAddDataSourceDialog = openAddDataSourceDialog;
 window.closeAddDataSourceDialog = closeAddDataSourceDialog;
 window.closeEditDataSourceDialog = closeEditDataSourceDialog;
+window.closeSecretsDataSourceDialog = closeSecretsDataSourceDialog;
+window.regenerateSecretsDataSource = regenerateSecretsDataSource;
+window.downloadTlsCertificate = downloadTlsCertificate;

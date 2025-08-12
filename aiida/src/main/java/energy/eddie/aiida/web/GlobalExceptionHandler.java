@@ -131,6 +131,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errors);
     }
 
+    @ExceptionHandler(value = {MqttUnauthorizedException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleMqttUnauthorizedException(MqttUnauthorizedException exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errors);
+    }
+
+    @ExceptionHandler(value = {MqttTlsCertificateNotFoundException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleMqttCertificateNotFoundException(
+            MqttTlsCertificateNotFoundException exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+    }
+
     @ExceptionHandler(value = {ModbusConnectionException.class})
     protected ResponseEntity<Map<String, List<EddieApiError>>> handleModbusConnectionException(ModbusConnectionException exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));

@@ -85,6 +85,21 @@ configureJavaCompileWithErrorProne("energy.eddie.foo.bar")
 
 For more details on the setup see the [build and setup section](./build-and-setup.md).
 
+## Bean Configuration
+
+The permission event supplier bean is for retrieving permission events externally (e.g., from an outbound connector) through the region connector.
+This registers a Supplier<PermissionEventRepository> given the [region connector implementation of the PermissionEventRepository interface](#permission-event-repository).
+
+```java
+@Configuration
+public class FooBarBeanConfig {
+  @Bean
+  Supplier<PermissionEventRepository> permissionEventSupplier(FooBarPermissionEventRepository repo) {
+    return () -> repo;
+  }
+}
+```
+
 ## Creating a permission request
 
 ::: details Checklist Status
@@ -315,6 +330,8 @@ CREATE TABLE foo_bar.permission_event
   PRIMARY KEY (id)
 );
 ```
+
+#### Permission event repository
 
 Persistence is done using Spring repositories.
 The repository for permission events is usually only needed for reading and writing, since update and delete should be disabled for the permission event table.

@@ -16,6 +16,15 @@ public class FluviusEnergyTimeframeStrategy implements EnergyDataTimeframeStrate
 
     public FluviusEnergyTimeframeStrategy(RegionConnectorMetadata regionConnectorMetadata) {this.regionConnectorMetadata = regionConnectorMetadata;}
 
+    /**
+     * For Fluvius one extra day has to be requested for energy data, otherwise the last 15 or 30 minutes will be missing for a granularity of PT15M or PT30M.
+     * For daily data, the permission request is fulfilled if the meter reading end data is the same data as the end - 1.
+     *
+     * @param dataNeed          The data need is the basis for the timeframe calculation
+     * @param referenceDateTime The reference datetime has to be used to calculate the start and end date. Usually the created datetime of the {@link energy.eddie.api.agnostic.process.model.PermissionRequest}.
+     * @return the energy timeframe
+     * @throws UnsupportedDataNeedException if the data need is not supported
+     */
     @Nullable
     @Override
     public Timeframe energyDataTimeframe(

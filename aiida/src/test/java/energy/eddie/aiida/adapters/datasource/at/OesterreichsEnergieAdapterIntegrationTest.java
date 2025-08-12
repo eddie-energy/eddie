@@ -2,6 +2,7 @@ package energy.eddie.aiida.adapters.datasource.at;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
@@ -46,23 +47,35 @@ class OesterreichsEnergieAdapterIntegrationTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("9211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final String USERNAME = "testUser";
+    private static final String USERNAME = "aiida";
     private static final String PASSWORD = "testPassword";
+
+    private static final String EMQX_IMAGE = "emqx/emqx:5.8.6";
+    private static final String EMQX_BASE_CONFIG_FILE = "emqx/base.hocon";
+    private static final String EMQX_INIT_USER_FILE = "emqx/init-user.json";
+    private static final String EMQX_BASE_CONFIG_CONTAINER_PATH = "/opt/emqx/etc/" + EMQX_BASE_CONFIG_FILE.split("/")[1];
+    private static final String EMQX_INIT_USER_CONTAINER_PATH = "/opt/emqx/data/" + EMQX_INIT_USER_FILE.split("/")[1];
+
+    private static final String TOXIPROXY_IMAGE = "ghcr.io/shopify/toxiproxy:2.5.0";
 
     public static Network network = Network.newNetwork();
     @Container
     // lifecycle is handled by @Testcontainers
     @SuppressWarnings("resource")
-    public static GenericContainer<?> mqtt = new GenericContainer<>(DockerImageName.parse("emqx/nanomq:0.20.0"))
+    public static GenericContainer<?> mqtt = new GenericContainer<>(DockerImageName.parse(EMQX_IMAGE))
             .withExposedPorts(1883)
             .withNetwork(network)
-            .withCopyFileToContainer(MountableFile.forClasspathResource("nanomq/nanomq_pwd.conf"),
-                                     "/etc/nanomq_pwd.conf")
-            .withCopyFileToContainer(MountableFile.forClasspathResource("nanomq/nanomq.conf"), "/etc/nanomq.conf")
+            .withCopyFileToContainer(
+                    MountableFile.forClasspathResource(EMQX_BASE_CONFIG_FILE),
+                    EMQX_BASE_CONFIG_CONTAINER_PATH)
+            .withCopyFileToContainer(
+                    MountableFile.forClasspathResource(EMQX_INIT_USER_FILE),
+                    EMQX_INIT_USER_CONTAINER_PATH)
             .withNetworkAliases("mqtt");
     @Container
-    public static ToxiproxyContainer toxiproxy = new ToxiproxyContainer("ghcr.io/shopify/toxiproxy:2.5.0")
+    public static ToxiproxyContainer toxiproxy = new ToxiproxyContainer(TOXIPROXY_IMAGE)
             .withNetwork(network);
+    private MqttConfiguration mqttConfiguration;
     private ObjectMapper mapper;
     private Proxy proxy;
     private OesterreichsEnergieDataSource dataSource;
@@ -78,6 +91,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
         var ipAddressViaToxiproxy = toxiproxy.getHost();
         var portViaToxiproxy = toxiproxy.getMappedPort(8666);
         var serverURI = "tcp://" + ipAddressViaToxiproxy + ":" + portViaToxiproxy;
+        mqttConfiguration = new MqttConfiguration(serverURI, serverURI, 10, PASSWORD, "");
 
         dataSource = new OesterreichsEnergieDataSource(
                 new DataSourceDto(DATA_SOURCE_ID,
@@ -113,7 +127,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
     void givenSampleJsonViaMqtt_recordsArePublishedToFlux() {
         var sampleJson = "{\"0-0:96.1.0\":{\"value\":\"90296857\"},\"0-0:1.0.0\":{\"value\":0,\"time\":1697623015},\"1-0:1.8.0\":{\"value\":83403,\"time\":1697623015},\"1-0:2.8.0\":{\"value\":16564,\"time\":1697623015},\"1-0:1.7.0\":{\"value\":40,\"time\":1697623015},\"1-0:2.7.0\":{\"value\":0,\"time\":1697623015},\"0-0:2.0.0\":{\"value\":481,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2435.7}";
 
-        var adapter = new OesterreichsEnergieAdapter(dataSource, mapper);
+        var adapter = new OesterreichsEnergieAdapter(dataSource, mapper, mqttConfiguration);
 
         StepVerifier.create(adapter.start())
                     .then(() -> publishSampleMqttMessage(dataSource.mqttSubscribeTopic(), sampleJson))
@@ -121,6 +135,36 @@ class OesterreichsEnergieAdapterIntegrationTest {
                     .then(adapter::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(33));    // internal timeout for .close is 30 seconds
+    }
+
+    @Test
+    // adapter is closed by StepVerifier
+    @SuppressWarnings({"resource", "FutureReturnValueIgnored"})
+    void verify_mqttClientAutomaticallyReconnects() {
+        var value = 20;
+        var expectedValue = String.valueOf(value / 1000f);
+        var json = "{\"1-0:2.7.0\":{\"value\":" + value + ",\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";
+
+        var adapter = new OesterreichsEnergieAdapter(dataSource, mapper, mqttConfiguration);
+        adapter.setKeepAliveInterval(1);
+
+        var scheduler = Executors.newSingleThreadScheduledExecutor();
+
+        scheduler.schedule(this::cutConnection, 1, TimeUnit.SECONDS);
+        scheduler.schedule(this::restoreConnection, 3, TimeUnit.SECONDS);
+        scheduler.schedule(() -> publishSampleMqttMessage(dataSource.mqttSubscribeTopic(), json), 4, TimeUnit.SECONDS);
+
+
+        StepVerifier.create(adapter.start())
+                    .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValues().stream()
+                                                                 .anyMatch(aiidaRecordValue -> aiidaRecordValue.value()
+                                                                                                               .equals(expectedValue)))
+                    .then(adapter::close)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(10));
+
+        assertTrue(LOG_CAPTOR.getInfoLogs().stream().anyMatch(s -> s.endsWith("was from automatic reconnect is true")));
+        assertThat(LOG_CAPTOR.getWarnLogs()).contains("Disconnected from MQTT broker");
     }
 
     /**
@@ -148,36 +192,6 @@ class OesterreichsEnergieAdapterIntegrationTest {
                 }
             });
         }
-    }
-
-    @Test
-    // adapter is closed by StepVerifier
-    @SuppressWarnings({"resource", "FutureReturnValueIgnored"})
-    void verify_mqttClientAutomaticallyReconnects() {
-        var value = 20;
-        var expectedValue = String.valueOf(value / 1000f);
-        var json = "{\"1-0:2.7.0\":{\"value\":" + value + ",\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";
-
-        var adapter = new OesterreichsEnergieAdapter(dataSource, mapper);
-        adapter.setKeepAliveInterval(1);
-
-        var scheduler = Executors.newSingleThreadScheduledExecutor();
-
-        scheduler.schedule(this::cutConnection, 1, TimeUnit.SECONDS);
-        scheduler.schedule(this::restoreConnection, 3, TimeUnit.SECONDS);
-        scheduler.schedule(() -> publishSampleMqttMessage(dataSource.mqttSubscribeTopic(), json), 4, TimeUnit.SECONDS);
-
-
-        StepVerifier.create(adapter.start())
-                    .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValues().stream()
-                                                                 .anyMatch(aiidaRecordValue -> aiidaRecordValue.value()
-                                                                                                               .equals(expectedValue)))
-                    .then(adapter::close)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(10));
-
-        assertTrue(LOG_CAPTOR.getInfoLogs().stream().anyMatch(s -> s.endsWith("was from automatic reconnect is true")));
-        assertThat(LOG_CAPTOR.getWarnLogs()).contains("Disconnected from MQTT broker");
     }
 
     private void cutConnection() {

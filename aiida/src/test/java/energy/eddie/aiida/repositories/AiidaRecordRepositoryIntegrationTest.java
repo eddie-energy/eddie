@@ -20,6 +20,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.time.Instant;
 import java.util.List;
@@ -35,11 +36,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestPropertySource(properties = {"spring.jpa.hibernate.ddl-auto=create"})
 @Testcontainers
 class AiidaRecordRepositoryIntegrationTest {
+    private static final String TIMESCALEDB_IMAGE = "timescale/timescaledb:latest-pg17";
+    private static final String TIMESCALEDB_CREATE_AIIDA_DB_AND_EMQX_USER_FILE =
+            "timescaledb/create-aiida-db-and-emqx-user.sql";
+    private static final String TIMESCALEDB_CONTAINER_PATH =
+            "/docker-entrypoint-initdb.d/" + TIMESCALEDB_CREATE_AIIDA_DB_AND_EMQX_USER_FILE.split("/")[1];
+
     @SuppressWarnings("unused")
     @Container
     @ServiceConnection
-    private static final PostgreSQLContainer<?> TIMESCALE = new PostgreSQLContainer<>(DockerImageName.parse(
-            "timescale/timescaledb:2.11.2-pg15").asCompatibleSubstituteFor("postgres"));
+    static final PostgreSQLContainer<?> timescale =
+            new PostgreSQLContainer<>(
+                    DockerImageName.parse(TIMESCALEDB_IMAGE)
+                                   .asCompatibleSubstituteFor("postgres"))
+                    .withCopyFileToContainer(
+                            MountableFile.forClasspathResource(TIMESCALEDB_CREATE_AIIDA_DB_AND_EMQX_USER_FILE),
+                            TIMESCALEDB_CONTAINER_PATH
+                    );
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private final ObjectMapper objectMapper = new AiidaConfiguration().customObjectMapper().build();

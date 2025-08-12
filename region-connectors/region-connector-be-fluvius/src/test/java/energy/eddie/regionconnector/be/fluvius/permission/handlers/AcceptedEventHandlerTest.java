@@ -2,7 +2,9 @@ package energy.eddie.regionconnector.be.fluvius.permission.handlers;
 
 import energy.eddie.regionconnector.be.fluvius.permission.events.AcceptedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.request.MeterReading;
+import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
 import energy.eddie.regionconnector.be.fluvius.service.polling.PollingService;
+import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import org.junit.jupiter.api.Test;
@@ -14,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AcceptedEventHandlerTest {
@@ -25,15 +27,40 @@ class AcceptedEventHandlerTest {
     private AcceptedEventHandler handler;
     @Mock
     private PollingService pollingService;
+    @Mock
+    private BePermissionRequestRepository repository;
 
     @Test
     void testAccept_acceptedEventTriggersPoll() {
-        // When
+        // Given
+        var pr = new DefaultFluviusPermissionRequestBuilder()
+                .permissionId("pid")
+                .build();
+        when(repository.getByPermissionId("pid")).thenReturn(pr);
+        when(pollingService.isActiveAndNeedsToBeFetched(pr)).thenReturn(true);
         var meterReading = new MeterReading("pid", "ean", null);
+
+        // When
         eventBus.emit(new AcceptedEvent("pid", List.of(meterReading)));
 
         // Then
-        verify(pollingService).poll("pid");
+        verify(pollingService).pollTimeSeriesData(pr);
     }
 
+    @Test
+    void testAccept_acceptedEventForFuturePermissionRequest_doesNothing() {
+        // Given
+        var pr = new DefaultFluviusPermissionRequestBuilder()
+                .permissionId("pid")
+                .build();
+        when(repository.getByPermissionId("pid")).thenReturn(pr);
+        when(pollingService.isActiveAndNeedsToBeFetched(pr)).thenReturn(false);
+        var meterReading = new MeterReading("pid", "ean", null);
+
+        // When
+        eventBus.emit(new AcceptedEvent("pid", List.of(meterReading)));
+
+        // Then
+        verify(pollingService, never()).pollTimeSeriesData(pr);
+    }
 }

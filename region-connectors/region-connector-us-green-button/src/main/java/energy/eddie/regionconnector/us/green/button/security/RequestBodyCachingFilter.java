@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.us.green.button.security;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.io.IOException;
 
@@ -13,7 +14,7 @@ public class RequestBodyCachingFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        CachedBodyHttpServletRequest wrappedRequest = new CachedBodyHttpServletRequest(httpRequest);
+        var wrappedRequest = new ContentCachingRequestWrapper(httpRequest);
         chain.doFilter(wrappedRequest, response);
     }
 }

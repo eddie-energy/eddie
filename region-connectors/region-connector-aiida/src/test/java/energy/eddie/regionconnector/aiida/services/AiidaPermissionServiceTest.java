@@ -62,7 +62,6 @@ class AiidaPermissionServiceTest {
                                                                                4,
                                                                                HANDSHAKE_URL,
                                                                                "tcp://localhost:1883",
-                                                                               null,
                                                                                null);
     private final LogCaptor logCaptor = LogCaptor.forClass(AiidaPermissionService.class);
     @Mock

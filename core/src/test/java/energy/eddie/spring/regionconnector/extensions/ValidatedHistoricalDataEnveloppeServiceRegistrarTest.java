@@ -1,7 +1,8 @@
 package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
-import energy.eddie.core.services.ValidatedHistoricalDataEnvelopeService;
+import energy.eddie.core.services.v0_82.ValidatedHistoricalDataEnvelopeService;
+import energy.eddie.spring.regionconnector.extensions.v0_82.ValidatedHistoricalDataEnvelopeServiceRegistrar;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;

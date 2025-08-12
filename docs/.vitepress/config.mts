@@ -39,7 +39,13 @@ export default withMermaid(
         {
           text: "Running",
           items: [
-            { text: "Operation", link: "/1-running/OPERATION" },
+            {
+              text: "Operation", link: "/1-running/OPERATION",
+              items: [
+                { text: "Open Telemetry", link: "/1-running/open-telemetry" },
+                { text: "Push Notification for Alerts", link: "/1-running/open-telemetry#alert-management" },
+              ],
+            },
             {
               text: "EDDIE Button",
               link: "/1-running/eddie-button/eddie-button.md",
@@ -106,6 +112,10 @@ export default withMermaid(
                   text: "AMQP",
                   link: "/1-running/outbound-connectors/outbound-connector-amqp.md",
                 },
+                {
+                  text: "REST",
+                  link: "/1-running/outbound-connectors/outbound-connector-rest.md",
+                },
               ],
             },
             { text: "Admin Console", link: "/1-running/admin-console" },
@@ -135,8 +145,8 @@ export default withMermaid(
                     {
                       text: "Raw Data Messages",
                       link: "/2-integrating/messages/agnostic.md#raw-data-messages",
-                    }
-                  ]
+                    },
+                  ],
                 },
                 {
                   text: "Common Information Model (CIM)",
@@ -230,5 +240,5 @@ export default withMermaid(
         { icon: "github", link: "https://github.com/eddie-energy/eddie" },
       ],
     },
-  })
+  }),
 );

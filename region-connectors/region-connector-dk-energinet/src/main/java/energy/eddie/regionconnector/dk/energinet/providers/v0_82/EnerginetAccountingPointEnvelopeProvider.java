@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
-import energy.eddie.api.v0_82.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
 import org.springframework.stereotype.Component;

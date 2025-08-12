@@ -1,8 +1,6 @@
 package energy.eddie.regionconnector.be.fluvius.persistence;
 
-import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
-import energy.eddie.api.agnostic.process.model.persistence.StalePermissionRequestRepository;
-import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.agnostic.process.model.persistence.FullPermissionRequestRepository;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -11,11 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 @org.springframework.stereotype.Repository
-public interface BePermissionRequestRepository extends
-        PermissionRequestRepository<FluviusPermissionRequest>,
-        Repository<FluviusPermissionRequest, String>,
-        StalePermissionRequestRepository<FluviusPermissionRequest> {
-    Iterable<FluviusPermissionRequest> findByStatus(PermissionProcessStatus permissionProcessStatus);
+public interface BePermissionRequestRepository extends Repository<FluviusPermissionRequest, String>, FullPermissionRequestRepository<FluviusPermissionRequest> {
 
     @Override
     @Query(

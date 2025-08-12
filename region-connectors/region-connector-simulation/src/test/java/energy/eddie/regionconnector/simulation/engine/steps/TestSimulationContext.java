@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.simulation.engine.steps;
 
-import energy.eddie.api.v0_82.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.simulation.engine.SimulationContext;
 import energy.eddie.regionconnector.simulation.providers.DocumentStreams;

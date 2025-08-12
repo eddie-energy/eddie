@@ -36,11 +36,13 @@ dependencies {
     implementation(libs.spring.boot.starter.keycloak)
     implementation(libs.spring.boot.starter.thymeleaf)
     implementation(libs.spring.boot.starter.oauth2.client)
+    implementation(libs.spring.boot.starter.oauth2.resource.server)
 
     implementation(libs.reactor.core)
     implementation(libs.eclipse.paho.mqttv5.client)
     // enable Jackson support to fetch Hibernate lazy loaded properties when serializing
     implementation(libs.jackson.hibernate6)
+    implementation(libs.jackson.jakarta.xmlbind.annotations)
     implementation(libs.j2mod)
     implementation(libs.mvel2)
 
@@ -94,6 +96,10 @@ tasks.register<Test>("integrationTest") {
     testLogging {
         events("passed")
     }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    dependsOn(":pnpmBuildAiidaUi")
 }
 
 jib {

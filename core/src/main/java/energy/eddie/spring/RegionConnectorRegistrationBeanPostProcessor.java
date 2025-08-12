@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springdoc.core.configuration.SpringDocConfiguration;
 import org.springdoc.core.properties.SpringDocConfigProperties;
-import org.springdoc.core.properties.SwaggerUiConfigParameters;
 import org.springdoc.core.properties.SwaggerUiConfigProperties;
 import org.springdoc.core.properties.SwaggerUiOAuthProperties;
 import org.springdoc.webmvc.core.configuration.MultipleOpenApiSupportConfiguration;
@@ -76,7 +75,6 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         applicationContext.register(
                 SwaggerConfig.class,
                 SwaggerUiConfigProperties.class,
-                SwaggerUiConfigParameters.class,
                 SwaggerUiOAuthProperties.class,
                 SpringDocWebMvcConfiguration.class,
                 MultipleOpenApiSupportConfiguration.class,
@@ -294,11 +292,13 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         return scanner.findCandidateComponents(REGION_CONNECTORS_SCAN_BASE_PACKAGE);
     }
 
+    // False positive for nonnull boolean
+    @SuppressWarnings("java:S5411")
     private boolean isRegionConnectorEnabled(Class<?> configClass) {
         var regionConnectorName = configClass.getAnnotation(RegionConnector.class).name();
         var propertyName = "region-connector.%s.enabled".formatted(regionConnectorName.replace('-', '.'));
 
-        var isEnabled = Boolean.TRUE.equals(environment.getProperty(propertyName, Boolean.class, false));
+        var isEnabled = environment.getProperty(propertyName, Boolean.class, false);
 
         if (!isEnabled) {
             LOGGER.info("Region connector {} not explicitly enabled by property, will not load it.",

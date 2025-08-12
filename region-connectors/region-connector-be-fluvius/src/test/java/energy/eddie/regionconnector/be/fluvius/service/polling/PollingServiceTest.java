@@ -1,17 +1,11 @@
 package energy.eddie.regionconnector.be.fluvius.service.polling;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.AccountingPointDataNeedResult;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
-import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.be.fluvius.client.DataServiceType;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApiClient;
 import energy.eddie.regionconnector.be.fluvius.client.model.*;
 import energy.eddie.regionconnector.be.fluvius.permission.request.MeterReading;
-import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
 import energy.eddie.regionconnector.be.fluvius.streams.IdentifiableDataStreams;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -32,7 +26,6 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
@@ -42,11 +35,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PollingServiceTest {
     @Mock
-    private BePermissionRequestRepository repository;
-    @Mock
     private FluviusApiClient apiClient;
-    @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
     @Mock
     private IdentifiableDataStreams streams;
     @Mock
@@ -54,170 +43,126 @@ class PollingServiceTest {
     @InjectMocks
     private PollingService service;
 
-    public static Stream<Arguments> testPollEnergyData_retriesOnError() {
-        return Stream.of(
-                Arguments.of(WebClientResponseException.create(HttpStatus.TOO_MANY_REQUESTS.value(),
-                                                               "",
-                                                               null,
-                                                               null,
-                                                               null)),
-                Arguments.of(WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
-                                                               "",
-                                                               null,
-                                                               null,
-                                                               null))
-        );
-    }
-
     @Test
-    void testPollEnergyData_notStarted_noDataIsFetched() {
+    void isActiveAndNeedsToBeFetcher_notStarted_returnsFalse() {
         // Given
-        when(repository.getByPermissionId("pid")).thenReturn(
-                DefaultFluviusPermissionRequestBuilder.create()
-                                                      .start(LocalDate.now(ZoneOffset.UTC).plusDays(1))
-                                                      .build()
-        );
+        var pr = DefaultFluviusPermissionRequestBuilder.create()
+                                                       .start(LocalDate.now(ZoneOffset.UTC).plusDays(1))
+                                                       .build();
 
         // When
-        service.poll("pid");
+        var res = service.isActiveAndNeedsToBeFetched(pr);
 
         // Then
-        verify(apiClient, never()).energy(any(), any(), any(), any(), any());
+        assertFalse(res);
     }
 
     @Test
-    void testPollEnergyData_noVhdDataNeed_noDataIsFetched() {
+    void isActiveAndNeedsToBeFetcher_alreadyFetched_returnsFalse() {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        when(repository.getByPermissionId("pid")).thenReturn(
-                DefaultFluviusPermissionRequestBuilder.create().build()
-        );
-        when(calculationService.calculate(eq("did"), any()))
-                .thenReturn(
-                        new AccountingPointDataNeedResult(new Timeframe(now, now))
-                );
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var pr = DefaultFluviusPermissionRequestBuilder.create()
+                                                       .start(now.minusDays(1).toLocalDate())
+                                                       .addMeterReadings(new MeterReading("pid", "mid", now))
+                                                       .build();
 
         // When
-        service.poll("pid");
+        var res = service.isActiveAndNeedsToBeFetched(pr);
 
         // Then
-        verify(apiClient, never()).energy(any(), any(), any(), any(), any());
+        assertFalse(res);
     }
 
     @Test
-    void testPollEnergyData_illegalGranularity_throw() {
+    void isActiveAndNeedsToBeFetcher_forActivePermissionRequest_returnsTrue() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        when(repository.getByPermissionId("pid")).thenReturn(
-                DefaultFluviusPermissionRequestBuilder.create()
-                                                      .granularity(Granularity.PT5M)
-                                                      .addMeterReadings(new MeterReading("pid", "ean", null))
-                                                      .dataNeedId("did")
-                                                      .build()
-        );
-        when(calculationService.calculate(eq("did"), any()))
-                .thenReturn(
-                        new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.PT30M),
-                                new Timeframe(now, now),
-                                new Timeframe(now, now)
-                        )
-                );
+        var pr = DefaultFluviusPermissionRequestBuilder.create()
+                                                       .start(now.minusDays(1))
+                                                       .build();
 
-        // When, Then
-        assertThrows(IllegalArgumentException.class, () -> service.poll("pid"));
+        // When
+        var res = service.isActiveAndNeedsToBeFetched(pr);
+
+        // Then
+        assertTrue(res);
     }
 
     @Test
-    void testPollEnergyData_correctDataNeedStartAndEnd() {
+    void isActiveAndNeedsToBeFetcher_forActiveFuturePermissionRequest_returnsTrue() {
+        // Given
+        var yesterday = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
+        var pr = DefaultFluviusPermissionRequestBuilder.create()
+                                                       .start(yesterday.toLocalDate())
+                                                       .addMeterReadings(new MeterReading("pid", "mid", yesterday))
+                                                       .build();
+
+        // When
+        var res = service.isActiveAndNeedsToBeFetched(pr);
+
+        // Then
+        assertTrue(res);
+    }
+
+    @Test
+    void testPollEnergyData_correctStartAndEnd() {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
-        when(repository.getByPermissionId("pid")).thenReturn(
-                DefaultFluviusPermissionRequestBuilder.create()
-                                                      .start(now.minusDays(2))
-                                                      .addMeterReadings(new MeterReading("pid", "ean", null))
-                                                      .dataNeedId("did")
-                                                      .build()
-        );
-        when(calculationService.calculate(eq("did"), any()))
-                .thenReturn(
-                        new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.PT15M),
-                                new Timeframe(now.minusDays(2), now),
-                                new Timeframe(now.minusDays(3), now.minusDays(1))
-                        )
-                );
+        var pr = DefaultFluviusPermissionRequestBuilder.create()
+                                                       .start(now.minusDays(2))
+                                                       .addMeterReadings(new MeterReading("pid", "ean", null))
+                                                       .dataNeedId("did")
+                                                       .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
 
         // When
-        service.poll("pid");
+        service.pollTimeSeriesData(pr);
 
         // Then
-        verify(apiClient).energy(
-                eq("pid"),
-                any(),
-                eq(DataServiceType.QUARTER_HOURLY),
-                eq(ZonedDateTime.of(now.minusDays(2).atStartOfDay(), ZoneOffset.UTC)),
-                eq(now.atStartOfDay(ZoneOffset.UTC))
-        );
+        verify(apiClient)
+                .energy(
+                        eq("pid"),
+                        any(),
+                        eq(DataServiceType.QUARTER_HOURLY),
+                        eq(ZonedDateTime.of(now.minusDays(2).atStartOfDay(), ZoneOffset.UTC)),
+                        eq(now.atStartOfDay(ZoneOffset.UTC))
+                );
     }
 
     @Test
     void testPollEnergyData_15minGranularity_callsApiClient() {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        when(repository.getByPermissionId("pid")).thenReturn(
-                DefaultFluviusPermissionRequestBuilder.create()
-                                                      .granularity(Granularity.PT15M)
-                                                      .addMeterReadings(new MeterReading("pid", "ean", null))
-                                                      .dataNeedId("did")
-                                                      .build()
-        );
-        when(calculationService.calculate(eq("did"), any()))
-                .thenReturn(
-                        new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.PT15M),
-                                new Timeframe(now, now),
-                                new Timeframe(now, now)
-                        )
-                );
+        var pr = DefaultFluviusPermissionRequestBuilder.create()
+                                                       .granularity(Granularity.PT15M)
+                                                       .addMeterReadings(new MeterReading("pid", "ean", null))
+                                                       .dataNeedId("did")
+                                                       .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
 
         // When
-        service.poll("pid");
+        service.pollTimeSeriesData(pr);
 
         // Then
         verify(apiClient).energy(eq("pid"), any(), eq(DataServiceType.QUARTER_HOURLY), any(), any());
     }
 
     @ParameterizedTest
-    @MethodSource
+    @MethodSource("testPollEnergyData_retriesOnError")
     void testPollEnergyData_retriesOnError(Exception error) {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        when(repository.getByPermissionId("pid")).thenReturn(
-                DefaultFluviusPermissionRequestBuilder.create()
-                                                      .granularity(Granularity.PT15M)
-                                                      .addMeterReadings(new MeterReading("pid", "ean", null))
-                                                      .dataNeedId("did")
-                                                      .build()
-        );
-        when(calculationService.calculate(eq("did"), any()))
-                .thenReturn(
-                        new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.PT15M),
-                                new Timeframe(now, now),
-                                new Timeframe(now, now)
-                        )
-                );
+        var pr = DefaultFluviusPermissionRequestBuilder.create()
+                                                       .granularity(Granularity.PT15M)
+                                                       .addMeterReadings(new MeterReading("pid", "ean", null))
+                                                       .dataNeedId("did")
+                                                       .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
                 .thenReturn(Mono.error(error))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
 
         // When
-        service.poll("pid");
+        service.pollTimeSeriesData(pr);
 
         // Then
         verify(apiClient).energy(eq("pid"), any(), eq(DataServiceType.QUARTER_HOURLY), any(), any());
@@ -226,28 +171,17 @@ class PollingServiceTest {
     @Test
     void testPollEnergyData_1dayGranularity_callsApiClient() {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        when(repository.getByPermissionId("pid")).thenReturn(
-                DefaultFluviusPermissionRequestBuilder
-                        .create()
-                        .dataNeedId("did")
-                        .granularity(Granularity.P1D)
-                        .addMeterReadings(new MeterReading("pid", "ean", null))
-                        .build()
-        );
-        when(calculationService.calculate(eq("did"), any()))
-                .thenReturn(
-                        new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.P1D),
-                                new Timeframe(now, now),
-                                new Timeframe(now, now)
-                        )
-                );
+        var pr = DefaultFluviusPermissionRequestBuilder
+                .create()
+                .dataNeedId("did")
+                .granularity(Granularity.P1D)
+                .addMeterReadings(new MeterReading("pid", "ean", null))
+                .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.DAILY), any(), any()))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
 
         // When
-        service.poll("pid");
+        service.pollTimeSeriesData(pr);
 
         // Then
         verify(apiClient).energy(eq("pid"), any(), eq(DataServiceType.DAILY), any(), any());
@@ -256,7 +190,6 @@ class PollingServiceTest {
     @Test
     void testPollEnergyData_responseWithData_emitMeteringData() {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
         var permissionRequest = DefaultFluviusPermissionRequestBuilder
                 .create()
                 .dataNeedId("did")
@@ -264,19 +197,10 @@ class PollingServiceTest {
                 .addMeterReadings(new MeterReading("pid", "ean", null))
                 .build();
         var sampleEnergyResponseModels = createSampleGetEnergyResponseModels();
-        when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
-        when(calculationService.calculate(eq("did"), any()))
-                .thenReturn(
-                        new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.P1D),
-                                new Timeframe(now, now),
-                                new Timeframe(now, now)
-                        )
-                );
         when(apiClient.energy(any(), any(), any(), any(), any())).thenReturn(Mono.just(sampleEnergyResponseModels));
 
         // When
-        service.poll("pid");
+        service.pollTimeSeriesData(permissionRequest);
 
         // Then
         verify(streams).publish(permissionRequest, sampleEnergyResponseModels);
@@ -285,22 +209,12 @@ class PollingServiceTest {
     @Test
     void testPollEnergyData_responseWithoutData_nothingIsEmitted() {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
         var permissionRequest = DefaultFluviusPermissionRequestBuilder
                 .create()
                 .dataNeedId("did")
                 .granularity(Granularity.P1D)
                 .addMeterReadings(new MeterReading("pid", "ean", null))
                 .build();
-        when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
-        when(calculationService.calculate(eq("did"), any()))
-                .thenReturn(
-                        new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.P1D),
-                                new Timeframe(now, now),
-                                new Timeframe(now, now)
-                        )
-                );
         when(apiClient.energy(any(), any(), any(), any(), any()))
                 .thenReturn(
                         Mono.just(
@@ -310,7 +224,7 @@ class PollingServiceTest {
                 );
 
         // When
-        service.poll("pid");
+        service.pollTimeSeriesData(permissionRequest);
 
         // Then
         verify(streams, never()).publish(permissionRequest, new GetEnergyResponseModelApiDataResponse());
@@ -319,22 +233,11 @@ class PollingServiceTest {
     @Test
     void testPollEnergyData_revokesPermissionOnForbidden() {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        when(repository.getByPermissionId("pid")).thenReturn(
-                DefaultFluviusPermissionRequestBuilder.create()
-                                                      .granularity(Granularity.PT15M)
-                                                      .addMeterReadings(new MeterReading("pid", "ean", null))
-                                                      .dataNeedId("did")
-                                                      .build()
-        );
-        when(calculationService.calculate(eq("did"), any()))
-                .thenReturn(
-                        new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.PT15M),
-                                new Timeframe(now, now),
-                                new Timeframe(now, now)
-                        )
-                );
+        var pr = DefaultFluviusPermissionRequestBuilder.create()
+                                                       .granularity(Granularity.PT15M)
+                                                       .addMeterReadings(new MeterReading("pid", "ean", null))
+                                                       .dataNeedId("did")
+                                                       .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
                 .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.FORBIDDEN.value(),
                                                                          "",
@@ -343,7 +246,7 @@ class PollingServiceTest {
                                                                          null)));
 
         // When
-        service.poll("pid");
+        service.pollTimeSeriesData(pr);
 
         // Then
         verify(outbox).commit(assertArg(res -> assertAll(
@@ -355,27 +258,16 @@ class PollingServiceTest {
     @Test
     void testPollEnergyData_onUnknownException_doesNothing() {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        when(repository.getByPermissionId("pid")).thenReturn(
-                DefaultFluviusPermissionRequestBuilder.create()
-                                                      .granularity(Granularity.PT15M)
-                                                      .addMeterReadings(new MeterReading("pid", "ean", null))
-                                                      .dataNeedId("did")
-                                                      .build()
-        );
-        when(calculationService.calculate(eq("did"), any()))
-                .thenReturn(
-                        new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.PT15M),
-                                new Timeframe(now, now),
-                                new Timeframe(now, now)
-                        )
-                );
+        var pr = DefaultFluviusPermissionRequestBuilder.create()
+                                                       .granularity(Granularity.PT15M)
+                                                       .addMeterReadings(new MeterReading("pid", "ean", null))
+                                                       .dataNeedId("did")
+                                                       .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
                 .thenReturn(Mono.error(new RuntimeException()));
 
         // When
-        service.poll("pid");
+        service.pollTimeSeriesData(pr);
 
         // Then
         verify(outbox, never()).commit(any());
@@ -384,22 +276,11 @@ class PollingServiceTest {
     @Test
     void testPollEnergyData_forUnrelatedError_doesNotRevoke() {
         // Given
-        var now = LocalDate.now(ZoneOffset.UTC);
-        when(repository.getByPermissionId("pid")).thenReturn(
-                DefaultFluviusPermissionRequestBuilder.create()
-                                                      .granularity(Granularity.PT15M)
-                                                      .addMeterReadings(new MeterReading("pid", "ean", null))
-                                                      .dataNeedId("did")
-                                                      .build()
-        );
-        when(calculationService.calculate(eq("did"), any()))
-                .thenReturn(
-                        new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.PT15M),
-                                new Timeframe(now, now),
-                                new Timeframe(now, now)
-                        )
-                );
+        var pr = DefaultFluviusPermissionRequestBuilder.create()
+                                                       .granularity(Granularity.PT15M)
+                                                       .addMeterReadings(new MeterReading("pid", "ean", null))
+                                                       .dataNeedId("did")
+                                                       .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
                 .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                                                                          "",
@@ -408,7 +289,7 @@ class PollingServiceTest {
                                                                          null)));
 
         // When
-        service.poll("pid");
+        service.pollTimeSeriesData(pr);
 
         // Then
         verify(outbox, never()).commit(any());
@@ -444,6 +325,21 @@ class PollingServiceTest {
                                  DataServiceType.QUARTER_HOURLY,
                                  from.atStartOfDay(ZoneOffset.UTC),
                                  endOfDay(to, ZoneOffset.UTC));
+    }
+
+    private static Stream<Arguments> testPollEnergyData_retriesOnError() {
+        return Stream.of(
+                Arguments.of(WebClientResponseException.create(HttpStatus.TOO_MANY_REQUESTS.value(),
+                                                               "",
+                                                               null,
+                                                               null,
+                                                               null)),
+                Arguments.of(WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
+                                                               "",
+                                                               null,
+                                                               null,
+                                                               null))
+        );
     }
 
     private GetEnergyResponseModelApiDataResponse createSampleGetEnergyResponseModels() {

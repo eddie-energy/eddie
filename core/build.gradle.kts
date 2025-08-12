@@ -22,6 +22,8 @@ dependencies {
     implementation(project(":european-masterdata"))
     implementation(project(":outbound-connectors:outbound-kafka"))
     implementation(project(":outbound-connectors:outbound-amqp"))
+    implementation(project(":outbound-connectors:outbound-rest"))
+    implementation(project(":outbound-connectors:outbound-metric"))
     implementation(project(":outbound-connectors:outbound-shared"))
     implementation(project(":region-connectors:shared"))
     implementation(project(":region-connectors:region-connector-aiida"))
