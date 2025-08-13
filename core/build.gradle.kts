@@ -15,6 +15,12 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        // Required to use the version catalog in this block
+        mavenBom(libs.opentelemetry.instrumentation.bom.get().toString())
+    }
+}
 dependencies {
     implementation(project(":api"))
     implementation(project(":data-needs"))
@@ -45,6 +51,7 @@ dependencies {
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.reactor.core)
     implementation(libs.flyway.core)
+    implementation(libs.spring.boot.starter.opentelemetry)
 
     runtimeOnly(libs.postgresql)
     runtimeOnly(libs.flyway.postgresql)

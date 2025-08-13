@@ -63,6 +63,8 @@ xmlunit = "2.10.3"
 j2mod = "3.2.1"
 mvel2 = "2.5.2.Final"
 
+opentelemetry-instrumentation-bom = "2.18.1"
+
 [libraries]
 # Static analysis
 errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorpronecore" }
@@ -190,7 +192,7 @@ bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref 
 rometools-rome = { module = "com.rometools:rome", version.ref = "rometools" }
 
 # dependencies required by region-connector-cds
-caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine"}
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 
 # dependencies region-connector-simulation
 jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version.ref = "jakarta-persistence-api" }
@@ -198,6 +200,11 @@ jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-ap
 # dependencies e2e-tests
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj-core" }
 playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
+
+# Open Telemetry
+opentelemetry-instrumentation-bom = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom", version.ref = "opentelemetry-instrumentation-bom" }
+spring-boot-starter-opentelemetry = { module = "io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter" }
+opentelemetry-sdk-metrics = { module = "io.opentelemetry:opentelemetry-sdk-metrics" }
 
 [bundles]
 
