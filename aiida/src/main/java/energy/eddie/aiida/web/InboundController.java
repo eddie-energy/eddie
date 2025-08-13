@@ -1,5 +1,6 @@
 package energy.eddie.aiida.web;
 
+import energy.eddie.aiida.errors.PermissionNotFoundException;
 import energy.eddie.aiida.errors.UnauthorizedException;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.services.InboundService;
@@ -31,20 +32,20 @@ public class InboundController {
         this.inboundService = inboundService;
     }
 
-    @Operation(summary = "Get latest inbound record for data source")
+    @Operation(summary = "Get latest inbound record for permission")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = InboundRecord.class))}),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Entity not found", content = @Content),
     })
-    @GetMapping(value = "/latest/{dataSourceId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/latest/{permissionId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<InboundRecord> latestRecord(
             @RequestHeader("Authorization") String authorizationHeader,
-            @PathVariable UUID dataSourceId
-    ) throws UnauthorizedException {
+            @PathVariable UUID permissionId
+    ) throws UnauthorizedException, PermissionNotFoundException {
         if (authorizationHeader != null && authorizationHeader.startsWith(BEARER_PREFIX)) {
             var accessCode = authorizationHeader.replace(BEARER_PREFIX, "");
-            return ResponseEntity.ok(inboundService.latestRecord(accessCode, dataSourceId));
+            return ResponseEntity.ok(inboundService.latestRecord(accessCode, permissionId));
         }
 
         throw new UnauthorizedException("Authorization header is missing or invalid");

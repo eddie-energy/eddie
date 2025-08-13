@@ -75,10 +75,28 @@ public class DataSourceService {
         return repository.findById(dataSourceId);
     }
 
-    public List<DataSource> getDataSources() throws InvalidUserException {
+    public List<DataSourceType> getOutboundDataSourceTypes() {
+        return Arrays.stream(DataSourceType.values())
+              .filter(this::isOutboundDataSourceType)
+              .toList();
+    }
+
+    public List<DataSource> getInboundDataSources() throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
 
-        return repository.findByUserId(currentUserId);
+        return repository.findByUserId(currentUserId)
+                         .stream()
+                         .filter(dataSource -> isInboundDataSourceType(dataSource.dataSourceType()))
+                         .toList();
+    }
+
+    public List<DataSource> getOutboundDataSources() throws InvalidUserException {
+        var currentUserId = authService.getCurrentUserId();
+
+        return repository.findByUserId(currentUserId)
+                .stream()
+                .filter(dataSource -> isOutboundDataSourceType(dataSource.dataSourceType()))
+                .toList();
     }
 
     public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException {
@@ -204,6 +222,14 @@ public class DataSourceService {
 
     public Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(Predicate<DataSourceAdapter<? extends DataSource>> predicate) {
         return dataSourceAdapters.stream().filter(predicate).findFirst();
+    }
+
+    private boolean isOutboundDataSourceType(DataSourceType dataSourceType) {
+        return !isInboundDataSourceType(dataSourceType);
+    }
+
+    private boolean isInboundDataSourceType(DataSourceType dataSourceType) {
+        return dataSourceType == DataSourceType.INBOUND;
     }
 
     private void closeDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {

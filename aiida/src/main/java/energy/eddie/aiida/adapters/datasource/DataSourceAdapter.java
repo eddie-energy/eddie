@@ -66,7 +66,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
                     new MicroTeleinfoV3Adapter((MicroTeleinfoV3DataSource) dataSource, objectMapper, mqttConfiguration);
             case SMART_GATEWAYS_ADAPTER ->
                     new SmartGatewaysAdapter((SmartGatewaysDataSource) dataSource, mqttConfiguration);
-            case INBOUND -> new InboundAdapter((InboundDataSource) dataSource);
+            case INBOUND -> new InboundAdapter((InboundDataSource) dataSource, mqttConfiguration);
             case SIMULATION -> new SimulationAdapter((SimulationDataSource) dataSource);
             case MODBUS -> new ModbusTcpDataSourceAdapter((ModbusDataSource) dataSource);
         };

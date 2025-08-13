@@ -436,6 +436,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private void removeInboundDataSourceIfExists(Permission permission) {
         if (permission.dataNeed() instanceof InboundAiidaLocalDataNeed && permission.dataSource() != null) {
             var dataSource = Objects.requireNonNull(permission.dataSource());
+            permission.setDataSource(null);
             dataSourceService.deleteDataSource(dataSource.id());
         }
     }

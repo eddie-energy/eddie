@@ -674,7 +674,7 @@ function openAddDataSourceDialog() {
   const dataSourceSelect = document.getElementById("data-source-type");
   const assetSelect = document.getElementById("asset-type");
 
-  fetch(`${DATASOURCES_BASE_URL}/types`)
+  fetch(`${DATASOURCES_BASE_URL}/outbound/types`)
     .then((response) => response.json())
     .then((types) => {
       dataSourceSelect.innerHTML = types

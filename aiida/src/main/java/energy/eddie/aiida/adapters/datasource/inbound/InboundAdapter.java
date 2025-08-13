@@ -1,6 +1,7 @@
 package energy.eddie.aiida.adapters.datasource.inbound;
 
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.record.InboundRecord;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
@@ -23,8 +24,8 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
      *
      * @param dataSource The entity of the data source.
      */
-    public InboundAdapter(InboundDataSource dataSource) {
-        super(dataSource, LOGGER);
+    public InboundAdapter(InboundDataSource dataSource, MqttConfiguration mqttConfiguration) {
+        super(dataSource, LOGGER, mqttConfiguration);
         inboundRecordSink = Sinks.many().unicast().onBackpressureBuffer();
     }
 

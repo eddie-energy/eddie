@@ -102,12 +102,12 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldReturnDataSources() throws InvalidUserException {
+    void shouldReturnOutboundDataSources() throws InvalidUserException {
         var dataSource = createNewDataSource(DATA_SOURCE_ID, DataSourceType.SMART_GATEWAYS_ADAPTER);
         when(repository.findByUserId(userId)).thenReturn(List.of(dataSource));
         when(authService.getCurrentUserId()).thenReturn(userId);
 
-        var result = dataSourceService.getDataSources();
+        var result = dataSourceService.getOutboundDataSources();
 
         assertTrue(result.contains(dataSource));
         verify(repository, times(1)).findByUserId(userId);

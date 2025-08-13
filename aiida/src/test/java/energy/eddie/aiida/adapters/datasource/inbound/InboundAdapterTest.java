@@ -1,6 +1,7 @@
 package energy.eddie.aiida.adapters.datasource.inbound;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
@@ -57,7 +58,14 @@ class InboundAdapterTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        adapter = new InboundAdapter(DATA_SOURCE);
+        var mqttConfiguration = new MqttConfiguration(
+                "tcp://localhost:1883",
+                "tcp://localhost:1883",
+                10,
+                "password",
+                ""
+        );
+        adapter = new InboundAdapter(DATA_SOURCE, mqttConfiguration);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 
@@ -144,23 +152,6 @@ class InboundAdapterTest {
             adapter.start().subscribe();
 
             verify(mockClient).connect(any());
-        }
-    }
-
-    @Test
-    void verify_usernameAndPassword_isUsedByAdapter() {
-        var spiedDataSource = spy(DATA_SOURCE);
-        adapter = new InboundAdapter(spiedDataSource);
-
-        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
-            var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
-                           .thenReturn(mockClient);
-
-            adapter.start().subscribe();
-
-            verify(spiedDataSource, atLeastOnce()).mqttUsername();
-            verify(spiedDataSource, atLeastOnce()).mqttPassword();
         }
     }
 

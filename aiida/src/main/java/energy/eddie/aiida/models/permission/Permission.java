@@ -250,7 +250,7 @@ public class Permission {
         this.dataNeed = requireNonNull(dataNeed);
     }
 
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = requireNonNull(dataSource);
+    public void setDataSource(@Nullable DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 }

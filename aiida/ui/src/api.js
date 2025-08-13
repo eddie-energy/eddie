@@ -94,12 +94,12 @@ export function getPermissions() {
 
 /** @returns {Promise<AiidaDataSource[]>} */
 export function getDataSources() {
-  return fetch('/datasources')
+  return fetch('/datasources/outbound')
 }
 
 /** @returns {Promise<AiidaDataSourceType[]>} */
 export function getDataSourceTypes() {
-  return fetch('/datasources/types')
+  return fetch('/datasources/outbound/types')
 }
 
 /** @returns {Promise<{assets: string[]}>} */
