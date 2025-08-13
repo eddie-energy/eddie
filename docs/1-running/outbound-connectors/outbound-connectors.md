@@ -9,6 +9,7 @@ Currently, there are three implementations of the outbound-connectors:
 - [outbound-connector-kafka](outbound-connector-kafka.md): Implements an outbound-connector that can interact with an Apache Kafka broker.
 - [outbound-connector-amqp](outbound-connector-amqp.md): Implements an outbound-connector that can interact with an AMQP 1.0 compatible broker.
 - [outbound-connector-rest](outbound-connector-rest.md): Implements an outbound-connector for REST clients.
+- [outbound-connector-metric](outbound-connector-metric.md): Implements an outbound-connector for metrics.
 
 There are multiple outbound connector implementations to allow the eligible party to have a selection of different protocols.
 This allows the EP to reuse already existing deployments of brokers and integrations.
