@@ -7,6 +7,7 @@ import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.AcceptedEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequestBuilder;
@@ -89,7 +90,7 @@ class AcceptedHandlerTest {
                 .setStatus(PermissionProcessStatus.ACCEPTED)
                 .build();
         when(repository.getByPermissionId("pid")).thenReturn(pr);
-        when(dataNeedsService.getById("dnid")).thenReturn(new AiidaDataNeed(Set.of()));
+        when(dataNeedsService.getById("dnid")).thenReturn(new OutboundAiidaDataNeed());
 
         // When
         eventBus.emit(new AcceptedEvent("pid"));
