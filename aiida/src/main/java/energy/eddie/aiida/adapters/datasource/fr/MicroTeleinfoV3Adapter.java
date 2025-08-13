@@ -27,6 +27,7 @@ import org.springframework.boot.actuate.health.Status;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV3DataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MicroTeleinfoV3Adapter.class);
@@ -89,16 +90,34 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
             }
 
             List<AiidaRecordValue> aiidaRecordValues = switch (mode) {
-                case HISTORY -> readPayload(message.getPayload(), MicroTeleinfoV3HistoryModeJson.class)
-                        .energyData()
-                        .entrySet()
-                        .stream()
-                        .map(entry ->
-                                     new MicroTeleinfoV3AdapterHistoryModeMeasurement(
-                                             entry.getKey(),
-                                             String.valueOf(entry.getValue().value()))
-                        ).map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
-                        .toList();
+                case HISTORY -> {
+                    var historyModeData = readPayload(message.getPayload(), MicroTeleinfoV3HistoryModeJson.class)
+                            .energyData();
+
+                    var historyModeMeasurementsStream = historyModeData
+                            .entrySet()
+                            .stream()
+                            .map(entry ->
+                                         new MicroTeleinfoV3AdapterHistoryModeMeasurement(
+                                                 entry.getKey(),
+                                                 String.valueOf(
+                                                         entry.getValue()
+                                                              .value())));
+
+                    var positiveActiveEnergy = MicroTeleinfoV3AdapterHistoryModeMeasurement
+                            .calculateAiidaPositiveActiveEnergy(historyModeData).stream();
+
+
+                    yield Stream.concat(historyModeMeasurementsStream, positiveActiveEnergy)
+                                .flatMap(measurement ->
+                                                 Stream.concat(Stream.of(measurement),
+                                                               measurement.calculateAiidaPositiveActiveInstantaneousPower()
+                                                                          .stream()
+                                                 )
+                                )
+                                .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
+                                .toList();
+                }
                 case STANDARD -> readPayload(message.getPayload(), MicroTeleinfoV3StandardModeJson.class)
                         .energyData()
                         .entrySet()
