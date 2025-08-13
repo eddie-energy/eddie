@@ -9,10 +9,10 @@ Then, the median duration, accumulative mean and count are updated and persisted
 |--------------------------------------|------------------------|---------|----------------------------------------------------------------|
 | `outbound-connector.metric.enabled`  | `true` or `false`      | `false` | Enables or disables the Metric outbound connector.             |
 | `outbound-connector.metric.interval` | ISO-8601 for durations | `PT12H` | Interval to periodically retrieve and send the metrics (e.g., PT12H). |
-| `outbound-connector.metric.endpoint` | URI                    |   https://eddie.energy/      | URL to which the metrics report is sent. |                                                                                          
+| `outbound-connector.metric.endpoint` | URI                    |   https://eddie.energy/metadata-sharing      | URL to which the metrics report is sent. |                                                                                          
 
 ```properties :spring
 outbound-connector.metric.enabled=true
 outbound-connector.metric.interval=PT12H
-outbound-connector.metric.endpoint=https://eddie.energy/
+outbound-connector.metric.endpoint=https://eddie.energy/metadata-sharing
 ```

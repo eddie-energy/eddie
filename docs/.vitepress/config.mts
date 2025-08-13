@@ -116,6 +116,10 @@ export default withMermaid(
                   text: "REST",
                   link: "/1-running/outbound-connectors/outbound-connector-rest.md",
                 },
+                {
+                  text: "Metric",
+                  link: "/1-running/outbound-connectors/outbound-connector-metric.md",
+                },
               ],
             },
             { text: "Admin Console", link: "/1-running/admin-console" },
