@@ -8,11 +8,14 @@ import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.ObisCode;
 import energy.eddie.cim.v1_04.rtd.QuantityTypeKind;
 import jakarta.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
 
 public class CimUtil {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CimUtil.class.getName());
     private static final Map<ObisCode, QuantityTypeKind> OBIS_TO_QUANTITY_TYPE = Map.ofEntries(
             Map.entry(ObisCode.POSITIVE_ACTIVE_ENERGY, QuantityTypeKind.TOTALACTIVEENERGYCONSUMED_IMPORT_KWH),
             Map.entry(ObisCode.NEGATIVE_ACTIVE_ENERGY, QuantityTypeKind.TOTALACTIVEENERGYPRODUCED_EXPORT_KWH),
@@ -34,7 +37,12 @@ public class CimUtil {
     }
 
     public static boolean isAiidaRecordValueSupported(AiidaRecordValue recordValue) {
-        return OBIS_TO_QUANTITY_TYPE.containsKey(getDataTag(recordValue));
+        if (OBIS_TO_QUANTITY_TYPE.containsKey(getDataTag(recordValue))) {
+            return true;
+        }
+
+        LOGGER.trace("AIIDA Record Value with data tag {} not supported.", recordValue.dataTag());
+        return false;
     }
 
     @Nullable
