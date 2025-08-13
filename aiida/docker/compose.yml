@@ -20,26 +20,26 @@ services:
       timeout: 3s
       retries: 3
 
-  aiida:
-    profiles:
-      - dockerized-aiida
-    image: ghcr.io/eddie-energy/aiida:latest
-    build:
-      dockerfile: docker/Dockerfile
-      context: ../
-    depends_on:
-      timescaledb:
-        condition: service_healthy
-      emqx:
-        condition: service_healthy
-      keycloak:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}/${SPRING_DATASOURCE_DATABASE}
-    env_file:
-      - .env
+#  aiida:
+#    profiles:
+#      - dockerized-aiida
+#    image: ghcr.io/eddie-energy/aiida:latest
+#    build:
+#      dockerfile: docker/Dockerfile
+#      context: ../
+#    depends_on:
+#      timescaledb:
+#        condition: service_healthy
+#      emqx:
+#        condition: service_healthy
+#      keycloak:
+#        condition: service_healthy
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}/${SPRING_DATASOURCE_DATABASE}
+#    env_file:
+#      - .env
 
   emqx:
     image: emqx/emqx:5.8.6
@@ -71,18 +71,18 @@ services:
       timeout: 25s
       retries: 5
 
-  teleinfo2mqtt:
-    depends_on:
-      - emqx
-    profiles:
-      - teleinfo
-    image: fmartinou/teleinfo2mqtt
-    container_name: teleinfo2mqtt
-    devices:
-      - /dev/ttyACM0:/dev/ttyACM0
-    env_file:
-      - .env-fr-teleinfo2mqtt
-    restart: always
+#  teleinfo2mqtt:
+#    depends_on:
+#      - emqx
+#    profiles:
+#      - teleinfo
+#    image: fmartinou/teleinfo2mqtt
+#    container_name: teleinfo2mqtt
+#    devices:
+#      - /dev/ttyACM0:/dev/ttyACM0
+#    env_file:
+#      - .env-fr-teleinfo2mqtt
+#    restart: always
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest

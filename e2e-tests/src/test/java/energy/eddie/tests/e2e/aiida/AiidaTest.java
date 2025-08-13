@@ -10,7 +10,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 class AiidaTest extends E2eTestSetup {
     @Test
     void buttonClickShowsQrCode_andBase64() {
-        this.navigateToRegionConnector("FUTURE_NEAR_REALTIME_DATA", null, null);
+        this.navigateToRegionConnector("FUTURE_NEAR_REALTIME_DATA_OUTBOUND", null, null);
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 

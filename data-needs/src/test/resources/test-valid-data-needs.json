@@ -34,7 +34,7 @@
   {
     "type": "inbound-aiida",
     "id": "f7698978-b9fe-40c8-aebe-c997f7f58f2f",
-    "name": "FUTURE_NEAR_REALTIME_DATA",
+    "name": "FUTURE_NEAR_REALTIME_DATA_OUTBOUND",
     "description": "Near realtime consumption data from the smart meter",
     "purpose": "purpose",
     "policyLink": "https://example.com/toc",
@@ -56,8 +56,8 @@
   {
     "type": "outbound-aiida",
     "id": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
-    "name": "FUTURE_NEAR_REALTIME_DATA",
-    "description": "Inbound data read by AIIDA",
+    "name": "FUTURE_NEAR_REALTIME_DATA_OUTBOUND",
+    "description": "Outbound data read by AIIDA",
     "purpose": "purpose",
     "policyLink": "https://example.com/toc",
     "duration": {

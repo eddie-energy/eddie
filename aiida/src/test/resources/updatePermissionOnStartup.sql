@@ -7,7 +7,7 @@ INSERT INTO public.aiida_local_data_need(data_need_id,
                                          type)
 VALUES ('6609a9b3-0718-4082-935d-6a98c0f8c5a2',
         'CONNECTION_AGREEMENT_POINT',
-        'FUTURE_NEAR_REALTIME_DATA',
+        'FUTURE_NEAR_REALTIME_DATA_OUTBOUND',
         'https://example.com/toc',
         'purpose',
         '*/5 * * * * *',
