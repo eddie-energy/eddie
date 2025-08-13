@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.jackson.datatype.jsr310)
 
     implementation(libs.reactor.core)
+    implementation(libs.opentelemetry.sdk.metrics)
 
     runtimeOnly(libs.hibernate.validator)
     runtimeOnly(libs.jaxb.runtime)
