@@ -113,6 +113,7 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
                                                                                    List.of(MicroTeleinfoV3Mode.UNKNOWN));
             };
 
+            LOGGER.trace("{} mode message ({} values) deserialized successfully.", mode, aiidaRecordValues.size());
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (MicroTeleinfoV3ModeNotSupportedException e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
