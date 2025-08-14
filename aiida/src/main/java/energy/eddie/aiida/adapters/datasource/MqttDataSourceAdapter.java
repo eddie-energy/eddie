@@ -153,7 +153,7 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
         // Not needed in MqttDataSource
     }
 
-    private MqttConnectionOptions createConnectOptions() {
+    protected MqttConnectionOptions createConnectOptions() {
         MqttConnectionOptions options = new MqttConnectionOptions();
 
         options.setCleanStart(false);

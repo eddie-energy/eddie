@@ -5,6 +5,7 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.record.InboundRecord;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,5 +68,15 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
 
     public Flux<InboundRecord> inboundRecordFlux() {
         return inboundRecordSink.asFlux();
+    }
+
+    @Override
+    protected MqttConnectionOptions createConnectOptions() {
+        var connectOptions = super.createConnectOptions();
+
+        connectOptions.setUserName(dataSource().mqttUsername());
+        connectOptions.setPassword(dataSource.mqttPassword().getBytes(StandardCharsets.UTF_8));
+
+        return connectOptions;
     }
 }

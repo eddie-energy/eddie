@@ -24,8 +24,6 @@ import java.util.UUID;
 @RequestMapping("/inbound")
 @Tag(name = "Inbound Controller")
 public class InboundController {
-    private static final String BEARER_PREFIX = "Bearer ";
-
     private final InboundService inboundService;
 
     public InboundController(InboundService inboundService) {
@@ -40,14 +38,13 @@ public class InboundController {
     })
     @GetMapping(value = "/latest/{permissionId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<InboundRecord> latestRecord(
-            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestHeader("X-API-Key") String apiKey,
             @PathVariable UUID permissionId
     ) throws UnauthorizedException, PermissionNotFoundException {
-        if (authorizationHeader != null && authorizationHeader.startsWith(BEARER_PREFIX)) {
-            var accessCode = authorizationHeader.replace(BEARER_PREFIX, "");
-            return ResponseEntity.ok(inboundService.latestRecord(accessCode, permissionId));
+        if (apiKey == null || apiKey.isEmpty()) {
+            throw new UnauthorizedException("X-API-Key header is missing or empty.");
         }
 
-        throw new UnauthorizedException("Authorization header is missing or invalid");
+        return ResponseEntity.ok(inboundService.latestRecord(apiKey, permissionId));
     }
 }

@@ -33,7 +33,7 @@ class InboundControllerTest {
         when(inboundService.latestRecord(ACCESS_CODE, DATA_SOURCE_ID)).thenReturn(mock(InboundRecord.class));
 
         mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID)
-                                .header("Authorization", "Bearer " + ACCESS_CODE)
+                                .header("X-API-Key", ACCESS_CODE)
                )
                .andExpect(status().isOk());
     }
@@ -45,9 +45,9 @@ class InboundControllerTest {
     }
 
     @Test
-    void latestRecord_withMalformedToken_isBadRequest() throws Exception {
+    void latestRecord_withEmptyToken_isUnauthorized() throws Exception {
         mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID)
-                                .header("Authorization", "xBearer " + ACCESS_CODE)
+                                .header("X-API-Key", "")
                )
                .andExpect(status().isUnauthorized());
     }
