@@ -16,16 +16,16 @@ The following command starts the open telemetry services.
 docker compose up -d
 ```
 
-To connect EDDIE to the open telemetry collector, it has to be extended with the [open telemetry java agent](https://github.com/open-telemetry/opentelemetry-java-instrumentation).
-This can be done via the command line simply by adding this option
-`-javaagent:/path/to/opentelemetry-javaagent.jar` when executing the JAR or by building the [docker image](https://github.com/eddie-energy/eddie/tree/main/env/otel/Dockerfile) with the agent.
-The following environment variables need to be set for the open telemetry java agent to be able to connect to the open telemetry collector.
-Add this to the EDDIE docker container or the environment running EDDIE.
+To connect EDDIE to an OpenTelemetry connector, enable OpenTelemetry via the following properties and set the collector endpoint.
+For more information regarding configuring OpenTelemetry for EDDIE see the [Spring Boot Starter](https://opentelemetry.io/docs/zero-code/java/spring-boot-starter/).
 
-```dotenv
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 # Replace by actual host
-OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-OTEL_SERVICE_NAME=eddie
+```properties :spring
+otel.sdk.disabled=false
+otel.resource.attributes.deployment.environment=dev
+otel.resource.attributes.service.name=EDDIE
+otel.resource.attributes.service.namespace=eddie.energy
+otel.exporter.otlp.endpoint=http://localhost:4318
+otel.exporter.otlp.protocol=http/protobuf
 ```
 
 ## Alert Management

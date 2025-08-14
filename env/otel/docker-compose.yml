@@ -37,7 +37,7 @@ services:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
-    env_file:
-      - ./.env_grafana
+    #env_file:
+      #- ./.env_grafana
     volumes:
       - ./grafana/:/etc/grafana/provisioning/datasources/
