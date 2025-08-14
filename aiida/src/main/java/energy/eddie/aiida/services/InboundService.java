@@ -35,16 +35,16 @@ public class InboundService {
                 .orElseThrow(() -> new PermissionNotFoundException(permissionId));
         var dataSource = permission.dataSource();
 
-        if (dataSource instanceof InboundDataSource inboundDataSource) {
-            if (!accessCode.equals(inboundDataSource.accessCode())) {
-                throw new UnauthorizedException("Access code does not match for data source with ID: " + dataSource.id());
-            }
-
-            return inboundRecordRepository
-                    .findTopByDataSourceIdOrderByTimestampDesc(dataSource.id())
-                    .orElseThrow(() -> new EntityNotFoundException("No entry found for data source with ID: " + dataSource.id()));
-        } else {
+        if (!(dataSource instanceof InboundDataSource inboundDataSource)) {
             throw new EntityNotFoundException("Data source is not an InboundDataSource");
         }
+
+        if (!accessCode.equals(inboundDataSource.accessCode())) {
+            throw new UnauthorizedException("Access code does not match for data source with ID: " + dataSource.id());
+        }
+
+        return inboundRecordRepository
+                .findTopByDataSourceIdOrderByTimestampDesc(dataSource.id())
+                .orElseThrow(() -> new EntityNotFoundException("No entry found for data source with ID: " + dataSource.id()));
     }
 }

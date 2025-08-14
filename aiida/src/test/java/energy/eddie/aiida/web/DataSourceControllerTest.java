@@ -63,7 +63,7 @@ class DataSourceControllerTest {
 
     @Test
     @WithMockUser
-    void getAllDataSources_shouldReturnListOfDataSources() throws Exception {
+    void getAllOutboundDataSources_shouldReturnListOfDataSources() throws Exception {
         List<DataSource> dataSources = List.of(DATA_SOURCE);
 
         when(service.getOutboundDataSources()).thenReturn(dataSources);
@@ -75,6 +75,22 @@ class DataSourceControllerTest {
                .andExpect(jsonPath("$.length()").value(1));
 
         verify(service, times(1)).getOutboundDataSources();
+    }
+
+    @Test
+    @WithMockUser
+    void getAllInboundDataSources_shouldReturnListOfDataSources() throws Exception {
+        List<DataSource> dataSources = List.of(DATA_SOURCE);
+
+        when(service.getInboundDataSources()).thenReturn(dataSources);
+
+        mockMvc.perform(get("/datasources/inbound")
+                                .with(csrf())
+                                .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.length()").value(1));
+
+        verify(service, times(1)).getInboundDataSources();
     }
 
     @Test

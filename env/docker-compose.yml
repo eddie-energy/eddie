@@ -22,42 +22,42 @@ services:
       timeout: 3s
       retries: 3
 
-#  eddie:
-#    profiles:
-#      - dockerized-eddie
-#    image: ghcr.io/eddie-energy/eddie:latest
-#    build:
-#      dockerfile: src/main/docker/Dockerfile
-#      context: ../core
-#    env_file:
-#      - .env
-#    volumes:
-#      - ./ponton:/ponton # mount a folder to store ponton files
-#      - ./data-needs.json:/opt/core/config/data-needs.json
-#    depends_on:
-#      - kafka
-#      - db
+  eddie:
+    profiles:
+      - dockerized-eddie
+    image: ghcr.io/eddie-energy/eddie:latest
+    build:
+      dockerfile: src/main/docker/Dockerfile
+      context: ../core
+    env_file:
+      - .env
+    volumes:
+      - ./ponton:/ponton # mount a folder to store ponton files
+      - ./data-needs.json:/opt/core/config/data-needs.json
+    depends_on:
+      - kafka
+      - db
 
-#  eddie-example-app:
-#    profiles:
-#      - dockerized-eddie
-#    image: ghcr.io/eddie-energy/eddie-example-app:latest
-#    build:
-#      dockerfile: src/main/docker/Dockerfile
-#      context: ../examples/example-app
-#    environment:
-#      JDBC_URL: ${JDBC_URL}
-#      JDBC_USER: ${JDBC_USER}
-#      JDBC_PASSWORD: ${JDBC_PASSWORD}
-#      EDDIE_PUBLIC_URL: ${PUBLIC_CONTEXT_PATH}
-#      PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
-#      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
-#    restart: always
-#    depends_on:
-#      db:
-#        condition: service_started
-#      eddie:
-#        condition: service_started
+  eddie-example-app:
+    profiles:
+      - dockerized-eddie
+    image: ghcr.io/eddie-energy/eddie-example-app:latest
+    build:
+      dockerfile: src/main/docker/Dockerfile
+      context: ../examples/example-app
+    environment:
+      JDBC_URL: ${JDBC_URL}
+      JDBC_USER: ${JDBC_USER}
+      JDBC_PASSWORD: ${JDBC_PASSWORD}
+      EDDIE_PUBLIC_URL: ${PUBLIC_CONTEXT_PATH}
+      PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+    restart: always
+    depends_on:
+      db:
+        condition: service_started
+      eddie:
+        condition: service_started
 
   kafka:
     # Docs: https://github.com/bitnami/containers/tree/main/bitnami/kafka#accessing-apache-kafka-with-internal-and-external-clients
@@ -108,28 +108,28 @@ services:
     entrypoint: [ "/bin/sh", "/tmp/replace-password-with-env.sh" ]
 
   # Only required for REST outbound connector
-#  keycloak:
-#    image: quay.io/keycloak/keycloak:latest
-#    ports:
-#      - "8888:8080"
-#    environment:
-#      KC_HEALTH_ENABLED: true
-#      KC_HOSTNAME: http://localhost:8888
-#      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-#      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-#    volumes:
-#      - ./keycloak.json:/opt/keycloak/data/import/master-realm.json
-#    command: -v start-dev --import-realm
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    ports:
+      - "8888:8080"
+    environment:
+      KC_HEALTH_ENABLED: true
+      KC_HOSTNAME: http://localhost:8888
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    volumes:
+      - ./keycloak.json:/opt/keycloak/data/import/master-realm.json
+    command: -v start-dev --import-realm
 
-#  caddy:
-#    image: caddy:alpine
-#    ports:
-#      - "9000:8080"
-#    environment:
-#      PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
-#    volumes:
-#      - ./Caddyfile:/etc/caddy/Caddyfile
-#      - caddy_data:/data
+  caddy:
+    image: caddy:alpine
+    ports:
+      - "9000:8080"
+    environment:
+      PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
 
 volumes:
   caddy_data:

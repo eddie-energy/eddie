@@ -6,6 +6,7 @@ import energy.eddie.aiida.errors.PermissionNotFoundException;
 import energy.eddie.aiida.errors.UnauthorizedException;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
@@ -84,6 +85,29 @@ class InboundServiceTest {
 
         // Then
         assertEquals(DATA_SOURCE_ID, inboundRecord.dataSourceId());
+    }
+
+    @Test
+    void testLatestRecord_withWrongDataSourceType_throwsException() {
+        // Given
+        var wrongPermission = new Permission();
+        var wrongDataSource = new SimulationDataSource(
+                new DataSourceDto(DATA_SOURCE_ID,
+                                  DataSourceType.SIMULATION,
+                                  AiidaAsset.SUBMETER,
+                                  "simulation",
+                                  "AT",
+                                  true,
+                                  1,
+                                  null,
+                                  null),
+                USER_ID
+        );
+        wrongPermission.setDataSource(wrongDataSource);
+        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(wrongPermission));
+
+        // When, Then
+        assertThrows(EntityNotFoundException.class, () -> inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID));
     }
 
     @Test
