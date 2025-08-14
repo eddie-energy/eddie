@@ -28,23 +28,29 @@ public class MicroTeleinfoV3AdapterHistoryModeMeasurement extends SmartMeterAdap
         return historyModeEntry.rawUnitOfMeasurement();
     }
 
-    public static Optional<MicroTeleinfoV3AdapterHistoryModeMeasurement> calculateAiidaPositiveActiveEnergy(Map<String, MicroTeleinfoV3DataField> historyModeData) {
+    public static Optional<MicroTeleinfoV3AdapterHistoryModeMeasurement> calculateAiidaPositiveActiveEnergyFromHistoryModeData(
+            Map<String, MicroTeleinfoV3DataField> historyModeData
+    ) {
         var hchc = historyModeData.get(HistoryModeEntry.HCHC.name());
         var hchp = historyModeData.get(HistoryModeEntry.HCHP.name());
 
         if (hchc != null && hchp != null) {
-            var sum = Integer.parseInt(hchc.raw()) + Integer.parseInt(hchp.raw());
+            var positiveActiveEnergy = Integer.parseInt(hchc.raw()) + Integer.parseInt(hchp.raw());
             return Optional.of(new MicroTeleinfoV3AdapterHistoryModeMeasurement(AIIDA_POSITIVE_ACTIVE_ENERGY.name(),
-                                                                                String.valueOf(sum))
+                                                                                String.valueOf(positiveActiveEnergy))
             );
         }
         return Optional.empty();
     }
 
-    public Optional<MicroTeleinfoV3AdapterHistoryModeMeasurement> calculateAiidaPositiveActiveInstantaneousPower() {
-        if (historyModeEntry == IINST) {
+    public static Optional<MicroTeleinfoV3AdapterHistoryModeMeasurement> calculateAiidaPositiveActiveInstantaneousPowerFromHistoryModeData(
+            Map<String, MicroTeleinfoV3DataField> historyModeData
+    ) {
+        var iinst = historyModeData.get(IINST.name());
+
+        if (iinst != null) {
             var voltage = 200;
-            var positiveActiveInstantaneousPower = voltage * Integer.parseInt(rawValue());
+            var positiveActiveInstantaneousPower = voltage * Integer.parseInt(iinst.raw());
 
             return Optional.of(new MicroTeleinfoV3AdapterHistoryModeMeasurement(
                     AIIDA_POSITIVE_ACTIVE_INSTANTANEOUS_POWER.name(),

@@ -104,17 +104,17 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
                                                          entry.getValue()
                                                               .value())));
 
+                    var positiveActiveInstantaneousPower = MicroTeleinfoV3AdapterHistoryModeMeasurement
+                            .calculateAiidaPositiveActiveInstantaneousPowerFromHistoryModeData(historyModeData)
+                            .stream();
                     var positiveActiveEnergy = MicroTeleinfoV3AdapterHistoryModeMeasurement
-                            .calculateAiidaPositiveActiveEnergy(historyModeData).stream();
+                            .calculateAiidaPositiveActiveEnergyFromHistoryModeData(historyModeData)
+                            .stream();
 
-
-                    yield Stream.concat(historyModeMeasurementsStream, positiveActiveEnergy)
-                                .flatMap(measurement ->
-                                                 Stream.concat(Stream.of(measurement),
-                                                               measurement.calculateAiidaPositiveActiveInstantaneousPower()
-                                                                          .stream()
-                                                 )
-                                )
+                    yield Stream.of(historyModeMeasurementsStream,
+                                    positiveActiveEnergy,
+                                    positiveActiveInstantaneousPower)
+                                .flatMap(stream -> stream)
                                 .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
                                 .toList();
                 }
