@@ -1,11 +1,12 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
-import energy.eddie.regionconnector.at.eda.AtEdaBeanConfig;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +21,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ConnectionStatusServiceTest {
-    private final ObjectMapper objectMapper = new AtEdaBeanConfig().objectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModules(new JavaTimeModule(), new Jdk8Module());
     @Mock
     private AtPermissionRequestRepository permissionRequestRepository;
 

@@ -205,6 +205,7 @@ playwright = { module = "com.microsoft.playwright:playwright", version.ref = "pl
 opentelemetry-instrumentation-bom = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom", version.ref = "opentelemetry-instrumentation-bom" }
 spring-boot-starter-opentelemetry = { module = "io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter" }
 opentelemetry-sdk-metrics = { module = "io.opentelemetry:opentelemetry-sdk-metrics" }
+opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing" }
 
 [bundles]
 
