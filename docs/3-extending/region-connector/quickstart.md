@@ -88,9 +88,17 @@ For more details on the setup see the [build and setup section](./build-and-setu
 ## Bean Configuration
 
 The permission event supplier bean is for retrieving permission events externally (e.g., from an outbound connector) through the region connector.
-This registers a Supplier<PermissionEventRepository> given the [region connector implementation of the PermissionEventRepository interface](#permission-event-repository).
+This registers a `Supplier<PermissionEventRepository>` given the [region connector implementation of the PermissionEventRepository interface](#permission-event-repository).
 
 ```java
+package energy.eddie.regionconnector.foo.bar;
+
+import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
+import energy.eddie.regionconnector.foo.bar.persistence.FooBarPermissionEventRepository;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import java.util.function.Supplier;
+
 @Configuration
 public class FooBarBeanConfig {
   @Bean

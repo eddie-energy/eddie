@@ -8,8 +8,10 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.schemas.cim.v1_04.utils.CimUtil;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
+import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,12 +25,14 @@ import java.util.UUID;
 
 import static energy.eddie.aiida.models.record.UnitOfMeasurement.*;
 import static energy.eddie.aiida.utils.ObisCode.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SchemaTest {
+    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(CimUtil.class);
     private static final Instant timestamp = Instant.ofEpochMilli(1729334059);
     private static final UUID aiidaId = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -117,7 +121,7 @@ class SchemaTest {
                                          POSITIVE_REACTIVE_INSTANTANEOUS_POWER,
                                          "10",
                                          VOLT_AMPERE,
-                                         "1ß",
+                                         "10",
                                          VOLT_AMPERE)
             )
     );
@@ -147,6 +151,8 @@ class SchemaTest {
 
     @Test
     void schemaCim() {
+        LOG_CAPTOR.setLogLevelToTrace();
+
         var dataNeedId = UUID.fromString("1211ea05-d4ab-48ff-8613-8f4791a56606");
         var permissionId = UUID.fromString("2211ea05-d4ab-48ff-8613-8f4791a56606");
 
@@ -167,7 +173,9 @@ class SchemaTest {
         assertDoesNotThrow(() -> cimFormatter.toSchema(aiidaRecordAT, objectMapper, permissionMock));
         assertThrows(CimFormatterException.class,
                      () -> cimFormatter.toSchema(aiidaRecordWithFaultyRecord, objectMapper, permissionMock));
-        assertThrows(CimFormatterException.class,
-                     () -> cimFormatter.toSchema(aiidaRecordWithUnsupportedQuantityType, objectMapper, permissionMock));
+
+        cimFormatter.toSchema(aiidaRecordWithUnsupportedQuantityType, objectMapper, permissionMock);
+        assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(
+                POSITIVE_REACTIVE_INSTANTANEOUS_POWER));
     }
 }
