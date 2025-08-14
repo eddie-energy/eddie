@@ -9,6 +9,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
@@ -146,12 +147,14 @@ public class AiidaPermissionService {
     public MqttDto acceptPermission(
             String permissionId,
             UUID aiidaId
-    ) throws CredentialsAlreadyExistException, PermissionNotFoundException, PermissionStateTransitionException {
+    ) throws CredentialsAlreadyExistException, PermissionNotFoundException, PermissionStateTransitionException, DataNeedNotFoundException {
         checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, ACCEPTED);
 
         outbox.commit(new AiidaIdReceivedEvent(permissionId, ACCEPTED, aiidaId));
 
-        var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId);
+        var permissionDetails = detailsForPermission(permissionId);
+        var dataNeed = permissionDetails.dataNeed();
+        var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId, dataNeed instanceof InboundAiidaDataNeed);
 
         outbox.commit(new MqttCredentialsCreatedEvent(permissionId, mqttDto.username()));
 

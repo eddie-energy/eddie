@@ -41,6 +41,7 @@ class DataNeedsConfigServiceTest {
         assertThat(service.getDataNeedIdsAndNames())
                 .extracting(DataNeedsNameAndIdProjection::getId)
                 .containsExactlyInAnyOrder("5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
+                                           "f7698978-b9fe-40c8-aebe-c997f7f58f2f",
                                            "dcbc1c74-37bd-4c5b-ab2e-fd0be9c1edf3",
                                            "9bd0668f-cc19-40a8-99db-dc2cb2802b17");
         Optional<DataNeed> example = service.findById("dcbc1c74-37bd-4c5b-ab2e-fd0be9c1edf3");

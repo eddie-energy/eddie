@@ -5,7 +5,7 @@ import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.dataneeds.duration.AbsoluteDuration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.cds.client.CdsServerClient;
 import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
@@ -73,7 +73,7 @@ class CdsServerCalculationServiceTest {
         when(calculationService.calculate("dnid", now))
                 .thenReturn(calculationResult);
         when(dataNeedsService.getById("dnid"))
-                .thenReturn(new AiidaDataNeed(Set.of()));
+                .thenReturn(new OutboundAiidaDataNeed());
 
 
         // When

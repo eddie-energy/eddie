@@ -1,13 +1,14 @@
 package energy.eddie.aiida.models.datasource;
 
-import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
+import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
-import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 
@@ -72,6 +73,18 @@ class DataSourceTest {
 
         // Then
         assertInstanceOf(SmartGatewaysDataSource.class, dataSource);
+    }
+
+    @Test
+    void givenInbound_returnsDataSource() {
+        // Given
+        var dto = createNewDataSourceDto(DataSourceType.INBOUND);
+
+        // When
+        var dataSource = DataSource.createFromDto(dto, ID, MQTT_DTO);
+
+        // Then
+        assertInstanceOf(InboundDataSource.class, dataSource);
     }
 
     @Test

@@ -147,7 +147,7 @@ class PermissionControllerTest {
         when(permissionService.setupNewPermission(any())).thenReturn(mockPermission);
         when(mockPermission.eddieId()).thenReturn(eddieId);
         when(mockPermission.permissionId()).thenReturn(permissionId);
-        var requestJson = "{\"eddieId\":\"" + eddieId + "\", \"permissionId\":\"" + permissionId + "\",\"serviceName\":\"FUTURE_NEAR_REALTIME_DATA\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"accessToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
+        var requestJson = "{\"eddieId\":\"" + eddieId + "\", \"permissionId\":\"" + permissionId + "\",\"serviceName\":\"FUTURE_NEAR_REALTIME_DATA_OUTBOUND\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"accessToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
         var expectedLocationHeader = "/permissions/" + permissionId;
 
         // When

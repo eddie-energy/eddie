@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
@@ -249,7 +250,7 @@ public class Permission {
         this.dataNeed = requireNonNull(dataNeed);
     }
 
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = requireNonNull(dataSource);
+    public void setDataSource(@Nullable DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 }

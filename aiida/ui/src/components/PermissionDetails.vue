@@ -7,7 +7,7 @@ const props = defineProps(['permission'])
 const { permission } = props
 
 const {
-  dataNeed: { asset, dataTags, schemas, transmissionSchedule },
+  dataNeed: { asset, dataTags, schemas, transmissionSchedule, type },
   dataSource,
   eddieId,
   expirationTime,
@@ -22,6 +22,9 @@ const {
   <dl class="details-list">
     <dt>Service</dt>
     <dd>{{ serviceName }}</dd>
+
+    <dt>Type</dt>
+    <dd>{{ type }}</dd>
 
     <dt>Status</dt>
     <dd>

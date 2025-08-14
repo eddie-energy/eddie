@@ -54,16 +54,6 @@ class DataSourceControllerTest {
 
     @Test
     @WithMockUser
-    void getDataSourceTypes_shouldReturnListOfTypes() throws Exception {
-        mockMvc.perform(get("/datasources/types")
-                                .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.length()").value(5));
-    }
-
-
-    @Test
-    @WithMockUser
     void getAssets_shouldReturnListOfAssets() throws Exception {
         mockMvc.perform(get("/datasources/assets")
                                 .accept(MediaType.APPLICATION_JSON))
@@ -73,18 +63,34 @@ class DataSourceControllerTest {
 
     @Test
     @WithMockUser
-    void getAllDataSources_shouldReturnListOfDataSources() throws Exception {
+    void getAllOutboundDataSources_shouldReturnListOfDataSources() throws Exception {
         List<DataSource> dataSources = List.of(DATA_SOURCE);
 
-        when(service.getDataSources()).thenReturn(dataSources);
+        when(service.getOutboundDataSources()).thenReturn(dataSources);
 
-        mockMvc.perform(get("/datasources")
+        mockMvc.perform(get("/datasources/outbound")
                                 .with(csrf())
                                 .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.length()").value(1));
 
-        verify(service, times(1)).getDataSources();
+        verify(service, times(1)).getOutboundDataSources();
+    }
+
+    @Test
+    @WithMockUser
+    void getAllInboundDataSources_shouldReturnListOfDataSources() throws Exception {
+        List<DataSource> dataSources = List.of(DATA_SOURCE);
+
+        when(service.getInboundDataSources()).thenReturn(dataSources);
+
+        mockMvc.perform(get("/datasources/inbound")
+                                .with(csrf())
+                                .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.length()").value(1));
+
+        verify(service, times(1)).getInboundDataSources();
     }
 
     @Test

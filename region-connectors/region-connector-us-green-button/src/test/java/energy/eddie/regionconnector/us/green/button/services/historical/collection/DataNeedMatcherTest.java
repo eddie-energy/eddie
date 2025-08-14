@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
@@ -218,7 +219,7 @@ class DataNeedMatcherTest {
         when(repository.findByAuthUid("1111"))
                 .thenReturn(PERMISSION_REQUEST);
         when(dataNeedsService.getById("dnid"))
-                .thenReturn(new AiidaDataNeed(Set.of()));
+                .thenReturn(new OutboundAiidaDataNeed());
 
         // When
         var res = dataNeedMatcher.filterMetersNotMeetingDataNeedCriteria(data);

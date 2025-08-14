@@ -50,7 +50,7 @@ aiida:
     tls-certificate-path: ${MQTT_TLS_CERTIFICATE_PATH:}
   keycloak:
     url:
-      internal: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8080}
+      internal: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8888}
       external: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}
     realm: ${KEYCLOAK_REALM:EDDIE}
     client: ${KEYCLOAK_CLIENT:AIIDA}

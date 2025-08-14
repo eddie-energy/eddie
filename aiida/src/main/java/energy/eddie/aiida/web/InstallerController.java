@@ -6,15 +6,14 @@ import energy.eddie.aiida.errors.InstallerException;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.services.InstallerService;
 import energy.eddie.api.agnostic.EddieApiError;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -25,7 +24,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/installer")
-@OpenAPIDefinition(info = @Info(title = "Installer API", version = "1.0", description = "Manage versions of AIIDA and services"))
+@Tag(name = "Installer Controller")
 public class InstallerController {
     private static final String AIIDA_PATH = "/aiida";
     private static final String SERVICE_PATH = "/services/user";

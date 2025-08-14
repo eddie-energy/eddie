@@ -7,16 +7,15 @@ import energy.eddie.aiida.services.PermissionService;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +31,7 @@ import java.util.UUID;
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/permissions")
-@OpenAPIDefinition(info = @Info(title = "Permissions API", version = "1.0", description = "Manage permissions"))
+@Tag(name = "Permission Controller")
 public class PermissionController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionController.class);
     private static final String REVOKE_PERMISSION_EXAMPLE_RETURN_JSON = "{\"permissionId\":\"a4dc1bad-b9fe-47ae-9336-690cfb4aada9\",\"status\":\"REVOKED\",\"serviceName\":\"My Energy Visualization Service\",\"dataNeedId\":\"DATA_NEED_ID\",\"startTime\":\"2023-10-01T08:00:00Z\",\"expirationTime\":\"2023-10-31T20:00:00Z\",\"grantTime\":\"2023-10-01T08:00:00Z\",\"revokeTime\":\"2023-10-20T08:00:00Z\",\"connectionId\":\"SomeRandomString\",\"requestedCodes\":\"[\\\"1-0:1.8.0\\\",\\\"1-0:1.7.0\\\"]\"}}";

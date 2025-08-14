@@ -522,7 +522,10 @@ class EddieConnectButton extends LitElement {
   }
 
   isAiida() {
-    return this._dataNeedAttributes?.type === "aiida";
+    return (
+      this._dataNeedAttributes?.type === "inbound-aiida" ||
+      this._dataNeedAttributes?.type === "outbound-aiida"
+    );
   }
 
   configureAiida() {

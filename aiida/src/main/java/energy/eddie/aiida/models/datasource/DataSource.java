@@ -8,6 +8,7 @@ import energy.eddie.aiida.dtos.DataSourceProtocolSettings;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -77,6 +78,13 @@ public abstract class DataSource {
                     yield new SmartGatewaysDataSource(dto, userId, mqtt);
                 }
                 throw new IllegalArgumentException("Expected MQTT settings for SMART_GATEWAYS_ADAPTER");
+            }
+
+            case INBOUND -> {
+                if (settings instanceof DataSourceMqttDto mqtt) {
+                    yield new InboundDataSource(dto, userId, mqtt);
+                }
+                throw new IllegalArgumentException("Expected MQTT settings for INBOUND");
             }
 
             case SIMULATION -> new SimulationDataSource(dto, userId);

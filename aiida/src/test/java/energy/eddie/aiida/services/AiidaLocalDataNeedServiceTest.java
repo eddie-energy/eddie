@@ -1,6 +1,6 @@
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.repositories.AiidaLocalDataNeedRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

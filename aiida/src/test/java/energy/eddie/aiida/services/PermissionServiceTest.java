@@ -3,9 +3,10 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.errors.*;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.permission.*;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -14,6 +15,7 @@ import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,7 +46,6 @@ import java.util.stream.Stream;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
 import static energy.eddie.aiida.models.permission.PermissionStatus.*;
-import static energy.eddie.dataneeds.needs.aiida.AiidaDataNeed.DISCRIMINATOR_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -81,6 +82,8 @@ class PermissionServiceTest {
     @Mock
     private AiidaLocalDataNeed mockAiidaDataNeed;
     @Mock
+    private InboundAiidaLocalDataNeed mockInboundAiidaLocalDataNeed;
+    @Mock
     private AuthService mockAuthService;
     @Mock
     private Permission mockPermission;
@@ -90,6 +93,8 @@ class PermissionServiceTest {
     private MqttDto mockMqttDto;
     @Mock
     private AiidaLocalDataNeedService mockAiidaLocalDataNeedService;
+    @Mock
+    private DataSourceService mockDataSourceService;
     @Captor
     private ArgumentCaptor<Permission> permissionCaptor;
     private PermissionService service;
@@ -105,7 +110,8 @@ class PermissionServiceTest {
                                         mockHandshakeService,
                                         mockPermissionScheduler,
                                         mockAuthService,
-                                        mockAiidaLocalDataNeedService);
+                                        mockAiidaLocalDataNeedService,
+                                        mockDataSourceService);
     }
 
     @Test
@@ -115,8 +121,8 @@ class PermissionServiceTest {
         when(mockPermissionRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
         when(mockPermission.permissionId()).thenReturn(permissionId);
         when(mockPermission.connectionId()).thenReturn(connectionId);
-        when(mockPermission.dataNeed()).thenReturn(mockAiidaDataNeed);
-        when(mockAiidaDataNeed.dataNeedId()).thenReturn(dataNeedId);
+        when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
+        when(mockPermission.dataSource()).thenReturn(mockDataSource);
 
         // When
         testPublisher.next(permissionId);
@@ -128,6 +134,7 @@ class PermissionServiceTest {
         verify(mockPermission).setStatus(TERMINATED);
         verify(mockPermission).setRevokeTime(any());
         verify(mockPermissionRepository).save(any());
+        verify(mockDataSourceService).deleteDataSource(any());
     }
 
     @Test
@@ -180,7 +187,7 @@ class PermissionServiceTest {
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/23 * * * * *"));
         when(mockDataNeed.dataNeedId()).thenReturn(dataNeedId);
-        when(mockDataNeed.type()).thenReturn(DISCRIMINATOR_VALUE);
+        when(mockDataNeed.type()).thenReturn(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE);
         when(mockDataNeed.name()).thenReturn("My Name");
         when(mockDataNeed.purpose()).thenReturn("Some purpose");
         when(mockDataNeed.policyLink()).thenReturn("https://example.org");
@@ -210,7 +217,7 @@ class PermissionServiceTest {
         assertNotNull(dataNeed);
         assertEquals(dataNeedId, dataNeed.dataNeedId());
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
-        assertEquals(DISCRIMINATOR_VALUE, dataNeed.type());
+        assertEquals(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE, dataNeed.type());
         assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of("1.8.0", "2.7.0"));
         assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of(AiidaSchema.SMART_METER_P1_RAW));
     }
@@ -387,6 +394,29 @@ class PermissionServiceTest {
     }
 
     @Test
+    void givenValidInboundPermission_createsAndStartsDataSource() throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
+        // Given
+        when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
+        when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
+        when(mockDataSourceRepository.findById(dataSourceId)).thenReturn(Optional.of(mockDataSource));
+        when(mockPermission.status()).thenReturn(FETCHED_DETAILS);
+        when(mockPermission.mqttStreamingConfig()).thenReturn(mock(MqttStreamingConfig.class));
+        when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
+        when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
+        when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
+        when(mockPermission.userId()).thenReturn(userId);
+        when(mockPermission.permissionId()).thenReturn(permissionId);
+
+        // When
+        service.acceptPermission(permissionId, dataSourceId);
+
+        // Then
+        verify(mockDataSourceRepository).save(any(InboundDataSource.class));
+        verify(mockPermission).setDataSource(any(InboundDataSource.class));
+        verify(mockDataSourceService).startDataSource(any(InboundDataSource.class));
+    }
+
+    @Test
     void givenInvalidUser_getPermissions_throws() throws InvalidUserException {
         // Given
         when(mockAuthService.getCurrentUserId()).thenThrow(InvalidUserException.class);
@@ -426,9 +456,9 @@ class PermissionServiceTest {
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.connectionId()).thenReturn("connectionId");
-        when(mockPermission.dataNeed()).thenReturn(mockAiidaDataNeed);
-        when(mockAiidaDataNeed.dataNeedId()).thenReturn(dataNeedId);
+        when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
         when(mockPermission.status()).thenReturn(STREAMING_DATA);
+        when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.permissionId()).thenReturn(permissionId);
 
         // When
@@ -440,6 +470,7 @@ class PermissionServiceTest {
         verify(mockPermission).setRevokeTime(fixedInstant);
         verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == REVOKED));
         verify(mockPermissionRepository).save(any());
+        verify(mockDataSourceService).deleteDataSource(any());
     }
 
     @Nested
@@ -482,7 +513,8 @@ class PermissionServiceTest {
                                             mockHandshakeService,
                                             permissionScheduler,
                                             mockAuthService,
-                                            mockAiidaLocalDataNeedService);
+                                            mockAiidaLocalDataNeedService,
+                                            mockDataSourceService);
         }
 
         /**

@@ -102,14 +102,44 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldReturnDataSources() throws InvalidUserException {
-        var dataSource = createNewDataSource(DATA_SOURCE_ID, DataSourceType.SMART_GATEWAYS_ADAPTER);
-        when(repository.findByUserId(userId)).thenReturn(List.of(dataSource));
+    void shouldReturnOutboundDataSourceTypes() {
+        var dataSourceTypes = dataSourceService.getOutboundDataSourceTypes();
+
+        assertTrue(dataSourceTypes.containsAll(List.of(
+                DataSourceType.SMART_GATEWAYS_ADAPTER,
+                DataSourceType.SIMULATION,
+                DataSourceType.MODBUS,
+                DataSourceType.MICRO_TELEINFO,
+                DataSourceType.SMART_METER_ADAPTER
+        )));
+        assertFalse(dataSourceTypes.contains(DataSourceType.INBOUND));
+    }
+
+    @Test
+    void shouldReturnInboundDataSources() throws InvalidUserException {
+        var wantedDataSource = createNewDataSource(DATA_SOURCE_ID, DataSourceType.INBOUND);
+        var unwantedDataSource = createNewDataSource(UUID.randomUUID(), DataSourceType.SMART_GATEWAYS_ADAPTER);
+        when(repository.findByUserId(userId)).thenReturn(List.of(wantedDataSource, unwantedDataSource));
         when(authService.getCurrentUserId()).thenReturn(userId);
 
-        var result = dataSourceService.getDataSources();
+        var result = dataSourceService.getInboundDataSources();
 
-        assertTrue(result.contains(dataSource));
+        assertTrue(result.contains(wantedDataSource));
+        assertFalse(result.contains(unwantedDataSource));
+        verify(repository, times(1)).findByUserId(userId);
+    }
+
+    @Test
+    void shouldReturnOutboundDataSources() throws InvalidUserException {
+        var wantedDataSource = createNewDataSource(DATA_SOURCE_ID, DataSourceType.SMART_GATEWAYS_ADAPTER);
+        var unwantedDataSource = createNewDataSource(UUID.randomUUID(), DataSourceType.INBOUND);
+        when(repository.findByUserId(userId)).thenReturn(List.of(wantedDataSource));
+        when(authService.getCurrentUserId()).thenReturn(userId);
+
+        var result = dataSourceService.getOutboundDataSources();
+
+        assertTrue(result.contains(wantedDataSource));
+        assertFalse(result.contains(unwantedDataSource));
         verify(repository, times(1)).findByUserId(userId);
     }
 

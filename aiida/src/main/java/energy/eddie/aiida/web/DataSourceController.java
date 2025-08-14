@@ -9,14 +9,13 @@ import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.services.DataSourceService;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +23,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/datasources")
-@OpenAPIDefinition(info = @Info(title = "Datasources API", version = "1.0", description = "Manage datasources"))
+@Tag(name = "Data Source Controller")
 public class DataSourceController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceController.class);
@@ -42,18 +40,20 @@ public class DataSourceController {
         this.service = service;
     }
 
-    @Operation(summary = "Get all data source types", description = "Retrieve all available data source types.",
-            operationId = "getDataSourceTypes", tags = {"datasource"})
+    @Operation(summary = "Get all outbound data source types", description = "Retrieve all available outbound data source types.",
+            operationId = "getOutboundDataSourceTypes", tags = {"datasource"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceType.class))))
     })
-    @GetMapping("/types")
-    public List<DataSourceTypeDto> getDataSourceTypes() {
-        return Arrays.stream(DataSourceType.values())
-                     .map(dataSourceType -> new DataSourceTypeDto(dataSourceType.identifier(),
-                                                                  dataSourceType.dataSourceName()))
-                     .toList();
+    @GetMapping("/outbound/types")
+    public List<DataSourceTypeDto> getOutboundDataSourceTypes() {
+        return service.getOutboundDataSourceTypes().stream()
+                      .map(dataSourceType -> new DataSourceTypeDto(
+                              dataSourceType.identifier(),
+                              dataSourceType.dataSourceName()
+                      ))
+                      .toList();
     }
 
     @Operation(summary = "Get all assets", description = "Retrieve all assets.",
@@ -67,15 +67,32 @@ public class DataSourceController {
         return ResponseEntity.ok(Map.of("assets", AiidaAsset.values()));
     }
 
-    @Operation(summary = "Get all datasources", description = "Retrieve all datasources.",
-            operationId = "getAllDatasources", tags = {"datasource"})
+    @Operation(summary = "Get all outbound datasources", description = "Retrieve all outbound datasources.",
+            operationId = "getAllOutboundDataSources", tags = {"datasource"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSource.class))))
     })
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<DataSourceDto>> getAllDataSources() throws InvalidUserException {
-        var dataSources = service.getDataSources();
+    @GetMapping(path = "/outbound", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<DataSourceDto>> getAllOutboundDataSources() throws InvalidUserException {
+        var dataSources = service.getOutboundDataSources();
+
+        return ResponseEntity.ok(
+                dataSources.stream()
+                           .map(DataSource::toDto)
+                           .toList()
+        );
+    }
+
+    @Operation(summary = "Get all inbound datasources", description = "Retrieve all inbound datasources.",
+            operationId = "getAllInboundDataSources", tags = {"datasource"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSource.class))))
+    })
+    @GetMapping(path = "/inbound", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<DataSourceDto>> getAllInboundDataSources() throws InvalidUserException {
+        var dataSources = service.getInboundDataSources();
 
         return ResponseEntity.ok(
                 dataSources.stream()
@@ -198,7 +215,7 @@ public class DataSourceController {
     })
     @PostMapping(value = "{id}/regenerate-secrets")
     public ResponseEntity<DataSourceSecretsDto> regenerateSecrets(@PathVariable("id") UUID dataSourceId) {
-    LOGGER.info("Regenerating secrets for datasource with ID: {}", dataSourceId);
+        LOGGER.info("Regenerating secrets for datasource with ID: {}", dataSourceId);
 
         var dataSourceSecrets = service.regenerateSecrets(dataSourceId);
 

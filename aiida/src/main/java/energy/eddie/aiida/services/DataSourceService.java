@@ -10,7 +10,7 @@ import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
-import energy.eddie.aiida.models.datasource.mqtt.MqttSecretGenerator;
+import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -62,14 +62,41 @@ public class DataSourceService {
         }
     }
 
+    public void startDataSource(DataSource dataSource) throws ModbusConnectionException {
+        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper, mqttConfiguration);
+        dataSourceAdapters.add(dataSourceAdapter);
+
+        if (dataSource.enabled()) {
+            aggregator.addNewDataSourceAdapter(dataSourceAdapter);
+        }
+    }
+
     public Optional<DataSource> dataSourceById(UUID dataSourceId) {
         return repository.findById(dataSourceId);
     }
 
-    public List<DataSource> getDataSources() throws InvalidUserException {
+    public List<DataSourceType> getOutboundDataSourceTypes() {
+        return Arrays.stream(DataSourceType.values())
+              .filter(this::isOutboundDataSourceType)
+              .toList();
+    }
+
+    public List<DataSource> getInboundDataSources() throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
 
-        return repository.findByUserId(currentUserId);
+        return repository.findByUserId(currentUserId)
+                         .stream()
+                         .filter(dataSource -> isInboundDataSourceType(dataSource.dataSourceType()))
+                         .toList();
+    }
+
+    public List<DataSource> getOutboundDataSources() throws InvalidUserException {
+        var currentUserId = authService.getCurrentUserId();
+
+        return repository.findByUserId(currentUserId)
+                .stream()
+                .filter(dataSource -> isOutboundDataSourceType(dataSource.dataSourceType()))
+                .toList();
     }
 
     public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException {
@@ -91,13 +118,13 @@ public class DataSourceService {
                 repository.save(dataSource);
             }
         } else {
-            dataSourceSecrets = new DataSourceSecretsDto(MqttSecretGenerator.generate());
+            dataSourceSecrets = new DataSourceSecretsDto(SecretGenerator.generate());
 
             var mqttSettingsDto = new DataSourceMqttDto(
                     mqttConfiguration.internalHost(),
                     mqttConfiguration.externalHost(),
-                    "aiida/" + MqttSecretGenerator.generate(),
-                    MqttSecretGenerator.generate(),
+                    "aiida/" + SecretGenerator.generate(),
+                    SecretGenerator.generate(),
                     bCryptPasswordEncoder.encode(dataSourceSecrets.plaintextPassword())
             );
             var dataSource = DataSource.createFromDto(dto, currentUserId, mqttSettingsDto);
@@ -173,7 +200,7 @@ public class DataSourceService {
         var dataSourceSecrets = new DataSourceSecretsDto(null);
 
         if(dataSource instanceof MqttDataSource mqttDataSource) {
-            dataSourceSecrets = new DataSourceSecretsDto(MqttSecretGenerator.generate());
+            dataSourceSecrets = new DataSourceSecretsDto(SecretGenerator.generate());
             mqttDataSource.setMqttPassword(bCryptPasswordEncoder.encode(dataSourceSecrets.plaintextPassword()));
 
             findDataSourceAdapter(dataSourceId).ifPresentOrElse(
@@ -197,13 +224,12 @@ public class DataSourceService {
         return dataSourceAdapters.stream().filter(predicate).findFirst();
     }
 
-    private void startDataSource(DataSource dataSource) throws ModbusConnectionException {
-        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper, mqttConfiguration);
-        dataSourceAdapters.add(dataSourceAdapter);
+    private boolean isOutboundDataSourceType(DataSourceType dataSourceType) {
+        return !isInboundDataSourceType(dataSourceType);
+    }
 
-        if (dataSource.enabled()) {
-            aggregator.addNewDataSourceAdapter(dataSourceAdapter);
-        }
+    private boolean isInboundDataSourceType(DataSourceType dataSourceType) {
+        return dataSourceType == DataSourceType.INBOUND;
     }
 
     private void closeDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {

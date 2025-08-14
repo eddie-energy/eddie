@@ -24,8 +24,10 @@ const { countryCode, asset, dataSourceType, enabled, id, mqttSettings, name, sim
       <dt>ID:</dt>
       <dd>{{ id }}</dd>
 
-      <dt>Country:</dt>
-      <dd>{{ COUNTRY_NAMES.of(countryCode) }}</dd>
+      <template v-if="countryCode">
+        <dt>Country:</dt>
+        <dd>{{ COUNTRY_NAMES.of(countryCode) }}</dd>
+      </template>
 
       <dt>Asset:</dt>
       <dd>{{ asset }}</dd>

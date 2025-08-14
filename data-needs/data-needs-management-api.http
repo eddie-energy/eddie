@@ -47,8 +47,8 @@ POST http://localhost:9090/data-needs/management
 Content-Type: application/json
 
 {
-  "type": "aiida",
-  "name": "FUTURE_NEAR_REALTIME_DATA",
+  "type": "outbound-aiida",
+  "name": "FUTURE_NEAR_REALTIME_DATA_OUTBOUND",
   "description": "Near realtime consumption data from the smart meter",
   "purpose": "purpose",
   "policyLink": "https://example.com/toc",

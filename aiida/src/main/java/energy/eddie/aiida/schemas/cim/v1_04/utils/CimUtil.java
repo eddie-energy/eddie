@@ -2,8 +2,8 @@ package energy.eddie.aiida.schemas.cim.v1_04.utils;
 
 import energy.eddie.aiida.errors.formatter.CimFormatterException;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.ObisCode;
 import energy.eddie.cim.v1_04.rtd.QuantityTypeKind;

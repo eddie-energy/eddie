@@ -3,15 +3,17 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.errors.*;
-import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
-import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.permission.*;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
@@ -41,6 +44,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private final PermissionScheduler permissionScheduler;
     private final AuthService authService;
     private final AiidaLocalDataNeedService aiidaLocalDataNeedService;
+    private final DataSourceService dataSourceService;
 
     @Autowired
     public PermissionService(
@@ -51,7 +55,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             HandshakeService handshakeService,
             PermissionScheduler permissionScheduler,
             AuthService authService,
-            AiidaLocalDataNeedService aiidaLocalDataNeedService
+            AiidaLocalDataNeedService aiidaLocalDataNeedService,
+            DataSourceService dataSourceService
     ) {
         this.permissionRepository = permissionRepository;
         this.dataSourceRepository = dataSourceRepository;
@@ -63,6 +68,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
 
         streamerManager.terminationRequestsFlux().subscribe(this::terminationRequestReceived);
+        this.dataSourceService = dataSourceService;
     }
 
     /**
@@ -110,6 +116,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                                          permission.permissionId(),
                                                          permission.eddieId());
         streamerManager.stopStreamer(revokedMessage);
+        removeInboundDataSourceIfExists(permission);
 
         return permission;
     }
@@ -248,6 +255,13 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setStatus(FETCHED_MQTT_CREDENTIALS);
         permission = permissionRepository.save(permission);
 
+        if (permission.dataNeed() instanceof InboundAiidaLocalDataNeed) {
+            var inboundDataSource = new InboundDataSource.Builder(permission).build();
+            dataSourceRepository.save(inboundDataSource);
+            permission.setDataSource(inboundDataSource);
+            dataSourceService.startDataSource(inboundDataSource);
+        }
+
         return permissionScheduler.scheduleOrStart(permission);
     }
 
@@ -334,7 +348,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         if (aiidaLocalDataNeed.isPresent()) {
             permission.setDataNeed(aiidaLocalDataNeed.get());
         } else {
-            permission.setDataNeed(new AiidaLocalDataNeed(details));
+            var localDataNeed = AiidaLocalDataNeedFactory.create(details.dataNeed());
+            permission.setDataNeed(localDataNeed);
         }
 
         if (!isPermissionFulfillable(permission)) {
@@ -351,8 +366,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      */
     private boolean isPermissionFulfillable(Permission permission) {
         var dataNeed = permission.dataNeed();
-        return dataNeed != null && dataNeed.type()
-                                           .equals(energy.eddie.dataneeds.needs.aiida.AiidaDataNeed.DISCRIMINATOR_VALUE);
+        return dataNeed != null && isValidDataNeedType(dataNeed.type());
+    }
+
+    private boolean isValidDataNeedType(String dataNeedType) {
+        return dataNeedType.equals(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE)
+               || dataNeedType.equals(InboundAiidaDataNeed.DISCRIMINATOR_VALUE);
     }
 
     private void terminationRequestReceived(UUID permissionId) {
@@ -383,6 +402,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                                             permission.permissionId(),
                                                             permission.eddieId());
         streamerManager.stopStreamer(terminatedMessage);
+
+        removeInboundDataSourceIfExists(permission);
     }
 
     /**
@@ -410,5 +431,13 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         handshakeService.sendUnfulfillableOrRejected(permission, UNFULFILLABLE);
         throw new PermissionUnfulfillableException(permission.serviceName());
+    }
+
+    private void removeInboundDataSourceIfExists(Permission permission) {
+        if (permission.dataNeed() instanceof InboundAiidaLocalDataNeed && permission.dataSource() != null) {
+            var dataSource = Objects.requireNonNull(permission.dataSource());
+            permission.setDataSource(null);
+            dataSourceService.deleteDataSource(dataSource.id());
+        }
     }
 }

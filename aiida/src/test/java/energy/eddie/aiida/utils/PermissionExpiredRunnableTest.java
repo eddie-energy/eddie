@@ -1,7 +1,7 @@
 package energy.eddie.aiida.utils;
 
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.models.permission.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;

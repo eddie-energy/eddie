@@ -10,7 +10,7 @@ import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.*;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,7 +38,7 @@ class IntermediatePermissionMarketDocumentTest {
     public static Stream<Arguments> toPermissionMarketDocument_respectsDataNeed() {
         return Stream.of(
                 Arguments.of(new AccountingPointDataNeed(), ProcessTypeList.ACCOUNTINGPOINT_DATA),
-                Arguments.of(new AiidaDataNeed(Set.of()), ProcessTypeList.ACCESS_TO_METERED_DATA),
+                Arguments.of(new OutboundAiidaDataNeed(), ProcessTypeList.ACCESS_TO_METERED_DATA),
                 Arguments.of(new ValidatedHistoricalDataDataNeed(new RelativeDuration(Period.ofYears(1),
                                                                                       Period.ofYears(1),
                                                                                       null),

@@ -59,14 +59,14 @@ public class MqttService implements AutoCloseable {
      * @return MqttDto that contains the topics and the {@link MqttUser} with its password.
      * @throws IllegalArgumentException If there is already a MqttUser for the permissionId.
      */
-    public MqttDto createCredentialsAndAclForPermission(String permissionId) throws CredentialsAlreadyExistException {
+    public MqttDto createCredentialsAndAclForPermission(String permissionId, boolean isInbound) throws CredentialsAlreadyExistException {
         LOGGER.info("Creating MQTT credentials and ACLs for permission {}", permissionId);
 
         if (userRepository.existsByPermissionId(permissionId))
             throw new CredentialsAlreadyExistException(permissionId);
 
         var wrapper = createAndSaveMqttUser(permissionId);
-        var topics = createAclsForUser(wrapper.user);
+        var topics = createAclsForUser(wrapper.user, isInbound);
 
         return new MqttDto(aiidaConfiguration.mqttServerUri(),
                            wrapper.user().username(),
@@ -97,13 +97,13 @@ public class MqttService implements AutoCloseable {
      * </ul>
      * No other ACLs are defined, make sure to properly configure your MQTT server with a deny-all for unmatched topics.
      */
-    private Topics createAclsForUser(MqttUser mqttUser) {
+    private Topics createAclsForUser(MqttUser mqttUser, boolean isInbound) {
         var topics = new Topics(getTopicForPermission(mqttUser.permissionId(), TopicType.DATA),
                                 getTopicForPermission(mqttUser.permissionId(), TopicType.STATUS),
                                 getTopicForPermission(mqttUser.permissionId(), TopicType.TERMINATION));
 
         var dataAcl = new MqttAcl(mqttUser.username(),
-                                  MqttAction.PUBLISH,
+                                  isInbound ? MqttAction.SUBSCRIBE : MqttAction.PUBLISH,
                                   MqttAclType.ALLOW,
                                   topics.publishTopic());
 

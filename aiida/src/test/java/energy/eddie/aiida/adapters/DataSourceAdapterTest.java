@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
 import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
+import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpClient;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
@@ -104,6 +105,18 @@ class DataSourceAdapterTest {
 
         // Then
         assertInstanceOf(SmartGatewaysAdapter.class, adapter);
+    }
+
+    @Test
+    void givenInbound_returnsAdapter() {
+        // Given
+        var dataSource = createNewDataSource(DataSourceType.INBOUND);
+
+        // When
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
+
+        // Then
+        assertInstanceOf(InboundAdapter.class, adapter);
     }
 
     @Test
