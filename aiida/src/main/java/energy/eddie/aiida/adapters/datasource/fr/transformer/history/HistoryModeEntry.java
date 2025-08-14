@@ -74,7 +74,15 @@ public enum HistoryModeEntry {
     /** Meter status word (6 chars; e.g. "000000") */
     MOTDETAT(ObisCode.UNKNOWN, UnitOfMeasurement.NONE),
     /** Presence of potential; "0X" where bit n = 1 means phase n is absent (three-phase only) */
-    PPOT(ObisCode.UNKNOWN, UnitOfMeasurement.NONE);
+    PPOT(ObisCode.UNKNOWN, UnitOfMeasurement.NONE),
+    /**
+     * This field is calculated by AIIDA using IINST and the static value of 200V
+     */
+    AIIDA_POSITIVE_ACTIVE_INSTANTANEOUS_POWER(ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER, UnitOfMeasurement.WATT),
+    /**
+     * This field is calculated by AIIDA by adding HCHC and HCHP
+     */
+    AIIDA_POSITIVE_ACTIVE_ENERGY(ObisCode.POSITIVE_ACTIVE_ENERGY, UnitOfMeasurement.WATT_HOUR);
 
     private static final Map<String, HistoryModeEntry> LOOK_UP_BY_ENTRY_KEY =
             Arrays.stream(HistoryModeEntry.values())
