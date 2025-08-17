@@ -16,12 +16,11 @@ import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import static energy.eddie.outbound.admin.console.config.AdminConsoleConfig.*;
-import static energy.eddie.outbound.shared.utils.CommonPaths.ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH;
 
 
 @OutboundConnectorSecurityConfig
 public class AdminConsoleSecurityConfig {
-    public static String ADMIN_CONSOLE_BASE_URL = "/" + ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH + "/" + "admin-console";
+    public static final String ADMIN_CONSOLE_BASE_URL = "/outbound-connectors/admin-console";
 
     @Bean
     public MvcRequestMatcher.Builder adminConsoleRequestMatcher(HandlerMappingIntrospector introspector) {

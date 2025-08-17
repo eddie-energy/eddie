@@ -18,8 +18,6 @@ import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 
-import static energy.eddie.outbound.shared.utils.CommonPaths.ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH;
-
 
 /**
  * This Spring Configuration modifies the embedded webserver by opening a second port for the management api. Because
@@ -83,7 +81,7 @@ public class ManagementApiConfig {
             var isRequestOnManagementPort = httpRequest.getServerPort() == managementPort;
             var requestURI = httpRequest.getRequestURI();
             var isRequestOnManagementUrl = requestURI.startsWith(CoreSpringConfig.DATA_NEEDS_URL_MAPPING_PREFIX + managementUrlPrefix)
-                                           || requestURI.startsWith("/" + ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH)
+                                           || requestURI.startsWith("/outbound-connectors")
                                            || requestURI.startsWith(managementUrlPrefix)
                                            || requestURI.matches("/region-connectors/[\\w\\-]+%s/.*".formatted(managementUrlPrefix));
             IEF_LOGGER.debug("{} requested on port {}, managementPort: {}, managementUrl: {}",
