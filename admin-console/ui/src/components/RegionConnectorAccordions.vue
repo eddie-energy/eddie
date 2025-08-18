@@ -7,7 +7,7 @@ import {
   HealthStatus,
   type RegionConnectorMetadata
 } from '@/api'
-import { allRegionConnectors } from '@/constants/region-connectors'
+import { REGION_CONNECTORS } from '@/constants'
 import { countryFlag, formatCountry } from '@/util/countries'
 
 import { Accordion, AccordionContent, AccordionHeader, AccordionPanel, Panel } from 'primevue'
@@ -20,7 +20,7 @@ const regionConnectorSupportedFeatures = ref<Map<string, string>>(new Map())
 const regionConnectorSupportedDataNeeds = ref<Map<string, string[]>>(new Map())
 
 const disabledRegionConnectors = computed(() =>
-  regionConnectors.value.filter(({ id }) => !allRegionConnectors.includes(id)).map(({ id }) => id)
+  regionConnectors.value.filter(({ id }) => !REGION_CONNECTORS.includes(id)).map(({ id }) => id)
 )
 
 const SUPPORTED_FEATURES: { [key: string]: string } = {

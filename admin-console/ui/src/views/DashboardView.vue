@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import {
-  type DataNeed,
   getDataNeeds,
   getPermissions,
   getRegionConnectorHealth,
@@ -14,10 +13,11 @@ import DoughnutChartRegions from '@/components/DoughnutChartRegions.vue'
 import LineChartPackages from '@/components/LineChartPackages.vue'
 import { computed, onMounted, ref } from 'vue'
 import HealthIcon from '@/components/HealthIcon.vue'
-import { allRegionConnectors } from '@/constants/region-connectors'
+import { REGION_CONNECTORS } from '@/constants'
+import type { AnyDataNeed } from '@/types'
 
 const permissions = ref<StatusMessage[]>([])
-const dataNeeds = ref<DataNeed[]>([])
+const dataNeeds = ref<AnyDataNeed[]>([])
 const regionConnectors = ref<RegionConnectorMetadata[]>([])
 const permissionCountPerRegionConnector = computed(() => getPermissionCountPerRegionConnector())
 const regionConnectorHealth = ref<Map<string, HealthStatus>>(new Map())
@@ -35,7 +35,7 @@ onMounted(async () => {
 function getPermissionCountPerRegionConnector() {
   const permissionsPerRegionConnector: { [key: string]: number } = {}
 
-  for (const id of allRegionConnectors) {
+  for (const id of REGION_CONNECTORS) {
     permissionsPerRegionConnector[id] = 0
   }
 

@@ -1,4 +1,4 @@
-export const allRegionConnectors = [
+export const REGION_CONNECTORS = [
   'aiida',
   'at-eda',
   'be-fluvius',
