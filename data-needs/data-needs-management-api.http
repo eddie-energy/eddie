@@ -70,7 +70,8 @@ Content-Type: application/json
 
 
 ### GET details of a data need
-GET http://localhost:9090/data-needs/management/{id}
+@id = 9bd0668f-cc19-40a8-99db-dc2cb2802b17
+GET http://localhost:9090/data-needs/management/{{id}}
 Accept: application/json
 
 
