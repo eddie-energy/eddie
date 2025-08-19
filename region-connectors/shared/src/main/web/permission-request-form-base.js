@@ -183,7 +183,7 @@ class PermissionRequestFormBase extends LitElement {
 
   pollRequestStatus(location) {
     const abortController = new AbortController();
-    fetchEventSource(location, {
+    void fetchEventSource(location, {
       headers: {
         Authorization: `Bearer ${this.bearerToken}`,
       },
@@ -213,7 +213,7 @@ class PermissionRequestFormBase extends LitElement {
           abortController.abort("Terminal state reached");
         }
       },
-    }).then();
+    });
   }
 }
 
