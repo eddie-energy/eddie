@@ -51,7 +51,9 @@ public class PontonQueueGauge implements AutoCloseable {
                             LOGGER.debug("Requesting queue size from ponton");
                             var res = getMessagesInQueue();
                             if (res != null) {
-                                observableMeasurement.record(res.totalResultCount());
+                                var messageCount = res.totalResultCount();
+                                LOGGER.debug("Got {} messages in transit from ponton for adapter {}", messageCount, adapterId);
+                                observableMeasurement.record(messageCount);
                             }
                         });
     }

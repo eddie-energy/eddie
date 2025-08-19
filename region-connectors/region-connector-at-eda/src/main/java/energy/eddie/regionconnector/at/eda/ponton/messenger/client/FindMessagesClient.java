@@ -24,7 +24,6 @@ public class FindMessagesClient {
     }
 
     public Mono<Messages> findMessages(FindMessages body) {
-
         return tokenProvider.getToken()
                             .flatMap(token -> findMessages(body, token));
     }
