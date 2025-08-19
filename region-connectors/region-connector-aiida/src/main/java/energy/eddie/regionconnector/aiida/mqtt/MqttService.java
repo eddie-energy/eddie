@@ -98,7 +98,8 @@ public class MqttService implements AutoCloseable {
      * No other ACLs are defined, make sure to properly configure your MQTT server with a deny-all for unmatched topics.
      */
     private Topics createAclsForUser(MqttUser mqttUser, boolean isInbound) {
-        var topics = new Topics(getTopicForPermission(mqttUser.permissionId(), TopicType.DATA),
+        var dataTopicType = isInbound ? TopicType.INBOUND_DATA : TopicType.OUTBOUND_DATA;
+        var topics = new Topics(getTopicForPermission(mqttUser.permissionId(), dataTopicType),
                                 getTopicForPermission(mqttUser.permissionId(), TopicType.STATUS),
                                 getTopicForPermission(mqttUser.permissionId(), TopicType.TERMINATION));
 

@@ -29,7 +29,7 @@ class InboundControllerTest {
     private InboundService inboundService;
 
     @Test
-    void latestRecord_isOk() throws Exception {
+    void latestRecordByHeader_isOk() throws Exception {
         when(inboundService.latestRecord(ACCESS_CODE, DATA_SOURCE_ID)).thenReturn(mock(InboundRecord.class));
 
         mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID)
@@ -39,16 +39,24 @@ class InboundControllerTest {
     }
 
     @Test
-    void latestRecord_withMissingToken_isBadRequest() throws Exception {
+    void latestRecordByHeader_withMissingToken_isBadRequest() throws Exception {
         mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID))
                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void latestRecord_withEmptyToken_isUnauthorized() throws Exception {
+    void latestRecordByHeader_withEmptyToken_isUnauthorized() throws Exception {
         mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID)
                                 .header("X-API-Key", "")
                )
                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void latestRecordByPath_isOk() throws Exception {
+        when(inboundService.latestRecord(ACCESS_CODE, DATA_SOURCE_ID)).thenReturn(mock(InboundRecord.class));
+
+        mockMvc.perform(get("/inbound/apikey/" + ACCESS_CODE + "/latest/" + DATA_SOURCE_ID))
+               .andExpect(status().isOk());
     }
 }

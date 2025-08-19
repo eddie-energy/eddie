@@ -37,7 +37,7 @@ public class InboundController {
             @ApiResponse(responseCode = "404", description = "Entity not found", content = @Content),
     })
     @GetMapping(value = "/latest/{permissionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<InboundRecord> latestRecord(
+    public ResponseEntity<InboundRecord> latestRecordByHeader(
             @RequestHeader("X-API-Key") String apiKey,
             @PathVariable UUID permissionId
     ) throws UnauthorizedException, PermissionNotFoundException {
@@ -45,6 +45,20 @@ public class InboundController {
             throw new UnauthorizedException("X-API-Key header is missing or empty.");
         }
 
+        return ResponseEntity.ok(inboundService.latestRecord(apiKey, permissionId));
+    }
+
+    @Operation(summary = "Get latest inbound record for permission")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = InboundRecord.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Entity not found", content = @Content),
+    })
+    @GetMapping(value = "apikey/{apiKey}/latest/{permissionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<InboundRecord> latestRecordByPath(
+            @PathVariable String apiKey,
+            @PathVariable UUID permissionId
+    ) throws UnauthorizedException, PermissionNotFoundException {
         return ResponseEntity.ok(inboundService.latestRecord(apiKey, permissionId));
     }
 }

@@ -113,8 +113,9 @@ The actual password remains on AIIDA's side and is transferred when AIIDA and ED
 For each permission there are ACLs for dedicated topics created in the `aiida_mqtt_acl` table.
 The ACLs are used to authorize the AIIDA instance to publish and subscribe.
 
-| topic_name                            | action      | acl_type |
-|---------------------------------------|-------------|----------|
-| `aiida/v1/<permissionId>/data`        | `publish`   | `allow`  |
-| `aiida/v1/<permissionId>/status`      | `publish`   | `allow`  |
-| `aiida/v1/<permissionId>/termination` | `subscribe` | `allow`  |
+| topic_name                              | action      | acl_type | data_need_type |
+|-----------------------------------------|-------------|----------|----------------|
+| `aiida/v1/<permissionId>/outbound-data` | `publish`   | `allow`  | outbound-aiida |
+| `aiida/v1/<permissionId>/inbound-data`  | `subscribe` | `allow`  | inbound-aiida  |
+| `aiida/v1/<permissionId>/status`        | `publish`   | `allow`  | all            |
+| `aiida/v1/<permissionId>/termination`   | `subscribe` | `allow`  | all            |
