@@ -6,6 +6,7 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.client.FingridApiClient;
 import energy.eddie.regionconnector.fi.fingrid.client.model.CustomerDataResponse;
+import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -21,6 +22,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 @Service
 public class PollingService implements CommonPollingService<FingridPermissionRequest> {
@@ -87,6 +90,27 @@ public class PollingService implements CommonPollingService<FingridPermissionReq
                         energyDataService.publish(permissionRequest),
                         error -> handleError(permissionRequest, error)
                 );
+    }
+
+    public Mono<List<TimeSeriesResponse>> forcePoll(
+            FingridPermissionRequest permissionRequest,
+            ZonedDateTime start,
+            ZonedDateTime end
+    ) {
+        return getKnownOrRequestMeterEANs(permissionRequest)
+                .flatMap(meteringPointEAN ->
+                                 api.getTimeSeriesData(
+                                         meteringPointEAN,
+                                         permissionRequest.customerIdentification(),
+                                         start,
+                                         end,
+                                         permissionRequest.granularity().name(),
+                                         null
+                                 )
+                )
+                .collectList()
+                .doOnSuccess(res -> energyDataService.publishWithoutUpdating(res, permissionRequest))
+                .doOnError(error -> handleError(permissionRequest, error));
     }
 
     public void pollAccountingPointData(FingridPermissionRequest permissionRequest) {

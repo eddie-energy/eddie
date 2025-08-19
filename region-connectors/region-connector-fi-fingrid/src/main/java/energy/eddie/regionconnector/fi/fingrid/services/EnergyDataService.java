@@ -60,6 +60,14 @@ public class EnergyDataService implements RawDataProvider, ValidatedHistoricalDa
         publishValidatedHistoricalDataMarketDocument(timeSeriesResponses, permissionRequest);
     }
 
+    public void publishWithoutUpdating(
+            List<TimeSeriesResponse> timeSeriesResponses,
+            FingridPermissionRequest permissionRequest
+    ) {
+        publishRawData(timeSeriesResponses, permissionRequest);
+        publishValidatedHistoricalDataMarketDocument(timeSeriesResponses, permissionRequest);
+    }
+
     public void publish(CustomerDataResponse data, FingridPermissionRequest permissionRequest) {
         publishRawData(data, permissionRequest);
         publishAccountingPointDataMarketDocument(data, permissionRequest);

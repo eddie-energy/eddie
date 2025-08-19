@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -48,13 +49,6 @@ class PollingServiceTest {
     private DataNeedsService dataNeedsService; //this is needed to mock the PollingService
     @InjectMocks
     private PollingService pollingService;
-
-    private static Stream<Arguments> pollValidatedHistoricalData_doesNothing_onFuturePermissionRequests() {
-        return Stream.of(
-                Arguments.of(LocalDate.now(ZoneOffset.UTC)),
-                Arguments.of(LocalDate.now(ZoneOffset.UTC).plusDays(1))
-        );
-    }
 
     @ParameterizedTest
     @MethodSource("pollValidatedHistoricalData_doesNothing_onFuturePermissionRequests")
@@ -296,6 +290,39 @@ class PollingServiceTest {
     }
 
     @Test
+    void forcePollValidatedHistoricalData_publishesData() {
+        // Given
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = now.minusDays(10);
+        var end = now.minusDays(1);
+        var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
+                                                      .setConnectionId("cid")
+                                                      .setDataNeedId("dnid")
+                                                      .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                      .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                      .setCustomerIdentification("cid")
+                                                      .setGranularity(Granularity.PT1H)
+                                                      .setLastMeterReadings(Map.of())
+                                                      .build();
+        var customerData = readCustomerDataFromFile(CUSTOMER_DATA_JSON);
+        when(api.getCustomerData("cid")).thenReturn(Mono.just(customerData));
+        var data = new TimeSeriesResponse(null);
+        var resp = Mono.just(data);
+        when(api.getTimeSeriesData(any(), eq("cid"), any(), any(), eq("PT1H"), eq(null)))
+                .thenReturn(resp);
+
+        // When
+        var res = pollingService.forcePoll(pr, start, end);
+
+        // Then
+        StepVerifier.create(res)
+                    .expectNextCount(1)
+                    .verifyComplete();
+
+        verify(energyDataService).publishWithoutUpdating(List.of(data), pr);
+    }
+
+    @Test
     void pollAccountingPointData_pollsAccountingPointData() {
         // Given
         var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
@@ -353,5 +380,12 @@ class PollingServiceTest {
 
         // Then
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, event.status())));
+    }
+
+    private static Stream<Arguments> pollValidatedHistoricalData_doesNothing_onFuturePermissionRequests() {
+        return Stream.of(
+                Arguments.of(LocalDate.now(ZoneOffset.UTC)),
+                Arguments.of(LocalDate.now(ZoneOffset.UTC).plusDays(1))
+        );
     }
 }
