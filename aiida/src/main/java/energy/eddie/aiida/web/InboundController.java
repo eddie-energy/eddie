@@ -13,10 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -38,11 +35,16 @@ public class InboundController {
     })
     @GetMapping(value = "/latest/{permissionId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<InboundRecord> latestRecord(
-            @RequestHeader("X-API-Key") String apiKey,
-            @PathVariable UUID permissionId
+            @PathVariable UUID permissionId,
+            @RequestHeader(value = "X-API-Key", required = false) String apiKeyHeader,
+            @RequestParam(name = "apiKey", required = false) String apiKeyQuery
     ) throws UnauthorizedException, PermissionNotFoundException {
-        if (apiKey == null || apiKey.isEmpty()) {
-            throw new UnauthorizedException("X-API-Key header is missing or empty.");
+        String apiKey = (apiKeyHeader != null && !apiKeyHeader.isBlank())
+                ? apiKeyHeader
+                : apiKeyQuery;
+
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new UnauthorizedException("API key missing: provide X-API-Key header or ?apiKey= query param.");
         }
 
         return ResponseEntity.ok(inboundService.latestRecord(apiKey, permissionId));

@@ -43,7 +43,7 @@ export type RegionConnectorMetadata = {
 }
 
 export type DataNeed = {
-  type: 'account' | 'validated' | 'aiida'
+  type: 'account' | 'validated' | 'outbound-aiida' | 'inbound-aiida'
   id: string
   name: string
   description: string

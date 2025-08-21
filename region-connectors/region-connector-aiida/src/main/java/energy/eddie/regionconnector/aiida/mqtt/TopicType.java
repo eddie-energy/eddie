@@ -1,7 +1,8 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
 public enum TopicType {
-    DATA("data"),
+    OUTBOUND_DATA("data/outbound"),
+    INBOUND_DATA("data/inbound"),
     STATUS("status"),
     TERMINATION("termination");
 

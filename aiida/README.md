@@ -159,3 +159,40 @@ _Map created with https://www.mapchart.net_
 For details on configuring Modbus-based smart meters and other energy devices within AIIDA, including virtual datapoints, endian handling, and transformation logic, please refer to the full documentation:
 
 📄 [Modbus Configuration Documentation](docs/modbus/ModbusConfigDocumentation.md)
+
+## Inbound Data Sources
+
+For **outbound data** (data sent from AIIDA to an EP), the data need type `outbound-aiida` is used.  
+
+In contrast, instead of collecting data from local resources running on the edge, **AIIDA can also receive data from the EP** using the `inbound-aiida` data need.  
+Similar to an outbound permission, an **inbound permission** is created for that purpose. These permissions automatically create an inbound data source.  
+This data source connects to the **MQTT broker** of the EDDIE instance, where the EP can send any data to AIIDA.
+
+### Data Flow
+
+- **Outbound**: AIIDA publishes to  
+  `aiida/v1/{PERMISSION_ID}/data/outbound`
+
+- **Inbound**: AIIDA subscribes to  
+  `aiida/v1/{PERMISSION_ID}/data/inbound`
+
+Data retrieved from this topic is stored in the `inbound_record` database table and can be accessed via a secured REST interface.
+
+### Accessing Inbound Data
+
+The REST interface is secured with an **access token** stored in the `data_source` table.  
+There are two ways to use this token to retrieve the latest inbound record:
+
+1. **Via Path**
+   ```bash
+   curl {URL_TO_AIIDA}/inbound/apikey/{ACCESS_CODE}/latest/{PERMISSION_ID}
+   ```
+2. **Via Header**
+    ```bash
+    curl {URL_TO_AIIDA}/inbound/latest/{PERMISSION_ID} \
+      --header "X-API-Key: {ACCESS_CODE}"
+    ```
+
+### Revocation
+
+If an inbound permission is revoked, the associated inbound data source is automatically deleted.

@@ -105,7 +105,7 @@ class MqttServiceTest {
         verify(mockAclRepository).saveAll(mqttAclCaptor.capture());
         List<MqttAcl> acls = StreamSupport.stream(mqttAclCaptor.getValue().spliterator(), false).toList();
 
-        assertEquals("aiida/v1/testId/data", acls.getFirst().topic());
+        assertEquals("aiida/v1/testId/data/outbound", acls.getFirst().topic());
         assertEquals(MqttAction.PUBLISH, acls.getFirst().action());
         assertEquals(MqttAclType.ALLOW, acls.getFirst().aclType());
         assertEquals(permissionId, acls.getFirst().username());
@@ -124,9 +124,35 @@ class MqttServiceTest {
         assertEquals(serverUri, dto.serverUri());
         assertEquals(permissionId, dto.username());
         assertEquals(password, dto.password());
-        assertEquals("aiida/v1/testId/data", dto.dataTopic());
+        assertEquals("aiida/v1/testId/data/outbound", dto.dataTopic());
         assertEquals("aiida/v1/testId/status", dto.statusTopic());
         assertEquals("aiida/v1/testId/termination", dto.terminationTopic());
+    }
+
+    @Test
+    void givenPermissionIdAndInbound_createsAndSavesUserAndAcls() throws CredentialsAlreadyExistException {
+        // Given
+        String permissionId = "testId";
+        String password = "MySuperSafePassword";
+        String hash = "myHash";
+        String serverUri = "tcp://localhost:1883";
+        when(mockUserRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(mockPasswordGenerator.generatePassword(anyInt())).thenReturn(password);
+        when(mockEncoder.encode(anyString())).thenReturn(hash);
+        when(mockConfiguration.mqttServerUri()).thenReturn(serverUri);
+
+        // When
+        MqttDto dto = mqttService.createCredentialsAndAclForPermission(permissionId, true);
+
+        verify(mockAclRepository).saveAll(mqttAclCaptor.capture());
+        List<MqttAcl> acls = StreamSupport.stream(mqttAclCaptor.getValue().spliterator(), false).toList();
+
+        assertEquals("aiida/v1/testId/data/inbound", acls.getFirst().topic());
+        assertEquals(MqttAction.SUBSCRIBE, acls.getFirst().action());
+        assertEquals(MqttAclType.ALLOW, acls.getFirst().aclType());
+        assertEquals(permissionId, acls.getFirst().username());
+
+        assertEquals("aiida/v1/testId/data/inbound", dto.dataTopic());
     }
 
     @Test
