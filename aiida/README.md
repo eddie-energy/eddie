@@ -183,9 +183,9 @@ Data retrieved from this topic is stored in the `inbound_record` database table 
 The REST interface is secured with an **access token** stored in the `data_source` table.  
 There are two ways to use this token to retrieve the latest inbound record:
 
-1. **Via Path**
+1. **Via Query Param**
    ```bash
-   curl {URL_TO_AIIDA}/inbound/apikey/{ACCESS_CODE}/latest/{PERMISSION_ID}
+   curl {URL_TO_AIIDA}/inbound/latest/{PERMISSION_ID}?apiKey={ACCESS_CODE}
    ```
 2. **Via Header**
     ```bash
