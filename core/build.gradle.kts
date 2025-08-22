@@ -43,6 +43,7 @@ dependencies {
     implementation(project(":region-connectors:region-connector-simulation"))
     implementation(project(":region-connectors:region-connector-us-green-button"))
     implementation(project(":region-connectors:region-connector-cds"))
+    implementation(project(":region-connectors:region-connector-si-moj-elektro"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.websocket)
     implementation(libs.spring.openapi.webmvc.ui)

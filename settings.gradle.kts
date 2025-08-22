@@ -48,6 +48,8 @@ findProject(":region-connectors:region-connector-us-green-button")?.name = "regi
 include("region-connectors:region-connector-cds")
 findProject(":region-connectors:region-connector-cds")?.name = "region-connector-cds"
 
+include("region-connectors:region-connector-si-moj-elektro")
+
 include("region-connectors:shared")
 findProject(":region-connectors:shared")?.name = "shared"
 
