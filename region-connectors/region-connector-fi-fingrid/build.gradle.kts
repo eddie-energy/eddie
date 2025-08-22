@@ -1,7 +1,5 @@
-import net.ltgt.gradle.errorprone.CheckSeverity
-import net.ltgt.gradle.errorprone.errorprone
+import energy.eddie.configureJavaCompileWithErrorProne
 import org.springframework.boot.gradle.tasks.bundling.BootJar
-import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
@@ -9,7 +7,6 @@ plugins {
 
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
-    alias(libs.plugins.openapi.generator)
 }
 
 group = "energy.eddie"
@@ -58,15 +55,7 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    options.errorprone.disableWarningsInGeneratedCode.set(true)
-    if (!name.lowercase(Locale.getDefault()).contains("test")) {
-        options.errorprone {
-            check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.fi.fingrid")
-        }
-    }
-}
+configureJavaCompileWithErrorProne("energy.eddie.regionconnector.fi.fingrid")
 
 // disable bootJar task as it needs a main class and region connectors do not have one
 tasks.getByName<BootJar>("bootJar") {
