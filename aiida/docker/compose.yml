@@ -95,7 +95,8 @@ services:
       KC_HEALTH_ENABLED: true
     volumes:
       - ./keycloak/EDDIE-realm.json:/opt/keycloak/data/import/EDDIE-realm.json
-      - ../../keycloak-eddie-theme/theme/eddie-theme:/opt/keycloak/themes/eddie-theme
+      - ../../keycloak-eddie-theme/themes/eddie-theme:/opt/keycloak/themes/eddie-theme
+      - ../../keycloak-eddie-theme/themes/aiida-theme:/opt/keycloak/themes/aiida-theme
     command: -v start-dev --import-realm
     env_file:
       - .env
