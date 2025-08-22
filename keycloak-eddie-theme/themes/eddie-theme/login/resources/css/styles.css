@@ -1,0 +1,221 @@
+.login-pf {
+    --eddie-primary: #017aa0;
+    --eddie-red-light: #ff3b30;
+    --app-bg-color: rgb(239, 242, 247, 0.9998);
+    --eddie-grey-medium: #4e4e4e;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-xlg: 1.5rem;
+    --spacing-xxl: 2rem;
+    background: var(--app-bg-color);
+
+    &::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -101;
+        background: radial-gradient(
+                ellipse 90% 50% at calc(100% - 1rem) calc(100% - 1rem),
+                #017aa066 0%,
+                rgba(1, 122, 160, 0.3) 33%,
+                transparent 66%
+        );
+    }
+
+    body {
+        background: unset;
+
+        &::before {
+            display: block;
+            content: '';
+            position: fixed;
+            top: 50dvh;
+            right: 25dvw;
+            width: clamp(20rem, 20vw, 40rem);
+            height: 100vh;
+            background-image: url('../images/eddie_brandmark.svg');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            filter: blur(18px);
+            opacity: 0.75;
+            z-index: -100;
+            transform: translateY(-50%) translateX(50%);
+        }
+    }
+}
+
+.login-pf-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: fit-content;
+    min-height: 100dvh;
+    padding-top: unset;
+    gap: 1rem;
+
+    @media screen and (width: 1024px) {
+        height: 100%;
+    }
+}
+
+.card-pf {
+    background: linear-gradient(#ffffff, #ffffffe6);
+    padding: var(--spacing-xxl)!important;
+    border-radius: var(--spacing-xxl);
+    border-top: unset;
+    box-shadow: unset;
+    margin: 0 var(--spacing-md);
+
+    @media screen and (min-width: 640px) {
+        max-width: 600px;
+        margin: 0 var(--spacing-md);
+    }
+}
+
+#kc-page-title {
+    text-align: left;
+    font-size: 3rem;
+    line-height: 1.125;
+    color: var(--eddie-primary);
+    font-weight: 600;
+    margin: 0 0 var(--spacing-xlg);
+}
+
+#kc-form-login {
+    > * {
+        margin-bottom: var(--spacing-md);
+    }
+
+    label::after {
+        content: " *";
+        color: var(--eddie-red-light);
+    }
+
+    @media screen and (min-width: 640px) {
+        > * {
+            margin-bottom: var(--spacing-xlg);
+        }
+    }
+}
+
+.form-group {
+    label,input {
+        font-size: 1rem;
+        line-height: 1.5rem;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    input {
+        border: 1px solid var(--eddie-grey-medium);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--spacing-sm);
+        transition: border-color ease-in-out .15s;
+        &:focus-visible {
+            outline: 1px solid var(--eddie-primary);
+            border-color: var(--eddie-primary);
+        }
+    }
+}
+
+.login-pf-settings {
+    justify-content: flex-start !important;
+
+    a {
+        color: #000000;
+        text-decoration: underline;
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+}
+
+.pf-c-input-group {
+    position: relative;
+}
+
+.pf-c-button.pf-m-control {
+    position: absolute;
+    right: 0;
+    border: none;
+    background:transparent;
+
+    &::after {
+        display: none;
+    }
+}
+
+#kc-login,.pf-c-button.pf-m-primary {
+    font-weight: 600;
+    color: #ffffff;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--spacing-xlg);
+    border: 2px solid var(--eddie-primary);
+    background-color: var(--eddie-primary);
+    transition: color 300ms ease-in-out, background-color 300ms ease-in-out;
+
+    &:hover {
+        background-color: #ffffff;
+        color: var(--eddie-primary);
+    }
+}
+
+#kc-info {
+    text-align: left;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    margin-top: 0;
+
+    a {
+        color: var(--eddie-primary);
+        text-decoration: underline;
+    }
+}
+
+
+#kc-form-options {
+    margin-bottom: var(--spacing-xlg);
+
+    a {
+        font-size: 1rem;
+        line-height: 1.5rem;
+        text-decoration: underline;
+    }
+}
+
+.pf-c-form-control:focus {
+    border-bottom: 1px solid !important;
+}
+
+#kc-header-wrapper {
+    display: none;
+}
+
+.login-pf-page-header {
+    background-image: url('../images/eddie.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    aspect-ratio: 2500 / 451;
+    height: 70px;
+    width: 91%;
+    margin: var(--spacing-md);
+
+    @media screen and (min-width: 1024px) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100px;
+        width:unset;
+        margin: 5rem 6rem;
+    }
+
+    /* landscape mode */
+    @media screen and (max-height: 700px) {
+        margin: var(--spacing-md);
+        position: unset;
+    }
+}
+
