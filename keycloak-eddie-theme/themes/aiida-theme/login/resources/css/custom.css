@@ -1,6 +1,6 @@
 .login-pf body::before {
     background-image: url('../images/aiida_brandmark.svg');
-    top: -28dvh;
+    top:-28dvh;
     right: -15dvh;
     height: 150vh;
     width: 100vw;
@@ -13,8 +13,4 @@
     background-image: url('../images/aiida.svg');
     aspect-ratio: 314 / 49;
     height: 50px;
-
-    @media screen and (min-width: 1024px) {
-        height: 100px;
-    }
 }

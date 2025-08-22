@@ -65,7 +65,7 @@
 
 .card-pf {
     background: linear-gradient(#ffffff, #ffffffe6);
-    padding: var(--spacing-xxl) !important;
+    padding: var(--spacing-xxl)!important;
     border-radius: var(--spacing-xxl);
     border-top: unset;
     box-shadow: unset;
@@ -104,7 +104,7 @@
 }
 
 .form-group {
-    label, input {
+    label,input {
         font-size: 1rem;
         line-height: 1.5rem;
         margin-bottom: var(--spacing-sm);
@@ -115,7 +115,6 @@
         padding: var(--spacing-sm) var(--spacing-md);
         border-radius: var(--spacing-sm);
         transition: border-color ease-in-out .15s;
-
         &:focus-visible {
             outline: 1px solid var(--eddie-primary);
             border-color: var(--eddie-primary);
@@ -142,14 +141,14 @@
     position: absolute;
     right: 0;
     border: none;
-    background: transparent;
+    background:transparent;
 
     &::after {
         display: none;
     }
 }
 
-#kc-login, .pf-c-button.pf-m-primary {
+#kc-login,.pf-c-button.pf-m-primary {
     font-weight: 600;
     color: #ffffff;
     padding: var(--spacing-sm) var(--spacing-md);
@@ -209,7 +208,7 @@
         top: 0;
         left: 0;
         height: 100px;
-        width: unset;
+        width:unset;
         margin: 5rem 6rem;
     }
 
