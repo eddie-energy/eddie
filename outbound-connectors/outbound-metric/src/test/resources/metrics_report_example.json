@@ -1,0 +1,53 @@
+{
+  "instance" : "EDDIE_Test",
+  "metrics" : {
+    "count" : 3
+  },
+  "region_connector_metrics" : [ {
+    "Id" : "be-fluvius",
+    "metrics" : {
+      "count" : 3
+    },
+    "permission_administrator_metrics" : [ {
+      "Id" : "Fluvius",
+      "metrics" : {
+        "count" : 3
+      },
+      "data_need_type_metrics" : [ {
+        "dnType" : "validated",
+        "metrics" : {
+          "count" : 3
+        },
+        "permission_request_state_metrics" : [ {
+          "Id" : "CREATED",
+          "metrics" : {
+            "count" : 3,
+            "mean" : 135.0,
+            "median" : 131.0
+          }
+        }, {
+          "Id" : "VALIDATED",
+          "metrics" : {
+            "count" : 3,
+            "mean" : 13588.0,
+            "median" : 16364.0
+          }
+        }, {
+          "Id" : "SENT_TO_PERMISSION_ADMINISTRATOR",
+          "metrics" : {
+            "count" : 3,
+            "mean" : 2405.0,
+            "median" : 349.0
+          }
+        }, {
+          "Id" : "ACCEPTED",
+          "metrics" : {
+            "count" : 3,
+            "mean" : 5.5,
+            "median" : 5.5
+          }
+        } ]
+      } ]
+    } ]
+  } ]
+}

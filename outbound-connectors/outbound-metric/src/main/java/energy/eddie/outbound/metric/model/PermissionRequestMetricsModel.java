@@ -40,14 +40,20 @@ public class PermissionRequestMetricsModel {
     private String countryCode;
 
     public PermissionRequestMetricsModel(double mean, double median, PermissionProcessStatus permissionRequestStatus,
-            String dataNeedType, String permissionAdministratorId, String regionConnectorId, String countryCode) {
+            String dataNeedType, String permissionAdministratorId, String regionConnectorId) {
         this.mean = mean;
         this.median = median;
         this.permissionRequestStatus = permissionRequestStatus;
         this.dataNeedType = dataNeedType;
         this.permissionAdministratorId = permissionAdministratorId;
         this.regionConnectorId = regionConnectorId;
-        this.countryCode = countryCode;
+    }
+
+    public PermissionRequestMetricsModel(double mean, double median, int permissionRequestCount,
+                                         PermissionProcessStatus permissionRequestStatus, String dataNeedType,
+                                         String permissionAdministratorId, String regionConnectorId) {
+        this(mean, median, permissionRequestStatus, dataNeedType, permissionAdministratorId, regionConnectorId);
+        this.permissionRequestCount = permissionRequestCount;
     }
 
     protected PermissionRequestMetricsModel() {

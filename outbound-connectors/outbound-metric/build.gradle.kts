@@ -1,9 +1,12 @@
 import energy.eddie.configureJavaCompileWithErrorProne
+import net.ltgt.gradle.errorprone.errorprone
 import org.springframework.boot.gradle.tasks.bundling.BootJar
+import java.util.Locale
 
 plugins {
     id("energy.eddie.java-conventions")
 
+    alias(libs.plugins.jsonschema2pojo)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
@@ -57,4 +60,35 @@ tasks.getByName<BootJar>("bootJar") {
 
 tasks.getByName<Jar>("jar") {
     enabled = true
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.errorprone.disableWarningsInGeneratedCode.set(true)
+    if (!name.lowercase(Locale.getDefault()).contains("test")) {
+        options.errorprone {
+            option("NullAway:TreatGeneratedAsUnannotated", true)
+        }
+    }
+}
+
+jsonSchema2Pojo {
+    setSource(files("src/main/resources/schema"))
+    targetPackage = "energy.eddie.outbound.metric.generated"
+    targetDirectory = file("${project.layout.buildDirectory.asFile.get()}/generated/sources/schema/main/java")
+    includeConstructors = true
+    usePrimitives = true
+    setAnnotationStyle("jackson")
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir("${layout.buildDirectory}/generated-sources")
+        }
+    }
+}
+
+tasks.named<JavaCompile>("compileJava") {
+    dependsOn("generateJsonSchema2Pojo")
+    source(jsonSchema2Pojo.targetDirectory)
 }

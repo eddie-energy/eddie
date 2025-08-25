@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Permission Request Metrics",
+  "type": "object",
+  "properties": {
+    "instance": {
+      "type": "string"
+    },
+    "metrics": {
+      "$ref": "#/$defs/metrics"
+    },
+    "region_connector_metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Id": { "type": "string" },
+          "metrics": { "$ref": "#/$defs/metrics" },
+          "permission_administrator_metrics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "Id": { "type": "string" },
+                "metrics": { "$ref": "#/$defs/metrics" },
+                "data_need_type_metrics": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "dnType": { "type": "string" },
+                      "metrics": { "$ref": "#/$defs/metrics" },
+                      "permission_request_state_metrics": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "Id": { "type": "string" },
+                            "metrics": { "$ref": "#/$defs/metrics" }
+                          },
+                          "required": ["Id", "metrics"],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": ["dnType", "metrics", "permission_request_state_metrics"],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": ["Id", "metrics", "data_need_type_metrics"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["Id", "metrics", "permission_administrator_metrics"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["instance", "metrics", "region_connector_metrics"],
+  "additionalProperties": false,
+  "$defs": {
+    "metrics": {
+      "javaType": "energy.eddie.outbound.metric.model.Metrics",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "count": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["count"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mean": { "type": "number" },
+            "median": { "type": "number" },
+            "count": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["mean", "median", "count"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

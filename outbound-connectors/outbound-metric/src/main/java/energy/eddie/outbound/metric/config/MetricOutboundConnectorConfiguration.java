@@ -6,5 +6,5 @@ import java.net.URI;
 import java.time.Duration;
 
 @ConfigurationProperties(prefix = "outbound-connector.metric")
-public record MetricOutboundConnectorConfiguration(URI endpoint, Duration interval) {
+public record MetricOutboundConnectorConfiguration(URI endpoint, Duration interval, String instance) {
 }
