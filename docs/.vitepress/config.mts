@@ -98,6 +98,10 @@ export default withMermaid(
                   text: "CDS",
                   link: "/1-running/region-connectors/region-connector-cds.md",
                 },
+                {
+                  text: "Simulation",
+                  link: "/1-running/region-connectors/region-connector-simulation.md",
+                },
               ],
             },
             {
