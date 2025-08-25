@@ -176,7 +176,7 @@ public class Aggregator implements AutoCloseable {
     }
 
     private void handleError(Throwable throwable, DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
-        // TODO: GH-1304 do we try to restart the affected datasource or only notify user?
+        // TODO: GH-1591 do we try to restart the affected datasource or only notify user?
         LOGGER.error("Error from datasource {}", dataSourceAdapter.dataSource().name(), throwable);
     }
 
