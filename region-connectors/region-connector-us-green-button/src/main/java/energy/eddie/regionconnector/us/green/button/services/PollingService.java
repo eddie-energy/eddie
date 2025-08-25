@@ -15,10 +15,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Flux;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 @Service
 public class PollingService {
@@ -43,7 +45,6 @@ public class PollingService {
         this.outbox = outbox;
     }
 
-
     // To force Hibernate to discard the first level cache
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void pollValidatedHistoricalData(String permissionId) {
@@ -53,9 +54,31 @@ public class PollingService {
             LOGGER.info("Permission request {} has not started yet", permissionId);
             return;
         }
+        var start = getStart(permissionRequest);
+        var end = getEnd(permissionRequest);
         credentialService.retrieveAccessToken(permissionRequest)
-                         .subscribe(credentials -> pollValidatedHistoricalData(permissionRequest, credentials),
-                                    throwable -> handleAccessTokenError(throwable, permissionId));
+                         .doOnError(throwable -> handleAccessTokenError(throwable, permissionId))
+                         .flatMapMany(credentials -> pollValidatedHistoricalData(permissionRequest,
+                                                                                 start,
+                                                                                 end,
+                                                                                 credentials))
+                         .subscribe();
+    }
+
+    public Flux<IdentifiableSyndFeed> forcePollValidatedHistoricalData(
+            UsGreenButtonPermissionRequest permissionRequest,
+            ZonedDateTime start,
+            ZonedDateTime end
+    ) {
+        var permissionId = permissionRequest.permissionId();
+        LOGGER.info("Force polling for permission request {}", permissionId);
+        return credentialService.retrieveAccessToken(permissionRequest)
+                                .flatMapMany(credentials -> pollValidatedHistoricalData(
+                                        permissionRequest,
+                                        start,
+                                        end,
+                                        credentials
+                                ));
     }
 
     public void pollAccountingPointData(UsGreenButtonPermissionRequest pr) {
@@ -69,32 +92,41 @@ public class PollingService {
         LOGGER.info("Polling accounting point data for permission request {}", permissionId);
         api.retailCustomer(pr.authorizationUid(), credentials.accessToken())
            .map(res -> new IdentifiableSyndFeed(pr, res))
-           .subscribe(publishService::publishAccountingPointData, throwable -> handlePollingError(throwable, permissionId));
+           .subscribe(publishService::publishAccountingPointData,
+                      throwable -> handlePollingError(throwable, permissionId));
     }
 
-    private void pollValidatedHistoricalData(
+    private Flux<IdentifiableSyndFeed> pollValidatedHistoricalData(
             UsGreenButtonPermissionRequest permissionRequest,
+            ZonedDateTime start,
+            ZonedDateTime end,
             OAuthTokenDetails creds
     ) {
         var permissionId = permissionRequest.permissionId();
-        var start = permissionRequest.start().atStartOfDay(ZoneOffset.UTC);
-        var energyDataStart = permissionRequest.latestMeterReadingEndDateTime()
-                                               .orElse(start);
-        var end = DateTimeUtils.endOfDay(permissionRequest.end(), ZoneOffset.UTC);
-        var now = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
-        var energyDataEnd = end.isBefore(now) ? end : now;
         LOGGER.info("Polling validated historical data for permission request {} from {} to {}",
                     permissionId,
-                    energyDataStart,
-                    energyDataEnd);
-        api.batchSubscription(creds.authUid(),
-                              creds.accessToken(),
-                              permissionRequest.allowedMeters(),
-                              energyDataStart,
-                              energyDataEnd)
-           .map(res -> new IdentifiableSyndFeed(permissionRequest, res))
-           .subscribe(publishService::publishValidatedHistoricalData,
-                      throwable -> handlePollingError(throwable, permissionId));
+                    start,
+                    end);
+        return api.batchSubscription(creds.authUid(),
+                                     creds.accessToken(),
+                                     permissionRequest.allowedMeters(),
+                                     start,
+                                     end)
+                  .map(res -> new IdentifiableSyndFeed(permissionRequest, res))
+                  .doOnNext(publishService::publishValidatedHistoricalData)
+                  .doOnError(throwable -> handlePollingError(throwable, permissionId));
+    }
+
+    private static ZonedDateTime getStart(UsGreenButtonPermissionRequest permissionRequest) {
+        var start = permissionRequest.start().atStartOfDay(ZoneOffset.UTC);
+        return permissionRequest.latestMeterReadingEndDateTime()
+                                .orElse(start);
+    }
+
+    private static ZonedDateTime getEnd(UsGreenButtonPermissionRequest permissionRequest) {
+        var end = DateTimeUtils.endOfDay(permissionRequest.end(), ZoneOffset.UTC);
+        var now = LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC);
+        return end.isBefore(now) ? end : now;
     }
 
     private void handleAccessTokenError(Throwable throwable, String permissionId) {

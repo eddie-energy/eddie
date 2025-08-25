@@ -69,6 +69,27 @@ class PermissionUpdateServiceTest {
         assertThat(res.latestMeterReadingEndDateTime()).contains(created.plusDays(1));
     }
 
+
+    @Test
+    void updatePermissionRequest_doesntUpdateUnchangesReading() throws FeedException {
+        // Given
+        var xml = XmlLoader.xmlFromResource("/xml/batch/Batch.xml");
+        var feed = new SyndFeedInput().build(new StringReader(xml));
+        var start = LocalDate.of(2024, 9, 4);
+        var created = ZonedDateTime.of(start, LocalTime.MIDNIGHT, ZoneOffset.UTC);
+        var pr = createPermissionRequest(created, start, "1669851");
+        var payload = new IdentifiableSyndFeed(pr, feed);
+        when(meterReadingRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        // When
+        permissionUpdateService.updatePermissionRequest(payload);
+
+        // Then
+        verify(outbox).commit(eventCaptor.capture());
+        var res = eventCaptor.getValue();
+        assertThat(res.latestMeterReadingEndDateTime()).contains(created);
+    }
+
     @Test
     void updatePermissionRequest_ignoresUnknownMeteringUid() throws FeedException {
         // Given

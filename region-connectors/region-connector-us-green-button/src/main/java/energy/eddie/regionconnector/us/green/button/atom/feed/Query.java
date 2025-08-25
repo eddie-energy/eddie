@@ -43,6 +43,13 @@ public class Query {
         return null;
     }
 
+    public static long countEntriesOfType(SyndFeed feed, String type) {
+        return feed.getEntries()
+                   .stream()
+                   .filter(entry -> type.equals(entry.getTitle()))
+                   .count();
+    }
+
     public List<SyndEntry> findAllByTitle(String title) {
         var list = new ArrayList<SyndEntry>();
         for (var entry : feed.getEntries()) {

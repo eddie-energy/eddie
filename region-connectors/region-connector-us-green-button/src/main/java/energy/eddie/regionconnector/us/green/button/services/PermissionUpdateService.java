@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +49,7 @@ public class PermissionUpdateService {
         var query = new Query(feed, unmarshaller);
         var intervalBlocks = query.findAllByTitle("IntervalBlock");
         if (intervalBlocks.isEmpty()) {
-            LOGGER.info("No data found for one of the meters of permission request {}", permissionId );
+            LOGGER.info("No data found for one of the meters of permission request {}", permissionId);
             return;
         }
         List<MeterReading> lastMeterReadings = new ArrayList<>();
@@ -64,7 +65,7 @@ public class PermissionUpdateService {
                                      .atZone(ZoneOffset.UTC);
             for (var meterReading : payload.permissionRequest().lastMeterReadings()) {
                 if (meterReading.meterUid().equals(id)) {
-                    meterReading.setLastMeterReading(lastReading);
+                    meterReading.setLastMeterReading(getLatest(lastReading, meterReading));
                     meterReading.setHistoricalCollectionStatus(PollingStatus.DATA_NOT_READY);
                     meterReadingRepository.save(meterReading);
                     lastMeterReadings.add(meterReading);
@@ -73,5 +74,12 @@ public class PermissionUpdateService {
             }
         }
         outbox.commit(new UsMeterReadingUpdateEvent(permissionId, lastMeterReadings));
+    }
+
+    private static ZonedDateTime getLatest(ZonedDateTime lastReading, MeterReading meterReading) {
+        if (meterReading.lastMeterReading() == null) {
+            return lastReading;
+        }
+        return lastReading.isAfter(meterReading.lastMeterReading()) ? lastReading : meterReading.lastMeterReading();
     }
 }
