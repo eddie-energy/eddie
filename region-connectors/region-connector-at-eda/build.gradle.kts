@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.jackson.datatype.jsr310)
 
     implementation(libs.reactor.core)
+    implementation(libs.opentelemetry.sdk.metrics)
 
     runtimeOnly(libs.hibernate.validator)
     runtimeOnly(libs.jaxb.runtime)
@@ -62,6 +63,7 @@ dependencies {
     testImplementation(libs.okhttp3.mockwebserver)
     testImplementation(project(":outbound-connectors:outbound-shared"))
     testImplementation(libs.xmlunit.core)
+    testImplementation(libs.opentelemetry.sdk.testing)
     testRuntimeOnly(libs.flyway.core)
     testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)

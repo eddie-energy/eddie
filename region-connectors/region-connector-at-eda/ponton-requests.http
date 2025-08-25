@@ -1,0 +1,29 @@
+### POST Authenticate
+POST {{host}}/api/authenticate
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+> {%
+  const body = response.body;
+  const token = body["token"];
+  client.global.set("ponton_token", token)
+%}
+
+### GET Health
+GET {{host}}/api/health
+Authorization: Bearer {{ponton_token}}
+
+### GET messagemonitor
+POST {{host}}/api/messagemonitor/findmessages
+Authorization: Bearer {{ponton_token}}
+Content-Type: application/json
+
+{
+  "inboundStates": [
+    "IN_TRANSIT"
+  ]
+}

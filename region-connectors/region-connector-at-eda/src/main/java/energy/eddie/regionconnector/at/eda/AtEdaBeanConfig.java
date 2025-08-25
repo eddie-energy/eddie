@@ -39,6 +39,7 @@ import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculati
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -162,21 +163,21 @@ public class AtEdaBeanConfig {
     @Bean
     public ConnectionStatusMessageHandler<AtPermissionRequest> connectionStatusMessageHandler(
             EventBus eventBus,
-            AtPermissionRequestRepository repository
+            AtPermissionRequestRepository repository,
+            ObjectMapper objectMapper
     ) {
         return new ConnectionStatusMessageHandler<>(
                 eventBus,
                 repository,
                 AtPermissionRequest::message,
-                pr -> objectMapper().createObjectNode().put("cmRequestId", pr.cmRequestId())
+                pr -> objectMapper.createObjectNode().put("cmRequestId", pr.cmRequestId())
         );
     }
 
     @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .registerModule(new Jdk8Module());
+    public Jackson2ObjectMapperBuilderCustomizer objectMapper() {
+        return customizer -> customizer
+                .modules(new JavaTimeModule(), new Jdk8Module());
     }
 
     @Bean

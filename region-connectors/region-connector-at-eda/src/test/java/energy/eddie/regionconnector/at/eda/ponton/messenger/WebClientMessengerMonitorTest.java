@@ -3,7 +3,8 @@ package energy.eddie.regionconnector.at.eda.ponton.messenger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.at.eda.AtEdaBeanConfig;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import okhttp3.mockwebserver.MockResponse;
@@ -35,7 +36,8 @@ class WebClientMessengerMonitorTest {
 
     static MockWebServer mockBackEnd;
     private static PontonXPAdapterConfiguration config;
-    private final ObjectMapper objectMapper = new AtEdaBeanConfig().objectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModules(new Jdk8Module(), new JavaTimeModule());
     private final WebClient webClient = WebClient.create();
     @Spy
     private PontonTokenProvider tokenProvider;
