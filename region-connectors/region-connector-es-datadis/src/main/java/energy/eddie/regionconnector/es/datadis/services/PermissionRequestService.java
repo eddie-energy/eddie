@@ -22,9 +22,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.validation.IdentifierValidator;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import energy.eddie.regionconnector.shared.security.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +44,6 @@ public class PermissionRequestService {
     private final PermissionRequestConsumer permissionRequestConsumer;
     private final Outbox outbox;
     private final DataNeedCalculationService<DataNeed> calculationService;
-    private final JwtUtil jwtUtil;
 
     @Autowired
     public PermissionRequestService(
@@ -54,15 +51,13 @@ public class PermissionRequestService {
             AccountingPointDataService accountingPointDataService,
             PermissionRequestConsumer permissionRequestConsumer,
             Outbox outbox,
-            DataNeedCalculationService<DataNeed> calculationService,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") JwtUtil jwtUtil
+            DataNeedCalculationService<DataNeed> calculationService
     ) {
         this.repository = repository;
         this.accountingPointDataService = accountingPointDataService;
         this.permissionRequestConsumer = permissionRequestConsumer;
         this.outbox = outbox;
         this.calculationService = calculationService;
-        this.jwtUtil = jwtUtil;
     }
 
     public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
@@ -110,7 +105,7 @@ public class PermissionRequestService {
      */
     public CreatedPermissionRequest createAndSendPermissionRequest(
             PermissionRequestForCreation requestForCreation
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException, EsValidationException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, EsValidationException {
         LOGGER.info("Got request to create a new permission, request was: {}", requestForCreation);
         var permissionId = UUID.randomUUID().toString();
         var dataNeedId = requestForCreation.dataNeedId();
@@ -147,8 +142,7 @@ public class PermissionRequestService {
                     handleValidatedHistoricalDataNeed(vhdResult, permissionId);
             case AccountingPointDataNeedResult ignored -> handleAccountingPointDataNeed(permissionId);
         }
-        var accessToken = jwtUtil.createJwt(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
-        return new CreatedPermissionRequest(permissionId, accessToken);
+        return new CreatedPermissionRequest(permissionId);
     }
 
     public void terminatePermission(String permissionId) throws PermissionNotFoundException {

@@ -14,8 +14,7 @@ Events are emitted once data is pushed to the region connector, instead of react
 
 First a new Gradle subproject has to be created in the [`region-connectors`](https://github.com/eddie-energy/eddie/tree/main/region-connectors) directory with the name
 `region-connector-foo-bar`.
-The new subproject has to be included in the [`settings.gradle.kts`](https://github.com/eddie-energy/eddie/blob/main/settings.gradle.kts) and [the core
-`build.gradle.kts`](https://github.com/eddie-energy/eddie/blob/main/core/build.gradle.kts).
+The new subproject has to be included in the [`settings.gradle.kts`](https://github.com/eddie-energy/eddie/blob/main/settings.gradle.kts) and [the core `build.gradle.kts`](https://github.com/eddie-energy/eddie/blob/main/core/build.gradle.kts).
 
 ```kotlin
 // settings.gradle.kts
@@ -617,7 +616,13 @@ Extend the REST controller to include validation.
 In this code example, the REST controller validates the permission request, polls the data need, and depending on the result, sends a validated event or malformed event.
 That is everything needed to create and validate a permission request on EDDIE's side.
 
+> [!IMPORTANT] The `/permission-request` endpoint always needs to produce JSON and return a JSON document with a property called `permissionId`.
+> Based on the permission ID, EDDIE automatically creates a JWT, to secure certain endpoints, and adds them to the response of the endpoint for the frontend to use.
+> The token is also available on the frontend via the permission-request-form-base.
+
 ```java
+
+import java.util.UUID;
 
 @RestController
 public class PermissionRequestController {

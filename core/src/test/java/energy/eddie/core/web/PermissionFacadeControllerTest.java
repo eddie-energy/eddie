@@ -5,6 +5,7 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.core.application.information.ApplicationInformation;
+import energy.eddie.core.security.JwtIssuerFilter;
 import energy.eddie.core.services.ApplicationInformationService;
 import energy.eddie.core.services.DataNeedCalculationRouter;
 import energy.eddie.core.services.MetadataService;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -27,7 +30,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(PermissionFacadeController.class)
+@WebMvcTest(
+        value = PermissionFacadeController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtIssuerFilter.class)
+)
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class PermissionFacadeControllerTest {
     @Autowired

@@ -1,5 +1,6 @@
 package energy.eddie.core;
 
+import energy.eddie.core.security.JwtIssuerFilter;
 import energy.eddie.core.services.ApplicationInformationService;
 import energy.eddie.core.services.DataNeedCalculationRouter;
 import energy.eddie.core.services.MetadataService;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,7 +24,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CoreSpringConfigTest {
     // Need to use nested classes to be able to pass different properties, didn't work with WebApplicationContextRunner
     @Nested
-    @WebMvcTest(controllers = PermissionFacadeController.class)
+    @WebMvcTest(
+            controllers = PermissionFacadeController.class,
+            excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtIssuerFilter.class)
+    )
     @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
     class NoCorsPropertyTest {
         @Autowired
@@ -42,7 +48,11 @@ class CoreSpringConfigTest {
     }
 
     @Nested
-    @WebMvcTest(properties = {"eddie.cors.allowed-origins=https://example.com", "eddie.jwt.hmac.secret=mPZzVhT7SJqg9jxuJKdtddswKYt7U1sn49di0eMoFnc=", "eddie.permission.request.timeout.duration=24"}, controllers = PermissionFacadeController.class)
+    @WebMvcTest(
+            properties = {"eddie.cors.allowed-origins=https://example.com", "eddie.jwt.hmac.secret=mPZzVhT7SJqg9jxuJKdtddswKYt7U1sn49di0eMoFnc=", "eddie.permission.request.timeout.duration=24"},
+            controllers = PermissionFacadeController.class,
+            excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtIssuerFilter.class)
+    )
     @Import(CoreSecurityConfig.class)
     class GivenCorsPropertyTest {
         @Autowired

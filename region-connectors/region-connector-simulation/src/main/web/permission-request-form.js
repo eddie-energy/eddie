@@ -72,7 +72,6 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
         variant: "success",
         duration: 10000,
       });
-      this.pollRequestStatus(`${this.requestStatusUrl}/${data.permissionId}`);
     } else {
       const { errors } = data;
       errors.forEach((err) => this.error(err.message));

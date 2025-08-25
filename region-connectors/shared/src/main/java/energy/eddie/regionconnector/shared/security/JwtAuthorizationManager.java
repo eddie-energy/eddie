@@ -29,7 +29,7 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
      * <br>
      * The JWT's signature is validated to prevent the acceptance of tampered tokens.
      *
-     * @param jwtUtil   {@link JwtUtil} used to parse and validate the JWTs.
+     * @param jwtUtil {@link JwtUtil} used to parse and validate the JWTs.
      */
     public JwtAuthorizationManager(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
@@ -43,15 +43,22 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
         var permissions = jwtUtil.getPermissions(jwt);
 
         String requestedPermissionId = context.getVariables().get("permissionId");
-        String requestedConnectorId = context.getRequest().getHttpServletMapping().getServletName();
-        List<String> permittedPermissionsForRequestedConnector = permissions.get(requestedConnectorId);
+        String servletName = context.getRequest().getHttpServletMapping().getServletName();
+        List<String> permittedPermissionsForRequestedConnector = "dispatcherServlet".equals(servletName)
+                // For API calls to the core
+                ? permissions.values()
+                             .stream()
+                             .flatMap(List::stream)
+                             .toList()
+                // For calls directly to the region connectors
+                : permissions.get(servletName);
 
-        if (requestedPermissionId == null || requestedConnectorId == null || permittedPermissionsForRequestedConnector == null) {
+        if (requestedPermissionId == null || servletName == null || permittedPermissionsForRequestedConnector == null) {
             LOGGER.trace(
                     "Denying authorization for request URI {} because one of the required fields is null ({} {} {})",
                     requestURI,
                     requestedPermissionId,
-                    requestedConnectorId,
+                    servletName,
                     permittedPermissionsForRequestedConnector);
             throw new AccessDeniedException("Not authorized to access the requested resource");
         }
@@ -63,7 +70,7 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
                     permissions);
             throw new AccessDeniedException("Not authorized to access the requested resource");
         }
-
+        LOGGER.info("Authorized request URI {} successfully", requestURI);
         return new AuthorizationDecision(true);
     }
 

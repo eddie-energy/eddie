@@ -21,7 +21,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   };
 
   permissionId = null;
-  accessToken = null;
 
   constructor() {
     super();
@@ -52,9 +51,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     this._isSubmitDisabled = true;
 
     this.createPermissionRequest(payload)
-      .then(({ permissionId, accessToken }) => {
+      .then(({ permissionId }) => {
         this.permissionId = permissionId;
-        this.accessToken = accessToken;
       })
       .catch((error) => {
         this._isSubmitDisabled = false;
@@ -66,7 +64,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     fetch(`${this.requestUrl}/${this.permissionId}/accepted`, {
       method: "PATCH",
       headers: {
-        Authorization: "Bearer " + this.accessToken,
+        Authorization: "Bearer " + this.bearerToken,
       },
     })
       .then(() => {
@@ -82,7 +80,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     fetch(`${this.requestUrl}/${this.permissionId}/rejected`, {
       method: "PATCH",
       headers: {
-        Authorization: "Bearer " + this.accessToken,
+        Authorization: "Bearer " + this.bearerToken,
       },
     }).catch((error) => {
       this.error(error);

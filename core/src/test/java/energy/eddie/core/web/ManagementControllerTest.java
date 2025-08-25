@@ -1,5 +1,6 @@
 package energy.eddie.core.web;
 
+import energy.eddie.core.security.JwtIssuerFilter;
 import energy.eddie.core.services.MetadataService;
 import energy.eddie.core.services.SupportedFeatureService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorSupportedFeatureExtension;
@@ -9,6 +10,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -18,7 +21,11 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(value = ManagementController.class, properties = "eddie.management.server.urlprefix=management")
+@WebMvcTest(
+        value = ManagementController.class,
+        properties = "eddie.management.server.urlprefix=management",
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtIssuerFilter.class)
+)
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class ManagementControllerTest {
     @Autowired

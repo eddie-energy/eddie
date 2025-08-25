@@ -101,7 +101,7 @@ class PermissionRequestControllerTest {
                                                                  "identifier"
         );
         when(creationService.createAndValidatePermissionRequest(permissionRequest))
-                .thenReturn(new CreatedPermissionRequest("pid", ""));
+                .thenReturn(new CreatedPermissionRequest("pid"));
 
         // When
         mockMvc.perform(MockMvcRequestBuilders.post("/permission-request")
@@ -109,7 +109,6 @@ class PermissionRequestControllerTest {
                                               .content(objectMapper.writeValueAsString(permissionRequest)))
                .andExpect(status().isCreated())
                .andExpect(jsonPath("$.permissionId", is("pid")))
-               .andExpect(jsonPath("$.accessToken").isString())
                .andExpect(header().string("location", "/permission-status/pid"));
     }
 

@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@microsoft/fetch-event-source": "^2.0.1",
     "lit": "^2.7.5"
   }
 }
