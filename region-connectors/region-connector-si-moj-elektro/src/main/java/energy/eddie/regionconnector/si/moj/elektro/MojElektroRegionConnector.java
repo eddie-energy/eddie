@@ -5,10 +5,10 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SiMojElektroRegionConnector implements RegionConnector {
-    private final SiMojElektroRegionConnectorMetadata metadata;
+public class MojElektroRegionConnector implements RegionConnector {
+    private final MojElektroRegionConnectorMetadata metadata;
 
-    public SiMojElektroRegionConnector(SiMojElektroRegionConnectorMetadata metadata) {this.metadata = metadata;}
+    public MojElektroRegionConnector(MojElektroRegionConnectorMetadata metadata) {this.metadata = metadata;}
 
     @Override
     public RegionConnectorMetadata getMetadata() {

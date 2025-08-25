@@ -12,8 +12,9 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 @Component
-public class SiMojElektroRegionConnectorMetadata implements RegionConnectorMetadata {
+public class MojElektroRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "si-moj-elektro";
+
     @Override
     public String id() {
         return REGION_CONNECTOR_ID;

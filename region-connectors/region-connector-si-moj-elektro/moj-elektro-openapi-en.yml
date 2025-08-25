@@ -1,4 +1,6 @@
 openapi: 3.0.1
+externalDocs:
+  url: https://docs.informatika.si/mojelektro/api/
 info:
   title: Moj elektro API
   description: Programming interface to services for providing data to the user on the Moj Elektro portal
