@@ -1,0 +1,16 @@
+.login-pf body::before {
+    background-image: url('../images/aiida_brandmark.svg');
+    top:-28dvh;
+    right: -15dvh;
+    height: 150vh;
+    width: 100vw;
+    rotate: -3.5deg;
+    transform: unset;
+    filter: blur(30px);
+}
+
+.login-pf-page-header {
+    background-image: url('../images/aiida.svg');
+    aspect-ratio: 314 / 49;
+    height: 50px;
+}
