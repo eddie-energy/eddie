@@ -2,6 +2,7 @@
 import { keycloak } from '@/keycloak.js'
 import { ref, useTemplateRef } from 'vue'
 import { getApplicationInformation } from '@/api.js'
+import AccountIcon from '@/assets/icons/AccountIcon.svg'
 
 const firstName = ref('')
 const lastName = ref('')
@@ -22,14 +23,9 @@ getApplicationInformation().then((data) => {
 </script>
 
 <template>
-  <button>
-    <sl-avatar
-      :initials="firstName[0] + lastName[0]"
-      @click="drawer.show()"
-      class="avatar"
-      label="Open user drawer"
-    ></sl-avatar>
-  </button>
+  <a @click="drawer.show()" data-text="Account" class="link-with-bold-hover user-profile-link">
+    <span class="user-profile-link">Account <AccountIcon /></span>
+  </a>
 
   <sl-drawer ref="drawer" no-header>
     <div class="header">
@@ -65,6 +61,9 @@ getApplicationInformation().then((data) => {
 </template>
 
 <style scoped>
+.user-profile-link::after {
+  padding-right: 2em;
+}
 .header {
   display: flex;
   justify-content: space-between;
@@ -95,11 +94,10 @@ small {
   align-self: end;
 }
 
-button {
-  all: unset;
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
+.user-profile-link {
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 </style>
