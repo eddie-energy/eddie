@@ -63,47 +63,47 @@ export default withMermaid(
                   link: "/1-running/region-connectors/region-connector-aiida.md",
                 },
                 {
-                  text: "EDA (Austria)",
-                  link: "/1-running/region-connectors/region-connector-at-eda.md",
-                },
-                {
-                  text: "Fluvius (Belgium)",
-                  link: "/1-running/region-connectors/region-connector-be-fluvius.md",
-                },
-                {
-                  text: "Energinet (Denmark)",
-                  link: "/1-running/region-connectors/region-connector-dk-energinet.md",
+                  text: "CDS",
+                  link: "/1-running/region-connectors/region-connector-cds.md",
                 },
                 {
                   text: "Datadis (Spain)",
                   link: "/1-running/region-connectors/region-connector-es-datadis.md",
                 },
                 {
-                  text: "Fingrid (Finland)",
-                  link: "/1-running/region-connectors/region-connector-fi-fingrid.md",
+                  text: "EDA (Austria)",
+                  link: "/1-running/region-connectors/region-connector-at-eda.md",
                 },
                 {
                   text: "Enedis (France)",
                   link: "/1-running/region-connectors/region-connector-fr-enedis.md",
                 },
                 {
-                  text: "Mijn Aansluiting (Netherlands)",
-                  link: "/1-running/region-connectors/region-connector-nl-mijn-aansluiting.md",
+                  text: "Energinet (Denmark)",
+                  link: "/1-running/region-connectors/region-connector-dk-energinet.md",
+                },
+                {
+                  text: "Fingrid (Finland)",
+                  link: "/1-running/region-connectors/region-connector-fi-fingrid.md",
+                },
+                {
+                  text: "Fluvius (Belgium)",
+                  link: "/1-running/region-connectors/region-connector-be-fluvius.md",
                 },
                 {
                   text: "Green Button (USA)",
                   link: "/1-running/region-connectors/region-connector-us-green-button.md",
                 },
                 {
-                  text: "CDS",
-                  link: "/1-running/region-connectors/region-connector-cds.md",
+                  text: "Mijn Aansluiting (Netherlands)",
+                  link: "/1-running/region-connectors/region-connector-nl-mijn-aansluiting.md",
                 },
                 {
-                  text: "Moj Elektro (SI)",
+                  text: "Moj Elektro (Slovenia)",
                   link: "/1-running/region-connectors/region-connector-si-moj-elektro.md",
                 },
                 {
-                  text: "Simulation",
+                  text: "Simulation (Dev)",
                   link: "/1-running/region-connectors/region-connector-simulation.md",
                 },
               ],
