@@ -64,7 +64,6 @@ getApplicationInformation().then((data) => {
 .user-profile-link::after {
   padding-right: 2em;
 }
-
 .header {
   display: flex;
   justify-content: space-between;
