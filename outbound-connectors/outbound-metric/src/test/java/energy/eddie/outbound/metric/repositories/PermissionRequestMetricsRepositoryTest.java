@@ -37,7 +37,8 @@ class PermissionRequestMetricsRepositoryTest {
                 PermissionProcessStatus.CREATED,
                 "dnType",
                 "paId",
-                "rcId"
+                "rcId",
+                "CC"
         );
         permissionRequestMetricsRepository.save(prMetrics);
 
@@ -63,7 +64,8 @@ class PermissionRequestMetricsRepositoryTest {
                 PermissionProcessStatus.CREATED,
                 "dnType",
                 "paId",
-                "rcId"
+                "rcId",
+                "CC"
         );
         permissionRequestMetricsRepository.save(prMetrics);
 
@@ -89,7 +91,8 @@ class PermissionRequestMetricsRepositoryTest {
                 PermissionProcessStatus.CREATED,
                 "dnType",
                 "paId",
-                "rcId"
+                "rcId",
+                "CC"
         );
         permissionRequestMetricsRepository.save(prMetrics);
 
@@ -118,7 +121,8 @@ class PermissionRequestMetricsRepositoryTest {
                 PermissionProcessStatus.CREATED,
                 "dnType",
                 "paId",
-                "rcId"
+                "rcId",
+                "CC"
         );
         permissionRequestMetricsRepository.save(prMetrics);
 

@@ -65,6 +65,19 @@ public class PermissionRequestMetricsModel {
     public PermissionRequestMetricsModel(
             double mean,
             double median,
+            PermissionProcessStatus permissionRequestStatus,
+            String dataNeedType,
+            String permissionAdministratorId,
+            String regionConnectorId,
+            String countryCode
+    ) {
+        this(mean, median, permissionRequestStatus, dataNeedType, permissionAdministratorId, regionConnectorId);
+        this.countryCode = countryCode;
+    }
+
+    public PermissionRequestMetricsModel(
+            double mean,
+            double median,
             int permissionRequestCount,
             PermissionProcessStatus permissionRequestStatus,
             String dataNeedType,
