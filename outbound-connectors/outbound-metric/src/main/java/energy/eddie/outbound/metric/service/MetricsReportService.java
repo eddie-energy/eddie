@@ -1,56 +1,53 @@
 package energy.eddie.outbound.metric.service;
 
 import energy.eddie.outbound.metric.config.MetricOutboundConnectorConfiguration;
-import energy.eddie.outbound.metric.generated.*;
+import energy.eddie.outbound.metric.generated.PermissionRequestMetrics;
 import energy.eddie.outbound.metric.model.PermissionRequestMetricsModel;
 import energy.eddie.outbound.metric.repositories.PermissionRequestMetricsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.net.URI;
 import java.util.List;
 
-@SuppressWarnings("FutureReturnValueIgnored")
 @Service
 public class MetricsReportService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MetricsReportService.class);
 
     private final PermissionRequestMetricsRepository metricsRepository;
     private final MetricOutboundConnectorConfiguration config;
-    private final RestTemplate restTemplate;
     private final MetricsReportBuilder reportBuilder;
+    private final WebClient webClient;
 
     public MetricsReportService(PermissionRequestMetricsRepository metricsRepository,
                                 MetricOutboundConnectorConfiguration config,
-                                RestTemplate restTemplate,
                                 MetricsReportBuilder reportBuilder,
-                                TaskScheduler taskScheduler) {
+                                WebClient webClient) {
         this.metricsRepository = metricsRepository;
         this.config = config;
-        this.restTemplate = restTemplate;
         this.reportBuilder = reportBuilder;
-        taskScheduler.scheduleAtFixedRate(this::fetchMetricsReport, config.interval());
+        this.webClient = webClient;
     }
 
-    void fetchMetricsReport() {
-        generateAndSendReport(config.instance(), config.endpoint());
-    }
-
-    void generateAndSendReport(String instance, URI endpoint) {
+    @Scheduled(cron = "${outbound-connector.metric.interval:0 0 */12 * * *}")
+    void generateAndSendReport() {
         List<PermissionRequestMetricsModel> rows = metricsRepository.findAll();
-        PermissionRequestMetrics report = reportBuilder.createMetricsReport(instance, rows);
+        PermissionRequestMetrics report = reportBuilder.createMetricsReport(rows);
+        report.setEddieId(config.eddieId());
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        URI endpoint = config.endpoint();
+        webClient.post()
+                .uri(endpoint)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(report)
+                .retrieve()
+                .toBodilessEntity()
+                .block();
 
-        restTemplate.exchange(endpoint, HttpMethod.POST, new HttpEntity<>(report, headers), Void.class);
         LOGGER.info("Metric report sent to endpoint {}", endpoint);
     }
 }

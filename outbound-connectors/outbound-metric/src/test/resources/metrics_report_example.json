@@ -1,23 +1,14 @@
 {
-  "instance" : "EDDIE_Test",
-  "metrics" : {
-    "count" : 3
-  },
+  "count" : 3,
   "region_connector_metrics" : [ {
     "Id" : "be-fluvius",
-    "metrics" : {
-      "count" : 3
-    },
+    "count" : 3,
     "permission_administrator_metrics" : [ {
       "Id" : "Fluvius",
-      "metrics" : {
-        "count" : 3
-      },
+      "count" : 3,
       "data_need_type_metrics" : [ {
         "dnType" : "validated",
-        "metrics" : {
-          "count" : 3
-        },
+        "count" : 3,
         "permission_request_state_metrics" : [ {
           "Id" : "CREATED",
           "metrics" : {

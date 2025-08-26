@@ -2,7 +2,7 @@ package energy.eddie.outbound.metric.service;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.outbound.metric.generated.*;
-import energy.eddie.outbound.metric.model.Metrics;
+import energy.eddie.outbound.metric.model.ExtendedPermissionRequestMetrics;
 import energy.eddie.outbound.metric.model.PermissionRequestMetricsModel;
 import org.springframework.stereotype.Component;
 
@@ -12,18 +12,12 @@ import java.util.stream.Collectors;
 @Component
 public class MetricsReportBuilder {
 
-    public PermissionRequestMetrics createMetricsReport(String instance, List<PermissionRequestMetricsModel> rows) {
-        PermissionRequestMetrics metricsReport = new PermissionRequestMetrics();
-        metricsReport.setInstance(instance);
-
+    public PermissionRequestMetrics createMetricsReport(List<PermissionRequestMetricsModel> rows) {
         Map<String, List<PermissionRequestMetricsModel>> regionMetricsMap = rows.stream()
                 .collect(Collectors.groupingBy(PermissionRequestMetricsModel::getRegionConnectorId,
                         LinkedHashMap::new, Collectors.toList()));
         var regionConnectorMetrics = getRegionConnectorMetrics(regionMetricsMap);
-        Metrics count = new Metrics(regionConnectorMetrics.getKey());
-        metricsReport.setMetrics(count);
-        metricsReport.setRegionConnectorMetrics(regionConnectorMetrics.getValue());
-        return metricsReport;
+        return new ExtendedPermissionRequestMetrics(regionConnectorMetrics.getKey(), regionConnectorMetrics.getValue());
     }
 
     private AbstractMap.SimpleEntry<Integer, List<RegionConnectorMetric>> getRegionConnectorMetrics(Map<String,
@@ -32,20 +26,12 @@ public class MetricsReportBuilder {
         int count = 0;
 
         for (var regionMetricsEntry : map.entrySet()) {
-            RegionConnectorMetric regionMetrics = new RegionConnectorMetric();
-            regionMetrics.setId(regionMetricsEntry.getKey());
-
             Map<String, List<PermissionRequestMetricsModel>> paMetricsMap = regionMetricsEntry.getValue().stream()
                     .collect(Collectors.groupingBy(PermissionRequestMetricsModel::getPermissionAdministratorId,
                             LinkedHashMap::new, Collectors.toList()));
-
             var paMetrics = getPermissionAdministratorMetrics(paMetricsMap);
             int prPermissionAdministratorCount = paMetrics.getKey();
-
-            Metrics regionCount = new Metrics(prPermissionAdministratorCount);
-            regionMetrics.setMetrics(regionCount);
-            regionMetrics.setPermissionAdministratorMetrics(paMetrics.getValue());
-            regionListMetrics.add(regionMetrics);
+            regionListMetrics.add(new RegionConnectorMetric(regionMetricsEntry.getKey(), prPermissionAdministratorCount, paMetrics.getValue()));
             count += prPermissionAdministratorCount;
         }
 
@@ -59,20 +45,12 @@ public class MetricsReportBuilder {
         int count = 0;
 
         for (var paMetricsEntry : map.entrySet()) {
-            PermissionAdministratorMetric paMetrics = new PermissionAdministratorMetric();
-            paMetrics.setId(paMetricsEntry.getKey());
-
             Map<String, List<PermissionRequestMetricsModel>> dnTypeMetricsMap = paMetricsEntry.getValue().stream()
                     .collect(Collectors.groupingBy(PermissionRequestMetricsModel::getDataNeedType,
                             LinkedHashMap::new, Collectors.toList()));
-
             var dnMetrics = getDataNeedMetrics(dnTypeMetricsMap);
             int prDataNeedCount = dnMetrics.getKey();
-
-            Metrics paCount = new Metrics(prDataNeedCount);
-            paMetrics.setMetrics(paCount);
-            paMetrics.setDataNeedTypeMetrics(dnMetrics.getValue());
-            paListMetrics.add(paMetrics);
+            paListMetrics.add(new PermissionAdministratorMetric(paMetricsEntry.getKey(), prDataNeedCount, dnMetrics.getValue()));
             count += prDataNeedCount;
         }
 
@@ -85,24 +63,16 @@ public class MetricsReportBuilder {
         int count = 0;
 
         for (var dnTypeMetricsEntry : map.entrySet()) {
-            DataNeedTypeMetric dnTypeMetrics = new DataNeedTypeMetric ();
-            dnTypeMetrics.setDnType(dnTypeMetricsEntry.getKey());
             Map<PermissionProcessStatus, List<PermissionRequestMetricsModel>> prStateMetricsMap = dnTypeMetricsEntry
                     .getValue().stream().collect(Collectors.groupingBy(PermissionRequestMetricsModel::
                                     getPermissionRequestStatus, LinkedHashMap::new, Collectors.toList()));
-
             var prStateMetrics = getPermissionRequestStateMetrics(prStateMetricsMap);
             int prStateCount = prStateMetrics.getKey();
-
-
-            Metrics dnTypeCount = new Metrics(prStateCount);
-            dnTypeMetrics.setMetrics(dnTypeCount);
-            dnTypeMetrics.setPermissionRequestStateMetrics(prStateMetrics.getValue());
-            dnTypeListMetrics.add(dnTypeMetrics);
+            dnTypeListMetrics.add(new DataNeedTypeMetric(dnTypeMetricsEntry.getKey(), prStateCount, prStateMetrics.getValue()));
             count += prStateCount;
         }
 
-        return  new AbstractMap.SimpleEntry<>(count, dnTypeListMetrics);
+        return new AbstractMap.SimpleEntry<>(count, dnTypeListMetrics);
     }
 
     private AbstractMap.SimpleEntry<Integer, List<PermissionRequestStateMetric>> getPermissionRequestStateMetrics(
@@ -112,15 +82,13 @@ public class MetricsReportBuilder {
         int count = 0;
 
         for (var prStateMetricsEntry : map.entrySet()) {
-            PermissionRequestStateMetric prStateMetrics = new PermissionRequestStateMetric();
-            prStateMetrics.setId(prStateMetricsEntry.getKey().name());
             for(var prStateMetricsEntryValue : prStateMetricsEntry.getValue()) {
                 double mean = prStateMetricsEntryValue.getMean();
                 double median = prStateMetricsEntryValue.getMedian();
                 count = prStateMetricsEntryValue.getPermissionRequestCount();
-                prStateMetrics.setMetrics(new Metrics(mean, median, count));
+                prStateListMetrics.add(new PermissionRequestStateMetric(prStateMetricsEntry.getKey().name(),
+                        new Metrics(mean, median, count)));
             }
-            prStateListMetrics.add(prStateMetrics);
         }
 
         return new AbstractMap.SimpleEntry<>(count, prStateListMetrics);

@@ -3,11 +3,8 @@ package energy.eddie.outbound.metric.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.outbound.metric.generated.PermissionRequestMetrics;
-import energy.eddie.outbound.metric.model.Metrics;
 import energy.eddie.outbound.metric.model.PermissionRequestMetricsModel;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +13,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(MockitoExtension.class)
 class MetricsReportBuilderTest {
 
     @Test
@@ -67,7 +63,7 @@ class MetricsReportBuilderTest {
         PermissionRequestMetrics input = mapper.readValue(json, PermissionRequestMetrics.class);
 
         // When
-        PermissionRequestMetrics result = metricsReportBuilder.createMetricsReport("EDDIE_Test", inputData);
+        PermissionRequestMetrics result = metricsReportBuilder.createMetricsReport(inputData);
 
         // Then
         assertEquals(mapper.writeValueAsString(input), mapper.writeValueAsString(result));
@@ -79,11 +75,10 @@ class MetricsReportBuilderTest {
         MetricsReportBuilder metricsReportBuilder = new MetricsReportBuilder();
 
         // When
-        PermissionRequestMetrics result = metricsReportBuilder.createMetricsReport("empty-instance", List.of());
+        PermissionRequestMetrics result = metricsReportBuilder.createMetricsReport(List.of());
 
         // Then
-        assertEquals("empty-instance", result.getInstance());
-        assertEquals(0, ((Metrics) result.getMetrics()).getCount());
+        assertEquals(0, result.getCount());
         assertTrue(result.getRegionConnectorMetrics().isEmpty());
     }
 }

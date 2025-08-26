@@ -1,28 +1,27 @@
 package energy.eddie.outbound.metric.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.outbound.metric.config.MetricOutboundConnectorConfiguration;
 import energy.eddie.outbound.metric.generated.PermissionRequestMetrics;
 import energy.eddie.outbound.metric.model.PermissionRequestMetricsModel;
 import energy.eddie.outbound.metric.repositories.PermissionRequestMetricsRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.web.client.RestTemplate;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import java.net.URI;
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,57 +35,60 @@ class MetricsReportServiceTest {
     private MetricOutboundConnectorConfiguration config;
 
     @Mock
-    private RestTemplate restTemplate;
-
-    @Mock
     private MetricsReportBuilder reportBuilder;
 
-    @SuppressWarnings("unused")
-    @Mock
-    private TaskScheduler taskScheduler;
-
-    @Spy
-    @InjectMocks
     private MetricsReportService service;
 
+    private MockWebServer mockWebServer;
+
+    @BeforeEach
+    void setUp() throws IOException {
+        mockWebServer = new MockWebServer();
+        mockWebServer.start();
+
+        WebClient webClient = WebClient.builder()
+                .baseUrl(mockWebServer.url("/").toString())
+                .build();
+
+        service = new MetricsReportService(metricsRepository, config, reportBuilder, webClient);
+
+        when(config.endpoint()).thenReturn(mockWebServer.url("/metadata-sharing").uri());
+
+    }
+
+    @AfterEach
+    void tearDown() throws IOException {
+        mockWebServer.shutdown();
+    }
+
     @Test
-    void testGenerateAndSendReport_Success() throws JsonProcessingException {
+    void testGenerateAndSendReport_Success() throws InterruptedException, JsonProcessingException {
         // Given
-        String instance = "EDDIE-test";
-        URI endpoint = URI.create("https://eddie.energy/metadata-sharing");
+        String eddieId = "EDDIE-test";
         List<PermissionRequestMetricsModel> metricsList = List.of();
         PermissionRequestMetrics report = new PermissionRequestMetrics();
 
         // When
         when(metricsRepository.findAll()).thenReturn(metricsList);
-        when(reportBuilder.createMetricsReport(instance, metricsList)).thenReturn(report);
+        when(reportBuilder.createMetricsReport(metricsList)).thenReturn(report);
+        when(config.eddieId()).thenReturn(eddieId);
 
-        service.generateAndSendReport(instance, endpoint);
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200));
+        service.generateAndSendReport();
 
-        var httpEntityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).exchange(eq(endpoint), eq(HttpMethod.POST), httpEntityCaptor.capture(), eq(Void.class));
+        var request = mockWebServer.takeRequest(1, TimeUnit.SECONDS);
+        assertNotNull(request);
 
-        // Then
-        var capturedEntity = httpEntityCaptor.getValue();
-        assertEquals(report, capturedEntity.getBody());
-        assertEquals(MediaType.APPLICATION_JSON, capturedEntity.getHeaders().getContentType());
-    }
-
-    @Test
-    void testFetchMetricsReport_HandlesJsonException() throws JsonProcessingException {
-        // Given
-        String instance = "EDDIE-test";
-        URI endpoint = URI.create("https://eddie.energy/metadata-sharing");
-
-        // When
-        when(config.instance()).thenReturn(instance);
-        when(config.endpoint()).thenReturn(endpoint);
-
-        doThrow(new JsonProcessingException("Simulated error") {})
-                .when(service).generateAndSendReport(instance, endpoint);
+        ObjectMapper mapper = new ObjectMapper();
+        PermissionRequestMetrics sentReport = mapper.readValue(request.getBody().readUtf8(), PermissionRequestMetrics.class);
 
         // Then
-        assertDoesNotThrow(() -> service.fetchMetricsReport());
-        verify(service).generateAndSendReport(instance, endpoint);
+        assertNotNull(request);
+        assertEquals("/metadata-sharing", request.getPath());
+        assertEquals("POST", request.getMethod());
+        assertEquals("application/json", request.getHeader("Content-Type"));
+
+        assertNotNull(sentReport);
+        assertEquals(eddieId, sentReport.getEddieId());
     }
 }
