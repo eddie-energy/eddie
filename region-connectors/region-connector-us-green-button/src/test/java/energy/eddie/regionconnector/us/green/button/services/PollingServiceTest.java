@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.time.*;
 import java.util.List;
@@ -306,6 +307,36 @@ class PollingServiceTest {
         // Then
         verify(publishService, never()).publishValidatedHistoricalData(any());
         verify(outbox, never()).commit(any());
+    }
+
+
+    @Test
+    void forcePollValidatedHistoricalDataOfValidatedHistoricalData_publishes() {
+        // Given
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var start = now.minusDays(10);
+        var end = now.minusDays(1);
+        var pr = new GreenButtonPermissionRequestBuilder().setPermissionId("pid")
+                                                          .setLastMeterReadings(METERS)
+                                                          .build();
+        var credentials = new OAuthTokenDetails("pid",
+                                                "token",
+                                                Instant.now(Clock.systemUTC()),
+                                                Instant.now(Clock.systemUTC()),
+                                                "token",
+                                                "1111");
+        when(credentialService.retrieveAccessToken(pr)).thenReturn(Mono.just(credentials));
+        when(api.batchSubscription("1111", "token", Set.of("uid"), start, end))
+                .thenReturn(Flux.just(new SyndFeedImpl()));
+
+        // When
+        var res = pollingService.forcePollValidatedHistoricalData(pr, start, end);
+
+        // Then
+        StepVerifier.create(res)
+                    .expectNextCount(1)
+                    .verifyComplete();
+        verify(publishService).publishValidatedHistoricalData(any());
     }
 
     @Test
