@@ -20,7 +20,8 @@
     "@vitejs/plugin-vue": "^5.2.3",
     "prettier": "3.5.3",
     "vite": "^6.2.4",
-    "vite-plugin-vue-devtools": "^7.7.2"
+    "vite-plugin-vue-devtools": "^7.7.2",
+    "vite-svg-loader": "^5.1.0"
   },
   "web-types": "./shoelace-web-types.json"
 }
