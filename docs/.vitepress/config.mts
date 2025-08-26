@@ -99,6 +99,10 @@ export default withMermaid(
                   link: "/1-running/region-connectors/region-connector-cds.md",
                 },
                 {
+                  text: "Moj Elektro (SI)",
+                  link: "/1-running/region-connectors/region-connector-si-moj-elektro.md",
+                },
+                {
                   text: "Simulation",
                   link: "/1-running/region-connectors/region-connector-simulation.md",
                 },

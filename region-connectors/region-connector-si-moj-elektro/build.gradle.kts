@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "energy.eddie"
-version = "1.0.0"
+version = "0.0.0"
 
 repositories {
     mavenCentral()
@@ -20,22 +20,13 @@ dependencies {
     implementation(project(":api"))
     implementation(project(":region-connectors:shared"))
     implementation(project(":data-needs"))
-
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.actuator)
-    implementation(libs.spring.boot.security)
     implementation(libs.jakarta.validation.api)
 
-    implementation(libs.reactor.core)
-
-    implementation(libs.nimbus.oidc)
-    implementation(libs.bouncycastle.bcpkix)
-
-
     runtimeOnly(libs.postgresql)
-    runtimeOnly(libs.bouncycastle.bcprov)
     runtimeOnly(libs.hibernate.validator)
 
     testImplementation(libs.junit.jupiter)
@@ -55,7 +46,7 @@ tasks.test {
     useJUnitPlatform()
 }
 
-configureJavaCompileWithErrorProne("energy.eddie.regionconnector.fi.fingrid")
+configureJavaCompileWithErrorProne("energy.eddie.regionconnector.si.moj.elektro")
 
 // disable bootJar task as it needs a main class and region connectors do not have one
 tasks.getByName<BootJar>("bootJar") {
@@ -65,7 +56,6 @@ tasks.getByName<BootJar>("bootJar") {
 tasks.getByName<Jar>("jar") {
     enabled = true
 }
-
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
