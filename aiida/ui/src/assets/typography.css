@@ -1,0 +1,48 @@
+.heading-1 {
+  font-weight: 600;
+  font-size: 3rem;
+  line-height: 3.5rem;
+  color: var(--eddie-primary);
+
+  @media screen and (max-width: 1024px) {
+    font-size: 2.5rem;
+    line-height: 3rem;
+  }
+}
+
+.heading-2 {
+  font-weight: 600;
+  font-size: 2.5rem;
+  line-height: 3rem;
+  color: var(--eddie-primary);
+}
+
+.heading-3 {
+  font-weight: 600;
+  font-size: 2rem;
+  line-height: 2.5rem;
+  color: var(--eddie-primary);
+}
+
+.heading-4 {
+  font-weight: 600;
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.heading-5 {
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.6rem;
+  color: var(--eddie-primary);
+}
+
+.text-large {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.text-small {
+  font-size: 0.875rem;
+  line-height: 1.1rem;
+}

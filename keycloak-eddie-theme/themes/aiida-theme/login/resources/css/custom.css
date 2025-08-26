@@ -13,4 +13,8 @@
     background-image: url('../images/aiida.svg');
     aspect-ratio: 314 / 49;
     height: 50px;
+
+    @media screen and (min-width: 1024px) {
+        height: 100px;
+    }
 }

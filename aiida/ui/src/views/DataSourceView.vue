@@ -18,13 +18,15 @@ function edit(target) {
 </script>
 
 <template>
-  <h2>Data sources</h2>
+  <main>
+    <h1 class="heading-2">Data sources</h1>
 
-  <Suspense>
-    <DataSourceDialog :open :dataSource @hide="open = false" />
-  </Suspense>
+    <Suspense>
+      <DataSourceDialog :open :dataSource @hide="open = false" />
+    </Suspense>
 
-  <sl-button variant="primary" @click="add">Add Data Source</sl-button>
+    <sl-button variant="primary" @click="add">Add Data Source</sl-button>
 
-  <DataSourceList @edit="edit" />
+    <DataSourceList @edit="edit" />
+  </main>
 </template>
