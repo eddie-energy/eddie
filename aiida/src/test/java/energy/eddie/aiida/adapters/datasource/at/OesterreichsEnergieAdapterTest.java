@@ -75,7 +75,7 @@ class OesterreichsEnergieAdapterTest {
         );
         adapter = new OesterreichsEnergieAdapter(DATA_SOURCE, mapper, mqttConfiguration);
 
-        LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
+        LOG_CAPTOR_ADAPTER.setLogLevelToTrace();
     }
 
     @AfterEach
@@ -308,7 +308,7 @@ class OesterreichsEnergieAdapterTest {
                     .expectComplete()
                     .verify();
 
-        assertThat(LOG_CAPTOR_ADAPTER.getDebugLogs()).contains("Found unknown OBIS-CODES from " + DATA_SOURCE.asset() + ": [UNKNOWN-OBIS-CODE]");
+        assertThat(LOG_CAPTOR_ADAPTER.getTraceLogs()).contains("Found unknown OBIS-CODES from " + DATA_SOURCE.asset() + ": [UNKNOWN-OBIS-CODE]");
     }
 
     @Test

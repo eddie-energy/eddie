@@ -4,7 +4,9 @@ import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.errors.*;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.permission.*;
+import energy.eddie.aiida.models.permission.MqttStreamingConfig;
+import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.repositories.DataSourceRepository;
@@ -356,6 +358,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             markPermissionAsUnfulfillable(permission);
         }
 
+        LOGGER.debug("Updated permission {} with details fetched from EDDIE {}",
+                     permission.permissionId(),
+                     permission.eddieId());
         return permissionRepository.save(permission);
     }
 

@@ -91,7 +91,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
         var invalidTags = AiidaRecordValidator.checkInvalidDataTags(aiidaRecord);
 
         if (!invalidTags.isEmpty()) {
-            LOGGER.debug("Found unknown OBIS-CODES from {}: {}", asset, invalidTags);
+            LOGGER.trace("Found unknown OBIS-CODES from {}: {}", asset, invalidTags);
         }
 
         var result = recordSink.tryEmitNext(aiidaRecord);
