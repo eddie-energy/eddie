@@ -229,6 +229,10 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             // If a client is not connected, it will not save published messages to its persistence module, but instead
             // throws an exception. Therefore, we need to manually save messages that failed to send.
             client.publish(topic, payload, 1, false);
+            LOGGER.atTrace()
+                  .addArgument(streamingConfig.permissionId())
+                  .addArgument(topic)
+                  .log("MqttStreamer for permission {} successfully sent message to topic {}");
         } catch (MqttException exception) {
             LOGGER.atTrace()
                   .addArgument(streamingConfig.permissionId())
@@ -261,7 +265,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                   .addArgument(streamingConfig.permissionId())
                   .addArgument(statusMessage)
                   .setCause(exception)
-                  .log("MqttStreamer for permission {} failed to send connectionStatusMessage {}, will close streamer without retrying to send");
+                  .log("MqttStreamer for permission {} failed to send ConnectionStatusMessage {}, will close streamer without retrying to send");
         }
     }
 

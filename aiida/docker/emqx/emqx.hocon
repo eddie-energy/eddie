@@ -53,7 +53,7 @@ authorization {
     max_size = 32
     ttl = "1m"
   }
-  deny_action = disconnect
+  deny_action = ignore
   no_match = deny
   sources = [
     {

@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.*;
+import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceModbusDto;
+import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.dtos.DataSourceSecretsDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -170,7 +173,11 @@ public class DataSourceService {
                         dto.enabled()),
                 () -> startDataSource(dataSource));
 
-        return repository.save(dataSource);
+
+        var savedDataSource = repository.save(dataSource);
+        LOGGER.debug("Updated data source {} with content {}", dto.id(), dto);
+
+        return savedDataSource;
     }
 
     public void updateEnabledState(UUID dataSourceId, boolean enabled) throws EntityNotFoundException {
@@ -190,6 +197,7 @@ public class DataSourceService {
                 () -> startDataSource(dataSource));
 
         repository.save(dataSource);
+        LOGGER.debug("Updated enabled state of data source {} to {}", dataSourceId, enabled);
     }
 
     public DataSourceSecretsDto regenerateSecrets(UUID dataSourceId) throws EntityNotFoundException {
@@ -212,6 +220,7 @@ public class DataSourceService {
                     () -> startDataSource(dataSource));
 
             repository.save(dataSource);
+            LOGGER.debug("Regenerated secrets for data source {}", dataSourceId);
         }
         return dataSourceSecrets;
     }
