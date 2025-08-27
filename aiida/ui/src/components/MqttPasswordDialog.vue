@@ -14,13 +14,9 @@ function hide(event: Event) {
   <sl-dialog label="MQTT Password" :open="open || undefined" @sl-hide="hide">
     <p>Make sure to copy the password now. You will not be able to view it again.</p>
     <sl-input type="password" readonly password-toggle :value="password">
-      <template v-slot:suffix>
-        <sl-copy-button :value="password"></sl-copy-button>
-      </template>
+      <sl-copy-button slot="suffix" :value="password"></sl-copy-button>
     </sl-input>
 
-    <template v-slot:footer>
-      <sl-button variant="danger" @click="hide">Close</sl-button>
-    </template>
+    <sl-button variant="danger" slot="footer" @click="hide">Close</sl-button>
   </sl-dialog>
 </template>

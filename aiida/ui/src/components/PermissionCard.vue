@@ -23,14 +23,11 @@ function handleUpdate() {
 
 <template>
   <sl-details>
-    <template v-slot:summary>
-      <span>
-        <strong>{{ serviceName }}</strong>
-        <br />
-        <small>{{ permissionId }}</small>
-      </span>
-    </template>
-
+    <span slot="summary">
+      <strong>{{ serviceName }}</strong>
+      <br />
+      <small>{{ permissionId }}</small>
+    </span>
     <PermissionDetails :permission />
 
     <br />

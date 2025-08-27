@@ -51,18 +51,14 @@ async function stopScanning() {
 
     <template v-if="errorMessage">
       <sl-alert variant="danger" open>
-        <template v-slot:icon>
-          <sl-icon name="exclamation-triangle"></sl-icon>
-        </template>
+        <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
         {{ errorMessage }}
       </sl-alert>
     </template>
 
     <div id="error"></div>
 
-    <template v-slot:footer>
-      <sl-button @close="stopScanning" outline>Close</sl-button>
-    </template>
+    <sl-button @close="stopScanning" outline slot="footer">Close</sl-button>
   </sl-dialog>
 </template>
 

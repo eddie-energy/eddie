@@ -242,14 +242,12 @@ onMounted(() => {
       </template>
     </form>
 
-    <template v-slot:footer>
-      <footer>
-        <sl-button slot="footer" type="submit" variant="primary" form="data-source-form">
-          Save
-        </sl-button>
-        <sl-button slot="footer" type="button" variant="neutral" @click="hide">Cancel</sl-button>
-      </footer>
-    </template>
+    <footer slot="footer">
+      <sl-button slot="footer" type="submit" variant="primary" form="data-source-form">
+        Save
+      </sl-button>
+      <sl-button slot="footer" type="button" variant="neutral" @click="hide">Cancel</sl-button>
+    </footer>
   </sl-dialog>
 </template>
 

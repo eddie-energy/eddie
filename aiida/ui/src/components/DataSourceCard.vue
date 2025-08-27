@@ -14,13 +14,11 @@ const { countryCode, asset, dataSourceType, enabled, id, mqttSettings, name, sim
 
 <template>
   <sl-details>
-    <template v-slot:summary>
-      <span>
-        <strong>{{ name }}</strong>
-        <br />
-        <small>{{ dataSourceType }}</small>
-      </span>
-    </template>
+    <span slot="summary">
+      <strong>{{ name }}</strong>
+      <br />
+      <small>{{ dataSourceType }}</small>
+    </span>
 
     <dl class="details-list">
       <dt>ID:</dt>

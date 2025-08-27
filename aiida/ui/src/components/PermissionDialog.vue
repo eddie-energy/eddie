@@ -64,13 +64,11 @@ function hide(event: Event) {
       permission.
     </p>
 
-    <template v-slot:footer>
-      <footer>
-        <sl-button variant="primary" @click="confirm(permission.permissionId)">Confirm</sl-button>
-        <sl-button variant="danger" @click="reject(permission.permissionId)">Reject</sl-button>
-        <sl-button outline @click="hide">Close</sl-button>
-      </footer>
-    </template>
+    <footer slot="footer">
+      <sl-button variant="primary" @click="confirm(permission.permissionId)">Confirm</sl-button>
+      <sl-button variant="danger" @click="reject(permission.permissionId)">Reject</sl-button>
+      <sl-button outline @click="hide">Close</sl-button>
+    </footer>
   </sl-dialog>
 </template>
 
