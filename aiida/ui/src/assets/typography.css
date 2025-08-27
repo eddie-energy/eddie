@@ -46,3 +46,12 @@
   font-size: 0.875rem;
   line-height: 1.1rem;
 }
+
+.text-xsmall {
+  font-size: 0.625rem;
+  line-height: 1rem;
+
+  @media screen and (min-width: 1024px) {
+    font-size: 0.875rem;
+  }
+}

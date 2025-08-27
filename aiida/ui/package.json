@@ -12,6 +12,7 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
+    "@fontsource/poppins": "^5.1.1",
     "@zxing/browser": "^0.1.5",
     "cronstrue": "^2.51.0",
     "keycloak-js": "^26.2.0",

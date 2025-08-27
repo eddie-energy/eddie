@@ -84,6 +84,9 @@ importers:
 
   aiida/ui:
     dependencies:
+      '@fontsource/poppins':
+        specifier: ^5.1.1
+        version: 5.1.1
       '@zxing/browser':
         specifier: ^0.1.5
         version: 0.1.5(@zxing/library@0.21.3)
