@@ -1,6 +1,7 @@
 package energy.eddie.outbound.rest;
 
 import energy.eddie.api.agnostic.outbound.OutboundConnectorSecurityConfig;
+import energy.eddie.outbound.shared.utils.CommonPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -26,7 +27,7 @@ public class RestSecurityConfig {
     @Bean
     @ConditionalOnExpression(value = "${outbound-connector.rest.enabled:false} and ${outbound-connector.rest.oauth2.enabled:false}")
     public MvcRequestMatcher.Builder restRequestMatcher(HandlerMappingIntrospector introspector) {
-        return new MvcRequestMatcher.Builder(introspector).servletPath("/outbound-connectors/rest");
+        return new MvcRequestMatcher.Builder(introspector).servletPath(CommonPaths.getServletPathForOutboundConnector("rest"));
     }
 
     @Bean

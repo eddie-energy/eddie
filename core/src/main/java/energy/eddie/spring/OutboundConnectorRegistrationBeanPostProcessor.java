@@ -70,7 +70,7 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
      * </p>
      * <p>
      * The DispatcherServlet has its URL mapping set to
-     * "/{@value CommonPaths#ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH}/{OC-NAME}/*" whereas {@code OC-NAME} is specified by
+     * "/outbound-connectors/{name}/*" whereas {@code name} is specified by
      * {@link OutboundConnector#name()}.
      * </p>
      *
@@ -206,7 +206,7 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
             AnnotationConfigWebApplicationContext outboundConnectorContext,
             String outboundConnectorName
     ) {
-        String urlMapping = CommonPaths.getServletPathForOutboundConnector(outboundConnectorName);
+        String urlMapping = CommonPaths.getServletPathForOutboundConnector(outboundConnectorName) + "/*";
         LOGGER.info("Registering new outbound-connector with URL mapping {}", urlMapping);
         DispatcherServlet dispatcherServlet = new DispatcherServlet(outboundConnectorContext);
 

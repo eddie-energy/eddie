@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "eddie.management.server.urlprefix=management",
         "outbound-connector.admin-console.login.enabled=true",
         "outbound-connector.admin-console.login.username=user",
-        "outbound-connector.admin-console.login.encodedPassword=$2a$10$qYTmwhGa3dd7Sl1CdXKKHOfmf0lNXL3L2k4CVhhm3CfY131hrcEyS"
+        "outbound-connector.admin-console.login.encoded-password=$2a$10$qYTmwhGa3dd7Sl1CdXKKHOfmf0lNXL3L2k4CVhhm3CfY131hrcEyS"
 })
 @AutoConfigureMockMvc
 @WithMockUser

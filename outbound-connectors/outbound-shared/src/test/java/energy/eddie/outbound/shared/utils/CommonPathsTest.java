@@ -15,6 +15,6 @@ class CommonPathsTest {
         var res = CommonPaths.getServletPathForOutboundConnector(oc);
 
         // Then
-        assertEquals("/outbound-connectors/admin-console/*", res);
+        assertEquals("/outbound-connectors/admin-console", res);
     }
 }

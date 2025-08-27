@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -39,10 +40,22 @@ public class CoreSecurityConfig {
     }
 
     /**
-     * Provide a custom {@link InMemoryUserDetailsManager} to avoid Spring auto-generating a user.
+     * Generate admin user for basic login to admin console or provide a custom {@link InMemoryUserDetailsManager} to avoid Spring auto-generating a user.
      */
     @Bean
-    public InMemoryUserDetailsManager userDetailsService() {
+    public InMemoryUserDetailsManager userDetailsService(
+            @Value("${outbound-connector.admin.console.login.mode:false}") String loginMode,
+            @Value("${outbound-connector.admin.console.login.username:admin}") String username,
+            @Value("${outbound-connector.admin.console.login.encoded-password:$2a$10$qYTmwhGa3dd7Sl1CdXKKHOfmf0lNXL3L2k4CVhhm3CfY131hrcEyS}") String encodedPassword
+    ) {
+        if ("basic".equalsIgnoreCase(loginMode)) {
+            var user = User.builder()
+                           .username(username)
+                           .password(encodedPassword)
+                           .roles("ADMIN")
+                           .build();
+            return new InMemoryUserDetailsManager(user);
+        }
         return new InMemoryUserDetailsManager();
     }
 
@@ -78,5 +91,4 @@ public class CoreSecurityConfig {
     public JwtAuthorizationManager jwtHeaderAuthorizationManager(JwtUtil jwtUtil) {
         return new JwtAuthorizationManager(jwtUtil);
     }
-
 }

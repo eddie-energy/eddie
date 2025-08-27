@@ -15,7 +15,7 @@ outbound-connector.rest.enabled=true
 outbound-connector.rest.retention-time=PT48H
 outbound-connector.rest.retention-removal=0 0 * * * *
 outbound-connector.rest.oauth2.enabled=false
-outbound-connector.rest.oauth2.issuer-url=http://localhost:8888/realms/master
+outbound-connector.rest.oauth2.issuer-url=http://localhost:8888/realms/EDDIE
 ```
 
 ## Endpoints
