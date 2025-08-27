@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import STATUS from '@/constants/permission-status'
-import type { PermissionStatus } from '@/types'
 
-const props = defineProps<{ status: PermissionStatus }>()
+const props = defineProps<{ status: string }>()
 const status = props.status
 </script>
 

@@ -71,8 +71,8 @@ async function handleModbusVendorSelect(event: Event) {
   if (dataSource.value.modbusSettings) {
     dataSource.value.modbusSettings.modbusVendor = vendor
     modbusModels.value = await getModbusModels(vendor)
-    delete dataSource.value.modbusSettings.modbusModel
-    delete dataSource.value.modbusSettings.modbusDevice
+    dataSource.value.modbusSettings.modbusModel = ''
+    dataSource.value.modbusSettings.modbusDevice = ''
   }
 }
 
@@ -81,7 +81,7 @@ async function handleModbusModelSelect(event: Event) {
   if (dataSource.value.modbusSettings) {
     dataSource.value.modbusSettings.modbusModel = model
     modbusDevices.value = await getModbusDevices(model)
-    delete dataSource.value.modbusSettings.modbusDevice
+    dataSource.value.modbusSettings.modbusDevice = ''
   }
 }
 

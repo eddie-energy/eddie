@@ -32,10 +32,7 @@ function parseAiidaCode(aiidaCode: string) {
 
 async function handleAddPermission() {
   try {
-    if (!aiidaCodeInput.value) {
-      throw new Error('Input element not found.')
-    }
-    const permissionRequest = parseAiidaCode(aiidaCodeInput.value.value)
+    const permissionRequest = parseAiidaCode(aiidaCodeInput.value!.value)
     const permission = await addPermission(permissionRequest)
     fetchPermissions()
     updatePermission(permission)

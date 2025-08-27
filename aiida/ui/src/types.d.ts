@@ -21,8 +21,8 @@ export type AiidaMqttSettings = {
 export type AiidaModbusSettings = {
   modbusIp: string
   modbusVendor: string
-  modbusModel?: string
-  modbusDevice?: string
+  modbusModel: string
+  modbusDevice: string
 }
 
 export type AiidaDataSource = {
@@ -40,7 +40,7 @@ export type AiidaDataSource = {
 export type AiidaPermission = {
   permissionId: string
   eddieId: string
-  status: PermissionStatus
+  status: string
   serviceName: string
   startTime: string
   expirationTime: string
@@ -67,28 +67,3 @@ export type AiidaPermissionRequest = {
   accessToken: string
 }
 
-export type PermissionStatus =
-  | 'ACCEPTED'
-  | 'WAITING_FOR_START'
-  | 'STREAMING_DATA'
-  | 'REJECTED'
-  | 'REVOCATION_RECEIVED'
-  | 'REVOKED'
-  | 'TERMINATED'
-  | 'FULFILLED'
-  | 'FAILED_TO_START'
-  | 'CREATED'
-  | 'FETCHED_DETAILS'
-  | 'UNFULFILLABLE'
-  | 'FETCHED_MQTT_CREDENTIALS'
-
-export type PermissionStatusMethods = {
-  title: string
-  description: string
-  isActive?: boolean
-  isRevocable?: boolean
-  isError?: boolean
-  isOpen?: boolean
-}
-
-export type PermissionStatusMap = Record<PermissionStatus, PermissionStatusMethods>

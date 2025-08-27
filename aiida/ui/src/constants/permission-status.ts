@@ -1,6 +1,13 @@
-import type { PermissionStatusMap } from "@/types";
-
-export default {
+const permissionSatus: {
+  [key: string]: {
+    title: string
+    description: string
+    isActive?: boolean
+    isRevocable?: boolean
+    isError?: boolean
+    isOpen?: boolean
+  }
+} = {
   ACCEPTED: {
     title: 'Accepted',
     description: 'You accepted the permission request and it is being processed.',
@@ -70,4 +77,5 @@ export default {
       'This is an internal state only, the permission should be transitioned into another state automatically.',
     isActive: true,
   },
-} as PermissionStatusMap
+}
+export default permissionSatus;
