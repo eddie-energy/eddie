@@ -36,8 +36,7 @@ public class MetricsReportService {
     @Scheduled(cron = "${outbound-connector.metric.interval:0 0 */12 * * *}")
     void generateAndSendReport() {
         List<PermissionRequestMetricsModel> rows = metricsRepository.findAll();
-        PermissionRequestMetrics report = reportBuilder.createMetricsReport(rows);
-        report.setEddieId(config.eddieId());
+        PermissionRequestMetrics report = reportBuilder.createMetricsReport(rows, config.eddieId());
 
         URI endpoint = config.endpoint();
         webClient.post()

@@ -64,14 +64,15 @@ class MetricsReportServiceTest {
     @Test
     void testGenerateAndSendReport_Success() throws InterruptedException, JsonProcessingException {
         // Given
-        String eddieId = "EDDIE-test";
+        String eddieId = "EDDIE-Test";
         List<PermissionRequestMetricsModel> metricsList = List.of();
         PermissionRequestMetrics report = new PermissionRequestMetrics();
+        report.setEddieId(eddieId);
 
         // When
         when(metricsRepository.findAll()).thenReturn(metricsList);
-        when(reportBuilder.createMetricsReport(metricsList)).thenReturn(report);
         when(config.eddieId()).thenReturn(eddieId);
+        when(reportBuilder.createMetricsReport(metricsList, eddieId)).thenReturn(report);
 
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
         service.generateAndSendReport();

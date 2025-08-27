@@ -63,7 +63,7 @@ class MetricsReportBuilderTest {
         PermissionRequestMetrics input = mapper.readValue(json, PermissionRequestMetrics.class);
 
         // When
-        PermissionRequestMetrics result = metricsReportBuilder.createMetricsReport(inputData);
+        PermissionRequestMetrics result = metricsReportBuilder.createMetricsReport(inputData, input.getEddieId());
 
         // Then
         assertEquals(mapper.writeValueAsString(input), mapper.writeValueAsString(result));
@@ -75,7 +75,7 @@ class MetricsReportBuilderTest {
         MetricsReportBuilder metricsReportBuilder = new MetricsReportBuilder();
 
         // When
-        PermissionRequestMetrics result = metricsReportBuilder.createMetricsReport(List.of());
+        PermissionRequestMetrics result = metricsReportBuilder.createMetricsReport(List.of(), "EDDIE-Test");
 
         // Then
         assertEquals(0, result.getCount());

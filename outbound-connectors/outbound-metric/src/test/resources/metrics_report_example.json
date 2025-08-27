@@ -1,4 +1,5 @@
 {
+  "eddie_id": "EDDIE-Test",
   "count" : 3,
   "region_connector_metrics" : [ {
     "Id" : "be-fluvius",
