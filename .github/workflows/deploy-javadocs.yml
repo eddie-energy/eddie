@@ -16,7 +16,7 @@ on:
 
 jobs:
   docs-deploy:
-    runs-on: [ linux, no-dind ]
+    runs-on: [ linux, external ]
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
@@ -29,6 +29,7 @@ jobs:
       - name: Deploy javadoc to webserver
         if: github.ref_name == 'main'
         uses: eddie-energy/ftp-deploy-action@main
+        timeout-minutes: 5
         with:
           host: ${{ secrets.WEBSERVER_SFTP_HOST }}
           source: "./build/docs/javadoc-all/"
