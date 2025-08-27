@@ -22,6 +22,7 @@ const { statusType = 'healthy' } = defineProps<{
   border: 1px solid var(--eddie-green);
   color: var(--eddie-green);
   width: fit-content;
+  height: fit-content;
   border-radius: 1rem;
 
   &.unhealthy {

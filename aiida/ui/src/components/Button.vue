@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 const { buttonStyle = 'primary', size = 'normal' } = defineProps<{
   buttonStyle?: 'primary' | 'secondary' | 'error' | 'error-secondary'
@@ -30,6 +31,8 @@ const { buttonStyle = 'primary', size = 'normal' } = defineProps<{
   border: 1px solid var(--button-bg-color);
   border-radius: 2rem;
   font-weight: 600;
+  width: fit-content;
+  height: fit-content;
 
   &:hover {
     color: var(--button-bg-color);
