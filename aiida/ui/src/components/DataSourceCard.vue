@@ -1,5 +1,5 @@
-<script setup>
-import { BASE_URL } from '@/api.js'
+<script setup lang="ts">
+import { BASE_URL } from '@/api'
 
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 

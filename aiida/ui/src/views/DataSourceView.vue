@@ -19,7 +19,7 @@ function edit(target) {
 
 <template>
   <main>
-    <h1 class="heading-2">Data sources</h1>
+    <h1>Data sources</h1>
 
     <Suspense>
       <DataSourceDialog :open :dataSource @hide="open = false" />

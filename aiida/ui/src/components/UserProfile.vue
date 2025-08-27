@@ -1,8 +1,7 @@
-<script setup>
-import { keycloak } from '@/keycloak.js'
+<script setup lang="ts">
+import { keycloak } from '@/keycloak'
 import { ref, useTemplateRef } from 'vue'
-import { getApplicationInformation } from '@/api.js'
-import AccountIcon from '@/assets/icons/AccountIcon.svg'
+import { getApplicationInformation } from '@/api'
 
 const firstName = ref('')
 const lastName = ref('')
@@ -12,9 +11,9 @@ const aiidaId = ref('')
 const drawer = useTemplateRef('drawer')
 
 keycloak.loadUserProfile().then((user) => {
-  firstName.value = user.firstName
-  lastName.value = user.lastName
-  username.value = user.username
+  firstName.value = user.firstName ?? ''
+  lastName.value = user.lastName ?? ''
+  username.value = user.username ?? ''
 })
 
 getApplicationInformation().then((data) => {
@@ -95,10 +94,11 @@ small {
   align-self: end;
 }
 
-.user-profile-link {
+button {
+  all: unset;
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 </style>

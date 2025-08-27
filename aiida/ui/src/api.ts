@@ -1,5 +1,6 @@
-import { keycloak } from '@/keycloak.js'
-import { notify } from '@/util/toast.js'
+import { keycloak } from './keycloak'
+import type { AiidaDataSource, AiidaPermission, AiidaPermissionRequest } from './types'
+import { notify } from './util/toast'
 
 export const BASE_URL = THYMELEAF_AIIDA_PUBLIC_URL ?? import.meta.env.VITE_AIIDA_PUBLIC_URL
 
@@ -19,7 +20,7 @@ const FALLBACK_ERROR_MESSAGES = {
  * @returns {Promise<any>}
  * @throws {{message: string, cause: Response}} Error message and response as cause for HTTP status codes outside the 2xx range.
  */
-async function fetch(path, init) {
+async function fetch(path: string, init?: RequestInit): Promise<any> {
   try {
     await keycloak.updateToken(5)
   } catch (error) {
@@ -35,7 +36,7 @@ async function fetch(path, init) {
       },
       ...init,
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       notify('Network error. Please check your connection.', 'danger')
       throw error
     })
@@ -43,7 +44,7 @@ async function fetch(path, init) {
   if (!response.ok) {
     const message =
       (await parseErrorResponse(response)) ??
-      FALLBACK_ERROR_MESSAGES[response.status] ??
+      FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
       'An unexpected error occurred. Please try again.'
     notify(message, 'danger')
     throw new Error(message, {
@@ -65,7 +66,7 @@ async function fetch(path, init) {
  * @param {Response} response
  * @returns {Promise<string>}
  */
-async function parseErrorResponse(response) {
+async function parseErrorResponse(response: Response): Promise<string> {
   // Check if response is JSON
   if (!response.headers.get('content-type')?.includes('application/json')) {
     return response.text()
@@ -74,8 +75,8 @@ async function parseErrorResponse(response) {
   const json = await response.json()
 
   // EDDIE-style error messages
-  if (json.errors && json.errors.length > 0) {
-    return json.errors.map(({ message }) => message).join(' ')
+  if (json.errors && Array.isArray(json.errors) && json.errors.length > 0) {
+    return json.errors.map(({ message }: { message: string }) => message).join(' ')
   }
 
   // AIIDA-style error messages
@@ -113,12 +114,16 @@ export function getModbusVendors() {
 }
 
 /** @returns {Promise<{id: string, name: string, vendorId: string}[]>} */
-export function getModbusModels(vendorId) {
+export function getModbusModels(
+  vendorId: string,
+): Promise<{ id: string; name: string; vendorId: string }[]> {
   return fetch(`/datasources/modbus/vendors/${vendorId}/models`)
 }
 
 /** @returns {Promise<{id: string, name: string, modelId: string}[]>} */
-export function getModbusDevices(modelId) {
+export function getModbusDevices(
+  modelId: string,
+): Promise<{ id: string; name: string; modelId: string }[]> {
   return fetch(`/datasources/modbus/models/${modelId}/devices`)
 }
 
@@ -133,14 +138,14 @@ export function getApplicationInformation() {
  * @param permission {AiidaPermissionRequest}
  * @returns {Promise<AiidaPermission>}
  */
-export function addPermission(permission) {
+export function addPermission(permission: AiidaPermissionRequest): Promise<AiidaPermission> {
   return fetch('/permissions', {
     method: 'POST',
     body: JSON.stringify(permission),
   })
 }
 
-export async function rejectPermission(permissionId) {
+export async function rejectPermission(permissionId: string): Promise<any> {
   const result = await fetch(`/permissions/${permissionId}`, {
     method: 'PATCH',
     body: JSON.stringify({
@@ -157,7 +162,7 @@ export async function rejectPermission(permissionId) {
  * @param {string} dataSourceId Data source to use to provide data for this permission.
  * @returns {Promise<void>}
  */
-export async function acceptPermission(permissionId, dataSourceId) {
+export async function acceptPermission(permissionId: string, dataSourceId: string): Promise<void> {
   await fetch(`/permissions/${permissionId}`, {
     method: 'PATCH',
     body: JSON.stringify({
@@ -168,7 +173,7 @@ export async function acceptPermission(permissionId, dataSourceId) {
   notify('Permission request accepted.', 'success')
 }
 
-export async function revokePermission(permissionId) {
+export async function revokePermission(permissionId: string): Promise<void> {
   await fetch(`/permissions/${permissionId}`, {
     method: 'PATCH',
     body: JSON.stringify({
@@ -183,7 +188,9 @@ export async function revokePermission(permissionId) {
  *
  * @param {Omit<AiidaDataSource, id>} dataSource
  */
-export async function addDataSource(dataSource) {
+export async function addDataSource(
+  dataSource: Omit<AiidaDataSource, 'id'>,
+): Promise<AiidaDataSource> {
   const result = await fetch(`/datasources`, {
     method: 'POST',
     body: JSON.stringify(dataSource),
@@ -198,7 +205,10 @@ export async function addDataSource(dataSource) {
  * @param {string} dataSourceId
  * @param {Omit<AiidaDataSource, id>} dataSource
  */
-export async function saveDataSource(dataSourceId, dataSource) {
+export async function saveDataSource(
+  dataSourceId: string,
+  dataSource: Omit<AiidaDataSource, 'id'>,
+): Promise<void> {
   await fetch(`/datasources/${dataSourceId}`, {
     method: 'PATCH',
     body: JSON.stringify(dataSource),
@@ -206,7 +216,7 @@ export async function saveDataSource(dataSourceId, dataSource) {
   notify('Changes to this data source have been saved.', 'success')
 }
 
-export async function deleteDataSource(dataSourceId) {
+export async function deleteDataSource(dataSourceId: string): Promise<void> {
   await fetch(`/datasources/${dataSourceId}`, {
     method: 'DELETE',
   })
@@ -219,7 +229,9 @@ export async function deleteDataSource(dataSourceId) {
  * @param dataSourceId
  * @returns {Promise<{ plaintextPassword: string }>}
  */
-export function regenerateDataSourceSecrets(dataSourceId) {
+export function regenerateDataSourceSecrets(
+  dataSourceId: string,
+): Promise<{ plaintextPassword: string }> {
   return fetch(`/datasources/${dataSourceId}/regenerate-secrets`, {
     method: 'POST',
   })

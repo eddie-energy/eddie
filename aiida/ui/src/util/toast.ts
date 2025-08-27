@@ -12,12 +12,11 @@ const icon = {
   danger: 'exclamation-octagon',
 }
 
-/**
- * @param {string} message
- * @param {"info" | "success" | "warning" | "danger"} severity
- * @param {number} duration
- */
-export function notify(message, severity = 'info', duration = 10000) {
+export function notify(
+  message: string,
+  severity: 'info' | 'success' | 'warning' | 'danger' = 'info',
+  duration: number = 10000,
+) {
   const alert = Object.assign(document.createElement('sl-alert'), {
     variant: variant[severity],
     closable: true,
@@ -29,5 +28,6 @@ export function notify(message, severity = 'info', duration = 10000) {
   })
 
   document.body.append(alert)
+  //@ts-expect-error
   customElements.whenDefined('sl-alert').then(() => alert.toast())
 }

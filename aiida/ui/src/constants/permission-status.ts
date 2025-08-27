@@ -1,3 +1,5 @@
+import type { PermissionStatusMap } from "@/types";
+
 export default {
   ACCEPTED: {
     title: 'Accepted',
@@ -68,4 +70,4 @@ export default {
       'This is an internal state only, the permission should be transitioned into another state automatically.',
     isActive: true,
   },
-}
+} as PermissionStatusMap

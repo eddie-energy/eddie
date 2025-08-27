@@ -1,9 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import cronstrue from 'cronstrue'
-import PermissionStatusBadge from '@/components/PermissionStatusBadge.vue'
+import PermissionStatusBadge from './PermissionStatusBadge.vue'
+import type { AiidaPermission } from '@/types'
 
-/** @type {{ permission: AiidaPermission }} */
-const props = defineProps(['permission'])
+const props = defineProps<{
+  permission: AiidaPermission
+}>()
+
 const { permission } = props
 
 const {

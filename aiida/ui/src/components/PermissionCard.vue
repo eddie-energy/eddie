@@ -1,12 +1,12 @@
-<script setup>
-import STATUS from '@/constants/permission-status.js'
-import { revokePermission } from '@/api.js'
+<script setup lang="ts">
+import STATUS from '@/constants/permission-status'
+import { revokePermission } from '@/api'
 import PermissionDetails from '@/components/PermissionDetails.vue'
-import { usePermissionDialog } from '@/composables/permission-dialog.js'
-import { fetchPermissions } from '@/stores/permissions.js'
+import { usePermissionDialog } from '@/composables/permission-dialog'
+import { fetchPermissions } from '@/stores/permissions'
+import type { AiidaPermission } from '@/types'
 
-/** @type {{ permission: AiidaPermission }} */
-const { permission } = defineProps(['permission'])
+const { permission } = defineProps<{ permission: AiidaPermission }>()
 const { permissionId, serviceName, status } = permission
 const { updatePermission } = usePermissionDialog()
 

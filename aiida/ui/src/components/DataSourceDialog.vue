@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import {
   addDataSource,
   getAssetTypes,
@@ -7,24 +7,33 @@ import {
   getModbusModels,
   getModbusVendors,
   saveDataSource,
-} from '@/api.js'
+} from '@/api'
 import { onMounted, ref, toRaw, useTemplateRef, watch } from 'vue'
 import { fetchDataSources } from '@/stores/dataSources.js'
+import type { AiidaDataSource } from '@/types'
 
 const SUPPORTED_COUNTRY_CODES = ['AT', 'FR', 'NL']
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
-/** @type {ShallowRef<HTMLFormElement>} */
-const form = useTemplateRef('form')
+const form = useTemplateRef<HTMLFormElement>('form')
 
 const dataSourceTypes = await getDataSourceTypes()
 const assetTypes = (await getAssetTypes()).assets
 
 const props = defineProps(['open', 'dataSource'])
 const emit = defineEmits(['hide'])
+const modbusVendors = ref([])
+const modbusModels = ref<{ id: string; name: string; vendorId: string }[]>([])
+const modbusDevices = ref<{ id: string; name: string; modelId: string }[]>([])
 
-/** @type {Ref<AiidaDataSource>} */
-const dataSource = ref({ enabled: false })
+const dataSource = ref<AiidaDataSource>({
+  enabled: false,
+  id: '',
+  dataSourceType: '',
+  asset: '',
+  name: '',
+  countryCode: '',
+})
 
 watch(props, async () => {
   dataSource.value = props.dataSource ? { ...toRaw(props.dataSource) } : { enabled: true }
@@ -36,49 +45,54 @@ watch(props, async () => {
       modbusVendors.value = await getModbusVendors()
     }
     modbusModels.value = await getModbusModels(modbusVendor)
-    modbusDevices.value = await getModbusDevices(modbusModel)
+    modbusDevices.value = modbusModel ? await getModbusDevices(modbusModel) : []
   }
 })
 
-const modbusVendors = ref([])
-const modbusModels = ref([])
-const modbusDevices = ref([])
-
-async function handleDataSourceTypeSelect(event) {
-  const dataSourceType = event.target.value
+async function handleDataSourceTypeSelect(event: Event) {
+  const dataSourceType = (event.target as HTMLSelectElement).value
   dataSource.value.dataSourceType = dataSourceType
 
   if (dataSourceType === 'MODBUS') {
-    dataSource.value.modbusSettings = {}
+    dataSource.value.modbusSettings = {
+      modbusIp: '',
+      modbusVendor: '',
+      modbusModel: '',
+      modbusDevice: '',
+    }
     modbusVendors.value = await getModbusVendors()
   } else {
     delete dataSource.value.modbusSettings
   }
 }
 
-async function handleModbusVendorSelect(event) {
-  const vendor = event.target.value
-  dataSource.value.modbusSettings.modbusVendor = vendor
-  modbusModels.value = await getModbusModels(vendor)
-  delete dataSource.value.modbusSettings.modbusModel
-  delete dataSource.value.modbusSettings.modbusDevice
+async function handleModbusVendorSelect(event: Event) {
+  const vendor = (event.target as HTMLSelectElement).value
+  if (dataSource.value.modbusSettings) {
+    dataSource.value.modbusSettings.modbusVendor = vendor
+    modbusModels.value = await getModbusModels(vendor)
+    delete dataSource.value.modbusSettings.modbusModel
+    delete dataSource.value.modbusSettings.modbusDevice
+  }
 }
 
-async function handleModbusModelSelect(event) {
-  const model = event.target.value
-  dataSource.value.modbusSettings.modbusModel = model
-  modbusDevices.value = await getModbusDevices(model)
-  delete dataSource.value.modbusSettings.modbusDevice
+async function handleModbusModelSelect(event: Event) {
+  const model = (event.target as HTMLSelectElement).value
+  if (dataSource.value.modbusSettings) {
+    dataSource.value.modbusSettings.modbusModel = model
+    modbusDevices.value = await getModbusDevices(model)
+    delete dataSource.value.modbusSettings.modbusDevice
+  }
 }
 
-function hide(event) {
+function hide(event: Event) {
   // avoid conflict with hide event from Shoelace's select element
   if (event.target === event.currentTarget) {
     emit('hide')
   }
 }
 
-function save(event) {
+function save(event: Event) {
   event.preventDefault()
 
   const promise = props.dataSource
@@ -95,7 +109,7 @@ function save(event) {
 onMounted(() => {
   // Prevent form from skipping validation in Shoelace elements
   customElements.whenDefined('sl-input').then(() => {
-    form.value.addEventListener('submit', save)
+    form.value?.addEventListener('submit', save)
   })
 })
 </script>
@@ -168,6 +182,7 @@ onMounted(() => {
       <template v-if="dataSource.dataSourceType === 'MODBUS'">
         <br />
         <sl-input
+          v-if="dataSource.modbusSettings?.modbusIp"
           name="modbusIp"
           label="Local IP Address"
           placeholder="e.g. 192.168.x.x / localhost"
@@ -206,6 +221,7 @@ onMounted(() => {
         </sl-select>
         <br />
         <sl-select
+          v-if="dataSource.modbusSettings?.modbusModel"
           id="modbus-device-list"
           name="modbusDevice"
           label="Device"

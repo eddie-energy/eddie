@@ -1,14 +1,15 @@
-<script setup>
+<script setup lang="ts">
 import PermissionCard from '@/components/PermissionCard.vue'
-import STATUS from '@/constants/permission-status.js'
+import STATUS from '@/constants/permission-status'
 import { computed, onMounted } from 'vue'
-import { fetchPermissions, permissions } from '@/stores/permissions.js'
+import { fetchPermissions, permissions } from '@/stores/permissions'
 
 onMounted(() => {
   fetchPermissions()
 })
 
-const labels = [
+type GroupKey = 'open' | 'active' | 'error' | 'complete'
+const labels: { key: GroupKey; label: string }[] = [
   { key: 'open', label: 'Pending' },
   { key: 'active', label: 'Active' },
   { key: 'error', label: 'Failed' },
@@ -30,7 +31,7 @@ const groups = computed(() => {
   <template v-for="{ key, label } in labels" :key="key">
     <template v-if="groups[key]?.length">
       <h3>{{ label }}</h3>
-      <article v-for="permission in groups[key]" :key="permission.id">
+      <article v-for="permission in groups[key]" :key="permission.permissionId">
         <PermissionCard :permission="permission" />
       </article>
     </template>

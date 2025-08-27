@@ -1,8 +1,8 @@
-<script setup>
+<script setup lang="ts">
 const { open, password } = defineProps(['open', 'password'])
 const emit = defineEmits(['hide'])
 
-function hide(event) {
+function hide(event: Event) {
   // avoid conflict with hide event from Shoelace's select element
   if (event.target === event.currentTarget) {
     emit('hide')

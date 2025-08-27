@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import PermissionList from '@/components/PermissionList.vue'
 import AiidaCodeInput from '@/components/AiidaCodeInput.vue'
 </script>
