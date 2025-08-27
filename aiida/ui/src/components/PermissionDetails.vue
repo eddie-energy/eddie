@@ -51,7 +51,7 @@ const {
 
     <dt>Schemas</dt>
     <dd>
-      <template v-for="schema in schemas">
+      <template v-for="schema in schemas" v-bind:key="schema">
         <span>{{ schema }}</span>
         <br />
       </template>
@@ -63,7 +63,7 @@ const {
     <template v-if="dataTags && dataTags.length">
       <dt>OBIS-Codes</dt>
       <dd>
-        <template v-for="code in dataTags">
+        <template v-for="code in dataTags" v-bind:key="code">
           <span>{{ code }}</span>
           <br />
         </template>

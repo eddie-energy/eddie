@@ -26,7 +26,7 @@ const modbusVendors = ref([])
 const modbusModels = ref<{ id: string; name: string; vendorId: string }[]>([])
 const modbusDevices = ref<{ id: string; name: string; modelId: string }[]>([])
 
-const dataSource = ref<AiidaDataSource>({
+const dataSourceRef = ref<AiidaDataSource>({
   enabled: false,
   id: '',
   dataSourceType: '',
@@ -36,10 +36,10 @@ const dataSource = ref<AiidaDataSource>({
 })
 
 watch(props, async () => {
-  dataSource.value = props.dataSource ? { ...toRaw(props.dataSource) } : { enabled: true }
+  dataSourceRef.value = props.dataSource ? { ...toRaw(props.dataSource) } : { enabled: true }
 
-  if (dataSource.value.modbusSettings) {
-    const { modbusVendor, modbusModel } = dataSource.value.modbusSettings
+  if (dataSourceRef.value.modbusSettings) {
+    const { modbusVendor, modbusModel } = dataSourceRef.value.modbusSettings
 
     if (!modbusVendors.value) {
       modbusVendors.value = await getModbusVendors()
@@ -51,10 +51,10 @@ watch(props, async () => {
 
 async function handleDataSourceTypeSelect(event: Event) {
   const dataSourceType = (event.target as HTMLSelectElement).value
-  dataSource.value.dataSourceType = dataSourceType
+  dataSourceRef.value.dataSourceType = dataSourceType
 
   if (dataSourceType === 'MODBUS') {
-    dataSource.value.modbusSettings = {
+    dataSourceRef.value.modbusSettings = {
       modbusIp: '',
       modbusVendor: '',
       modbusModel: '',
@@ -62,26 +62,26 @@ async function handleDataSourceTypeSelect(event: Event) {
     }
     modbusVendors.value = await getModbusVendors()
   } else {
-    delete dataSource.value.modbusSettings
+    delete dataSourceRef.value.modbusSettings
   }
 }
 
 async function handleModbusVendorSelect(event: Event) {
   const vendor = (event.target as HTMLSelectElement).value
-  if (dataSource.value.modbusSettings) {
-    dataSource.value.modbusSettings.modbusVendor = vendor
+  if (dataSourceRef.value.modbusSettings) {
+    dataSourceRef.value.modbusSettings.modbusVendor = vendor
     modbusModels.value = await getModbusModels(vendor)
-    dataSource.value.modbusSettings.modbusModel = ''
-    dataSource.value.modbusSettings.modbusDevice = ''
+    dataSourceRef.value.modbusSettings.modbusModel = ''
+    dataSourceRef.value.modbusSettings.modbusDevice = ''
   }
 }
 
 async function handleModbusModelSelect(event: Event) {
   const model = (event.target as HTMLSelectElement).value
-  if (dataSource.value.modbusSettings) {
-    dataSource.value.modbusSettings.modbusModel = model
+  if (dataSourceRef.value.modbusSettings) {
+    dataSourceRef.value.modbusSettings.modbusModel = model
     modbusDevices.value = await getModbusDevices(model)
-    dataSource.value.modbusSettings.modbusDevice = ''
+    dataSourceRef.value.modbusSettings.modbusDevice = ''
   }
 }
 
@@ -96,8 +96,8 @@ function save(event: Event) {
   event.preventDefault()
 
   const promise = props.dataSource
-    ? saveDataSource(props.dataSource.id, dataSource.value)
-    : addDataSource(dataSource.value)
+    ? saveDataSource(props.dataSource.id, dataSourceRef.value)
+    : addDataSource(dataSourceRef.value)
 
   promise.then(() => {
     fetchDataSources()
@@ -122,13 +122,13 @@ onMounted(() => {
         label="Name"
         required
         :value="dataSource.name"
-        @sl-input="dataSource.name = $event.target.value"
+        @sl-input="dataSourceRef.name = $event.target.value"
       ></sl-input>
       <br />
       <sl-checkbox
         name="enabled"
         :checked="dataSource.enabled"
-        @sl-input="dataSource.enabled = $event.target.checked"
+        @sl-input="dataSourceRef.enabled = $event.target.checked"
       >
         Enabled
       </sl-checkbox>
@@ -139,9 +139,9 @@ onMounted(() => {
         label="Country"
         required
         :value="dataSource.countryCode"
-        @sl-input="dataSource.countryCode = $event.target.value"
+        @sl-input="dataSourceRef.countryCode = $event.target.value"
       >
-        <sl-option v-for="country in SUPPORTED_COUNTRY_CODES" :value="country">
+        <sl-option v-for="country in SUPPORTED_COUNTRY_CODES" :value="country" v-bind:key="country">
           {{ COUNTRY_NAMES.of(country) }}
         </sl-option>
       </sl-select>
@@ -150,9 +150,9 @@ onMounted(() => {
         label="Asset Type"
         required
         :value="dataSource.asset"
-        @sl-input="dataSource.asset = $event.target.value"
+        @sl-input="dataSourceRef.asset = $event.target.value"
       >
-        <sl-option v-for="type in assetTypes" :value="type">
+        <sl-option v-for="type in assetTypes" :value="type" v-bind:key="type">
           {{ type }}
         </sl-option>
       </sl-select>
@@ -164,7 +164,11 @@ onMounted(() => {
         :value="dataSource.dataSourceType"
         @sl-input="handleDataSourceTypeSelect"
       >
-        <sl-option v-for="{ identifier, name } in dataSourceTypes" :value="identifier">
+        <sl-option
+          v-for="{ identifier, name } in dataSourceTypes"
+          :value="identifier"
+          v-bind:key="identifier"
+        >
           {{ name }}
         </sl-option>
       </sl-select>
@@ -176,7 +180,7 @@ onMounted(() => {
           type="number"
           required
           :value="dataSource.simulationPeriod"
-          @sl-input="dataSource.simulationPeriod = $event.target.value"
+          @sl-input="dataSourceRef.simulationPeriod = $event.target.value"
         ></sl-input>
       </template>
       <template v-if="dataSource.dataSourceType === 'MODBUS'">
@@ -190,7 +194,7 @@ onMounted(() => {
           help-text="Enter a private local IP address (e.g. 192.168.x.x)"
           pattern="(?:localhost|((25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)(\.)){3}(25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d))"
           :value="dataSource.modbusSettings?.modbusIp"
-          @sl-input="dataSource.modbusSettings.modbusIp = $event.target.value"
+          @sl-input="dataSourceRef.modbusSettings!.modbusIp = $event.target.value"
         ></sl-input>
         <br />
         <sl-select
@@ -201,7 +205,7 @@ onMounted(() => {
           :value="dataSource.modbusSettings?.modbusVendor"
           @sl-input="handleModbusVendorSelect"
         >
-          <sl-option v-for="{ id, name } in modbusVendors" :value="id">
+          <sl-option v-for="{ id, name } in modbusVendors" :value="id" v-bind:key="id">
             {{ name }}
           </sl-option>
         </sl-select>
@@ -215,7 +219,7 @@ onMounted(() => {
           :value="dataSource.modbusSettings?.modbusModel"
           @sl-input="handleModbusModelSelect"
         >
-          <sl-option v-for="{ id, name } in modbusModels" :value="id">
+          <sl-option v-for="{ id, name } in modbusModels" :value="id" v-bind:key="id">
             {{ name }}
           </sl-option>
         </sl-select>
@@ -229,21 +233,23 @@ onMounted(() => {
           required
           :disabled="!dataSource.modbusSettings?.modbusModel"
           :value="dataSource.modbusSettings?.modbusDevice"
-          @sl-input="dataSource.modbusSettings.modbusDevice = $event.target.value"
+          @sl-input="dataSourceRef.modbusSettings!.modbusDevice = $event.target.value"
         >
-          <sl-option v-for="{ id, name } in modbusDevices" :value="id">
+          <sl-option v-for="{ id, name } in modbusDevices" :value="id" v-bind:key="id">
             {{ name }}
           </sl-option>
         </sl-select>
       </template>
     </form>
 
-    <footer slot="footer">
-      <sl-button slot="footer" type="submit" variant="primary" form="data-source-form">
-        Save
-      </sl-button>
-      <sl-button slot="footer" type="button" variant="neutral" @click="hide">Cancel</sl-button>
-    </footer>
+    <template v-slot:footer>
+      <footer>
+        <sl-button slot="footer" type="submit" variant="primary" form="data-source-form">
+          Save
+        </sl-button>
+        <sl-button slot="footer" type="button" variant="neutral" @click="hide">Cancel</sl-button>
+      </footer>
+    </template>
   </sl-dialog>
 </template>
 

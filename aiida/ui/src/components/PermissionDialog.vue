@@ -53,7 +53,9 @@ function hide(event: Event) {
       :value="selectedDataSource"
       @sl-input="selectedDataSource = $event.target.value"
     >
-      <sl-option v-for="{ name, id } in dataSources" :value="id">{{ name }} ({{ id }})</sl-option>
+      <sl-option v-for="{ name, id } in dataSources" :value="id" v-bind:key="id"
+        >{{ name }} ({{ id }})</sl-option
+      >
     </sl-select>
 
     <p class="text">
@@ -62,11 +64,13 @@ function hide(event: Event) {
       permission.
     </p>
 
-    <footer slot="footer">
-      <sl-button variant="primary" @click="confirm(permission.permissionId)">Confirm</sl-button>
-      <sl-button variant="danger" @click="reject(permission.permissionId)">Reject</sl-button>
-      <sl-button outline @click="hide">Close</sl-button>
-    </footer>
+    <template v-slot:footer>
+      <footer>
+        <sl-button variant="primary" @click="confirm(permission.permissionId)">Confirm</sl-button>
+        <sl-button variant="danger" @click="reject(permission.permissionId)">Reject</sl-button>
+        <sl-button outline @click="hide">Close</sl-button>
+      </footer>
+    </template>
   </sl-dialog>
 </template>
 

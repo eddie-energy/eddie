@@ -66,4 +66,3 @@ export type AiidaPermissionRequest = {
   handshakeUrl: string
   accessToken: string
 }
-

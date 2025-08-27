@@ -1,5 +1,6 @@
-<script setup>
-import { RouterLink, useRoute } from 'vue-router'
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup lang="ts">
+import { RouterLink } from 'vue-router'
 import UserProfile from '@/components/UserProfile.vue'
 import Logo from '@/assets/logo.svg'
 import { BASE_URL } from '@/api.js'
@@ -22,6 +23,7 @@ const paths = [
         :to="path"
         v-for="[path, name] in paths"
         class="link-with-bold-hover"
+        v-bind:key="path"
       >
         {{ name }}
       </RouterLink>

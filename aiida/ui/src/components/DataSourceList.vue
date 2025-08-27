@@ -2,7 +2,7 @@
 import { deleteDataSource, regenerateDataSourceSecrets } from '@/api'
 import DataSourceCard from '@/components/DataSourceCard.vue'
 import MqttPasswordDialog from '@/components/MqttPasswordDialog.vue'
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref } from 'vue'
 import { dataSources, fetchDataSources } from '@/stores/dataSources'
 
 const dialogOpen = ref(false)

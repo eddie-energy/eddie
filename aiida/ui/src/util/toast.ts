@@ -29,5 +29,6 @@ export function notify(
 
   document.body.append(alert)
   //@ts-expect-error
+  // temporary because we will delete it later
   customElements.whenDefined('sl-alert').then(() => alert.toast())
 }

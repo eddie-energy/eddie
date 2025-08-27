@@ -78,4 +78,4 @@ const permissionSatus: {
     isActive: true,
   },
 }
-export default permissionSatus;
+export default permissionSatus

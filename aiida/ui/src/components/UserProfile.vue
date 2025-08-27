@@ -42,12 +42,16 @@ getApplicationInformation().then((data) => {
 
     <div class="actions">
       <sl-button variant="primary" outline @click="keycloak.accountManagement()">
-        <sl-icon slot="prefix" name="person-fill"></sl-icon>
+        <template v-slot:prefix>
+          <sl-icon name="person-fill"></sl-icon>
+        </template>
         Account settings
       </sl-button>
 
       <sl-button variant="danger" outline @click="keycloak.logout()">
-        <sl-icon slot="prefix" name="box-arrow-in-right"></sl-icon>
+        <template v-slot:prefix>
+          <sl-icon name="box-arrow-in-right"></sl-icon>
+        </template>
         Logout
       </sl-button>
     </div>

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import DataSourceList from '@/components/DataSourceList.vue'
 import DataSourceDialog from '@/components/DataSourceDialog.vue'
 import { ref } from 'vue'
