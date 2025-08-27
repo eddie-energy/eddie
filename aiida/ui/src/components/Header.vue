@@ -23,7 +23,7 @@ const paths = [
         :to="path"
         v-for="[path, name] in paths"
         class="link-with-bold-hover"
-        v-bind:key="path"
+        :key="path"
       >
         {{ name }}
       </RouterLink>

@@ -53,7 +53,7 @@ function hide(event: Event) {
       :value="selectedDataSource"
       @sl-input="selectedDataSource = $event.target.value"
     >
-      <sl-option v-for="{ name, id } in dataSources" :value="id" v-bind:key="id"
+      <sl-option v-for="{ name, id } in dataSources" :value="id" :key="id"
         >{{ name }} ({{ id }})</sl-option
       >
     </sl-select>

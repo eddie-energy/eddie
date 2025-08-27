@@ -2,6 +2,7 @@
 import { keycloak } from '@/keycloak'
 import { ref, useTemplateRef } from 'vue'
 import { getApplicationInformation } from '@/api'
+import AccountIcon from '@/assets/icons/AccountIcon.svg'
 
 const firstName = ref('')
 const lastName = ref('')
@@ -62,8 +63,14 @@ getApplicationInformation().then((data) => {
 </template>
 
 <style scoped>
-.user-profile-link::after {
-  padding-right: 2em;
+.user-profile-link {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+
+  &:after {
+    padding-right: 2em;
+  }
 }
 
 .header {

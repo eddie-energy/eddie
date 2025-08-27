@@ -69,10 +69,13 @@ async function handleDataSourceTypeSelect(event: Event) {
 async function handleModbusVendorSelect(event: Event) {
   const vendor = (event.target as HTMLSelectElement).value
   if (dataSourceRef.value.modbusSettings) {
-    dataSourceRef.value.modbusSettings.modbusVendor = vendor
+    dataSourceRef.value.modbusSettings = {
+      modbusVendor: vendor,
+      modbusModel: '',
+      modbusDevice: '',
+      modbusIp: '',
+    }
     modbusModels.value = await getModbusModels(vendor)
-    dataSourceRef.value.modbusSettings.modbusModel = ''
-    dataSourceRef.value.modbusSettings.modbusDevice = ''
   }
 }
 
@@ -121,13 +124,13 @@ onMounted(() => {
         name="name"
         label="Name"
         required
-        :value="dataSource.name"
+        :value="dataSourceRef.name"
         @sl-input="dataSourceRef.name = $event.target.value"
       ></sl-input>
       <br />
       <sl-checkbox
         name="enabled"
-        :checked="dataSource.enabled"
+        :checked="dataSourceRef.enabled"
         @sl-input="dataSourceRef.enabled = $event.target.checked"
       >
         Enabled
@@ -138,10 +141,10 @@ onMounted(() => {
         name="countryCode"
         label="Country"
         required
-        :value="dataSource.countryCode"
+        :value="dataSourceRef.countryCode"
         @sl-input="dataSourceRef.countryCode = $event.target.value"
       >
-        <sl-option v-for="country in SUPPORTED_COUNTRY_CODES" :value="country" v-bind:key="country">
+        <sl-option v-for="country in SUPPORTED_COUNTRY_CODES" :value="country" :key="country">
           {{ COUNTRY_NAMES.of(country) }}
         </sl-option>
       </sl-select>
@@ -149,10 +152,10 @@ onMounted(() => {
       <sl-select
         label="Asset Type"
         required
-        :value="dataSource.asset"
+        :value="dataSourceRef.asset"
         @sl-input="dataSourceRef.asset = $event.target.value"
       >
-        <sl-option v-for="type in assetTypes" :value="type" v-bind:key="type">
+        <sl-option v-for="type in assetTypes" :value="type" :key="type">
           {{ type }}
         </sl-option>
       </sl-select>
@@ -161,39 +164,39 @@ onMounted(() => {
         name="dataSourceType"
         label="Data Source Type"
         required
-        :value="dataSource.dataSourceType"
+        :value="dataSourceRef.dataSourceType"
         @sl-input="handleDataSourceTypeSelect"
       >
         <sl-option
           v-for="{ identifier, name } in dataSourceTypes"
           :value="identifier"
-          v-bind:key="identifier"
+          :key="identifier"
         >
           {{ name }}
         </sl-option>
       </sl-select>
-      <template v-if="dataSource.dataSourceType === 'SIMULATION'">
+      <template v-if="dataSourceRef.dataSourceType === 'SIMULATION'">
         <br />
         <sl-input
           name="simulationPeriod"
           label="Simulation Period"
           type="number"
           required
-          :value="dataSource.simulationPeriod"
+          :value="dataSourceRef.simulationPeriod"
           @sl-input="dataSourceRef.simulationPeriod = $event.target.value"
         ></sl-input>
       </template>
-      <template v-if="dataSource.dataSourceType === 'MODBUS'">
+      <template v-if="dataSourceRef.dataSourceType === 'MODBUS'">
         <br />
         <sl-input
-          v-if="dataSource.modbusSettings?.modbusIp"
+          v-if="dataSourceRef.modbusSettings?.modbusIp"
           name="modbusIp"
           label="Local IP Address"
           placeholder="e.g. 192.168.x.x / localhost"
           required
           help-text="Enter a private local IP address (e.g. 192.168.x.x)"
           pattern="(?:localhost|((25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)(\.)){3}(25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d))"
-          :value="dataSource.modbusSettings?.modbusIp"
+          :value="dataSourceRef.modbusSettings?.modbusIp"
           @sl-input="dataSourceRef.modbusSettings!.modbusIp = $event.target.value"
         ></sl-input>
         <br />
@@ -202,10 +205,10 @@ onMounted(() => {
           label="Vendor"
           placeholder="Select a vendor..."
           required
-          :value="dataSource.modbusSettings?.modbusVendor"
+          :value="dataSourceRef.modbusSettings?.modbusVendor"
           @sl-input="handleModbusVendorSelect"
         >
-          <sl-option v-for="{ id, name } in modbusVendors" :value="id" v-bind:key="id">
+          <sl-option v-for="{ id, name } in modbusVendors" :value="id" :key="id">
             {{ name }}
           </sl-option>
         </sl-select>
@@ -215,27 +218,27 @@ onMounted(() => {
           label="Model"
           placeholder="Select a model..."
           required
-          :disabled="!dataSource.modbusSettings?.modbusVendor"
-          :value="dataSource.modbusSettings?.modbusModel"
+          :disabled="!dataSourceRef.modbusSettings?.modbusVendor"
+          :value="dataSourceRef.modbusSettings?.modbusModel"
           @sl-input="handleModbusModelSelect"
         >
-          <sl-option v-for="{ id, name } in modbusModels" :value="id" v-bind:key="id">
+          <sl-option v-for="{ id, name } in modbusModels" :value="id" :key="id">
             {{ name }}
           </sl-option>
         </sl-select>
         <br />
         <sl-select
-          v-if="dataSource.modbusSettings?.modbusModel"
+          v-if="dataSourceRef.modbusSettings?.modbusModel"
           id="modbus-device-list"
           name="modbusDevice"
           label="Device"
           placeholder="Select a device..."
           required
-          :disabled="!dataSource.modbusSettings?.modbusModel"
-          :value="dataSource.modbusSettings?.modbusDevice"
+          :disabled="!dataSourceRef.modbusSettings?.modbusModel"
+          :value="dataSourceRef.modbusSettings?.modbusDevice"
           @sl-input="dataSourceRef.modbusSettings!.modbusDevice = $event.target.value"
         >
-          <sl-option v-for="{ id, name } in modbusDevices" :value="id" v-bind:key="id">
+          <sl-option v-for="{ id, name } in modbusDevices" :value="id" :key="id">
             {{ name }}
           </sl-option>
         </sl-select>
