@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.outbound.EnableSwaggerDoc;
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import energy.eddie.api.agnostic.outbound.OutboundConnectorExtension;
+import energy.eddie.outbound.shared.utils.CommonPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -205,7 +206,7 @@ public class OutboundConnectorRegistrationBeanPostProcessor implements BeanDefin
             AnnotationConfigWebApplicationContext outboundConnectorContext,
             String outboundConnectorName
     ) {
-        var urlMapping = "/outbound-connectors/%s/*".formatted(outboundConnectorName);
+        String urlMapping = CommonPaths.getServletPathForOutboundConnector(outboundConnectorName) + "/*";
         LOGGER.info("Registering new outbound-connector with URL mapping {}", urlMapping);
         DispatcherServlet dispatcherServlet = new DispatcherServlet(outboundConnectorContext);
 
