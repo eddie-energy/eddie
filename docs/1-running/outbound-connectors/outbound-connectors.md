@@ -2,7 +2,7 @@
 
 Outbound-connectors allow the eligible party to interact with EDDIE via defined interfaces.
 Which interfaces and protocols are supported depends on the implementation of the outbound-connector.
-Currently, there are three implementations of the outbound-connectors:
+Current implementations of the outbound-connectors are as follows:
 
 - [admin-console](../admin-console.md): Allows interacting with EDDIE via a human-readable interface and is served as a webpage.
   It is considered a special outbound connector since it supports more features than a simple outbound connector.
@@ -11,6 +11,6 @@ Currently, there are three implementations of the outbound-connectors:
 - [outbound-connector-rest](outbound-connector-rest.md): Implements an outbound-connector for REST clients.
 - [outbound-connector-metric](outbound-connector-metric.md): Implements an outbound-connector for metrics.
 
-There are multiple outbound connector implementations to allow the eligible party to have a selection of different protocols.
+These outbound connector implementations allow the eligible party to have a selection of different protocols.
 This allows the EP to reuse already existing deployments of brokers and integrations.
 Not all outbound connectors have to be active at the same time.

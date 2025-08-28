@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Permission Request Metrics",
+  "type": "object",
+  "properties": {
+    "eddie_id": { "type": "string" },
+    "count": { "type": "integer" },
+    "region_connector_metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Id": { "type": "string" },
+          "count": { "type": "integer" },
+          "permission_administrator_metrics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "Id": { "type": "string" },
+                "count": { "type": "integer" },
+                "data_need_type_metrics": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "dnType": { "type": "string" },
+                      "count": { "type": "integer" },
+                      "permission_request_state_metrics": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "Id": { "type": "string" },
+                            "metrics": { "$ref": "#/$defs/metrics" }
+                          },
+                          "required": ["Id", "metrics"],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": ["dnType", "count", "permission_request_state_metrics"],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": ["Id", "count", "data_need_type_metrics"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["Id", "count", "permission_administrator_metrics"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["eddie_id", "count", "region_connector_metrics"],
+  "additionalProperties": false,
+  "$defs": {
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "mean": { "type": "number" },
+        "median": { "type": "number" },
+        "count": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["mean", "median", "count"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -51,6 +51,7 @@ caffeine = "3.2.0"
 
 swagger-annotations = "2.2.34"
 openapi-generator = "7.11.0"
+jsonschema2pojo = "1.2.2"
 openapi-webmvc-ui = "2.8.9"
 apache-httpcomponents-version = "4.5.14"
 apache-httpcomponents-client-version = "5.4.1"
@@ -216,5 +217,9 @@ jte-gradle = { id = "gg.jte.gradle", version.ref = "jte" }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
+
+# used by metric outbound-connector
+jsonschema2pojo = { id = "org.jsonschema2pojo", version.ref = "jsonschema2pojo" }
+
 # AIIDA
 google-jib = { id = "com.google.cloud.tools.jib", version.ref = "google-jib" }

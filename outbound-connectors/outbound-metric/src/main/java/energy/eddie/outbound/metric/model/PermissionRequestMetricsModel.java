@@ -4,9 +4,16 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "permission_request_metrics", schema = "metric", uniqueConstraints = @UniqueConstraint(
-        columnNames = {"permission_request_status", "data_need_type", "permission_administrator_id",
-                "region_connector_id", "country_code"})
+@Table(name = "permission_request_metrics",
+       schema = "metric",
+       uniqueConstraints = @UniqueConstraint(
+               columnNames = {
+                       "permission_request_status",
+                       "data_need_type",
+                       "permission_administrator_id",
+                       "region_connector_id",
+                       "country_code"
+               })
 )
 @SuppressWarnings("NullAway")
 public class PermissionRequestMetricsModel {
@@ -39,20 +46,49 @@ public class PermissionRequestMetricsModel {
     @Column(name = "country_code", nullable = false, updatable = false)
     private String countryCode;
 
-    public PermissionRequestMetricsModel(double mean, double median, PermissionProcessStatus permissionRequestStatus,
-            String dataNeedType, String permissionAdministratorId, String regionConnectorId, String countryCode) {
+    public PermissionRequestMetricsModel(
+            double mean,
+            double median,
+            PermissionProcessStatus permissionRequestStatus,
+            String dataNeedType,
+            String permissionAdministratorId,
+            String regionConnectorId
+    ) {
         this.mean = mean;
         this.median = median;
         this.permissionRequestStatus = permissionRequestStatus;
         this.dataNeedType = dataNeedType;
         this.permissionAdministratorId = permissionAdministratorId;
         this.regionConnectorId = regionConnectorId;
+    }
+
+    public PermissionRequestMetricsModel(
+            double mean,
+            double median,
+            PermissionProcessStatus permissionRequestStatus,
+            String dataNeedType,
+            String permissionAdministratorId,
+            String regionConnectorId,
+            String countryCode
+    ) {
+        this(mean, median, permissionRequestStatus, dataNeedType, permissionAdministratorId, regionConnectorId);
         this.countryCode = countryCode;
     }
 
-    protected PermissionRequestMetricsModel() {
-
+    public PermissionRequestMetricsModel(
+            double mean,
+            double median,
+            int permissionRequestCount,
+            PermissionProcessStatus permissionRequestStatus,
+            String dataNeedType,
+            String permissionAdministratorId,
+            String regionConnectorId
+    ) {
+        this(mean, median, permissionRequestStatus, dataNeedType, permissionAdministratorId, regionConnectorId);
+        this.permissionRequestCount = permissionRequestCount;
     }
+
+    protected PermissionRequestMetricsModel() { }
 
     public Long getId() {
         return id;
