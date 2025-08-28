@@ -77,7 +77,7 @@ const handleTabClick = (tab: string) => {
       <PermissionDropdown
         v-for="permission in slicedPermissions"
         :key="permission.permissionId"
-        :permission="permission"
+        :permission
         :status="selectedTab === 'Complete' ? 'unhealthy' : 'healthy'"
       />
       <Button

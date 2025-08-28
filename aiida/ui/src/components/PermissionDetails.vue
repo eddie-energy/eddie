@@ -57,7 +57,7 @@ const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
       </div>
       <div class="permission-field graph">
         <dt>Data Package Graph</dt>
-        <img class="graph-data" src="/DummyGraph.png" />
+        <img class="graph-data" src="@/assets/DummyGraph.png" />
       </div>
     </div>
     <div class="column">
