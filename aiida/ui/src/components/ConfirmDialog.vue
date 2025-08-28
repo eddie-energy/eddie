@@ -4,11 +4,16 @@ import ModalDialog from './ModalDialog.vue'
 import Button from './Button.vue'
 import { ref } from 'vue'
 
-const { title } = defineProps<{
+const {
+  title,
+  description,
+  cancelLabel = 'Cancel',
+  confirmLabel = 'Confirm',
+} = defineProps<{
   title: string
   description: string
-  cancelLabel: string
-  confirmLabel: string
+  cancelLabel?: string
+  confirmLabel?: string
 }>()
 
 const modal = ref<HTMLDialogElement>()
@@ -37,7 +42,9 @@ defineExpose({ showModal })
       {{ description }}
     </p>
     <div class="button-pair">
-      <Button button-style="secondary" @click="handleUserInput(false)">{{ cancelLabel }}</Button>
+      <Button button-style="secondary" @click="handleUserInput(false)">
+        {{ cancelLabel }}
+      </Button>
       <Button button-style="error" @click="handleUserInput(true)">
         {{ confirmLabel }}
       </Button>
