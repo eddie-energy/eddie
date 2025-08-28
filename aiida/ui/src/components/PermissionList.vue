@@ -7,7 +7,7 @@ import Button from '@/components/Button.vue'
 import CompleteIcon from '@/assets/icons/CompleteIcon.svg'
 import ActiveIcon from '@/assets/icons/ActiveIcon.svg'
 import PendingIcon from '@/assets/icons/PendingIcon.svg'
-import StatusTag from './StatusTag.vue'
+import PermissionDropdown from './PermissionDropdown.vue'
 
 onMounted(async () => {
   await fetchPermissions()
@@ -61,12 +61,12 @@ watch([selectedTab, permissions], () => {
       >
     </div>
     <TransitionGroup tag="ul" name="permissions" class="permission-list">
-      <p v-for="permission in activePermissions" :key="permission.permissionId">
-        {{ permission.serviceName }}
-        <StatusTag :status-type="selectedTab === 'Complete' ? 'unhealthy' : 'healthy'">{{
-          STATUS[permission.status].title
-        }}</StatusTag>
-      </p>
+      <PermissionDropdown
+        v-for="permission in activePermissions"
+        :key="permission.permissionId"
+        :permission="permission"
+        :status="selectedTab === 'Complete' ? 'unhealthy' : 'healthy'"
+      />
     </TransitionGroup>
   </div>
 </template>
