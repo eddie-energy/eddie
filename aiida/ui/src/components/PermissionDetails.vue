@@ -1,9 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import cronstrue from 'cronstrue'
-import PermissionStatusBadge from '@/components/PermissionStatusBadge.vue'
+import PermissionStatusBadge from './PermissionStatusBadge.vue'
+import type { AiidaPermission } from '@/types'
 
-/** @type {{ permission: AiidaPermission }} */
-const props = defineProps(['permission'])
+const props = defineProps<{
+  permission: AiidaPermission
+}>()
+
 const { permission } = props
 
 const {
@@ -48,7 +51,7 @@ const {
 
     <dt>Schemas</dt>
     <dd>
-      <template v-for="schema in schemas">
+      <template v-for="schema in schemas" :key="schema">
         <span>{{ schema }}</span>
         <br />
       </template>
@@ -60,7 +63,7 @@ const {
     <template v-if="dataTags && dataTags.length">
       <dt>OBIS-Codes</dt>
       <dd>
-        <template v-for="code in dataTags">
+        <template v-for="code in dataTags" :key="code">
           <span>{{ code }}</span>
           <br />
         </template>

@@ -2,8 +2,8 @@ import './assets/main.css'
 
 import { createApp } from 'vue'
 import App from './App.vue'
-import router from './router'
-import { keycloak } from '@/keycloak.js'
+import router from './router/index'
+import { keycloak } from './keycloak'
 
 keycloak
   .init({

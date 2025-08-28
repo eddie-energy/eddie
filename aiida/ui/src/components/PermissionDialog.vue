@@ -1,17 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { acceptPermission, getDataSources, rejectPermission } from '@/api.js'
-import PermissionDetails from '@/components/PermissionDetails.vue'
-import { usePermissionDialog } from '@/composables/permission-dialog.js'
-import { fetchPermissions } from '@/stores/permissions.js'
+import { acceptPermission, getDataSources, rejectPermission } from '@/api'
+import PermissionDetails from './PermissionDetails.vue'
+import { usePermissionDialog } from '@/composables/permission-dialog'
+import { fetchPermissions } from '@/stores/permissions'
+import type { AiidaDataSource } from '@/types'
 
 const { permission, open } = usePermissionDialog()
 
-/** @type {Ref<AiidaDataSource[]>} */
-const dataSources = ref([])
+const dataSources = ref<AiidaDataSource[]>([])
 
-/** @type {Ref<string>} */
-const selectedDataSource = ref('')
+const selectedDataSource = ref<string>('')
 
 onMounted(() => {
   getDataSources().then((result) => {
@@ -20,19 +19,19 @@ onMounted(() => {
   })
 })
 
-function confirm() {
-  acceptPermission(permission.value.permissionId, selectedDataSource.value)
+function confirm(permissionId: string) {
+  acceptPermission(permissionId, selectedDataSource.value)
   open.value = false
   fetchPermissions()
 }
 
-function reject() {
-  rejectPermission(permission.value.permissionId)
+function reject(permissionId: string) {
+  rejectPermission(permissionId)
   open.value = false
   fetchPermissions()
 }
 
-function hide(event) {
+function hide(event: Event) {
   // avoid conflict with hide event from Shoelace's select element
   if (event.target === event.currentTarget) {
     open.value = false
@@ -54,7 +53,9 @@ function hide(event) {
       :value="selectedDataSource"
       @sl-input="selectedDataSource = $event.target.value"
     >
-      <sl-option v-for="{ name, id } in dataSources" :value="id">{{ name }} ({{ id }})</sl-option>
+      <sl-option v-for="{ name, id } in dataSources" :value="id" :key="id">
+        {{ name }} ({{ id }})
+      </sl-option>
     </sl-select>
 
     <p class="text">
@@ -64,8 +65,8 @@ function hide(event) {
     </p>
 
     <footer slot="footer">
-      <sl-button variant="primary" @click="confirm">Confirm</sl-button>
-      <sl-button variant="danger" @click="reject">Reject</sl-button>
+      <sl-button variant="primary" @click="confirm(permission.permissionId)">Confirm</sl-button>
+      <sl-button variant="danger" @click="reject(permission.permissionId)">Reject</sl-button>
       <sl-button outline @click="hide">Close</sl-button>
     </footer>
   </sl-dialog>

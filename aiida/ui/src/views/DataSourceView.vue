@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import DataSourceList from '@/components/DataSourceList.vue'
 import DataSourceDialog from '@/components/DataSourceDialog.vue'
 import { ref } from 'vue'
@@ -19,7 +19,7 @@ function edit(target) {
 
 <template>
   <main>
-    <h1 class="heading-2">Data sources</h1>
+    <h1>Data sources</h1>
 
     <Suspense>
       <DataSourceDialog :open :dataSource @hide="open = false" />

@@ -1,8 +1,8 @@
-<script setup>
+<script setup lang="ts">
 const { open, password } = defineProps(['open', 'password'])
 const emit = defineEmits(['hide'])
 
-function hide(event) {
+function hide(event: Event) {
   // avoid conflict with hide event from Shoelace's select element
   if (event.target === event.currentTarget) {
     emit('hide')
@@ -14,9 +14,9 @@ function hide(event) {
   <sl-dialog label="MQTT Password" :open="open || undefined" @sl-hide="hide">
     <p>Make sure to copy the password now. You will not be able to view it again.</p>
     <sl-input type="password" readonly password-toggle :value="password">
-      <sl-copy-button :value="password" slot="suffix"></sl-copy-button>
+      <sl-copy-button slot="suffix" :value="password"></sl-copy-button>
     </sl-input>
 
-    <sl-button slot="footer" variant="danger" @click="hide">Close</sl-button>
+    <sl-button variant="danger" slot="footer" @click="hide">Close</sl-button>
   </sl-dialog>
 </template>

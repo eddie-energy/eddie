@@ -1,24 +1,23 @@
-<script setup>
+<script setup lang="ts">
 import { useTemplateRef } from 'vue'
-import { addPermission } from '@/api.js'
+import { addPermission } from '@/api'
 import QrCodeScanner from '@/components/QrCodeScanner.vue'
-import { usePermissionDialog } from '@/composables/permission-dialog.js'
-import { fetchPermissions } from '@/stores/permissions.js'
+import { usePermissionDialog } from '@/composables/permission-dialog'
+import { fetchPermissions } from '@/stores/permissions'
 
 const { updatePermission } = usePermissionDialog()
 
-/** @type {ShallowRef<HTMLInputElement>} */
-const aiidaCodeInput = useTemplateRef('aiidaCodeInput')
+const aiidaCodeInput = useTemplateRef<HTMLInputElement>('aiidaCodeInput')
 
-function parseAiidaCode(aiidaCode) {
+function parseAiidaCode(aiidaCode: string) {
   if (!aiidaCode?.trim()) {
     throw new Error('Please fill out this field')
   }
 
   try {
     return JSON.parse(window.atob(aiidaCode))
-  } catch (error) {
-    if (error.name === 'InvalidCharacterError') {
+  } catch (error: any) {
+    if (error?.name === 'InvalidCharacterError') {
       console.debug('The AIIDA code does not appear to be encoded in Base64 format.', error)
       throw new Error('The AIIDA code should only contain letters, numbers, and "=" characters.')
     }
@@ -33,18 +32,21 @@ function parseAiidaCode(aiidaCode) {
 
 async function handleAddPermission() {
   try {
-    const permissionRequest = parseAiidaCode(aiidaCodeInput.value.value)
+    const permissionRequest = parseAiidaCode(aiidaCodeInput.value!.value)
     const permission = await addPermission(permissionRequest)
     fetchPermissions()
     updatePermission(permission)
-  } catch ({ message }) {
-    aiidaCodeInput.value.setCustomValidity(message)
-    aiidaCodeInput.value.reportValidity()
+  } catch (error: any) {
+    const message = error?.message ?? error?.toString() ?? 'An unknown error occurred.'
+    if (aiidaCodeInput.value) {
+      aiidaCodeInput.value.setCustomValidity(message)
+      aiidaCodeInput.value.reportValidity()
+    }
   }
 }
 
-function handleQrCodeResult(result) {
-  aiidaCodeInput.value.value = btoa(result)
+function handleQrCodeResult(result: string) {
+  aiidaCodeInput.value!.value = btoa(result)
   handleAddPermission()
 }
 </script>

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { BrowserQRCodeReader } from '@zxing/browser'
 import { ref, useTemplateRef } from 'vue'
 
@@ -9,8 +9,7 @@ const errorMessage = ref('')
 const loading = ref(true)
 
 const dialog = useTemplateRef('dialog')
-/** @type {ShallowRef<HTMLVideoElement>} */
-const video = useTemplateRef('video')
+const video = useTemplateRef<HTMLVideoElement>('video')
 
 async function startScanning() {
   errorMessage.value = ''
@@ -21,15 +20,14 @@ async function startScanning() {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'environment' },
     })
-
-    const result = await codeReader.decodeOnceFromStream(stream, video.value)
+    const result = await codeReader.decodeOnceFromStream(stream, video.value as HTMLVideoElement)
     emit('result', result.getText())
 
     dialog.value.hide()
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
 
-    errorMessage.value = error.message || error
+    errorMessage.value = error.message ?? error
   }
 }
 
@@ -60,7 +58,7 @@ async function stopScanning() {
 
     <div id="error"></div>
 
-    <sl-button @close="stopScanning" slot="footer" outline>Close</sl-button>
+    <sl-button @close="stopScanning" outline slot="footer">Close</sl-button>
   </sl-dialog>
 </template>
 

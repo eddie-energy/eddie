@@ -1,4 +1,13 @@
-export default {
+const permissionSatus: {
+  [key: string]: {
+    title: string
+    description: string
+    isActive?: boolean
+    isRevocable?: boolean
+    isError?: boolean
+    isOpen?: boolean
+  }
+} = {
   ACCEPTED: {
     title: 'Accepted',
     description: 'You accepted the permission request and it is being processed.',
@@ -69,3 +78,4 @@ export default {
     isActive: true,
   },
 }
+export default permissionSatus

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { RouterView } from 'vue-router'
 import PermissionDialog from '@/components/PermissionDialog.vue'
 import Header from '@/components/Header.vue'
@@ -8,11 +8,8 @@ import Header from '@/components/Header.vue'
   <PermissionDialog />
 
   <Header />
+
   <RouterView />
 </template>
 
-<style scoped>
-img {
-  max-width: 100%;
-}
-</style>
+<style scoped></style>

@@ -1,7 +1,7 @@
-<script setup>
-import { keycloak } from '@/keycloak.js'
+<script setup lang="ts">
+import { keycloak } from '@/keycloak'
 import { ref, useTemplateRef } from 'vue'
-import { getApplicationInformation } from '@/api.js'
+import { getApplicationInformation } from '@/api'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
 
 const firstName = ref('')
@@ -12,9 +12,9 @@ const aiidaId = ref('')
 const drawer = useTemplateRef('drawer')
 
 keycloak.loadUserProfile().then((user) => {
-  firstName.value = user.firstName
-  lastName.value = user.lastName
-  username.value = user.username
+  firstName.value = user.firstName ?? ''
+  lastName.value = user.lastName ?? ''
+  username.value = user.username ?? ''
 })
 
 getApplicationInformation().then((data) => {
@@ -44,11 +44,13 @@ getApplicationInformation().then((data) => {
     <div class="actions">
       <sl-button variant="primary" outline @click="keycloak.accountManagement()">
         <sl-icon slot="prefix" name="person-fill"></sl-icon>
+
         Account settings
       </sl-button>
 
       <sl-button variant="danger" outline @click="keycloak.logout()">
         <sl-icon slot="prefix" name="box-arrow-in-right"></sl-icon>
+
         Logout
       </sl-button>
     </div>
@@ -61,8 +63,14 @@ getApplicationInformation().then((data) => {
 </template>
 
 <style scoped>
-.user-profile-link::after {
-  padding-right: 2em;
+.user-profile-link {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+
+  &:after {
+    padding-right: 2em;
+  }
 }
 
 .header {
@@ -95,10 +103,11 @@ small {
   align-self: end;
 }
 
-.user-profile-link {
+button {
+  all: unset;
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 </style>

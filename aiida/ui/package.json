@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "type-check": "vue-tsc --build",
+    "lint": "eslint . --fix"
   },
   "dependencies": {
     "@zxing/browser": "^0.1.5",
@@ -17,11 +19,25 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@tsconfig/node22": "^22.0.2",
+    "@types/node": "^22.16.5",
     "@vitejs/plugin-vue": "^5.2.3",
-    "prettier": "3.5.3",
-    "vite": "^6.2.4",
-    "vite-plugin-vue-devtools": "^7.7.2",
-    "vite-svg-loader": "^5.1.0"
+    "@vitest/eslint-plugin": "^1.1.39",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/eslint-config-typescript": "^14.6.0",
+    "@vue/tsconfig": "^0.7.0",
+    "eslint": "^9.31.0",
+    "eslint-plugin-cypress": "^4.2.0",
+    "eslint-plugin-oxlint": "~1.8.0",
+    "eslint-plugin-vue": "~10.3.0",
+    "jiti": "^2.4.2",
+    "oxlint": "~1.8.0",
+    "prettier": "3.6.2",
+    "typescript": "~5.8.0",
+    "vite": "^7.0.6",
+    "vite-plugin-vue-devtools": "^8.0.0",
+    "vite-svg-loader": "^5.1.0",
+    "vue-tsc": "^3.0.4"
   },
   "web-types": "./shoelace-web-types.json"
 }
