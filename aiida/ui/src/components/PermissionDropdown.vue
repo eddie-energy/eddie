@@ -20,7 +20,7 @@ const isOpen = ref(false)
     <div class="permission-header">
       <PermissionIcon />
       <h2 class="heading-5">{{ permission.serviceName }}</h2>
-      <img src="/DummySmallGraph.svg" />
+      <img src="@/assets/DummySmallGraph.png" />
       <time>{{
         new Date(permission.startTime).toLocaleDateString(undefined, {
           day: '2-digit',
@@ -37,12 +37,7 @@ const isOpen = ref(false)
       </button>
     </div>
     <Transition name="details">
-      <PermissionDetails
-        v-if="isOpen"
-        class="permission-details"
-        :permission="permission"
-        :status="status"
-      />
+      <PermissionDetails v-if="isOpen" class="permission-details" :permission :status />
     </Transition>
   </li>
 </template>
