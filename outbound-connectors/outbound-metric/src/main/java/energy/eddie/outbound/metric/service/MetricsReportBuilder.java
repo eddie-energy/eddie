@@ -61,7 +61,8 @@ public class MetricsReportBuilder {
     ) {
         var metrics = input.stream().collect(Collectors.groupingBy(
                 groupingFunction,
-                LinkedHashMap::new, Collectors.toList()
+                LinkedHashMap::new, 
+                Collectors.toList()
         ));
 
         List<R> metricsList = new ArrayList<>();
