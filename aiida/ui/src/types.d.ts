@@ -44,9 +44,9 @@ export type AiidaPermission = {
   serviceName: string
   startTime: string
   expirationTime: string
-  grantTime: string
+  grantTime?: string
   dataNeed: AiidaDataNeed
-  dataSource: AiidaDataSource
+  dataSource?: AiidaDataSource
   userId: string
 }
 
