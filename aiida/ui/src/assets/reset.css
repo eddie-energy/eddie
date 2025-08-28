@@ -129,3 +129,8 @@ a {
   color: unset;
   text-decoration: unset;
 }
+
+button {
+  background-color: unset;
+  border: unset;
+}
