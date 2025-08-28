@@ -88,6 +88,11 @@ watch([selectedTab, permissions], () => {
 }
 .permission-list {
   position: relative;
+  height: 75vh;
+  max-height: 75vh;
+  overflow-y: auto;
+  scrollbar-color: var(--eddie-primary) var(--light);
+  scrollbar-gutter: stable;
 }
 
 .permissions-move,
@@ -101,7 +106,7 @@ watch([selectedTab, permissions], () => {
 .permissions-enter-from,
 .permissions-leave-to {
   opacity: 0;
-  transform: translateX(30px);
+  transform: translateY(30px);
 }
 
 .permissions-leave-active {
