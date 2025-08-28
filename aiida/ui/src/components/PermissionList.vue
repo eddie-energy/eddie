@@ -1,45 +1,111 @@
 <script setup lang="ts">
-import PermissionCard from '@/components/PermissionCard.vue'
 import STATUS from '@/constants/permission-status'
-import { computed, onMounted } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { fetchPermissions, permissions } from '@/stores/permissions'
+import type { AiidaPermission } from '@/types'
+import Button from '@/components/Button.vue'
+import CompleteIcon from '@/assets/icons/CompleteIcon.svg'
+import ActiveIcon from '@/assets/icons/ActiveIcon.svg'
+import PendingIcon from '@/assets/icons/PendingIcon.svg'
+import StatusTag from './StatusTag.vue'
 
-onMounted(() => {
-  fetchPermissions()
+onMounted(async () => {
+  await fetchPermissions()
 })
 
-type GroupKey = 'open' | 'active' | 'error' | 'complete'
-const labels: { key: GroupKey; label: string }[] = [
-  { key: 'open', label: 'Pending' },
-  { key: 'active', label: 'Active' },
-  { key: 'error', label: 'Failed' },
-  { key: 'complete', label: 'Complete' },
+const activePermissions = ref<AiidaPermission[]>(
+  permissions.value.filter((p) => STATUS[p.status].isActive),
+)
+
+const selectedTab = ref('Active')
+
+const tabs = [
+  {
+    name: 'Active',
+    icon: ActiveIcon,
+  },
+  {
+    name: 'Pending',
+    icon: PendingIcon,
+  },
+  {
+    name: 'Complete',
+    icon: CompleteIcon,
+  },
 ]
 
-const groups = computed(() => {
-  return Object.groupBy(permissions.value, (permission) => {
-    const status = STATUS[permission.status]
-    if (status.isOpen) return 'open'
-    if (status.isActive) return 'active'
-    if (status.isError) return 'error'
-    return 'complete'
-  })
+watch([selectedTab, permissions], () => {
+  if (selectedTab.value === 'Active') {
+    activePermissions.value = permissions.value.filter((p) => STATUS[p.status].isActive)
+  } else if (selectedTab.value === 'Pending') {
+    activePermissions.value = permissions.value.filter((p) => STATUS[p.status].isOpen)
+  } else {
+    activePermissions.value = permissions.value.filter(
+      (p) => !STATUS[p.status].isOpen && !STATUS[p.status].isActive,
+    )
+  }
 })
 </script>
 
 <template>
-  <template v-for="{ key, label } in labels" :key="key">
-    <template v-if="groups[key]?.length">
-      <h3>{{ label }}</h3>
-      <article v-for="permission in groups[key]" :key="permission.permissionId">
-        <PermissionCard :permission="permission" />
-      </article>
-    </template>
-  </template>
+  <div class="permission-list-wrapper">
+    <div class="permission-tabs">
+      <Button
+        v-for="tab in tabs"
+        button-style="secondary"
+        :key="tab.name"
+        @click="selectedTab = tab.name"
+        :class="{ active: selectedTab === tab.name }"
+      >
+        <component :is="tab.icon" /> {{ tab.name }}</Button
+      >
+    </div>
+    <TransitionGroup tag="ul" name="permissions" class="permission-list">
+      <p v-for="permission in activePermissions" :key="permission.permissionId">
+        {{ permission.serviceName }}
+        <StatusTag :status-type="selectedTab === 'Complete' ? 'unhealthy' : 'healthy'">{{
+          STATUS[permission.status].title
+        }}</StatusTag>
+      </p>
+    </TransitionGroup>
+  </div>
 </template>
 
 <style scoped>
-article + article {
-  margin-top: 1rem;
+.permission-list-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: var(--spacing-xlg);
+}
+.permission-tabs > * {
+  width: 100%;
+  margin-bottom: var(--spacing-md);
+}
+.active {
+  pointer-events: none;
+  background-color: var(--eddie-primary);
+  color: var(--light);
+}
+.permission-list {
+  position: relative;
+}
+
+.permissions-move,
+.permissions-enter-active,
+.permissions-leave-active {
+  transition:
+    transform 0.5s ease,
+    opacity 0.5s ease;
+}
+
+.permissions-enter-from,
+.permissions-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.permissions-leave-active {
+  position: absolute;
+  width: 100%;
 }
 </style>
