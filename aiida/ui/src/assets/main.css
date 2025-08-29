@@ -78,7 +78,6 @@ body,
 
 body {
   font-family: 'Poppins', Helvetica, sans-serif;
-  line-height: 1.6;
   letter-spacing: 0.01em;
   padding: 3rem var(--content-padding);
   max-width: calc(var(--max-content-width) + 2 * var(--content-padding));
@@ -115,28 +114,9 @@ strong {
   font-weight: bold;
 }
 
-.details-list {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.25rem 2rem;
-
-  dt {
-    font-weight: bold;
-    color: var(--sl-color-neutral-500);
-    font-size: var(--sl-font-size-small);
-  }
-
-  dd {
-    margin: 0;
-  }
-
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-
-    dd + dt {
-      margin-top: 0.5rem;
-    }
-  }
+input {
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 .link-with-bold-hover {
