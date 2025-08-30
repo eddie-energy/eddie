@@ -8,6 +8,7 @@ const { buttonStyle = 'primary', size = 'normal' } = defineProps<{
 
 <template>
   <button class="button" :class="[buttonStyle, size]">
+    <slot name="icon" />
     <slot />
   </button>
 </template>

@@ -28,6 +28,7 @@
   font-weight: 600;
   font-size: 1.5rem;
   line-height: 2rem;
+  color: var(--eddie-primary);
 }
 
 .heading-5 {

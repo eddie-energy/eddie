@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import { BASE_URL } from '@/api'
+import Button from '@/components/Button.vue'
+import TrashIcon from '@/assets/icons/TrashIcon.svg'
+import PenIcon from '@/assets/icons/PenIcon.svg'
+import ElectricityIcon from '@/assets/icons/ElectricityIcon.svg'
+import HeatIcon from '@/assets/icons/HeatIcon.svg'
+import MeterIcon from '@/assets/icons/MeterIcon.svg'
+import WaterIcon from '@/assets/icons/WaterIcon.svg'
 
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
@@ -8,73 +15,173 @@ const { dataSource } = defineProps(['dataSource'])
 
 const emit = defineEmits(['edit', 'delete', 'reset'])
 
-const { countryCode, asset, dataSourceType, enabled, id, mqttSettings, name, simulationPeriod } =
-  dataSource
+const {
+  countryCode,
+  asset,
+  dataSourceType,
+  enabled,
+  id,
+  mqttSettings,
+  name,
+  simulationPeriod,
+  icon = 'electricity',
+} = dataSource
 </script>
 
 <template>
-  <sl-details>
-    <span slot="summary">
-      <strong>{{ name }}</strong>
-      <br />
-      <small>{{ dataSourceType }}</small>
-    </span>
+  <article>
+    <header>
+      <span class="icon">
+        <ElectricityIcon v-if="icon === 'electricity'" />
+        <HeatIcon v-if="icon === 'heat'" />
+        <MeterIcon v-if="icon === 'meter'" />
+        <WaterIcon v-if="icon === 'water'" />
+      </span>
+      <h2 class="heading-4">{{ name }}</h2>
+      <span class="text-xsmall">{{ dataSourceType }}</span>
+    </header>
 
-    <dl class="details-list">
-      <dt>ID:</dt>
-      <dd>{{ id }}</dd>
+    <dl>
+      <div>
+        <dt>ID</dt>
+        <dd>{{ id }}</dd>
+      </div>
 
       <template v-if="countryCode">
-        <dt>Country:</dt>
-        <dd>{{ COUNTRY_NAMES.of(countryCode) }}</dd>
+        <div>
+          <dt>Country</dt>
+          <dd>{{ COUNTRY_NAMES.of(countryCode) }}</dd>
+        </div>
       </template>
 
-      <dt>Asset:</dt>
-      <dd>{{ asset }}</dd>
+      <div>
+        <dt>Asset</dt>
+        <dd>{{ asset }}</dd>
+      </div>
 
-      <dt>Type:</dt>
-      <dd>{{ dataSourceType }}</dd>
+      <div>
+        <dt>Type</dt>
+        <dd>{{ dataSourceType }}</dd>
+      </div>
 
       <template v-if="simulationPeriod">
-        <dt>Simulation Period:</dt>
-        <dd>{{ simulationPeriod }} seconds</dd>
+        <div>
+          <dt>Simulation Period</dt>
+          <dd>{{ simulationPeriod }} seconds</dd>
+        </div>
       </template>
 
       <template v-if="mqttSettings">
-        <dt>MQTT Server URI:</dt>
-        <dd>{{ mqttSettings.externalHost }}</dd>
-        <dt>MQTT Topic:</dt>
-        <dd>{{ mqttSettings.subscribeTopic }}</dd>
-        <dt>MQTT Username:</dt>
-        <dd>{{ mqttSettings.username }}</dd>
-        <dt>MQTT Password:</dt>
-        <dd>
-          <sl-button size="small" @click="emit('reset')">Reset password</sl-button>
-        </dd>
-        <dt>MQTT Certificate</dt>
-        <dd>
-          <sl-button
-            size="small"
-            :href="BASE_URL + '/mqtt/download/tls-certificate'"
-            download="certificate.pem"
-            target="_blank"
-            >Download certificate
-          </sl-button>
-        </dd>
+        <div>
+          <dt>MQTT Server URI</dt>
+          <dd>{{ mqttSettings.externalHost }}</dd>
+        </div>
+        <div>
+          <dt>MQTT Topic</dt>
+          <dd>{{ mqttSettings.subscribeTopic }}</dd>
+        </div>
+        <div>
+          <dt>MQTT Username</dt>
+          <dd>{{ mqttSettings.username }}</dd>
+        </div>
+        <div class="button-field">
+          <dt>MQTT Password</dt>
+          <dd>
+            <Button button-style="secondary" @click="emit('reset')"> Reset password </Button>
+          </dd>
+        </div>
+        <div class="button-field">
+          <dt>MQTT Certificate</dt>
+          <dd>
+            <Button
+              button-style="secondary"
+              :href="BASE_URL + '/mqtt/download/tls-certificate'"
+              download="certificate.pem"
+              target="_blank"
+            >
+              Download certificate
+            </Button>
+          </dd>
+        </div>
       </template>
 
-      <dt>Enabled:</dt>
-      <dd>{{ enabled }}</dd>
+      <div>
+        <dt>Enabled</dt>
+        <dd>{{ enabled }}</dd>
+      </div>
     </dl>
 
-    <br />
-    <sl-button @click="emit('edit')">Edit</sl-button>
-    <sl-button @click="emit('delete')">Delete</sl-button>
-  </sl-details>
+    <div class="actions">
+      <Button button-style="error" @click="emit('delete')"><TrashIcon slot="icon" />Delete</Button>
+      <Button @click="emit('edit')"><PenIcon slot="icon" />Edit</Button>
+    </div>
+  </article>
 </template>
 
 <style scoped>
-sl-button + sl-button {
-  margin-left: 0.5rem;
+article {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--eddie-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  background: white;
+}
+
+dl {
+  display: grid;
+  gap: 0.5rem;
+  color: var(--eddie-grey-medium);
+}
+
+dd {
+  text-align: right;
+}
+
+dt {
+  flex-grow: 1
+}
+
+dl > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+dl > div:not(.button-field),
+dl > div.button-field > dt {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--eddie-grey-light);
+  border-radius: var(--border-radius);
+}
+
+header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: end;
+  color: var(--eddie-primary);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.icon {
+  height: 2rem;
+  width: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid var(--eddie-grey-light);
+  border-radius: var(--border-radius);
+}
+
+.actions {
+  flex-grow: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+  margin-top: 0.75rem;
 }
 </style>
