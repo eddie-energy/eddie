@@ -11,6 +11,7 @@ import {
 import { onMounted, ref, toRaw, useTemplateRef, watch } from 'vue'
 import { fetchDataSources } from '@/stores/dataSources.js'
 import type { AiidaDataSource } from '@/types'
+import Button from '@/components/Button.vue'
 
 const SUPPORTED_COUNTRY_CODES = ['AT', 'FR', 'NL']
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
@@ -118,7 +119,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <sl-dialog label="Add Data Source" :open="open || undefined" @sl-hide="hide">
+  <sl-dialog :open="open || undefined" @sl-hide="hide">
+    <h2 class="heading-2" slot="label">Add Data Source</h2>
     <form ref="form" id="data-source-form">
       <sl-input
         name="name"
@@ -245,17 +247,16 @@ onMounted(() => {
       </template>
     </form>
 
-    <footer slot="footer">
-      <sl-button slot="footer" type="submit" variant="primary" form="data-source-form">
-        Save
-      </sl-button>
-      <sl-button slot="footer" type="button" variant="neutral" @click="hide">Cancel</sl-button>
-    </footer>
+    <div class="actions">
+      <Button type="submit" form="data-source-form">Save</Button>
+      <Button button-style="error" type="button" @click="hide">Cancel</Button>
+    </div>
   </sl-dialog>
 </template>
 
 <style scoped>
-footer {
+.actions {
+  margin-top: 2rem;
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
