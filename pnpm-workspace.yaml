@@ -1,6 +1,9 @@
 packages:
-  - 'core'
-  - 'region-connectors/*'
-  - 'docs'
-  - 'admin-console/ui'
-  - 'aiida/ui'
+  - core
+  - region-connectors/*
+  - docs
+  - admin-console/ui
+  - aiida/ui
+
+onlyBuiltDependencies:
+  - esbuild

@@ -23,8 +23,8 @@ version = "0.0.0"
 
 
 node {
-    pnpmVersion.set("8.5.0")
     version.set("22.19.0")
+    pnpmVersion.set("10.15.0")
     download.set(true)
 }
 
