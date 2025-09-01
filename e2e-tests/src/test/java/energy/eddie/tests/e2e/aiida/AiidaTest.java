@@ -14,7 +14,7 @@ class AiidaTest extends E2eTestSetup {
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
-        assertThat(page.getByLabel("\"permissionId\":\"")).isVisible();
+        assertThat(page.getByLabel("AIIDA QR code")).isVisible();
         assertThat(page.getByLabel("AIIDA code")).isVisible();
     }
 }
