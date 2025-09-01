@@ -26,7 +26,7 @@ function edit(target: AiidaDataSource) {
       <h1 class="heading-2">Data sources</h1>
 
       <Button @click="add">
-        <PlusIcon slot="icon" />
+        <PlusIcon />
         Add Data Source
       </Button>
     </header>

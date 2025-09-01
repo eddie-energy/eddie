@@ -112,8 +112,8 @@ const {
     </dl>
 
     <div class="actions">
-      <Button button-style="error" @click="emit('delete')"><TrashIcon slot="icon" />Delete</Button>
-      <Button @click="emit('edit')"><PenIcon slot="icon" />Edit</Button>
+      <Button button-style="error" @click="emit('delete')"><TrashIcon />Delete</Button>
+      <Button @click="emit('edit')"><PenIcon />Edit</Button>
     </div>
   </article>
 </template>
