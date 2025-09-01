@@ -114,7 +114,8 @@ strong {
   font-weight: bold;
 }
 
-input {
+input,
+select {
   font-size: 1rem;
   line-height: 1.5;
 }

@@ -47,9 +47,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
       'An unexpected error occurred. Please try again.'
     notify(message, 'danger')
-    throw new Error(message, {
-      cause: response,
-    })
+    throw new Error(message)
   }
 
   if (response.headers.get('content-type')?.includes('application/json')) {

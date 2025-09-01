@@ -49,7 +49,12 @@ export type AiidaPermission = {
   grantTime?: string
   dataNeed: AiidaDataNeed
   dataSource?: AiidaDataSource
-  userId: string
+  userId: string,
+  unimplemented: {
+    packageGraph: any,
+    targetIP: any,
+    lastPackageSent: any
+  }
 }
 
 export type AiidaDataSourceType = {
@@ -67,4 +72,7 @@ export type AiidaPermissionRequest = {
   serviceName: string
   handshakeUrl: string
   accessToken: string
+  bearerToken?: string
 }
+
+export type PermissionTypes = 'Active' | 'Pending' | 'Complete'

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import STATUS from '@/constants/permission-status'
-import type { AiidaPermission } from '@/types'
+import type { AiidaPermission, PermissionTypes } from '@/types'
 import PermissionIcon from '@/assets/icons/PermissionIcon.svg'
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
 import StatusTag from './StatusTag.vue'
@@ -9,7 +9,7 @@ import PermissionDetails from './PermissionDetails.vue'
 
 const { permission, status } = defineProps<{
   permission: AiidaPermission
-  status?: 'healthy' | 'unhealthy'
+  status?: PermissionTypes
 }>()
 
 const isOpen = ref(false)
@@ -20,7 +20,7 @@ const isOpen = ref(false)
     <div class="permission-header">
       <PermissionIcon />
       <h2 class="heading-5">{{ permission.serviceName }}</h2>
-      <img src="@/assets/DummySmallGraph.png" />
+      <img v-if="permission.unimplemented" src="@/assets/DummySmallGraph.png" />
       <time>{{
         new Date(permission.startTime).toLocaleDateString(undefined, {
           day: '2-digit',
@@ -31,7 +31,9 @@ const isOpen = ref(false)
       <time v-if="permission.grantTime">
         {{ new Date(permission.grantTime).toLocaleTimeString() }}
       </time>
-      <StatusTag :status-type="status">{{ STATUS[permission.status].title }}</StatusTag>
+      <StatusTag :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'">
+        {{ STATUS[permission.status].title }}
+      </StatusTag>
       <button class="chevron" @click="isOpen = !isOpen">
         <ChevronDownIcon />
       </button>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import PermissionList from '@/components/PermissionList.vue'
-import AiidaCodeInput from '@/components/AiidaCodeInput.vue'
 import Button from '@/components/Button.vue'
 import PlusIcon from '@/assets/icons/PlusIcon.svg'
 import AddPermissionModal from '@/components/Modals/AddPermissionModal.vue'
@@ -22,7 +21,6 @@ const showAddPermissionModal = () => {
 
     <PermissionList />
     <AddPermissionModal ref="permissionModalRef" />
-    <AiidaCodeInput :class="'input'" />
   </main>
 </template>
 
