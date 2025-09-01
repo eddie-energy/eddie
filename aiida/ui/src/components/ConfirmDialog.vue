@@ -2,51 +2,39 @@
 //inspired by https://medium.com/nerd-for-tech/creating-a-customized-alert-and-confirm-function-modal-component-which-can-stop-function-execution-bb26914da78a
 import ModalDialog from './ModalDialog.vue'
 import Button from './Button.vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useConfirmDialog } from '@/composables/confirm-dialog'
 
-const {
-  title,
-  description,
-  cancelLabel = 'Cancel',
-  confirmLabel = 'Confirm',
-} = defineProps<{
-  title: string
-  description: string
-  cancelLabel?: string
-  confirmLabel?: string
-}>()
+const { titleRef, descriptionRef, cancelLabelRef, confirmLabelRef, open, resolvePromise } =
+  useConfirmDialog()
 
 const modal = ref<HTMLDialogElement>()
-let resolvePromise: (value: PromiseLike<boolean> | boolean) => void
 
-const showModal = () => {
-  modal.value?.showModal()
-
-  return new Promise((resolve) => {
-    resolvePromise = resolve
-  })
-}
+watch([open], () => {
+  if (open.value) {
+    modal.value?.showModal()
+  }
+})
 
 function handleUserInput(value: boolean) {
-  if (!resolvePromise) return
-  resolvePromise(value)
+  if (!resolvePromise.value) return
+  resolvePromise.value(value)
+  open.value = false
   modal.value?.close()
 }
-
-defineExpose({ showModal })
 </script>
 
 <template>
-  <ModalDialog :title ref="modal" @keydown.esc="handleUserInput(false)">
+  <ModalDialog :title="titleRef" ref="modal" @close="handleUserInput(false)">
     <p class="description">
-      {{ description }}
+      {{ descriptionRef }}
     </p>
     <div class="button-pair">
-      <Button button-style="secondary" @click="handleUserInput(false)">
-        {{ cancelLabel }}
+      <Button button-style="secondary" @click="modal?.close()">
+        {{ cancelLabelRef }}
       </Button>
       <Button button-style="error" @click="handleUserInput(true)">
-        {{ confirmLabel }}
+        {{ confirmLabelRef }}
       </Button>
     </div>
   </ModalDialog>
