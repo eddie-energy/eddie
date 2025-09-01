@@ -105,7 +105,7 @@ main {
   background-color: rgb(255, 255, 255, 0.5);
   height: 100%;
   border-radius: 0.5rem;
-  overflow: auto;
+  overflow-y: scroll;
 }
 
 img {
