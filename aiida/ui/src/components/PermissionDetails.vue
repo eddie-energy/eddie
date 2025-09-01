@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import STATUS from '@/constants/permission-status'
-import type { AiidaPermission } from '@/types'
+import type { AiidaPermission, PermissionTypes } from '@/types'
 import StatusTag from './StatusTag.vue'
 import cronstrue from 'cronstrue'
 import Button from '@/components/Button.vue'
+import RevokeIcon from '@/assets/icons/RevokeIcon.svg'
+import { usePermissionDialog } from '@/composables/permission-dialog'
 
 const { permission, status } = defineProps<{
   permission: AiidaPermission
-  status?: 'healthy' | 'unhealthy'
+  status?: PermissionTypes
 }>()
+
+const { updatePermission } = usePermissionDialog()
 
 const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
   day: '2-digit',
@@ -18,6 +22,10 @@ const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
   hour: '2-digit',
   second: '2-digit',
 })
+
+const revokePermission = () => {
+  console.log('revoke')
+}
 </script>
 
 <template>
@@ -29,9 +37,11 @@ const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
       </div>
       <div class="permission-field status">
         <dt>Status</dt>
-        <StatusTag :status-type="status" class="status-tag">{{
-          STATUS[permission.status].title
-        }}</StatusTag>
+        <StatusTag
+          :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'"
+          class="status-tag"
+          >{{ STATUS[permission.status].title }}</StatusTag
+        >
       </div>
       <div class="permission-field">
         <dt>Creation Date</dt>
@@ -55,7 +65,7 @@ const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
         <dt>End</dt>
         <dd>{{ dateTimeFormat.format(new Date(permission.expirationTime)) }}</dd>
       </div>
-      <div class="permission-field graph">
+      <div class="permission-field graph" v-if="permission.unimplemented">
         <dt>Data Package Graph</dt>
         <img class="graph-data" src="@/assets/DummyGraph.png" />
       </div>
@@ -87,19 +97,32 @@ const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
           </dd>
         </div>
       </div>
-      <div class="permission-field">
+      <div class="permission-field" v-if="permission.dataSource">
         <dt>Data Source</dt>
         <dd>{{ permission.dataSource?.name ?? 'undefined' }}</dd>
       </div>
-      <div class="permission-field">
+      <div class="permission-field" v-if="permission.unimplemented">
         <dt>Target IP Adress, Port</dt>
         <dd>PLACEHOLDER</dd>
       </div>
-      <div class="permission-field">
+      <div class="permission-field" v-if="permission.unimplemented">
         <dt>Last Data Package sent</dt>
         <dd>PLACEHOLDER</dd>
       </div>
-      <Button class="update-button">Update</Button>
+      <Button
+        button-style="error"
+        class="update-button"
+        v-if="status === 'Active'"
+        @click="revokePermission"
+      >
+        <RevokeIcon /> Revoke
+      </Button>
+      <Button
+        v-if="status === 'Pending'"
+        @click="updatePermission(permission)"
+        class="update-button"
+        >Accept</Button
+      >
     </div>
   </dl>
 </template>
