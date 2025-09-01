@@ -108,6 +108,21 @@ main {
   overflow-y: scroll;
 }
 
+main::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+main::-webkit-scrollbar-track {
+  border-radius: 0.5rem;
+  background: var(--light);
+}
+
+main::-webkit-scrollbar-thumb {
+  border-radius: 0.5rem;
+  background-color: var(--eddie-primary);
+  color: var(--eddie-primary)
+}
+
 img {
   max-width: 100%;
 }
