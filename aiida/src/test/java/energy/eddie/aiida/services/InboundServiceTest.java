@@ -2,6 +2,8 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.errors.InboundRecordNotFoundException;
+import energy.eddie.aiida.errors.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
 import energy.eddie.aiida.errors.UnauthorizedException;
 import energy.eddie.aiida.models.datasource.DataSourceType;
@@ -12,7 +14,6 @@ import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -74,7 +75,7 @@ class InboundServiceTest {
     }
 
     @Test
-    void testLatestRecord_returnsRecord() throws UnauthorizedException, PermissionNotFoundException {
+    void testLatestRecord_returnsRecord() throws UnauthorizedException, PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
         // Given
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(PERMISSION));
         when(inboundRecordRepository.findTopByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID)).thenReturn(Optional.of(
@@ -107,7 +108,7 @@ class InboundServiceTest {
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(wrongPermission));
 
         // When, Then
-        assertThrows(EntityNotFoundException.class, () -> inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID));
+        assertThrows(InvalidDataSourceTypeException.class, () -> inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID));
     }
 
     @Test
@@ -134,6 +135,6 @@ class InboundServiceTest {
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(PERMISSION));
 
         // When, Then
-        assertThrows(EntityNotFoundException.class, () -> inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID));
+        assertThrows(InboundRecordNotFoundException.class, () -> inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID));
     }
 }

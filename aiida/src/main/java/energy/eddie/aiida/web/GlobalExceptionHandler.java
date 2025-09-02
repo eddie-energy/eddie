@@ -131,6 +131,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errors);
     }
 
+    @ExceptionHandler(value = {InvalidDataSourceTypeException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleInvalidDataSourceTypeException(
+            InvalidDataSourceTypeException exception
+    ) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(value = {InboundRecordNotFoundException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleInboundRecordNotFoundException(
+            InboundRecordNotFoundException exception
+    ) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+    }
+
     @ExceptionHandler(value = {MqttUnauthorizedException.class})
     protected ResponseEntity<Map<String, List<EddieApiError>>> handleMqttUnauthorizedException(MqttUnauthorizedException exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));

@@ -1,12 +1,13 @@
 package energy.eddie.aiida.services;
 
+import energy.eddie.aiida.errors.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
 import energy.eddie.aiida.errors.UnauthorizedException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,10 @@ public class InboundService {
         this.permissionRepository = permissionRepository;
     }
 
-    public InboundRecord latestRecord(String accessCode, UUID permissionId) throws PermissionNotFoundException, UnauthorizedException {
+    public InboundRecord latestRecord(
+            String accessCode,
+            UUID permissionId
+    ) throws PermissionNotFoundException, UnauthorizedException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
         LOGGER.trace("Getting latest raw record for permission {}", permissionId);
 
         var permission = permissionRepository
@@ -36,7 +40,7 @@ public class InboundService {
         var dataSource = permission.dataSource();
 
         if (!(dataSource instanceof InboundDataSource inboundDataSource)) {
-            throw new EntityNotFoundException("Data source is not an InboundDataSource");
+            throw new InvalidDataSourceTypeException();
         }
 
         if (!accessCode.equals(inboundDataSource.accessCode())) {
@@ -45,6 +49,6 @@ public class InboundService {
 
         return inboundRecordRepository
                 .findTopByDataSourceIdOrderByTimestampDesc(dataSource.id())
-                .orElseThrow(() -> new EntityNotFoundException("No entry found for data source with ID: " + dataSource.id()));
+                .orElseThrow(() -> new InboundRecordNotFoundException(dataSource.id()));
     }
 }
