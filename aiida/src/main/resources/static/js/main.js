@@ -234,7 +234,7 @@ function permissionElement(permission) {
         <dd>
           ${permission.dataSource
             ? `${permission.dataSource.name} (${permission.dataSource.id})`
-            : 'Not found.'}
+            : "Not found."}
         </dd>
       </dl>
       ${STATUS[status].isRevocable
@@ -507,13 +507,21 @@ function renderDataSources() {
 
           <dt>MQTT Password:</dt>
           <dd>
-            <sl-button variant="default" size="small" onclick="window.regenerateSecretsDataSource('${dataSource.id}')">
+            <sl-button
+              variant="default"
+              size="small"
+              onclick="window.regenerateSecretsDataSource('${dataSource.id}')"
+            >
               Regenerate
             </sl-button>
           </dd>
           <dt>Certificate:</dt>
           <dd>
-            <sl-button variant="default" size="small" onclick="window.downloadTlsCertificate()">
+            <sl-button
+              variant="default"
+              size="small"
+              onclick="window.downloadTlsCertificate()"
+            >
               Download
             </sl-button>
           </dd>
@@ -760,7 +768,7 @@ function regenerateSecretsDataSource(dataSourceId) {
       return response.json();
     })
     .then((dataSourceSecrets) => {
-      openSecretsDataSourceDialog(dataSourceSecrets)
+      openSecretsDataSourceDialog(dataSourceSecrets);
     })
     .catch((error) => {
       console.error("Failed to regenerate secrets:", error);
@@ -771,24 +779,27 @@ function regenerateSecretsDataSource(dataSourceId) {
 function downloadTlsCertificate() {
   const url = `${MQTT_BASE_URL}/download/tls-certificate`;
 
-  fetch(url, { method: 'HEAD' })
-    .then(async (response) => {
-      if (!response.ok) {
-        alert('No TLS certificate found!');
-        return;
-      }
+  fetch(url, { method: "HEAD" }).then(async (response) => {
+    if (!response.ok) {
+      alert("No TLS certificate found!");
+      return;
+    }
 
-      window.location.href = url;
-    })
+    window.location.href = url;
+  });
 }
 
 function openSecretsDataSourceDialog(dataSourceSecrets) {
   closeAddDataSourceDialog();
   renderDataSources();
 
-  if(dataSourceSecrets && dataSourceSecrets.plaintextPassword) {
-    const passwordSpan = document.getElementById(`secrets-data-source-password`);
-    const toggleIcon = document.getElementById(`secrets-data-source-toggle-password`);
+  if (dataSourceSecrets && dataSourceSecrets.plaintextPassword) {
+    const passwordSpan = document.getElementById(
+      `secrets-data-source-password`
+    );
+    const toggleIcon = document.getElementById(
+      `secrets-data-source-toggle-password`
+    );
 
     passwordSpan.innerText = dataSourceSecrets.plaintextPassword;
 
@@ -800,7 +811,6 @@ function openSecretsDataSourceDialog(dataSourceSecrets) {
     }
 
     document.getElementById("secrets-data-source-dialog").show();
-
   }
 }
 
@@ -1067,7 +1077,7 @@ document
         return response.json();
       })
       .then((dataSourceSecrets) => {
-        openSecretsDataSourceDialog(dataSourceSecrets)
+        openSecretsDataSourceDialog(dataSourceSecrets);
       })
       .catch((error) => {
         console.error("Failed to add data source:", error);
@@ -1144,7 +1154,7 @@ Promise.all([
 document
   .querySelector("qr-code-scanner")
   .addEventListener("result", (event) => {
-    aiidaCodeInput.value = btoa(event.detail.result);
+    aiidaCodeInput.value = event.detail.result;
     aiidaCodeInput.updateComplete.then(() => {
       permissionForm.requestSubmit();
     });
