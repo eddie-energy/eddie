@@ -111,9 +111,4 @@ button {
   right: 2rem;
   cursor: pointer;
 }
-
-@media screen and (min-width: 1024px) {
-  .user-profile-link {
-  }
-}
 </style>
