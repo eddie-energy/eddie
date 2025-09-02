@@ -3,10 +3,7 @@ import { BASE_URL } from '@/api'
 import Button from '@/components/Button.vue'
 import TrashIcon from '@/assets/icons/TrashIcon.svg'
 import PenIcon from '@/assets/icons/PenIcon.svg'
-import ElectricityIcon from '@/assets/icons/ElectricityIcon.svg'
-import HeatIcon from '@/assets/icons/HeatIcon.svg'
-import MeterIcon from '@/assets/icons/MeterIcon.svg'
-import WaterIcon from '@/assets/icons/WaterIcon.svg'
+import DataSourceIcon from '@/components/DataSourceIcon.vue'
 
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
@@ -31,12 +28,7 @@ const {
 <template>
   <article class="card">
     <header class="header">
-      <span class="icon">
-        <ElectricityIcon v-if="icon === 'electricity'" />
-        <HeatIcon v-if="icon === 'heat'" />
-        <MeterIcon v-if="icon === 'meter'" />
-        <WaterIcon v-if="icon === 'water'" />
-      </span>
+      <DataSourceIcon :icon />
       <h2 class="heading-4 headline">{{ name }}</h2>
       <span class="text-xsmall">{{ dataSourceType }}</span>
     </header>
@@ -163,16 +155,6 @@ const {
   color: var(--eddie-primary);
   margin-bottom: 1rem;
   font-weight: 600;
-}
-
-.icon {
-  height: 2rem;
-  width: 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid var(--eddie-grey-light);
-  border-radius: var(--border-radius);
 }
 
 .actions {
