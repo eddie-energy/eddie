@@ -14,10 +14,10 @@ const showAddPermissionModal = () => {
 
 <template>
   <main>
-    <div class="two-item-pair bottom-margin">
+    <header class="two-item-pair bottom-margin">
       <h1 class="heading-2">Permissions</h1>
       <Button @click="showAddPermissionModal"><PlusIcon />Add Permission</Button>
-    </div>
+    </header>
 
     <PermissionList />
     <AddPermissionModal ref="permissionModalRef" />

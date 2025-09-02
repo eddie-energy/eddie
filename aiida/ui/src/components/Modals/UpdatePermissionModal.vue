@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import ModalDialog from '@/components/ModalDialog.vue'
 import type { AiidaDataSource } from '@/types'
-import Button from '../Button.vue'
-
+import Button from '@/components/Button.vue'
 import { ref, watch } from 'vue'
-import PermissionDetails from '../PermissionDetails.vue'
+import PermissionDetails from '@/components/PermissionDetails.vue'
 import { acceptPermission, getDataSources, rejectPermission } from '@/api'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 
@@ -34,8 +33,6 @@ const handleInput = async (confirm: boolean) => {
     await rejectPermission(permission.value!.permissionId)
   }
   modal.value?.close()
-  open.value = false
-  loading.value = false
   emit('update')
 }
 

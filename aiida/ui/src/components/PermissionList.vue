@@ -76,8 +76,8 @@ const refetchPermissions = async () => {
         @click="handleTabClick(tab.name as 'Active' | 'Pending' | 'Complete')"
         :class="{ active: selectedTab === tab.name }"
       >
-        <component :is="tab.icon" /> {{ tab.name }}</Button
-      >
+        <component :is="tab.icon" /> {{ tab.name }}
+      </Button>
     </div>
     <TransitionGroup tag="ul" name="permissions" class="permission-list">
       <PermissionDropdown
@@ -120,7 +120,7 @@ const refetchPermissions = async () => {
 
 .permission-list-wrapper {
   display: grid;
-  grid-template-columns: 1fr 3fr;
+  grid-template-columns: 1fr 4fr;
   gap: var(--spacing-xlg);
 }
 
