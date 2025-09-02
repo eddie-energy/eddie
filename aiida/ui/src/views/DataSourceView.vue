@@ -22,7 +22,7 @@ function edit(target: AiidaDataSource) {
 
 <template>
   <main>
-    <header>
+    <header class="header">
       <h1 class="heading-2">Data sources</h1>
 
       <Button @click="add">
@@ -40,7 +40,7 @@ function edit(target: AiidaDataSource) {
 </template>
 
 <style scoped>
-header {
+.header {
   display: flex;
   justify-content: space-between;
   gap: 1rem;

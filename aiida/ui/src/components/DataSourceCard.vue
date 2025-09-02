@@ -29,19 +29,19 @@ const {
 </script>
 
 <template>
-  <article>
-    <header>
+  <article class="card">
+    <header class="header">
       <span class="icon">
         <ElectricityIcon v-if="icon === 'electricity'" />
         <HeatIcon v-if="icon === 'heat'" />
         <MeterIcon v-if="icon === 'meter'" />
         <WaterIcon v-if="icon === 'water'" />
       </span>
-      <h2 class="heading-4">{{ name }}</h2>
+      <h2 class="heading-4 headline">{{ name }}</h2>
       <span class="text-xsmall">{{ dataSourceType }}</span>
     </header>
 
-    <dl>
+    <dl class="fields">
       <div>
         <dt>ID</dt>
         <dd>{{ id }}</dd>
@@ -87,7 +87,7 @@ const {
         <div class="button-field">
           <dt>MQTT Password</dt>
           <dd>
-            <Button button-style="secondary" @click="emit('reset')"> Reset password </Button>
+            <Button button-style="secondary" @click="emit('reset')">Reset password</Button>
           </dd>
         </div>
         <div class="button-field">
@@ -119,7 +119,7 @@ const {
 </template>
 
 <style scoped>
-article {
+.card {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--eddie-primary);
@@ -128,35 +128,34 @@ article {
   background: white;
 }
 
-dl {
+.headline {
+  word-break: break-word;
+}
+
+.fields {
   display: grid;
   gap: 0.5rem;
   color: var(--eddie-grey-medium);
 }
 
-dd {
-  text-align: right;
-}
-
-dt {
-  flex-grow: 1
-}
-
-dl > div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.fields > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: 1rem;
 }
 
-dl > div:not(.button-field),
-dl > div.button-field > dt {
+.fields dd {
+  text-align: right;
+}
+
+.fields > div:not(.button-field),
+.fields > .button-field > dt {
   padding: 0.25rem 0.5rem;
   border: 1px solid var(--eddie-grey-light);
   border-radius: var(--border-radius);
 }
 
-header {
+.header {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 1rem;
