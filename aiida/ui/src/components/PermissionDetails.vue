@@ -57,8 +57,8 @@ const revokePermission = () => {
       </div>
       <div class="permission-field">
         <dt>Start</dt>
-        <dd v-if="permission.grantTime">
-          {{ dateTimeFormat.format(new Date(permission.grantTime)) }}
+        <dd>
+          {{ permission.grantTime ? dateTimeFormat.format(new Date(permission.grantTime)) : 'N/A' }}
         </dd>
       </div>
       <div class="permission-field">
@@ -129,30 +129,35 @@ const revokePermission = () => {
 </template>
 
 <style scoped>
-.permission-details {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-lg);
-}
-
 .column {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+
+  &:first-child {
+    margin-bottom: var(--spacing-sm);
+  }
 }
 
 .permission-field {
   display: flex;
+
   justify-content: space-between;
   border: 1px solid var(--eddie-grey-light);
   color: var(--eddie-grey-medium);
   padding: var(--spacing-sm) var(--spacing-sm);
   border-radius: 0.5rem;
-  font-size: 0.625rem;
-  line-height: 1rem;
-
-  @media screen and (min-width: 1024px) {
-    font-size: 0.875rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  word-break: break-all;
+  gap: 0.25rem;
+  &:not(.status) {
+    flex-direction: column;
+  }
+  dd {
+    line-height: 1;
+    color: var(--eddie-grey-medium);
+    font-weight: 600;
   }
 }
 
@@ -174,17 +179,40 @@ const revokePermission = () => {
 }
 
 .schema {
-  /**field gap + field padding + border */
-  gap: calc(var(--spacing-sm) + var(--spacing-sm) * 2 + 2px);
+  gap: var(--spacing-sm);
 }
 
 .graph {
   flex-direction: column;
+
   gap: var(--spacing-sm);
 }
 
 .update-button {
-  width: fit-content;
+  width: 100%;
+  justify-content: center;
   margin: auto 0 0 auto;
+}
+
+@media screen and (min-width: 1024px) {
+  .permission-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+  }
+  .permission-field {
+    align-items: center;
+    &:not(.status) {
+      flex-direction: row;
+    }
+  }
+  .schema {
+    /**field gap + field padding + border */
+    gap: calc(var(--spacing-xlg) + var(--spacing-sm) * 2 + 2px);
+  }
+  .update-button {
+    width: fit-content;
+    justify-content: flex-start;
+  }
 }
 </style>

@@ -18,20 +18,20 @@ const isOpen = ref(false)
 <template>
   <li class="permission" :class="{ 'is-open': isOpen }">
     <div class="permission-header">
-      <PermissionIcon />
-      <h2 class="heading-5">{{ permission.serviceName }}</h2>
+      <PermissionIcon class="icon" />
+      <h2 class="heading-5 title">{{ permission.serviceName }}</h2>
       <p v-if="permission.unimplemented" class="small-data-graph">Placeholder</p>
-      <time>{{
+      <time class="non-essential">{{
         new Date(permission.startTime).toLocaleDateString(undefined, {
           day: '2-digit',
           month: '2-digit',
           year: 'numeric',
         })
       }}</time>
-      <time v-if="permission.grantTime">
+      <time v-if="permission.grantTime" class="non-essential">
         {{ new Date(permission.grantTime).toLocaleTimeString() }}
       </time>
-      <StatusTag :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'">
+      <StatusTag :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'" minimal-on-mobile>
         {{ STATUS[permission.status].title }}
       </StatusTag>
       <button class="chevron" @click="isOpen = !isOpen">
@@ -46,7 +46,7 @@ const isOpen = ref(false)
 
 <style scoped>
 .permission {
-  padding: var(--spacing-lg) var(--spacing-xlg);
+  padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--eddie-primary);
   margin-bottom: var(--spacing-md);
   background-color: var(--light);
@@ -65,6 +65,10 @@ const isOpen = ref(false)
     }
   }
 }
+.icon {
+  min-width: 2rem;
+}
+
 .permission-header {
   display: flex;
   align-items: center;
@@ -92,5 +96,37 @@ const isOpen = ref(false)
 .details-enter-from,
 .details-leave-to {
   opacity: 0;
+}
+
+.title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.non-essential {
+  display: none;
+}
+.status {
+  display: none;
+}
+
+@media screen and (min-width: 640px) {
+  .status {
+    display: flex;
+  }
+
+  .title {
+    max-width: 50%;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .permission {
+    padding: var(--spacing-lg) var(--spacing-xlg);
+  }
+  .non-essential {
+    display: block;
+  }
 }
 </style>

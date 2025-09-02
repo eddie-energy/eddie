@@ -15,6 +15,7 @@ const activePermissions = ref<AiidaPermission[]>(
 )
 const selectedTab = ref<PermissionTypes>('Active')
 const showMore = ref(false)
+const scrollTarget = ref()
 
 onMounted(async () => {
   await fetchPermissions()
@@ -63,6 +64,16 @@ const handleTabClick = (tab: 'Active' | 'Pending' | 'Complete') => {
 const refetchPermissions = async () => {
   await fetchPermissions()
 }
+
+const handleShowMore = () => {
+  showMore.value = !showMore.value
+  if (!showMore.value) {
+    window.scrollTo({
+      top: (scrollTarget.value as HTMLElement).offsetTop - 100,
+      behavior: 'smooth',
+    })
+  }
+}
 </script>
 
 <template>
@@ -76,10 +87,10 @@ const refetchPermissions = async () => {
         @click="handleTabClick(tab.name as 'Active' | 'Pending' | 'Complete')"
         :class="{ active: selectedTab === tab.name }"
       >
-        <component :is="tab.icon" /> {{ tab.name }}
+        <component :is="tab.icon" class="icon" /> {{ tab.name }}
       </Button>
     </div>
-    <TransitionGroup tag="ul" name="permissions" class="permission-list">
+    <TransitionGroup tag="ul" name="permissions" class="permission-list" ref="scrollTarget">
       <PermissionDropdown
         v-for="permission in slicedPermissions"
         :key="permission.permissionId"
@@ -89,7 +100,7 @@ const refetchPermissions = async () => {
       <Button
         v-if="activePermissions.length > initialPermissionsCount"
         button-style="secondary"
-        @click="showMore = !showMore"
+        @click="handleShowMore"
         class="show-more-button"
       >
         {{ showMore ? 'Show Less Permissions' : 'Load More Permissions' }}
@@ -118,36 +129,99 @@ const refetchPermissions = async () => {
   width: 100%;
 }
 
+.icon {
+  min-width: 1rem;
+}
+
 .permission-list-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 4fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--spacing-xlg);
+  background-color: var(--light);
+  border-radius: 0.5rem;
+  margin-bottom: calc(var(--mobile-header-height) / 1.5);
 }
 
-.permission-tabs > * {
-  width: 100%;
-  margin-bottom: var(--spacing-md);
-}
+.permission-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-radius: 0.5rem 0.5rem 0 0;
+  overflow: hidden;
+  height: fit-content;
+  min-height: fit-content;
 
-.active {
-  pointer-events: none;
-  background-color: var(--eddie-primary);
-  color: var(--light);
+  > * {
+    width: 100%;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: unset;
+    border: unset;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.3s ease-in-out;
+
+    &:hover {
+      background-color: var(--light);
+      color: var(--eddie-primary);
+    }
+  }
+
+  .active {
+    border-bottom-color: var(--eddie-primary);
+  }
 }
 
 .permission-list {
   position: relative;
-  height: 75vh;
-  max-height: 75vh;
+  max-height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-color: var(--eddie-primary) var(--light);
   scrollbar-gutter: stable;
+  padding: var(--spacing-md) 0.75rem;
 }
 
 .show-more-button {
   grid-column: span 2;
-  width: fit-content;
+  width: 100%;
+  justify-content: center;
   justify-self: end;
+}
+
+@media screen and (min-width: 1024px) {
+  .permission-list-wrapper {
+    display: grid;
+    background-color: transparent;
+    grid-template-columns: 1fr 6fr;
+  }
+  .permission-list {
+    padding: unset;
+  }
+  .permission-tabs {
+    display: block;
+    .active {
+      pointer-events: none;
+      background-color: var(--eddie-primary);
+      color: var(--light);
+    }
+    > * {
+      width: 100%;
+      flex-direction: row;
+      height: fit-content;
+      border-radius: 2rem;
+      border: 1px solid var(--eddie-primary);
+      margin-bottom: var(--spacing-md);
+    }
+  }
+  .show-more-button {
+    width: fit-content;
+    justify-content: flex-start;
+  }
+}
+@media screen and (min-width: 1620px) {
+  .permission-list-wrapper {
+    grid-template-columns: 1fr 4fr;
+  }
 }
 </style>

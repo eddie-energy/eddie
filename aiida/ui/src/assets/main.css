@@ -36,7 +36,8 @@
   --content-padding: 1rem;
   --border-radius: 0.5rem;
   --app-bg-color: rgb(239, 242, 247, 0.9998);
-
+  --main-bg-color: rgb(255, 255, 255, 0.5);
+  --mobile-header-height: 70px;
   font-size: 16px;
   line-height: 1.5;
 
@@ -66,15 +67,43 @@
 }
 
 html,
-body,
-#app {
+body {
+  margin: 0;
+  scrollbar-color: var(--eddie-primary) var(--light);
+
+  @media screen and (min-width: 1024px) {
+    height: 100vh;
+  }
+}
+
+main {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+main > div {
+  flex: 1;
 }
 
 #app {
+  height: 100%;
+
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+html,
+body,
+main,
+main > div,
+#app {
+  overflow: auto;
+
+  @media screen and (min-width: 1024px) {
+    overflow: hidden;
+  }
 }
 
 body {
@@ -97,15 +126,26 @@ body {
     height: 70vh;
     width: 70vh;
   }
+  font-size: 11px;
+  line-height: 1;
+
+  @media screen and (min-width: 1024px) {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
 }
 
 main {
-  padding: 2rem;
-  background-color: rgb(255, 255, 255, 0.5);
   height: 100%;
   border-radius: 0.5rem;
   overflow-y: scroll;
   scrollbar-color: var(--eddie-primary) var(--light);
+
+  @media screen and (min-width: 1024px) {
+    padding: 2rem;
+    border-radius: 0.5rem;
+    background-color: var(--main-bg-color);
+  }
 }
 
 main::-webkit-scrollbar {
@@ -169,7 +209,13 @@ select {
   }
 
   &.router-link-active {
-    border-color: var(--eddie-primary);
-    font-weight: var(--font-weight-bold);
+    background-color: var(--light);
+    color: var(--eddie-primary);
+
+    @media screen and (min-width: 1024px) {
+      background-color: unset;
+      border-color: var(--eddie-primary);
+      font-weight: var(--font-weight-bold);
+    }
   }
 }

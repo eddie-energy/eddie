@@ -16,7 +16,7 @@ const showAddPermissionModal = () => {
   <main>
     <header class="two-item-pair bottom-margin">
       <h1 class="heading-2">Permissions</h1>
-      <Button @click="showAddPermissionModal"><PlusIcon />Add Permission</Button>
+      <Button @click="showAddPermissionModal" class="add-button"><PlusIcon />Add Permission</Button>
     </header>
 
     <PermissionList />
@@ -31,7 +31,23 @@ const showAddPermissionModal = () => {
 
 .two-item-pair {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+.add-button {
+  width: 100%;
+  justify-content: center;
+}
+
+@media screen and (min-width: 640px) {
+  .two-item-pair {
+    flex-direction: row;
+    align-items: center;
+  }
+  .add-button {
+    width: fit-content;
+  }
 }
 </style>
