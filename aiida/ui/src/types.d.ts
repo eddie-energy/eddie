@@ -1,5 +1,3 @@
-import type ConfirmDialog from "./components/ConfirmDialog.vue"
-
 export type AiidaDataNeed = {
   dataNeedId: string
   name: string
