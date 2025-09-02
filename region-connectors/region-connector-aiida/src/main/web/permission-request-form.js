@@ -68,7 +68,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           </sl-button>`
         : html`
             <sl-qr-code
-              value="${this._aiidaCode}"
+              value="${this.convertToBase64(this._aiidaCode)}"
+              label="AIIDA QR code"
               radius="0.5"
               size="256"
             ></sl-qr-code>
