@@ -5,13 +5,13 @@ import ScanQrCodeIcon from '@/assets/icons/ScanQrCodeIcon.svg'
 import { ref } from 'vue'
 import { addPermission } from '@/api'
 import { fetchPermissions } from '@/stores/permissions'
-import QrCodeScanner from '../QrCodeScanner.vue'
+import QrCodeScanner from '@/components/QrCodeScanner.vue'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import type { AiidaPermissionRequest } from '@/types'
 
 const { updatePermission } = usePermissionDialog()
-const permissionModalRef = ref<HTMLDialogElement>()
-const qrCodeModalRef = ref<HTMLDialogElement>()
+const permissionModal = ref<HTMLDialogElement>()
+const qrCodeModal = ref<HTMLDialogElement>()
 const qrCodeIsOpen = ref(false)
 const aiidaCode = ref('')
 const aiidaCodeError = ref('')
@@ -19,15 +19,16 @@ const aiidaCodeError = ref('')
 const showModal = () => {
   aiidaCode.value = ''
   aiidaCodeError.value = ''
-  permissionModalRef.value?.showModal()
+  permissionModal.value?.showModal()
 }
-const toggleQrCodeScanner = (open: boolean) => {
+
+const toggleQrCodeModal = (open: boolean) => {
   if (open) {
     qrCodeIsOpen.value = true
-    qrCodeModalRef.value?.showModal()
+    qrCodeModal.value?.showModal()
   } else {
     qrCodeIsOpen.value = false
-    qrCodeModalRef.value?.close()
+    qrCodeModal.value?.close()
   }
 }
 
@@ -35,7 +36,6 @@ const parseAiidaCode = (aiidaCode: string) => {
   if (!aiidaCode?.trim()) {
     throw new Error('Please fill out this field')
   }
-
   try {
     return JSON.parse(window.atob(aiidaCode))
   } catch (error: any) {
@@ -58,9 +58,9 @@ const executePermissionRequest = async (permissionRequest: AiidaPermissionReques
     fetchPermissions()
     updatePermission(permission)
   } catch {
-    //catch handled by notify from api methods
+    //catch handled by notify from api functions
   }
-  permissionModalRef.value?.close()
+  permissionModal.value?.close()
 }
 
 const handleAddPermission = async () => {
@@ -73,7 +73,7 @@ const handleAddPermission = async () => {
 }
 
 const handleValidQrCode = (permissionRequest: AiidaPermissionRequest) => {
-  toggleQrCodeScanner(false)
+  toggleQrCodeModal(false)
   executePermissionRequest(permissionRequest)
 }
 
@@ -81,7 +81,7 @@ defineExpose({ showModal })
 </script>
 
 <template>
-  <ModalDialog title="Add new Permission" ref="permissionModalRef">
+  <ModalDialog title="Add new Permission" ref="permissionModal">
     <form class="permission-form bottom-margin">
       <label for="code">New Permission *</label>
       <input
@@ -93,7 +93,7 @@ defineExpose({ showModal })
         v-model="aiidaCode"
       />
     </form>
-    <Button class="bottom-margin" @click="toggleQrCodeScanner(true)">
+    <Button class="bottom-margin" @click="toggleQrCodeModal(true)">
       <ScanQrCodeIcon />
       Scan AIIDA Code
     </Button>
@@ -102,13 +102,13 @@ defineExpose({ showModal })
       {{ aiidaCodeError }}
     </div>
     <div class="two-item-pair">
-      <Button button-style="error-secondary" @click="permissionModalRef?.close()">Cancel</Button>
+      <Button button-style="error-secondary" @click="permissionModal?.close()">Cancel</Button>
       <Button @click="handleAddPermission">Add</Button>
     </div>
-    <ModalDialog title="Scan QR Code" ref="qrCodeModalRef" @close="qrCodeIsOpen = false">
+    <ModalDialog title="Scan QR Code" ref="qrCodeModal" @close="qrCodeIsOpen = false">
       <QrCodeScanner :open="qrCodeIsOpen" @valid="handleValidQrCode" />
       <div class="two-item-pair">
-        <Button button-style="error-secondary" @click="toggleQrCodeScanner(false)">Cancel</Button>
+        <Button button-style="error-secondary" @click="toggleQrCodeModal(false)">Cancel</Button>
       </div>
     </ModalDialog>
   </ModalDialog>

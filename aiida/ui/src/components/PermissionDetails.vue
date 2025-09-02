@@ -50,7 +50,7 @@ const revokePermission = () => {
         </dd>
       </div>
       <div class="permission-field">
-        <dt>EDDIE Appliaction</dt>
+        <dt>EDDIE Application</dt>
         <dd>
           {{ permission.eddieId }}
         </dd>
@@ -67,7 +67,7 @@ const revokePermission = () => {
       </div>
       <div class="permission-field graph" v-if="permission.unimplemented">
         <dt>Data Package Graph</dt>
-        <img class="graph-data" src="@/assets/DummyGraph.png" />
+        <dd class="graph-data">PLACEHOLDER</dd>
       </div>
     </div>
     <div class="column">
@@ -121,8 +121,9 @@ const revokePermission = () => {
         v-if="status === 'Pending'"
         @click="updatePermission(permission)"
         class="update-button"
-        >Accept</Button
       >
+        Accept
+      </Button>
     </div>
   </dl>
 </template>

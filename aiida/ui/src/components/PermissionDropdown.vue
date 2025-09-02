@@ -20,7 +20,7 @@ const isOpen = ref(false)
     <div class="permission-header">
       <PermissionIcon />
       <h2 class="heading-5">{{ permission.serviceName }}</h2>
-      <img v-if="permission.unimplemented" src="@/assets/DummySmallGraph.png" />
+      <p v-if="permission.unimplemented" class="small-data-graph">Placeholder</p>
       <time>{{
         new Date(permission.startTime).toLocaleDateString(undefined, {
           day: '2-digit',

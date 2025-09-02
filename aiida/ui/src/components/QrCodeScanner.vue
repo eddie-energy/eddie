@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { QrcodeStream } from 'vue-qrcode-reader'
+import { QrcodeStream, type DetectedBarcode } from 'vue-qrcode-reader'
 import type { AiidaPermissionRequest } from '@/types'
 
 const { open } = defineProps<{ open?: boolean }>()
@@ -21,7 +21,7 @@ function parseAiidaCode(aiidaCode: string) {
   }
 }
 
-function paintOutline(detectedCodes: any, ctx: any) {
+function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingContext2D) {
   for (const detectedCode of detectedCodes) {
     const [firstPoint, ...otherPoints] = detectedCode.cornerPoints
 
@@ -42,7 +42,7 @@ const onError = () => {
   codeError.value = 'Unable to access the camera.'
 }
 
-const onDetect = async (detectedCodes: Array<{ rawValue: string }>) => {
+const onDetect = async (detectedCodes: DetectedBarcode[]) => {
   if (!detectedCodes.length) return
   const firstDetectedCode = detectedCodes[0]
   paused.value = true
@@ -73,7 +73,7 @@ const onDetect = async (detectedCodes: Array<{ rawValue: string }>) => {
       <p v-if="notValid" class="invalid">Not a valid AIIDA Code</p>
     </QrcodeStream>
     <div class="error" v-if="codeError">
-      <h3 class="heading-3">Error</h3>
+      <p class="heading-3">Error</p>
       <p>{{ codeError }}</p>
     </div>
   </div>
