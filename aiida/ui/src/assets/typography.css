@@ -45,6 +45,11 @@
 .text-normal {
   font-size: 1rem;
   line-height: 1.5rem;
+
+  @media screen and (min-width: 640px) {
+    font-size: 0.875rem;
+    line-height: 100%;
+  }
 }
 
 .text-small {
