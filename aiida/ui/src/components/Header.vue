@@ -16,7 +16,6 @@ const paths = [
   ['/', 'Permissions', PermissionsNavIcon],
   ['/data-sources', 'Data Sources', DataSourceIcon],
 ]
-console.log(userProfile.value)
 </script>
 
 <template>
