@@ -46,7 +46,7 @@ async function handleAddPermission() {
 }
 
 function handleQrCodeResult(result: string) {
-  aiidaCodeInput.value!.value = btoa(result)
+  aiidaCodeInput.value!.value = result
   handleAddPermission()
 }
 </script>
