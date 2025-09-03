@@ -37,8 +37,8 @@ Gradle will automatically install the required Node.js and pnpm versions to buil
 
 If you are actively working on frontend applications, you will also want to install these dependencies locally:
 
-- [Node.js (18.17.0)](https://nodejs.org/en/download)
-- [pnpm (8.5.0)](https://pnpm.io/pnpm-cli)
+- [Node.js (22.19.0)](https://nodejs.org/en/download)
+- [pnpm (10.15.0)](https://pnpm.io/pnpm-cli)
 
 > [!TIP]
 > You can use a tool like [nvm](https://github.com/nvm-sh/nvm) or [Volta](https://volta.sh/) to help manage multiple Node.js versions on your machine.

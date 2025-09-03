@@ -31,19 +31,25 @@ onMounted(() => {
 
 <template>
   <MqttPasswordDialog :open="dialogOpen" :password="dialogPassword" @hide="hideResetDialog" />
-
-  <article v-for="dataSource in dataSources" :key="JSON.stringify(dataSource)">
+  <div class="layout">
     <DataSourceCard
+      v-for="dataSource in dataSources"
+      :key="JSON.stringify(dataSource)"
       :data-source="dataSource"
       @edit="$emit('edit', dataSource)"
       @delete="handleDelete(dataSource.id)"
       @reset="handleReset(dataSource.id)"
     />
-  </article>
+  </div>
 </template>
 
 <style scoped>
-article {
-  margin-top: 1rem;
+.layout {
+  display: grid;
+  gap: 1rem;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 </style>

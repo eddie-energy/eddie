@@ -34,6 +34,7 @@
   --eddie-primary-400: #017aa066;
   --max-content-width: 1620px;
   --content-padding: 1rem;
+  --border-radius: 0.5rem;
   --app-bg-color: rgb(239, 242, 247, 0.9998);
 
   font-size: 16px;
@@ -104,6 +105,22 @@ main {
   background-color: rgb(255, 255, 255, 0.5);
   height: 100%;
   border-radius: 0.5rem;
+  overflow-y: scroll;
+  scrollbar-color: var(--eddie-primary) var(--light);
+}
+
+main::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+main::-webkit-scrollbar-track {
+  border-radius: 0.5rem;
+  background: var(--light);
+}
+
+main::-webkit-scrollbar-thumb {
+  border-radius: 0.5rem;
+  color: var(--eddie-primary);
 }
 
 img {
