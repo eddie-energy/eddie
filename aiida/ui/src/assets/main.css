@@ -106,6 +106,7 @@ main {
   height: 100%;
   border-radius: 0.5rem;
   overflow-y: scroll;
+  scrollbar-color: var(--eddie-primary) var(--light);
 }
 
 main::-webkit-scrollbar {
@@ -119,8 +120,7 @@ main::-webkit-scrollbar-track {
 
 main::-webkit-scrollbar-thumb {
   border-radius: 0.5rem;
-  background-color: var(--eddie-primary);
-  color: var(--eddie-primary)
+  color: var(--eddie-primary);
 }
 
 img {
