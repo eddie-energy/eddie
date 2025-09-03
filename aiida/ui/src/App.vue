@@ -6,7 +6,7 @@ import ConfirmDialog from './components/ConfirmDialog.vue'
 
 <template>
   <ConfirmDialog />
-
+  <div class="alert-list"></div>
   <Header />
 
   <RouterView v-slot="{ Component }">
@@ -25,5 +25,30 @@ import ConfirmDialog from './components/ConfirmDialog.vue'
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
+}
+
+.alert-list {
+  position: absolute;
+  margin-bottom: var(--mobile-header-height);
+  padding: var(--content-padding);
+  right: 0;
+  bottom: 0;
+  height: fit-content;
+  display: flex;
+  gap: var(--spacing-md);
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: end;
+}
+
+@media screen and (min-width: 1024px) {
+  .alert-list {
+    width: 100%;
+    right: unset;
+    max-width: var(--max-content-width);
+    margin-bottom: unset;
+    margin: 3em auto;
+    padding: var(--spacing-xxl);
+  }
 }
 </style>

@@ -74,3 +74,4 @@ export type AiidaPermissionRequest = {
 }
 
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'
+export type ToastTypes = 'info' | 'success' | 'warning' | 'danger'
