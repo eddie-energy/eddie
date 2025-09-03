@@ -14,6 +14,15 @@ const router = createRouter({
       name: 'data-sources',
       component: () => import('../views/DataSourceView.vue'),
     },
+    {
+      path: '/account',
+      name: 'account',
+      component: () => import('../views/AccountView.vue'),
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      component: PermissionView,
+    },
   ],
 })
 

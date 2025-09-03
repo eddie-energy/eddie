@@ -1,20 +1,16 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import UserProfile from '@/components/UserProfile.vue'
 import Logo from '@/assets/logo.svg'
-import { BASE_URL } from '@/api.js'
 import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
 import DataSourceIcon from '@/assets/icons/DataSourceIcon.svg'
 import DataSinkIcon from '@/assets/icons/DataSinkIcon.svg'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
-import { useTemplateRef } from 'vue'
-
-const userProfile = useTemplateRef('userProfile')
 
 const paths = [
   ['/', 'Permissions', PermissionsNavIcon],
   ['/data-sources', 'Data Sources', DataSourceIcon],
+  ['/data-sinks', 'Data Sinks', DataSinkIcon],
 ]
 </script>
 
@@ -35,23 +31,9 @@ const paths = [
         <component :is="icon" class="icon" />
         {{ name }}
       </RouterLink>
-      <a
-        data-text="Services"
-        :href="`${BASE_URL}/installer`"
-        target="_blank"
-        class="link-with-bold-hover nav-link"
-      >
-        <DataSinkIcon class="icon" />
-        Data Sinks
-      </a>
-      <a
-        @click="userProfile?.drawer.show()"
-        data-text="Account"
-        class="link-with-bold-hover nav-link"
-      >
+      <RouterLink to="/account" data-text="Account" class="link-with-bold-hover nav-link">
         <span class="user-profile-link"> <AccountIcon /> Account</span>
-      </a>
-      <UserProfile ref="userProfile" />
+      </RouterLink>
     </nav>
   </header>
 </template>
