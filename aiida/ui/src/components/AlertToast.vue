@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ToastTypes } from '@/types'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, useId } from 'vue'
 import ErrorToastIcon from '@/assets/icons/ErrorToastIcon.svg'
 import InfoToastIcon from '@/assets/icons/InfoToastIcon.svg'
 import WarningToastIcon from '@/assets/icons/WarningToastIcon.svg'
@@ -9,18 +9,23 @@ import CloseIcon from '@/assets/icons/CloseIcon.svg'
 
 let timeoutId: ReturnType<typeof setTimeout> | null = null
 
-const { severity, message, duration, canClose } = defineProps<{
-  severity: ToastTypes
+const {
+  severity = 'info',
+  message,
+  duration = 5000,
+  canClose = false,
+} = defineProps<{
+  severity?: ToastTypes
   message: string
-  duration: number
+  duration?: number
   canClose?: boolean
 }>()
-
+const id = useId()
 const progress = ref(100)
 const isLeaving = ref(false)
 
 const selfdestruct = () => {
-  const el = document.querySelector('.toast')
+  const el = document.getElementById(id)
   if (el && el.parentNode) {
     el.parentNode.parentNode?.removeChild(el.parentNode)
   }
@@ -69,7 +74,13 @@ const toastTypes: {
 </script>
 
 <template>
-  <div class="toast" :class="[severity, isLeaving && 'toast-leave']" aria-live="polite" role="">
+  <div
+    class="toast"
+    :class="[severity, isLeaving && 'toast-leave']"
+    aria-live="polite"
+    role="alert"
+    :id
+  >
     <component :is="toastTypes[severity].icon" class="icon" />
     <div>
       <p class="toast-title text-normal">{{ toastTypes[severity].title }}</p>
@@ -91,7 +102,7 @@ const toastTypes: {
 
 <style scoped>
 .toast {
-  --serverity-color: var(--eddie-blue);
+  --severity-color: var(--eddie-blue);
   z-index: 10;
   position: relative;
   border-radius: 1rem;
@@ -111,21 +122,21 @@ const toastTypes: {
 }
 
 .success {
-  --serverity-color: var(--eddie-green);
+  --severity-color: var(--eddie-green);
 }
 
 .warning {
-  --serverity-color: var(--eddie-yellow);
+  --severity-color: var(--eddie-yellow);
 }
 
 .danger {
-  --serverity-color: var(--eddie-red-medium);
+  --severity-color: var(--eddie-red-medium);
 }
 
 .icon {
   min-width: 40px;
   border-radius: 0.5rem;
-  background: linear-gradient(322.21deg, var(--serverity-color) -3.82%, #ffffff 96.51%);
+  background: linear-gradient(322.21deg, var(--severity-color) -3.82%, #ffffff 96.51%);
 }
 
 .toast-title {
@@ -137,7 +148,7 @@ const toastTypes: {
   bottom: 0;
   left: 0;
   height: 5px;
-  background-color: var(--serverity-color);
+  background-color: var(--severity-color);
 }
 
 .close-button {
