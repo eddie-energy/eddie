@@ -6,13 +6,13 @@ import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestProjection;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.dto.SimpleResponseData;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.ConsentData;
 import energy.eddie.regionconnector.at.eda.models.ResponseCode;
-import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEventFactory;
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -32,8 +33,7 @@ import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CCMORejectHandlerTest {
@@ -59,11 +59,8 @@ class CCMORejectHandlerTest {
     void testCmRequestStatusMessage_retriesOnConsentRequestIdAlreadyExists() {
         // Given
         LocalDate today = LocalDate.now(AT_ZONE_ID);
-        var permissionRequest = new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
-                                                         "conversationId", null, "dsoId", today, today.plusDays(1),
-                                                         AllowedGranularity.PT15M,
-                                                         PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
-                                                         "", null, null);
+        var permissionRequest = projection(AllowedGranularity.PT15M);
+
         when(repository.findByConversationIdOrCMRequestId(any(), any()))
                 .thenReturn(List.of(permissionRequest));
         CMRequestStatus cmRequestStatus = cmRequestStatus(ResponseCode.CmReqOnl.CONSENT_REQUEST_ID_ALREADY_EXISTS);
@@ -74,9 +71,9 @@ class CCMORejectHandlerTest {
         // Then
         verify(outbox).commit(validatedEventCaptor.capture());
         assertAll(
-                () -> assertEquals(permissionRequest.start(), validatedEventCaptor.getValue().start()),
-                () -> assertEquals(permissionRequest.end(), validatedEventCaptor.getValue().end()),
-                () -> assertEquals(permissionRequest.granularity(), validatedEventCaptor.getValue().granularity())
+                () -> assertEquals(permissionRequest.getPermissionStart(), validatedEventCaptor.getValue().start()),
+                () -> assertEquals(permissionRequest.getPermissionEnd(), validatedEventCaptor.getValue().end()),
+                () -> assertEquals(permissionRequest.getGranularity(), validatedEventCaptor.getValue().granularity().name())
         );
     }
 
@@ -94,7 +91,7 @@ class CCMORejectHandlerTest {
     @Test
     void testCmRequestStatusMessage_retriesWithHigherGranularity() {
         // Given
-        var permissionRequest = permissionRequest(AllowedGranularity.PT15M);
+        var permissionRequest = projection(AllowedGranularity.PT15M);
         when(repository.findByConversationIdOrCMRequestId(any(), any()))
                 .thenReturn(List.of(permissionRequest));
         var cmRequestStatus = cmRequestStatus(ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE);
@@ -113,18 +110,31 @@ class CCMORejectHandlerTest {
         assertEquals(AllowedGranularity.P1D, validatedEventCaptor.getValue().granularity());
     }
 
-    private static EdaPermissionRequest permissionRequest(AllowedGranularity allowedGranularity) {
-        return new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
-                                        "conversationId", null, "dsoId", null, null,
-                                        allowedGranularity,
-                                        PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
-                                        "", null, null);
+    private static AtPermissionRequestProjection projection(AllowedGranularity allowedGranularity) {
+        AtPermissionRequestProjection p = mock(AtPermissionRequestProjection.class);
+
+        when(p.getPermissionId()).thenReturn("pid");
+        when(p.getConnectionId()).thenReturn("connectionId");
+        when(p.getCmRequestId()).thenReturn("cmRequestId");
+        when(p.getConversationId()).thenReturn("conversationId");
+        when(p.getPermissionStart()).thenReturn(LocalDate.now());
+        when(p.getPermissionEnd()).thenReturn(LocalDate.now());
+        when(p.getDataNeedId()).thenReturn("dnid");
+        when(p.getDsoId()).thenReturn("dsoId");
+        when(p.getMeteringPointId()).thenReturn("meteringPointId");
+        when(p.getConsentId()).thenReturn("consentId");
+        when(p.getMessage()).thenReturn("message");
+        when(p.getGranularity()).thenReturn(allowedGranularity.name());
+        when(p.getStatus()).thenReturn(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR.name());
+        when(p.getCreated()).thenReturn(Instant.now());
+
+        return p;
     }
 
     @Test
     void testCmRequestStatusMessage_doesNotRetryOnUnsupportedGranularity() {
         // Given
-        var permissionRequest = permissionRequest(AllowedGranularity.PT15M);
+        var permissionRequest = projection(AllowedGranularity.PT15M);
         when(repository.findByConversationIdOrCMRequestId(any(), any()))
                 .thenReturn(List.of(permissionRequest));
         CMRequestStatus cmRequestStatus = cmRequestStatus(ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE);
@@ -146,7 +156,7 @@ class CCMORejectHandlerTest {
     @Test
     void testCmRequestStatusMessage_doesNotRetryOnHighestGranularity() {
         // Given
-        var permissionRequest = permissionRequest(AllowedGranularity.P1D);
+        var permissionRequest = projection(AllowedGranularity.P1D);
         when(repository.findByConversationIdOrCMRequestId(any(), any()))
                 .thenReturn(List.of(permissionRequest));
         CMRequestStatus cmRequestStatus = cmRequestStatus(ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE);
@@ -162,7 +172,7 @@ class CCMORejectHandlerTest {
     @Test
     void testCmRequestStatusMessage_receivingTimeOutEmitsTimeOut() {
         // Given
-        var permissionRequest = permissionRequest(AllowedGranularity.P1D);
+        var permissionRequest = projection(AllowedGranularity.P1D);
         when(repository.findByConversationIdOrCMRequestId(any(), any()))
                 .thenReturn(List.of(permissionRequest));
         CMRequestStatus cmRequestStatus = cmRequestStatus(ResponseCode.CmReqOnl.TIMEOUT);
@@ -178,7 +188,7 @@ class CCMORejectHandlerTest {
     @Test
     void testCmRequestStatusMessage_receivingRejectedEmitsRejected() {
         // Given
-        var permissionRequest = permissionRequest(AllowedGranularity.P1D);
+        var permissionRequest = projection(AllowedGranularity.P1D);
         when(repository.findByConversationIdOrCMRequestId(any(), any()))
                 .thenReturn(List.of(permissionRequest));
         CMRequestStatus cmRequestStatus = cmRequestStatus(ResponseCode.CmReqOnl.REJECTED);

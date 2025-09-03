@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
@@ -23,9 +23,9 @@ public class CCMOAnswerHandler {
 
 
     public void handleCCMOAnswer(CMRequestStatus cmRequestStatus) {
-        for (AtPermissionRequest request : repository.findByConversationIdOrCMRequestId(
+        for (var request : repository.findByConversationIdOrCMRequestId(
                 cmRequestStatus.conversationId(),
-                cmRequestStatus.cmRequestId())) {
+                cmRequestStatus.cmRequestId()).stream().map(EdaPermissionRequest::fromProjection).toList()) {
             if (request.status() != PermissionProcessStatus.VALIDATED) {
                 LOGGER.atError()
                       .addArgument(request::permissionId)

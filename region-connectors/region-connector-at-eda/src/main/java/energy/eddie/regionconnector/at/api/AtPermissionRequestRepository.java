@@ -23,7 +23,7 @@ public interface AtPermissionRequestRepository extends PermissionRequestReposito
      * @param cmRequestId    the request id of the original CM Request.
      * @return a List, which is empty if there is no matching permission request.
      */
-    List<AtPermissionRequest> findByConversationIdOrCMRequestId(
+    List<AtPermissionRequestProjection> findByConversationIdOrCMRequestId(
             String conversationId,
             @Nullable String cmRequestId
     );

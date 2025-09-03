@@ -1,12 +1,12 @@
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestProjection;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.dto.SimpleResponseData;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.ConsentData;
 import energy.eddie.regionconnector.at.eda.models.ResponseCode;
-import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
@@ -22,6 +22,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -72,11 +74,14 @@ class CCMSHandlerTest {
             List<Integer> statusCodes
     ) {
         // Given
-        var permissionRequest = permissionRequest(PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION);
+        var permissionRequests = List.of(
+                projection(PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION),
+                projection(PermissionProcessStatus.ACCEPTED));
+
         CMRequestStatus cmRequestStatus = cmRequestStatus(notificationMessageType, statusCodes);
         when(repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
                                                           cmRequestStatus.cmRequestId()))
-                .thenReturn(List.of(permissionRequest, permissionRequest(PermissionProcessStatus.ACCEPTED)));
+                .thenReturn(permissionRequests);
 
         // When
         handler.handleCCMSReject(cmRequestStatus);
@@ -86,12 +91,25 @@ class CCMSHandlerTest {
         assertEquals(status, edaAnswerEventCaptor.getValue().status());
     }
 
-    private static EdaPermissionRequest permissionRequest(PermissionProcessStatus permissionProcessStatus) {
-        return new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
-                                        "conversationId", null, "dsoId", null, null,
-                                        AllowedGranularity.PT15M,
-                                        permissionProcessStatus,
-                                        "", null, null);
+    private static AtPermissionRequestProjection projection(PermissionProcessStatus permissionProcessStatus) {
+        AtPermissionRequestProjection p = mock(AtPermissionRequestProjection.class);
+
+        when(p.getPermissionId()).thenReturn("pid");
+        when(p.getConnectionId()).thenReturn("connectionId");
+        when(p.getCmRequestId()).thenReturn("cmRequestId");
+        when(p.getConversationId()).thenReturn("conversationId");
+        when(p.getPermissionStart()).thenReturn(LocalDate.now());
+        when(p.getPermissionEnd()).thenReturn(LocalDate.now());
+        when(p.getDataNeedId()).thenReturn("dnid");
+        when(p.getDsoId()).thenReturn("dsoId");
+        when(p.getMeteringPointId()).thenReturn("meteringPointId");
+        when(p.getConsentId()).thenReturn("consentId");
+        when(p.getMessage()).thenReturn("message");
+        when(p.getGranularity()).thenReturn(AllowedGranularity.PT15M.name());
+        when(p.getStatus()).thenReturn(permissionProcessStatus.name());
+        when(p.getCreated()).thenReturn(Instant.now());
+
+        return p;
     }
 
     private static CMRequestStatus cmRequestStatus(
@@ -111,14 +129,16 @@ class CCMSHandlerTest {
     @Test
     void handleCCMSAnswer_emitsExternallyTerminatedForEveryRequiresTerminationPermissionRequest() {
         // Given
-        var permissionRequest = permissionRequest(PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION);
+        var permissionRequest = projection(PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION);
         CMRequestStatus cmRequestStatus = cmRequestStatus(NotificationMessageType.CCMS_ANSWER,
                                                           List.of(ResponseCode.CmRevSP.TERMINATION_SUCCESSFUL));
+
+        var accepted = projection(PermissionProcessStatus.ACCEPTED);
         when(repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
                                                           cmRequestStatus.cmRequestId()))
                 .thenReturn(List.of(permissionRequest,
                                     permissionRequest,
-                                    permissionRequest(PermissionProcessStatus.ACCEPTED)));
+                                    accepted));
 
         // When
         handler.handleCCMSAnswer(cmRequestStatus);
@@ -133,4 +153,6 @@ class CCMSHandlerTest {
                                    edaAnswerEventCaptor.getAllValues().getLast().status())
         );
     }
+
+
 }

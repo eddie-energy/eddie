@@ -1,8 +1,7 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestProjection;
 import energy.eddie.regionconnector.at.eda.dto.*;
 import energy.eddie.regionconnector.at.eda.persistence.JpaPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
@@ -26,6 +25,23 @@ class IdentifiableConsumptionRecordServiceTest {
     @Mock
     private JpaPermissionRequestRepository repository;
 
+    private static AtPermissionRequestProjection projection(
+            String permissionId, String connectionId, String dataNeedId,
+            String cmRequestId, String conversationId
+    ) {
+        AtPermissionRequestProjection p = org.mockito.Mockito.mock(AtPermissionRequestProjection.class);
+        when(p.getPermissionId()).thenReturn(permissionId);
+        when(p.getConnectionId()).thenReturn(connectionId);
+        when(p.getDataNeedId()).thenReturn(dataNeedId);
+        when(p.getCmRequestId()).thenReturn(cmRequestId);
+        when(p.getConversationId()).thenReturn(conversationId);
+        when(p.getStatus()).thenReturn("ACCEPTED");
+        when(p.getPermissionStart()).thenReturn(LocalDate.now().minusDays(1));
+        when(p.getPermissionEnd()).thenReturn(null);
+        when(p.getCreated()).thenReturn(java.time.Instant.now());
+        return p;
+    }
+
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     void mapToIdentifiableConsumptionRecord_returnsCorrectlyMappedRecord() {
@@ -33,15 +49,16 @@ class IdentifiableConsumptionRecordServiceTest {
         String identifiableMeteringPoint = "identifiableMeteringPoint";
         var identifiableConsumptionRecord = createConsumptionRecord(identifiableMeteringPoint);
 
+        var permissionRequests = List.of(
+                projection("pmId1", "connId1", "dataNeedId1", "test1", "any1"),
+                projection("pmId2", "connId2", "dataNeedId2", "test2", "any2")
+        );
+
         when(repository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted(
                 eq(identifiableMeteringPoint),
                 any()
         ))
-                .thenReturn(List.of(new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1",
-                                                                PermissionProcessStatus.ACCEPTED),
-                                    new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2",
-                                                                PermissionProcessStatus.ACCEPTED)
-                ));
+                .thenReturn(permissionRequests);
 
         IdentifiableConsumptionRecordService service = new IdentifiableConsumptionRecordService(repository);
 

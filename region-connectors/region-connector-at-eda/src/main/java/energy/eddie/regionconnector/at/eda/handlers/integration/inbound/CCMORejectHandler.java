@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.ResponseCode;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEventFactory;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
@@ -45,8 +46,9 @@ public class CCMORejectHandler {
         var permissionRequests = repository.findByConversationIdOrCMRequestId(
                 cmRequestStatus.conversationId(),
                 cmRequestStatus.cmRequestId()
-        );
-        for (AtPermissionRequest permissionRequest : permissionRequests) {
+        ).stream().map(EdaPermissionRequest::fromProjection).toList();
+
+        for (var permissionRequest : permissionRequests) {
             handlePermissionRequestReject(cmRequestStatus, permissionRequest);
         }
     }

@@ -25,8 +25,38 @@ public interface JpaPermissionRequestRepository extends PagingAndSortingReposito
     Optional<AtPermissionRequest> findByPermissionId(String permissionId);
 
     @Override
-    @Query("SELECT pr FROM EdaPermissionRequest pr WHERE pr.conversationId = :conversationId OR pr.cmRequestId = :cmRequestId")
-    List<AtPermissionRequest> findByConversationIdOrCMRequestId(
+    @Query(value = """
+        WITH permissions AS (
+            SELECT DISTINCT ON (permission_id) permission_id
+            FROM at_eda.permission_event
+            WHERE cm_request_id = :cmRequestId or conversation_id = :conversationId
+        )
+        SELECT DISTINCT ON (pe.permission_id)
+            pe.permission_id,
+            at_eda.firstval_agg(pe.cm_request_id)     OVER w AS cm_request_id,
+            at_eda.firstval_agg(pe.connection_id)     OVER w AS connection_id,
+            at_eda.firstval_agg(pe.conversation_id)   OVER w AS conversation_id,
+            at_eda.firstval_agg(pe.created)           OVER w AS created,
+            at_eda.firstval_agg(pe.data_need_id)      OVER w AS data_need_id,
+            at_eda.firstval_agg(pe.dso_id)            OVER w AS dso_id,
+            at_eda.firstval_agg(pe.granularity)       OVER w AS granularity,
+            at_eda.firstval_agg(pe.metering_point_id) OVER w AS metering_point_id,
+            at_eda.firstval_agg(pe.permission_start)  OVER w AS permission_start,
+            at_eda.firstval_agg(pe.permission_end)    OVER w AS permission_end,
+            at_eda.firstval_agg(pe.cm_consent_id)     OVER w AS cm_consent_id,
+            at_eda.firstval_agg(pe.message)           OVER w AS message,
+            at_eda.firstval_agg(pe.status)            OVER w AS status,
+            at_eda.firstval_agg(pe.cause)             OVER w AS cause
+        FROM at_eda.permission_event pe
+                 JOIN permissions USING (permission_id)
+        WINDOW w AS (
+                PARTITION BY pe.permission_id
+                ORDER BY pe.event_created DESC
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+                )
+        ORDER BY pe.permission_id, pe.event_created DESC;
+        """, nativeQuery = true)
+    List<AtPermissionRequestProjection> findByConversationIdOrCMRequestId(
             @Param("conversationId") String conversationId,
             @Param("cmRequestId") @Nullable String cmRequestId
     );
