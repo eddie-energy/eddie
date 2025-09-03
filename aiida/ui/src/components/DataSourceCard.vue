@@ -117,7 +117,7 @@ const {
   border: 1px solid var(--eddie-primary);
   border-radius: var(--border-radius);
   padding: var(--spacing-lg);
-  background: white;
+  background: var(--light);
 }
 
 .headline {
@@ -126,14 +126,14 @@ const {
 
 .fields {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   color: var(--eddie-grey-medium);
 }
 
 .fields > div {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 .fields dd {
@@ -142,7 +142,7 @@ const {
 
 .fields > div:not(.button-field),
 .fields > .button-field > dt {
-  padding: 0.25rem 0.5rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border: 1px solid var(--eddie-grey-light);
   border-radius: var(--border-radius);
 }
@@ -150,10 +150,10 @@ const {
 .header {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 1rem;
+  gap: var(--spacing-md);
   align-items: end;
   color: var(--eddie-primary);
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-md);
   font-weight: 600;
 }
 
@@ -162,7 +162,7 @@ const {
   display: flex;
   justify-content: space-between;
   align-items: end;
-  gap: 1rem;
+  gap: var(--spacing-md);
   margin-top: 0.75rem;
 }
 </style>
