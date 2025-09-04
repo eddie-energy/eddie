@@ -4,10 +4,11 @@ const titleRef = ref('')
 const descriptionRef = ref('')
 const cancelLabelRef = ref('')
 const confirmLabelRef = ref('')
-const open = ref<boolean | undefined>(false)
+const confirmModalRef = ref<HTMLDialogElement>()
 let _resolve: (value: boolean) => void
 
 export function useConfirmDialog() {
+
     async function confirm(
         title: string,
         description: string,
@@ -18,7 +19,7 @@ export function useConfirmDialog() {
         descriptionRef.value = description
         cancelLabelRef.value = cancelLabel
         confirmLabelRef.value = confirmLabel
-        open.value = true
+        confirmModalRef.value?.showModal()
 
         return new Promise<boolean>((resolve) => {
             _resolve = resolve
@@ -26,12 +27,12 @@ export function useConfirmDialog() {
     }
 
     function onConfirm() {
-        open.value = false;
+        confirmModalRef.value?.close()
         _resolve(true)
     }
 
     function onCancel() {
-        open.value = false;
+        confirmModalRef.value?.close()
         _resolve(false)
     }
 
@@ -40,9 +41,10 @@ export function useConfirmDialog() {
         descriptionRef,
         cancelLabelRef,
         confirmLabelRef,
+        confirmModalRef,
         confirm,
         onConfirm,
         onCancel,
-        open,
+
     }
 }
