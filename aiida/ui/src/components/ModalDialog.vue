@@ -19,7 +19,7 @@ defineExpose({ showModal, close })
 </script>
 
 <template>
-  <dialog class="dialog" ref="modal">
+  <dialog class="dialog" ref="modal" closedby="any">
     <div class="dialog-header">
       <p class="heading-2">{{ title }}</p>
       <button type="button" @click="close" aria-label="Close" class="close-button">
@@ -37,7 +37,7 @@ defineExpose({ showModal, close })
   margin: auto;
   padding: var(--spacing-xlg);
   min-width: 25vw;
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
   border: unset;
   &::backdrop {
     background-color: var(--eddie-grey-medium);

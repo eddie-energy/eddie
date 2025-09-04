@@ -5,23 +5,34 @@ const descriptionRef = ref('')
 const cancelLabelRef = ref('')
 const confirmLabelRef = ref('')
 const open = ref<boolean | undefined>(false)
-const resolvePromise = ref<((value: PromiseLike<boolean> | boolean) => void) | null>(null)
-
+let _resolve: (value: boolean) => void
 
 export function useConfirmDialog() {
-    async function confirm(title: string,
+    async function confirm(
+        title: string,
         description: string,
-        cancelLabel?: string,
-        confirmLabel?: string) {
+        cancelLabel = "Cancel",
+        confirmLabel = "Confirm"
+    ) {
         titleRef.value = title
         descriptionRef.value = description
-        cancelLabelRef.value = cancelLabel ?? "Cancel"
-        confirmLabelRef.value = confirmLabel ?? "Confirm"
+        cancelLabelRef.value = cancelLabel
+        confirmLabelRef.value = confirmLabel
         open.value = true
 
         return new Promise<boolean>((resolve) => {
-            resolvePromise.value = resolve
+            _resolve = resolve
         })
+    }
+
+    function onConfirm() {
+        open.value = false;
+        _resolve(true)
+    }
+
+    function onCancel() {
+        open.value = false;
+        _resolve(false)
     }
 
     return {
@@ -30,7 +41,8 @@ export function useConfirmDialog() {
         cancelLabelRef,
         confirmLabelRef,
         confirm,
+        onConfirm,
+        onCancel,
         open,
-        resolvePromise
     }
 }

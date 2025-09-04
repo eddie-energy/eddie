@@ -1,11 +1,10 @@
 <script setup lang="ts">
-//inspired by https://medium.com/nerd-for-tech/creating-a-customized-alert-and-confirm-function-modal-component-which-can-stop-function-execution-bb26914da78a
 import ModalDialog from './ModalDialog.vue'
 import Button from './Button.vue'
 import { ref, watch } from 'vue'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 
-const { titleRef, descriptionRef, cancelLabelRef, confirmLabelRef, open, resolvePromise } =
+const { titleRef, descriptionRef, cancelLabelRef, confirmLabelRef, open, onConfirm, onCancel } =
   useConfirmDialog()
 
 const modal = ref<HTMLDialogElement>()
@@ -17,9 +16,11 @@ watch([open], () => {
 })
 
 function handleUserInput(value: boolean) {
-  if (!resolvePromise.value) return
-  resolvePromise.value(value)
-  open.value = false
+  if (value) {
+    onConfirm()
+  } else {
+    onCancel()
+  }
   modal.value?.close()
 }
 </script>
