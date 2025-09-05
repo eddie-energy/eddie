@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import STATUS from '@/constants/permission-status'
 import type { AiidaPermission, PermissionTypes } from '@/types'
-import PermissionIcon from '@/assets/icons/PermissionIcon.svg'
+import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
 import StatusTag from './StatusTag.vue'
 import { ref } from 'vue'
@@ -18,7 +18,9 @@ const isOpen = ref(false)
 <template>
   <li class="permission" :class="{ 'is-open': isOpen }">
     <div class="permission-header">
-      <PermissionIcon class="icon" />
+      <div class="icon-wrapper">
+        <PermissionsNavIcon class="icon" />
+      </div>
       <h2 class="heading-5 title">{{ permission.serviceName }}</h2>
       <p v-if="permission.unimplemented" class="small-data-graph">Placeholder</p>
       <time class="non-essential">{{
@@ -65,8 +67,15 @@ const isOpen = ref(false)
     }
   }
 }
-.icon {
-  min-width: 2rem;
+
+.icon-wrapper {
+  padding: 8.5px 6px;
+  border: 1px solid var(--eddie-grey-light);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--eddie-primary);
+  border-radius: 0.5rem;
 }
 
 .permission-header {

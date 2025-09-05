@@ -101,15 +101,13 @@ defineExpose({ showModal })
       <p class="heading-3">Error</p>
       {{ aiidaCodeError }}
     </div>
-    <div class="two-item-pair">
+    <div class="action-buttons">
       <Button button-style="error-secondary" @click="permissionModal?.close()">Cancel</Button>
       <Button @click="handleAddPermission">Add</Button>
     </div>
     <ModalDialog title="Scan QR Code" ref="qrCodeModal" @close="qrCodeIsOpen = false">
       <QrCodeScanner :open="qrCodeIsOpen" @valid="handleValidQrCode" />
-      <div class="two-item-pair">
-        <Button button-style="error-secondary" @click="toggleQrCodeModal(false)">Cancel</Button>
-      </div>
+      <Button button-style="error-secondary" @click="toggleQrCodeModal(false)">Cancel</Button>
     </ModalDialog>
   </ModalDialog>
 </template>
@@ -119,7 +117,7 @@ defineExpose({ showModal })
   margin-bottom: var(--spacing-xxl);
 }
 
-.two-item-pair {
+.action-buttons {
   display: flex;
   align-items: center;
   justify-content: space-between;
