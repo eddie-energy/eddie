@@ -1,6 +1,12 @@
 import useToast from './composables/useToast'
 import { keycloak } from './keycloak'
-import type { AiidaApplicationInformation, AiidaDataSource, AiidaDataSourceType, AiidaPermission, AiidaPermissionRequest } from './types'
+import type {
+  AiidaApplicationInformation,
+  AiidaDataSource,
+  AiidaDataSourceType,
+  AiidaPermission,
+  AiidaPermissionRequest,
+} from './types'
 const { danger, success } = useToast()
 
 export const BASE_URL = THYMELEAF_AIIDA_PUBLIC_URL ?? import.meta.env.VITE_AIIDA_PUBLIC_URL
@@ -92,7 +98,7 @@ export function getAssetTypes(): Promise<{ assets: string[] }> {
   return fetch('/datasources/assets')
 }
 
-export function getModbusVendors(): Promise<{ id: string, name: string }[]> {
+export function getModbusVendors(): Promise<{ id: string; name: string }[]> {
   return fetch('/datasources/modbus/vendors')
 }
 
