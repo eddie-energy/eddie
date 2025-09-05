@@ -1,6 +1,7 @@
+import useToast from './composables/useToast'
 import { keycloak } from './keycloak'
 import type { AiidaApplicationInformation, AiidaDataSource, AiidaDataSourceType, AiidaPermission, AiidaPermissionRequest } from './types'
-import { danger, success, } from './util/alert-toast'
+const { danger, success } = useToast()
 
 export const BASE_URL = THYMELEAF_AIIDA_PUBLIC_URL ?? import.meta.env.VITE_AIIDA_PUBLIC_URL
 

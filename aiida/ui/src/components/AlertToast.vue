@@ -1,52 +1,27 @@
 <script setup lang="ts">
 import type { ToastTypes } from '@/types'
-import { onMounted, ref, useId } from 'vue'
 import ErrorToastIcon from '@/assets/icons/ErrorToastIcon.svg'
 import InfoToastIcon from '@/assets/icons/InfoToastIcon.svg'
 import WarningToastIcon from '@/assets/icons/WarningToastIcon.svg'
 import SuccessToastIcon from '@/assets/icons/SuccessToastIcon.svg'
 import CloseIcon from '@/assets/icons/CloseIcon.svg'
+import useToast from '@/composables/useToast'
 
-let timeoutId: ReturnType<typeof setTimeout> | null = null
+const { remove } = useToast()
 
 const {
   severity = 'info',
   message,
   duration = 5000,
   canClose = false,
+  id,
 } = defineProps<{
   severity?: ToastTypes
   message: string
+  id: number
   duration?: number
   canClose?: boolean
 }>()
-const id = useId()
-const progress = ref(100)
-const isLeaving = ref(false)
-
-const selfdestruct = () => {
-  const el = document.getElementById(id)
-  if (el && el.parentNode) {
-    el.parentNode.parentNode?.removeChild(el.parentNode)
-  }
-}
-
-onMounted(() => {
-  if (timeoutId) clearTimeout(timeoutId)
-  timeoutId = setTimeout(selfdestruct, duration)
-  const interval = 10
-  const decrement = 100 / (duration / interval)
-  const progressInterval = setInterval(() => {
-    progress.value -= decrement
-    if (progress.value <= 0) {
-      progress.value = 0
-      clearInterval(progressInterval)
-    }
-    if (progress.value <= 5 && !isLeaving.value) {
-      isLeaving.value = true
-    }
-  }, interval)
-})
 
 const toastTypes: {
   [key: string]: {
@@ -71,16 +46,12 @@ const toastTypes: {
     icon: ErrorToastIcon,
   },
 }
+
+const progressBarDuration = `${duration}ms`
 </script>
 
 <template>
-  <div
-    class="toast"
-    :class="[severity, isLeaving && 'toast-leave']"
-    aria-live="polite"
-    role="alert"
-    :id
-  >
+  <div class="toast" :class="[severity]" aria-live="polite" role="alert">
     <component :is="toastTypes[severity].icon" class="icon" />
     <div>
       <p class="toast-title text-normal">{{ toastTypes[severity].title }}</p>
@@ -89,14 +60,14 @@ const toastTypes: {
     <button
       type="button"
       v-if="canClose"
-      @click="selfdestruct"
+      @click="remove(id)"
       aria-label="Close"
       class="close-button"
     >
       <CloseIcon />
     </button>
 
-    <div class="toast-progress-bar" :style="{ width: progress + '%' }"></div>
+    <div class="toast-progress-bar" :class="{ hide: canClose }"></div>
   </div>
 </template>
 
@@ -114,10 +85,7 @@ const toastTypes: {
   padding: var(--spacing-md) var(--spacing-xlg);
   box-shadow: 0px 3px 10px 0px #00000040;
   min-width: 20vw;
-  width: 100%;
-  opacity: 0;
-  animation: fadeIn 0.4s ease;
-  animation-fill-mode: forwards;
+  opacity: 1;
   overflow: hidden;
 }
 
@@ -149,6 +117,11 @@ const toastTypes: {
   left: 0;
   height: 5px;
   background-color: var(--severity-color);
+  animation: progress v-bind(progressBarDuration) linear;
+}
+
+.hide {
+  display: none;
 }
 
 .close-button {
@@ -156,29 +129,12 @@ const toastTypes: {
   margin-left: auto;
 }
 
-.toast-leave {
-  animation: fadeOut 0.4s ease forwards;
-}
-
-@keyframes fadeOut {
+@keyframes progress {
   from {
-    opacity: 1;
-    transform: translateY(0);
+    width: 100%;
   }
   to {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+    width: 0%;
   }
 }
 </style>
