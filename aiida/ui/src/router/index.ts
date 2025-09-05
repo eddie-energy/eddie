@@ -5,7 +5,7 @@ const router = createRouter({
   history: createWebHistory(THYMELEAF_AIIDA_PUBLIC_URL ? '/vue/' : undefined),
   routes: [
     {
-      path: '/',
+      path: '/:pathMatch(.*)*',
       name: 'home',
       component: PermissionView,
     },
@@ -18,11 +18,7 @@ const router = createRouter({
       path: '/account',
       name: 'account',
       component: () => import('../views/AccountView.vue'),
-    },
-    {
-      path: '/:pathMatch(.*)*',
-      component: PermissionView,
-    },
+    }
   ],
 })
 
