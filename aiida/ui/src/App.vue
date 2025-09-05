@@ -27,15 +27,4 @@ import AlertToastList from './components/AlertToastList.vue'
 .v-leave-to {
   opacity: 0;
 }
-
-@media screen and (min-width: 1024px) {
-  .alert-list {
-    width: 100%;
-    right: unset;
-    max-width: var(--max-content-width);
-    margin-bottom: unset;
-    margin: 3em auto;
-    padding: var(--spacing-xxl);
-  }
-}
 </style>
