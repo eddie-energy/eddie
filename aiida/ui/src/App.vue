@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import PermissionDialog from '@/components/PermissionDialog.vue'
 import Header from '@/components/Header.vue'
+import ConfirmDialog from './components/ConfirmDialog.vue'
 </script>
 
 <template>
-  <PermissionDialog />
+  <ConfirmDialog />
 
   <Header />
 
