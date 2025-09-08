@@ -1,6 +1,7 @@
 package energy.eddie.aiida.adapters.datasource.simulation;
 
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -26,6 +27,7 @@ class SimulationDataSourceTest {
                               "simulation",
                               "AT",
                               true,
+                              DataSourceIcon.METER,
                               1,
                               null,
                               null),

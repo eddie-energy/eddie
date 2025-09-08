@@ -2,12 +2,12 @@
 import {
   addDataSource,
   getAssetTypes,
-  getDataSourceTypes,
+  getDataSourceTypes, getIconTypes,
   getModbusDevices,
   getModbusModels,
   getModbusVendors,
   saveDataSource,
-} from '@/api'
+} from "@/api";
 import { onMounted, ref, toRaw, useTemplateRef, watch } from 'vue'
 import { fetchDataSources } from '@/stores/dataSources.js'
 import type { AiidaDataSource } from '@/types'
@@ -20,6 +20,7 @@ const form = useTemplateRef<HTMLFormElement>('form')
 
 const dataSourceTypes = await getDataSourceTypes()
 const assetTypes = (await getAssetTypes()).assets
+const icons = (await getIconTypes()).icons
 
 const props = defineProps(['open', 'dataSource'])
 const emit = defineEmits(['hide'])
@@ -34,6 +35,7 @@ const dataSourceRef = ref<AiidaDataSource>({
   asset: '',
   name: '',
   countryCode: '',
+  icon: 'ELECTRICITY',
 })
 
 watch(props, async () => {
@@ -158,6 +160,16 @@ onMounted(() => {
         @sl-input="dataSourceRef.asset = $event.target.value"
       >
         <sl-option v-for="type in assetTypes" :value="type" :key="type">
+          {{ type }}
+        </sl-option>
+      </sl-select>
+      <sl-select
+        label="Icon"
+        required
+        :value="dataSourceRef.icon"
+        @sl-input="dataSourceRef.icon = $event.target.value"
+      >
+        <sl-option v-for="type in icons" :value="type" :key="type">
           {{ type }}
         </sl-option>
       </sl-select>

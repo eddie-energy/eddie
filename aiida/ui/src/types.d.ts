@@ -32,6 +32,7 @@ export type AiidaDataSource = {
   name: string
   countryCode: string
   enabled: boolean
+  icon: string
   simulationPeriod?: number
   mqttSettings?: AiidaMqttSettings
   modbusSettings?: AiidaModbusSettings

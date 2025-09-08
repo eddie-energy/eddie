@@ -3,6 +3,7 @@ package energy.eddie.aiida.models.datasource.mqtt.inbound;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
@@ -49,6 +50,7 @@ public class InboundDataSource extends MqttDataSource {
                     permission.permissionId().toString(),
                     "",
                     true,
+                    DataSourceIcon.METER,
                     null, null, null
             );
 

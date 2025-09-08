@@ -29,6 +29,7 @@ public class SimulationDataSource extends IntervalBasedDataSource {
                 name,
                 countryCode,
                 enabled,
+                icon,
                 pollingInterval,
                 null,
                 null

@@ -67,6 +67,7 @@ public abstract class MqttDataSource extends DataSource {
                 name,
                 countryCode,
                 enabled,
+                icon,
                 null,
                 toMqttDto(),
                 null

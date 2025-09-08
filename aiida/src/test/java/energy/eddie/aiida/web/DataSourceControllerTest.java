@@ -3,6 +3,7 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceSecretsDto;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.services.DataSourceService;
@@ -39,6 +40,7 @@ class DataSourceControllerTest {
                               "simulation",
                               "AT",
                               true,
+                              DataSourceIcon.METER,
                               1,
                               null,
                               null),

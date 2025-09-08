@@ -98,6 +98,10 @@ export function getAssetTypes(): Promise<{ assets: string[] }> {
   return fetch('/datasources/assets')
 }
 
+export function getIconTypes(): Promise<{ icons: string[] }> {
+  return fetch('/datasources/icons')
+}
+
 export function getModbusVendors(): Promise<{ id: string; name: string }[]> {
   return fetch('/datasources/modbus/vendors')
 }

@@ -36,7 +36,7 @@ class DataSourceTest {
             null, VENDOR_ID, MODEL_ID, DEVICE_ID);
 
     DataSourceDto createNewDataSourceDto(DataSourceType type) {
-        return new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", COUNTRY_CODE, true, 1, null, null);
+        return new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", COUNTRY_CODE, true, DataSourceIcon.METER, 1, null, null);
     }
 
     @Test
@@ -135,6 +135,7 @@ class DataSourceTest {
                                            "test-updated",
                                            COUNTRY_CODE,
                                            true,
+                                           DataSourceIcon.METER,
                                            1,
                                            null,
                                            new DataSourceModbusDto("192.168.1.200", VENDOR_ID, MODEL_ID, DEVICE_ID));
@@ -156,6 +157,7 @@ class DataSourceTest {
                                            "test",
                                            COUNTRY_CODE,
                                            true,
+                                           DataSourceIcon.METER,
                                            1,
                                            null,
                                            new DataSourceModbusDto(null, VENDOR_ID, MODEL_ID, DEVICE_ID));
@@ -175,6 +177,7 @@ class DataSourceTest {
                                            "test",
                                            COUNTRY_CODE,
                                            true,
+                                           DataSourceIcon.METER,
                                            1,
                                            null,
                                            new DataSourceModbusDto(null, VENDOR_ID, MODEL_ID, DEVICE_ID));

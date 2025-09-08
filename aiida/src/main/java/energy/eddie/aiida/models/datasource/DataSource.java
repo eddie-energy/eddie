@@ -12,6 +12,7 @@ import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
+import energy.eddie.aiida.models.image.Image;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -42,6 +43,13 @@ public abstract class DataSource {
     @Enumerated(EnumType.STRING)
     @Column(name = "data_source_type", insertable = false, updatable = false)
     protected DataSourceType dataSourceType;
+    @JsonProperty
+    @Enumerated(EnumType.STRING)
+    protected DataSourceIcon icon;
+    @Nullable
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "image_id", referencedColumnName = "id")
+    protected Image image;
 
     @SuppressWarnings("NullAway")
     protected DataSource() {}
@@ -54,6 +62,7 @@ public abstract class DataSource {
         this.enabled = dto.enabled();
         this.dataSourceType = dto.dataSourceType();
         this.countryCode = dto.countryCode();
+        this.icon = dto.icon();
     }
 
     public static DataSource createFromDto(
@@ -146,8 +155,21 @@ public abstract class DataSource {
         return dataSourceType;
     }
 
+    public DataSourceIcon icon() {
+        return icon;
+    }
+
+    @Nullable
+    public Image image() {
+        return image;
+    }
+
+    public void setImage(@Nullable Image image) {
+        this.image = image;
+    }
+
     public DataSourceDto toDto() {
-        return new DataSourceDto(id, dataSourceType, asset, name, countryCode, enabled, null, null, null);
+        return new DataSourceDto(id, dataSourceType, asset, name, countryCode, enabled, icon, null, null, null);
     }
 
     private static IllegalStateException createMqttSettingsIllegalStateException(DataSourceType dataSourceType) {

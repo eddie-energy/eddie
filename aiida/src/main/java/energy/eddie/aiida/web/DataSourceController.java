@@ -6,6 +6,7 @@ import energy.eddie.aiida.dtos.DataSourceTypeDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.services.DataSourceService;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -65,6 +66,17 @@ public class DataSourceController {
     @GetMapping("/assets")
     public ResponseEntity<Map<String, AiidaAsset[]>> getAssets() {
         return ResponseEntity.ok(Map.of("assets", AiidaAsset.values()));
+    }
+
+    @Operation(summary = "Get all icons", description = "Retrieve all icons.",
+            operationId = "getIcons", tags = {"icon"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceIcon.class))))
+    })
+    @GetMapping("/icons")
+    public ResponseEntity<Map<String, DataSourceIcon[]>> getIcons() {
+        return ResponseEntity.ok(Map.of("icons", DataSourceIcon.values()));
     }
 
     @Operation(summary = "Get all outbound datasources", description = "Retrieve all outbound datasources.",

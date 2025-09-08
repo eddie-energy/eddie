@@ -4,6 +4,7 @@ import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
@@ -42,6 +43,7 @@ class InboundAdapterTest {
                               "sma",
                               "AT",
                               true,
+                              DataSourceIcon.METER,
                               null,
                               null,
                               null),

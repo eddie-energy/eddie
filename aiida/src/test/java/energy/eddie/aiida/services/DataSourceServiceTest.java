@@ -11,6 +11,7 @@ import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
@@ -52,7 +53,7 @@ class DataSourceServiceTest {
             String countryCode,
             boolean enabled
     ) {
-        return new DataSourceDto(id, type, AiidaAsset.SUBMETER, name, countryCode, enabled, 1, null, null);
+        return new DataSourceDto(id, type, AiidaAsset.SUBMETER, name, countryCode, enabled, DataSourceIcon.METER, 1, null, null);
     }
 
     DataSource createNewDataSource(UUID id, DataSourceType type) {
@@ -184,6 +185,7 @@ class DataSourceServiceTest {
                     "Modbus DS",
                     COUNTRY_CODE,
                     true,
+                    DataSourceIcon.METER,
                     1,
                     null,
                     modbusSettings

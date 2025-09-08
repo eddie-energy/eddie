@@ -3,6 +3,7 @@ package energy.eddie.aiida.adapters.datasource.sga;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysTopic;
@@ -39,6 +40,7 @@ class SmartGatewaysAdapterTest {
                               "sma",
                               "AT",
                               true,
+                              DataSourceIcon.METER,
                               null,
                               null,
                               null),

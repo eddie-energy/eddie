@@ -17,6 +17,7 @@ import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.dtos.DataSourceProtocolSettings;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.services.ModbusDeviceService;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -52,7 +53,7 @@ class DataSourceAdapterTest {
         }
 
         return DataSource.createFromDto(
-                new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", "AT", true, 1, null, null),
+                new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", "AT", true, DataSourceIcon.METER, 1, null, null),
                 ID,
                 settings
         );

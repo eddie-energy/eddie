@@ -7,6 +7,7 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
@@ -47,6 +48,7 @@ class OesterreichsEnergieAdapterTest {
                               "sma",
                               "AT",
                               true,
+                              DataSourceIcon.METER,
                               null,
                               null,
                               null),
