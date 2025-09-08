@@ -5,7 +5,6 @@ import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
 import energy.eddie.aiida.utils.ObisCode;
 import energy.eddie.cim.v1_04.rtd.QuantityTypeKind;
 import energy.eddie.cim.v1_04.rtd.TimeSeries;
@@ -16,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 public class CimUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(CimUtil.class.getName());
@@ -34,20 +32,6 @@ public class CimUtil {
             Map.entry(ObisCode.INSTANTANEOUS_VOLTAGE_IN_PHASE_L1, QuantityTypeKind.INSTANTANEOUSVOLTAGE_V_ON_PHASEL1),
             Map.entry(ObisCode.INSTANTANEOUS_VOLTAGE_IN_PHASE_L2, QuantityTypeKind.INSTANTANEOUSVOLTAGE_V_ON_PHASEL2),
             Map.entry(ObisCode.INSTANTANEOUS_VOLTAGE_IN_PHASE_L3, QuantityTypeKind.INSTANTANEOUSVOLTAGE_V_ON_PHASEL3)
-    );
-
-    private static final Map<QuantityTypeKind, UnitOfMeasurement> QUANTITY_TYPE_TO_UOM = Map.ofEntries(
-            Map.entry(QuantityTypeKind.TOTALACTIVEENERGYCONSUMED_IMPORT_KWH, UnitOfMeasurement.KILO_WATT_HOUR),
-            Map.entry(QuantityTypeKind.TOTALACTIVEENERGYPRODUCED_EXPORT_KWH, UnitOfMeasurement.KILO_WATT_HOUR),
-            Map.entry(QuantityTypeKind.INSTANTANEOUSACTIVEPOWERCONSUMPTION_IMPORT__KW, UnitOfMeasurement.KILO_WATT),
-            Map.entry(QuantityTypeKind.INSTANTANEOUSACTIVEPOWERGENERATION_EXPORT_KW, UnitOfMeasurement.KILO_WATT),
-            Map.entry(QuantityTypeKind.POWERFACTOR, UnitOfMeasurement.NONE),
-            Map.entry(QuantityTypeKind.INSTANTANEOUSCURRENT_A_ON_PHASEL1, UnitOfMeasurement.AMPERE),
-            Map.entry(QuantityTypeKind.INSTANTANEOUSCURRENT_A_ON_PHASEL2, UnitOfMeasurement.AMPERE),
-            Map.entry(QuantityTypeKind.INSTANTANEOUSCURRENT_A_ON_PHASEL3, UnitOfMeasurement.AMPERE),
-            Map.entry(QuantityTypeKind.INSTANTANEOUSVOLTAGE_V_ON_PHASEL1, UnitOfMeasurement.VOLT),
-            Map.entry(QuantityTypeKind.INSTANTANEOUSVOLTAGE_V_ON_PHASEL2, UnitOfMeasurement.VOLT),
-            Map.entry(QuantityTypeKind.INSTANTANEOUSVOLTAGE_V_ON_PHASEL3, UnitOfMeasurement.VOLT)
     );
 
     private CimUtil() {
@@ -109,8 +93,7 @@ public class CimUtil {
                              }
 
                              var quantityValue = quantity.getQuantity().toString();
-                             var unitOfMeasurement = Optional.ofNullable(QUANTITY_TYPE_TO_UOM.get(quantity.getType()))
-                                                             .orElse(UnitOfMeasurement.UNKNOWN);
+                             var unitOfMeasurement = obisCode.unitOfMeasurement();
 
                              return new AiidaRecordValue(quantity.getType().name(),
                                                          obisCode,

@@ -68,28 +68,28 @@ public abstract class DataSource {
                 if (settings instanceof DataSourceMqttDto mqtt) {
                     yield new OesterreichsEnergieDataSource(dto, userId, mqtt);
                 }
-                throw throwMqttSettingsIllegalStateException(dataSourceType);
+                throw createMqttSettingsIllegalStateException(dataSourceType);
             }
 
             case MICRO_TELEINFO -> {
                 if (settings instanceof DataSourceMqttDto mqtt) {
                     yield new MicroTeleinfoV3DataSource(dto, userId, mqtt);
                 }
-                throw throwMqttSettingsIllegalStateException(dataSourceType);
+                throw createMqttSettingsIllegalStateException(dataSourceType);
             }
 
             case SMART_GATEWAYS_ADAPTER -> {
                 if (settings instanceof DataSourceMqttDto mqtt) {
                     yield new SmartGatewaysDataSource(dto, userId, mqtt);
                 }
-                throw throwMqttSettingsIllegalStateException(dataSourceType);
+                throw createMqttSettingsIllegalStateException(dataSourceType);
             }
 
             case INBOUND -> {
                 if (settings instanceof DataSourceMqttDto mqtt) {
                     yield new InboundDataSource(dto, userId, mqtt);
                 }
-                throw throwMqttSettingsIllegalStateException(dataSourceType);
+                throw createMqttSettingsIllegalStateException(dataSourceType);
             }
 
             case SIMULATION -> new SimulationDataSource(dto, userId);
@@ -104,7 +104,7 @@ public abstract class DataSource {
                 if (settings instanceof DataSourceMqttDto mqtt) {
                     yield new CimDataSource(dto, userId, mqtt);
                 }
-                throw throwMqttSettingsIllegalStateException(dataSourceType);
+                throw createMqttSettingsIllegalStateException(dataSourceType);
             }
         };
     }
@@ -150,7 +150,7 @@ public abstract class DataSource {
         return new DataSourceDto(id, dataSourceType, asset, name, countryCode, enabled, null, null, null);
     }
 
-    private static IllegalStateException throwMqttSettingsIllegalStateException(DataSourceType dataSourceType) {
+    private static IllegalStateException createMqttSettingsIllegalStateException(DataSourceType dataSourceType) {
         return new IllegalStateException("Expected MQTT settings for %s datasource".formatted(dataSourceType));
     }
 }
