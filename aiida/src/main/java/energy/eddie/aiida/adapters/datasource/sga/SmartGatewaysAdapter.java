@@ -6,7 +6,6 @@ import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysTopic;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import jakarta.annotation.Nullable;
-import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,13 +20,11 @@ import java.util.concurrent.TimeUnit;
 
 public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SmartGatewaysAdapter.class);
-
-    final Map<SmartGatewaysTopic, String> batchBuffer = new HashMap<>();
+    private static final Duration TIMEOUT = Duration.ofSeconds(15);
+    final Map<SmartGatewaysTopic, String> batchBuffer = new EnumMap<>(SmartGatewaysTopic.class);
     private final String topicPrefix;
     private final List<SmartGatewaysTopic> expectedTopics;
-
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    private static final Duration TIMEOUT = Duration.ofSeconds(15);
     @Nullable
     private ScheduledFuture<?> timeoutFuture = null;
 
@@ -57,7 +54,8 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
 
                 if (batchBuffer.size() == 1 && (timeoutFuture == null || timeoutFuture.isDone())) {
                     timeoutFuture = scheduler.schedule(() -> {
-                        LOGGER.warn("Batch timeout reached. Processing incomplete batch with {} entries.", batchBuffer.size());
+                        LOGGER.warn("Batch timeout reached. Processing incomplete batch with {} entries.",
+                                    batchBuffer.size());
                         synchronized (SmartGatewaysAdapter.this) {
                             processBatch(batchBuffer);
                             batchBuffer.clear();
@@ -78,22 +76,16 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
         }
     }
 
-    /**
-     * Will always throw {@link UnsupportedOperationException}, as this datasource is not designed to publish data.
-     *
-     * @param token The delivery token associated with the message.
-     * @throws UnsupportedOperationException Always thrown, as this datasource is not designed to publish data.
-     */
     @Override
-    public void deliveryComplete(IMqttToken token) throws UnsupportedOperationException {
-        LOGGER.warn(
-                "Got deliveryComplete notification, but {} mustn't publish any MQTT messages but just listen. Token was {}",
-                SmartGatewaysAdapter.class.getName(),
-                token);
-        throw new UnsupportedOperationException("The " + SmartGatewaysAdapter.class.getName() + " mustn't publish any MQTT messages");
+    public void close() {
+        super.close();
+        scheduler.shutdown();
     }
 
-    private void addAiidaRecordValue(List<AiidaRecordValue> aiidaRecordValues, SmartGatewaysAdapterMessageField recordValue) {
+    private void addAiidaRecordValue(
+            List<AiidaRecordValue> aiidaRecordValues,
+            SmartGatewaysAdapterMessageField recordValue
+    ) {
         aiidaRecordValues.add(new AiidaRecordValue(recordValue.rawTag(),
                                                    recordValue.obisCode(),
                                                    String.valueOf(recordValue.value()),
@@ -122,11 +114,5 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
 
     private String topicPrefixOf(String mqttSubscribeTopic) {
         return Arrays.stream(mqttSubscribeTopic.split("/")).findFirst().orElse("");
-    }
-
-    @Override
-    public void close() {
-        super.close();
-        scheduler.shutdown();
     }
 }

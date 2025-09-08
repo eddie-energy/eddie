@@ -6,7 +6,8 @@ public enum DataSourceType {
     SMART_GATEWAYS_ADAPTER(Identifiers.SMART_GATEWAYS_ADAPTER, "Smart Gateways Adapter"),
     INBOUND(Identifiers.INBOUND, "Inbound"),
     SIMULATION(Identifiers.SIMULATION, "Simulation"),
-    MODBUS(Identifiers.MODBUS_TCP, "Modbus");
+    MODBUS(Identifiers.MODBUS_TCP, "Modbus"),
+    CIM_ADAPTER(Identifiers.CIM_ADAPTER, "CIM Adapter");
 
     private final String identifier;
     private final String name;
@@ -31,6 +32,7 @@ public enum DataSourceType {
         public static final String INBOUND = "INBOUND";
         public static final String SIMULATION = "SIMULATION";
         public static final String MODBUS_TCP = "MODBUS";
+        public static final String CIM_ADAPTER = "CIM_ADAPTER";
 
         private Identifiers() {}
     }

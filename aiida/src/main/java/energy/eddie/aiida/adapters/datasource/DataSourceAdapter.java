@@ -2,6 +2,7 @@ package energy.eddie.aiida.adapters.datasource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
+import energy.eddie.aiida.adapters.datasource.cim.CimAdapter;
 import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
@@ -11,6 +12,7 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.cim.CimDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
@@ -69,6 +71,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
             case INBOUND -> new InboundAdapter((InboundDataSource) dataSource, mqttConfiguration);
             case SIMULATION -> new SimulationAdapter((SimulationDataSource) dataSource);
             case MODBUS -> new ModbusTcpDataSourceAdapter((ModbusDataSource) dataSource);
+            case CIM_ADAPTER -> new CimAdapter((CimDataSource) dataSource, objectMapper, mqttConfiguration);
         };
     }
 

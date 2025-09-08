@@ -7,6 +7,7 @@ import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.dtos.DataSourceProtocolSettings;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.cim.CimDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
@@ -55,7 +56,11 @@ public abstract class DataSource {
         this.countryCode = dto.countryCode();
     }
 
-    public static DataSource createFromDto(DataSourceDto dto, UUID userId, @Nullable DataSourceProtocolSettings settings) {
+    public static DataSource createFromDto(
+            DataSourceDto dto,
+            UUID userId,
+            @Nullable DataSourceProtocolSettings settings
+    ) {
         var dataSourceType = dto.dataSourceType();
 
         return switch (dataSourceType) {
@@ -63,28 +68,28 @@ public abstract class DataSource {
                 if (settings instanceof DataSourceMqttDto mqtt) {
                     yield new OesterreichsEnergieDataSource(dto, userId, mqtt);
                 }
-                throw new IllegalArgumentException("Expected MQTT settings for SMART_METER_ADAPTER");
+                throw throwMqttSettingsIllegalStateException(dataSourceType);
             }
 
             case MICRO_TELEINFO -> {
                 if (settings instanceof DataSourceMqttDto mqtt) {
                     yield new MicroTeleinfoV3DataSource(dto, userId, mqtt);
                 }
-                throw new IllegalArgumentException("Expected MQTT settings for MICRO_TELEINFO");
+                throw throwMqttSettingsIllegalStateException(dataSourceType);
             }
 
             case SMART_GATEWAYS_ADAPTER -> {
                 if (settings instanceof DataSourceMqttDto mqtt) {
                     yield new SmartGatewaysDataSource(dto, userId, mqtt);
                 }
-                throw new IllegalArgumentException("Expected MQTT settings for SMART_GATEWAYS_ADAPTER");
+                throw throwMqttSettingsIllegalStateException(dataSourceType);
             }
 
             case INBOUND -> {
                 if (settings instanceof DataSourceMqttDto mqtt) {
                     yield new InboundDataSource(dto, userId, mqtt);
                 }
-                throw new IllegalArgumentException("Expected MQTT settings for INBOUND");
+                throw throwMqttSettingsIllegalStateException(dataSourceType);
             }
 
             case SIMULATION -> new SimulationDataSource(dto, userId);
@@ -93,7 +98,13 @@ public abstract class DataSource {
                 if (settings instanceof DataSourceModbusDto modbus) {
                     yield new ModbusDataSource(dto, userId, modbus);
                 }
-                throw new IllegalArgumentException("Expected MODBUS settings for MODBUS data source");
+                throw new IllegalStateException("Expected MODBUS settings for %s datasource".formatted(dataSourceType));
+            }
+            case CIM_ADAPTER -> {
+                if (settings instanceof DataSourceMqttDto mqtt) {
+                    yield new CimDataSource(dto, userId, mqtt);
+                }
+                throw throwMqttSettingsIllegalStateException(dataSourceType);
             }
         };
     }
@@ -137,5 +148,9 @@ public abstract class DataSource {
 
     public DataSourceDto toDto() {
         return new DataSourceDto(id, dataSourceType, asset, name, countryCode, enabled, null, null, null);
+    }
+
+    private static IllegalStateException throwMqttSettingsIllegalStateException(DataSourceType dataSourceType) {
+        return new IllegalStateException("Expected MQTT settings for %s datasource".formatted(dataSourceType));
     }
 }
