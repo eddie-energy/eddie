@@ -98,7 +98,7 @@ class DataSourceControllerTest {
     @Test
     @WithMockUser
     void addDataSource_shouldReturn201() throws Exception {
-        doReturn(new DataSourceSecretsDto(PLAIN_TEXT_PASSWORD))
+        doReturn(new DataSourceSecretsDto(DATA_SOURCE_ID, PLAIN_TEXT_PASSWORD))
                 .when(service).addDataSource(any(DataSourceDto.class));
 
         mockMvc.perform(post("/datasources")
@@ -184,7 +184,7 @@ class DataSourceControllerTest {
     @Test
     @WithMockUser
     void regenerateSecrets_shouldReturn200() throws Exception {
-        doReturn(new DataSourceSecretsDto(PLAIN_TEXT_PASSWORD))
+        doReturn(new DataSourceSecretsDto(DATA_SOURCE_ID, PLAIN_TEXT_PASSWORD))
                 .when(service).regenerateSecrets(DATA_SOURCE_ID);
 
         mockMvc.perform(post("/datasources/%s/regenerate-secrets".formatted(DATA_SOURCE_ID))
