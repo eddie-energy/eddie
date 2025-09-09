@@ -30,7 +30,7 @@ const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
 const handleRevoke = async () => {
   if (
     await confirm(
-      'Revoke Permisison',
+      'Revoke Permission',
       'Are you sure you want to revoke this permission? This action cannot be undone.',
       'Revoke',
     )

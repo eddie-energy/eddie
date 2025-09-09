@@ -16,7 +16,6 @@ const onImageDrop = (files: File[] | null) => {
       console.error('Dropped file is not an image:', file)
       return
     }
-    console.log(file)
     imageFile.value = file
     previewImage.value = URL.createObjectURL(file)
   }

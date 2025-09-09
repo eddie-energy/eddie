@@ -140,7 +140,7 @@ const validateForm = () => {
 
   if (dataSource.value?.dataSourceType === 'MODBUS') {
     const modBusRequiredFields = [
-      { value: dataSource.value.modbusSettings?.modbusIp, label: 'IP Address', key: 'ipAdress' },
+      { value: dataSource.value.modbusSettings?.modbusIp, label: 'IP Address', key: 'ipAddress' },
       { value: dataSource.value.modbusSettings?.modbusVendor, label: 'Vendor', key: 'vendor' },
       { value: dataSource.value.modbusSettings?.modbusModel, label: 'Model', key: 'model' },
       { value: dataSource.value.modbusSettings?.modbusDevice, label: 'Device', key: 'device' },
@@ -148,7 +148,7 @@ const validateForm = () => {
     modBusRequiredFields.forEach((field) => handleRequired(field.value, field.label, field.key))
   }
   if (dataSource.value?.dataSourceType === 'SIMULATION') {
-    handleRequired(dataSource.value?.simulationPeriod, 'Simulation Period', 'simulationPeriod')
+    handleRequired(dataSource.value?.simulationPeriod, 'Simulation Period', 'simPeriod')
   }
   if (imageFile.value && !imageFile.value.type.startsWith('image/')) {
     errors.value['image'] = 'Uploaded file must be an image.'
@@ -264,14 +264,14 @@ defineExpose({ showModal })
         >
           <template v-if="dataSource.dataSourceType === 'MODBUS' && dataSource.modbusSettings">
             <div class="input-field extra-margin">
-              <label for="ipAdress"> Local IP Adress</label>
+              <label for="ipAddress"> Local IP Address</label>
               <input
-                id="ipAdress"
+                id="ipAddress"
                 v-model="dataSource.modbusSettings.modbusIp"
-                name="ipAdress"
+                name="ipAddress"
                 required
               />
-              <p v-if="errors['ipAdress']" class="error-message">{{ errors['ipAdress'] }}</p>
+              <p v-if="errors['ipAddress']" class="error-message">{{ errors['ipAddress'] }}</p>
             </div>
             <div class="input-field">
               <label for="vendor"> Vendor </label>
