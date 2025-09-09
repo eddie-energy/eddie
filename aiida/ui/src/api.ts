@@ -26,12 +26,13 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
     danger('Failed to update authentication token. Please reload this page.')
     throw error
   }
+  const isImagesEndpoint = path.includes("images")
 
   const response = await window
     .fetch(BASE_URL + path, {
       headers: {
         Authorization: `Bearer ${keycloak.token}`,
-        'Content-Type': 'application/json',
+        ...(!isImagesEndpoint ? { 'Content-Type': 'application/json' } : {})
       },
       ...init,
     })
@@ -41,12 +42,14 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
     })
 
   if (!response.ok) {
-    const message =
-      (await parseErrorResponse(response)) ??
-      FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
-      'An unexpected error occurred. Please try again.'
-    danger(message, 0, true)
-    throw new Error(message)
+    if (isImagesEndpoint && response.status != 404) {
+      const message =
+        (await parseErrorResponse(response)) ??
+        FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
+        'An unexpected error occurred. Please try again.'
+      danger(message, 0, true)
+      throw new Error(message)
+    }
   }
 
   if (response.headers.get('content-type')?.includes('application/json')) {
@@ -163,12 +166,16 @@ export async function revokePermission(permissionId: string): Promise<void> {
 
 export async function addDataSource(
   dataSource: Omit<AiidaDataSource, 'id'>,
-): Promise<AiidaDataSource> {
+): Promise<{
+  dataSourceId: string;
+  plainTextPassword: string;
+}> {
   const result = await fetch(`/datasources`, {
     method: 'POST',
     body: JSON.stringify(dataSource),
   })
   success('Data source created.')
+  console.log(result)
   return result
 }
 
@@ -210,5 +217,23 @@ export function regenerateDataSourceSecrets(
 ): Promise<{ plaintextPassword: string }> {
   return fetch(`/datasources/${dataSourceId}/regenerate-secrets`, {
     method: 'POST',
+  })
+}
+
+export async function addDataSourceImage(
+  dataSourceId: string,
+  imageFile: File
+): Promise<void> {
+  const data = new FormData()
+  data.append("file", imageFile as Blob)
+  await fetch(`/datasources/images/${dataSourceId}`, {
+    method: 'POST',
+    body: data
+  })
+}
+export async function getDataSourceImage(dataSourceId: string
+): Promise<any> {
+  return fetch(`/datasources/images/${dataSourceId}`, {
+    method: 'GET',
   })
 }

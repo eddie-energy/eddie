@@ -5,7 +5,6 @@ import Button from '@/components/Button.vue'
 import PlusIcon from '@/assets/icons/PlusIcon.svg'
 import type { AiidaDataSource } from '@/types'
 import DataSourceModal from '@/components/Modals/DataSourceModal.vue'
-
 const modal = useTemplateRef('modal')
 
 const add = () => {

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { BASE_URL } from '@/api'
+import { BASE_URL, getDataSourceImage } from '@/api'
 import Button from '@/components/Button.vue'
 import TrashIcon from '@/assets/icons/TrashIcon.svg'
 import PenIcon from '@/assets/icons/PenIcon.svg'
 import DataSourceIcon from '@/components/DataSourceIcon.vue'
 import StatusDotIcon from '@/assets/icons/StatusDotIcon.svg'
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
@@ -15,7 +15,7 @@ const { dataSource, startOpen } = defineProps<{
   startOpen?: boolean
 }>()
 const isOpen = ref(startOpen)
-
+const image = ref()
 const emit = defineEmits(['edit', 'delete', 'reset', 'enableToggle'])
 
 const {
@@ -27,8 +27,15 @@ const {
   mqttSettings,
   name,
   simulationPeriod,
-  icon = 'electricity',
+  icon,
 } = dataSource
+
+onMounted(async () => {
+  try {
+    const blob = await getDataSourceImage(id)
+    console.log(blob)
+  } catch {}
+})
 </script>
 
 <template>
@@ -315,6 +322,7 @@ div.toggle-field {
 @media screen and (min-width: 1024px) {
   .card {
     background-color: var(--light);
+    padding: var(--spacing-xlg);
   }
   .fields,
   .actions {

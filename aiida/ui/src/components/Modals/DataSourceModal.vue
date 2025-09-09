@@ -11,6 +11,7 @@ import HeatIcon from '@/assets/icons/HeatIcon.svg'
 import CheckmarkIcon from '@/assets/icons/CheckmarkIcon.svg'
 import {
   addDataSource,
+  addDataSourceImage,
   getAssetTypes,
   getDataSourceTypes,
   getModbusDevices,
@@ -36,6 +37,7 @@ const getEmptyDataSource = () => {
       modbusDevice: '',
     },
     simulationPeriod: 0,
+    icon: '',
   }
 }
 
@@ -60,7 +62,6 @@ const modbusVendorsOptions = ref<{ label: string; value: string }[]>([])
 const modbusModelsOptions = ref<{ label: string; value: string }[]>([])
 const modbusDevicesOptions = ref<{ label: string; value: string }[]>([])
 const imageFile = ref<File | null>(null)
-const icon = ref<'electricity' | 'heat' | 'meter' | 'water' | ''>('')
 const loading = ref(false)
 
 const getInitalFormData = (data?: AiidaDataSource) => {
@@ -74,10 +75,10 @@ const getInitalFormData = (data?: AiidaDataSource) => {
 }
 
 const dataSourceIcons = {
-  electricity: ElectricityIcon,
-  heat: HeatIcon,
-  meter: MeterIcon,
-  water: WaterIcon,
+  ELECTRICITY: ElectricityIcon,
+  HEAT: HeatIcon,
+  METER: MeterIcon,
+  WATER: WaterIcon,
 }
 
 onMounted(async () => {
@@ -145,7 +146,7 @@ const validateForm = () => {
     { value: dataSource.value?.asset, label: 'Asset Type', key: 'assetType' },
     { value: dataSource.value?.dataSourceType, label: 'Data Source Type', key: 'dataSourceType' },
     { value: dataSource.value?.countryCode, label: 'Country', key: 'country' },
-    //{ value: dataSource.value?.icon, label: 'Data Source Icon', key: 'icon' },
+    { value: dataSource.value?.icon, label: 'Data Source Icon', key: 'icon' },
   ]
   requiredFields.forEach((field) => handleRequired(field.value, field.label, field.key))
 
@@ -179,7 +180,11 @@ const handleFormSubmit = async () => {
             ...dataSource.value,
           })
         } else {
-          await addDataSource(dataSource.value)
+          const data = await addDataSource(dataSource.value)
+          console.log(data)
+          if (imageFile.value) {
+            await addDataSourceImage(data.dataSourceId, imageFile.value)
+          }
         }
         await fetchDataSources()
         loading.value = false
@@ -361,11 +366,11 @@ defineExpose({ showModal })
             <button
               v-for="(dataIcon, key) in dataSourceIcons"
               :key
-              @click.prevent="icon = key"
+              @click.prevent="dataSource.icon = key"
               class="icon-button"
-              :class="{ selected: icon === key }"
+              :class="{ selected: dataSource.icon === key }"
             >
-              <component :is="dataIcon"></component>
+              <component :is="dataIcon" />
             </button>
           </div>
           <p v-if="errors['icon']" class="error-message">{{ errors['icon'] }}</p>
