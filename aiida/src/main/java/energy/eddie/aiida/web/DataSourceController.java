@@ -7,7 +7,6 @@ import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.services.DataSourceService;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,7 +44,7 @@ public class DataSourceController {
             operationId = "getOutboundDataSourceTypes", tags = {"datasource"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceType.class))))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = List.class))))
     })
     @GetMapping("/outbound/types")
     public List<DataSourceTypeDto> getOutboundDataSourceTypes() {
@@ -61,7 +60,7 @@ public class DataSourceController {
             operationId = "getAssets", tags = {"asset"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = AiidaAsset.class))))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Map.class))))
     })
     @GetMapping("/assets")
     public ResponseEntity<Map<String, AiidaAsset[]>> getAssets() {
@@ -72,7 +71,7 @@ public class DataSourceController {
             operationId = "getIcons", tags = {"icon"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceIcon.class))))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Map.class))))
     })
     @GetMapping("/icons")
     public ResponseEntity<Map<String, DataSourceIcon[]>> getIcons() {
@@ -83,7 +82,7 @@ public class DataSourceController {
             operationId = "getAllOutboundDataSources", tags = {"datasource"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSource.class))))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceDto.class))))
     })
     @GetMapping(path = "/outbound", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<DataSourceDto>> getAllOutboundDataSources() throws InvalidUserException {
@@ -100,7 +99,7 @@ public class DataSourceController {
             operationId = "getAllInboundDataSources", tags = {"datasource"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSource.class))))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceDto.class))))
     })
     @GetMapping(path = "/inbound", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<DataSourceDto>> getAllInboundDataSources() throws InvalidUserException {
@@ -117,7 +116,7 @@ public class DataSourceController {
             operationId = "addDatasource", tags = {"datasource"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Datasource created successfully",
-                    content = @Content(schema = @Schema(implementation = DataSource.class))),
+                    content = @Content(schema = @Schema(implementation = DataSourceSecretsDto.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input data",
                     content = @Content(schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error",
@@ -139,8 +138,7 @@ public class DataSourceController {
     @Operation(summary = "Delete a datasource", description = "Delete a datasource by ID.",
             operationId = "deleteDatasource", tags = {"datasource"})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Datasource deleted successfully",
-                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "200", description = "Datasource deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Datasource not found",
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
@@ -156,8 +154,7 @@ public class DataSourceController {
     @Operation(summary = "Update a datasource", description = "Update the details of a datasource by ID.",
             operationId = "updateDatasource", tags = {"datasource"})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Datasource updated successfully",
-                    content = @Content(schema = @Schema(implementation = DataSource.class))),
+            @ApiResponse(responseCode = "200", description = "Datasource updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data",
                     content = @Content(schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "404", description = "Datasource not found",
@@ -179,7 +176,7 @@ public class DataSourceController {
             operationId = "getDatasourceById", tags = {"datasource"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(schema = @Schema(implementation = DataSource.class))),
+                    content = @Content(schema = @Schema(implementation = DataSourceDto.class))),
             @ApiResponse(responseCode = "404", description = "Datasource not found",
                     content = @Content(schema = @Schema(implementation = String.class)))
     })

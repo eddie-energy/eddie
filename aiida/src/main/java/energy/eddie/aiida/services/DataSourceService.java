@@ -111,7 +111,8 @@ public class DataSourceService {
     public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
 
-        var dataSourceSecrets = new DataSourceSecretsDto(null);
+        UUID dataSourceId = null;
+        String plaintextPassword = null;
 
         if (dto.dataSourceType().equals(DataSourceType.MODBUS)) {
             var modbusSettings = dto.modbusSettings();
@@ -125,21 +126,24 @@ public class DataSourceService {
                 var dataSource = DataSource.createFromDto(dto, currentUserId, modbusSettingsDto);
                 startDataSource(dataSource);
                 repository.save(dataSource);
+
+                dataSourceId = dataSource.id();
             }
         } else {
-            dataSourceSecrets = new DataSourceSecretsDto(SecretGenerator.generate());
+            plaintextPassword = SecretGenerator.generate();
 
             var mqttSettingsDto = new DataSourceMqttDto(
                     mqttConfiguration.internalHost(),
                     mqttConfiguration.externalHost(),
                     "aiida/" + SecretGenerator.generate(),
                     SecretGenerator.generate(),
-                    bCryptPasswordEncoder.encode(dataSourceSecrets.plaintextPassword())
+                    bCryptPasswordEncoder.encode(plaintextPassword)
             );
             var dataSource = DataSource.createFromDto(dto, currentUserId, mqttSettingsDto);
 
             // This save generates the datasource ID
             repository.save(dataSource);
+            dataSourceId = dataSource.id();
 
             if (dataSource instanceof MqttDataSource) {
                 // This save now perists the subscribe topic with the generated ID
@@ -148,7 +152,7 @@ public class DataSourceService {
             startDataSource(dataSource);
         }
 
-        return dataSourceSecrets;
+        return new DataSourceSecretsDto(dataSourceId, plaintextPassword);
     }
 
     public void deleteDataSource(UUID dataSourceId) {
@@ -211,10 +215,10 @@ public class DataSourceService {
                                           .orElseThrow(() -> new EntityNotFoundException(
                                                   "Datasource not found with ID: " + dataSourceId));
 
-        var dataSourceSecrets = new DataSourceSecretsDto(null);
+        var dataSourceSecrets = new DataSourceSecretsDto(dataSourceId, null);
 
         if(dataSource instanceof MqttDataSource mqttDataSource) {
-            dataSourceSecrets = new DataSourceSecretsDto(SecretGenerator.generate());
+            dataSourceSecrets = new DataSourceSecretsDto(dataSourceId, SecretGenerator.generate());
             mqttDataSource.setMqttPassword(bCryptPasswordEncoder.encode(dataSourceSecrets.plaintextPassword()));
 
             findDataSourceAdapter(dataSourceId).ifPresentOrElse(
