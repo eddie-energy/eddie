@@ -39,6 +39,16 @@ const getEmptyDataSource = () => {
   }
 }
 
+const SUPPORTED_COUNTRY_CODES = ['AT', 'FR', 'NL']
+const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
+
+const countryOptions = SUPPORTED_COUNTRY_CODES.map((country) => {
+  return {
+    label: COUNTRY_NAMES.of(country),
+    value: country,
+  }
+})
+
 const modal = useTemplateRef('dataSourceModal')
 const formRef = useTemplateRef('form')
 const title = ref('Add Data Source')
@@ -134,6 +144,7 @@ const validateForm = () => {
     { value: dataSource.value?.name, label: 'Name', key: 'name' },
     { value: dataSource.value?.asset, label: 'Asset Type', key: 'assetType' },
     { value: dataSource.value?.dataSourceType, label: 'Data Source Type', key: 'dataSourceType' },
+    { value: dataSource.value?.countryCode, label: 'Country', key: 'country' },
     //{ value: dataSource.value?.icon, label: 'Data Source Icon', key: 'icon' },
   ]
   requiredFields.forEach((field) => handleRequired(field.value, field.label, field.key))
@@ -252,6 +263,20 @@ defineExpose({ showModal })
           />
           <p v-if="errors['datasourceType']" class="error-message">
             {{ errors['datasourceType'] }}
+          </p>
+        </div>
+        <div class="input-field">
+          <label for="country">Country </label>
+          <CustomSelect
+            id="country"
+            v-model="dataSource.countryCode"
+            placeholder="Select Country"
+            name="country"
+            required
+            :options="countryOptions"
+          />
+          <p v-if="errors['country']" class="error-message">
+            {{ errors['country'] }}
           </p>
         </div>
       </div>
