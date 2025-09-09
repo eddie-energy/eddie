@@ -1,14 +1,14 @@
 package energy.eddie.aiida.models.datasource;
 
-import energy.eddie.aiida.dtos.DataSourceModbusDto;
-import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
-import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 
@@ -108,18 +108,20 @@ class DataSourceTest {
 
     @Test
     void throwsOnInvalidSmartMeterAdapterSettings() {
-        var dto = createNewDataSourceDto(DataSourceType.SMART_METER_ADAPTER);
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+        var dataSourceType = DataSourceType.SMART_METER_ADAPTER;
+        var dto = createNewDataSourceDto(dataSourceType);
+        Exception exception = assertThrows(IllegalStateException.class, () ->
                 DataSource.createFromDto(dto, ID, MODBUS_DTO));
-        assertEquals("Expected MQTT settings for SMART_METER_ADAPTER", exception.getMessage());
+        assertEquals("Expected MQTT settings for %s datasource".formatted(dataSourceType), exception.getMessage());
     }
 
     @Test
     void throwsOnInvalidModbusSettings() {
-        var dto = createNewDataSourceDto(DataSourceType.MODBUS);
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+        var dataSourceType = DataSourceType.MODBUS;
+        var dto = createNewDataSourceDto(dataSourceType);
+        Exception exception = assertThrows(IllegalStateException.class, () ->
                 DataSource.createFromDto(dto, ID, MQTT_DTO));
-        assertEquals("Expected MODBUS settings for MODBUS data source", exception.getMessage());
+        assertEquals("Expected MODBUS settings for %s datasource".formatted(dataSourceType), exception.getMessage());
     }
 
     @Test

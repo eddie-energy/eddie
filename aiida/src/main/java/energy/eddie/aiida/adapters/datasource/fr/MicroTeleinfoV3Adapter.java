@@ -17,7 +17,6 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
@@ -139,21 +138,6 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
                          e.payload(),
                          e);
         }
-    }
-
-    /**
-     * Will always throw {@link UnsupportedOperationException}, as this datasource is not designed to publish data.
-     *
-     * @param token The delivery token associated with the message.
-     * @throws UnsupportedOperationException Always thrown, as this datasource is not designed to publish data.
-     */
-    @Override
-    public void deliveryComplete(IMqttToken token) throws UnsupportedOperationException {
-        LOGGER.warn(
-                "Got deliveryComplete notification, but {} mustn't publish any MQTT messages but just listen. Token was {}",
-                MicroTeleinfoV3Adapter.class.getName(),
-                token);
-        throw new UnsupportedOperationException("The " + MicroTeleinfoV3Adapter.class.getName() + " mustn't publish any MQTT messages");
     }
 
     @Override

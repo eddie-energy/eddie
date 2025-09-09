@@ -4,7 +4,6 @@ import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.record.InboundRecord;
-import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
@@ -49,21 +48,6 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
                 new String(message.getPayload(), StandardCharsets.UTF_8)
         );
         inboundRecordSink.tryEmitNext(inboundRecord);
-    }
-
-    /**
-     * Will always throw {@link UnsupportedOperationException}, as this datasource is not designed to publish data.
-     *
-     * @param token The delivery token associated with the message.
-     * @throws UnsupportedOperationException Always thrown, as this datasource is not designed to publish data.
-     */
-    @Override
-    public void deliveryComplete(IMqttToken token) throws UnsupportedOperationException {
-        LOGGER.warn(
-                "Got deliveryComplete notification, but {} mustn't publish any MQTT messages but just listen. Token was {}",
-                InboundAdapter.class.getName(),
-                token);
-        throw new UnsupportedOperationException("The " + InboundAdapter.class.getName() + " mustn't publish any MQTT messages");
     }
 
     public Flux<InboundRecord> inboundRecordFlux() {

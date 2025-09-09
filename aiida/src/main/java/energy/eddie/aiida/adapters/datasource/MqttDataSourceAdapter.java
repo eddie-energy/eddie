@@ -5,10 +5,7 @@ import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.utils.MqttFactory;
 import jakarta.annotation.Nullable;
-import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
-import org.eclipse.paho.mqttv5.client.MqttCallback;
-import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
-import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
+import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.slf4j.Logger;
@@ -100,6 +97,22 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
     @Override
     public void mqttErrorOccurred(MqttException exception) {
         logger.error("MQTT error occurred", exception);
+    }
+
+    /**
+     * Will always throw {@link UnsupportedOperationException}, as this datasource is not designed to publish data.
+     *
+     * @param token The delivery token associated with the message.
+     * @throws UnsupportedOperationException Always thrown, as this datasource is not designed to publish data.
+     */
+    @Override
+    public void deliveryComplete(IMqttToken token) {
+        logger.warn(
+                "Got deliveryComplete notification, but {} mustn't publish any MQTT messages but just listen. Token was {}",
+                this.getClass().getName(),
+                token);
+        throw new UnsupportedOperationException("The " + this.getClass()
+                                                             .getName() + " mustn't publish any MQTT messages");
     }
 
     /**
