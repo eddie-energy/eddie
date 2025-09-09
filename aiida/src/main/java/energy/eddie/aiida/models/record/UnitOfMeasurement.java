@@ -18,6 +18,7 @@ public enum UnitOfMeasurement {
     VOLT("V"),
     VOLT_AMPERE("VA"),
     KILO_VOLT_AMPERE("kVA"),
+    HERTZ("Hz"),
     NONE("none"),
     UNKNOWN("unknown");
 

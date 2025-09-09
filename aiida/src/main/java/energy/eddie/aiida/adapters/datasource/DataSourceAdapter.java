@@ -7,6 +7,7 @@ import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
+import energy.eddie.aiida.adapters.datasource.shelly.ShellyEMAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -16,6 +17,7 @@ import energy.eddie.aiida.models.datasource.mqtt.cim.CimDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyEMDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValidator;
@@ -68,6 +70,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
                     new MicroTeleinfoV3Adapter((MicroTeleinfoV3DataSource) dataSource, objectMapper, mqttConfiguration);
             case SMART_GATEWAYS_ADAPTER ->
                     new SmartGatewaysAdapter((SmartGatewaysDataSource) dataSource, mqttConfiguration);
+            case SHELLY_EM -> new ShellyEMAdapter((ShellyEMDataSource) dataSource, objectMapper, mqttConfiguration);
             case INBOUND -> new InboundAdapter((InboundDataSource) dataSource, mqttConfiguration);
             case SIMULATION -> new SimulationAdapter((SimulationDataSource) dataSource);
             case MODBUS -> new ModbusTcpDataSourceAdapter((ModbusDataSource) dataSource);

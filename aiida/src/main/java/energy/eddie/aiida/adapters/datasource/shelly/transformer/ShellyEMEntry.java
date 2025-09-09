@@ -1,0 +1,153 @@
+package energy.eddie.aiida.adapters.datasource.shelly.transformer;
+
+import energy.eddie.aiida.models.record.UnitOfMeasurement;
+import energy.eddie.aiida.utils.ObisCode;
+
+import java.util.stream.Stream;
+
+public enum ShellyEMEntry {
+    TOTAL_ACTIVE_ENERGY(
+            "total_act_energy",
+            ObisCode.POSITIVE_ACTIVE_ENERGY,
+            ObisCode.POSTIVIE_ACTIVE_ENERGY_IN_PHASE_L1,
+            ObisCode.POSTIVIE_ACTIVE_ENERGY_IN_PHASE_L2,
+            ObisCode.POSTIVIE_ACTIVE_ENERGY_IN_PHASE_L3,
+            UnitOfMeasurement.WATT_HOUR
+    ),
+    TOTAL_ACTIVE(
+            "total_act",
+            ObisCode.POSITIVE_ACTIVE_ENERGY,
+            ObisCode.POSTIVIE_ACTIVE_ENERGY_IN_PHASE_L1,
+            ObisCode.POSTIVIE_ACTIVE_ENERGY_IN_PHASE_L2,
+            ObisCode.POSTIVIE_ACTIVE_ENERGY_IN_PHASE_L3,
+            UnitOfMeasurement.WATT_HOUR
+    ),
+    TOTAL_ACTIVE_RETURNED_ENERGY(
+            "total_act_ret_energy",
+            ObisCode.NEGATIVE_ACTIVE_ENERGY,
+            ObisCode.NEGATIVE_ACTIVE_ENERGY_IN_PHASE_L1,
+            ObisCode.NEGATIVE_ACTIVE_ENERGY_IN_PHASE_L2,
+            ObisCode.NEGATIVE_ACTIVE_ENERGY_IN_PHASE_L3,
+            UnitOfMeasurement.WATT_HOUR
+    ),
+
+    TOTAL_ACTIVE_RETURNED(
+            "total_act_ret",
+            ObisCode.NEGATIVE_ACTIVE_ENERGY,
+            ObisCode.NEGATIVE_ACTIVE_ENERGY_IN_PHASE_L1,
+            ObisCode.NEGATIVE_ACTIVE_ENERGY_IN_PHASE_L2,
+            ObisCode.NEGATIVE_ACTIVE_ENERGY_IN_PHASE_L3,
+            UnitOfMeasurement.WATT_HOUR
+    ),
+    CURRENT(
+            "current",
+            ObisCode.INSTANTANEOUS_CURRENT,
+            ObisCode.INSTANTANEOUS_CURRENT_IN_PHASE_NEUTRAL,
+            ObisCode.INSTANTANEOUS_CURRENT_IN_PHASE_L1,
+            ObisCode.INSTANTANEOUS_CURRENT_IN_PHASE_L2,
+            ObisCode.INSTANTANEOUS_CURRENT_IN_PHASE_L3,
+            UnitOfMeasurement.AMPERE
+    ),
+    VOLTAGE(
+            "voltage",
+            ObisCode.INSTANTANEOUS_VOLTAGE,
+            ObisCode.INSTANTANEOUS_VOLTAGE_IN_PHASE_L1,
+            ObisCode.INSTANTANEOUS_VOLTAGE_IN_PHASE_L2,
+            ObisCode.INSTANTANEOUS_VOLTAGE_IN_PHASE_L3,
+            UnitOfMeasurement.VOLT
+    ),
+    ACTIVE_POWER(
+            "act_power",
+            ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
+            ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L1,
+            ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L2,
+            ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L3,
+            UnitOfMeasurement.WATT
+    ),
+    APPARENT_POWER(
+            "aprt_power",
+            ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER,
+            ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L1,
+            ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L2,
+            ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L3,
+            UnitOfMeasurement.VOLT_AMPERE
+    ),
+    POWER_FACTOR(
+            "pf",
+            ObisCode.INSTANTANEOUS_POWER_FACTOR,
+            ObisCode.INSTANTANEOUS_POWER_FACTOR_IN_PHASE_L1,
+            ObisCode.INSTANTANEOUS_POWER_FACTOR_IN_PHASE_L2,
+            ObisCode.INSTANTANEOUS_POWER_FACTOR_IN_PHASE_L3,
+            UnitOfMeasurement.NONE
+    ),
+    FREQUENCY("freq", ObisCode.FREQUENCY, UnitOfMeasurement.HERTZ),
+    UNKNOWN("unknown", ObisCode.UNKNOWN, UnitOfMeasurement.UNKNOWN);
+
+    private final String entrySuffix;
+    private final ObisCode obisCodeTotal;
+    private final ObisCode obisCodeNetral;
+    private final ObisCode obisCodePhaseL1;
+    private final ObisCode obisCodePhaseL2;
+    private final ObisCode obisCodePhaseL3;
+    private final UnitOfMeasurement rawUnitOfMeasurement;
+
+    ShellyEMEntry(
+            String entrySuffix,
+            ObisCode obisCodeTotal,
+            ObisCode obisCodeNetral,
+            ObisCode obisCodePhaseL1,
+            ObisCode obisCodePhaseL2,
+            ObisCode obisCodePhaseL3,
+            UnitOfMeasurement rawUnitOfMeasurement
+    ) {
+        this.entrySuffix = entrySuffix;
+        this.obisCodeTotal = obisCodeTotal;
+        this.obisCodeNetral = obisCodeNetral;
+        this.obisCodePhaseL1 = obisCodePhaseL1;
+        this.obisCodePhaseL2 = obisCodePhaseL2;
+        this.obisCodePhaseL3 = obisCodePhaseL3;
+        this.rawUnitOfMeasurement = rawUnitOfMeasurement;
+    }
+
+    ShellyEMEntry(
+            String entrySuffix,
+            ObisCode obisCodeTotal,
+            ObisCode obisCodePhaseL1,
+            ObisCode obisCodePhaseL2,
+            ObisCode obisCodePhaseL3,
+            UnitOfMeasurement rawUnitOfMeasurement
+    ) {
+        this(entrySuffix,
+             obisCodeTotal,
+             ObisCode.UNKNOWN,
+             obisCodePhaseL1,
+             obisCodePhaseL2,
+             obisCodePhaseL3,
+             rawUnitOfMeasurement);
+    }
+
+    ShellyEMEntry(String entrySuffix, ObisCode obisCode, UnitOfMeasurement rawUnitOfMeasurement) {
+        this(entrySuffix, obisCode, obisCode, obisCode, obisCode, obisCode, rawUnitOfMeasurement);
+    }
+
+    public static ShellyEMEntry fromKey(String key) {
+        return Stream.of(ShellyEMEntry.values())
+                     .filter(entry -> entry.entrySuffix.endsWith(key))
+                     .findFirst()
+                     .orElse(ShellyEMEntry.UNKNOWN);
+    }
+
+    public ObisCode obisCodeForPhase(ShellyEMPhase phase) {
+        return switch (phase) {
+            case TOTAL -> obisCodeTotal;
+            case NEUTRAL -> obisCodeNetral;
+            case PHASE_L1 -> obisCodePhaseL1;
+            case PHASE_L2 -> obisCodePhaseL2;
+            case PHASE_L3 -> obisCodePhaseL3;
+        };
+    }
+
+    public UnitOfMeasurement rawUnitOfMeasurement() {
+        return rawUnitOfMeasurement;
+    }
+}
