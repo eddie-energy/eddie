@@ -6,6 +6,7 @@ import energy.eddie.aiida.errors.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
 import energy.eddie.aiida.errors.UnauthorizedException;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
@@ -42,6 +43,7 @@ class InboundServiceTest {
                               "sma",
                               "AT",
                               true,
+                              DataSourceIcon.METER,
                               null,
                               null,
                               null),
@@ -99,6 +101,7 @@ class InboundServiceTest {
                                   "simulation",
                                   "AT",
                                   true,
+                                  DataSourceIcon.METER,
                                   1,
                                   null,
                                   null),

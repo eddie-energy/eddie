@@ -4,6 +4,9 @@ import api.ValidationErrors;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.errors.*;
 import energy.eddie.aiida.errors.ModbusConnectionException;
+import energy.eddie.aiida.errors.image.ImageFormatException;
+import energy.eddie.aiida.errors.image.ImageNotFoundException;
+import energy.eddie.aiida.errors.image.ImageReadException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.springframework.http.HttpStatus;
@@ -137,6 +140,30 @@ public class GlobalExceptionHandler {
     ) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(DataSourceNotFoundException.class)
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleDataServiceNotFoundException(DataSourceNotFoundException exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+    }
+
+    @ExceptionHandler(ImageNotFoundException.class)
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleImageNotFoundException(ImageNotFoundException exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+    }
+
+    @ExceptionHandler(ImageReadException.class)
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleImageReadException(ImageReadException exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
+    @ExceptionHandler(ImageFormatException.class)
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleImageFormatException(ImageFormatException exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
     @ExceptionHandler(value = {InboundRecordNotFoundException.class})

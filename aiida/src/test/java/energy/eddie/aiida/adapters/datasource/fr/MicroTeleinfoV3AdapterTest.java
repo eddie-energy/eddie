@@ -7,6 +7,7 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.utils.MqttFactory;
@@ -48,6 +49,7 @@ class MicroTeleinfoV3AdapterTest {
                               "teleinfo",
                               "FR",
                               true,
+                              DataSourceIcon.METER,
                               null,
                               null,
                               null),

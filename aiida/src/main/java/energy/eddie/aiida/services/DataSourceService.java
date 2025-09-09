@@ -8,6 +8,7 @@ import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceModbusDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.dtos.DataSourceSecretsDto;
+import energy.eddie.aiida.errors.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -76,6 +77,11 @@ public class DataSourceService {
 
     public Optional<DataSource> dataSourceById(UUID dataSourceId) {
         return repository.findById(dataSourceId);
+    }
+
+    public DataSource dataSourceByIdOrThrow(UUID dataSourceId) throws DataSourceNotFoundException {
+        return repository.findById(dataSourceId)
+                .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
     }
 
     public List<DataSourceType> getOutboundDataSourceTypes() {

@@ -1043,6 +1043,7 @@ document
       enabled: formData.get("enabled") === "on",
       asset: document.getElementById("asset-type").value,
       dataSourceType: document.getElementById("data-source-type").value,
+      icon: "ELECTRICITY",
     };
 
     if (dataSourceType === "SIMULATION") {
@@ -1100,6 +1101,7 @@ document
       enabled: formData.get("enabled") === "on",
       asset: document.getElementById("asset-select").value,
       dataSourceType: formData.get("dataSourceType"),
+      icon: "ELECTRICITY",
     };
 
     if (formData.has("simulationPeriod")) {

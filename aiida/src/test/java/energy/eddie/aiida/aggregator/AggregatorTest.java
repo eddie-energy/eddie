@@ -5,6 +5,7 @@ import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
@@ -61,6 +62,7 @@ class AggregatorTest {
             DATASOURCE_NAME_1,
             COUNTRY_CODE,
             true,
+            DataSourceIcon.METER,
             null,
             null,
             null), USER_ID);
@@ -71,6 +73,7 @@ class AggregatorTest {
             "AT",
             "test-2",
             true,
+            DataSourceIcon.METER,
             null,
             null,
             null), USER_ID);
@@ -81,6 +84,7 @@ class AggregatorTest {
                               "sma",
                               "AT",
                               true,
+                              DataSourceIcon.METER,
                               null,
                               null,
                               null),
