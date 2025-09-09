@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import StatusDotIcon from '@/assets/icons/StatusDotIcon.svg'
-const { statusType = 'healthy' } = defineProps<{
+const { statusType = 'healthy', minimalOnMobile } = defineProps<{
   statusType?: 'healthy' | 'unhealthy'
+  minimalOnMobile?: boolean
 }>()
 </script>
 
 <template>
-  <div class="status-tag text-xsmall" :class="statusType">
+  <div class="status-tag text-xsmall" :class="[statusType, minimalOnMobile && 'minimal']">
     <StatusDotIcon />
-    <slot />
+    <span>
+      <slot />
+    </span>
   </div>
 </template>
 
@@ -24,11 +27,28 @@ const { statusType = 'healthy' } = defineProps<{
   width: fit-content;
   height: fit-content;
   border-radius: 1rem;
+  text-wrap: nowrap;
 
   &.unhealthy {
     color: var(--eddie-red-medium);
     background-color: #ffeaeb;
     border-color: var(--eddie-red-medium);
+  }
+
+  &.minimal {
+    padding: unset;
+    > span {
+      display: none;
+    }
+  }
+
+  @media screen and (min-width: 640px) {
+    &.minimal {
+      padding: var(--spacing-xs) var(--spacing-md);
+      > span {
+        display: inline;
+      }
+    }
   }
 
   @media screen and (min-width: 1024px) {

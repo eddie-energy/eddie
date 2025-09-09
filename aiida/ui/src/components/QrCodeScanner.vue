@@ -1,69 +1,118 @@
 <script setup lang="ts">
-import { BrowserQRCodeReader } from '@zxing/browser'
-import { ref, useTemplateRef } from 'vue'
+import { ref } from 'vue'
+import { QrcodeStream, type DetectedBarcode } from 'vue-qrcode-reader'
+import type { AiidaPermissionRequest } from '@/types'
 
-const emit = defineEmits(['result'])
-
-const codeReader = new BrowserQRCodeReader()
-const errorMessage = ref('')
+const { open } = defineProps<{ open?: boolean }>()
 const loading = ref(true)
+const codeError = ref('')
+const paused = ref(false)
+const notValid = ref(false)
 
-const dialog = useTemplateRef('dialog')
-const video = useTemplateRef<HTMLVideoElement>('video')
+const emit = defineEmits<{
+  (e: 'valid', permission: AiidaPermissionRequest): void
+}>()
 
-async function startScanning() {
-  errorMessage.value = ''
-
-  dialog.value.show()
-
+function parseAiidaCode(aiidaCode: string) {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment' },
-    })
-    const result = await codeReader.decodeOnceFromStream(stream, video.value as HTMLVideoElement)
-    emit('result', result.getText())
-
-    dialog.value.hide()
-  } catch (error: any) {
-    console.error(error)
-
-    errorMessage.value = error.message ?? error
+    return JSON.parse(window.atob(aiidaCode))
+  } catch {
+    throw new Error('The input does not appear to be a valid AIIDA code.')
   }
 }
 
-async function stopScanning() {
-  dialog.value.hide()
+function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingContext2D) {
+  for (const detectedCode of detectedCodes) {
+    const [firstPoint, ...otherPoints] = detectedCode.cornerPoints
+
+    ctx.strokeStyle = 'red'
+
+    ctx.beginPath()
+    ctx.moveTo(firstPoint.x, firstPoint.y)
+    for (const { x, y } of otherPoints) {
+      ctx.lineTo(x, y)
+    }
+    ctx.lineTo(firstPoint.x, firstPoint.y)
+    ctx.closePath()
+    ctx.stroke()
+  }
+}
+
+const onError = () => {
+  codeError.value = 'Unable to access the camera.'
+}
+
+const onDetect = async (detectedCodes: DetectedBarcode[]) => {
+  if (!detectedCodes.length) return
+  const firstDetectedCode = detectedCodes[0]
+  paused.value = true
+  try {
+    const permissionRequest = parseAiidaCode(firstDetectedCode.rawValue)
+    paused.value = false
+    loading.value = true
+    codeError.value = ''
+    emit('valid', permissionRequest)
+  } catch (error: any) {
+    codeError.value = error ?? 'An unknown error occurred.'
+    notValid.value = true
+    paused.value = false
+  }
 }
 </script>
 
 <template>
-  <sl-button @click="startScanning" circle>
-    <sl-icon name="camera" label="Camera"></sl-icon>
-  </sl-button>
-
-  <sl-dialog ref="dialog" id="dialog" label="Scan AIIDA code">
-    <video ref="video" @play="loading = false" :hidden="loading"></video>
-
-    <template v-if="loading && !errorMessage">
-      Waiting for camera...
-      <sl-spinner></sl-spinner>
-    </template>
-
-    <template v-if="errorMessage">
-      <sl-alert variant="danger" open>
-        <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
-        {{ errorMessage }}
-      </sl-alert>
-    </template>
-
-    <div id="error"></div>
-
-    <sl-button @close="stopScanning" outline slot="footer">Close</sl-button>
-  </sl-dialog>
+  <div v-if="open" class="qr-scanner-wrapper">
+    <QrcodeStream
+      :track="paintOutline"
+      :paused
+      @error="onError"
+      @detect="onDetect"
+      @camera-off="loading = true"
+    >
+      <div class="loading-indicator" v-if="!codeError"></div>
+      <p v-if="notValid" class="invalid">Not a valid AIIDA Code</p>
+    </QrcodeStream>
+    <div class="error" v-if="codeError">
+      <p class="heading-3">Error</p>
+      <p>{{ codeError }}</p>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-video {
-  width: 100%;
+.error {
+  max-width: 80%;
+}
+.qr-scanner-wrapper {
+  margin-bottom: var(--spacing-xxl);
+  z-index: 1;
+}
+.loading-indicator {
+  position: absolute;
+  z-index: -1;
+  height: 4rem;
+  width: 4rem;
+  animation: spin 1s linear infinite;
+  border-bottom: solid 2px var(--eddie-primary);
+  border-radius: 9999px;
+  left: calc(50% - 2rem);
+  top: calc(50% - 2rem);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.invalid {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%);
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem;
+  font-weight: 600;
+  color: var(--eddie-red-medium);
 }
 </style>

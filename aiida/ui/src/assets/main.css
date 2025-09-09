@@ -36,7 +36,8 @@
   --content-padding: 1rem;
   --border-radius: 0.5rem;
   --app-bg-color: rgb(239, 242, 247, 0.9998);
-
+  --main-bg-color: rgb(255, 255, 255, 0.5);
+  --mobile-header-height: 70px;
   font-size: 16px;
   line-height: 1.5;
 
@@ -67,20 +68,27 @@
 
 html,
 body,
+main,
+main > div,
 #app {
-  height: 100%;
+  overflow: auto;
 }
 
-#app {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+html,
+body {
+  margin: 0;
+  scrollbar-color: var(--eddie-primary) var(--light);
+
+  @media screen and (min-width: 1024px) {
+    height: 100vh;
+  }
 }
 
 body {
   font-family: 'Poppins', Helvetica, sans-serif;
-  line-height: 1.6;
   letter-spacing: 0.01em;
+  font-size: 11px;
+  line-height: 1;
   padding: 3rem var(--content-padding);
   max-width: calc(var(--max-content-width) + 2 * var(--content-padding));
   margin: 0 auto;
@@ -98,15 +106,36 @@ body {
     height: 70vh;
     width: 70vh;
   }
+
+  @media screen and (min-width: 1024px) {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+}
+
+#app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 main {
-  padding: 2rem;
-  background-color: rgb(255, 255, 255, 0.5);
   height: 100%;
   border-radius: 0.5rem;
-  overflow-y: scroll;
   scrollbar-color: var(--eddie-primary) var(--light);
+  display: flex;
+  flex-direction: column;
+
+  > div {
+    flex: 1;
+  }
+
+  @media screen and (min-width: 1024px) {
+    padding: 2rem;
+    border-radius: 0.5rem;
+    background-color: var(--main-bg-color);
+  }
 }
 
 main::-webkit-scrollbar {
@@ -132,28 +161,10 @@ strong {
   font-weight: bold;
 }
 
-.details-list {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.25rem 2rem;
-
-  dt {
-    font-weight: bold;
-    color: var(--sl-color-neutral-500);
-    font-size: var(--sl-font-size-small);
-  }
-
-  dd {
-    margin: 0;
-  }
-
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-
-    dd + dt {
-      margin-top: 0.5rem;
-    }
-  }
+input,
+select {
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 .link-with-bold-hover {
@@ -188,7 +199,13 @@ strong {
   }
 
   &.router-link-active {
-    border-color: var(--eddie-primary);
-    font-weight: var(--font-weight-bold);
+    background-color: var(--light);
+    color: var(--eddie-primary);
+
+    @media screen and (min-width: 1024px) {
+      background-color: unset;
+      border-color: var(--eddie-primary);
+      font-weight: var(--font-weight-bold);
+    }
   }
 }

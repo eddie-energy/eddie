@@ -1,16 +1,53 @@
 <script setup lang="ts">
 import PermissionList from '@/components/PermissionList.vue'
-import AiidaCodeInput from '@/components/AiidaCodeInput.vue'
+import Button from '@/components/Button.vue'
+import PlusIcon from '@/assets/icons/PlusIcon.svg'
+import AddPermissionModal from '@/components/Modals/AddPermissionModal.vue'
+import { ref } from 'vue'
+
+const permissionModalRef = ref<HTMLDialogElement>()
+
+const showAddPermissionModal = () => {
+  permissionModalRef.value?.showModal()
+}
 </script>
 
 <template>
   <main>
-    <h1 class="heading-2">Permissions</h1>
-
-    <h2>Add new permission</h2>
-
-    <AiidaCodeInput />
+    <header class="two-item-pair bottom-margin">
+      <h1 class="heading-2">Permissions</h1>
+      <Button @click="showAddPermissionModal" class="add-button"><PlusIcon />Add Permission</Button>
+    </header>
 
     <PermissionList />
+    <AddPermissionModal ref="permissionModalRef" />
   </main>
 </template>
+
+<style scoped>
+.bottom-margin {
+  margin-bottom: var(--spacing-xxl);
+}
+
+.two-item-pair {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+.add-button {
+  width: 100%;
+  justify-content: center;
+}
+
+@media screen and (min-width: 640px) {
+  .two-item-pair {
+    flex-direction: row;
+    align-items: center;
+  }
+  .add-button {
+    width: fit-content;
+  }
+}
+</style>

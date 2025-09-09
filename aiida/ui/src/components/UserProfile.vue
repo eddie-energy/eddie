@@ -2,7 +2,6 @@
 import { keycloak } from '@/keycloak'
 import { ref, useTemplateRef } from 'vue'
 import { getApplicationInformation } from '@/api'
-import AccountIcon from '@/assets/icons/AccountIcon.svg'
 
 const firstName = ref('')
 const lastName = ref('')
@@ -10,6 +9,10 @@ const username = ref('')
 const aiidaId = ref('')
 
 const drawer = useTemplateRef('drawer')
+
+defineExpose({
+  drawer,
+})
 
 keycloak.loadUserProfile().then((user) => {
   firstName.value = user.firstName ?? ''
@@ -23,10 +26,6 @@ getApplicationInformation().then((data) => {
 </script>
 
 <template>
-  <a @click="drawer.show()" data-text="Account" class="link-with-bold-hover user-profile-link">
-    <span class="user-profile-link">Account <AccountIcon /></span>
-  </a>
-
   <sl-drawer ref="drawer" no-header>
     <div class="header">
       <div class="profile">
@@ -65,7 +64,9 @@ getApplicationInformation().then((data) => {
 <style scoped>
 .user-profile-link {
   display: flex;
+  flex-direction: column-reverse;
   gap: var(--spacing-sm);
+  height: 100%;
   align-items: center;
 
   &:after {
