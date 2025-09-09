@@ -7,7 +7,6 @@ import DataSourceIcon from '@/components/DataSourceIcon.vue'
 
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
-/** @type {{ dataSource: AiidaDataSource }} */
 const { dataSource } = defineProps(['dataSource'])
 
 const emit = defineEmits(['edit', 'delete', 'reset'])

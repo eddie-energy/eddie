@@ -7,10 +7,11 @@ import { dataSources, fetchDataSources } from '@/stores/dataSources'
 
 const dialogOpen = ref(false)
 const dialogPassword = ref('')
-
+const emit = defineEmits(['edit'])
 function handleDelete(id: string) {
-  confirm('This action will remove the given data source.') &&
+  if (confirm('This action will remove the given data source.')) {
     deleteDataSource(id).then(() => fetchDataSources())
+  }
 }
 
 async function handleReset(id: string) {
@@ -35,8 +36,8 @@ onMounted(() => {
     <DataSourceCard
       v-for="dataSource in dataSources"
       :key="JSON.stringify(dataSource)"
-      :data-source="dataSource"
-      @edit="$emit('edit', dataSource)"
+      :data-source
+      @edit="emit('edit', dataSource)"
       @delete="handleDelete(dataSource.id)"
       @reset="handleReset(dataSource.id)"
     />

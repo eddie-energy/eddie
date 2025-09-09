@@ -1,27 +1,26 @@
 <script setup lang="ts">
 import DataSourceList from '@/components/DataSourceList.vue'
-import DataSourceDialog from '@/components/DataSourceDialog.vue'
-import { ref } from 'vue'
+import { useTemplateRef } from 'vue'
 import Button from '@/components/Button.vue'
 import PlusIcon from '@/assets/icons/PlusIcon.svg'
 import type { AiidaDataSource } from '@/types'
+import DataSourceModal from '@/components/Modals/DataSourceModal.vue'
 
-const open = ref(false)
-const dataSource = ref()
+const modal = useTemplateRef('modal')
 
-function add() {
-  dataSource.value = undefined
-  open.value = true
+const add = () => {
+  modal.value?.showModal()
 }
 
 function edit(target: AiidaDataSource) {
-  dataSource.value = target
-  open.value = true
+  const dataSource = { ...target }
+  modal.value?.showModal(dataSource)
 }
 </script>
 
 <template>
   <main>
+    <DataSourceModal ref="modal" />
     <header class="header">
       <h1 class="heading-2">Data sources</h1>
 
@@ -30,11 +29,6 @@ function edit(target: AiidaDataSource) {
         Add Data Source
       </Button>
     </header>
-
-    <Suspense>
-      <DataSourceDialog :open :dataSource @hide="open = false" />
-    </Suspense>
-
     <DataSourceList @edit="edit" />
   </main>
 </template>
