@@ -51,6 +51,7 @@ const modbusModelsOptions = ref<{ label: string; value: string }[]>([])
 const modbusDevicesOptions = ref<{ label: string; value: string }[]>([])
 const imageFile = ref<File | null>(null)
 const icon = ref<'electricity' | 'heat' | 'meter' | 'water' | ''>('')
+const loading = ref(false)
 
 const getInitalFormData = (data?: AiidaDataSource) => {
   if (data) {
@@ -68,6 +69,7 @@ const dataSourceIcons = {
   meter: MeterIcon,
   water: WaterIcon,
 }
+
 onMounted(async () => {
   dataSourceTypeOptions.value = (await getDataSourceTypes()).map((type) => {
     return {
@@ -75,7 +77,10 @@ onMounted(async () => {
       value: type.identifier,
     }
   })
-  assetTypeOptions.value = (await getAssetTypes()).assets
+  assetTypeOptions.value = (await getAssetTypes()).assets.map((asset: string) => ({
+    label: asset,
+    value: asset,
+  }))
 })
 
 const dataSourceType = computed(() => dataSource.value.dataSourceType)
@@ -152,20 +157,26 @@ const validateForm = () => {
   }
 }
 
-const handleFormSubmit = () => {
+const handleFormSubmit = async () => {
   if (formRef.value && dataSource.value) {
     validateForm()
     if (!Object.keys(errors.value).length) {
-      const promise = dataSource.value.id
-        ? saveDataSource(dataSource.value.id, {
+      loading.value = true
+      try {
+        if (dataSource.value.id) {
+          await saveDataSource(dataSource.value.id, {
             ...dataSource.value,
           })
-        : addDataSource(dataSource.value)
-
-      promise.then(async () => {
+        } else {
+          await addDataSource(dataSource.value)
+        }
         await fetchDataSources()
-      })
-      modal.value?.close()
+        loading.value = false
+        modal.value?.close()
+      } catch {
+        loading.value = false
+        modal.value?.close()
+      }
     }
   }
 }
@@ -179,7 +190,12 @@ defineExpose({ showModal })
 </script>
 
 <template>
-  <ModalDialog :title ref="dataSourceModal" :class="'data-source-dialog'">
+  <ModalDialog
+    :title
+    ref="dataSourceModal"
+    class="data-source-dialog"
+    :class="{ 'is-loading': loading }"
+  >
     <form
       ref="form"
       novalidate
@@ -341,12 +357,20 @@ defineExpose({ showModal })
       <Button button-style="error-secondary" @click="modal?.close()">Cancel</Button>
       <Button @click="formRef?.requestSubmit()">Add</Button>
     </div>
+    <div v-if="loading" class="loading-indicator"></div>
   </ModalDialog>
 </template>
 
 <style scoped>
 .data-source-dialog {
   width: fit-content;
+}
+.is-loading {
+  form,
+  p,
+  div:not(.loading-indicator) {
+    opacity: 0;
+  }
 }
 .data-source-form {
   display: flex;

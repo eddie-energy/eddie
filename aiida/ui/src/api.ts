@@ -45,7 +45,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       (await parseErrorResponse(response)) ??
       FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
       'An unexpected error occurred. Please try again.'
-    danger(message)
+    danger(message, 0, true)
     throw new Error(message)
   }
 
