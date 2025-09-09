@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/datasources/images")
+@RequestMapping("/datasources/images")
 @Tag(name = "Data Source Images")
 public class DataSourceImageController {
     private final DataSourceImageService dataSourceImageService;
