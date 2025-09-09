@@ -12,10 +12,16 @@ import java.util.UUID;
 @Entity
 @DiscriminatorValue(DataSourceType.Identifiers.SHELLY_EM)
 public class ShellyEMDataSource extends MqttDataSource {
+    private static final String TOPIC_SUFFIX = "/#";
     @SuppressWarnings("NullAway")
     protected ShellyEMDataSource() {}
 
     public ShellyEMDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
         super(dto, userId, dataSourceMqttDto);
+    }
+
+    @Override
+    protected void updateMqttSubscribeTopic() {
+        this.mqttSubscribeTopic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
     }
 }

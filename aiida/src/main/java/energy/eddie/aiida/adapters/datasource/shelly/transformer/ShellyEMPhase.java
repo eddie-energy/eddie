@@ -7,7 +7,8 @@ public enum ShellyEMPhase {
     NEUTRAL("n"),
     PHASE_L1("a"),
     PHASE_L2("b"),
-    PHASE_L3("c");
+    PHASE_L3("c"),
+    UNKNOWN("");
 
     private final String phasePrefix;
 
@@ -19,6 +20,6 @@ public enum ShellyEMPhase {
         return Stream.of(values())
                 .filter(phase -> key.startsWith(phase.phasePrefix))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unknown phase prefix in key: " + key));
+                .orElse(UNKNOWN);
     }
 }

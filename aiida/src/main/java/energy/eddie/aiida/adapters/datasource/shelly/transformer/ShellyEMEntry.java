@@ -132,7 +132,7 @@ public enum ShellyEMEntry {
 
     public static ShellyEMEntry fromKey(String key) {
         return Stream.of(ShellyEMEntry.values())
-                     .filter(entry -> entry.entrySuffix.endsWith(key))
+                     .filter(entry -> key.endsWith(entry.entrySuffix))
                      .findFirst()
                      .orElse(ShellyEMEntry.UNKNOWN);
     }
@@ -144,6 +144,7 @@ public enum ShellyEMEntry {
             case PHASE_L1 -> obisCodePhaseL1;
             case PHASE_L2 -> obisCodePhaseL2;
             case PHASE_L3 -> obisCodePhaseL3;
+            case UNKNOWN -> ObisCode.UNKNOWN;
         };
     }
 
