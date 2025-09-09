@@ -37,7 +37,22 @@ function edit(target: AiidaDataSource) {
 .header {
   display: flex;
   justify-content: space-between;
+  flex-direction: column;
   gap: 1rem;
   margin-bottom: 2rem;
+  button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media screen and (min-width: 640px) {
+  .header {
+    flex-direction: row;
+    button {
+      width: fit-content;
+      justify-content: flex-start;
+    }
+  }
 }
 </style>

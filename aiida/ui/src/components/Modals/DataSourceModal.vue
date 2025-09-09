@@ -8,6 +8,7 @@ import ElectricityIcon from '@/assets/icons/ElectricityIcon.svg'
 import MeterIcon from '@/assets/icons/MeterIcon.svg'
 import WaterIcon from '@/assets/icons/WaterIcon.svg'
 import HeatIcon from '@/assets/icons/HeatIcon.svg'
+import CheckmarkIcon from '@/assets/icons/CheckmarkIcon.svg'
 import {
   addDataSource,
   getAssetTypes,
@@ -201,7 +202,15 @@ defineExpose({ showModal })
         </div>
         <div class="checkbox-field">
           <label for="enable">Enabled</label>
-          <input type="checkbox" id="enable" name="enable" required v-model="dataSource.enabled" />
+          <input
+            type="checkbox"
+            id="enable"
+            name="enable"
+            required
+            v-model="dataSource.enabled"
+            class="checkbox-input"
+          />
+          <CheckmarkIcon class="checkbox-icon" />
         </div>
         <div class="input-field">
           <label for="assetType"> Asset Type </label>
@@ -356,6 +365,7 @@ defineExpose({ showModal })
 }
 .checkbox-field {
   display: flex;
+  position: relative;
   flex-direction: row-reverse;
   justify-content: flex-end;
   align-items: center;
@@ -371,14 +381,16 @@ defineExpose({ showModal })
     &:checked {
       background-color: var(--eddie-primary);
     }
-    &::after {
-      content: '';
-      inset: 0;
-      position: absolute;
-      margin: var(--spacing-xs);
-      background: url(@/assets/icons/CheckmarkIcon.svg) no-repeat center/contain;
-    }
   }
+}
+
+.checkbox-icon {
+  pointer-events: none;
+  position: absolute;
+  color: var(--light);
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 4px;
 }
 
 .column {

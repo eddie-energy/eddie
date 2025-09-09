@@ -1,28 +1,37 @@
 <script setup lang="ts">
-import { deleteDataSource, regenerateDataSourceSecrets } from '@/api'
+import { deleteDataSource, regenerateDataSourceSecrets, toggleDataSource } from '@/api'
 import DataSourceCard from '@/components/DataSourceCard.vue'
-import MqttPasswordDialog from '@/components/MqttPasswordDialog.vue'
-import { onMounted, ref } from 'vue'
+import { onMounted, useTemplateRef } from 'vue'
 import { dataSources, fetchDataSources } from '@/stores/dataSources'
+import type { AiidaDataSource } from '@/types'
+import { useConfirmDialog } from '@/composables/confirm-dialog'
+import MqttPasswordModal from './Modals/MqttPasswordModal.vue'
+import { notify } from '@/util/toast'
 
-const dialogOpen = ref(false)
-const dialogPassword = ref('')
+const { confirm } = useConfirmDialog()
+const modal = useTemplateRef('passModal')
 const emit = defineEmits(['edit'])
-function handleDelete(id: string) {
-  if (confirm('This action will remove the given data source.')) {
+
+async function handleDelete(id: string) {
+  if (
+    await confirm(
+      'Delete Data Source',
+      'Are you sure you want to delete this data source? This action cannot be undone.',
+      'Delete',
+    )
+  ) {
     deleteDataSource(id).then(() => fetchDataSources())
   }
 }
 
 async function handleReset(id: string) {
   const { plaintextPassword } = await regenerateDataSourceSecrets(id)
-  dialogPassword.value = plaintextPassword
-  dialogOpen.value = true
+  notify('Successfully reset MQTT password', 'success')
+  modal.value?.showModal(plaintextPassword)
 }
 
-async function hideResetDialog() {
-  dialogOpen.value = false
-  dialogPassword.value = ''
+const handleEnableToggle = (datasource: AiidaDataSource) => {
+  toggleDataSource(datasource.id, datasource).then(() => fetchDataSources())
 }
 
 onMounted(() => {
@@ -31,7 +40,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <MqttPasswordDialog :open="dialogOpen" :password="dialogPassword" @hide="hideResetDialog" />
+  <MqttPasswordModal ref="passModal" />
   <div class="layout">
     <DataSourceCard
       v-for="dataSource in dataSources"
@@ -40,6 +49,7 @@ onMounted(() => {
       @edit="emit('edit', dataSource)"
       @delete="handleDelete(dataSource.id)"
       @reset="handleReset(dataSource.id)"
+      @enableToggle="handleEnableToggle(dataSource)"
     />
   </div>
 </template>

@@ -11,8 +11,8 @@ export function useConfirmDialog() {
   async function confirm(
     title: string,
     description: string,
-    cancelLabel = 'Cancel',
     confirmLabel = 'Confirm',
+    cancelLabel = 'Cancel',
   ) {
     titleRef.value = title
     descriptionRef.value = description

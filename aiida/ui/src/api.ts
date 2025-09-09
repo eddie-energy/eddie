@@ -183,6 +183,21 @@ export async function saveDataSource(
   success('Changes to this data source have been saved.')
 }
 
+export async function toggleDataSource(
+  dataSourceId: string,
+  dataSource: Omit<AiidaDataSource, 'id'>,
+): Promise<void> {
+  const enabled = !dataSource.enabled
+  await fetch(`/datasources/${dataSourceId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      ...dataSource,
+      enabled
+    }),
+  })
+  notify(`${dataSource.name} has been ${enabled ? 'enabled' : 'disabled'} `, 'success')
+}
+
 export async function deleteDataSource(dataSourceId: string): Promise<void> {
   await fetch(`/datasources/${dataSourceId}`, {
     method: 'DELETE',
