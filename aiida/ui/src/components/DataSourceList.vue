@@ -6,7 +6,9 @@ import { dataSources, fetchDataSources } from '@/stores/dataSources'
 import type { AiidaDataSource } from '@/types'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import MqttPasswordModal from './Modals/MqttPasswordModal.vue'
-import { notify } from '@/util/toast'
+import useToast from '@/composables/useToast'
+
+const { success } = useToast()
 
 const { confirm } = useConfirmDialog()
 const modal = useTemplateRef('passModal')
@@ -26,7 +28,7 @@ async function handleDelete(id: string) {
 
 async function handleReset(id: string) {
   const { plaintextPassword } = await regenerateDataSourceSecrets(id)
-  notify('Successfully reset MQTT password', 'success')
+  success('Successfully reset MQTT password')
   modal.value?.showModal(plaintextPassword)
 }
 

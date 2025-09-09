@@ -48,10 +48,10 @@ export type AiidaPermission = {
   grantTime?: string
   dataNeed: AiidaDataNeed
   dataSource?: AiidaDataSource
-  userId: string,
+  userId: string
   unimplemented: {
-    packageGraph: any,
-    targetIP: any,
+    packageGraph: any
+    targetIP: any
     lastPackageSent: any
   }
 }

@@ -192,10 +192,10 @@ export async function toggleDataSource(
     method: 'PATCH',
     body: JSON.stringify({
       ...dataSource,
-      enabled
+      enabled,
     }),
   })
-  notify(`${dataSource.name} has been ${enabled ? 'enabled' : 'disabled'} `, 'success')
+  success(`${dataSource.name} has been ${enabled ? 'enabled' : 'disabled'} `)
 }
 
 export async function deleteDataSource(dataSourceId: string): Promise<void> {
