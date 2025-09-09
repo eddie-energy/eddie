@@ -2,11 +2,12 @@
 import { RouterView } from 'vue-router'
 import Header from '@/components/Header.vue'
 import ConfirmDialog from './components/ConfirmDialog.vue'
+import AlertToastList from './components/AlertToastList.vue'
 </script>
 
 <template>
   <ConfirmDialog />
-
+  <AlertToastList />
   <Header />
 
   <RouterView v-slot="{ Component }">

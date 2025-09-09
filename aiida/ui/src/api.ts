@@ -1,6 +1,13 @@
+import useToast from './composables/useToast'
 import { keycloak } from './keycloak'
-import type { AiidaDataSource, AiidaPermission, AiidaPermissionRequest } from './types'
-import { notify } from './util/toast'
+import type {
+  AiidaApplicationInformation,
+  AiidaDataSource,
+  AiidaDataSourceType,
+  AiidaPermission,
+  AiidaPermissionRequest,
+} from './types'
+const { danger, success } = useToast()
 
 export const BASE_URL = THYMELEAF_AIIDA_PUBLIC_URL ?? import.meta.env.VITE_AIIDA_PUBLIC_URL
 
@@ -12,19 +19,11 @@ const FALLBACK_ERROR_MESSAGES = {
   500: 'Something went wrong. Please try again.',
 }
 
-/**
- * Wrapper for {@link window.fetch} preconfigured with base url, content-type, authorization, and error response handling.
- *
- * @param path {string}
- * @param init {RequestInit?}
- * @returns {Promise<any>}
- * @throws {{message: string, cause: Response}} Error message and response as cause for HTTP status codes outside the 2xx range.
- */
 async function fetch(path: string, init?: RequestInit): Promise<any> {
   try {
     await keycloak.updateToken(5)
   } catch (error) {
-    notify('Failed to update authentication token. Please reload this page.', 'danger')
+    danger('Failed to update authentication token. Please reload this page.')
     throw error
   }
 
@@ -37,7 +36,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       ...init,
     })
     .catch((error: unknown) => {
-      notify('Network error. Please check your connection.', 'danger')
+      danger('Network error. Please check your connection.')
       throw error
     })
 
@@ -46,7 +45,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       (await parseErrorResponse(response)) ??
       FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
       'An unexpected error occurred. Please try again.'
-    notify(message, 'danger')
+    danger(message)
     throw new Error(message)
   }
 
@@ -60,9 +59,6 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
 /**
  * Helper for parsing error messages from response objects.
  * TODO: Simplify by enforcing a single format for all error messages on the backend.
- *
- * @param {Response} response
- * @returns {Promise<string>}
  */
 async function parseErrorResponse(response: Response): Promise<string> {
   // Check if response is JSON
@@ -86,56 +82,42 @@ async function parseErrorResponse(response: Response): Promise<string> {
   return JSON.stringify(json)
 }
 
-/** @returns {Promise<AiidaPermission[]>} */
-export function getPermissions() {
+export function getPermissions(): Promise<AiidaPermission[]> {
   return fetch('/permissions')
 }
 
-/** @returns {Promise<AiidaDataSource[]>} */
-export function getDataSources() {
+export function getDataSources(): Promise<AiidaDataSource[]> {
   return fetch('/datasources/outbound')
 }
 
-/** @returns {Promise<AiidaDataSourceType[]>} */
-export function getDataSourceTypes() {
+export function getDataSourceTypes(): Promise<AiidaDataSourceType[]> {
   return fetch('/datasources/outbound/types')
 }
 
-/** @returns {Promise<{assets: string[]}>} */
-export function getAssetTypes() {
+export function getAssetTypes(): Promise<{ assets: string[] }> {
   return fetch('/datasources/assets')
 }
 
-/** @returns {Promise<{id: string, name: string}[]>} */
-export function getModbusVendors() {
+export function getModbusVendors(): Promise<{ id: string; name: string }[]> {
   return fetch('/datasources/modbus/vendors')
 }
 
-/** @returns {Promise<{id: string, name: string, vendorId: string}[]>} */
 export function getModbusModels(
   vendorId: string,
 ): Promise<{ id: string; name: string; vendorId: string }[]> {
   return fetch(`/datasources/modbus/vendors/${vendorId}/models`)
 }
 
-/** @returns {Promise<{id: string, name: string, modelId: string}[]>} */
 export function getModbusDevices(
   modelId: string,
 ): Promise<{ id: string; name: string; modelId: string }[]> {
   return fetch(`/datasources/modbus/models/${modelId}/devices`)
 }
 
-/** @returns {Promise<AiidaApplicationInformation>} */
-export function getApplicationInformation() {
+export function getApplicationInformation(): Promise<AiidaApplicationInformation> {
   return fetch('/application-information')
 }
 
-/**
- * Create permission from a permission request.
- *
- * @param permission {AiidaPermissionRequest}
- * @returns {Promise<AiidaPermission>}
- */
 export function addPermission(permission: AiidaPermissionRequest): Promise<AiidaPermission> {
   return fetch('/permissions', {
     method: 'POST',
@@ -150,16 +132,10 @@ export async function rejectPermission(permissionId: string): Promise<any> {
       operation: 'REJECT',
     }),
   })
-  notify('Permission request rejected.', 'success')
+  success('Permission request rejected.')
   return result
 }
 
-/**
- * Accepts an existing permission request and assigns a data source.
- * @param {string} permissionId Id of the permission to update.
- * @param {string} dataSourceId Data source to use to provide data for this permission.
- * @returns {Promise<void>}
- */
 export async function acceptPermission(permissionId: string, dataSourceId: string): Promise<void> {
   await fetch(`/permissions/${permissionId}`, {
     method: 'PATCH',
@@ -168,7 +144,7 @@ export async function acceptPermission(permissionId: string, dataSourceId: strin
       dataSourceId,
     }),
   })
-  notify('Permission request accepted.', 'success')
+  success('Permission request accepted.')
 }
 
 export async function revokePermission(permissionId: string): Promise<void> {
@@ -178,14 +154,9 @@ export async function revokePermission(permissionId: string): Promise<void> {
       operation: 'REVOKE',
     }),
   })
-  notify('The permission for this service was revoked.', 'success')
+  success('The permission for this service was revoked.')
 }
 
-/**
- * Create a new data source.
- *
- * @param {Omit<AiidaDataSource, id>} dataSource
- */
 export async function addDataSource(
   dataSource: Omit<AiidaDataSource, 'id'>,
 ): Promise<AiidaDataSource> {
@@ -193,16 +164,10 @@ export async function addDataSource(
     method: 'POST',
     body: JSON.stringify(dataSource),
   })
-  notify('Data source created.', 'success')
+  success('Data source created.')
   return result
 }
 
-/**
- * Updates the data source with the given id with the provided contents.
- *
- * @param {string} dataSourceId
- * @param {Omit<AiidaDataSource, id>} dataSource
- */
 export async function saveDataSource(
   dataSourceId: string,
   dataSource: Omit<AiidaDataSource, 'id'>,
@@ -211,22 +176,16 @@ export async function saveDataSource(
     method: 'PATCH',
     body: JSON.stringify(dataSource),
   })
-  notify('Changes to this data source have been saved.', 'success')
+  success('Changes to this data source have been saved.')
 }
 
 export async function deleteDataSource(dataSourceId: string): Promise<void> {
   await fetch(`/datasources/${dataSourceId}`, {
     method: 'DELETE',
   })
-  notify('Data source deleted successfully.', 'success')
+  success('Data source deleted successfully.')
 }
 
-/**
- * Generates a new password for the MQTT data source of the given id.
- *
- * @param dataSourceId
- * @returns {Promise<{ plaintextPassword: string }>}
- */
 export function regenerateDataSourceSecrets(
   dataSourceId: string,
 ): Promise<{ plaintextPassword: string }> {
