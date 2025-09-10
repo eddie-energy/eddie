@@ -31,7 +31,7 @@ public record ShellyEMJson(
             var component = ShellyEMComponent.fromKey(key);
 
             if(component == ShellyEMComponent.UNKNOWN) {
-                LOGGER.debug("Ignoring unknown component key: {}", key);
+                LOGGER.trace("Ignoring unknown component key: {}", key);
                 return;
             }
 
