@@ -4,14 +4,8 @@ import { RouterLink } from 'vue-router'
 import Logo from '@/assets/logo.svg'
 import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
 import DataSourceIcon from '@/assets/icons/DataSourceIcon.svg'
-import DataSinkIcon from '@/assets/icons/DataSinkIcon.svg'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
-
-const paths = [
-  ['/', 'Permissions', PermissionsNavIcon],
-  ['/data-sources', 'Data Sources', DataSourceIcon],
-  ['/data-sinks', 'Data Sinks', DataSinkIcon],
-]
+import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
 </script>
 
 <template>
@@ -22,14 +16,28 @@ const paths = [
 
     <nav class="header-nav">
       <RouterLink
-        :data-text="name"
-        :to="path"
-        v-for="[path, name, icon] in paths"
+        data-text="Permissions"
+        to="/"
         class="link-with-bold-hover nav-link"
-        :key="path"
+        :class="{ 'not-selected': selectedPermissionCategory !== 'outbound-aiida' }"
+        @click="selectedPermissionCategory = 'outbound-aiida'"
       >
-        <component :is="icon" class="icon" />
-        {{ name }}
+        <PermissionsNavIcon class="icon outbound" />
+        Permissions
+      </RouterLink>
+      <RouterLink
+        data-text="Inbound"
+        to="/?category=inbound-aiida"
+        class="link-with-bold-hover nav-link inbound-link"
+        @click="selectedPermissionCategory = 'inbound-aiida'"
+        :class="{ 'not-selected': selectedPermissionCategory !== 'inbound-aiida' }"
+      >
+        <PermissionsNavIcon class="icon" />
+        Inbound
+      </RouterLink>
+      <RouterLink data-text="Data Sources" to="/data-sources" class="link-with-bold-hover nav-link">
+        <DataSourceIcon class="icon" />
+        Data Sources
       </RouterLink>
       <RouterLink to="/account" data-text="Account" class="link-with-bold-hover nav-link">
         <span class="user-profile-link"> <AccountIcon /> Account</span>
@@ -46,7 +54,7 @@ const paths = [
   gap: 2rem;
 }
 
-.logo {
+.inbound-aiida .logo {
   height: 3rem;
 }
 
@@ -83,6 +91,10 @@ const paths = [
   flex-direction: column;
 }
 
+.outbound {
+  transform: rotate(180deg);
+}
+
 @media screen and (min-width: 1024px) {
   .header {
     display: flex;
@@ -97,7 +109,8 @@ const paths = [
     padding: unset;
     cursor: pointer;
   }
-  .icon {
+  .icon,
+  .inbound-link {
     display: none;
   }
   .user-profile-link {
