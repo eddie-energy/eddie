@@ -70,8 +70,7 @@ export type AiidaPermissionRequest = {
   permissionId: string
   serviceName: string
   handshakeUrl: string
-  accessToken: string
-  bearerToken?: string
+  bearerToken: string
 }
 
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'

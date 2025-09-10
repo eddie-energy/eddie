@@ -4,7 +4,9 @@ import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.errors.*;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.permission.*;
+import energy.eddie.aiida.models.permission.MqttStreamingConfig;
+import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.repositories.DataSourceRepository;
@@ -57,7 +59,6 @@ class PermissionServiceTest {
     private final UUID dataSourceId = UUID.fromString("92831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final UUID dataNeedId = UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final String handshakeUrl = "https://example.org";
-    private final String accessToken = "fooBar";
     private final String serviceName = "Hello Service";
     private final String connectionId = "NewAiidaRandomConnectionId";
     private final LocalDate start = LocalDate.now(ZoneId.systemDefault());
@@ -66,7 +67,7 @@ class PermissionServiceTest {
     private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
     private final Clock clock = Clock.fixed(fixedInstant, AIIDA_ZONE_ID);
     private final UUID userId = UUID.randomUUID();
-    private final QrCodeDto qrCodeDto = new QrCodeDto(eddieId, permissionId, serviceName, handshakeUrl, accessToken);
+    private final QrCodeDto qrCodeDto = new QrCodeDto(eddieId, permissionId, serviceName, handshakeUrl);
     @Mock
     private PermissionRepository mockPermissionRepository;
     @Mock
@@ -79,8 +80,6 @@ class PermissionServiceTest {
     private HandshakeService mockHandshakeService;
     @Mock
     private AiidaDataNeed mockDataNeed;
-    @Mock
-    private AiidaLocalDataNeed mockAiidaDataNeed;
     @Mock
     private InboundAiidaLocalDataNeed mockInboundAiidaLocalDataNeed;
     @Mock
@@ -177,11 +176,7 @@ class PermissionServiceTest {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
-        var permissionDetails = new PermissionDetailsDto(permissionId,
-                                                         connectionId,
-                                                         start,
-                                                         end,
-                                                         mockDataNeed);
+        var permissionDetails = new PermissionDetailsDto(permissionId, connectionId, start, end, mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
@@ -227,11 +222,7 @@ class PermissionServiceTest {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
-        var permissionDetails = new PermissionDetailsDto(permissionId,
-                                                         connectionId,
-                                                         start,
-                                                         end,
-                                                         mockDataNeed);
+        var permissionDetails = new PermissionDetailsDto(permissionId, connectionId, start, end, mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
@@ -347,7 +338,8 @@ class PermissionServiceTest {
         when(mockPermission.status()).thenReturn(STREAMING_DATA);
 
         // When, Then
-        assertThrows(PermissionStateTransitionException.class, () -> service.acceptPermission(permissionId, dataSourceId));
+        assertThrows(PermissionStateTransitionException.class,
+                     () -> service.acceptPermission(permissionId, dataSourceId));
     }
 
     @Test
@@ -487,8 +479,7 @@ class PermissionServiceTest {
             var per = new Permission(new QrCodeDto(UUID.fromString("15ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
                                                    UUID.fromString("25ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
                                                    "Test Service Name",
-                                                   "https://example.org",
-                                                   "fooBarToken"), UUID.randomUUID());
+                                                   "https://example.org"), UUID.randomUUID());
             return Stream.of(Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-12-24T00:00:00.000Z", STREAMING_DATA),
                              Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-09-19T00:00:00.000Z", FULFILLED),
                              Arguments.of(per, "2023-09-11T00:00:00.000Z", "2023-09-30T00:00:00.000Z", FULFILLED),

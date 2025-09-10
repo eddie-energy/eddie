@@ -50,7 +50,8 @@ import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSI
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -84,8 +85,7 @@ class PermissionRequestControllerTest {
 
     @Test
     void givenNoRequestBody_createPermissionRequest_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/permission-request")
-                                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post("/permission-request").contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("Invalid request body.")));
@@ -95,9 +95,7 @@ class PermissionRequestControllerTest {
     void givenMissingConnectionId_createPermissionRequest_returnsBadRequest() throws Exception {
         var json = "{\"dataNeedId\":\"1\"}";
 
-        mockMvc.perform(post("/permission-request")
-                                .content(json)
-                                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post("/permission-request").content(json).contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("connectionId: must not be blank")));
@@ -106,17 +104,14 @@ class PermissionRequestControllerTest {
     @Test
     void givenAdditionalNotNeededInformation_createPermissionRequest_isIgnored() throws Exception {
         // Given
-        var mockDto = mock(QrCodeDto.class);
-        when(mockService.createValidateAndSendPermissionRequest(any())).thenReturn(mockDto);
-        when(mockDto.permissionId()).thenReturn(permissionId);
+        var qrCodeDto = new QrCodeDto(UUID.randomUUID(), permissionId, "serviceName", "http://localhost:8080/example");
+        when(mockService.createValidateAndSendPermissionRequest(any())).thenReturn(qrCodeDto);
         var requestJson = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"11\",\"extra\":\"information\"}";
         var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
                                                                                             .toString();
 
         // When
-        mockMvc.perform(post("/permission-request")
-                                .content(requestJson)
-                                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post("/permission-request").content(requestJson).contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isCreated())
                .andExpect(header().string("Location", is(expectedLocationHeader)))
@@ -127,27 +122,22 @@ class PermissionRequestControllerTest {
     @Test
     void givenValidInput_createPermissionRequest_asExpected() throws Exception {
         // Given
-        when(mockService.createValidateAndSendPermissionRequest(any())).thenReturn(new QrCodeDto(
-                eddieId,
-                permissionId,
-                "serviceName",
-                "http://localhost:8080/example",
-                "token"));
+        when(mockService.createValidateAndSendPermissionRequest(any())).thenReturn(new QrCodeDto(eddieId,
+                                                                                                 permissionId,
+                                                                                                 "serviceName",
+                                                                                                 "http://localhost:8080/example"));
         var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
         var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
                                                                                             .toString();
 
         // When
-        mockMvc.perform(post("/permission-request")
-                                .content(json)
-                                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post("/permission-request").content(json).contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isCreated())
                .andExpect(header().string("Location", is(expectedLocationHeader)))
                .andExpect(jsonPath("$.permissionId", is(permissionId.toString())))
                .andExpect(jsonPath("$.serviceName", is("serviceName")))
-               .andExpect(jsonPath("$.handshakeUrl", is("http://localhost:8080/example")))
-               .andExpect(jsonPath("$.accessToken", is("token")));
+               .andExpect(jsonPath("$.handshakeUrl", is("http://localhost:8080/example")));
 
         verify(mockService).createValidateAndSendPermissionRequest(any());
     }
@@ -162,9 +152,7 @@ class PermissionRequestControllerTest {
         var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"UNSUPPORTED\"}";
 
         // When
-        mockMvc.perform(post("/permission-request")
-                                .content(json)
-                                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post("/permission-request").content(json).contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
@@ -177,9 +165,8 @@ class PermissionRequestControllerTest {
         var json = "{\"operation\":\"INVALID_VALUE_BLA\"}";
 
         // When
-        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId)
-                                .content(json)
-                                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId).content(json)
+                                                                              .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
@@ -193,9 +180,8 @@ class PermissionRequestControllerTest {
         var json = "{\"operation\":\"REJECT\"}";
 
         // When
-        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId)
-                                .content(json)
-                                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId).content(json)
+                                                                              .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isNoContent());
     }
@@ -206,9 +192,8 @@ class PermissionRequestControllerTest {
         var json = "{\"operation\":\"UNFULFILLABLE\"}";
 
         // When
-        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId)
-                                .content(json)
-                                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId).content(json)
+                                                                              .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isNoContent());
     }
@@ -219,16 +204,15 @@ class PermissionRequestControllerTest {
         var json = "{\"operation\":\"ACCEPT\", \"aiidaId\":\"" + aiidaId + "\"}";
         when(mockService.acceptPermission(permissionId.toString(), aiidaId)).thenReturn(new MqttDto(
                 "tcp://localhost:1883",
-                                                                                           permissionId.toString(),
-                                                                                           "MySuperSafePassword",
-                                                                                           "data",
-                                                                                           "status",
-                                                                                           "termination"));
+                permissionId.toString(),
+                "MySuperSafePassword",
+                "data",
+                "status",
+                "termination"));
 
         // When
-        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId)
-                                .content(json)
-                                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId).content(json)
+                                                                              .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.username", is(permissionId.toString())))
@@ -241,8 +225,9 @@ class PermissionRequestControllerTest {
     @Test
     void getPermissionDetails_returnsAsExpected() throws Exception {
         // Given
-        when(mockService.detailsForPermission(permissionId.toString())).thenReturn(
-                new PermissionDetailsDto(eddieId, createDummyRequest(), new DummyAiidaDataNeed()));
+        when(mockService.detailsForPermission(permissionId.toString())).thenReturn(new PermissionDetailsDto(eddieId,
+                                                                                                            createDummyRequest(),
+                                                                                                            new DummyAiidaDataNeed()));
 
         // When
         mockMvc.perform(get(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId))

@@ -52,7 +52,6 @@ const parseAiidaCode = (aiidaCode: string) => {
 }
 
 const executePermissionRequest = async (permissionRequest: AiidaPermissionRequest) => {
-  delete permissionRequest.bearerToken
   try {
     const permission = await addPermission(permissionRequest)
     fetchPermissions()

@@ -130,7 +130,7 @@ class PermissionControllerTest {
         // Given
         when(permissionService.setupNewPermission(any())).thenReturn(mockPermission);
         when(mockPermission.permissionId()).thenReturn(permissionId);
-        var requestJson = "{\"permissionId\":\"" + permissionId + "\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"accessToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
+        var requestJson = "{\"permissionId\":\"" + permissionId + "\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"bearerToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
 
         // When
         mockMvc.perform(post("/permissions").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(requestJson))
@@ -147,7 +147,7 @@ class PermissionControllerTest {
         when(permissionService.setupNewPermission(any())).thenReturn(mockPermission);
         when(mockPermission.eddieId()).thenReturn(eddieId);
         when(mockPermission.permissionId()).thenReturn(permissionId);
-        var requestJson = "{\"eddieId\":\"" + eddieId + "\", \"permissionId\":\"" + permissionId + "\",\"serviceName\":\"FUTURE_NEAR_REALTIME_DATA_OUTBOUND\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"accessToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
+        var requestJson = "{\"eddieId\":\"" + eddieId + "\", \"permissionId\":\"" + permissionId + "\",\"serviceName\":\"FUTURE_NEAR_REALTIME_DATA_OUTBOUND\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"bearerToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
         var expectedLocationHeader = "/permissions/" + permissionId;
 
         // When
@@ -255,29 +255,17 @@ class PermissionControllerTest {
 
     private List<Permission> sampleDataForGetAllPermissionsTest() {
         var name = "Service1";
-        var permission1 = new Permission(new QrCodeDto(eddieId,
-                                                       permissionId,
-                                                       name,
-                                                       "https://example.org",
-                                                       "fooBarToken"), userId);
+        var permission1 = new Permission(new QrCodeDto(eddieId, permissionId, name, "https://example.org"), userId);
         permission1.setGrantTime(grant);
 
         name = "Service2";
         grant = grant.plusSeconds(1000);
-        var permission2 = new Permission(new QrCodeDto(eddieId,
-                                                       permissionId,
-                                                       name,
-                                                       "https://example.org",
-                                                       "fooBarToken"), userId);
+        var permission2 = new Permission(new QrCodeDto(eddieId, permissionId, name, "https://example.org"), userId);
         permission2.setGrantTime(grant);
 
         name = "Service3";
         grant = grant.plusSeconds(5000);
-        var permission3 = new Permission(new QrCodeDto(eddieId,
-                                                       permissionId,
-                                                       name,
-                                                       "https://example.org",
-                                                       "fooBarToken"), userId);
+        var permission3 = new Permission(new QrCodeDto(eddieId, permissionId, name, "https://example.org"), userId);
         permission3.setGrantTime(grant);
 
         // grant time order is permission3, permission2, permission1

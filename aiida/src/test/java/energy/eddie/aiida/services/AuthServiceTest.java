@@ -27,22 +27,17 @@ import static org.mockito.Mockito.when;
 class AuthServiceTest {
     private final String uuid = "dc9ff3d3-1f1f-445d-a4ee-85c1faffb715";
     private final UUID userId = UUID.fromString(uuid);
-    private final QrCodeDto qrCodeDto = new QrCodeDto(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            "Test Service Name",
-            "https://example.org",
-            "fooBarToken");
+    private final QrCodeDto qrCodeDto = new QrCodeDto(UUID.randomUUID(),
+                                                      UUID.randomUUID(),
+                                                      "Test Service Name",
+                                                      "https://example.org");
     private AuthService service;
 
     @BeforeEach
     void setUp() {
         service = new AuthService();
 
-        OidcUser oidcUser = createOidcUserWithClaims(Map.of(
-                "sub", uuid,
-                "email", "test@eddie.eu"
-        ));
+        OidcUser oidcUser = createOidcUserWithClaims(Map.of("sub", uuid, "email", "test@eddie.eu"));
         configureSecurityContextForPrincipal(oidcUser);
     }
 
@@ -78,10 +73,7 @@ class AuthServiceTest {
     @Test
     void givenInvalidUUID_getCurrentUserId_throws() {
         // Given
-        OidcUser oidcUser = createOidcUserWithClaims(Map.of(
-                "email", "test@eddie.eu",
-                "sub", "invalidUUID"
-        ));
+        OidcUser oidcUser = createOidcUserWithClaims(Map.of("email", "test@eddie.eu", "sub", "invalidUUID"));
         configureSecurityContextForPrincipal(oidcUser);
 
         // When, Then
@@ -99,15 +91,11 @@ class AuthServiceTest {
     }
 
     private OidcUser createOidcUserWithClaims(Map<String, Object> claims) {
-        return new DefaultOidcUser(
-                List.of(),
-                new OidcIdToken(
-                        "tokenValue",
-                        Instant.now(),
-                        Instant.now().plusSeconds(60 * 5),
-                        claims
-                )
-        );
+        return new DefaultOidcUser(List.of(),
+                                   new OidcIdToken("tokenValue",
+                                                   Instant.now(),
+                                                   Instant.now().plusSeconds(60 * 5),
+                                                   claims));
     }
 
     private void configureSecurityContextForPrincipal(Object principal) {
