@@ -10,6 +10,7 @@ import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSourc
 import energy.eddie.aiida.models.datasource.mqtt.cim.CimDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
@@ -84,6 +85,13 @@ public abstract class DataSource {
             case MICRO_TELEINFO -> {
                 if (settings instanceof DataSourceMqttDto mqtt) {
                     yield new MicroTeleinfoV3DataSource(dto, userId, mqtt);
+                }
+                throw createMqttSettingsIllegalStateException(dataSourceType);
+            }
+
+            case SINAPSI_ALFA -> {
+                if (settings instanceof DataSourceMqttDto mqtt) {
+                    yield new SinapsiAlfaDataSource(dto, userId, mqtt);
                 }
                 throw createMqttSettingsIllegalStateException(dataSourceType);
             }
