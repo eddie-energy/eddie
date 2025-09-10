@@ -54,7 +54,7 @@ import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
   gap: 2rem;
 }
 
-.inbound-aiida .logo {
+.logo {
   height: 3rem;
 }
 
