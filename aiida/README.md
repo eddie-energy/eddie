@@ -146,10 +146,11 @@ Data from all data sources is automatically persisted in the TimescaleDB.
 Currently, the following countries are supported:
 
 | Country                        | Name of datasource                                                              |
-| ------------------------------ | ------------------------------------------------------------------------------- |
+|--------------------------------|---------------------------------------------------------------------------------|
 | AT                             | [OesterreichsEnergieAdapter](docs/datasources/at/OesterreichsEnergieAdapter.md) |
 | FR                             | [MicroTeleinfoV3](docs/datasources/fr/MicroTeleinfoV3.md)                       |
 | NL, BE, SE, DK, FI, HU, LT, CH | [SmartGatewaysAdapter](docs/datasources/sga/SmartGatewaysAdapter.md)            |
+| INTERNATIONAL                  | [ShellyEM](docs/datasources/shelly/ShellyEM.md)                                 |
 
 ![SupportedMeters](docs/images/Smart_Meter_supported_by_AIIDA.png)
 _Map created with https://www.mapchart.net_
