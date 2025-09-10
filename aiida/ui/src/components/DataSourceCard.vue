@@ -18,7 +18,7 @@ const { dataSource, startOpen } = defineProps<{
 }>()
 const isOpen = ref(startOpen)
 const emit = defineEmits(['edit', 'delete', 'reset', 'enableToggle'])
-//TODO implement mqtt certificate
+//TODO see #GH-1957
 const mqttCertificate = false
 
 const {

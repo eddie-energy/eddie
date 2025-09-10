@@ -104,34 +104,33 @@ const model = computed(() => dataSource.value.modbusSettings?.modbusModel)
 watch(
   [dataSourceType, vendor, model],
   async ([newDataSourceType, newVendor, newModel], [, oldVendor, oldModel]) => {
-    if (newDataSourceType === 'MODBUS') {
-      modbusVendorsOptions.value = (await getModbusVendors()).map((vend) => {
+    if (newDataSourceType !== 'MODBUS' || !dataSource.value.modbusSettings) {
+      return
+    }
+    modbusVendorsOptions.value = (await getModbusVendors()).map((vend) => {
+      return {
+        label: vend.name,
+        value: vend.id,
+      }
+    })
+    if (newVendor && newVendor !== oldVendor) {
+      dataSource.value.modbusSettings.modbusModel = ''
+      dataSource.value.modbusSettings.modbusDevice = ''
+      modbusModelsOptions.value = (await getModbusModels(newVendor)).map((mod) => {
         return {
-          label: vend.name,
-          value: vend.id,
+          label: mod.name,
+          value: mod.id,
         }
       })
-      if (dataSource.value.modbusSettings) {
-        if (newVendor && newVendor !== oldVendor) {
-          dataSource.value.modbusSettings.modbusModel = ''
-          dataSource.value.modbusSettings.modbusDevice = ''
-          modbusModelsOptions.value = (await getModbusModels(newVendor)).map((mod) => {
-            return {
-              label: mod.name,
-              value: mod.id,
-            }
-          })
+    }
+    if (newModel && newModel !== oldModel) {
+      dataSource.value.modbusSettings.modbusDevice = ''
+      modbusDevicesOptions.value = (await getModbusDevices(newModel)).map((dev) => {
+        return {
+          label: dev.name,
+          value: dev.id,
         }
-        if (newModel && newModel !== oldModel) {
-          dataSource.value.modbusSettings.modbusDevice = ''
-          modbusDevicesOptions.value = (await getModbusDevices(newModel)).map((dev) => {
-            return {
-              label: dev.name,
-              value: dev.id,
-            }
-          })
-        }
-      }
+      })
     }
   },
 )
@@ -173,32 +172,33 @@ const validateForm = () => {
 }
 
 const handleFormSubmit = async () => {
-  if (formRef.value && dataSource.value) {
-    validateForm()
-    if (!Object.keys(errors.value).length) {
-      loading.value = true
-      try {
-        if (dataSource.value.id) {
-          await saveDataSource(dataSource.value.id, {
-            ...dataSource.value,
-          })
-        } else {
-          const { dataSourceId, plaintextPassword } = await addDataSource(dataSource.value)
-          dataSource.value.id = dataSourceId
-          if (!nonMQTTDataSourceTypes.includes(dataSource.value.dataSourceType)) {
-            emit('showMqtt', plaintextPassword)
-          }
+  if (!(formRef.value && dataSource.value)) {
+    return
+  }
+  validateForm()
+  if (!Object.keys(errors.value).length) {
+    loading.value = true
+    try {
+      if (dataSource.value.id) {
+        await saveDataSource(dataSource.value.id, {
+          ...dataSource.value,
+        })
+      } else {
+        const { dataSourceId, plaintextPassword } = await addDataSource(dataSource.value)
+        dataSource.value.id = dataSourceId
+        if (!nonMQTTDataSourceTypes.includes(dataSource.value.dataSourceType)) {
+          emit('showMqtt', plaintextPassword)
         }
-        if (imageFile.value) {
-          await addDataSourceImage(dataSource.value.id, imageFile.value)
-        }
-        await fetchDataSources()
-        loading.value = false
-        modal.value?.close()
-      } catch {
-        loading.value = false
-        modal.value?.close()
       }
+      if (imageFile.value) {
+        await addDataSourceImage(dataSource.value.id, imageFile.value)
+      }
+      await fetchDataSources()
+      loading.value = false
+      modal.value?.close()
+    } catch {
+      loading.value = false
+      modal.value?.close()
     }
   }
 }
