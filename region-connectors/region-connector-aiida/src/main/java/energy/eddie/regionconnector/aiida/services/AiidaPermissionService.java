@@ -21,9 +21,7 @@ import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequ
 import energy.eddie.regionconnector.aiida.permission.request.events.*;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import energy.eddie.regionconnector.shared.security.JwtUtil;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +43,6 @@ public class AiidaPermissionService {
     private final AiidaConfiguration configuration;
     private final MqttService mqttService;
     private final AiidaPermissionRequestViewRepository viewRepository;
-    private final JwtUtil jwtUtil;
     private final DataNeedCalculationService<DataNeed> calculationService;
     private final UUID eddieId;
 
@@ -56,8 +53,6 @@ public class AiidaPermissionService {
             AiidaConfiguration configuration,
             MqttService mqttService,
             AiidaPermissionRequestViewRepository viewRepository,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // is injected from another Spring context
-            JwtUtil jwtUtil,
             DataNeedCalculationService<DataNeed> calculationService,
             Sinks.Many<String> revocationSink,
             ApplicationContext applicationContext
@@ -67,7 +62,6 @@ public class AiidaPermissionService {
         this.configuration = configuration;
         this.mqttService = mqttService;
         this.viewRepository = viewRepository;
-        this.jwtUtil = jwtUtil;
         this.calculationService = calculationService;
         revocationSink.asFlux().subscribe(this::revokePermission);
         this.eddieId = applicationContext.getBean(ApplicationInformationAware.BEAN_NAME, UUID.class);
@@ -84,22 +78,21 @@ public class AiidaPermissionService {
         }
     }
 
-    public QrCodeDto createValidateAndSendPermissionRequest(PermissionRequestForCreation forCreation)
-            throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
+    public QrCodeDto createValidateAndSendPermissionRequest(PermissionRequestForCreation forCreation) throws DataNeedNotFoundException, UnsupportedDataNeedException {
         var permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating new permission request with ID {}", permissionId);
         var dataNeedId = forCreation.dataNeedId();
         var res = calculationService.calculate(dataNeedId);
         switch (res) {
             case DataNeedNotFoundResult ignored -> throw new DataNeedNotFoundException(dataNeedId);
-            case DataNeedNotSupportedResult(String message) ->
-                    throw new UnsupportedDataNeedException(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                           dataNeedId,
-                                                           message);
-            case AccountingPointDataNeedResult ignored ->
-                    throw new UnsupportedDataNeedException(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                           dataNeedId,
-                                                           "Data need not supported");
+            case DataNeedNotSupportedResult(String message) -> throw new UnsupportedDataNeedException(
+                    AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                    dataNeedId,
+                    message);
+            case AccountingPointDataNeedResult ignored -> throw new UnsupportedDataNeedException(
+                    AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                    dataNeedId,
+                    "Data need not supported");
             case ValidatedHistoricalDataDataNeedResult vhdResult -> {
                 var terminationTopic = terminationTopicForPermissionId(permissionId);
                 var createdEvent = new CreatedEvent(permissionId,
@@ -115,13 +108,8 @@ public class AiidaPermissionService {
                 outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
 
                 var handshakeUrl = new UriTemplate(configuration.handshakeUrl()).expand(permissionId).toString();
-                var jwtString = jwtUtil.createJwt(AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID, permissionId);
                 var dataNeed = dataNeedsService.getById(dataNeedId);
-                return new QrCodeDto(eddieId,
-                                     UUID.fromString(permissionId),
-                                     dataNeed.name(),
-                                     handshakeUrl,
-                                     jwtString);
+                return new QrCodeDto(eddieId, UUID.fromString(permissionId), dataNeed.name(), handshakeUrl);
             }
         }
     }
@@ -154,7 +142,8 @@ public class AiidaPermissionService {
 
         var permissionDetails = detailsForPermission(permissionId);
         var dataNeed = permissionDetails.dataNeed();
-        var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId, dataNeed instanceof InboundAiidaDataNeed);
+        var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId,
+                                                                       dataNeed instanceof InboundAiidaDataNeed);
 
         outbox.commit(new MqttCredentialsCreatedEvent(permissionId, mqttDto.username()));
 
@@ -192,8 +181,7 @@ public class AiidaPermissionService {
      */
     public PermissionDetailsDto detailsForPermission(String permissionId) throws PermissionNotFoundException, DataNeedNotFoundException {
         AiidaPermissionRequest request = viewRepository.findByPermissionId(permissionId)
-                                                       .orElseThrow(() -> new PermissionNotFoundException(
-                                                               permissionId));
+                                                       .orElseThrow(() -> new PermissionNotFoundException(permissionId));
 
         DataNeed dataNeed = dataNeedsService.findById(request.dataNeedId())
                                             .orElseThrow(() -> new DataNeedNotFoundException(request.dataNeedId()));
@@ -218,11 +206,10 @@ public class AiidaPermissionService {
               .log("Got request check if permission {} is in status {} before transitioning it to status {}");
         // check if in valid previous state because we are reacting to an external event
         if (request.status() != requiredStatus) {
-            throw new PermissionStateTransitionException(
-                    permissionId,
-                    desiredNextStatus,
-                    requiredStatus,
-                    request.status());
+            throw new PermissionStateTransitionException(permissionId,
+                                                         desiredNextStatus,
+                                                         requiredStatus,
+                                                         request.status());
         }
 
         return request;

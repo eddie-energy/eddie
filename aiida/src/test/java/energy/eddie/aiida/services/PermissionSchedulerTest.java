@@ -35,12 +35,10 @@ class PermissionSchedulerTest {
     private final UUID permissionId = UUID.fromString("b69f9bc2-e16c-4de4-8c3e-00d219dcd819");
     private final String serviceName = "My Test Service";
     private final String handshakeUrl = "https://example.org";
-    private final String accessToken = "fooBar";
     private final Permission permission = new Permission(new QrCodeDto(eddieId,
                                                                        permissionId,
                                                                        serviceName,
-                                                                       handshakeUrl,
-                                                                       accessToken), UUID.randomUUID());
+                                                                       handshakeUrl), UUID.randomUUID());
     @Mock
     private TaskScheduler mockTaskScheduler;
     @Mock
