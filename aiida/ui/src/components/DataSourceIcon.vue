@@ -3,8 +3,9 @@ import ElectricityIcon from '@/assets/icons/ElectricityIcon.svg'
 import MeterIcon from '@/assets/icons/MeterIcon.svg'
 import WaterIcon from '@/assets/icons/WaterIcon.svg'
 import HeatIcon from '@/assets/icons/HeatIcon.svg'
+import type { AiidaDataSourceIcon } from '@/types'
 
-const { icon } = defineProps<{ icon: 'ELECTRICITY' | 'HEAT' | 'METER' | 'WATER' }>()
+const { icon } = defineProps<{ icon: AiidaDataSourceIcon }>()
 </script>
 
 <template>

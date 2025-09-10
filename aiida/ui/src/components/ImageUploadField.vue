@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useDropZone } from '@vueuse/core'
 
 const dropZoneRef = ref<HTMLDivElement>()
 const imageFile = defineModel<File | null>()
-const previewImage = ref<string | null>(null)
+
 const imageUploadInput = ref<HTMLInputElement>()
 const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml']
 
@@ -17,7 +17,6 @@ const onImageDrop = (files: File[] | null) => {
       return
     }
     imageFile.value = file
-    previewImage.value = URL.createObjectURL(file)
   }
 }
 
@@ -34,7 +33,6 @@ const { isOverDropZone } = useDropZone(dropZoneRef, {
 const handleImage = (event: Event) => {
   const file = Array.from((event.target as HTMLInputElement).files || [])[0] || null
   imageFile.value = file
-  previewImage.value = URL.createObjectURL(file as Blob)
 }
 
 const handleImageUploadKeydown = (event: KeyboardEvent) => {
@@ -43,6 +41,14 @@ const handleImageUploadKeydown = (event: KeyboardEvent) => {
     imageUploadInput.value?.click()
   }
 }
+
+const previewImage = computed(() => {
+  if (imageFile.value) {
+    return URL.createObjectURL((imageFile.value as Blob) ?? '')
+  } else {
+    return null
+  }
+})
 </script>
 
 <template>

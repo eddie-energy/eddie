@@ -19,16 +19,16 @@ import {
   getModbusVendors,
   saveDataSource,
 } from '@/api'
-import type { AiidaDataSource } from '@/types'
+import type { AiidaDataSource, AiidaDataSourceIcon } from '@/types'
 import { fetchDataSources } from '@/stores/dataSources'
 
-const getEmptyDataSource = () => {
+const getEmptyDataSource = (): AiidaDataSource => {
   return {
     name: '',
     asset: '',
     dataSourceType: '',
     enabled: true,
-    id: '',
+    id: '' as AiidaDataSourceIcon,
     countryCode: '',
     modbusSettings: {
       modbusIp: '',
@@ -37,7 +37,7 @@ const getEmptyDataSource = () => {
       modbusDevice: '',
     },
     simulationPeriod: 0,
-    icon: '',
+    icon: '' as AiidaDataSourceIcon,
   }
 }
 
@@ -53,7 +53,7 @@ const countryOptions = SUPPORTED_COUNTRY_CODES.map((country) => {
 
 const modal = useTemplateRef('dataSourceModal')
 const formRef = useTemplateRef('form')
-const title = ref('Add Data Source')
+const operationType = ref('Add')
 const errors = ref<Record<string, string>>({})
 const dataSource = ref<AiidaDataSource>(getEmptyDataSource())
 const dataSourceTypeOptions = ref<{ label: string; value: string }[]>([])
@@ -63,14 +63,17 @@ const modbusModelsOptions = ref<{ label: string; value: string }[]>([])
 const modbusDevicesOptions = ref<{ label: string; value: string }[]>([])
 const imageFile = ref<File | null>(null)
 const loading = ref(false)
+const emit = defineEmits(['showMqtt'])
+const nonMQTTDataSourceTypes = ['SIMULATION', 'MODBUS']
 
 const getInitalFormData = (data?: AiidaDataSource) => {
   if (data) {
     dataSource.value = data
-    title.value = 'Edit Data Source'
+    operationType.value = 'Edit'
   } else {
     dataSource.value = getEmptyDataSource()
-    title.value = 'Add Data Source'
+    operationType.value = 'Add'
+    imageFile.value = null
   }
 }
 
@@ -180,11 +183,14 @@ const handleFormSubmit = async () => {
             ...dataSource.value,
           })
         } else {
-          const data = await addDataSource(dataSource.value)
-          console.log(data)
-          if (imageFile.value) {
-            await addDataSourceImage(data.dataSourceId, imageFile.value)
+          const { dataSourceId, plaintextPassword } = await addDataSource(dataSource.value)
+          dataSource.value.id = dataSourceId
+          if (!nonMQTTDataSourceTypes.includes(dataSource.value.dataSourceType)) {
+            emit('showMqtt', plaintextPassword)
           }
+        }
+        if (imageFile.value) {
+          await addDataSourceImage(dataSource.value.id, imageFile.value)
         }
         await fetchDataSources()
         loading.value = false
@@ -207,7 +213,7 @@ defineExpose({ showModal })
 
 <template>
   <ModalDialog
-    :title
+    :title="`${operationType} Data Source`"
     ref="dataSourceModal"
     class="data-source-dialog"
     :class="{ 'is-loading': loading }"
@@ -385,7 +391,7 @@ defineExpose({ showModal })
     <p class="info-text">Fields marked with * are required!</p>
     <div class="action-buttons">
       <Button button-style="error-secondary" @click="modal?.close()">Cancel</Button>
-      <Button @click="formRef?.requestSubmit()">Add</Button>
+      <Button @click="formRef?.requestSubmit()">{{ operationType }}</Button>
     </div>
     <div v-if="loading" class="loading-indicator"></div>
   </ModalDialog>

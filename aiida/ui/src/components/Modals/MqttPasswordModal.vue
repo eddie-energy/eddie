@@ -11,8 +11,10 @@ const modal = useTemplateRef<HTMLDialogElement>('modal')
 const pass = ref<string | undefined>()
 const copied = ref(false)
 const show = ref(false)
+const title = ref('')
 
-const showModal = (password?: string) => {
+const showModal = (password?: string, isNew?: boolean) => {
+  title.value = isNew ? 'Copy Password' : 'Reset Password'
   pass.value = password
   modal.value?.showModal()
 }
@@ -41,7 +43,7 @@ defineExpose({ showModal })
 </script>
 
 <template>
-  <ModalDialog title="Reset Password" ref="modal" @close="closeModal" @focus="checkClipboard">
+  <ModalDialog :title ref="modal" @close="closeModal" @focus="checkClipboard">
     <p class="text-limit text-normalc">
       Make sure to copy the password now. You will not be able to view it again.
     </p>

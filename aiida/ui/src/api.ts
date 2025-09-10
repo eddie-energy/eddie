@@ -26,13 +26,13 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
     danger('Failed to update authentication token. Please reload this page.')
     throw error
   }
-  const isImagesEndpoint = path.includes("images")
+  const isImagesEndpoint = path.startsWith('/datasources/images')
 
   const response = await window
     .fetch(BASE_URL + path, {
       headers: {
         Authorization: `Bearer ${keycloak.token}`,
-        ...(!isImagesEndpoint ? { 'Content-Type': 'application/json' } : {})
+        ...(!isImagesEndpoint ? { 'Content-Type': 'application/json' } : {}),
       },
       ...init,
     })
@@ -42,18 +42,21 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
     })
 
   if (!response.ok) {
-    if (isImagesEndpoint && response.status != 404) {
-      const message =
-        (await parseErrorResponse(response)) ??
-        FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
-        'An unexpected error occurred. Please try again.'
+    const message =
+      (await parseErrorResponse(response)) ??
+      FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
+      'An unexpected error occurred. Please try again.'
+    if (!(isImagesEndpoint && response.status == 404)) {
       danger(message, 0, true)
-      throw new Error(message)
     }
+    throw new Error(message)
   }
 
   if (response.headers.get('content-type')?.includes('application/json')) {
     return response.json()
+  }
+  if (isImagesEndpoint) {
+    return response.blob()
   }
 
   return response.text()
@@ -164,18 +167,15 @@ export async function revokePermission(permissionId: string): Promise<void> {
   success('The permission for this service was revoked.')
 }
 
-export async function addDataSource(
-  dataSource: Omit<AiidaDataSource, 'id'>,
-): Promise<{
-  dataSourceId: string;
-  plainTextPassword: string;
+export async function addDataSource(dataSource: Omit<AiidaDataSource, 'id'>): Promise<{
+  dataSourceId: string
+  plaintextPassword: string
 }> {
   const result = await fetch(`/datasources`, {
     method: 'POST',
     body: JSON.stringify(dataSource),
   })
   success('Data source created.')
-  console.log(result)
   return result
 }
 
@@ -195,12 +195,9 @@ export async function toggleDataSource(
   dataSource: Omit<AiidaDataSource, 'id'>,
 ): Promise<void> {
   const enabled = !dataSource.enabled
-  await fetch(`/datasources/${dataSourceId}`, {
+  await fetch(`/datasources/${dataSourceId}/enabled`, {
     method: 'PATCH',
-    body: JSON.stringify({
-      ...dataSource,
-      enabled,
-    }),
+    body: JSON.stringify(enabled),
   })
   success(`${dataSource.name} has been ${enabled ? 'enabled' : 'disabled'} `)
 }
@@ -220,19 +217,15 @@ export function regenerateDataSourceSecrets(
   })
 }
 
-export async function addDataSourceImage(
-  dataSourceId: string,
-  imageFile: File
-): Promise<void> {
+export async function addDataSourceImage(dataSourceId: string, imageFile: File): Promise<void> {
   const data = new FormData()
-  data.append("file", imageFile as Blob)
+  data.append('file', imageFile as Blob)
   await fetch(`/datasources/images/${dataSourceId}`, {
     method: 'POST',
-    body: data
+    body: data,
   })
 }
-export async function getDataSourceImage(dataSourceId: string
-): Promise<any> {
+export async function getDataSourceImage(dataSourceId: string): Promise<Blob> {
   return fetch(`/datasources/images/${dataSourceId}`, {
     method: 'GET',
   })
