@@ -28,19 +28,21 @@ public record ShellyEMJson(
 
         @JsonAnySetter
         void capture(String key, Object value) {
-            try {
-                var component = ShellyEMComponent.fromKey(key);
-                if (value instanceof Map<?, ?> map) {
-                    Map<String, Number> values = new HashMap<>();
-                    for (Map.Entry<?, ?> entry : map.entrySet()) {
-                        if (entry.getKey() instanceof String strKey && entry.getValue() instanceof Number numValue) {
-                            values.put(strKey, numValue);
-                        }
+            var component = ShellyEMComponent.fromKey(key);
+
+            if(component == ShellyEMComponent.UNKNOWN) {
+                LOGGER.debug("Ignoring unknown component key: {}", key);
+                return;
+            }
+
+            if (value instanceof Map<?, ?> map) {
+                Map<String, Number> values = new HashMap<>();
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    if (entry.getKey() instanceof String strKey && entry.getValue() instanceof Number numValue) {
+                        values.put(strKey, numValue);
                     }
-                    em.put(component, values);
                 }
-            } catch (IllegalArgumentException e) {
-                LOGGER.debug("Unknown Shelly EM component key: {}", key);
+                em.put(component, values);
             }
         }
     }

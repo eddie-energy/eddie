@@ -8,7 +8,7 @@ public enum ShellyEMPhase {
     PHASE_L1("a"),
     PHASE_L2("b"),
     PHASE_L3("c"),
-    UNKNOWN("");
+    UNKNOWN("unknown");
 
     private final String phasePrefix;
 

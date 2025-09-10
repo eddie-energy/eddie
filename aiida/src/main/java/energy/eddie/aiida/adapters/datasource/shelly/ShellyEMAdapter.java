@@ -12,7 +12,6 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.actuate.health.Health;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -52,18 +51,9 @@ public class ShellyEMAdapter extends MqttDataSourceAdapter<ShellyEMDataSource> {
     public void messageArrived(String topic, MqttMessage message) {
         LOGGER.info("Topic {} new message: {}", topic, message);
 
+        var payload = new String(message.getPayload(), StandardCharsets.UTF_8).trim();
         try {
-            var online = Boolean.parseBoolean(new String(message.getPayload(), StandardCharsets.UTF_8));
-            var health = online ? Health.up() : Health.down();
-
-            healthSink.tryEmitNext(health.build());
-            return;
-        } catch (Exception ignored) {
-            // not a health message, continue processing
-        }
-
-        try {
-            var json = mapper.readValue(message.getPayload(), ShellyEMJson.class);
+            var json = mapper.readValue(payload, ShellyEMJson.class);
 
             var aiidaRecordValues = json.params().em()
                                         .entrySet()
@@ -74,9 +64,7 @@ public class ShellyEMAdapter extends MqttDataSourceAdapter<ShellyEMDataSource> {
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (IOException e) {
-            LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
-                         new String(message.getPayload(), StandardCharsets.UTF_8),
-                         e);
+            LOGGER.error("Error while deserializing payload received from adapter. Payload was {}", payload, e);
         }
     }
 

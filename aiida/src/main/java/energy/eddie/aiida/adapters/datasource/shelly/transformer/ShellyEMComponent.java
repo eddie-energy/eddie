@@ -23,7 +23,7 @@ public enum ShellyEMComponent {
 
     public static ShellyEMComponent fromKey(String key) {
         return Stream.of(values())
-                .filter(component -> key.startsWith(component.componentKey))
+                .filter(component -> key.equals(component.componentKey))
                 .findFirst()
                 .orElse(UNKNOWN);
     }

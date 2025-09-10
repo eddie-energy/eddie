@@ -9,17 +9,17 @@ public enum ShellyEMEntry {
     TOTAL_ACTIVE_ENERGY(
             "total_act_energy",
             ObisCode.POSITIVE_ACTIVE_ENERGY,
-            ObisCode.POSTIVIE_ACTIVE_ENERGY_IN_PHASE_L1,
-            ObisCode.POSTIVIE_ACTIVE_ENERGY_IN_PHASE_L2,
-            ObisCode.POSTIVIE_ACTIVE_ENERGY_IN_PHASE_L3,
+            ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L1,
+            ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L2,
+            ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L3,
             UnitOfMeasurement.WATT_HOUR
     ),
     TOTAL_ACTIVE(
             "total_act",
             ObisCode.POSITIVE_ACTIVE_ENERGY,
-            ObisCode.POSTIVIE_ACTIVE_ENERGY_IN_PHASE_L1,
-            ObisCode.POSTIVIE_ACTIVE_ENERGY_IN_PHASE_L2,
-            ObisCode.POSTIVIE_ACTIVE_ENERGY_IN_PHASE_L3,
+            ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L1,
+            ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L2,
+            ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L3,
             UnitOfMeasurement.WATT_HOUR
     ),
     TOTAL_ACTIVE_RETURNED_ENERGY(
@@ -70,7 +70,7 @@ public enum ShellyEMEntry {
             ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L1,
             ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L2,
             ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L3,
-            UnitOfMeasurement.VOLT_AMPERE
+            UnitOfMeasurement.VOLT_AMPERE_REACTIVE
     ),
     POWER_FACTOR(
             "pf",
