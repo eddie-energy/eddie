@@ -8,6 +8,7 @@ import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSourc
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyEMDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
@@ -73,6 +74,18 @@ class DataSourceTest {
 
         // Then
         assertInstanceOf(SmartGatewaysDataSource.class, dataSource);
+    }
+
+    @Test
+    void givenShellyEM_returnsDataSource() {
+        // Given
+        var dto = createNewDataSourceDto(DataSourceType.SHELLY_EM);
+
+        // When
+        var dataSource = DataSource.createFromDto(dto, ID, MQTT_DTO);
+
+        // Then
+        assertInstanceOf(ShellyEMDataSource.class, dataSource);
     }
 
     @Test

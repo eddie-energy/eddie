@@ -9,6 +9,7 @@ import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpClient;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
+import energy.eddie.aiida.adapters.datasource.shelly.ShellyEMAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
@@ -106,6 +107,18 @@ class DataSourceAdapterTest {
 
         // Then
         assertInstanceOf(SmartGatewaysAdapter.class, adapter);
+    }
+
+    @Test
+    void givenShellyEM_returnsAdapter() {
+        // Given
+        var dataSource = createNewDataSource(DataSourceType.SHELLY_EM);
+
+        // When
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
+
+        // Then
+        assertInstanceOf(ShellyEMAdapter.class, adapter);
     }
 
     @Test

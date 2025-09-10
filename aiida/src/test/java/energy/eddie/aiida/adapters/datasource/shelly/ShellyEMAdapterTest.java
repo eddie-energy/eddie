@@ -1,14 +1,16 @@
-package energy.eddie.aiida.adapters.datasource.cim;
+package energy.eddie.aiida.adapters.datasource.shelly;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
+import energy.eddie.aiida.adapters.datasource.shelly.transformer.ShellyEMJsonTest;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
-import energy.eddie.aiida.models.datasource.mqtt.cim.CimDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyEMDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
+import energy.eddie.aiida.utils.ObisCode;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
@@ -26,24 +28,23 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.UUID;
 
-import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-class CimAdapterTest {
-    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(CimAdapter.class);
+class ShellyEMAdapterTest {
+    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(ShellyEMAdapter.class);
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final String TOPIC = "aiida/cim";
-    private static final CimDataSource DATA_SOURCE = new CimDataSource(
+    private static final String TOPIC = "aiida/4211ea05-d4ab-48ff-8613-8f4791a56606/events/rpc";
+    private static final ShellyEMDataSource DATA_SOURCE = new ShellyEMDataSource(
             new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.CIM_ADAPTER,
+                              DataSourceType.SHELLY_EM,
                               AiidaAsset.SUBMETER,
-                              "cim",
+                              "shelly-test",
                               "AT",
                               true,
                               DataSourceIcon.METER,
@@ -57,7 +58,7 @@ class CimAdapterTest {
                                   "user",
                                   "password")
     );
-    private CimAdapter adapter;
+    private ShellyEMAdapter adapter;
 
     @BeforeEach
     void setUp() {
@@ -71,7 +72,7 @@ class CimAdapterTest {
                 "password",
                 ""
         );
-        adapter = new CimAdapter(DATA_SOURCE, mapper, mqttConfiguration);
+        adapter = new ShellyEMAdapter(DATA_SOURCE, mapper, mqttConfiguration);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 
@@ -132,7 +133,7 @@ class CimAdapterTest {
 
     @Test
     void verify_errorsDuringClose_areLogged() throws MqttException {
-        try (LogCaptor captor = LogCaptor.forClass(CimAdapter.class)) {
+        try (LogCaptor captor = LogCaptor.forClass(ShellyEMAdapter.class)) {
             try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
                 var mockClient = mock(MqttAsyncClient.class);
                 mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
@@ -177,44 +178,24 @@ class CimAdapterTest {
 
     @Test
     void givenPayloadFromMqttBroker_isPublishedOnFlux() {
-        var payload = """
-                {
-                  "version": "1.0",
-                  "registeredResource.mRID": {
-                    "value": "0fecab2b-1c5e-4595-8d41-427850719410",
-                    "codingScheme": "NAT"
-                  },
-                  "dateAndOrTime.dateTime": "2025-09-08T06:42:08Z",
-                  "Quantity": [
-                    {
-                      "quantity": 1130,
-                      "type": "0",
-                      "quality": "AS_PROVIDED"
-                    },
-                    {
-                      "quantity": 128,
-                      "type": "2",
-                      "quality": "AS_PROVIDED"
-                    }
-                  ]
-                }
-                """;
-
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
 
-            MqttMessage message = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
+            MqttMessage message = new MqttMessage(ShellyEMJsonTest.EM_PAYLOAD.getBytes(StandardCharsets.UTF_8));
 
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived(TOPIC, message))
                         .expectNextMatches(received -> received.aiidaRecordValues()
                                                                .stream()
-                                                               .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
-                                                                                                             .equals(POSITIVE_ACTIVE_ENERGY) && aiidaRecordValue.value()
-                                                                                                                                                                .equals("1130")))
+                                                               .anyMatch(aiidaRecordValue ->
+                                                                                 aiidaRecordValue.dataTag()
+                                                                                                 .equals(ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER) &&
+                                                                                 aiidaRecordValue.value()
+                                                                                                 .equals("-0.018017")
+                                                               ))
                         .then(adapter::close)
                         .expectComplete()
                         .log()

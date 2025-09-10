@@ -36,6 +36,7 @@ public class OesterreichsEnergieAdapterMeasurement extends SmartMeterAdapterMeas
             case AMPERE -> UnitOfMeasurement.AMPERE;
             case VOLT -> UnitOfMeasurement.VOLT;
             case VOLT_AMPERE, KILO_VOLT_AMPERE -> UnitOfMeasurement.VOLT_AMPERE;
+            case HERTZ -> UnitOfMeasurement.HERTZ;
             case NONE -> UnitOfMeasurement.NONE;
             case UNKNOWN -> UnitOfMeasurement.UNKNOWN;
         };
