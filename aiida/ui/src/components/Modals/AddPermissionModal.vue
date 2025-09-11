@@ -53,6 +53,7 @@ const parseAiidaCode = (aiidaCode: string) => {
 
 const executePermissionRequest = async (permissionRequest: AiidaPermissionRequest) => {
   try {
+    // delete permissionRequest.accessToken
     const permission = await addPermission(permissionRequest)
     fetchPermissions()
     updatePermission(permission)
@@ -65,6 +66,7 @@ const executePermissionRequest = async (permissionRequest: AiidaPermissionReques
 const handleAddPermission = async () => {
   try {
     const permissionRequest = parseAiidaCode(aiidaCode.value)
+    console.log(permissionRequest)
     executePermissionRequest(permissionRequest)
   } catch (error: any) {
     aiidaCodeError.value = error?.message ?? error?.toString() ?? 'An unknown error occurred.'
@@ -131,6 +133,6 @@ defineExpose({ showModal })
 .code-input {
   padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--eddie-grey-medium);
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
 }
 </style>

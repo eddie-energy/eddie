@@ -122,7 +122,7 @@ body {
 
 main {
   height: 100%;
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
   scrollbar-color: var(--eddie-primary) var(--light);
   display: flex;
   flex-direction: column;
@@ -133,7 +133,7 @@ main {
 
   @media screen and (min-width: 1024px) {
     padding: 2rem;
-    border-radius: 0.5rem;
+    border-radius: var(--border-radius);
     background-color: var(--main-bg-color);
   }
 }
@@ -143,12 +143,12 @@ main::-webkit-scrollbar {
 }
 
 main::-webkit-scrollbar-track {
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
   background: var(--light);
 }
 
 main::-webkit-scrollbar-thumb {
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
   color: var(--eddie-primary);
 }
 
@@ -179,7 +179,6 @@ select {
     font-weight 0.3s ease-in-out;
 
   &:after {
-    content: attr(data-text);
     content: attr(data-text) / '';
     height: 0;
     visibility: hidden;
@@ -187,7 +186,6 @@ select {
     user-select: none;
     pointer-events: none;
     font-weight: var(--font-weight-bold);
-
     @media speech {
       display: none;
     }
@@ -207,10 +205,10 @@ select {
     @media screen and (min-width: 1024px) {
       &:not(.not-selected) {
         background-color: unset;
+        font-weight: var(--font-weight-bold);
       }
 
       border-color: var(--eddie-primary);
-      font-weight: var(--font-weight-bold);
     }
   }
 }

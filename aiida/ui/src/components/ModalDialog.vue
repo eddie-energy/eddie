@@ -50,6 +50,7 @@ defineExpose({ showModal, close })
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--spacing-xxl);
+  gap: var(--spacing-md);
 }
 
 .close-button {

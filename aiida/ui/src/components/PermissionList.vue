@@ -137,6 +137,10 @@ const handleCategoryChange = (category: string) => {
         >
           {{ showMore ? 'Show Less Permissions' : 'Load More Permissions' }}
         </Button>
+        <p v-if="!slicedPermissions.length" class="no-permissions heading-5">
+          No {{ selectedTab }}
+          {{ selectedPermissionCategory === 'outbound-aiida' ? 'Outbound' : 'Inbound' }} Permissions
+        </p>
       </TransitionGroup>
     </div>
   </div>
@@ -166,12 +170,17 @@ const handleCategoryChange = (category: string) => {
   min-width: 1rem;
 }
 
+.no-permissions {
+  padding: var(--spacing-md);
+}
+
 .permission-list-wrapper {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xlg);
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
   margin-bottom: calc(var(--mobile-header-height) / 1.5);
+  background-color: var(--light);
 }
 
 .permission-tabs {
@@ -182,7 +191,7 @@ const handleCategoryChange = (category: string) => {
   height: fit-content;
   min-height: fit-content;
 
-  > * {
+  button {
     width: 100%;
     height: 100%;
     flex-direction: column;
@@ -192,6 +201,7 @@ const handleCategoryChange = (category: string) => {
     border: unset;
     border-bottom: 2px solid transparent;
     transition: border-color 0.3s ease-in-out;
+    gap: var(--spacing-sm);
 
     &:hover {
       background-color: var(--light);
@@ -211,6 +221,7 @@ const handleCategoryChange = (category: string) => {
   overflow-x: hidden;
   scrollbar-color: var(--eddie-primary) var(--light);
   scrollbar-gutter: stable;
+  padding: 0 var(--spacing-sm);
 }
 
 .show-more-button {
@@ -279,13 +290,14 @@ const handleCategoryChange = (category: string) => {
       background-color: var(--eddie-primary);
       color: var(--light);
     }
-    > * {
+    button {
       width: 100%;
       flex-direction: row;
       height: fit-content;
       border-radius: 2rem;
       border: 1px solid var(--eddie-primary);
       margin-bottom: var(--spacing-md);
+      gap: var(--spacing-md);
     }
   }
   .show-more-button {

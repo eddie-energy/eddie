@@ -39,7 +39,7 @@ import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
         <DataSourceIcon class="icon" />
         Data Sources
       </RouterLink>
-      <RouterLink to="/account" data-text="Account" class="link-with-bold-hover nav-link">
+      <RouterLink to="/account" data-text="Accountaaa" class="link-with-bold-hover nav-link">
         <span class="user-profile-link"> <AccountIcon /> Account</span>
       </RouterLink>
     </nav>
@@ -80,7 +80,6 @@ import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-
   height: 100%;
 }
 
