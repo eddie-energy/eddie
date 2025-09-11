@@ -9,13 +9,19 @@ import ActiveIcon from '@/assets/icons/ActiveIcon.svg'
 import PendingIcon from '@/assets/icons/PendingIcon.svg'
 import PermissionDropdown from './PermissionDropdown.vue'
 import UpdatePermissionModal from './Modals/UpdatePermissionModal.vue'
+import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
+import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
 
-const activePermissions = ref<AiidaPermission[]>(
-  permissions.value.filter((p) => STATUS[p.status].isActive),
-)
 const selectedTab = ref<PermissionTypes>('Active')
 const showMore = ref(false)
 const scrollTarget = ref()
+const activePermissionCategory = ref<AiidaPermission[]>(
+  permissions.value.filter((p) => p.dataNeed.type === selectedPermissionCategory.value),
+)
+
+const activePermissions = ref<AiidaPermission[]>(
+  activePermissionCategory.value.filter((p) => STATUS[p.status].isActive),
+)
 
 onMounted(async () => {
   await fetchPermissions()
@@ -37,13 +43,18 @@ const tabs = [
 ]
 const initialPermissionsCount = 6
 
-watch([selectedTab, permissions], () => {
+watch([selectedTab, permissions, selectedPermissionCategory], () => {
+  activePermissionCategory.value = permissions.value.filter(
+    (p) => p.dataNeed.type === selectedPermissionCategory.value,
+  )
   if (selectedTab.value === 'Active') {
-    activePermissions.value = permissions.value.filter((p) => STATUS[p.status].isActive)
+    activePermissions.value = activePermissionCategory.value.filter(
+      (p) => STATUS[p.status].isActive,
+    )
   } else if (selectedTab.value === 'Pending') {
-    activePermissions.value = permissions.value.filter((p) => STATUS[p.status].isOpen)
+    activePermissions.value = activePermissionCategory.value.filter((p) => STATUS[p.status].isOpen)
   } else {
-    activePermissions.value = permissions.value.filter(
+    activePermissions.value = activePermissionCategory.value.filter(
       (p) => !STATUS[p.status].isOpen && !STATUS[p.status].isActive,
     )
   }
@@ -74,38 +85,60 @@ const handleShowMore = () => {
     })
   }
 }
+
+const handleCategoryChange = (category: string) => {
+  selectedPermissionCategory.value = category
+}
 </script>
 
 <template>
-  <div class="permission-list-wrapper">
+  <div>
     <UpdatePermissionModal @update="refetchPermissions" />
-    <div class="permission-tabs">
-      <Button
-        v-for="tab in tabs"
-        button-style="secondary"
-        :key="tab.name"
-        @click="handleTabClick(tab.name as 'Active' | 'Pending' | 'Complete')"
-        :class="{ active: selectedTab === tab.name }"
+    <div class="category-tabs">
+      <button
+        @click="handleCategoryChange('outbound-aiida')"
+        class="text-normal"
+        :class="{ 'active-category': selectedPermissionCategory === 'outbound-aiida' }"
       >
-        <component :is="tab.icon" class="icon" /> {{ tab.name }}
-      </Button>
+        <PermissionsNavIcon class="rotate" /> Outbound Permissions
+      </button>
+      <button
+        @click="handleCategoryChange('inbound-aiida')"
+        :class="{ 'active-category': selectedPermissionCategory === 'inbound-aiida' }"
+        class="text-normal"
+      >
+        <PermissionsNavIcon /> Inbound Permissions
+      </button>
     </div>
-    <TransitionGroup tag="ul" name="permissions" class="permission-list" ref="scrollTarget">
-      <PermissionDropdown
-        v-for="permission in slicedPermissions"
-        :key="permission.permissionId"
-        :permission
-        :status="selectedTab"
-      />
-      <Button
-        v-if="activePermissions.length > initialPermissionsCount"
-        button-style="secondary"
-        @click="handleShowMore"
-        class="show-more-button"
-      >
-        {{ showMore ? 'Show Less Permissions' : 'Load More Permissions' }}
-      </Button>
-    </TransitionGroup>
+    <div class="permission-list-wrapper">
+      <div class="permission-tabs">
+        <Button
+          v-for="tab in tabs"
+          button-style="secondary"
+          :key="tab.name"
+          @click="handleTabClick(tab.name as 'Active' | 'Pending' | 'Complete')"
+          :class="{ active: selectedTab === tab.name }"
+        >
+          <component :is="tab.icon" class="icon" /> {{ tab.name }}
+        </Button>
+      </div>
+      <TransitionGroup tag="ul" name="permissions" class="permission-list" ref="scrollTarget">
+        <PermissionDropdown
+          v-for="permission in slicedPermissions"
+          :key="permission.permissionId"
+          :permission
+          :status="selectedTab"
+        />
+        <Button
+          v-if="activePermissions.length > initialPermissionsCount"
+          button-style="secondary"
+          @click="handleShowMore"
+          class="show-more-button"
+        >
+          {{ showMore ? 'Show Less Permissions' : 'Load More Permissions' }}
+        </Button>
+      </TransitionGroup>
+    </div>
   </div>
 </template>
 
@@ -137,7 +170,6 @@ const handleShowMore = () => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xlg);
-  background-color: var(--light);
   border-radius: 0.5rem;
   margin-bottom: calc(var(--mobile-header-height) / 1.5);
 }
@@ -152,7 +184,7 @@ const handleShowMore = () => {
 
   > * {
     width: 100%;
-
+    height: 100%;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -179,7 +211,6 @@ const handleShowMore = () => {
   overflow-x: hidden;
   scrollbar-color: var(--eddie-primary) var(--light);
   scrollbar-gutter: stable;
-  padding: var(--spacing-md) 0.75rem;
 }
 
 .show-more-button {
@@ -189,14 +220,57 @@ const handleShowMore = () => {
   justify-self: end;
 }
 
+.category-tabs {
+  display: none;
+}
+
+.rotate {
+  transform: rotate(180deg);
+}
+
 @media screen and (min-width: 1024px) {
-  .permission-list-wrapper {
+  .category-tabs {
     display: grid;
-    background-color: transparent;
+    grid-template-columns: 1fr 1fr;
+    grid-column: span 2;
+    background: #017aa026;
+
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      text-align: left;
+      color: var(--eddie-primary);
+      cursor: pointer;
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
+      padding: var(--spacing-lg) var(--spacing-xxl);
+      border: 1px solid transparent;
+      border-bottom: 1px solid var(--eddie-primary);
+      transition:
+        background-color 0.3s ease-in-out,
+        border-color 0.3s ease-in-out;
+
+      &.active-category {
+        border: 1px solid var(--eddie-primary);
+        border-bottom-color: transparent;
+        background-color: var(--light);
+      }
+    }
+  }
+  .permission-list-wrapper {
+    padding: var(--spacing-lg) var(--spacing-xxl);
+    display: grid;
+    background-color: var(--light);
+    border: 1px solid var(--eddie-primary);
+    border-top: none;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
     grid-template-columns: 1fr 6fr;
+    grid-template-rows: min-content;
   }
   .permission-list {
-    padding: unset;
+    padding: var(--spacing-md) 0.75rem;
   }
   .permission-tabs {
     display: block;

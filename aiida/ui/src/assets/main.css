@@ -199,11 +199,16 @@ select {
   }
 
   &.router-link-active {
-    background-color: var(--light);
-    color: var(--eddie-primary);
+    &:not(.not-selected) {
+      background-color: var(--light);
+      color: var(--eddie-primary);
+    }
 
     @media screen and (min-width: 1024px) {
-      background-color: unset;
+      &:not(.not-selected) {
+        background-color: unset;
+      }
+
       border-color: var(--eddie-primary);
       font-weight: var(--font-weight-bold);
     }
