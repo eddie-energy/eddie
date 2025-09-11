@@ -17,7 +17,7 @@ const isOpen = ref(false)
 
 <template>
   <li class="permission" :class="{ 'is-open': isOpen }">
-    <div class="permission-header">
+    <header class="permission-header" @click="isOpen = !isOpen">
       <div class="icon-wrapper">
         <PermissionsNavIcon class="icon" />
       </div>
@@ -36,10 +36,10 @@ const isOpen = ref(false)
       <StatusTag :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'" minimal-on-mobile>
         {{ STATUS[permission.status].title }}
       </StatusTag>
-      <button class="chevron" @click="isOpen = !isOpen">
+      <button class="chevron" aria-label="Open Permission Details">
         <ChevronDownIcon />
       </button>
-    </div>
+    </header>
     <Transition name="details">
       <PermissionDetails v-if="isOpen" class="permission-details" :permission :status />
     </Transition>
@@ -60,7 +60,7 @@ const isOpen = ref(false)
     }
     .permission-header {
       margin-bottom: var(--spacing-lg);
-      & > :not(button, h2, svg) {
+      & > :not(button, h2, .icon-wrapper) {
         opacity: 0;
         visibility: hidden;
       }

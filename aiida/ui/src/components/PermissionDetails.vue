@@ -6,6 +6,10 @@ import cronstrue from 'cronstrue'
 import Button from '@/components/Button.vue'
 import RevokeIcon from '@/assets/icons/RevokeIcon.svg'
 import { usePermissionDialog } from '@/composables/permission-dialog'
+import { useConfirmDialog } from '@/composables/confirm-dialog'
+import { revokePermission } from '@/api'
+import { fetchPermissions } from '@/stores/permissions'
+const { confirm } = useConfirmDialog()
 
 const { permission, status } = defineProps<{
   permission: AiidaPermission
@@ -23,8 +27,17 @@ const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
   second: '2-digit',
 })
 
-const revokePermission = () => {
-  console.log('revoke')
+const handleRevoke = async () => {
+  if (
+    await confirm(
+      'Revoke Permission',
+      'Are you sure you want to revoke this permission? This action cannot be undone.',
+      'Revoke',
+    )
+  ) {
+    const promise = revokePermission(permission.permissionId)
+    promise.then(() => fetchPermissions())
+  }
 }
 </script>
 
@@ -113,7 +126,7 @@ const revokePermission = () => {
         button-style="error"
         class="update-button"
         v-if="status === 'Active'"
-        @click="revokePermission"
+        @click="handleRevoke"
       >
         <RevokeIcon /> Revoke
       </Button>

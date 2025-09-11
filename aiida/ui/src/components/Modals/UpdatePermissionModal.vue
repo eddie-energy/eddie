@@ -44,24 +44,29 @@ const handleModalClose = () => {
 
 <template>
   <ModalDialog title="Add new Permission" ref="modal" @close="handleModalClose">
-    <PermissionDetails v-if="permission" :permission />
-    <form class="form">
-      <label class="heading-3" for="datasourceSelect">Assign Datasource</label>
-      <select v-model="selectedDataSource" id="datasourceSelect">
-        <option v-for="datasource in dataSources" :key="datasource.id" :value="datasource.id">
-          {{ datasource.name }} {{ datasource.id }}
-        </option>
-      </select>
-    </form>
-    <p v-if="loading">Loading...</p>
-    <div v-if="!loading" class="two-item-pair">
-      <Button button-style="error-secondary" @click="handleInput(false)">Reject</Button>
-      <Button @click="handleInput(true)">Accept</Button>
+    <div :class="{ 'is-loading': loading }">
+      <PermissionDetails v-if="permission" :permission />
+      <form class="form">
+        <label class="heading-3" for="datasourceSelect">Assign Datasource</label>
+        <select v-model="selectedDataSource" id="datasourceSelect">
+          <option v-for="datasource in dataSources" :key="datasource.id" :value="datasource.id">
+            {{ datasource.name }} {{ datasource.id }}
+          </option>
+        </select>
+      </form>
+      <div class="two-item-pair">
+        <Button button-style="error-secondary" @click="handleInput(false)">Reject</Button>
+        <Button @click="handleInput(true)">Accept</Button>
+      </div>
     </div>
+    <div v-if="loading" class="loading-indicator"></div>
   </ModalDialog>
 </template>
 
 <style scoped>
+.is-loading {
+  opacity: 0;
+}
 .form {
   display: flex;
   flex-direction: column;

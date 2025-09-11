@@ -22,7 +22,7 @@ onMounted(() => {
 
 <template>
   <ModalDialog :title="titleRef" ref="modal" @close="onCancel">
-    <p class="description">
+    <p class="description text-normal">
       {{ descriptionRef }}
     </p>
     <div class="button-pair">

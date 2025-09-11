@@ -25,6 +25,8 @@ export type AiidaModbusSettings = {
   modbusDevice: string
 }
 
+export type AiidaDataSourceIcon = 'ELECTRICITY' | 'HEAT' | 'METER' | 'WATER' | ''
+
 export type AiidaDataSource = {
   id: string
   dataSourceType: string
@@ -32,7 +34,7 @@ export type AiidaDataSource = {
   name: string
   countryCode: string
   enabled: boolean
-  icon: string
+  icon: AiidaDataSourceIcon
   simulationPeriod?: number
   mqttSettings?: AiidaMqttSettings
   modbusSettings?: AiidaModbusSettings
@@ -48,10 +50,10 @@ export type AiidaPermission = {
   grantTime?: string
   dataNeed: AiidaDataNeed
   dataSource?: AiidaDataSource
-  userId: string,
+  userId: string
   unimplemented: {
-    packageGraph: any,
-    targetIP: any,
+    packageGraph: any
+    targetIP: any
     lastPackageSent: any
   }
 }

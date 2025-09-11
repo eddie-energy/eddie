@@ -15,7 +15,6 @@ keycloak
   })
   .then((authenticated) => {
     if (authenticated) {
-      console.log('User is authenticated')
       createApp(App).use(router).mount('#app')
     } else {
       console.error('User is not authenticated')

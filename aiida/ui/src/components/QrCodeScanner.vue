@@ -83,26 +83,10 @@ const onDetect = async (detectedCodes: DetectedBarcode[]) => {
 .error {
   max-width: 80%;
 }
+
 .qr-scanner-wrapper {
   margin-bottom: var(--spacing-xxl);
   z-index: 1;
-}
-.loading-indicator {
-  position: absolute;
-  z-index: -1;
-  height: 4rem;
-  width: 4rem;
-  animation: spin 1s linear infinite;
-  border-bottom: solid 2px var(--eddie-primary);
-  border-radius: 9999px;
-  left: calc(50% - 2rem);
-  top: calc(50% - 2rem);
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .invalid {

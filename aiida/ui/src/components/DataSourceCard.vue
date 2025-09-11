@@ -4,13 +4,22 @@ import Button from '@/components/Button.vue'
 import TrashIcon from '@/assets/icons/TrashIcon.svg'
 import PenIcon from '@/assets/icons/PenIcon.svg'
 import DataSourceIcon from '@/components/DataSourceIcon.vue'
+import StatusDotIcon from '@/assets/icons/StatusDotIcon.svg'
+import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
+import { computed, ref } from 'vue'
+import type { AiidaDataSource } from '@/types'
+import { dataSourceImages } from '@/stores/dataSources'
 
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
-/** @type {{ dataSource: AiidaDataSource }} */
-const { dataSource } = defineProps(['dataSource'])
-
-const emit = defineEmits(['edit', 'delete', 'reset'])
+const { dataSource, startOpen } = defineProps<{
+  dataSource: AiidaDataSource
+  startOpen?: boolean
+}>()
+const isOpen = ref(startOpen)
+const emit = defineEmits(['edit', 'delete', 'reset', 'enableToggle'])
+//TODO see #GH-1957
+const mqttCertificate = false
 
 const {
   countryCode,
@@ -21,19 +30,26 @@ const {
   mqttSettings,
   name,
   simulationPeriod,
-  icon = 'electricity',
+  icon,
 } = dataSource
+
+const image = computed(() => dataSourceImages.value[dataSource.id])
 </script>
 
 <template>
-  <article class="card">
-    <header class="header">
+  <article class="card" :class="{ 'is-open': isOpen }">
+    <header class="header" @click="isOpen = !isOpen">
       <DataSourceIcon :icon />
       <h2 class="heading-4 headline">{{ name }}</h2>
-      <span class="text-xsmall">{{ dataSourceType }}</span>
+      <span class="text-xsmall data-source-type">{{ dataSourceType }}</span>
+      <button class="chevron" aria-label="Open Data Source Card">
+        <ChevronDownIcon />
+      </button>
     </header>
 
-    <dl class="fields">
+    <img v-if="image" :src="image" alt="image for data source" role="presentation" class="image" />
+
+    <dl class="fields" :class="{ 'with-image': image }">
       <div>
         <dt>ID</dt>
         <dd>{{ id }}</dd>
@@ -82,7 +98,7 @@ const {
             <Button button-style="secondary" @click="emit('reset')">Reset password</Button>
           </dd>
         </div>
-        <div class="button-field">
+        <div class="button-field" v-if="mqttCertificate">
           <dt>MQTT Certificate</dt>
           <dd>
             <Button
@@ -97,9 +113,16 @@ const {
         </div>
       </template>
 
-      <div>
+      <div class="toggle-field">
         <dt>Enabled</dt>
-        <dd>{{ enabled }}</dd>
+        <button
+          class="toggle-button"
+          :class="{ enabled: enabled }"
+          @click="emit('enableToggle')"
+          :aria-label="`${enabled ? 'Disable' : 'Enable'} Data Source`"
+        >
+          <StatusDotIcon class="toggle-icon" />
+        </button>
       </div>
     </dl>
 
@@ -116,53 +139,229 @@ const {
   flex-direction: column;
   border: 1px solid var(--eddie-primary);
   border-radius: var(--border-radius);
-  padding: var(--spacing-lg);
-  background: var(--light);
+  padding: var(--spacing-md);
+  gap: var(--spacing-md);
+  background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.9) 100%);
+
+  &.is-open {
+    .fields {
+      display: grid;
+    }
+    .actions {
+      display: flex;
+    }
+    .image {
+      display: block;
+    }
+    .chevron {
+      transform: rotate(180deg);
+    }
+  }
 }
 
 .headline {
-  word-break: break-word;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.data-source-type {
+  display: none;
+}
+
+.image {
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--border-radius);
 }
 
 .fields {
   display: grid;
   gap: var(--spacing-sm);
   color: var(--eddie-grey-medium);
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  dd {
+    font-weight: 600;
+    line-height: 1;
+    color: var(--eddie-grey-medium);
+  }
+  > div:not(.button-field),
+  > .button-field > dt {
+    background-color: var(--light);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--eddie-grey-light);
+    border-radius: var(--border-radius);
+  }
 }
 
-.fields > div {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--spacing-md);
-}
+div.button-field {
+  dt {
+    width: 100%;
+  }
 
-.fields dd {
-  text-align: right;
-}
-
-.fields > div:not(.button-field),
-.fields > .button-field > dt {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border: 1px solid var(--eddie-grey-light);
-  border-radius: var(--border-radius);
+  dd,
+  button {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .header {
   display: grid;
+  align-items: center;
   grid-template-columns: auto 1fr auto;
   gap: var(--spacing-md);
-  align-items: end;
   color: var(--eddie-primary);
-  margin-bottom: var(--spacing-md);
+  cursor: pointer;
   font-weight: 600;
+}
+
+.chevron {
+  cursor: pointer;
+  justify-self: end;
+  margin-left: auto;
+  padding: 0.5rem;
+  transition: transform 0.3s ease-in-out;
+}
+
+div.toggle-field {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 1fr auto;
+}
+
+.toggle-icon {
+  position: absolute;
+  margin: 2px 4.5px;
+  top: 0;
+  left: 0;
+  transition:
+    transform 0.3s ease-in-out,
+    color 0.3s ease-in-out;
+}
+
+.toggle-button {
+  position: relative;
+  cursor: pointer;
+  width: 2rem;
+  height: 1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--eddie-primary);
+  background-color: var(--light);
+  color: var(--eddie-primary);
+  transition: background-color 0.3s ease-in-out;
+
+  &:hover {
+    .toggle-icon {
+      transform: translateX(13px);
+    }
+  }
+
+  &.enabled {
+    background-color: var(--eddie-primary);
+    color: var(--light);
+    .toggle-icon {
+      transform: translateX(13px);
+    }
+
+    &:hover {
+      background-color: var(--light);
+      color: var(--eddie-primary);
+      .toggle-icon {
+        transform: translateX(0);
+      }
+    }
+  }
 }
 
 .actions {
   flex-grow: 1;
-  display: flex;
+  flex-direction: column;
   justify-content: space-between;
   align-items: end;
   gap: var(--spacing-md);
-  margin-top: 0.75rem;
+
+  button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.image,
+.fields,
+.actions {
+  display: none;
+}
+
+@media screen and (min-width: 640px) {
+  div.button-field {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    dd,
+    button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .actions {
+    display: flex;
+    flex-direction: row;
+    grid-column: span 2;
+
+    button {
+      width: fit-content;
+      justify-content: flex-start;
+    }
+  }
+
+  .card {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    grid-template-rows: max-content;
+    background-color: var(--light);
+    padding: var(--spacing-xlg);
+  }
+  .header {
+    grid-column: span 2;
+  }
+  .fields {
+    display: grid;
+    grid-column: span 2;
+  }
+  .with-image {
+    grid-column: span 1;
+  }
+  .image {
+    display: block;
+  }
+  .chevron {
+    display: none;
+  }
+  .data-source-type {
+    display: inline;
+  }
+}
+
+@media screen and (min-width: 1620px) {
+  .fields {
+    > div {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--spacing-md);
+      align-items: center;
+    }
+    dd {
+      text-align: right;
+    }
+  }
 }
 </style>

@@ -13,11 +13,12 @@
   },
   "dependencies": {
     "@fontsource/poppins": "^5.1.1",
+    "@vueuse/core": "^13.9.0",
     "cronstrue": "^2.51.0",
     "keycloak-js": "^26.2.0",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0",
-    "vue-qrcode-reader": "^5.7.3"
+    "vue-qrcode-reader": "^5.7.3",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
