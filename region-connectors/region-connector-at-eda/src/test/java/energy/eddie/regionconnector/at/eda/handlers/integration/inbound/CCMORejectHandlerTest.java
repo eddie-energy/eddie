@@ -33,7 +33,8 @@ import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CCMORejectHandlerTest {
@@ -111,24 +112,12 @@ class CCMORejectHandlerTest {
     }
 
     private static AtPermissionRequestProjection projection(AllowedGranularity allowedGranularity) {
-        AtPermissionRequestProjection p = mock(AtPermissionRequestProjection.class);
-
-        when(p.getPermissionId()).thenReturn("pid");
-        when(p.getConnectionId()).thenReturn("connectionId");
-        when(p.getCmRequestId()).thenReturn("cmRequestId");
-        when(p.getConversationId()).thenReturn("conversationId");
-        when(p.getPermissionStart()).thenReturn(LocalDate.now());
-        when(p.getPermissionEnd()).thenReturn(LocalDate.now());
-        when(p.getDataNeedId()).thenReturn("dnid");
-        when(p.getDsoId()).thenReturn("dsoId");
-        when(p.getMeteringPointId()).thenReturn("meteringPointId");
-        when(p.getConsentId()).thenReturn("consentId");
-        when(p.getMessage()).thenReturn("message");
-        when(p.getGranularity()).thenReturn(allowedGranularity.name());
-        when(p.getStatus()).thenReturn(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR.name());
-        when(p.getCreated()).thenReturn(Instant.now());
-
-        return p;
+        return new AtPermissionRequestProjectionTest(
+                "pid", "connectionId", "cmRequestId", "conversationId",
+                LocalDate.now(), LocalDate.now(), "dnid", "dsoId", "meteringPointId",
+                "consentId", "message",
+                allowedGranularity.name(),PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR.name(), Instant.now()
+        );
     }
 
     @Test

@@ -46,10 +46,12 @@ public class CCMORejectHandler {
         var permissionRequests = repository.findByConversationIdOrCMRequestId(
                 cmRequestStatus.conversationId(),
                 cmRequestStatus.cmRequestId()
-        ).stream().map(EdaPermissionRequest::fromProjection).toList();
-
-        for (var permissionRequest : permissionRequests) {
-            handlePermissionRequestReject(cmRequestStatus, permissionRequest);
+        );
+        for (var projection : permissionRequests) {
+            handlePermissionRequestReject(
+                    cmRequestStatus,
+                    EdaPermissionRequest.fromProjection(projection)
+            );
         }
     }
 

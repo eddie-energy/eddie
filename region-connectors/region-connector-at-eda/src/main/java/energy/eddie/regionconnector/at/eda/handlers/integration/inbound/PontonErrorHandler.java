@@ -23,9 +23,13 @@ public class PontonErrorHandler {
     public void handlePontonError(CMRequestStatus cmRequestStatus) {
         // If the DSO does not exist EDA will respond with an error without sending a received-message.
         // In that case the error message is an implicit received-message.
-        for (var request : repository.findByConversationIdOrCMRequestId(
-                cmRequestStatus.conversationId(),
-                cmRequestStatus.cmRequestId()).stream().map(EdaPermissionRequest::fromProjection).toList()) {
+        for (var request : repository
+                .findByConversationIdOrCMRequestId(
+                    cmRequestStatus.conversationId(),
+                    cmRequestStatus.cmRequestId())
+                .stream()
+                .map(EdaPermissionRequest::fromProjection)
+                .toList()) {
             if (request.status() == PermissionProcessStatus.VALIDATED) {
                 outbox.commit(
                         new EdaAnswerEvent(request.permissionId(),

@@ -41,9 +41,13 @@ public class CCMSHandler {
      * occurs we have a bug in our system.
      */
     public void handleCCMSReject(CMRequestStatus cmRequestStatus) {
-        for (var permissionRequest : repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
-                                                                                                  cmRequestStatus.cmRequestId())
-                                               .stream().map(EdaPermissionRequest::fromProjection).toList()) {
+        for (var permissionRequest : repository
+                .findByConversationIdOrCMRequestId(
+                        cmRequestStatus.conversationId(),
+                        cmRequestStatus.cmRequestId())
+                .stream()
+                .map(EdaPermissionRequest::fromProjection)
+                .toList()) {
             // the cmRequestId is not necessarily unique, only process marked permission requests
             if (permissionRequest.status() != PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION) {
                 continue;
@@ -71,9 +75,13 @@ public class CCMSHandler {
     }
 
     public void handleCCMSAnswer(CMRequestStatus cmRequestStatus) {
-        for (var permissionRequest : repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
-                                                                                                  cmRequestStatus.cmRequestId())
-                .stream().map(EdaPermissionRequest::fromProjection).toList()) {
+        for (var permissionRequest : repository
+                .findByConversationIdOrCMRequestId(
+                        cmRequestStatus.conversationId(),
+                        cmRequestStatus.cmRequestId())
+                .stream()
+                .map(EdaPermissionRequest::fromProjection)
+                .toList()) {
             // the cmRequestId is not necessarily unique, only process permission requests that have been marked for external termination
             if (permissionRequest.status() == PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION) {
                 outbox.commit(

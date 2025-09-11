@@ -91,25 +91,12 @@ class CCMSHandlerTest {
         assertEquals(status, edaAnswerEventCaptor.getValue().status());
     }
 
-    private static AtPermissionRequestProjection projection(PermissionProcessStatus permissionProcessStatus) {
-        AtPermissionRequestProjection p = mock(AtPermissionRequestProjection.class);
-
-        when(p.getPermissionId()).thenReturn("pid");
-        when(p.getConnectionId()).thenReturn("connectionId");
-        when(p.getCmRequestId()).thenReturn("cmRequestId");
-        when(p.getConversationId()).thenReturn("conversationId");
-        when(p.getPermissionStart()).thenReturn(LocalDate.now());
-        when(p.getPermissionEnd()).thenReturn(LocalDate.now());
-        when(p.getDataNeedId()).thenReturn("dnid");
-        when(p.getDsoId()).thenReturn("dsoId");
-        when(p.getMeteringPointId()).thenReturn("meteringPointId");
-        when(p.getConsentId()).thenReturn("consentId");
-        when(p.getMessage()).thenReturn("message");
-        when(p.getGranularity()).thenReturn(AllowedGranularity.PT15M.name());
-        when(p.getStatus()).thenReturn(permissionProcessStatus.name());
-        when(p.getCreated()).thenReturn(Instant.now());
-
-        return p;
+    private static AtPermissionRequestProjection projection(PermissionProcessStatus s) {
+        return new AtPermissionRequestProjectionTest(
+                "pid", "connectionId", "cmRequestId", "conversationId",
+                LocalDate.now(), LocalDate.now(), "dnid", "dsoId", "meteringPointId", "consentId", "message",
+                AllowedGranularity.PT15M.name(), s.name(), Instant.now()
+        );
     }
 
     private static CMRequestStatus cmRequestStatus(
