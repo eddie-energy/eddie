@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class ShellyEMJsonTest {
+public class ShellyJsonTest {
     public static final String EM_PAYLOAD = """
             {
               "src": "shellypro3em-8813bfe14804",
@@ -83,8 +83,8 @@ public class ShellyEMJsonTest {
     void deserialize_returnsEMJson() throws JsonProcessingException {
         var objectMapper = new AiidaConfiguration().customObjectMapper().build();
 
-        var json = objectMapper.readValue(EM_PAYLOAD, ShellyEMJson.class);
-        var component = json.params().em().get(ShellyEMComponent.EM);
+        var json = objectMapper.readValue(EM_PAYLOAD, ShellyJson.class);
+        var component = json.params().em().get(ShellyComponent.EM);
 
         assertNotNull(component);
         assertEquals("shellypro3em-8813bfe14804", json.source());
@@ -99,8 +99,8 @@ public class ShellyEMJsonTest {
     void deserialize_returnsEMDataJson() throws JsonProcessingException {
         var objectMapper = new AiidaConfiguration().customObjectMapper().build();
 
-        var json = objectMapper.readValue(EM_DATA_PAYLOAD, ShellyEMJson.class);
-        var component = json.params().em().get(ShellyEMComponent.EM_DATA);
+        var json = objectMapper.readValue(EM_DATA_PAYLOAD, ShellyJson.class);
+        var component = json.params().em().get(ShellyComponent.EM_DATA);
 
         assertNotNull(component);
         assertEquals("shellypro3em-8813bfe14804", json.source());
@@ -115,7 +115,7 @@ public class ShellyEMJsonTest {
     void deserialize_returnsJsonWithoutData_whenUnknownComponent() throws JsonProcessingException {
         var objectMapper = new AiidaConfiguration().customObjectMapper().build();
 
-        var json = objectMapper.readValue(UNKNOWN_COMPONENT_PAYLOAD, ShellyEMJson.class);
+        var json = objectMapper.readValue(UNKNOWN_COMPONENT_PAYLOAD, ShellyJson.class);
 
         assertNotNull(json);
         assertEquals("shellypro3em-8813bfe14804", json.source());
@@ -130,6 +130,6 @@ public class ShellyEMJsonTest {
         var objectMapper = new AiidaConfiguration().customObjectMapper().build();
         var invalidJson = "{ \"foo\": \"bar\" }";
 
-        assertThrows(JsonProcessingException.class, () -> objectMapper.readValue(invalidJson, ShellyEMJson.class));
+        assertThrows(JsonProcessingException.class, () -> objectMapper.readValue(invalidJson, ShellyJson.class));
     }
 }

@@ -3,11 +3,11 @@ package energy.eddie.aiida.adapters.datasource.shelly;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
-import energy.eddie.aiida.adapters.datasource.shelly.transformer.ShellyEMComponent;
-import energy.eddie.aiida.adapters.datasource.shelly.transformer.ShellyEMJson;
-import energy.eddie.aiida.adapters.datasource.shelly.transformer.ShellyEMMeasurement;
+import energy.eddie.aiida.adapters.datasource.shelly.transformer.ShellyComponent;
+import energy.eddie.aiida.adapters.datasource.shelly.transformer.ShellyJson;
+import energy.eddie.aiida.adapters.datasource.shelly.transformer.ShellyMeasurement;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyEMDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
@@ -18,12 +18,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class ShellyEMAdapter extends MqttDataSourceAdapter<ShellyEMDataSource> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ShellyEMAdapter.class);
+public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShellyAdapter.class);
     private final ObjectMapper mapper;
 
     /**
-     * Creates the datasource for the Shelly EM (energy meter) devices. It connects to the specified MQTT broker and expects
+     * Creates the datasource for the Shelly (energy meter) devices. It connects to the specified MQTT broker and expects
      * that the adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be
      * assigned a Unix timestamp of 0.
      *
@@ -31,8 +31,8 @@ public class ShellyEMAdapter extends MqttDataSourceAdapter<ShellyEMDataSource> {
      * @param mapper            {@link ObjectMapper} that is used to deserialize the JSON messages.
      * @param mqttConfiguration The MQTT configuration that is used to connect to the MQTT broker.
      */
-    public ShellyEMAdapter(
-            ShellyEMDataSource dataSource,
+    public ShellyAdapter(
+            ShellyDataSource dataSource,
             ObjectMapper mapper,
             MqttConfiguration mqttConfiguration
     ) {
@@ -53,7 +53,7 @@ public class ShellyEMAdapter extends MqttDataSourceAdapter<ShellyEMDataSource> {
 
         var payload = new String(message.getPayload(), StandardCharsets.UTF_8).trim();
         try {
-            var json = mapper.readValue(payload, ShellyEMJson.class);
+            var json = mapper.readValue(payload, ShellyJson.class);
 
             var aiidaRecordValues = json.params().em()
                                         .entrySet()
@@ -68,13 +68,13 @@ public class ShellyEMAdapter extends MqttDataSourceAdapter<ShellyEMDataSource> {
         }
     }
 
-    private Stream<ShellyEMMeasurement> componentEntryToMeasurement(
-            Map.Entry<ShellyEMComponent, Map<String, Number>> componentEntry
+    private Stream<ShellyMeasurement> componentEntryToMeasurement(
+            Map.Entry<ShellyComponent, Map<String, Number>> componentEntry
     ) {
         return componentEntry.getValue()
                              .entrySet()
                              .stream()
-                             .map(entry -> new ShellyEMMeasurement(
+                             .map(entry -> new ShellyMeasurement(
                                           componentEntry.getKey(),
                                           entry.getKey(),
                                           String.valueOf(entry.getValue())

@@ -5,7 +5,7 @@ import energy.eddie.aiida.utils.ObisCode;
 
 import java.util.stream.Stream;
 
-public enum ShellyEMEntry {
+public enum ShellyEntry {
     TOTAL_ACTIVE_ENERGY(
             "total_act_energy",
             ObisCode.POSITIVE_ACTIVE_ENERGY,
@@ -91,7 +91,7 @@ public enum ShellyEMEntry {
     private final ObisCode obisCodePhaseL3;
     private final UnitOfMeasurement rawUnitOfMeasurement;
 
-    ShellyEMEntry(
+    ShellyEntry(
             String entrySuffix,
             ObisCode obisCodeTotal,
             ObisCode obisCodeNetral,
@@ -109,7 +109,7 @@ public enum ShellyEMEntry {
         this.rawUnitOfMeasurement = rawUnitOfMeasurement;
     }
 
-    ShellyEMEntry(
+    ShellyEntry(
             String entrySuffix,
             ObisCode obisCodeTotal,
             ObisCode obisCodePhaseL1,
@@ -126,18 +126,18 @@ public enum ShellyEMEntry {
              rawUnitOfMeasurement);
     }
 
-    ShellyEMEntry(String entrySuffix, ObisCode obisCode, UnitOfMeasurement rawUnitOfMeasurement) {
+    ShellyEntry(String entrySuffix, ObisCode obisCode, UnitOfMeasurement rawUnitOfMeasurement) {
         this(entrySuffix, obisCode, obisCode, obisCode, obisCode, obisCode, rawUnitOfMeasurement);
     }
 
-    public static ShellyEMEntry fromKey(String key) {
-        return Stream.of(ShellyEMEntry.values())
+    public static ShellyEntry fromKey(String key) {
+        return Stream.of(ShellyEntry.values())
                      .filter(entry -> key.endsWith(entry.entrySuffix))
                      .findFirst()
-                     .orElse(ShellyEMEntry.UNKNOWN);
+                     .orElse(ShellyEntry.UNKNOWN);
     }
 
-    public ObisCode obisCodeForPhase(ShellyEMPhase phase) {
+    public ObisCode obisCodeForPhase(ShellyPhase phase) {
         return switch (phase) {
             case TOTAL -> obisCodeTotal;
             case NEUTRAL -> obisCodeNetral;

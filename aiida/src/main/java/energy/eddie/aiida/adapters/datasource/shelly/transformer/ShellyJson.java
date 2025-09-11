@@ -10,27 +10,27 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-public record ShellyEMJson(
+public record ShellyJson(
         @JsonProperty("src") String source,
         @JsonProperty("dst") String destination,
         @JsonProperty("method") String method,
         @JsonProperty("params") Params params
 ) {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ShellyEMJson.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShellyJson.class);
 
     public record Params(
             @JsonProperty("ts") Double timestamp,
-            @JsonIgnore EnumMap<ShellyEMComponent, Map<String, Number>> em
+            @JsonIgnore EnumMap<ShellyComponent, Map<String, Number>> em
     ) {
         public Params {
-            em = new EnumMap<>(ShellyEMComponent.class);
+            em = new EnumMap<>(ShellyComponent.class);
         }
 
         @JsonAnySetter
         void capture(String key, Object value) {
-            var component = ShellyEMComponent.fromKey(key);
+            var component = ShellyComponent.fromKey(key);
 
-            if(component == ShellyEMComponent.UNKNOWN) {
+            if(component == ShellyComponent.UNKNOWN) {
                 LOGGER.trace("Ignoring unknown component key: {}", key);
                 return;
             }

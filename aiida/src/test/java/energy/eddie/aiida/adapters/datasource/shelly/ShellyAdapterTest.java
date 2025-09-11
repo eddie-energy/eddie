@@ -1,14 +1,14 @@
 package energy.eddie.aiida.adapters.datasource.shelly;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
-import energy.eddie.aiida.adapters.datasource.shelly.transformer.ShellyEMJsonTest;
+import energy.eddie.aiida.adapters.datasource.shelly.transformer.ShellyJsonTest;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.DataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceMqttDto;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
-import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyEMDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.ObisCode;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -34,15 +34,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-class ShellyEMAdapterTest {
-    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(ShellyEMAdapter.class);
+class ShellyAdapterTest {
+    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(ShellyAdapter.class);
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final String TOPIC = "aiida/4211ea05-d4ab-48ff-8613-8f4791a56606/events/rpc";
-    private static final ShellyEMDataSource DATA_SOURCE = new ShellyEMDataSource(
+    private static final ShellyDataSource DATA_SOURCE = new ShellyDataSource(
             new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.SHELLY_EM,
+                              DataSourceType.SHELLY,
                               AiidaAsset.SUBMETER,
                               "shelly-test",
                               "AT",
@@ -58,7 +58,7 @@ class ShellyEMAdapterTest {
                                   "user",
                                   "password")
     );
-    private ShellyEMAdapter adapter;
+    private ShellyAdapter adapter;
 
     @BeforeEach
     void setUp() {
@@ -72,7 +72,7 @@ class ShellyEMAdapterTest {
                 "password",
                 ""
         );
-        adapter = new ShellyEMAdapter(DATA_SOURCE, mapper, mqttConfiguration);
+        adapter = new ShellyAdapter(DATA_SOURCE, mapper, mqttConfiguration);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 
@@ -133,7 +133,7 @@ class ShellyEMAdapterTest {
 
     @Test
     void verify_errorsDuringClose_areLogged() throws MqttException {
-        try (LogCaptor captor = LogCaptor.forClass(ShellyEMAdapter.class)) {
+        try (LogCaptor captor = LogCaptor.forClass(ShellyAdapter.class)) {
             try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
                 var mockClient = mock(MqttAsyncClient.class);
                 mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
@@ -183,7 +183,7 @@ class ShellyEMAdapterTest {
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
 
-            MqttMessage message = new MqttMessage(ShellyEMJsonTest.EM_PAYLOAD.getBytes(StandardCharsets.UTF_8));
+            MqttMessage message = new MqttMessage(ShellyJsonTest.EM_PAYLOAD.getBytes(StandardCharsets.UTF_8));
 
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message

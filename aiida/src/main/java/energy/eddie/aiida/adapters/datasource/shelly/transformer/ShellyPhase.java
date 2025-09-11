@@ -2,7 +2,7 @@ package energy.eddie.aiida.adapters.datasource.shelly.transformer;
 
 import java.util.stream.Stream;
 
-public enum ShellyEMPhase {
+public enum ShellyPhase {
     TOTAL("total"),
     NEUTRAL("n"),
     PHASE_L1("a"),
@@ -12,11 +12,11 @@ public enum ShellyEMPhase {
 
     private final String phasePrefix;
 
-    ShellyEMPhase(String phasePrefix) {
+    ShellyPhase(String phasePrefix) {
         this.phasePrefix = phasePrefix;
     }
 
-    public static ShellyEMPhase fromKey(String key) {
+    public static ShellyPhase fromKey(String key) {
         return Stream.of(values())
                 .filter(phase -> key.startsWith(phase.phasePrefix))
                 .findFirst()

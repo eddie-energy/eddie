@@ -4,16 +4,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ShellyEMPhaseTest {
+class ShellyPhaseTest {
     @Test
     void fromKey_returnsPhaseL1() {
-        var phase = ShellyEMPhase.fromKey("a_total_act_energy");
-        assertEquals(ShellyEMPhase.PHASE_L1, phase);
+        var phase = ShellyPhase.fromKey("a_total_act_energy");
+        assertEquals(ShellyPhase.PHASE_L1, phase);
     }
 
     @Test
     void fromKey_returnsUnknown() {
-        var phase = ShellyEMPhase.fromKey("unknown_key");
-        assertEquals(ShellyEMPhase.UNKNOWN, phase);
+        var phase = ShellyPhase.fromKey("unknown_key");
+        assertEquals(ShellyPhase.UNKNOWN, phase);
     }
 }

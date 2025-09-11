@@ -1,8 +1,8 @@
-# Shelly EM
+# Shelly
 
 > ⚠️ **ATTENTION:** When not using the official smart meter data, measurement accuracy may vary, and billing-relevant values cannot be guaranteed.
 
-The Shelly EM data source enables the integration of energy systems that do not have a smart meter adapter built into AIIDA.
+The Shelly data source enables the integration of energy systems that do not have a smart meter adapter built into AIIDA.
 It supports both single-phase and three-phase Shelly energy meters.
 
 These meters are DIN-rail mountable, use contactless Current Transformer (CT) clamps to measure AC current, and connect to smart home ecosystems via Wi-Fi.
@@ -53,8 +53,23 @@ In the `monophase` profile there are three energy meters `EM1`, one per measured
 
 #### Data
 
+- 1 instance of `Switch` (`switch:0`)
 - 2 instances of `EM1` (`em1:0`, `em1:1`)
 - 2 instances of `EM1Data` (`em1data:0`, `em1data:1`)
+
+### Shelly PM
+
+> ⚠️ **UNTESTED**
+
+![Shelly 1PM](ShellyPlus1PM.png)
+
+- **n channels** (Shelly 1PM: 1 channel, Shelly 2PM: 2 channels, Shelly 4PM: 4 channels)
+- **Shelly Pro EM:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyProEM
+- **Shelly EM Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyProEM
+
+#### Data
+
+- n instances of `Switch` (`switch:0`, `switch:1`, ...)
 
 ## MQTT Messages
 
@@ -131,7 +146,7 @@ In the `monophase` profile there are three energy meters `EM1`, one per measured
 
 - Current single-phase measurements
 - **Topic**: `aiida/12345678-1234-1234-1234-123456789abc/events/rpc`
-- **When**: Every couple seconds (customizable thresholds exceeded)
+- **When**: Customizable thresholds exceeds
 
 <details>
 <summary>Example Payload</summary>
@@ -301,6 +316,51 @@ In the `monophase` profile there are three energy meters `EM1`, one per measured
         }
       }
     ]
+  }
+}
+```
+</details>
+
+### Switch
+
+- Total single-phase energy consumption/production
+- **Topic**: `aiida/12345678-1234-1234-1234-123456789abc/events/rpc`
+- **When**: Customizable thresholds exceeds
+
+<details>
+<summary>Example Payload</summary>
+
+```json
+{
+  "src": "shelly1pmg4-1234567890ab",
+  "dst": "aiida/12345678-1234-1234-1234-123456789abc/events",
+  "method": "NotifyStatus",
+  "params": {
+    "ts": 1757591520.01,
+    "switch:0": {
+      "aenergy": {
+        "by_minute": [
+          0,
+          0,
+          0
+        ],
+        "minute_ts": 1757591520,
+        "total": 0
+      },
+      "apower": 0,
+      "current": 0,
+      "freq": 50.01,
+      "ret_aenergy": {
+        "by_minute": [
+          0,
+          0,
+          0
+        ],
+        "minute_ts": 1757591520,
+        "total": 0
+      },
+      "voltage": 228.5
+    }
   }
 }
 ```

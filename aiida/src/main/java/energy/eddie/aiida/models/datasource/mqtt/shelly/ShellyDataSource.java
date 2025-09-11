@@ -10,13 +10,13 @@ import jakarta.persistence.Entity;
 import java.util.UUID;
 
 @Entity
-@DiscriminatorValue(DataSourceType.Identifiers.SHELLY_EM)
-public class ShellyEMDataSource extends MqttDataSource {
+@DiscriminatorValue(DataSourceType.Identifiers.SHELLY)
+public class ShellyDataSource extends MqttDataSource {
     private static final String TOPIC_SUFFIX = "/#";
     @SuppressWarnings("NullAway")
-    protected ShellyEMDataSource() {}
+    protected ShellyDataSource() {}
 
-    public ShellyEMDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
+    public ShellyDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
         super(dto, userId, dataSourceMqttDto);
     }
 

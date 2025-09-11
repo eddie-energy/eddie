@@ -6,14 +6,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ShellyEMMeasurementTest {
+class ShellyMeasurementTest {
     @Test
     void constructor_setsFieldsForApparentPowerL2_withTotalComponent() {
         var exprectedObisCode = ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L2;
         var entryKey = "b_aprt_power";
 
-        var measurement = new ShellyEMMeasurement(
-                ShellyEMComponent.EM,
+        var measurement = new ShellyMeasurement(
+                ShellyComponent.EM,
                 entryKey,
                 "123.45"
         );
@@ -33,8 +33,8 @@ class ShellyEMMeasurementTest {
         var exprectedObisCode = ObisCode.POSITIVE_ACTIVE_ENERGY;
         var entryKey = "total_act";
 
-        var measurement = new ShellyEMMeasurement(
-                ShellyEMComponent.EM_DATA,
+        var measurement = new ShellyMeasurement(
+                ShellyComponent.EM_DATA,
                 entryKey,
                 "12345.67"
         );
@@ -54,8 +54,8 @@ class ShellyEMMeasurementTest {
         var exprectedObisCode = ObisCode.INSTANTANEOUS_CURRENT_IN_PHASE_NEUTRAL;
         var entryKey = "n_current";
 
-        var measurement = new ShellyEMMeasurement(
-                ShellyEMComponent.EM,
+        var measurement = new ShellyMeasurement(
+                ShellyComponent.EM,
                 entryKey,
                 "1.234"
         );
@@ -75,8 +75,8 @@ class ShellyEMMeasurementTest {
         var exprectedObisCode = ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L3;
         var entryKey = "act_power";
 
-        var measurement = new ShellyEMMeasurement(
-                ShellyEMComponent.EM1_2,
+        var measurement = new ShellyMeasurement(
+                ShellyComponent.EM1_2,
                 entryKey,
                 "12.34"
         );
