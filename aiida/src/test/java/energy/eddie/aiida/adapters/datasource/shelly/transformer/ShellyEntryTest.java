@@ -39,7 +39,7 @@ class ShellyEntryTest {
 
     @Test
     void rawUnitOfMeasurement_returnsNotDefaultUnit() {
-        var entry = ShellyEntry.ACTIVE_POWER;
+        var entry = ShellyEntry.ACTIVE_POWER_EM;
         assertEquals(UnitOfMeasurement.WATT, entry.rawUnitOfMeasurement());
     }
 }

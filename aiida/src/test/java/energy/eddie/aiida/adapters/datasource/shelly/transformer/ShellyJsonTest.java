@@ -64,6 +64,40 @@ public class ShellyJsonTest {
               }
             }
             """;
+    private static final String SWITCH_PAYLOAD = """
+            {
+              "src": "shelly1pmg4-8813bfe14804",
+              "dst": "aiida/17a019b1-253b-40de-8800-d577e4e96181/events",
+              "method": "NotifyStatus",
+              "params": {
+                "ts": 1757591520.01,
+                "switch:3": {
+                  "aenergy": {
+                    "by_minute": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "minute_ts": 1757591520,
+                    "total": 1235.456
+                  },
+                  "apower": 35,
+                  "current": 77,
+                  "freq": 50.01,
+                  "ret_aenergy": {
+                    "by_minute": [
+                      312.345,
+                      23.456,
+                      356.789
+                    ],
+                    "minute_ts": 1757591520,
+                    "total": 234.567
+                  },
+                  "voltage": 228.5
+                }
+              }
+            }
+            """;
     private static final String UNKNOWN_COMPONENT_PAYLOAD = """
             {
               "src": "shellypro3em-8813bfe14804",
@@ -109,6 +143,25 @@ public class ShellyJsonTest {
         assertEquals(1757060280.21, json.params().timestamp());
         assertEquals(26289.57, component.get("total_act"));
         assertEquals(131881.86, component.get("total_act_ret"));
+    }
+
+    @Test
+    void deserialize_returnsSwitchJson() throws JsonProcessingException {
+        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
+
+        var json = objectMapper.readValue(SWITCH_PAYLOAD, ShellyJson.class);
+        var component = json.params().em().get(ShellyComponent.SWITCH_3);
+
+        assertNotNull(component);
+        assertEquals("shelly1pmg4-8813bfe14804", json.source());
+        assertEquals("aiida/17a019b1-253b-40de-8800-d577e4e96181/events", json.destination());
+        assertEquals("NotifyStatus", json.method());
+        assertEquals(1757591520.01, json.params().timestamp());
+        assertEquals(77, component.get("current"));
+        assertEquals(35, component.get("apower"));
+        assertEquals(228.5, component.get("voltage"));
+        assertEquals(1235.456, component.get("aenergy.total"));
+        assertEquals(234.567, component.get("ret_aenergy.total"));
     }
 
     @Test

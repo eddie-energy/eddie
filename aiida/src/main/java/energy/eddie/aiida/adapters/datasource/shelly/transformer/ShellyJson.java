@@ -17,6 +17,7 @@ public record ShellyJson(
         @JsonProperty("params") Params params
 ) {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShellyJson.class);
+    private static final String NESTED_KEY_SEPARATOR = ".";
 
     public record Params(
             @JsonProperty("ts") Double timestamp,
@@ -30,19 +31,35 @@ public record ShellyJson(
         void capture(String key, Object value) {
             var component = ShellyComponent.fromKey(key);
 
-            if(component == ShellyComponent.UNKNOWN) {
+            if (component == ShellyComponent.UNKNOWN) {
                 LOGGER.trace("Ignoring unknown component key: {}", key);
                 return;
             }
 
             if (value instanceof Map<?, ?> map) {
                 Map<String, Number> values = new HashMap<>();
-                for (Map.Entry<?, ?> entry : map.entrySet()) {
-                    if (entry.getKey() instanceof String strKey && entry.getValue() instanceof Number numValue) {
-                        values.put(strKey, numValue);
-                    }
-                }
+                flattenMap("", map, values);
                 em.put(component, values);
+            }
+        }
+
+        /**
+         * Recursively flattens nested maps into dot-separated keys.
+         */
+        private void flattenMap(String prefix, Map<?, ?> map, Map<String, Number> values) {
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (!(entry.getKey() instanceof String strKey)) {
+                    continue;
+                }
+
+                String fullKey = prefix.isEmpty() ? strKey : prefix + NESTED_KEY_SEPARATOR + strKey;
+
+                Object val = entry.getValue();
+                if (val instanceof Number num) {
+                    values.put(fullKey, num);
+                } else if (val instanceof Map<?, ?> nested) {
+                    flattenMap(fullKey, nested, values);
+                }
             }
         }
     }

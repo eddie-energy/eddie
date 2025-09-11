@@ -3,11 +3,11 @@ package energy.eddie.aiida.adapters.datasource.shelly.transformer;
 import java.util.stream.Stream;
 
 public enum ShellyPhase {
-    TOTAL("total"),
-    NEUTRAL("n"),
-    PHASE_L1("a"),
-    PHASE_L2("b"),
-    PHASE_L3("c"),
+    TOTAL("total_"),
+    NEUTRAL("n_"),
+    PHASE_L1("a_"),
+    PHASE_L2("b_"),
+    PHASE_L3("c_"),
     UNKNOWN("unknown");
 
     private final String phasePrefix;
