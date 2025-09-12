@@ -179,7 +179,7 @@ select {
     font-weight 0.3s ease-in-out;
 
   &:after {
-    content: attr(data-text) / '';
+    content: attr(data-text);
     height: 0;
     visibility: hidden;
     overflow: hidden;
