@@ -323,7 +323,7 @@ In the `monophase` profile there are three energy meters `EM1`, one per measured
 
 ### Switch
 
-- Total single-phase energy consumption/production
+- Current single-channel measurements
 - **Topic**: `aiida/12345678-1234-1234-1234-123456789abc/events/rpc`
 - **When**: Customizable thresholds exceeds
 

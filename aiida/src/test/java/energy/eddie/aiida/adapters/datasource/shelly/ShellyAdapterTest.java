@@ -93,6 +93,15 @@ class ShellyAdapterTest {
             adapter.start();
             assertEquals(Status.UP, adapter.health().getStatus());
 
+            adapter.messageArrived(TOPIC, new MqttMessage("true".getBytes(StandardCharsets.UTF_8)));
+            assertEquals(Status.UP, adapter.health().getStatus());
+
+            adapter.messageArrived(TOPIC, new MqttMessage("false".getBytes(StandardCharsets.UTF_8)));
+            assertEquals(Status.DOWN, adapter.health().getStatus());
+
+            adapter.messageArrived(TOPIC, new MqttMessage("true".getBytes(StandardCharsets.UTF_8)));
+            assertEquals(Status.UP, adapter.health().getStatus());
+
             adapter.close();
             when(mockClient.isConnected()).thenReturn(false);
             assertEquals(Status.DOWN, adapter.health().getStatus());

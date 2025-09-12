@@ -12,15 +12,19 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.Status;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShellyAdapter.class);
     private final ObjectMapper mapper;
+    private Optional<Health> healthState = Optional.empty();
 
     /**
      * Creates the datasource for the Shelly (energy meter) devices. It connects to the specified MQTT broker and expects
@@ -64,8 +68,22 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (IOException e) {
+            if(payload.equals("true") || payload.equals("false")) {
+                var online = Boolean.parseBoolean(payload);
+                setHealthState(online);
+                return;
+            }
+
             LOGGER.error("Error while deserializing payload received from adapter. Payload was {}", payload, e);
         }
+    }
+
+    @Override
+    public Health health() {
+        if(healthState.isEmpty() || super.health().getStatus() == Status.DOWN) {
+            return super.health();
+        }
+        return healthState.get();
     }
 
     private Stream<ShellyMeasurement> componentEntryToMeasurement(
@@ -80,5 +98,12 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
                                           String.valueOf(entry.getValue())
                                   )
                              );
+    }
+
+    private void setHealthState(boolean online) {
+        var status = online ? Status.UP : Status.DOWN;
+        this.healthState = Optional.of(Health.status(status).build());
+
+        LOGGER.info("Set health state of Shelly adapter {} to {}", dataSource.id(), status);
     }
 }
