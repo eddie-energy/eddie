@@ -7,7 +7,6 @@ const { options, placeholder } = defineProps<{
   placeholder: string
 }>()
 const model = defineModel()
-
 const show = ref(false)
 const parentDiv = useTemplateRef('parent')
 
@@ -24,7 +23,7 @@ const labelValueOptions = computed(() => {
 
 const handleOptionClick = (value: string) => {
   show.value = false
-  model.value = labelValueOptions.value.filter((option) => option.value === value)[0].label
+  model.value = value
 }
 
 const handleBlur = (e: FocusEvent) => {
@@ -49,7 +48,8 @@ const handleBlur = (e: FocusEvent) => {
     role="listbox"
   >
     <div class="main-option" :class="{ placeholder: model === '' }">
-      {{ model === '' ? placeholder : model }}<ChevronDownIcon class="icon" />
+      {{ labelValueOptions.find((option) => option.value === model)?.label ?? placeholder }}
+      <ChevronDownIcon class="icon" />
     </div>
     <Transition>
       <div class="options" v-if="show">
@@ -63,7 +63,7 @@ const handleBlur = (e: FocusEvent) => {
           @keydown.enter="handleOptionClick(option.value)"
           @blur="handleBlur"
           role="option"
-          :aria-sected="model === option.value"
+          :aria-selected="model === option.value"
         >
           {{ option.label }}
         </div>
