@@ -54,12 +54,13 @@ const dataSourceOptions = computed(() => {
     <div v-if="!loading">
       <PermissionDetails v-if="permission" :permission />
       <form class="form" v-if="permission?.dataNeed.type === 'outbound-aiida'">
-        <label class="heading-3" for="datasourceSelect">Assign Datasource</label>
+        <label class="heading-3" id="updatePermLabel">Assign Datasource</label>
         <CustomSelect
           v-model="selectedDataSource"
           id="datasourceSelect"
           :options="dataSourceOptions"
           placeholder="Select Data Source for Permission"
+          aria-labelledby="updatePermLabel"
         />
       </form>
       <div class="two-item-pair">
