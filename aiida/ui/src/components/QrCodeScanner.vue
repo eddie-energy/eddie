@@ -86,7 +86,7 @@ const onDetect = async (detectedCodes: DetectedBarcode[]) => {
 
 .qr-scanner-wrapper {
   margin-bottom: var(--spacing-xxl);
-  z-index: 1;
+  aspect-ratio: 1;
 }
 
 .invalid {

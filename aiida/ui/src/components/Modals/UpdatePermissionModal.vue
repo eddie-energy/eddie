@@ -1,27 +1,25 @@
 <script setup lang="ts">
 import ModalDialog from '@/components/ModalDialog.vue'
-import type { AiidaDataSource } from '@/types'
+
 import Button from '@/components/Button.vue'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import PermissionDetails from '@/components/PermissionDetails.vue'
-import { acceptPermission, getDataSources, rejectPermission } from '@/api'
+import { acceptPermission, rejectPermission } from '@/api'
 import { usePermissionDialog } from '@/composables/permission-dialog'
+import CustomSelect from '../CustomSelect.vue'
+import { dataSources, fetchDataSources } from '@/stores/dataSources'
 
 const { permission, open } = usePermissionDialog()
 
 const modal = ref<HTMLDialogElement>()
 const loading = ref(false)
-const dataSources = ref<AiidaDataSource[]>([])
 const selectedDataSource = ref<string>('')
 const emit = defineEmits(['update'])
 
-watch([open], () => {
+watch([open], async () => {
   if (open.value) {
     modal.value?.showModal()
-    getDataSources().then((result) => {
-      dataSources.value = result
-      selectedDataSource.value = dataSources.value[0]?.id
-    })
+    await fetchDataSources()
   }
 })
 
@@ -40,19 +38,29 @@ const handleModalClose = () => {
   open.value = false
   loading.value = false
 }
+
+const dataSourceOptions = computed(() => {
+  return dataSources.value.map((datasource) => {
+    return {
+      label: datasource.name,
+      value: datasource.id,
+    }
+  })
+})
 </script>
 
 <template>
-  <ModalDialog title="Add new Permission" ref="modal" @close="handleModalClose">
-    <div :class="{ 'is-loading': loading }">
+  <ModalDialog title="Add new Permission" ref="modal" @close="handleModalClose" class="modal">
+    <div v-if="!loading">
       <PermissionDetails v-if="permission" :permission />
-      <form class="form">
+      <form class="form" v-if="permission?.dataNeed.type === 'outbound-aiida'">
         <label class="heading-3" for="datasourceSelect">Assign Datasource</label>
-        <select v-model="selectedDataSource" id="datasourceSelect">
-          <option v-for="datasource in dataSources" :key="datasource.id" :value="datasource.id">
-            {{ datasource.name }} {{ datasource.id }}
-          </option>
-        </select>
+        <CustomSelect
+          v-model="selectedDataSource"
+          id="datasourceSelect"
+          :options="dataSourceOptions"
+          placeholder="Select Data Source for Permission"
+        />
       </form>
       <div class="two-item-pair">
         <Button button-style="error-secondary" @click="handleInput(false)">Reject</Button>
@@ -64,6 +72,9 @@ const handleModalClose = () => {
 </template>
 
 <style scoped>
+.modal {
+  min-height: 50vh;
+}
 .is-loading {
   opacity: 0;
 }
@@ -74,6 +85,7 @@ const handleModalClose = () => {
   margin: 2rem 0;
 }
 .two-item-pair {
+  margin-top: var(--spacing-xxl);
   display: flex;
   align-items: center;
   justify-content: space-between;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import STATUS from '@/constants/permission-status'
 import type { AiidaPermission, PermissionTypes } from '@/types'
-import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
+import PermissionIcon from '@/assets/icons/PermissionIcon.svg'
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
 import StatusTag from './StatusTag.vue'
 import { ref } from 'vue'
@@ -18,9 +18,7 @@ const isOpen = ref(false)
 <template>
   <li class="permission" :class="{ 'is-open': isOpen }">
     <header class="permission-header" @click="isOpen = !isOpen">
-      <div class="icon-wrapper">
-        <PermissionsNavIcon class="icon" />
-      </div>
+      <PermissionIcon class="icon" />
       <h2 class="heading-5 title">{{ permission.serviceName }}</h2>
       <p v-if="permission.unimplemented" class="small-data-graph">Placeholder</p>
       <time class="non-essential">{{
@@ -52,7 +50,7 @@ const isOpen = ref(false)
   border: 1px solid var(--eddie-primary);
   margin-bottom: var(--spacing-md);
   background-color: var(--light);
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
 
   &.is-open {
     .chevron {
@@ -60,22 +58,12 @@ const isOpen = ref(false)
     }
     .permission-header {
       margin-bottom: var(--spacing-lg);
-      & > :not(button, h2, .icon-wrapper) {
+      & > :not(button, h2, .icon) {
         opacity: 0;
         visibility: hidden;
       }
     }
   }
-}
-
-.icon-wrapper {
-  padding: 8.5px 6px;
-  border: 1px solid var(--eddie-grey-light);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: var(--eddie-primary);
-  border-radius: 0.5rem;
 }
 
 .permission-header {
@@ -87,6 +75,11 @@ const isOpen = ref(false)
   > * {
     transition: opacity 0.5s ease-in;
   }
+}
+
+.icon {
+  min-width: var(--spacing-xxl);
+  min-height: var(--spacing-xxl);
 }
 
 .chevron {
@@ -111,6 +104,7 @@ const isOpen = ref(false)
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  width: 100%;
 }
 
 .non-essential {
@@ -133,6 +127,9 @@ const isOpen = ref(false)
 @media screen and (min-width: 1024px) {
   .permission {
     padding: var(--spacing-lg) var(--spacing-xlg);
+  }
+  .title {
+    width: 50%;
   }
   .non-essential {
     display: block;

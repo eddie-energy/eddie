@@ -113,7 +113,7 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
         </div>
       </template>
 
-      <div class="toggle-field">
+      <div class="button-field toggle">
         <dt>Enabled</dt>
         <button
           class="toggle-button"
@@ -208,7 +208,7 @@ div.button-field {
   }
 
   dd,
-  button {
+  button:not(.toggle-button) {
     width: 100%;
     justify-content: center;
   }
@@ -232,17 +232,12 @@ div.button-field {
   transition: transform 0.3s ease-in-out;
 }
 
-div.toggle-field {
-  display: grid;
-  align-items: center;
-  grid-template-columns: 1fr auto;
-}
-
 .toggle-icon {
   position: absolute;
-  margin: 2px 4.5px;
+  margin: 6px 12px;
   top: 0;
   left: 0;
+  transform: translateX(-5px);
   transition:
     transform 0.3s ease-in-out,
     color 0.3s ease-in-out;
@@ -251,8 +246,8 @@ div.toggle-field {
 .toggle-button {
   position: relative;
   cursor: pointer;
-  width: 2rem;
-  height: 1rem;
+  width: 3rem;
+  height: 1.5rem;
   border-radius: 1rem;
   border: 1px solid var(--eddie-primary);
   background-color: var(--light);
@@ -276,7 +271,7 @@ div.toggle-field {
       background-color: var(--light);
       color: var(--eddie-primary);
       .toggle-icon {
-        transform: translateX(0);
+        transform: translateX(-5px);
       }
     }
   }
@@ -295,6 +290,12 @@ div.toggle-field {
   }
 }
 
+div.toggle {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
 .image,
 .fields,
 .actions {
@@ -302,14 +303,9 @@ div.toggle-field {
 }
 
 @media screen and (min-width: 640px) {
-  div.button-field {
+  div.button-field:not(.toggle) {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    dd,
-    button {
-      width: 100%;
-      justify-content: center;
-    }
   }
 
   .actions {

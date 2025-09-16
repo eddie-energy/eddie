@@ -7,7 +7,7 @@ export type AiidaDataNeed = {
   schemas: string[]
   asset: string
   dataTags: string[]
-  type: string
+  type: 'outbound-aiida' | 'inbound-aiida'
 }
 
 export type AiidaMqttSettings = {
@@ -38,6 +38,7 @@ export type AiidaDataSource = {
   simulationPeriod?: number
   mqttSettings?: AiidaMqttSettings
   modbusSettings?: AiidaModbusSettings
+  accessCode?: string
 }
 
 export type AiidaPermission = {

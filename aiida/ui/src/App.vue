@@ -3,6 +3,13 @@ import { RouterView } from 'vue-router'
 import Header from '@/components/Header.vue'
 import ConfirmDialog from './components/ConfirmDialog.vue'
 import AlertToastList from './components/AlertToastList.vue'
+import { onMounted } from 'vue'
+import { checkClipboard } from './stores/clipboardValue'
+import ScrollToTopButton from './components/ScrollToTopButton.vue'
+
+onMounted(() => {
+  window.addEventListener('focus', checkClipboard)
+})
 </script>
 
 <template>
@@ -15,4 +22,5 @@ import AlertToastList from './components/AlertToastList.vue'
       <component :is="Component" />
     </Transition>
   </RouterView>
+  <ScrollToTopButton />
 </template>

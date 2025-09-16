@@ -70,7 +70,7 @@ getApplicationInformation().then((data) => {
   background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.9) 100%);
   border: 1px solid var(--eddie-primary);
   padding: var(--spacing-md);
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
 }
 .profile-header {
   display: flex;
@@ -82,7 +82,7 @@ getApplicationInformation().then((data) => {
   color: var(--eddie-primary);
   display: flex;
   padding: var(--spacing-sm);
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
   border: 1px solid var(--eddie-grey-light);
 }
 
@@ -94,7 +94,7 @@ getApplicationInformation().then((data) => {
   border: 1px solid var(--eddie-grey-light);
   color: var(--eddie-grey-medium);
   padding: var(--spacing-sm) var(--spacing-sm);
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
   font-size: 1rem;
   line-height: 1.5;
   word-break: break-all;

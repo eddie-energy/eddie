@@ -131,6 +131,6 @@ defineExpose({ showModal })
 .code-input {
   padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--eddie-grey-medium);
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
 }
 </style>
