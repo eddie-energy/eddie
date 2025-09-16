@@ -39,6 +39,7 @@ defineExpose({ showModal, close })
   min-width: 25vw;
   border-radius: var(--border-radius);
   border: unset;
+  overflow: auto;
   &::backdrop {
     background-color: var(--eddie-grey-medium);
     opacity: 0.5;
@@ -56,5 +57,11 @@ defineExpose({ showModal, close })
 .close-button {
   display: flex;
   cursor: pointer;
+}
+
+@media screen and (min-width: 1024px) {
+  .dialog {
+    overflow: unset;
+  }
 }
 </style>

@@ -235,6 +235,7 @@ defineExpose({ showModal })
             id="name"
             v-model="dataSource.name"
             name="name"
+            autocomplete="off"
           />
           <p v-if="errors['name']" class="error-message">{{ errors['name'] }}</p>
         </div>
@@ -251,40 +252,40 @@ defineExpose({ showModal })
           <CheckmarkIcon class="checkbox-icon" />
         </div>
         <div class="input-field">
-          <label for="assetType"> Asset Type </label>
+          <label id="assetType"> Asset Type </label>
           <CustomSelect
-            id="assetType"
             v-model="dataSource.asset"
             placeholder="Your Asset Type"
             :options="assetTypeOptions"
             :name="'assetType'"
             required
+            aria-labelledby="assetType"
           />
           <p v-if="errors['assetType']" class="error-message">{{ errors['assetType'] }}</p>
         </div>
         <div class="input-field">
-          <label for="datasourceType">Data Source Type </label>
+          <label id="datasourceType">Data Source Type </label>
           <CustomSelect
-            id="datasourceType"
             v-model="dataSource.dataSourceType"
             placeholder="Your Data Source Type"
             name="datasourceType"
             required
             :options="dataSourceTypeOptions"
+            aria-labelledby="datasourceType"
           />
           <p v-if="errors['datasourceType']" class="error-message">
             {{ errors['datasourceType'] }}
           </p>
         </div>
         <div class="input-field">
-          <label for="country">Country </label>
+          <label id="country">Country </label>
           <CustomSelect
-            id="country"
             v-model="dataSource.countryCode"
             placeholder="Select Country"
             name="country"
             required
             :options="countryOptions"
+            aria-labelledby="country"
           />
           <p v-if="errors['country']" class="error-message">
             {{ errors['country'] }}
@@ -418,7 +419,9 @@ defineExpose({ showModal })
   }
 
   input {
-    padding: var(--spacing-sm);
+    &:not([type='checkbox']) {
+      padding: var(--spacing-sm) var(--spacing-md);
+    }
     border-radius: var(--border-radius);
     border: 1px solid var(--eddie-grey-medium);
   }

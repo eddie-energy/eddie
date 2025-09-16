@@ -165,6 +165,10 @@ input,
 select {
   font-size: 1rem;
   line-height: 1.5;
+
+  &::placeholder {
+    color: var(--eddie-grey-medium);
+  }
 }
 
 .link-with-bold-hover {
@@ -175,8 +179,8 @@ select {
   padding-bottom: var(--spacing-xs);
   border-bottom: 1px solid transparent;
   transition:
-    border-color 0.3s ease-in-out,
-    font-weight 0.3s ease-in-out;
+    border-color 0.3s ease,
+    font-weight 0.3s ease;
 
   &:after {
     content: attr(data-text);

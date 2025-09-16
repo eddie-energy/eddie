@@ -35,7 +35,7 @@ defineExpose({ showModal })
       Make sure to copy the password now. You will not be able to view it again.
     </p>
     <div class="input-field text-limit">
-      <input readonly :type="show ? 'text' : 'password'" :value="pass" />
+      <input readonly :type="show ? 'text' : 'password'" :value="pass" name="password" />
       <div class="actions">
         <CopyButton :copy-text="pass" aria-label="Copy MQTT password" />
         <button
