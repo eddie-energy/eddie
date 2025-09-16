@@ -5,7 +5,9 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/button/button.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/alert/alert.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/radio-group/radio-group.js";
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/radio-button/radio-button.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/components/radio/radio.js";
+import 'https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/components/tooltip/tooltip.js';
+import 'https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/components/icon/icon.js';
 
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
@@ -42,24 +44,37 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
   render() {
     return html`
-      <div>
-        <form id="request-form">
-          <sl-radio-group label="Your type: " name="flow" value="B2C">
-            <sl-radio-button value="B2B">B2B</sl-radio-button>
-            <sl-radio-button value="B2C">B2C</sl-radio-button>
-          </sl-radio-group>
+        <div>
+            <h4>Select Account</h4>
+            <form id="request-form">
+                <sl-radio-group
+                        label="Please select your account type:"
+                        name="flow"
+                        value="B2C"
+                        help-text="Fluvius needs to know your account type in order to send the correct data."
+                >
+                    <sl-radio value="B2C">Personal Account</sl-radio>
 
-          <br />
 
-          <sl-button type="submit" variant="primary">Create</sl-button>
-        </form>
-      </div>
-      <div ?hidden="${!this._shortUrlIdentifier}">
-        <p>Please accept the authorization request in your Fluvius portal.</p>
-        <a href="${this.jumpOffUrl + this._shortUrlIdentifier}" target="_blank">
-          Go to Fluvius
-        </a>
-      </div>
+                    <sl-radio value="B2B">Professional Account
+                        <sl-tooltip content="For companies, local authorities, non-profit organizations etc.">
+                            <sl-icon name="info-circle"></sl-icon>
+                        </sl-tooltip>
+                    </sl-radio>
+
+                </sl-radio-group>
+
+                <br/>
+
+                <sl-button type="submit" variant="primary">Connect</sl-button>
+            </form>
+        </div>
+        <div ?hidden="${!this._shortUrlIdentifier}">
+            <p>Please accept the authorization request in your Fluvius portal.</p>
+            <a href="${this.jumpOffUrl + this._shortUrlIdentifier}" target="_blank">
+                Go to Fluvius
+            </a>
+        </div>
     `;
   }
 }
