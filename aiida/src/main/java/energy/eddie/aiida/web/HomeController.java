@@ -1,21 +1,11 @@
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.config.KeycloakConfiguration;
-import jakarta.annotation.Nullable;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.UUID;
 
 @Controller
 public class HomeController {
