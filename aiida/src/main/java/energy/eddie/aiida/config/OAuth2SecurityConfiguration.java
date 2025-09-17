@@ -51,8 +51,6 @@ public class OAuth2SecurityConfiguration {
                         .requestMatchers(
                                 "/assets/**",
                                 "/favicon.svg",
-                                "/vue",
-                                "/vue/**",
                                 "/login",
                                 "/mqtt-auth/**",
                                 "/actuator/health/**",
@@ -63,7 +61,10 @@ public class OAuth2SecurityConfiguration {
                                 "/css/login.css",
                                 "/webhook/event",
                                 "/js/main.js",
-                                "/inbound/**")
+                                "/inbound/**",
+                                "/",
+                                "/data-sources",
+                                "/account")
                         .permitAll()
                         .anyRequest().authenticated()
                 )

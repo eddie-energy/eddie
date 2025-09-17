@@ -22,14 +22,7 @@ public class HomeController {
     public static final Duration MAX_CONNECTION_ID_LIFETIME = Duration.ofHours(24);
     public static final String CONNECTION_ID_COOKIE_NAME = "connectionId";
 
-    private final KeycloakConfiguration keycloakConfiguration;
-
-    @Autowired
-    public HomeController(KeycloakConfiguration keycloakConfiguration) {
-        this.keycloakConfiguration = keycloakConfiguration;
-    }
-
-    @GetMapping("/vue/**")
+    @GetMapping("/")
     public String vue(
             Model model,
             @Value("${aiida.public.url}") String aiidaPublicUrl,
@@ -42,30 +35,6 @@ public class HomeController {
         model.addAttribute("keycloakRealm", keycloakRealm);
         model.addAttribute("keycloakClient", keycloakClient);
         return "vue";
-    }
-
-    @GetMapping("/")
-    public String home(
-            Model model,
-            HttpServletRequest request,
-            HttpServletResponse response,
-            Authentication auth
-    ) {
-        model.addAttribute("isAuthenticated", auth != null && auth.isAuthenticated());
-
-        if (auth != null && auth.getPrincipal() instanceof OidcUser oidcUser) {
-            model.addAttribute("oidcUser", oidcUser);
-
-            var initials = String.valueOf(oidcUser.getGivenName().charAt(0)) + oidcUser.getFamilyName().charAt(0);
-            model.addAttribute("userInitials", initials);
-        }
-
-        String connectionId = getConnectionIdFromCookiesIfPresent(request);
-        connectionId = createCookie(response, connectionId);
-
-        model.addAttribute(CONNECTION_ID_COOKIE_NAME, connectionId);
-
-        return "index";
     }
 
     protected @Nullable String getConnectionIdFromCookiesIfPresent(HttpServletRequest request) {
@@ -98,10 +67,5 @@ public class HomeController {
     @GetMapping("/login")
     public String login() {
         return "login";
-    }
-
-    @GetMapping("/account")
-    public String account() {
-        return "redirect:" + keycloakConfiguration.accountUri();
     }
 }
