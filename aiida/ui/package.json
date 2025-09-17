@@ -40,6 +40,5 @@
     "vite-plugin-vue-devtools": "^8.0.0",
     "vite-svg-loader": "^5.1.0",
     "vue-tsc": "^3.0.4"
-  },
-  "web-types": "./shoelace-web-types.json"
+  }
 }

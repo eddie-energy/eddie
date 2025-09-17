@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import PermissionView from '@/views/PermissionView.vue'
 
 const router = createRouter({
-  history: createWebHistory(THYMELEAF_AIIDA_PUBLIC_URL ? '/vue/' : undefined),
+  history: createWebHistory(),
   routes: [
     {
       path: '/:pathMatch(.*)*',
