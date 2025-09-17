@@ -37,28 +37,6 @@ public class HomeController {
         return "vue";
     }
 
-    protected @Nullable String getConnectionIdFromCookiesIfPresent(HttpServletRequest request) {
-        if (request.getCookies() == null) {
-            return null;
-        }
-        var connectionIdCookie = Arrays.stream(request.getCookies())
-                                       .filter(cookie -> cookie.getName().equals(CONNECTION_ID_COOKIE_NAME))
-                                       .findFirst();
-        return connectionIdCookie.map(Cookie::getValue).orElse(null);
-    }
-
-    protected String createCookie(HttpServletResponse response, @Nullable String connectionId) {
-        if (connectionId == null) {
-            connectionId = "CONN_" + UUID.randomUUID();
-            Cookie cookie = new Cookie(CONNECTION_ID_COOKIE_NAME, connectionId);
-            cookie.setMaxAge((int) MAX_CONNECTION_ID_LIFETIME.getSeconds());
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            response.addCookie(cookie);
-        }
-        return connectionId;
-    }
-
     @GetMapping("/installer")
     public String installer() {
         return "installer";
