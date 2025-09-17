@@ -24,10 +24,11 @@ import java.util.List;
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestCreationAndValidationServiceTest {
+    @SuppressWarnings("unused")
     @Mock
     private Outbox mockOutbox;
     @Spy
