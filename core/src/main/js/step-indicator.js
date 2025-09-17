@@ -1,7 +1,7 @@
 import { css, html, LitElement } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 
-import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.0/cdn/components/tooltip/tooltip.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/tooltip/tooltip.js";
 
 class StepIndicator extends LitElement {
   static properties = {
