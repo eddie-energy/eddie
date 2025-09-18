@@ -29,7 +29,6 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -59,7 +58,6 @@ class CCMORejectHandlerTest {
     @Test
     void testCmRequestStatusMessage_retriesOnConsentRequestIdAlreadyExists() {
         // Given
-        LocalDate today = LocalDate.now(AT_ZONE_ID);
         var permissionRequest = projection(AllowedGranularity.PT15M);
 
         when(repository.findByConversationIdOrCMRequestId(any(), any()))
