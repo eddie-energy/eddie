@@ -14,14 +14,14 @@ class NlMijnAansluitingTest extends E2eTestSetup {
         this.navigateToRegionConnector(null, "Netherlands", null);
 
         // Shows permission form
-        page.getByLabel("House Number").fill("420");
+        page.getByLabel("House Number").fill("2");
         Page callbackPage = page.context().waitForPage(() -> {
             page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Submit")).click();
         });
 
         // Select test user if not cached by local test
         if (callbackPage.url().contains("https://www.acc.mijnenergiedata.nl/edlp/login")) {
-            callbackPage.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Testuser 13")).click();
+            callbackPage.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Testuser veertien")).click();
         }
         // Interact with external permission page
         callbackPage.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Deel mijn data")).click();
