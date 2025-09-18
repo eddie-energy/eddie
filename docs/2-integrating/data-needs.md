@@ -54,6 +54,9 @@ See the file [env/data-needs.json](https://github.com/eddie-energy/eddie/blob/ma
 While the REST-API ignores the ID field for creation requests, when supplying data needs via the JSON file,
 the ID is a mandatory field.
 
+> [!NOTE]
+> It is not possible to use the management API when using data needs in config mode.
+
 ```json
 {
   "type": "validated",
