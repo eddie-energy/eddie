@@ -1,16 +1,18 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestProjection;
 import energy.eddie.regionconnector.at.eda.dto.*;
+import energy.eddie.regionconnector.at.eda.handlers.integration.inbound.AtPermissionRequestProjectionTest;
 import energy.eddie.regionconnector.at.eda.persistence.JpaPermissionRequestRepository;
+import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -26,6 +28,15 @@ class IdentifiableConsumptionRecordServiceTest {
     @Mock
     private JpaPermissionRequestRepository repository;
 
+    private static AtPermissionRequestProjection projection(String permissionId, String connectionId, String dataNeedId,
+                                                            String cmRequestId, String conversationId) {
+        return new AtPermissionRequestProjectionTest(
+                permissionId, connectionId, cmRequestId, conversationId,
+                LocalDate.now(), LocalDate.now(), dataNeedId, "dsoId", "meteringPointId", "consentId", "message",
+                AllowedGranularity.PT15M.name(), "ACCEPTED", Instant.now()
+        );
+    }
+
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     void mapToIdentifiableConsumptionRecord_returnsCorrectlyMappedRecord() {
@@ -33,15 +44,16 @@ class IdentifiableConsumptionRecordServiceTest {
         String identifiableMeteringPoint = "identifiableMeteringPoint";
         var identifiableConsumptionRecord = createConsumptionRecord(identifiableMeteringPoint);
 
+        var permissionRequests = List.of(
+                projection("pmId1", "connId1", "dataNeedId1", "test1", "any1"),
+                projection("pmId2", "connId2", "dataNeedId2", "test2", "any2")
+        );
+
         when(repository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted(
                 eq(identifiableMeteringPoint),
                 any()
         ))
-                .thenReturn(List.of(new SimplePermissionRequest("pmId1", "connId1", "dataNeedId1", "test1", "any1",
-                                                                PermissionProcessStatus.ACCEPTED),
-                                    new SimplePermissionRequest("pmId2", "connId2", "dataNeedId2", "test2", "any2",
-                                                                PermissionProcessStatus.ACCEPTED)
-                ));
+                .thenReturn(permissionRequests);
 
         IdentifiableConsumptionRecordService service = new IdentifiableConsumptionRecordService(repository);
 

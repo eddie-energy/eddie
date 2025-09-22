@@ -6,6 +6,7 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.ConsentData;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.CreatedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
@@ -50,7 +51,9 @@ public class CCMOAcceptHandler {
                   .log("Found multiple matching permission requests for conversationId '{}' or requestId '{}'. This should never happen at this stage, only considering the first.");
         }
 
-        AtPermissionRequest permissionRequest = permissionRequests.getFirst();
+        var permissionRequest = permissionRequests.stream()
+                                                  .map(EdaPermissionRequest::fromProjection)
+                                                  .toList().getFirst();
 
         var status = permissionRequest.status();
         if (status == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR) {

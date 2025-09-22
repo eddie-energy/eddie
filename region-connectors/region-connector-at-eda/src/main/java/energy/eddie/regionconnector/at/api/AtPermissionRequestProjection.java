@@ -8,8 +8,8 @@ public interface AtPermissionRequestProjection {
     String getConnectionId();
     String getCmRequestId();
     String getConversationId();
-    LocalDate getStart();
-    LocalDate getEnd();
+    LocalDate getPermissionStart();
+    LocalDate getPermissionEnd();
     String getDataNeedId();
     String getDsoId();
     String getMeteringPointId();

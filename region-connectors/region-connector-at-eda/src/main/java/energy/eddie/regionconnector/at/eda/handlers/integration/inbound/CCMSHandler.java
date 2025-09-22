@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.ResponseCode;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -41,8 +41,13 @@ public class CCMSHandler {
      * occurs we have a bug in our system.
      */
     public void handleCCMSReject(CMRequestStatus cmRequestStatus) {
-        for (AtPermissionRequest permissionRequest : repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
-                                                                                                  cmRequestStatus.cmRequestId())) {
+        for (var permissionRequest : repository
+                .findByConversationIdOrCMRequestId(
+                        cmRequestStatus.conversationId(),
+                        cmRequestStatus.cmRequestId())
+                .stream()
+                .map(EdaPermissionRequest::fromProjection)
+                .toList()) {
             // the cmRequestId is not necessarily unique, only process marked permission requests
             if (permissionRequest.status() != PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION) {
                 continue;
@@ -70,8 +75,13 @@ public class CCMSHandler {
     }
 
     public void handleCCMSAnswer(CMRequestStatus cmRequestStatus) {
-        for (AtPermissionRequest permissionRequest : repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
-                                                                                                  cmRequestStatus.cmRequestId())) {
+        for (var permissionRequest : repository
+                .findByConversationIdOrCMRequestId(
+                        cmRequestStatus.conversationId(),
+                        cmRequestStatus.cmRequestId())
+                .stream()
+                .map(EdaPermissionRequest::fromProjection)
+                .toList()) {
             // the cmRequestId is not necessarily unique, only process permission requests that have been marked for external termination
             if (permissionRequest.status() == PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION) {
                 outbox.commit(

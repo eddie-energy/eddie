@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.springframework.stereotype.Component;
@@ -23,9 +23,13 @@ public class PontonErrorHandler {
     public void handlePontonError(CMRequestStatus cmRequestStatus) {
         // If the DSO does not exist EDA will respond with an error without sending a received-message.
         // In that case the error message is an implicit received-message.
-        for (AtPermissionRequest request : repository.findByConversationIdOrCMRequestId(
-                cmRequestStatus.conversationId(),
-                cmRequestStatus.cmRequestId())) {
+        for (var request : repository
+                .findByConversationIdOrCMRequestId(
+                    cmRequestStatus.conversationId(),
+                    cmRequestStatus.cmRequestId())
+                .stream()
+                .map(EdaPermissionRequest::fromProjection)
+                .toList()) {
             if (request.status() == PermissionProcessStatus.VALIDATED) {
                 outbox.commit(
                         new EdaAnswerEvent(request.permissionId(),

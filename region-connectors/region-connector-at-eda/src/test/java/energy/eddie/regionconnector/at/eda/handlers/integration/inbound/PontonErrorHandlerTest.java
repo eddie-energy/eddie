@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestProjection;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
-import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEvent;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
@@ -16,6 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -45,10 +47,13 @@ class PontonErrorHandlerTest {
                 null,
                 List.of()
         );
+        var permissionRequests = List.of(
+                projection(PermissionProcessStatus.VALIDATED),
+                projection(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
+        );
         when(repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),
                                                           cmRequestStatus.cmRequestId()))
-                .thenReturn(List.of(permissionRequest(PermissionProcessStatus.VALIDATED),
-                                    permissionRequest(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
+                .thenReturn(permissionRequests);
 
         // When
         handler.handlePontonError(cmRequestStatus);
@@ -66,11 +71,11 @@ class PontonErrorHandlerTest {
         );
     }
 
-    private static EdaPermissionRequest permissionRequest(PermissionProcessStatus permissionProcessStatus) {
-        return new EdaPermissionRequest("connectionId", "pid", "dnid", "cmRequestId",
-                                        "conversationId", null, "dsoId", null, null,
-                                        AllowedGranularity.PT15M,
-                                        permissionProcessStatus,
-                                        "", null, null);
+    private static AtPermissionRequestProjection projection(PermissionProcessStatus s) {
+        return new AtPermissionRequestProjectionTest(
+                "pid", "connectionId", "cmRequestId", "conversationId",
+                LocalDate.now(), LocalDate.now(), "dnid", "dsoId", "meteringPointId", "consentId", "message",
+                AllowedGranularity.PT15M.name(), s.name(), Instant.now()
+        );
     }
 }
