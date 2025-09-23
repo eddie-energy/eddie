@@ -12,7 +12,9 @@ public class HomeController {
     public static final Duration MAX_CONNECTION_ID_LIFETIME = Duration.ofHours(24);
     public static final String CONNECTION_ID_COOKIE_NAME = "connectionId";
 
-    @GetMapping("/")
+   @GetMapping(value = {"/", 
+                         "/{path:^(?!api$)[^\\.]*}", 
+                         "/**/{path:^(?!api$)[^\\.]*}"})
     public String vue(
             Model model,
             @Value("${aiida.public.url}") String aiidaPublicUrl,
