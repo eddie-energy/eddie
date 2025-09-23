@@ -3,6 +3,7 @@ package energy.eddie.exampleappbackend;
 import energy.eddie.exampleappbackend.config.ExampleAppEddieConfig;
 import energy.eddie.exampleappbackend.config.ExampleAppKafkaConfig;
 import energy.eddie.exampleappbackend.config.ExampleAppMqttConfig;
+import energy.eddie.exampleappbackend.config.FeignClientConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -11,7 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableFeignClients("energy.eddie")
+@EnableFeignClients(basePackages = "energy.eddie", defaultConfiguration = FeignClientConfig.class)
 @EnableConfigurationProperties({ExampleAppEddieConfig.class, ExampleAppKafkaConfig.class, ExampleAppMqttConfig.class})
 public class ExampleAppBackendApplication {
 
