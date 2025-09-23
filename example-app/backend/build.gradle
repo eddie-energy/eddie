@@ -93,7 +93,7 @@ sourceSets {
 
 tasks.register('generateDataNeedsClient', GenerateTask) {
 	generatorName = "spring"
-	inputSpec = "$projectDir/src/main/swagger/eddie-data-needs-api.yml"
+	inputSpec = "$projectDir/src/main/swagger/eddie-data-needs-api.json"
 	outputDir = generateDataNeedsClientDir
 	apiPackage = "energy.eddie.data-needs.generated.api"
 	modelPackage = "energy.eddie.data-needs.generated.model"

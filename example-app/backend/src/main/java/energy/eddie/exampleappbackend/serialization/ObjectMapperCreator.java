@@ -1,5 +1,6 @@
 package energy.eddie.exampleappbackend.serialization;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -24,6 +25,7 @@ class ObjectMapperCreator {
                 .registerModule(new JavaTimeModule())
                 .registerModule(new Jdk8Module())
                 .registerModule(new JakartaXmlBindAnnotationModule())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
