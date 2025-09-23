@@ -12,7 +12,10 @@ public class HomeController {
     public static final Duration MAX_CONNECTION_ID_LIFETIME = Duration.ofHours(24);
     public static final String CONNECTION_ID_COOKIE_NAME = "connectionId";
 
-    @GetMapping("/")
+    // Sonar wants to add a @PathVariable here, but we do NOT need it since we don't consume it
+    @SuppressWarnings("java:S6856")
+    @GetMapping(value = {"/",
+            "/{path:^(?!api$)[^.]*}"})
     public String vue(
             Model model,
             @Value("${aiida.public.url}") String aiidaPublicUrl,
