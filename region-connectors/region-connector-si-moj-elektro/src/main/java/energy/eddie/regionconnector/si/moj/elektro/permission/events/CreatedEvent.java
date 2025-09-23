@@ -9,10 +9,10 @@ import jakarta.persistence.Entity;
 public class CreatedEvent extends PersistablePermissionEvent {
 
     @Column(length = 36)
-    private final String dataNeedId;
-    private final String connectionId;
-    private final String apiToken;
-    private final String meteringPointId;
+    private String dataNeedId;
+    private String connectionId;
+    private String apiToken;
+    private String meteringPointId;
 
     public CreatedEvent(String permissionId,
                         String dataNeedId,
@@ -27,12 +27,7 @@ public class CreatedEvent extends PersistablePermissionEvent {
         this.meteringPointId = meteringPointId;
     }
 
-    public CreatedEvent() {
-        this.dataNeedId = null;
-        this.connectionId = null;
-        this.meteringPointId = null;
-        this.apiToken = null;
-    }
+    protected CreatedEvent() { }
 
     public String dataNeedId() {
         return dataNeedId;

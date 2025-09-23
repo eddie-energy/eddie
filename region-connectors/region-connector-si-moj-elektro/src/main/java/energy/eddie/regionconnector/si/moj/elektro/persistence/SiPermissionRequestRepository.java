@@ -1,14 +1,11 @@
 package energy.eddie.regionconnector.si.moj.elektro.persistence;
 
 import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.si.moj.elektro.permission.request.MojElektroPermissionRequest;
-import org.springframework.data.repository.Repository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
+@Repository
 public interface SiPermissionRequestRepository extends
-        Repository<MojElektroPermissionRequest, String>,
+        org.springframework.data.repository.Repository<MojElektroPermissionRequest, String>,
         PermissionRequestRepository<MojElektroPermissionRequest> {
-    List<MojElektroPermissionRequest> findByStatus(PermissionProcessStatus status);
 }

@@ -14,16 +14,16 @@ import java.time.LocalDate;
 public class ValidatedEvent extends PersistablePermissionEvent {
 
     @Column(name = "permission_start")
-    private final LocalDate start;
+    private LocalDate start;
 
     @Column(name = "permission_end")
-    private final LocalDate end;
+    private LocalDate end;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
-    private final Granularity granularity;
+    private Granularity granularity;
 
-    private final String apiToken;
+    private String apiToken;
 
     public ValidatedEvent(
             String permissionId,
@@ -39,12 +39,7 @@ public class ValidatedEvent extends PersistablePermissionEvent {
         this.apiToken = apiToken;
     }
 
-    protected ValidatedEvent() {
-        this.start = null;
-        this.end = null;
-        this.granularity = null;
-        this.apiToken = null;
-    }
+    protected ValidatedEvent() { }
 
     public LocalDate start() {
         return start;

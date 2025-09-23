@@ -15,41 +15,24 @@ public abstract class PersistablePermissionEvent implements PermissionEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private final Long id;
+    private Long id;
 
     @Column(length = 36)
-    private final String permissionId;
+    private String permissionId;
 
-    private final ZonedDateTime eventCreated;
+    private ZonedDateTime eventCreated;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
-    private final PermissionProcessStatus status;
+    private PermissionProcessStatus status;
 
-    protected PersistablePermissionEvent(
-            String permissionId,
-            PermissionProcessStatus status
-    ) {
-        this(permissionId, status, ZonedDateTime.now(ZoneOffset.UTC));
-    }
-
-    protected PersistablePermissionEvent(
-            String permissionId,
-            PermissionProcessStatus status,
-            ZonedDateTime created
-    ) {
-        this.id = null;
+    protected PersistablePermissionEvent(String permissionId, PermissionProcessStatus status) {
         this.permissionId = permissionId;
-        this.eventCreated = created;
         this.status = status;
+        this.eventCreated = ZonedDateTime.now(ZoneOffset.UTC);
     }
 
-    protected PersistablePermissionEvent() {
-        this.id = null;
-        permissionId = null;
-        eventCreated = null;
-        status = null;
-    }
+    protected PersistablePermissionEvent() { }
 
     @Override
     public String permissionId() {

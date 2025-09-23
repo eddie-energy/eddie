@@ -21,35 +21,31 @@ public class MojElektroPermissionRequest implements MeterReadingPermissionReques
 
     @Id
     @Column(length = 36)
-    private final String permissionId;
+    private String permissionId;
 
-    private final String connectionId;
+    private String connectionId;
 
     @Column(length = 36)
-    private final String dataNeedId;
+    private String dataNeedId;
 
     @Enumerated(EnumType.STRING)
-    private final PermissionProcessStatus status;
+    private PermissionProcessStatus status;
 
-    private final Granularity granularity;
+    private Granularity granularity;
 
-    @Column(name = "permission_start")
-    private final LocalDate start;
+    private LocalDate permissionStart;
 
-    @Column(name = "permission_end")
-    private final LocalDate end;
+    private LocalDate permissionEnd;
 
-    @Column(name = "event_created")
-    private final ZonedDateTime created;
+    private ZonedDateTime eventCreated;
 
     @Nullable
-    private final LocalDate latestMeterReadingEndDate;
+    private LocalDate latestMeterReadingEndDate;
+
+    private String apiToken;
 
     @Nullable
-    private final String apiToken;
-
-    @Nullable
-    private final String meteringPoint;
+    private String meteringPoint;
 
     public MojElektroPermissionRequest(
             String permissionId,
@@ -57,9 +53,9 @@ public class MojElektroPermissionRequest implements MeterReadingPermissionReques
             String dataNeedId,
             PermissionProcessStatus status,
             Granularity granularity,
-            LocalDate start,
-            LocalDate end,
-            ZonedDateTime created,
+            LocalDate permissionStart,
+            LocalDate permissionEnd,
+            ZonedDateTime eventCreated,
             @Nullable LocalDate latestMeterReadingEndDate,
             @Nullable String apiToken,
             @Nullable String meteringPoint
@@ -69,27 +65,15 @@ public class MojElektroPermissionRequest implements MeterReadingPermissionReques
         this.dataNeedId = dataNeedId;
         this.status = status;
         this.granularity = granularity;
-        this.start = start;
-        this.end = end;
-        this.created = created;
+        this.permissionStart = permissionStart;
+        this.permissionEnd = permissionEnd;
+        this.eventCreated = eventCreated;
         this.latestMeterReadingEndDate = latestMeterReadingEndDate;
         this.apiToken = apiToken;
         this.meteringPoint = meteringPoint;
     }
 
-    protected MojElektroPermissionRequest() {
-        permissionId = null;
-        connectionId = null;
-        dataNeedId = null;
-        status = null;
-        granularity = null;
-        start = null;
-        end = null;
-        created = null;
-        latestMeterReadingEndDate = null;
-        apiToken = null;
-        meteringPoint = null;
-    }
+    protected MojElektroPermissionRequest() { }
 
     @Override
     public Optional<LocalDate> latestMeterReadingEndDate() {
@@ -123,17 +107,17 @@ public class MojElektroPermissionRequest implements MeterReadingPermissionReques
 
     @Override
     public ZonedDateTime created() {
-        return created;
+        return eventCreated;
     }
 
     @Override
     public LocalDate start() {
-        return start;
+        return permissionStart;
     }
 
     @Override
     public LocalDate end() {
-        return end;
+        return permissionEnd;
     }
 
     public Granularity granularity() {

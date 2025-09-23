@@ -49,8 +49,8 @@ public class PermissionRequestService {
 
         outbox.commit(new CreatedEvent(
                 permissionId,
-                requestForCreation.connectionId(),
                 dataNeedId,
+                requestForCreation.connectionId(),
                 requestForCreation.apiToken(),
                 requestForCreation.meteringPoint()
         ));

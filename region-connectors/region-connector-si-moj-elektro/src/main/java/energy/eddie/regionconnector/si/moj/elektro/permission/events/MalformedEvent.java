@@ -14,7 +14,7 @@ import java.util.List;
 public class MalformedEvent extends PersistablePermissionEvent {
     @Convert(converter = AttributeErrorListConverter.class)
     @Column(name = "errors", columnDefinition = "text")
-    private final List<AttributeError> attributeErrors;
+    private List<AttributeError> attributeErrors;
 
     public MalformedEvent(String permissionId, List<AttributeError> attributeErrors) {
         super(permissionId, PermissionProcessStatus.MALFORMED);
@@ -25,8 +25,5 @@ public class MalformedEvent extends PersistablePermissionEvent {
         this(permissionId, List.of(attributeErrors));
     }
 
-    protected MalformedEvent() {
-        attributeErrors = List.of();
-    }
+    protected MalformedEvent() { }
 }
-

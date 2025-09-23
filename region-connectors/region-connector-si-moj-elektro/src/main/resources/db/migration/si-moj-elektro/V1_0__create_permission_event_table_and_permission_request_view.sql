@@ -2,7 +2,7 @@ CREATE TABLE si_moj_elektro.permission_event
 (
     id                            bigserial PRIMARY KEY,
     dtype                         varchar(31) NOT NULL,
-    permission_id                 varchar(36),
+    permission_id                 varchar(36) NOT NULL,
     connection_id                 varchar(200),
     data_need_id                  varchar(200),
     status                        varchar(75),

@@ -36,8 +36,9 @@ public class PermissionRequestController {
     public ResponseEntity<CreatedPermissionRequest> createPermissionRequest(@Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation)
             throws DataNeedNotFoundException, UnsupportedDataNeedException {
         var permissionRequest = permissionRequestService.createPermissionRequest(permissionRequestForCreation);
-        return ResponseEntity.created(new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
-                        .expand(permissionRequest.permissionId())).body(permissionRequest);
+        return ResponseEntity.created(
+            new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionRequest.permissionId())
+        ).body(permissionRequest);
     }
 
     @GetMapping(
