@@ -51,9 +51,9 @@ example-app:
     validated-historical-data-cim-version: cim_0_82
   mqtt:
     server-uri: tcp://eddie-demo.projekte.fh-hagenberg.at:5105
-    client-id: example-app-mqtt-client
-    username: example-app-client
-    password: 07yY6tSMWFrDlQ
+    client-id: ${MQTT_CLIENT_ID:example-app-mqtt-client}
+    username: ${MQTT_USERNAME}
+    password: ${MQTT_PASSWORD}
 
 dataNeeds:
   url: ${example-app.eddie.public-url}/data-needs
