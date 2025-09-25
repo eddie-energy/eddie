@@ -50,7 +50,7 @@ example-app:
     permission-cim-version: cim_0_82
     validated-historical-data-cim-version: cim_0_82
   mqtt:
-    server-uri: tcp://eddie-demo.projekte.fh-hagenberg.at:5105
+    server-uri: ${MQTT_SERVER_URI:tcp://eddie-demo.projekte.fh-hagenberg.at:5105}
     client-id: ${MQTT_CLIENT_ID:example-app-mqtt-client}
     username: ${MQTT_USERNAME}
     password: ${MQTT_PASSWORD}
