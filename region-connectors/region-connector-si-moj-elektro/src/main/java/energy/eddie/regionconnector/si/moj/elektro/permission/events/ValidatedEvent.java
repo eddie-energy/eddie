@@ -15,14 +15,11 @@ public class ValidatedEvent extends PersistablePermissionEvent {
 
     @Column(name = "permission_start")
     private LocalDate start;
-
     @Column(name = "permission_end")
     private LocalDate end;
-
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
     private Granularity granularity;
-
     private String apiToken;
 
     public ValidatedEvent(

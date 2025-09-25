@@ -27,22 +27,16 @@ class MojElektroBeanConfigTest {
 
     @MockitoBean
     private SiPermissionEventRepository siPermissionEventRepository;
-
     @MockitoBean
     private ConnectionStatusMessageHandler<MojElektroPermissionRequest> connectionStatusMessageHandler;
-
     @MockitoBean
     private PermissionMarketDocumentMessageHandler<MojElektroPermissionRequest> permissionMarketDocumentMessageHandler;
-
     @MockitoBean
     private DataNeedCalculationService<DataNeed> dataNeedCalculationService;
-
     @Autowired
     private Supplier<PermissionEventRepository> permissionEventSupplier;
-
     @Autowired
     private EventBus eventBus;
-
     @Autowired
     private Outbox outbox;
 

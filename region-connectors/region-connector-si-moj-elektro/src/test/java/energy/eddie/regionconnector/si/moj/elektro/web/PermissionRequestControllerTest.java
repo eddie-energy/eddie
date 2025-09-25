@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.si.moj.elektro.dtos.CreatedPermissionRequest;
+import energy.eddie.regionconnector.si.moj.elektro.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.si.moj.elektro.permission.MojElektroDataSourceInformation;
 import energy.eddie.regionconnector.si.moj.elektro.service.PermissionRequestService;
 import org.junit.jupiter.api.Test;
@@ -30,10 +31,8 @@ class PermissionRequestControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
     @Autowired
     private MockMvc mockMvc;
-
     @MockitoBean
     private PermissionRequestService service;
 
@@ -43,17 +42,17 @@ class PermissionRequestControllerTest {
         var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand("pid").toString();
         var createdPr = new CreatedPermissionRequest("pid");
         when(service.createPermissionRequest(any())).thenReturn(createdPr);
-        var jsonNode = objectMapper.createObjectNode()
-                .put("connectionId", "cid")
-                .put("dataNeedId", "dnid")
-                .put("apiToken", "apitoken")
-                .put("meteringPoint", "mp");
+        var prForCreation = new PermissionRequestForCreation(
+                "cid",
+                "dnid",
+                "apitoken"
+        );
 
         // When
         mockMvc.perform(
                 MockMvcRequestBuilders.post("/permission-request")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonNode.toString())
+                        .content(objectMapper.writeValueAsString(prForCreation))
                 )
         // Then
                 .andExpect(status().isCreated())

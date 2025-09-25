@@ -12,19 +12,12 @@ public class CreatedEvent extends PersistablePermissionEvent {
     private String dataNeedId;
     private String connectionId;
     private String apiToken;
-    private String meteringPointId;
 
-    public CreatedEvent(String permissionId,
-                        String dataNeedId,
-                        String connectionId,
-                        String apiToken,
-                        String meteringPointId
-    ) {
+    public CreatedEvent(String permissionId, String dataNeedId, String connectionId, String apiToken) {
         super(permissionId, PermissionProcessStatus.CREATED);
         this.dataNeedId = dataNeedId;
         this.connectionId = connectionId;
         this.apiToken = apiToken;
-        this.meteringPointId = meteringPointId;
     }
 
     protected CreatedEvent() { }
@@ -39,9 +32,5 @@ public class CreatedEvent extends PersistablePermissionEvent {
 
     public String apiToken() {
         return apiToken;
-    }
-
-    public String meteringPointId() {
-        return meteringPointId;
     }
 }

@@ -27,12 +27,11 @@ import static energy.eddie.regionconnector.si.moj.elektro.MojElektroRegionConnec
 @Service
 public class PermissionRequestService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
+    private static final String DATA_NEED_ID = "dataNeedId";
     private final SiPermissionRequestRepository siPermissionRequestRepository;
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     private final Outbox outbox;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
-    private static final String DATA_NEED_ID = "dataNeedId";
 
     public PermissionRequestService(SiPermissionRequestRepository siPermissionRequestRepository,
                                     DataNeedCalculationService<DataNeed> dataNeedCalculationService,
@@ -51,8 +50,7 @@ public class PermissionRequestService {
                 permissionId,
                 dataNeedId,
                 requestForCreation.connectionId(),
-                requestForCreation.apiToken(),
-                requestForCreation.meteringPoint()
+                requestForCreation.apiToken()
         ));
 
         switch (dataNeedCalculationService.calculate(dataNeedId)) {
@@ -80,7 +78,7 @@ public class PermissionRequestService {
                     Timeframe ignored,
                     Timeframe energyTimeframe
             ) -> {
-                LOGGER.info("Created permission request {}", permissionId);
+                LOGGER.info("Validated permission request {}", permissionId);
                 outbox.commit(new ValidatedEvent(permissionId,
                         energyTimeframe.start(),
                         energyTimeframe.end(),

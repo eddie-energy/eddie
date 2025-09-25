@@ -5,13 +5,11 @@ import energy.eddie.regionconnector.si.moj.elektro.MojElektroRegionConnectorMeta
 
 public class MojElektroDataSourceInformation implements DataSourceInformation {
 
-    private static final MojElektroRegionConnectorMetadata regionConnectorMetadata = new MojElektroRegionConnectorMetadata();
-
     private static final String MOJ_ELEKTRO = "Moj Elektro";
 
     @Override
     public String countryCode() {
-        return regionConnectorMetadata.countryCode();
+        return MojElektroRegionConnectorMetadata.COUNTRY_CODE;
     }
 
     @Override

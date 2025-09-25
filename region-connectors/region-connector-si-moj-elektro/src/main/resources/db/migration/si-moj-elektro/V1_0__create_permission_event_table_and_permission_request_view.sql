@@ -10,9 +10,7 @@ CREATE TABLE si_moj_elektro.permission_event
     permission_start              timestamp(6) WITH TIME ZONE,
     permission_end                timestamp(6) WITH TIME ZONE,
     event_created                 timestamp(6) WITH TIME ZONE,
-    latest_meter_reading_end_date timestamp(6) WITH TIME ZONE,
     api_token                     text,
-    metering_point                varchar(100),
     errors                        text
 );
 
@@ -31,9 +29,7 @@ SELECT DISTINCT ON (permission_id) permission_id,
         si_moj_elektro.firstval_agg(granularity)                   OVER w AS granularity,
         si_moj_elektro.firstval_agg(permission_start)              OVER w AS permission_start,
         si_moj_elektro.firstval_agg(permission_end)                OVER w AS permission_end,
-        si_moj_elektro.firstval_agg(latest_meter_reading_end_date) OVER w AS latest_meter_reading_end_date,
         si_moj_elektro.firstval_agg(api_token)                     OVER w AS api_token,
-        si_moj_elektro.firstval_agg(metering_point)                OVER w AS metering_point,
         MIN(event_created)                                         OVER w AS created
 FROM si_moj_elektro.permission_event
 WINDOW w AS (PARTITION BY permission_id ORDER BY event_created DESC)

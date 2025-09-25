@@ -8,7 +8,5 @@ public record PermissionRequestForCreation(
         @NotBlank(message = "must not be blank")
         String dataNeedId,
         @NotBlank(message = "must not be blank")
-        String apiToken,
-        @NotBlank(message = "must not be blank")
-        String meteringPoint
+        String apiToken
 ) { }

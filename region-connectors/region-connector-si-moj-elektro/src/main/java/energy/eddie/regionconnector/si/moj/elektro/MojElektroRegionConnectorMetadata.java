@@ -13,7 +13,9 @@ import java.util.List;
 
 @Component
 public class MojElektroRegionConnectorMetadata implements RegionConnectorMetadata {
+
     public static final String REGION_CONNECTOR_ID = "si-moj-elektro";
+    public static final String COUNTRY_CODE = "SI";
 
     @Override
     public String id() {
@@ -22,7 +24,7 @@ public class MojElektroRegionConnectorMetadata implements RegionConnectorMetadat
 
     @Override
     public String countryCode() {
-        return "SI";
+        return COUNTRY_CODE;
     }
 
     @Override

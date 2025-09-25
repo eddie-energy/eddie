@@ -38,24 +38,18 @@ class PermissionRequestServiceTest {
 
     @Mock
     private DataNeedCalculationService<DataNeed> calculationService;
-
     @Mock
     private Outbox outbox;
-
     @Mock
     private SiPermissionRequestRepository repository;
-
     @InjectMocks
     private PermissionRequestService permissionRequestService;
-
     @Captor
     private ArgumentCaptor<ValidatedEvent> validatedCaptor;
-
     private final PermissionRequestForCreation pr = new PermissionRequestForCreation(
             "cid",
             "dnid",
-            "apitoken",
-            "mp"
+            "apitoken"
     );
 
     @Test
@@ -117,7 +111,6 @@ class PermissionRequestServiceTest {
         var res = permissionRequestService.createPermissionRequest(pr);
 
         // Then
-        assertNotNull(res.permissionId());
         verify(outbox).commit(isA(CreatedEvent.class));
         verify(outbox).commit(validatedCaptor.capture());
         verify(outbox, times(2)).commit(any());
@@ -144,8 +137,6 @@ class PermissionRequestServiceTest {
                 now.minusDays(10),
                 now.minusDays(1),
                 ZonedDateTime.now(ZoneOffset.UTC),
-                null,
-                null,
                 null
         );
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(request));

@@ -16,12 +16,9 @@ public abstract class PersistablePermissionEvent implements PermissionEvent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(length = 36)
     private String permissionId;
-
     private ZonedDateTime eventCreated;
-
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
     private PermissionProcessStatus status;
