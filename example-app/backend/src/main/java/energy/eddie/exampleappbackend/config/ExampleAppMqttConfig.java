@@ -7,5 +7,6 @@ public record ExampleAppMqttConfig(
     String serverUri,
     String username,
     String password,
-    String clientId
+    String clientId,
+    String rtdTopic
 ) {}

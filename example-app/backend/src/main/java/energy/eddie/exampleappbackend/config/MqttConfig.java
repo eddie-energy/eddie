@@ -2,6 +2,7 @@ package energy.eddie.exampleappbackend.config;
 
 import energy.eddie.exampleappbackend.mqtt.MqttSubscriber;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.mqttv5.client.MqttClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
@@ -13,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 
 @Configuration
 @AllArgsConstructor
+@Slf4j
 public class MqttConfig {
     private final ExampleAppMqttConfig mqttConfig;
 
@@ -32,7 +34,9 @@ public class MqttConfig {
         var client = new MqttClient(config.serverUri(), config.clientId(), new MemoryPersistence());
         client.setCallback(mqttSubscriber);
         client.connect(options);
-        client.subscribe("aiida/v1/+/data", 0);
+        client.subscribe(config.rtdTopic(), 0);
+        log.info("Will subscribe to topic {}", config.rtdTopic());
+
         return client;
     }
 

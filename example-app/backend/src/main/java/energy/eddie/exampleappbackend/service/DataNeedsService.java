@@ -18,7 +18,7 @@ public class DataNeedsService {
 
             if (dataNeed != null && dataNeed.getType() != null && dataNeed.getType().equals("validated")) {
                 return PermissionType.VALIDATED_HISTORICAL_DATA;
-            } else if (dataNeed != null && dataNeed.getType() != null && (dataNeed.getType().equals("aiida") || dataNeed.getType().equals("aiida-outbound"))) {
+            } else if (dataNeed != null && dataNeed.getType() != null && (dataNeed.getType().equals("aiida") || dataNeed.getType().equals("outbound-aiida"))) {
                 return PermissionType.REAL_TIME_DATA;
             } else {
                 return PermissionType.OTHER;
