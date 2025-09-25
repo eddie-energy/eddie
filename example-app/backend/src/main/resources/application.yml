@@ -56,5 +56,7 @@ example-app:
     password: ${MQTT_PASSWORD}
     rtd-topic: ${MQTT_RTD_TOPIC:aiida/v1/+/data/outbound}
 
+  rtd-lifetime-window-minutes: 15
+
 dataNeeds:
   url: ${example-app.eddie.public-url}/data-needs
