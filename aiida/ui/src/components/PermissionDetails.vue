@@ -191,7 +191,10 @@ onClickOutside(target, () => (showToolTip.value = false))
           </Transition>
         </div>
       </template>
-
+      <div class="permission-field" v-if="permission.permissionId">
+        <dt>Permission ID</dt>
+        <dd>{{ permission.permissionId }}</dd>
+      </div>
       <div class="permission-field" v-if="permission.unimplemented">
         <dt>Target IP Adress, Port</dt>
         <dd>PLACEHOLDER</dd>
