@@ -392,7 +392,9 @@ defineExpose({ showModal })
     <p class="info-text">Fields marked with * are required!</p>
     <div class="action-buttons">
       <Button button-style="error-secondary" @click="modal?.close()">Cancel</Button>
-      <Button @click="formRef?.requestSubmit()">{{ operationType }}</Button>
+      <Button @click="formRef?.requestSubmit()">
+        {{ operationType === 'Edit' ? 'Save' : operationType }}
+      </Button>
     </div>
     <div v-if="loading" class="loading-indicator"></div>
   </ModalDialog>
