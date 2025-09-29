@@ -206,6 +206,65 @@ class OesterreichsEnergieAdapterTest {
     }
 
     @Test
+    void givenRecordWithNameAndDeviceId_isBothPublishedOnFlux() {
+        var recordJson = "{\"0-0:96.1.0\":{\"value\":\"90296857\"},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2370.6}";
+        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
+            var mockClient = mock(MqttAsyncClient.class);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
+
+            MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
+
+            StepVerifier.create(adapter.start())
+                        // call method to simulate arrived message
+                        .then(() -> adapter.messageArrived("MyTestTopic", message))
+                        .expectNextMatches(received -> {
+                            var values = received.aiidaRecordValues();
+                            var firstMatch = values.stream().anyMatch(v ->
+                                                                              v.rawTag().equals("0-0:96.1.0") &&
+                                                                              v.dataTag() == DEVICE_ID_1 &&
+                                                                              v.value().equals("90296857"));
+
+                            var secondMatch = values.stream().anyMatch(v ->
+                                                                               v.rawTag().equals("name") &&
+                                                                               v.dataTag() == DEVICE_ID_1 &&
+                                                                               v.value().equals("90296857"));
+
+                            return firstMatch && secondMatch;
+                        })
+                        .then(adapter::close)
+                        .expectComplete()
+                        .log()
+                        .verify();
+        }
+    }
+
+    @Test
+    void givenEmptyName_isNotPublishedOnFlux() {
+        var recordJson = "{\"1-0:1.7.0\":{\"value\":152,\"time\":1698915600},\"api_version\":\"v1\",\"name\":\"\",\"sma_time\":2370.6}";
+        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
+            var mockClient = mock(MqttAsyncClient.class);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
+
+            MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
+
+            StepVerifier.create(adapter.start())
+                        // call method to simulate arrived message
+                        .then(() -> adapter.messageArrived("MyTestTopic", message))
+                        .expectNextMatches(received -> received.aiidaRecordValues()
+                                                               .stream()
+                                                               .noneMatch(aiidaRecordValue -> aiidaRecordValue.dataTag() == DEVICE_ID_1)
+                        )
+                        .then(adapter::close)
+                        .expectComplete()
+                        .log()
+                        .verify();
+        }
+    }
+
+
+    @Test
     void givenRecordFromMqttBroker_isPublishedOnFlux() {
         var recordJson = "{\"1-0:1.7.0\":{\"value\":152,\"time\":1698915600},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":782238.7}";
 
