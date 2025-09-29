@@ -1,6 +1,6 @@
 package energy.eddie.exampleappbackend.mqtt;
 
-import energy.eddie.cim.v1_04.RTDEnvelope;
+import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.exampleappbackend.serialization.DeserializationException;
 import energy.eddie.exampleappbackend.serialization.MessageSerde;
 import energy.eddie.exampleappbackend.serialization.SerdeFactory;

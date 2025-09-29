@@ -1,4 +1,5 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.4'
@@ -7,7 +8,7 @@ plugins {
 }
 
 group = 'energy.eddie'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 
 java {
 	toolchain {
@@ -33,10 +34,7 @@ repositories {
 }
 
 dependencies {
-	implementation(project(":api"))
-	implementation(project(":cim"))
-
-	implementation 'energy.eddie:cim:0.0.0'
+	implementation 'energy.eddie:cim:3.1.0'
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -56,17 +54,21 @@ dependencies {
 	implementation "org.eclipse.paho:org.eclipse.paho.mqttv5.client:1.2.5"
 	implementation "io.swagger.core.v3:swagger-annotations:2.2.22"
 
-	implementation(libs.jaxb.runtime)
-	implementation(libs.jackson.databind)
-	implementation(libs.jackson.datatype.jsr310)
-	implementation(libs.jackson.datatype.jdk8)
-	implementation(libs.jackson.dataformat.xml)
-	implementation(libs.jackson.jakarta.xmlbind.annotations)
-	implementation(libs.jackson.core)
-	implementation(libs.jakarta.annotation.api)
+	implementation "org.glassfish.jaxb:jaxb-runtime"
+	implementation "com.fasterxml.jackson.core:jackson-databind"
+	implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+	implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8"
+	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml"
+	implementation "com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations"
+	implementation "com.fasterxml.jackson.core:jackson-core"
+	implementation "jakarta.annotation:jakarta.annotation-api"
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	testImplementation "org.springframework.boot:spring-boot-testcontainers"
+	testImplementation "org.testcontainers:postgresql:1.21.0"
+	testCompileOnly 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

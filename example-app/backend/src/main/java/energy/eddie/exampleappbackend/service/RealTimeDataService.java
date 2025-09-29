@@ -2,8 +2,8 @@ package energy.eddie.exampleappbackend.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.cim.v1_04.QuantityTypeKind;
-import energy.eddie.cim.v1_04.RTDEnvelope;
+import energy.eddie.cim.v1_04.rtd.QuantityTypeKind;
+import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.exampleappbackend.config.ExampleAppConfig;
 import energy.eddie.exampleappbackend.model.db.TimeSeries;
 import energy.eddie.exampleappbackend.model.db.TimeSeriesList;
