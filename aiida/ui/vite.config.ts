@@ -16,7 +16,11 @@ export default defineConfig({
       },
     }),
     vueDevTools(),
-    svgLoader(),
+    svgLoader({
+      svgoConfig: {
+        plugins: ["removeDimensions"]
+      }
+    }),
   ],
   resolve: {
     alias: {

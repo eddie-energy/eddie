@@ -17,7 +17,6 @@ const { buttonStyle = 'primary', size = 'normal' } = defineProps<{
   --button-block-padding: var(--spacing-sm);
   --button-color: var(--light);
   --button-bg-color: var(--eddie-primary);
-
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
@@ -30,6 +29,7 @@ const { buttonStyle = 'primary', size = 'normal' } = defineProps<{
   background-color: var(--button-bg-color);
   border: 1px solid var(--button-bg-color);
   border-radius: 2rem;
+  font-size: 1rem;
   font-weight: 600;
   width: fit-content;
   height: fit-content;

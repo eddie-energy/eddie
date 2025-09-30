@@ -56,6 +56,7 @@ import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
 
 .logo {
   height: 3rem;
+  width: auto;
 }
 
 .header-nav {

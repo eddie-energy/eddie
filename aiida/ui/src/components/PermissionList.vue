@@ -166,10 +166,6 @@ const handleCategoryChange = (category: string) => {
   width: 100%;
 }
 
-.icon {
-  min-width: 1rem;
-}
-
 .no-permissions {
   padding: var(--spacing-md);
 }
@@ -188,6 +184,7 @@ const handleCategoryChange = (category: string) => {
   grid-template-columns: 1fr 1fr 1fr;
   border-radius: 0.5rem 0.5rem 0 0;
   overflow: hidden;
+  margin-top: var(--spacing-md);
   height: fit-content;
   min-height: fit-content;
 

@@ -8,7 +8,7 @@ const { statusType = 'healthy', minimalOnMobile } = defineProps<{
 
 <template>
   <div class="status-tag text-xsmall" :class="[statusType, minimalOnMobile && 'minimal']">
-    <StatusDotIcon />
+    <StatusDotIcon class="dot" />
     <span>
       <slot />
     </span>
@@ -40,6 +40,10 @@ const { statusType = 'healthy', minimalOnMobile } = defineProps<{
     > span {
       display: none;
     }
+  }
+
+  .dot {
+    width: 0.5rem;
   }
 
   @media screen and (min-width: 640px) {

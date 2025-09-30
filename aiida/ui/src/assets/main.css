@@ -52,6 +52,10 @@
   @media (min-width: 1620px) {
     --content-padding: 10rem;
   }
+  @media screen and (min-width: 2565px) {
+    --max-content-width: 70vw;
+    font-size: clamp(16px, 1vw, 32px);
+  }
 }
 
 *,
@@ -121,7 +125,7 @@ body {
 }
 
 main {
-  height: 100%;
+  height: fit-content;
   border-radius: var(--border-radius);
   scrollbar-color: var(--eddie-primary) var(--light);
   display: flex;
@@ -227,6 +231,10 @@ select {
   border-radius: 9999px;
   left: calc(50% - 2rem);
   top: calc(50% - 2rem);
+}
+
+svg {
+  width: 1rem;
 }
 
 @keyframes spin {

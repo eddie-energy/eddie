@@ -61,7 +61,7 @@ defineExpose({ showModal, close })
 
 @media screen and (min-width: 1024px) {
   .dialog {
-    overflow: unset;
+    overflow: auto;
   }
 }
 </style>

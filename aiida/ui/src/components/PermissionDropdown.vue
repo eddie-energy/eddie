@@ -18,19 +18,23 @@ const isOpen = ref(false)
 <template>
   <li class="permission" :class="{ 'is-open': isOpen }">
     <header class="permission-header" @click="isOpen = !isOpen">
-      <PermissionIcon class="icon" />
-      <h2 class="heading-5 title">{{ permission.serviceName }}</h2>
+      <div class="header-title">
+        <PermissionIcon class="icon" />
+        <h2 class="heading-5 title">{{ permission.serviceName }}</h2>
+      </div>
       <p v-if="permission.unimplemented" class="small-data-graph">Placeholder</p>
-      <time class="non-essential">{{
-        new Date(permission.startTime).toLocaleDateString(undefined, {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        })
-      }}</time>
-      <time v-if="permission.grantTime" class="non-essential">
-        {{ new Date(permission.grantTime).toLocaleTimeString() }}
-      </time>
+      <div class="non-essential">
+        <time>{{
+          new Date(permission.startTime).toLocaleDateString(undefined, {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })
+        }}</time>
+        <time v-if="permission.grantTime">
+          {{ new Date(permission.grantTime).toLocaleTimeString() }}
+        </time>
+      </div>
       <StatusTag :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'" minimal-on-mobile>
         {{ STATUS[permission.status].title }}
       </StatusTag>
@@ -58,7 +62,7 @@ const isOpen = ref(false)
     }
     .permission-header {
       margin-bottom: var(--spacing-lg);
-      & > :not(button, h2, .icon) {
+      & > :not(button, .header-title) {
         opacity: 0;
         visibility: hidden;
       }
@@ -66,11 +70,21 @@ const isOpen = ref(false)
   }
 }
 
-.permission-header {
+.header-title {
   display: flex;
   align-items: center;
+  gap: var(--spacing-xlg);
+  justify-self: start;
+}
+
+.permission-header {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr)) auto auto;
+  align-items: center;
+  justify-items: center;
   width: 100%;
   gap: var(--spacing-xlg);
+  cursor: pointer;
   transition: margin-bottom 0.3s ease-out;
   > * {
     transition: opacity 0.5s ease-in;
@@ -85,6 +99,7 @@ const isOpen = ref(false)
 .chevron {
   cursor: pointer;
   justify-self: end;
+  align-self: flex-end;
   margin-left: auto;
   padding: 0.5rem;
   transition: transform 0.3s ease-in-out;
@@ -104,7 +119,6 @@ const isOpen = ref(false)
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  width: 100%;
 }
 
 .non-essential {
@@ -119,8 +133,9 @@ const isOpen = ref(false)
     display: flex;
   }
 
-  .title {
-    max-width: 50%;
+  .permission-header {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
   }
 }
 
@@ -128,11 +143,13 @@ const isOpen = ref(false)
   .permission {
     padding: var(--spacing-lg) var(--spacing-xlg);
   }
-  .title {
-    width: 50%;
+  .permission-header {
+    grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr)) auto;
   }
+
   .non-essential {
-    display: block;
+    display: flex;
+    gap: var(--spacing-sm);
   }
 }
 </style>
