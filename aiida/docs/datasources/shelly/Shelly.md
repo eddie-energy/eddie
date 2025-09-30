@@ -43,7 +43,7 @@ In the `monophase` profile there are three energy meters `EM1`, one per measured
 
 ### Shelly EM
 
-> ⚠️ **UNTESTED**
+> ✅ **TESTED**
 
 ![Shelly EM Gen3](ShellyEMGen3.png)
 
@@ -59,7 +59,7 @@ In the `monophase` profile there are three energy meters `EM1`, one per measured
 
 ### Shelly PM
 
-> ⚠️ **UNTESTED**
+> ✅ **TESTED**
 
 ![Shelly 1PM](ShellyPlus1PM.png)
 
