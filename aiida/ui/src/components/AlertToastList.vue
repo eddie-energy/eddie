@@ -44,7 +44,7 @@ const { toasts } = useToast()
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(--spacing-xxl);
 }
 
 @media screen and (min-width: 1024px) {

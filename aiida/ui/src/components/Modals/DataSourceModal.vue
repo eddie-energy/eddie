@@ -455,7 +455,7 @@ defineExpose({ showModal })
   color: var(--light);
   top: 50%;
   transform: translateY(-50%);
-  margin-left: 4px;
+  margin-left: var(--spacing-xs);
 }
 
 .column {

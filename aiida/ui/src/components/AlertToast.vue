@@ -102,7 +102,7 @@ const progressBarDuration = `${duration}ms`
 }
 
 .icon {
-  min-width: 40px;
+  min-width: 2.5rem;
   border-radius: var(--border-radius);
   background: linear-gradient(322.21deg, var(--severity-color) -3.82%, #ffffff 96.51%);
 }
