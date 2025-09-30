@@ -1,6 +1,6 @@
 package energy.eddie.exampleappbackend.controller;
 
-import energy.eddie.exampleappbackend.model.PermissionIdTypeAndName;
+import energy.eddie.exampleappbackend.model.AllPermissionsItem;
 import energy.eddie.exampleappbackend.model.db.Permission;
 import energy.eddie.exampleappbackend.service.PermissionService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,7 +21,7 @@ public class PermissionController {
     private final PermissionService permissionService;
 
     @GetMapping
-    public ResponseEntity<List<PermissionIdTypeAndName>> getAllPermissionsForUser() {
+    public ResponseEntity<List<AllPermissionsItem>> getAllPermissionsForUser() {
         return ResponseEntity.ok(permissionService.getAllPermissionIdAndNameForUser());
     }
 

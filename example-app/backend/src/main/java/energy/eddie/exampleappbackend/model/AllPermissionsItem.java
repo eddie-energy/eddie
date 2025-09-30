@@ -8,12 +8,13 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class PermissionIdTypeAndName {
+public class AllPermissionsItem {
     private Long id;
     private String type;
     private String name;
+    private String status;
 
-    public PermissionIdTypeAndName(Permission permission) {
-        this(permission.getId(), permission.getPermissionType().name(), permission.getName());
+    public AllPermissionsItem(Permission permission) {
+        this(permission.getId(), permission.getPermissionType().name(), permission.getName(), permission.getStatus());
     }
 }

@@ -3,7 +3,7 @@ package energy.eddie.exampleappbackend.service;
 import energy.eddie.cim.v0_82.pmd.MktActivityRecordComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionMarketDocumentComplexType;
-import energy.eddie.exampleappbackend.model.PermissionIdTypeAndName;
+import energy.eddie.exampleappbackend.model.AllPermissionsItem;
 import energy.eddie.exampleappbackend.model.db.Permission;
 import energy.eddie.exampleappbackend.model.db.PermissionType;
 import energy.eddie.exampleappbackend.persistence.PermissionRepository;
@@ -29,11 +29,11 @@ public class PermissionService {
     private final ValidatedHistoricalDataService validatedHistoricalDataService;
     private final AuthService authService;
 
-    public List<PermissionIdTypeAndName> getAllPermissionIdAndNameForUser() {
+    public List<AllPermissionsItem> getAllPermissionIdAndNameForUser() {
         var userId = authService.getCurrentUserId().toString();
         return permissionRepository.findByUserId(userId)
                 .stream()
-                .map((PermissionIdTypeAndName::new))
+                .map((AllPermissionsItem::new))
                 .toList();
     }
 
