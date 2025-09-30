@@ -18,13 +18,12 @@ import org.springframework.boot.actuate.health.Status;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShellyAdapter.class);
     private final ObjectMapper mapper;
-    private Optional<Health> healthState = Optional.empty();
+    private Health healthState = Health.unknown().build();
 
     /**
      * Creates the datasource for the Shelly (energy meter) devices. It connects to the specified MQTT broker and expects
@@ -53,7 +52,7 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        LOGGER.info("Topic {} new message: {}", topic, message);
+        LOGGER.trace("Topic {} new message: {}", topic, message);
 
         var payload = new String(message.getPayload(), StandardCharsets.UTF_8).trim();
         try {
@@ -80,10 +79,10 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
 
     @Override
     public Health health() {
-        if(healthState.isEmpty() || super.health().getStatus() == Status.DOWN) {
+        if(healthState.getStatus() == Status.UNKNOWN || super.health().getStatus() == Status.DOWN) {
             return super.health();
         }
-        return healthState.get();
+        return healthState;
     }
 
     private Stream<ShellyMeasurement> componentEntryToMeasurement(
@@ -102,7 +101,7 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
 
     private void setHealthState(boolean online) {
         var status = online ? Status.UP : Status.DOWN;
-        this.healthState = Optional.of(Health.status(status).build());
+        this.healthState = Health.status(status).build();
 
         LOGGER.info("Set health state of Shelly adapter {} to {}", dataSource.id(), status);
     }

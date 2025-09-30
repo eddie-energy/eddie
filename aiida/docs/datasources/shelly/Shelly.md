@@ -18,12 +18,12 @@ After wiring and mounting, connect the device to your Wi-Fi network and configur
 
 ### Shelly 3EM
 
-> ✅ **TESTED**
+> ✅ **TESTED:** Shelly Pro 3 EM Gen2
 
 ![Shelly Pro 3EM](ShellyPro3EM.png)
 
 - **Three-phase**
-- **Shelly Pro 3 EM:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPro3EM/
+- **Shelly Pro 3 EM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPro3EM/
 - **Shelly 3EM:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly3EMG3
 
 #### Data
@@ -43,13 +43,13 @@ In the `monophase` profile there are three energy meters `EM1`, one per measured
 
 ### Shelly EM
 
-> ✅ **TESTED**
+> ✅ **TESTED:** Shelly Pro EM-50 Gen2
 
 ![Shelly EM Gen3](ShellyEMGen3.png)
 
 - **Single-phase**
-- **Shelly Pro EM:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyProEM
-- **Shelly EM Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyProEM
+- **Shelly Pro EM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyProEM
+- **Shelly EM Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/ShellyEMG3
 
 #### Data
 
@@ -59,13 +59,22 @@ In the `monophase` profile there are three energy meters `EM1`, one per measured
 
 ### Shelly PM
 
-> ✅ **TESTED**
+> ✅ **TESTED:** Shelly 1 PM Gen4
 
-![Shelly 1PM](ShellyPlus1PM.png)
+![Shelly 1PM](Shelly1PM.png)
 
 - **n channels** (Shelly 1PM: 1 channel, Shelly 2PM: 2 channels, Shelly 4PM: 4 channels)
-- **Shelly Pro EM:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyProEM
-- **Shelly EM Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyProEM
+- **Shelly Plus 1 PM (Mini) Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPlus1PM
+- **Shelly Plus 2 PM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPlus2PM
+- **Shelly Pro 1 PM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPro1PM
+- **Shelly Pro 2 PM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPro2PM
+- **Shelly Plus 4 PM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPlus4PM
+- **Shelly 1 PM Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly1PMG3
+- **Shelly 1 PM Mini Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/ShellyMini1PMG3
+- **Shelly 2 PM Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly2PMG3
+- **Shelly 1 PM Gen4:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly1PMG4
+- **Shelly 1 PM Mini Gen4:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen4/ShellyMini1PMG4
+- **Shelly 2 PM Gen4:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly2PMG4
 
 #### Data
 
