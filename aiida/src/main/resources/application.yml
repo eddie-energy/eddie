@@ -19,7 +19,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}
-          jwk-set-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/protocol/openid-connect/certs
+          jwk-set-uri: ${aiida.keycloak.url.internal}/realms/${aiida.keycloak.realm}/protocol/openid-connect/certs
       client:
         provider:
           keycloak:
