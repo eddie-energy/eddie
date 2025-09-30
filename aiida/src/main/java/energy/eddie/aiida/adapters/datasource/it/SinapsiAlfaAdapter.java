@@ -1,14 +1,15 @@
 package energy.eddie.aiida.adapters.datasource.it;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
-import energy.eddie.aiida.adapters.datasource.it.transformer.SinapsiAlfaJson;
+import energy.eddie.aiida.adapters.datasource.it.transformer.SinapsiAlfaEntryJson;
 import energy.eddie.aiida.adapters.datasource.it.transformer.SinapsiAlfaMeasurement;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.aiida.models.record.AiidaRecordValue;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import java.util.List;
 
 public class SinapsiAlfaAdapter extends MqttDataSourceAdapter<SinapsiAlfaDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SinapsiAlfaAdapter.class);
+    private static final TypeReference<List<SinapsiAlfaEntryJson>> ENTRY_JSON_TYPE_REF = new TypeReference<>() {};
     private final ObjectMapper mapper;
 
     /**
@@ -51,23 +53,21 @@ public class SinapsiAlfaAdapter extends MqttDataSourceAdapter<SinapsiAlfaDataSou
         LOGGER.trace("Topic {} new message: {}", topic, message);
 
         try {
-            var json = mapper.readValue(message.getPayload(), SinapsiAlfaJson.class);
+            var json = mapper.readValue(message.getPayload(), ENTRY_JSON_TYPE_REF);
 
-            // TODO: buffer values
-
-            List<AiidaRecordValue> aiidaRecordValues = json.data()
-                                                           .stream()
-                                                           .flatMap(dataEntry -> dataEntry.entries()
-                                                                                          .entrySet()
-                                                                                          .stream()
-                                                           )
-                                                           .map(entry -> new SinapsiAlfaMeasurement(
-                                                                        entry.getKey(),
-                                                                        String.valueOf(entry.getValue())
-                                                                )
-                                                           )
-                                                           .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
-                                                           .toList();
+            var aiidaRecordValues = json.stream()
+                                        .flatMap(x -> x.data().stream())
+                                        .flatMap(dataEntry -> dataEntry.entries()
+                                                                       .entrySet()
+                                                                       .stream()
+                                        )
+                                        .map(entry -> new SinapsiAlfaMeasurement(
+                                                     entry.getKey(),
+                                                     String.valueOf(entry.getValue())
+                                             )
+                                        )
+                                        .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
+                                        .toList();
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (IOException e) {
@@ -75,5 +75,15 @@ public class SinapsiAlfaAdapter extends MqttDataSourceAdapter<SinapsiAlfaDataSou
                          new String(message.getPayload(), StandardCharsets.UTF_8),
                          e);
         }
+    }
+
+    @Override
+    protected MqttConnectionOptions createConnectOptions() {
+        var connectOptions = super.createConnectOptions();
+
+        connectOptions.setUserName(dataSource().mqttUsername());
+        connectOptions.setPassword(dataSource().mqttPassword().getBytes(StandardCharsets.UTF_8));
+
+        return connectOptions;
     }
 }

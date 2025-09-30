@@ -28,9 +28,13 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
 
         this.mqttInternalHost = HOST;
         this.mqttExternalHost = HOST;
-        this.mqttSubscribeTopic = TOPIC_SUFFIX + DUMMY_USERNAME + TOPIC_INFIX + DUMMY_ACTIVATION_KEY;
         this.mqttUsername = DUMMY_USERNAME;
         this.mqttPassword = DUMMY_PASSWORD;
+    }
+
+    @Override
+    protected void updateMqttSubscribeTopic() {
+        this.mqttSubscribeTopic = TOPIC_SUFFIX + DUMMY_USERNAME + TOPIC_INFIX + DUMMY_ACTIVATION_KEY;
     }
 
     @Override

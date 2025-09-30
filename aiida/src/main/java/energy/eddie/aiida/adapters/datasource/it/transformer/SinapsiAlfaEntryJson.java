@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record SinapsiAlfaJson(
+public record SinapsiAlfaEntryJson(
     @JsonProperty("du") String meterFabricationNumber,
     @JsonProperty("pod") String pointOfDelivery,
     @JsonProperty("data") List<SinapsiAlfaDataEntryJson> data

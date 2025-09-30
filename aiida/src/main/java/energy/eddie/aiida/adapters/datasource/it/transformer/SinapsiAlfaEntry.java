@@ -16,15 +16,20 @@ public enum SinapsiAlfaEntry {
             ObisCode.NEGATIVE_ACTIVE_INSTANTANEOUS_POWER,
             UnitOfMeasurement.WATT
     ),
-    POWER_THRESHOLD_CROSSING_EVENT_COUNTER(
-            "1-0:16.7.0.255_3,0_2",
-            ObisCode.UNKNOWN,
-            UnitOfMeasurement.NONE
-    ),
     POSITIVE_ACTIVE_ENERGY(
             "1-0:1.8.0.255_3,0_2",
             ObisCode.POSITIVE_ACTIVE_ENERGY,
             UnitOfMeasurement.WATT_HOUR
+    ),
+    NEGATIVE_ACTIVE_ENERGY(
+            "1-0:2.8.0.255_3,0_2",
+            ObisCode.NEGATIVE_ACTIVE_ENERGY,
+            UnitOfMeasurement.WATT_HOUR
+    ),
+    DEVICE_ID_1(
+            "0-0:96.1.0.255_1,0_2",
+            ObisCode.DEVICE_ID_1,
+            UnitOfMeasurement.NONE
     ),
     AVERAGE_POSITIVE_ACTIVE_POWER_OVER_15_MINUTES(
             "1-0:1.27.0.255_3,0_2",

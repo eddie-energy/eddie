@@ -41,7 +41,7 @@ const getEmptyDataSource = (): AiidaDataSource => {
   }
 }
 
-const SUPPORTED_COUNTRY_CODES = ['AT', 'FR', 'NL']
+const SUPPORTED_COUNTRY_CODES = ['AT', 'BE', 'CH', 'DK', 'FI', 'FR', 'HU', 'IT', 'LT', 'NL', 'SE']
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
 const countryOptions = SUPPORTED_COUNTRY_CODES.map((country) => {
