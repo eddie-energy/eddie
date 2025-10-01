@@ -10,13 +10,16 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.models.record.UnitOfMeasurement;
+import energy.eddie.aiida.utils.ObisCode;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<OesterreichsEnergieDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(OesterreichsEnergieAdapter.class);
@@ -50,22 +53,15 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        LOGGER.trace("Topic {} new message: {}", topic, message);
+        LOGGER.info("Topic {} new message: {}", topic, message);
 
         try {
             var json = mapper.readValue(message.getPayload(), OesterreichsEnergieAdapterJson.class);
 
-            List<AiidaRecordValue> aiidaRecordValues = json.energyData()
-                                                           .entrySet()
-                                                           .stream()
-                                                           .map(entry ->
-                                                                        new OesterreichsEnergieAdapterMeasurement(entry.getKey(),
-                                                                                                                  String.valueOf(
-                                                                                                                          entry.getValue()
-                                                                                                                               .value()))
-                                                           )
-                                                           .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
-                                                           .toList();
+            var aiidaRecordValues = convertEnergyDataToAiidaRecordValues(json);
+            if(!json.name().isEmpty()) {
+                aiidaRecordValues.add(convertNameToAiidaRecordValue(json));
+            }
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (IOException e) {
@@ -73,5 +69,30 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
                          new String(message.getPayload(), StandardCharsets.UTF_8),
                          e);
         }
+    }
+
+    private ArrayList<AiidaRecordValue> convertEnergyDataToAiidaRecordValues(OesterreichsEnergieAdapterJson json) {
+        return json.energyData()
+                   .entrySet()
+                   .stream()
+                   .map(entry ->
+                                new OesterreichsEnergieAdapterMeasurement(
+                                        entry.getKey(),
+                                        String.valueOf(entry.getValue().value())
+                                )
+                   )
+                   .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
+                   .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private AiidaRecordValue convertNameToAiidaRecordValue(OesterreichsEnergieAdapterJson json) {
+        return new AiidaRecordValue(
+                "name",
+                ObisCode.DEVICE_ID_1,
+                json.name(),
+                UnitOfMeasurement.NONE,
+                json.name(),
+                UnitOfMeasurement.NONE
+        );
     }
 }
