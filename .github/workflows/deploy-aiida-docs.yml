@@ -1,0 +1,30 @@
+name: Deploy AIIDA docs
+on:
+  push:
+    paths:
+      - 'aiida/docs/**'
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  docs-deploy:
+    runs-on: [ linux, external ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Gradle build aiida-docs
+        run: ./gradlew pnpmBuildAiidaDocs
+      - name: Deploy docs to webserver
+        uses: eddie-energy/ftp-deploy-action@main
+        timeout-minutes: 5
+        with:
+          host: ${{ secrets.WEBSERVER_SFTP_HOST }}
+          password: ${{ secrets.WEBSERVER_SFTP_PASSWORD }}
+          user: ${{ secrets.WEBSERVER_SFTP_USERNAME }}
+          source: "./docs/.vitepress/dist/"
+          destination: "/public_html/aiida/"

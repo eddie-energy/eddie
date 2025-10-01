@@ -4,6 +4,7 @@ packages:
   - docs
   - admin-console/ui
   - aiida/ui
+  - aiida/docs
 
 onlyBuiltDependencies:
   - esbuild

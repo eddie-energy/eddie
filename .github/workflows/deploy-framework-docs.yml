@@ -18,7 +18,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
       - name: Gradle build framework-docs
-        run: ./gradlew pnpmBuildDocs
+        run: ./gradlew pnpmBuildFrameworkDocs
       - name: Deploy docs to webserver
         uses: eddie-energy/ftp-deploy-action@main
         timeout-minutes: 5
