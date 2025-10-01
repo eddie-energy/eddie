@@ -50,7 +50,7 @@ public class XmlMessageSerde implements MessageSerde {
     }
 
     @Override
-    public byte[] serialize(Object message) throws SerializationException {
+    public synchronized byte[] serialize(Object message) throws SerializationException {
         try {
             if (CIM_CLASSES.contains(message.getClass())) {
                 return serializeCimMessage(message);
