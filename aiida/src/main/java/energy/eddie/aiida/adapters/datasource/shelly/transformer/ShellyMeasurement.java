@@ -4,19 +4,19 @@ import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
 import energy.eddie.aiida.models.record.UnitOfMeasurement;
 import energy.eddie.aiida.utils.ObisCode;
 
-public class ShellyEMMeasurement extends SmartMeterAdapterMeasurement {
-    private final ShellyEMPhase phase;
-    private final ShellyEMEntry entry;
+public class ShellyMeasurement extends SmartMeterAdapterMeasurement {
+    private final ShellyPhase phase;
+    private final ShellyEntry entry;
 
-    public ShellyEMMeasurement(ShellyEMComponent component, String entryKey, String rawValue) {
+    public ShellyMeasurement(ShellyComponent component, String entryKey, String rawValue) {
         super(entryKey, rawValue);
 
-        if(component.phase() == ShellyEMPhase.TOTAL) {
-            this.phase = ShellyEMPhase.fromKey(entryKey);
+        if(component.phase() == ShellyPhase.TOTAL) {
+            this.phase = ShellyPhase.fromKey(entryKey);
         } else {
             this.phase = component.phase();
         }
-        this.entry = ShellyEMEntry.fromKey(entryKey);
+        this.entry = ShellyEntry.fromKey(entryKey);
     }
 
     @Override

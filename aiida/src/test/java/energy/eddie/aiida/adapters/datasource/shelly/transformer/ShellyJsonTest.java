@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class ShellyEMJsonTest {
+public class ShellyJsonTest {
     public static final String EM_PAYLOAD = """
             {
               "src": "shellypro3em-8813bfe14804",
@@ -64,6 +64,40 @@ public class ShellyEMJsonTest {
               }
             }
             """;
+    private static final String SWITCH_PAYLOAD = """
+            {
+              "src": "shelly1pmg4-8813bfe14804",
+              "dst": "aiida/17a019b1-253b-40de-8800-d577e4e96181/events",
+              "method": "NotifyStatus",
+              "params": {
+                "ts": 1757591520.01,
+                "switch:3": {
+                  "aenergy": {
+                    "by_minute": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "minute_ts": 1757591520,
+                    "total": 1235.456
+                  },
+                  "apower": 35,
+                  "current": 77,
+                  "freq": 50.01,
+                  "ret_aenergy": {
+                    "by_minute": [
+                      312.345,
+                      23.456,
+                      356.789
+                    ],
+                    "minute_ts": 1757591520,
+                    "total": 234.567
+                  },
+                  "voltage": 228.5
+                }
+              }
+            }
+            """;
     private static final String UNKNOWN_COMPONENT_PAYLOAD = """
             {
               "src": "shellypro3em-8813bfe14804",
@@ -83,8 +117,8 @@ public class ShellyEMJsonTest {
     void deserialize_returnsEMJson() throws JsonProcessingException {
         var objectMapper = new AiidaConfiguration().customObjectMapper().build();
 
-        var json = objectMapper.readValue(EM_PAYLOAD, ShellyEMJson.class);
-        var component = json.params().em().get(ShellyEMComponent.EM);
+        var json = objectMapper.readValue(EM_PAYLOAD, ShellyJson.class);
+        var component = json.params().em().get(ShellyComponent.EM);
 
         assertNotNull(component);
         assertEquals("shellypro3em-8813bfe14804", json.source());
@@ -99,8 +133,8 @@ public class ShellyEMJsonTest {
     void deserialize_returnsEMDataJson() throws JsonProcessingException {
         var objectMapper = new AiidaConfiguration().customObjectMapper().build();
 
-        var json = objectMapper.readValue(EM_DATA_PAYLOAD, ShellyEMJson.class);
-        var component = json.params().em().get(ShellyEMComponent.EM_DATA);
+        var json = objectMapper.readValue(EM_DATA_PAYLOAD, ShellyJson.class);
+        var component = json.params().em().get(ShellyComponent.EM_DATA);
 
         assertNotNull(component);
         assertEquals("shellypro3em-8813bfe14804", json.source());
@@ -112,10 +146,29 @@ public class ShellyEMJsonTest {
     }
 
     @Test
+    void deserialize_returnsSwitchJson() throws JsonProcessingException {
+        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
+
+        var json = objectMapper.readValue(SWITCH_PAYLOAD, ShellyJson.class);
+        var component = json.params().em().get(ShellyComponent.SWITCH_3);
+
+        assertNotNull(component);
+        assertEquals("shelly1pmg4-8813bfe14804", json.source());
+        assertEquals("aiida/17a019b1-253b-40de-8800-d577e4e96181/events", json.destination());
+        assertEquals("NotifyStatus", json.method());
+        assertEquals(1757591520.01, json.params().timestamp());
+        assertEquals(77, component.get("current"));
+        assertEquals(35, component.get("apower"));
+        assertEquals(228.5, component.get("voltage"));
+        assertEquals(1235.456, component.get("aenergy.total"));
+        assertEquals(234.567, component.get("ret_aenergy.total"));
+    }
+
+    @Test
     void deserialize_returnsJsonWithoutData_whenUnknownComponent() throws JsonProcessingException {
         var objectMapper = new AiidaConfiguration().customObjectMapper().build();
 
-        var json = objectMapper.readValue(UNKNOWN_COMPONENT_PAYLOAD, ShellyEMJson.class);
+        var json = objectMapper.readValue(UNKNOWN_COMPONENT_PAYLOAD, ShellyJson.class);
 
         assertNotNull(json);
         assertEquals("shellypro3em-8813bfe14804", json.source());
@@ -130,6 +183,6 @@ public class ShellyEMJsonTest {
         var objectMapper = new AiidaConfiguration().customObjectMapper().build();
         var invalidJson = "{ \"foo\": \"bar\" }";
 
-        assertThrows(JsonProcessingException.class, () -> objectMapper.readValue(invalidJson, ShellyEMJson.class));
+        assertThrows(JsonProcessingException.class, () -> objectMapper.readValue(invalidJson, ShellyJson.class));
     }
 }

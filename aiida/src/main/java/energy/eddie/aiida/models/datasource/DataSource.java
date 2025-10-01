@@ -11,7 +11,7 @@ import energy.eddie.aiida.models.datasource.mqtt.cim.CimDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
-import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyEMDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.image.Image;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -95,9 +95,9 @@ public abstract class DataSource {
                 throw createMqttSettingsIllegalStateException(dataSourceType);
             }
 
-            case SHELLY_EM -> {
+            case SHELLY -> {
                 if (settings instanceof DataSourceMqttDto mqtt) {
-                    yield new ShellyEMDataSource(dto, userId, mqtt);
+                    yield new ShellyDataSource(dto, userId, mqtt);
                 }
                 throw createMqttSettingsIllegalStateException(dataSourceType);
             }

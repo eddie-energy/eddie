@@ -5,7 +5,7 @@ import energy.eddie.aiida.utils.ObisCode;
 
 import java.util.stream.Stream;
 
-public enum ShellyEMEntry {
+public enum ShellyEntry {
     TOTAL_ACTIVE_ENERGY(
             "total_act_energy",
             ObisCode.POSITIVE_ACTIVE_ENERGY,
@@ -14,14 +14,15 @@ public enum ShellyEMEntry {
             ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L3,
             UnitOfMeasurement.WATT_HOUR
     ),
-    TOTAL_ACTIVE(
-            "total_act",
+    ACTIVE_ENERGY_EM(
+            "act",
             ObisCode.POSITIVE_ACTIVE_ENERGY,
             ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L1,
             ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L2,
             ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L3,
             UnitOfMeasurement.WATT_HOUR
     ),
+    ACTIVE_ENERGY_SWITCH("aenergy.total", ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L1, UnitOfMeasurement.WATT_HOUR),
     TOTAL_ACTIVE_RETURNED_ENERGY(
             "total_act_ret_energy",
             ObisCode.NEGATIVE_ACTIVE_ENERGY,
@@ -30,15 +31,15 @@ public enum ShellyEMEntry {
             ObisCode.NEGATIVE_ACTIVE_ENERGY_IN_PHASE_L3,
             UnitOfMeasurement.WATT_HOUR
     ),
-
-    TOTAL_ACTIVE_RETURNED(
-            "total_act_ret",
+    ACTIVE_RETURNED_ENERGY_EM(
+            "act_ret",
             ObisCode.NEGATIVE_ACTIVE_ENERGY,
             ObisCode.NEGATIVE_ACTIVE_ENERGY_IN_PHASE_L1,
             ObisCode.NEGATIVE_ACTIVE_ENERGY_IN_PHASE_L2,
             ObisCode.NEGATIVE_ACTIVE_ENERGY_IN_PHASE_L3,
             UnitOfMeasurement.WATT_HOUR
     ),
+    ACTIVE_RETURNED_ENERGY_SWITCH("ret_aenergy.total", ObisCode.NEGATIVE_ACTIVE_ENERGY_IN_PHASE_L1, UnitOfMeasurement.WATT_HOUR),
     CURRENT(
             "current",
             ObisCode.INSTANTANEOUS_CURRENT,
@@ -56,7 +57,7 @@ public enum ShellyEMEntry {
             ObisCode.INSTANTANEOUS_VOLTAGE_IN_PHASE_L3,
             UnitOfMeasurement.VOLT
     ),
-    ACTIVE_POWER(
+    ACTIVE_POWER_EM(
             "act_power",
             ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
             ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L1,
@@ -64,6 +65,7 @@ public enum ShellyEMEntry {
             ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L3,
             UnitOfMeasurement.WATT
     ),
+    ACTIVE_POWER_SWITCH("apower", ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L1, UnitOfMeasurement.WATT),
     APPARENT_POWER(
             "aprt_power",
             ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER,
@@ -91,7 +93,7 @@ public enum ShellyEMEntry {
     private final ObisCode obisCodePhaseL3;
     private final UnitOfMeasurement rawUnitOfMeasurement;
 
-    ShellyEMEntry(
+    ShellyEntry(
             String entrySuffix,
             ObisCode obisCodeTotal,
             ObisCode obisCodeNetral,
@@ -109,7 +111,7 @@ public enum ShellyEMEntry {
         this.rawUnitOfMeasurement = rawUnitOfMeasurement;
     }
 
-    ShellyEMEntry(
+    ShellyEntry(
             String entrySuffix,
             ObisCode obisCodeTotal,
             ObisCode obisCodePhaseL1,
@@ -126,18 +128,18 @@ public enum ShellyEMEntry {
              rawUnitOfMeasurement);
     }
 
-    ShellyEMEntry(String entrySuffix, ObisCode obisCode, UnitOfMeasurement rawUnitOfMeasurement) {
+    ShellyEntry(String entrySuffix, ObisCode obisCode, UnitOfMeasurement rawUnitOfMeasurement) {
         this(entrySuffix, obisCode, obisCode, obisCode, obisCode, obisCode, rawUnitOfMeasurement);
     }
 
-    public static ShellyEMEntry fromKey(String key) {
-        return Stream.of(ShellyEMEntry.values())
+    public static ShellyEntry fromKey(String key) {
+        return Stream.of(ShellyEntry.values())
                      .filter(entry -> key.endsWith(entry.entrySuffix))
                      .findFirst()
-                     .orElse(ShellyEMEntry.UNKNOWN);
+                     .orElse(ShellyEntry.UNKNOWN);
     }
 
-    public ObisCode obisCodeForPhase(ShellyEMPhase phase) {
+    public ObisCode obisCodeForPhase(ShellyPhase phase) {
         return switch (phase) {
             case TOTAL -> obisCodeTotal;
             case NEUTRAL -> obisCodeNetral;

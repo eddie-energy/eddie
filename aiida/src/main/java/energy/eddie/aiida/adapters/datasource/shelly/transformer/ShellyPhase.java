@@ -2,21 +2,21 @@ package energy.eddie.aiida.adapters.datasource.shelly.transformer;
 
 import java.util.stream.Stream;
 
-public enum ShellyEMPhase {
-    TOTAL("total"),
-    NEUTRAL("n"),
-    PHASE_L1("a"),
-    PHASE_L2("b"),
-    PHASE_L3("c"),
+public enum ShellyPhase {
+    TOTAL("total_"),
+    NEUTRAL("n_"),
+    PHASE_L1("a_"),
+    PHASE_L2("b_"),
+    PHASE_L3("c_"),
     UNKNOWN("unknown");
 
     private final String phasePrefix;
 
-    ShellyEMPhase(String phasePrefix) {
+    ShellyPhase(String phasePrefix) {
         this.phasePrefix = phasePrefix;
     }
 
-    public static ShellyEMPhase fromKey(String key) {
+    public static ShellyPhase fromKey(String key) {
         return Stream.of(values())
                 .filter(phase -> key.startsWith(phase.phasePrefix))
                 .findFirst()
