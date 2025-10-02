@@ -1,0 +1,19 @@
+{
+  "name": "aiida-docs",
+  "private": "true",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "@shikijs/vitepress-twoslash": "^1.24.0",
+    "@types/markdown-it": "^14.1.2",
+    "mermaid": "^11.4.0",
+    "vitepress": "^1.4.2",
+    "vitepress-plugin-mermaid": "^2.0.17",
+    "vue": "^3.5.12"
+  }
+}

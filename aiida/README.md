@@ -145,21 +145,21 @@ Data from all data sources is automatically persisted in the TimescaleDB.
 
 Currently, the following countries are supported:
 
-| Country                        | Name of datasource                                                              |
-|--------------------------------|---------------------------------------------------------------------------------|
-| AT                             | [OesterreichsEnergieAdapter](docs/datasources/at/OesterreichsEnergieAdapter.md) |
-| FR                             | [MicroTeleinfoV3](docs/datasources/fr/MicroTeleinfoV3.md)                       |
-| NL, BE, SE, DK, FI, HU, LT, CH | [SmartGatewaysAdapter](docs/datasources/sga/SmartGatewaysAdapter.md)            |
-| INTERNATIONAL                  | [Shelly](docs/datasources/shelly/Shelly.md)                                     |
+| Country                        | Name of datasource                                                                     |
+|--------------------------------|----------------------------------------------------------------------------------------|
+| AT                             | [OesterreichsEnergieAdapter](docs-legacy/datasources/at/OesterreichsEnergieAdapter.md) |
+| FR                             | [MicroTeleinfoV3](docs-legacy/datasources/fr/MicroTeleinfoV3.md)                       |
+| NL, BE, SE, DK, FI, HU, LT, CH | [SmartGatewaysAdapter](docs-legacy/datasources/sga/SmartGatewaysAdapter.md)            |
+| INTERNATIONAL                  | [Shelly](docs-legacy/datasources/shelly/Shelly.md)                                     |
 
-![SupportedMeters](docs/images/Smart_Meter_supported_by_AIIDA.png)
+![SupportedMeters](docs/images/supported-smart-meters.png)
 _Map created with https://www.mapchart.net_
 
 ## Modbus Configuration Documentation
 
 For details on configuring Modbus-based smart meters and other energy devices within AIIDA, including virtual datapoints, endian handling, and transformation logic, please refer to the full documentation:
 
-📄 [Modbus Configuration Documentation](docs/modbus/ModbusConfigDocumentation.md)
+📄 [Modbus Configuration Documentation](docs-legacy/modbus/ModbusConfigDocumentation.md)
 
 ## Inbound Data Sources
 

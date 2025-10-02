@@ -17,7 +17,7 @@ Editing and adding markdown files shouldn't be different from anywhere else.
 
 ## Documentation Site Generation
 
-`gradlew pnpmBuildDocs` in the project root will generate the documentation website using Gradle and pnpm which can be found in
+`gradlew pnpmBuildFrameworkDocs` in the project root will generate the documentation website using Gradle and pnpm which can be found in
 `/docs/.vitepress/dist`.
 
 For local development running the following commands in the `/docs` folder can become handy:

@@ -72,11 +72,18 @@ tasks.register<PnpmTask>("pnpmBuildAiidaUi") {
     }
 }
 
-tasks.register<PnpmTask>("pnpmBuildDocs") {
+tasks.register<PnpmTask>("pnpmBuildFrameworkDocs") {
     group = "documentation"
     description = "builds the eddie framework documentation"
     dependsOn("pnpmInstall")
-    pnpmCommand.set(listOf("run", "docs:build"))
+    pnpmCommand.set(listOf("run", "docs:framework:build"))
+}
+
+tasks.register<PnpmTask>("pnpmBuildAiidaDocs") {
+    group = "documentation"
+    description = "builds the aiida documentation"
+    dependsOn("pnpmInstall")
+    pnpmCommand.set(listOf("run", "docs:aiida:build"))
 }
 
 sonar {
