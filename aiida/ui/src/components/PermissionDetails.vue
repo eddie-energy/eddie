@@ -236,7 +236,7 @@ onClickOutside(target, () => (showToolTip.value = false))
 .permission-field {
   display: flex;
   justify-content: space-between;
-  border: 1px solid var(--eddie-grey-light);
+  border: 1px solid var(--eddie-grey-medium);
   color: var(--eddie-grey-medium);
   padding: var(--spacing-sm) var(--spacing-sm);
   border-radius: var(--border-radius);
@@ -261,7 +261,7 @@ onClickOutside(target, () => (showToolTip.value = false))
 
   dt {
     padding: var(--spacing-sm) var(--spacing-sm);
-    border: 1px solid var(--eddie-grey-light);
+    border: 1px solid var(--eddie-grey-medium);
     width: 100%;
     border-radius: var(--border-radius);
   }

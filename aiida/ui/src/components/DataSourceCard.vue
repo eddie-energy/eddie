@@ -197,7 +197,7 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
   > .button-field > dt {
     background-color: var(--light);
     padding: var(--spacing-xs) var(--spacing-sm);
-    border: 1px solid var(--eddie-grey-light);
+    border: 1px solid var(--eddie-grey-medium);
     border-radius: var(--border-radius);
   }
 }
