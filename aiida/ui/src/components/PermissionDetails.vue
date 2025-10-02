@@ -330,8 +330,8 @@ onClickOutside(target, () => (showToolTip.value = false))
     position: absolute;
     bottom: 100%;
     left: 10%;
-    margin-left: -5px;
-    border-width: 5px;
+    margin-left: -var(--spacing-xs);
+    border-width: var(--spacing-xs);
     border-style: solid;
     border-color: var(--eddie-primary) transparent transparent transparent;
     transform: rotate(180deg);

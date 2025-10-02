@@ -234,10 +234,10 @@ div.button-field {
 
 .toggle-icon {
   position: absolute;
-  margin: 6px 12px;
+  margin: 0.2rem 0.75rem;
   top: 0;
   left: 0;
-  transform: translateX(-5px);
+  transform: translateX(-0.25rem);
   transition:
     transform 0.3s ease-in-out,
     color 0.3s ease-in-out;
@@ -256,7 +256,7 @@ div.button-field {
 
   &:hover {
     .toggle-icon {
-      transform: translateX(13px);
+      transform: translateX(0.75rem);
     }
   }
 
@@ -264,14 +264,14 @@ div.button-field {
     background-color: var(--eddie-primary);
     color: var(--light);
     .toggle-icon {
-      transform: translateX(13px);
+      transform: translateX(0.75rem);
     }
 
     &:hover {
       background-color: var(--light);
       color: var(--eddie-primary);
       .toggle-icon {
-        transform: translateX(-5px);
+        transform: translateX(-0.2rem);
       }
     }
   }
