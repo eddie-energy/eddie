@@ -7,6 +7,7 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfig;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
 import energy.eddie.aiida.errors.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.ModbusConnectionException;
@@ -119,8 +120,8 @@ public class DataSourceService {
         repository.save(dataSource); // This save generates the datasource ID
 
         if (dataSource instanceof MqttDataSource mqttDataSource) {
-            if (mqttDataSource instanceof SinapsiAlfaDataSource sinapsiAlfaDataSource) {
-                sinapsiAlfaDataSource.generateMqttSettings(sinapsiAlfaConfig, plaintextPassword);
+            if (mqttDataSource instanceof SinapsiAlfaDataSource sinapsiAlfaDataSource && dto instanceof SinapsiAlfaDataSourceDto sinapsiAlfaDataSourceDto) {
+                sinapsiAlfaDataSource.generateMqttSettings(sinapsiAlfaConfig, sinapsiAlfaDataSourceDto.activationKey());
             } else {
                 mqttDataSource.generateMqttSettings(mqttConfiguration, bCryptPasswordEncoder, plaintextPassword);
             }
