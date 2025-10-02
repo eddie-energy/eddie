@@ -3,7 +3,7 @@ package energy.eddie.aiida.models.datasource.mqtt;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
@@ -39,13 +39,8 @@ public abstract class MqttDataSource extends DataSource {
     @SuppressWarnings("NullAway")
     protected MqttDataSource() {}
 
-    protected MqttDataSource(MqttDataSourceDto dto, UUID userId) {
+    protected MqttDataSource(DataSourceDto dto, UUID userId) {
         super(dto, userId);
-        this.mqttInternalHost = dto.internalHost();
-        this.mqttExternalHost = dto.externalHost();
-        this.mqttSubscribeTopic = dto.subscribeTopic();
-        this.mqttUsername = dto.username();
-        this.mqttPassword = dto.password();
         this.action = MqttAction.ALL;
         this.aclType = MqttAclType.ALLOW;
     }

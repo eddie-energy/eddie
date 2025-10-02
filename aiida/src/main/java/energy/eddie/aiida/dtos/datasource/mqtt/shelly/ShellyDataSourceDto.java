@@ -1,5 +1,5 @@
 package energy.eddie.aiida.dtos.datasource.mqtt.shelly;
 
-import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 
-public class ShellyDataSourceDto extends MqttDataSourceDto {}
+public class ShellyDataSourceDto extends DataSourceDto {}

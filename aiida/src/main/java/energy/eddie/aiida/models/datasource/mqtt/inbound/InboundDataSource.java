@@ -5,6 +5,7 @@ import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
+import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -21,30 +22,36 @@ public class InboundDataSource extends MqttDataSource {
     @SuppressWarnings("NullAway")
     protected InboundDataSource() {}
 
-    public InboundDataSource(InboundDataSourceDto dto, UUID userId) {
-        this(dto, userId, SecretGenerator.generate());
+    public InboundDataSource(InboundDataSourceDto dto, UUID userId, MqttStreamingConfig mqttStreamingConfig) {
+        this(dto, userId, mqttStreamingConfig, SecretGenerator.generate());
     }
 
-    public InboundDataSource(InboundDataSourceDto dto, UUID userId, String accessCode) {
+    public InboundDataSource(InboundDataSourceDto dto, UUID userId, MqttStreamingConfig mqttStreamingConfig, String accessCode) {
         super(dto, userId);
+        this.mqttInternalHost = mqttStreamingConfig.serverUri();
+        this.mqttExternalHost = mqttStreamingConfig.serverUri();
+        this.mqttSubscribeTopic = mqttStreamingConfig.dataTopic();
+        this.mqttUsername = mqttStreamingConfig.username();
+        this.mqttPassword = mqttStreamingConfig.password();
         this.accessCode = accessCode;
     }
 
     public static class Builder  {
         private final InboundDataSourceDto dataSourceDto;
         private final UUID userId;
+        private final MqttStreamingConfig mqttStreamingConfig;
 
         @SuppressWarnings("NullAway")
         public Builder(Permission permission) {
             this.userId = Objects.requireNonNull(permission.userId());
             var dataNeed = Objects.requireNonNull(permission.dataNeed());
-            var mqttStreamingConfig = Objects.requireNonNull(permission.mqttStreamingConfig());
+            this.mqttStreamingConfig = Objects.requireNonNull(permission.mqttStreamingConfig());
 
-            this.dataSourceDto = new InboundDataSourceDto(dataNeed.asset(), permission.permissionId(), mqttStreamingConfig);
+            this.dataSourceDto = new InboundDataSourceDto(dataNeed.asset(), permission.permissionId());
         }
 
         public InboundDataSource build() {
-            return new InboundDataSource(dataSourceDto, userId);
+            return new InboundDataSource(dataSourceDto, userId, mqttStreamingConfig);
         }
     }
 
