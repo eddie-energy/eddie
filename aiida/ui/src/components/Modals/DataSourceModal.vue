@@ -30,13 +30,10 @@ const getEmptyDataSource = (): AiidaDataSource => {
     enabled: true,
     id: '' as AiidaDataSourceIcon,
     countryCode: '',
-    modbusSettings: {
-      modbusIp: '',
-      modbusVendor: '',
-      modbusModel: '',
-      modbusDevice: '',
-    },
-    simulationPeriod: 0,
+    modbusIp: '',
+    modbusVendor: '',
+    modbusModel: '',
+    modbusDevice: '',
     icon: '' as AiidaDataSourceIcon,
   }
 }
@@ -98,13 +95,13 @@ onMounted(async () => {
 })
 
 const dataSourceType = computed(() => dataSource.value.dataSourceType)
-const vendor = computed(() => dataSource.value.modbusSettings?.modbusVendor)
-const model = computed(() => dataSource.value.modbusSettings?.modbusModel)
+const vendor = computed(() => dataSource.value.modbusVendor)
+const model = computed(() => dataSource.value.modbusModel)
 
 watch(
   [dataSourceType, vendor, model],
   async ([newDataSourceType, newVendor, newModel], [, oldVendor, oldModel]) => {
-    if (newDataSourceType !== 'MODBUS' || !dataSource.value.modbusSettings) {
+    if (newDataSourceType !== 'MODBUS') {
       return
     }
     modbusVendorsOptions.value = (await getModbusVendors()).map((vend) => {
@@ -404,6 +401,7 @@ defineExpose({ showModal })
 .data-source-dialog {
   width: fit-content;
 }
+
 .is-loading {
   form,
   p,
@@ -411,6 +409,7 @@ defineExpose({ showModal })
     opacity: 0;
   }
 }
+
 .data-source-form {
   display: flex;
   flex-direction: column;
@@ -424,10 +423,12 @@ defineExpose({ showModal })
     &:not([type='checkbox']) {
       padding: var(--spacing-sm) var(--spacing-md);
     }
+
     border-radius: var(--border-radius);
     border: 1px solid var(--eddie-grey-medium);
   }
 }
+
 .checkbox-field {
   display: flex;
   position: relative;
@@ -443,6 +444,7 @@ defineExpose({ showModal })
     height: var(--spacing-xlg);
     cursor: pointer;
     position: relative;
+
     &:checked {
       background-color: var(--eddie-primary);
     }
@@ -463,16 +465,19 @@ defineExpose({ showModal })
   flex-direction: column;
   gap: var(--spacing-xlg);
 }
+
 .input-field {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
 }
+
 .icon-select {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
 }
+
 .icon-button {
   border-radius: var(--border-radius);
   cursor: pointer;
@@ -523,6 +528,7 @@ defineExpose({ showModal })
   .data-source-form {
     flex-direction: row;
   }
+
   .column {
     width: 20vw;
   }

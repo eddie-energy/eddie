@@ -1,6 +1,6 @@
 package energy.eddie.aiida.adapters.datasource.simulation;
 
-import energy.eddie.aiida.dtos.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;

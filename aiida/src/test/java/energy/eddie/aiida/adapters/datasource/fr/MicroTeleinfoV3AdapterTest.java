@@ -5,8 +5,8 @@ import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3Mode
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3ModeNotSupportedException;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
@@ -54,7 +54,7 @@ class MicroTeleinfoV3AdapterTest {
                               null,
                               null),
             USER_ID,
-            new DataSourceMqttDto("tcp://localhost:1883",
+            new MqttDataSourceDto("tcp://localhost:1883",
                                   "tcp://localhost:1883",
                                   "aiida/test",
                                   "user",

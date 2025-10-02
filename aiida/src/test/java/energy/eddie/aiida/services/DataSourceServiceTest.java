@@ -6,9 +6,9 @@ import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceModbusDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
@@ -60,7 +60,7 @@ class DataSourceServiceTest {
         return DataSource.createFromDto(
                 createNewDataSourceDto(id, type, "Test", COUNTRY_CODE, true),
                 userId,
-                new DataSourceMqttDto("tcp://localhost:1883", "tcp://localhost:1883", "aiida/test", "user", "pw")
+                new MqttDataSourceDto("tcp://localhost:1883", "tcp://localhost:1883", "aiida/test", "user", "pw")
         );
     }
 
@@ -171,7 +171,7 @@ class DataSourceServiceTest {
                         .thenReturn(ModbusDeviceTestHelper.setupModbusDevice());
             when(authService.getCurrentUserId()).thenReturn(userId);
 
-            var modbusSettings = new DataSourceModbusDto(
+            var modbusSettings = new ModbusDataSourceDto(
                     "192.168.1.100",
                     VENDOR_ID,
                     MODEL_ID,

@@ -1,7 +1,7 @@
 package energy.eddie.aiida.adapters.datasource.modbus;
 
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceModbusDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
@@ -67,7 +67,7 @@ class ModbusTcpDataSourceAdapterTest {
                 DataSourceIcon.METER,
                 1,
                 null,
-                new DataSourceModbusDto("127.0.0.1", null, null, UUID.randomUUID())
+                new ModbusDataSourceDto("127.0.0.1", null, null, UUID.randomUUID())
         );
 
         ModbusDataSource dataSource = new ModbusDataSource(dto, UUID.randomUUID(), dto.modbusSettings());

@@ -6,5 +6,5 @@ import org.springframework.context.annotation.Configuration;
 
 @OpenAPIDefinition(info = @Info(title = "AIIDA API", version = "1.0"))
 @Configuration
-public class OpenAPIConfig {
+public class OpenAPIConfiguration {
 }

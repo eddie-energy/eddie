@@ -1,7 +1,6 @@
 package energy.eddie.aiida.models.datasource.mqtt.shelly;
 
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.shelly.ShellyDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import jakarta.persistence.DiscriminatorValue;
@@ -16,8 +15,8 @@ public class ShellyDataSource extends MqttDataSource {
     @SuppressWarnings("NullAway")
     protected ShellyDataSource() {}
 
-    public ShellyDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
-        super(dto, userId, dataSourceMqttDto);
+    public ShellyDataSource(ShellyDataSourceDto dto, UUID userId) {
+        super(dto, userId);
     }
 
     @Override

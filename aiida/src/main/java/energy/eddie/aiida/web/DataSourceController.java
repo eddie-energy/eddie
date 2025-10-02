@@ -1,8 +1,8 @@
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceSecretsDto;
-import energy.eddie.aiida.dtos.DataSourceTypeDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceTypeDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -85,14 +85,10 @@ public class DataSourceController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceDto.class))))
     })
     @GetMapping(path = "/outbound", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<DataSourceDto>> getAllOutboundDataSources() throws InvalidUserException {
+    public ResponseEntity<List<DataSource>> getAllOutboundDataSources() throws InvalidUserException {
         var dataSources = service.getOutboundDataSources();
 
-        return ResponseEntity.ok(
-                dataSources.stream()
-                           .map(DataSource::toDto)
-                           .toList()
-        );
+        return ResponseEntity.ok(dataSources);
     }
 
     @Operation(summary = "Get all inbound datasources", description = "Retrieve all inbound datasources.",
@@ -102,14 +98,10 @@ public class DataSourceController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceDto.class))))
     })
     @GetMapping(path = "/inbound", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<DataSourceDto>> getAllInboundDataSources() throws InvalidUserException {
+    public ResponseEntity<List<DataSource>> getAllInboundDataSources() throws InvalidUserException {
         var dataSources = service.getInboundDataSources();
 
-        return ResponseEntity.ok(
-                dataSources.stream()
-                           .map(DataSource::toDto)
-                           .toList()
-        );
+        return ResponseEntity.ok(dataSources);
     }
 
     @Operation(summary = "Add a new datasource", description = "Add a new datasource.",
@@ -181,11 +173,11 @@ public class DataSourceController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping("/{id}")
-    public ResponseEntity<DataSourceDto> getDataSourceById(@PathVariable("id") UUID dataSourceId) {
+    public ResponseEntity<DataSource> getDataSourceById(@PathVariable("id") UUID dataSourceId) {
         LOGGER.info("Fetching datasource with ID: {}", dataSourceId);
 
         return service.dataSourceById(dataSourceId)
-                      .map(dataSource -> ResponseEntity.ok(dataSource.toDto()))
+                      .map(ResponseEntity::ok)
                       .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

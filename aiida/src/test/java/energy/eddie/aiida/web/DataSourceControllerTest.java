@@ -1,7 +1,7 @@
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceSecretsDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;

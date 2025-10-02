@@ -13,9 +13,9 @@ import energy.eddie.aiida.adapters.datasource.shelly.ShellyAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceModbusDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
 import energy.eddie.aiida.dtos.DataSourceProtocolSettings;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
@@ -48,9 +48,9 @@ class DataSourceAdapterTest {
         DataSourceProtocolSettings settings;
 
         if (type == DataSourceType.MODBUS) {
-            settings = new DataSourceModbusDto("127.0.0.1", VENDOR_ID, MODEL_ID, DEVICE_ID);
+            settings = new ModbusDataSourceDto("127.0.0.1", VENDOR_ID, MODEL_ID, DEVICE_ID);
         } else {
-            settings = new DataSourceMqttDto("tcp://localhost:1883","tcp://localhost:1883", "aiida/test", "user", "pw");
+            settings = new MqttDataSourceDto("tcp://localhost:1883", "tcp://localhost:1883", "aiida/test", "user", "pw");
         }
 
         return DataSource.createFromDto(

@@ -1,7 +1,7 @@
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
 import energy.eddie.aiida.errors.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
@@ -48,7 +48,7 @@ class InboundServiceTest {
                               null,
                               null),
             USER_ID,
-            new DataSourceMqttDto("tcp://localhost:1883",
+            new MqttDataSourceDto("tcp://localhost:1883",
                                   "tcp://localhost:1883",
                                   "aiida/test",
                                   "user",

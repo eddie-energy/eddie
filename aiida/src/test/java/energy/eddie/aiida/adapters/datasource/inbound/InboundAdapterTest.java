@@ -2,8 +2,8 @@ package energy.eddie.aiida.adapters.datasource.inbound;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
@@ -48,7 +48,7 @@ class InboundAdapterTest {
                               null,
                               null),
             USER_ID,
-            new DataSourceMqttDto("tcp://localhost:1883",
+            new MqttDataSourceDto("tcp://localhost:1883",
                                   "tcp://localhost:1883",
                                   "aiida/test",
                                   "user",

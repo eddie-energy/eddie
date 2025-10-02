@@ -1,8 +1,8 @@
 package energy.eddie.aiida.models.datasource;
 
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceModbusDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
@@ -23,17 +23,17 @@ class DataSourceTest {
     private static final UUID MODEL_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     private static final UUID DEVICE_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
 
-    private static final DataSourceMqttDto MQTT_DTO = new DataSourceMqttDto("tcp://localhost:1883",
+    private static final MqttDataSourceDto MQTT_DTO = new MqttDataSourceDto("tcp://localhost:1883",
                                                                             "tcp://localhost:1883",
                                                                             "aiida/test",
                                                                             "user",
                                                                             "pw");
     private static final UUID ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
 
-    private static final DataSourceModbusDto MODBUS_DTO = new DataSourceModbusDto(
+    private static final ModbusDataSourceDto MODBUS_DTO = new ModbusDataSourceDto(
             "192.168.1.100", VENDOR_ID, MODEL_ID, DEVICE_ID);
 
-    private static final DataSourceModbusDto MODBUS_DTO_NO_IP = new DataSourceModbusDto(
+    private static final ModbusDataSourceDto MODBUS_DTO_NO_IP = new ModbusDataSourceDto(
             null, VENDOR_ID, MODEL_ID, DEVICE_ID);
 
     DataSourceDto createNewDataSourceDto(DataSourceType type) {
@@ -151,7 +151,7 @@ class DataSourceTest {
                                            DataSourceIcon.METER,
                                            1,
                                            null,
-                                           new DataSourceModbusDto("192.168.1.200", VENDOR_ID, MODEL_ID, DEVICE_ID));
+                                           new ModbusDataSourceDto("192.168.1.200", VENDOR_ID, MODEL_ID, DEVICE_ID));
 
         DataSource merged = original.mergeWithDto(updatedDto, ID);
         assertInstanceOf(ModbusDataSource.class, merged);
@@ -173,7 +173,7 @@ class DataSourceTest {
                                            DataSourceIcon.METER,
                                            1,
                                            null,
-                                           new DataSourceModbusDto(null, VENDOR_ID, MODEL_ID, DEVICE_ID));
+                                           new ModbusDataSourceDto(null, VENDOR_ID, MODEL_ID, DEVICE_ID));
 
         assertThrows(IllegalArgumentException.class, () -> original.mergeWithDto(updatedDto, ID));
     }
@@ -193,7 +193,7 @@ class DataSourceTest {
                                            DataSourceIcon.METER,
                                            1,
                                            null,
-                                           new DataSourceModbusDto(null, VENDOR_ID, MODEL_ID, DEVICE_ID));
+                                           new ModbusDataSourceDto(null, VENDOR_ID, MODEL_ID, DEVICE_ID));
 
         // No exception should be thrown because original has a valid IP
         DataSource merged = original.mergeWithDto(updatedDto, ID);

@@ -1,8 +1,8 @@
 package energy.eddie.aiida.adapters.datasource.sga;
 
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
@@ -45,7 +45,7 @@ class SmartGatewaysAdapterTest {
                               null,
                               null),
             USER_ID,
-            new DataSourceMqttDto("tcp://localhost:1883", "tcp://localhost:1883", "aiida/test", "user", "password")
+            new MqttDataSourceDto("tcp://localhost:1883", "tcp://localhost:1883", "aiida/test", "user", "password")
     );
 
     private SmartGatewaysAdapter adapter;
