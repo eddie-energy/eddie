@@ -5,11 +5,12 @@ import energy.eddie.aiida.models.record.UnitOfMeasurement;
 import energy.eddie.aiida.utils.ObisCode;
 
 public class ShellyMeasurement extends SmartMeterAdapterMeasurement {
+    private static final String COMPONENT_KEY_SEPARATOR = ":";
     private final ShellyPhase phase;
     private final ShellyEntry entry;
 
     public ShellyMeasurement(ShellyComponent component, String entryKey, String rawValue) {
-        super(entryKey, rawValue);
+        super(component.name() + COMPONENT_KEY_SEPARATOR + entryKey, rawValue);
 
         if(component.phase() == ShellyPhase.TOTAL) {
             this.phase = ShellyPhase.fromKey(entryKey);

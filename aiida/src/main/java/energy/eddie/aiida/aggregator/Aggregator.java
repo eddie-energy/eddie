@@ -231,7 +231,6 @@ public class Aggregator implements AutoCloseable {
     }
 
     private List<AiidaRecord> aggregateRecords(List<AiidaRecord> aiidaRecords) {
-        // TODO: GH-1307 Currently only the latest values of a data source is kept. This should be changed to a more sophisticated aggregation.
         var aggregatedRecords = aiidaRecords.stream()
                                             .collect(Collectors.toMap(
                                                     AiidaRecord::dataSourceId,
