@@ -216,7 +216,7 @@ onClickOutside(target, () => (showToolTip.value = false))
         @click="updatePermission(permission)"
         class="update-button"
       >
-        Accept
+        Continue
       </Button>
     </div>
   </dl>
