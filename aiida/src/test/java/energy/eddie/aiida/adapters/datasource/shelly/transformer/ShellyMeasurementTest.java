@@ -10,16 +10,15 @@ class ShellyMeasurementTest {
     @Test
     void constructor_setsFieldsForApparentPowerL2_withTotalComponent() {
         var exprectedObisCode = ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L2;
-        var entryKey = "b_aprt_power";
 
         var measurement = new ShellyMeasurement(
                 ShellyComponent.EM,
-                entryKey,
+                "b_aprt_power",
                 "123.45"
         );
         var aiidaRecordValue = measurement.toAiidaRecordValue();
 
-        assertEquals(entryKey, aiidaRecordValue.rawTag());
+        assertEquals("em:0:b_aprt_power", aiidaRecordValue.rawTag());
         assertEquals(exprectedObisCode, measurement.obisCode());
         assertEquals(exprectedObisCode, aiidaRecordValue.dataTag());
         assertEquals(UnitOfMeasurement.VOLT_AMPERE_REACTIVE, aiidaRecordValue.rawUnitOfMeasurement());
@@ -31,16 +30,15 @@ class ShellyMeasurementTest {
     @Test
     void constructor_setsFieldsForActiveEnergyTotal_withTotalComponent() {
         var exprectedObisCode = ObisCode.POSITIVE_ACTIVE_ENERGY;
-        var entryKey = "total_act";
 
         var measurement = new ShellyMeasurement(
                 ShellyComponent.EM_DATA,
-                entryKey,
+                "total_act",
                 "12345.67"
         );
         var aiidaRecordValue = measurement.toAiidaRecordValue();
 
-        assertEquals(entryKey, aiidaRecordValue.rawTag());
+        assertEquals("emdata:0:total_act", aiidaRecordValue.rawTag());
         assertEquals(exprectedObisCode, measurement.obisCode());
         assertEquals(exprectedObisCode, aiidaRecordValue.dataTag());
         assertEquals(UnitOfMeasurement.WATT_HOUR, aiidaRecordValue.rawUnitOfMeasurement());
@@ -52,16 +50,15 @@ class ShellyMeasurementTest {
     @Test
     void constructor_setsFieldsForCurrent_withTotalComponent() {
         var exprectedObisCode = ObisCode.INSTANTANEOUS_CURRENT_IN_PHASE_NEUTRAL;
-        var entryKey = "n_current";
 
         var measurement = new ShellyMeasurement(
                 ShellyComponent.EM,
-                entryKey,
+                "n_current",
                 "1.234"
         );
 
         var aiidaRecordValue = measurement.toAiidaRecordValue();
-        assertEquals(entryKey, aiidaRecordValue.rawTag());
+        assertEquals("em:0:n_current", aiidaRecordValue.rawTag());
         assertEquals(exprectedObisCode, measurement.obisCode());
         assertEquals(exprectedObisCode, aiidaRecordValue.dataTag());
         assertEquals(UnitOfMeasurement.AMPERE, aiidaRecordValue.rawUnitOfMeasurement());
@@ -73,16 +70,15 @@ class ShellyMeasurementTest {
     @Test
     void constructor_setsFieldsForActivePower_withL3Component() {
         var exprectedObisCode = ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L3;
-        var entryKey = "act_power";
 
         var measurement = new ShellyMeasurement(
                 ShellyComponent.EM1_2,
-                entryKey,
+                "act_power",
                 "12.34"
         );
         var aiidaRecordValue = measurement.toAiidaRecordValue();
 
-        assertEquals(entryKey, aiidaRecordValue.rawTag());
+        assertEquals("em1:2:act_power", aiidaRecordValue.rawTag());
         assertEquals(exprectedObisCode, measurement.obisCode());
         assertEquals(exprectedObisCode, aiidaRecordValue.dataTag());
         assertEquals(UnitOfMeasurement.WATT, aiidaRecordValue.rawUnitOfMeasurement());

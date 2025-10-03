@@ -64,21 +64,18 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
             ObjectMapper objectMapper,
             MqttConfiguration mqttConfiguration
     ) {
-        return switch (dataSource.dataSourceType()) {
-            case SMART_METER_ADAPTER -> new OesterreichsEnergieAdapter((OesterreichsEnergieDataSource) dataSource,
-                                                                       objectMapper,
-                                                                       mqttConfiguration);
-            case MICRO_TELEINFO ->
-                    new MicroTeleinfoV3Adapter((MicroTeleinfoV3DataSource) dataSource, objectMapper, mqttConfiguration);
-            case SINAPSI_ALFA ->
-                    new SinapsiAlfaAdapter((SinapsiAlfaDataSource) dataSource, objectMapper, mqttConfiguration);
-            case SMART_GATEWAYS_ADAPTER ->
-                    new SmartGatewaysAdapter((SmartGatewaysDataSource) dataSource, mqttConfiguration);
-            case SHELLY -> new ShellyAdapter((ShellyDataSource) dataSource, objectMapper, mqttConfiguration);
-            case INBOUND -> new InboundAdapter((InboundDataSource) dataSource, mqttConfiguration);
-            case SIMULATION -> new SimulationAdapter((SimulationDataSource) dataSource);
-            case MODBUS -> new ModbusTcpDataSourceAdapter((ModbusDataSource) dataSource);
-            case CIM_ADAPTER -> new CimAdapter((CimDataSource) dataSource, objectMapper, mqttConfiguration);
+        return switch (dataSource) {
+            case OesterreichsEnergieDataSource ds ->
+                    new OesterreichsEnergieAdapter(ds, objectMapper, mqttConfiguration);
+            case MicroTeleinfoV3DataSource ds -> new MicroTeleinfoV3Adapter(ds, objectMapper, mqttConfiguration);
+            case SinapsiAlfaDataSource ds -> new SinapsiAlfaAdapter(ds, objectMapper, mqttConfiguration);
+            case SmartGatewaysDataSource ds -> new SmartGatewaysAdapter(ds, mqttConfiguration);
+            case ShellyDataSource ds -> new ShellyAdapter(ds, objectMapper, mqttConfiguration);
+            case InboundDataSource ds -> new InboundAdapter(ds, mqttConfiguration);
+            case SimulationDataSource ds -> new SimulationAdapter(ds);
+            case ModbusDataSource ds -> new ModbusTcpDataSourceAdapter(ds);
+            case CimDataSource ds -> new CimAdapter(ds, objectMapper, mqttConfiguration);
+            default -> throw new IllegalArgumentException("Unknown data source: " + dataSource);
         };
     }
 

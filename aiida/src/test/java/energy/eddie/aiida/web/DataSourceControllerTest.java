@@ -3,11 +3,8 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.services.DataSourceService;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,20 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(DataSourceController.class)
 class DataSourceControllerTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final SimulationDataSource DATA_SOURCE = new SimulationDataSource(
-            new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.SIMULATION,
-                              AiidaAsset.SUBMETER,
-                              "simulation",
-                              "AT",
-                              true,
-                              DataSourceIcon.METER,
-                              1,
-                              null,
-                              null),
-            USER_ID
-    );
+    private static final SimulationDataSource DATA_SOURCE = mock(SimulationDataSource.class);
     private static final String PLAIN_TEXT_PASSWORD = "SUPER_SAFE";
 
     @Autowired

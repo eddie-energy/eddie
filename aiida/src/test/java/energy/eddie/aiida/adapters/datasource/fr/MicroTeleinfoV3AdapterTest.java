@@ -1,14 +1,9 @@
 package energy.eddie.aiida.adapters.datasource.fr;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3Mode;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3ModeNotSupportedException;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.datasource.DataSourceDto;
-import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.ObisCode;
@@ -41,42 +36,22 @@ import static org.mockito.Mockito.*;
 class MicroTeleinfoV3AdapterTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(MicroTeleinfoV3Adapter.class);
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final MicroTeleinfoV3DataSource DATA_SOURCE = new MicroTeleinfoV3DataSource(
-            new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.MICRO_TELEINFO,
-                              AiidaAsset.SUBMETER,
-                              "teleinfo",
-                              "FR",
-                              true,
-                              DataSourceIcon.METER,
-                              null,
-                              null,
-                              null),
-            USER_ID,
-            new MqttDataSourceDto("tcp://localhost:1883",
-                                  "tcp://localhost:1883",
-                                  "aiida/test",
-                                  "user",
-                                  "password")
-    );
+    private static final MicroTeleinfoV3DataSource DATA_SOURCE = mock(MicroTeleinfoV3DataSource.class);
+    private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
     private MicroTeleinfoV3Adapter adapter;
-    private ObjectMapper mapper;
-    private MqttConfiguration mqttConfiguration;
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        mapper = new AiidaConfiguration().customObjectMapper().build();
-        mqttConfiguration = new MqttConfiguration(
-                "tcp://localhost:1883",
-                "tcp://localhost:1883",
-                10,
-                "password",
-                ""
-        );
-        adapter = new MicroTeleinfoV3Adapter(DATA_SOURCE, mapper, mqttConfiguration);
+        when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
+        when(DATA_SOURCE.mqttInternalHost()).thenReturn("tcp://localhost:1883");
+        when(DATA_SOURCE.mqttSubscribeTopic()).thenReturn("aiida/test");
+        when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(MQTT_CONFIGURATION.password()).thenReturn("password");
+
+        var mapper = new AiidaConfiguration().customObjectMapper().build();
+        adapter = new MicroTeleinfoV3Adapter(DATA_SOURCE, mapper, MQTT_CONFIGURATION);
 
         LOG_CAPTOR.resetLogLevel();
     }

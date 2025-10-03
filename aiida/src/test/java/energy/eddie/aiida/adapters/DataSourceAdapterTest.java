@@ -13,15 +13,14 @@ import energy.eddie.aiida.adapters.datasource.shelly.ShellyAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.datasource.DataSourceDto;
-import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
-import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceProtocolSettings;
-import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
+import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.services.ModbusDeviceService;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,33 +32,11 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.*;
 
 class DataSourceAdapterTest {
-    private static final UUID VENDOR_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
-    private static final UUID MODEL_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
-    private static final UUID DEVICE_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
-    private static final UUID ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private ObjectMapper mapper;
     private MqttConfiguration mqttConfiguration;
-
-    DataSource createNewDataSource(DataSourceType type) {
-        DataSourceProtocolSettings settings;
-
-        if (type == DataSourceType.MODBUS) {
-            settings = new ModbusDataSourceDto("127.0.0.1", VENDOR_ID, MODEL_ID, DEVICE_ID);
-        } else {
-            settings = new MqttDataSourceDto("tcp://localhost:1883", "tcp://localhost:1883", "aiida/test", "user", "pw");
-        }
-
-        return DataSource.createFromDto(
-                new DataSourceDto(ID, type, AiidaAsset.SUBMETER, "test", "AT", true, DataSourceIcon.METER, 1, null, null),
-                ID,
-                settings
-        );
-    }
-
 
     @BeforeEach
     void setUp() {
@@ -76,7 +53,7 @@ class DataSourceAdapterTest {
     @Test
     void givenOesterreichsEnergie_returnsAdapter() {
         // Given
-        var dataSource = createNewDataSource(DataSourceType.SMART_METER_ADAPTER);
+        var dataSource = mock(OesterreichsEnergieDataSource.class);
 
         // When
         var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
@@ -88,7 +65,9 @@ class DataSourceAdapterTest {
     @Test
     void givenMicroTeleinfo_returnsAdapter() {
         // Given
-        var dataSource = createNewDataSource(DataSourceType.MICRO_TELEINFO);
+        var dataSource = mock(MicroTeleinfoV3DataSource.class);
+        when(dataSource.id()).thenReturn(UUID.randomUUID());
+        when(dataSource.mqttSubscribeTopic()).thenReturn("");
 
         // When
         var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
@@ -100,7 +79,8 @@ class DataSourceAdapterTest {
     @Test
     void givenSmartGateways_returnsAdapter() {
         // Given
-        var dataSource = createNewDataSource(DataSourceType.SMART_GATEWAYS_ADAPTER);
+        var dataSource = mock(SmartGatewaysDataSource.class);
+        when(dataSource.mqttSubscribeTopic()).thenReturn("");
 
         // When
         var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
@@ -112,7 +92,7 @@ class DataSourceAdapterTest {
     @Test
     void givenShelly_returnsAdapter() {
         // Given
-        var dataSource = createNewDataSource(DataSourceType.SHELLY);
+        var dataSource = mock(ShellyDataSource.class);
 
         // When
         var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
@@ -124,7 +104,7 @@ class DataSourceAdapterTest {
     @Test
     void givenInbound_returnsAdapter() {
         // Given
-        var dataSource = createNewDataSource(DataSourceType.INBOUND);
+        var dataSource = mock(InboundDataSource.class);
 
         // When
         var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
@@ -136,7 +116,7 @@ class DataSourceAdapterTest {
     @Test
     void givenSimulation_returnsAdapter() {
         // Given
-        var dataSource = createNewDataSource(DataSourceType.SIMULATION);
+        var dataSource = mock(SimulationDataSource.class);
 
         // When
         var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
@@ -154,7 +134,7 @@ class DataSourceAdapterTest {
             mockedStatic.when(() -> ModbusDeviceService.loadConfig(any()))
                     .thenReturn(ModbusDeviceTestHelper.setupModbusDevice());
 
-            var dataSource = createNewDataSource(DataSourceType.MODBUS);
+            var dataSource = mock(ModbusDataSource.class);
 
             var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
 

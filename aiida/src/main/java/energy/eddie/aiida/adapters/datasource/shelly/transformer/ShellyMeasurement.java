@@ -10,7 +10,7 @@ public class ShellyMeasurement extends SmartMeterAdapterMeasurement {
     private final ShellyEntry entry;
 
     public ShellyMeasurement(ShellyComponent component, String entryKey, String rawValue) {
-        super(component.name() + COMPONENT_KEY_SEPARATOR + entryKey, rawValue);
+        super(component.key() + COMPONENT_KEY_SEPARATOR + entryKey, rawValue);
 
         if(component.phase() == ShellyPhase.TOTAL) {
             this.phase = ShellyPhase.fromKey(entryKey);

@@ -1,13 +1,9 @@
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.datasource.DataSourceDto;
-import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
 import energy.eddie.aiida.errors.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.PermissionNotFoundException;
 import energy.eddie.aiida.errors.UnauthorizedException;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.permission.Permission;
@@ -18,6 +14,7 @@ import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -27,6 +24,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,25 +34,7 @@ class InboundServiceTest {
     private static final UUID PERMISSION_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final String ACCESS_CODE = "test-access-code";
     private static final Permission PERMISSION = new Permission();
-    private static final InboundDataSource DATA_SOURCE = new InboundDataSource(
-            new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.SMART_METER_ADAPTER,
-                              AiidaAsset.SUBMETER,
-                              "sma",
-                              "AT",
-                              true,
-                              DataSourceIcon.METER,
-                              null,
-                              null,
-                              null),
-            USER_ID,
-            new MqttDataSourceDto("tcp://localhost:1883",
-                                  "tcp://localhost:1883",
-                                  "aiida/test",
-                                  "user",
-                                  "password"),
-            ACCESS_CODE
-    );
+    private static final InboundDataSource DATA_SOURCE = mock(InboundDataSource.class);
     private static final InboundRecord INBOUND_RECORD = new InboundRecord(
             Instant.now(),
             AiidaAsset.SUBMETER,
@@ -68,11 +48,14 @@ class InboundServiceTest {
     @Mock
     private PermissionRepository permissionRepository;
 
+    @InjectMocks
     private InboundService inboundService;
 
     @BeforeEach
     void setUp() {
-        inboundService = new InboundService(inboundRecordRepository, permissionRepository);
+        when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
+        when(DATA_SOURCE.accessCode()).thenReturn(ACCESS_CODE);
+
         PERMISSION.setDataSource(DATA_SOURCE);
     }
 
@@ -94,24 +77,13 @@ class InboundServiceTest {
     void testLatestRecord_withWrongDataSourceType_throwsException() {
         // Given
         var wrongPermission = new Permission();
-        var wrongDataSource = new SimulationDataSource(
-                new DataSourceDto(DATA_SOURCE_ID,
-                                  DataSourceType.SIMULATION,
-                                  AiidaAsset.SUBMETER,
-                                  "simulation",
-                                  "AT",
-                                  true,
-                                  DataSourceIcon.METER,
-                                  1,
-                                  null,
-                                  null),
-                USER_ID
-        );
+        var wrongDataSource = mock(SimulationDataSource.class);
         wrongPermission.setDataSource(wrongDataSource);
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(wrongPermission));
 
         // When, Then
-        assertThrows(InvalidDataSourceTypeException.class, () -> inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID));
+        assertThrows(InvalidDataSourceTypeException.class,
+                     () -> inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID));
     }
 
     @Test
@@ -138,6 +110,7 @@ class InboundServiceTest {
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(PERMISSION));
 
         // When, Then
-        assertThrows(InboundRecordNotFoundException.class, () -> inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID));
+        assertThrows(InboundRecordNotFoundException.class,
+                     () -> inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID));
     }
 }

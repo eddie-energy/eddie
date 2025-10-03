@@ -2,11 +2,7 @@ package energy.eddie.aiida.aggregator;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
-import energy.eddie.aiida.dtos.datasource.DataSourceDto;
-import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
@@ -49,52 +45,14 @@ import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 @ExtendWith(MockitoExtension.class)
 class AggregatorTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(Aggregator.class);
-    private static final String COUNTRY_CODE = "AT";
     private static final String DATASOURCE_NAME_1 = "test-1";
     private static final UUID DATA_SOURCE_ID_1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID DATA_SOURCE_ID_2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID DATA_SOURCE_ID_3 = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56607");
-    private static final SimulationDataSource DATA_SOURCE_1 = new SimulationDataSource(new DataSourceDto(
-            DATA_SOURCE_ID_1,
-            DataSourceType.SIMULATION,
-            AiidaAsset.SUBMETER,
-            DATASOURCE_NAME_1,
-            COUNTRY_CODE,
-            true,
-            DataSourceIcon.METER,
-            null,
-            null,
-            null), USER_ID);
-    private static final SimulationDataSource DATA_SOURCE_2 = new SimulationDataSource(new DataSourceDto(
-            DATA_SOURCE_ID_2,
-            DataSourceType.SIMULATION,
-            AiidaAsset.SUBMETER,
-            "AT",
-            "test-2",
-            true,
-            DataSourceIcon.METER,
-            null,
-            null,
-            null), USER_ID);
-    private static final InboundDataSource INBOUND_DATA_SOURCE = new InboundDataSource(
-            new DataSourceDto(DATA_SOURCE_ID_3,
-                              DataSourceType.SMART_METER_ADAPTER,
-                              AiidaAsset.SUBMETER,
-                              "sma",
-                              "AT",
-                              true,
-                              DataSourceIcon.METER,
-                              null,
-                              null,
-                              null),
-            USER_ID,
-            new MqttDataSourceDto("tcp://localhost:1883",
-                                  "tcp://localhost:1883",
-                                  "aiida/test",
-                                  "user",
-                                  "password")
-    );
+    private static final SimulationDataSource DATA_SOURCE_1 = mock(SimulationDataSource.class);
+    private static final SimulationDataSource DATA_SOURCE_2 = mock(SimulationDataSource.class);
+    private static final InboundDataSource INBOUND_DATA_SOURCE = mock(InboundDataSource.class);
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
     private Aggregator aggregator;
     private AiidaAsset wantedAsset;
@@ -119,6 +77,11 @@ class AggregatorTest {
 
         // add 10 minutes to the current time, as only records after the next scheduled cron timestamp are processed
         var instant = Instant.now().plusSeconds(600);
+
+        when(DATA_SOURCE_1.id()).thenReturn(DATA_SOURCE_ID_1);
+        when(DATA_SOURCE_1.name()).thenReturn(DATASOURCE_NAME_1);
+        when(DATA_SOURCE_2.id()).thenReturn(DATA_SOURCE_ID_2);
+        when(INBOUND_DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID_3);
 
         wantedAsset = AiidaAsset.SUBMETER;
         wantedCodes = Set.of("1-0:1.8.0", "1-0:2.8.0");

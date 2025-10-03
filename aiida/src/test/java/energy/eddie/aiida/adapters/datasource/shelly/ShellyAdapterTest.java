@@ -4,10 +4,6 @@ import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.shelly.transformer.ShellyJsonTest;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.datasource.DataSourceDto;
-import energy.eddie.aiida.dtos.datasource.mqtt.MqttDataSourceDto;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.ObisCode;
@@ -26,7 +22,6 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,42 +32,22 @@ import static org.mockito.Mockito.*;
 class ShellyAdapterTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(ShellyAdapter.class);
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
-    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final String TOPIC = "aiida/4211ea05-d4ab-48ff-8613-8f4791a56606/events/rpc";
-    private static final ShellyDataSource DATA_SOURCE = new ShellyDataSource(
-            new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.SHELLY,
-                              AiidaAsset.SUBMETER,
-                              "shelly-test",
-                              "AT",
-                              true,
-                              DataSourceIcon.METER,
-                              null,
-                              null,
-                              null),
-            USER_ID,
-            new MqttDataSourceDto("tcp://localhost:1883",
-                                  "tcp://localhost:1883",
-                                  TOPIC,
-                                  "user",
-                                  "password")
-    );
+    private static final ShellyDataSource DATA_SOURCE = mock(ShellyDataSource.class);
+    private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
     private ShellyAdapter adapter;
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
+        when(DATA_SOURCE.mqttInternalHost()).thenReturn("tcp://localhost:1883");
+        when(DATA_SOURCE.mqttSubscribeTopic()).thenReturn("aiida/#");
+        when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(MQTT_CONFIGURATION.password()).thenReturn("password");
+
         var mapper = new AiidaConfiguration().customObjectMapper().build();
-        var mqttConfiguration = new MqttConfiguration(
-                "tcp://localhost:1883",
-                "tcp://localhost:1883",
-                10,
-                "password",
-                ""
-        );
-        adapter = new ShellyAdapter(DATA_SOURCE, mapper, mqttConfiguration);
+        adapter = new ShellyAdapter(DATA_SOURCE, mapper, MQTT_CONFIGURATION);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 

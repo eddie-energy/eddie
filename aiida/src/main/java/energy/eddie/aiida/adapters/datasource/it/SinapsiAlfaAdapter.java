@@ -59,13 +59,10 @@ public class SinapsiAlfaAdapter extends MqttDataSourceAdapter<SinapsiAlfaDataSou
                                         .flatMap(x -> x.data().stream())
                                         .flatMap(dataEntry -> dataEntry.entries()
                                                                        .entrySet()
-                                                                       .stream()
-                                        )
+                                                                       .stream())
                                         .map(entry -> new SinapsiAlfaMeasurement(
-                                                     entry.getKey(),
-                                                     String.valueOf(entry.getValue())
-                                             )
-                                        )
+                                                entry.getKey(),
+                                                String.valueOf(entry.getValue())))
                                         .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
                                         .toList();
 

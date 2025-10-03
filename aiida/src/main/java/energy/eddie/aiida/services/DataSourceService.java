@@ -114,12 +114,14 @@ public class DataSourceService {
 
     public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
-        var plaintextPassword = SecretGenerator.generate();
+        String plaintextPassword = null;
 
         var dataSource = DataSource.createFromDto(dto, currentUserId);
         repository.save(dataSource); // This save generates the datasource ID
 
         if (dataSource instanceof MqttDataSource mqttDataSource) {
+            plaintextPassword = SecretGenerator.generate();
+
             if (mqttDataSource instanceof SinapsiAlfaDataSource sinapsiAlfaDataSource && dto instanceof SinapsiAlfaDataSourceDto sinapsiAlfaDataSourceDto) {
                 sinapsiAlfaDataSource.generateMqttSettings(sinapsiAlfaConfig, sinapsiAlfaDataSourceDto.activationKey());
             } else {
