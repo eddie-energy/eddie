@@ -216,7 +216,7 @@ onClickOutside(target, () => (showToolTip.value = false))
         @click="updatePermission(permission)"
         class="update-button"
       >
-        Accept
+        Continue
       </Button>
     </div>
   </dl>
@@ -236,7 +236,7 @@ onClickOutside(target, () => (showToolTip.value = false))
 .permission-field {
   display: flex;
   justify-content: space-between;
-  border: 1px solid var(--eddie-grey-light);
+  border: 1px solid var(--eddie-grey-medium);
   color: var(--eddie-grey-medium);
   padding: var(--spacing-sm) var(--spacing-sm);
   border-radius: var(--border-radius);
@@ -261,7 +261,7 @@ onClickOutside(target, () => (showToolTip.value = false))
 
   dt {
     padding: var(--spacing-sm) var(--spacing-sm);
-    border: 1px solid var(--eddie-grey-light);
+    border: 1px solid var(--eddie-grey-medium);
     width: 100%;
     border-radius: var(--border-radius);
   }
@@ -330,8 +330,8 @@ onClickOutside(target, () => (showToolTip.value = false))
     position: absolute;
     bottom: 100%;
     left: 10%;
-    margin-left: -5px;
-    border-width: 5px;
+    margin-left: -var(--spacing-xs);
+    border-width: var(--spacing-xs);
     border-style: solid;
     border-color: var(--eddie-primary) transparent transparent transparent;
     transform: rotate(180deg);

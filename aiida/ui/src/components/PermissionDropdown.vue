@@ -75,6 +75,13 @@ const isOpen = ref(false)
   align-items: center;
   gap: var(--spacing-xlg);
   justify-self: start;
+
+  width: 100%;
+
+  .title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .permission-header {
@@ -113,12 +120,6 @@ const isOpen = ref(false)
 .details-enter-from,
 .details-leave-to {
   opacity: 0;
-}
-
-.title {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .non-essential {

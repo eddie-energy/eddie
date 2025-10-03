@@ -91,7 +91,7 @@ getApplicationInformation().then((data) => {
   justify-content: space-between;
   flex-direction: column;
 
-  border: 1px solid var(--eddie-grey-light);
+  border: 1px solid var(--eddie-grey-medium);
   color: var(--eddie-grey-medium);
   padding: var(--spacing-sm) var(--spacing-sm);
   border-radius: var(--border-radius);

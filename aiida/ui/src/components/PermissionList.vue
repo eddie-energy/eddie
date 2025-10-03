@@ -158,7 +158,7 @@ const handleCategoryChange = (category: string) => {
 .permissions-enter-from,
 .permissions-leave-to {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(--spacing-xxl);
 }
 
 .permissions-leave-active {
