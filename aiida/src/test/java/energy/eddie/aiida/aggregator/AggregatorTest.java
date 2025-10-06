@@ -165,7 +165,7 @@ class AggregatorTest {
                                                                                    DATA_SOURCE_ID_1))
                                                 .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
                                                         aiidaRecord,
-                                                        unwanted2.aiidaRecordValues().getFirst()))
+                                                        wanted.aiidaRecordValues().getFirst()))
                                                 .thenCancel()   // Flux of datasource doesn't terminate except if .close() is called
                                                 .verifyLater();
 
