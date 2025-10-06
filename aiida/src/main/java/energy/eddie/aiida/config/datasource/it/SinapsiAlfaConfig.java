@@ -8,6 +8,7 @@ public record SinapsiAlfaConfig(
         String mqttUsername,
         String mqttPassword
 ) {
-    public static final String TOPIC_SUFFIX = "/";
+    public static final String TOPIC_PREFIX = "/";
     public static final String TOPIC_INFIX = "/iomtsgdata/";
+    public static final String TOPIC_SUFFIX = "/";
 }

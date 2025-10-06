@@ -11,6 +11,7 @@ import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
 import energy.eddie.aiida.errors.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.ModbusConnectionException;
+import energy.eddie.aiida.errors.SinapsiAlflaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
@@ -112,7 +113,7 @@ public class DataSourceService {
                          .toList();
     }
 
-    public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException {
+    public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException, SinapsiAlflaEmptyConfigException {
         var currentUserId = authService.getCurrentUserId();
         String plaintextPassword = null;
 

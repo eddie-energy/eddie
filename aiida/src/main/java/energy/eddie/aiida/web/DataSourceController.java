@@ -5,6 +5,7 @@ import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceTypeDto;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.ModbusConnectionException;
+import energy.eddie.aiida.errors.SinapsiAlflaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.services.DataSourceService;
@@ -115,7 +116,9 @@ public class DataSourceController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DataSourceSecretsDto> addDataSource(@RequestBody DataSourceDto dataSource) throws InvalidUserException, ModbusConnectionException {
+    public ResponseEntity<DataSourceSecretsDto> addDataSource(
+            @RequestBody DataSourceDto dataSource
+    ) throws InvalidUserException, ModbusConnectionException, SinapsiAlflaEmptyConfigException {
         LOGGER.info("Adding new datasource");
 
         if (dataSource.name() == null || dataSource.name().isEmpty()) {

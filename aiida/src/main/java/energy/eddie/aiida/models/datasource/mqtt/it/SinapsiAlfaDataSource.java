@@ -2,6 +2,7 @@ package energy.eddie.aiida.models.datasource.mqtt.it;
 
 import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfig;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
+import energy.eddie.aiida.errors.SinapsiAlflaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import jakarta.persistence.DiscriminatorValue;
@@ -20,13 +21,21 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
         super(dto, userId);
     }
 
-    public void generateMqttSettings(SinapsiAlfaConfig config, String activationKey) {
+    public void generateMqttSettings(
+            SinapsiAlfaConfig config,
+            String activationKey
+    ) throws SinapsiAlflaEmptyConfigException {
+        if (config.mqttUsername().isEmpty() || config.mqttPassword().isEmpty()) {
+            throw new SinapsiAlflaEmptyConfigException();
+        }
+
         this.mqttInternalHost = config.mqttHost();
         this.mqttExternalHost = config.mqttHost();
-        this.mqttSubscribeTopic = SinapsiAlfaConfig.TOPIC_SUFFIX
+        this.mqttSubscribeTopic = SinapsiAlfaConfig.TOPIC_PREFIX
                                   + config.mqttUsername()
                                   + SinapsiAlfaConfig.TOPIC_INFIX
-                                  + activationKey;
+                                  + activationKey
+                                  + SinapsiAlfaConfig.TOPIC_SUFFIX;
         this.mqttUsername = config.mqttUsername();
         this.mqttPassword = config.mqttPassword();
     }

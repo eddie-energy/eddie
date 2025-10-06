@@ -70,5 +70,5 @@ aiida:
     it:
       sinapsi-alfa:
         mqtt-host: ${DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_HOST:tcp://hstbrk.sghiot.com:1883}
-        mqtt-username: ${DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_USERNAME:REPLACE_ME}
-        mqtt-password: ${DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_PASSWORD:REPLACE_ME}
+        mqtt-username: ${DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_USERNAME}
+        mqtt-password: ${DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_PASSWORD}

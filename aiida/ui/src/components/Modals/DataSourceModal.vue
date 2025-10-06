@@ -171,13 +171,6 @@ const validateForm = () => {
     errors.value['image'] = 'Image size must be less than 20MB.'
   }
 }
-//TODO GH-1945 change back when modbus data sources are fixed
-const getDatasourceWithoutModbus = () => {
-  const { modbusIp, modbusVendor, modbusModel, modbusDevice, ...rest } = dataSource.value
-  console.log('removed modbus settings', modbusIp, modbusVendor, modbusModel, modbusDevice)
-  console.log('Datasource', rest)
-  return rest
-}
 
 const handleFormSubmit = async () => {
   if (!(formRef.value && dataSource.value)) {
@@ -188,25 +181,20 @@ const handleFormSubmit = async () => {
     loading.value = true
     try {
       if (dataSource.value.id) {
-        if (dataSource.value.dataSourceType !== 'MODBUS') {
-          await saveDataSource(dataSource.value.id, getDatasourceWithoutModbus())
-        } else {
-          await saveDataSource(dataSource.value.id, {
-            ...dataSource.value,
-          })
-        }
+        await saveDataSource(dataSource.value.id, {
+          ...dataSource.value,
+        })
+      } else if (dataSource.value.dataSourceType === 'MODBUS') {
+        const { dataSourceId } = await addDataSource(dataSource.value)
+        dataSource.value.id = dataSourceId
       } else {
-        if (dataSource.value.dataSourceType === 'MODBUS') {
-          const { dataSourceId } = await addDataSource(dataSource.value)
-          dataSource.value.id = dataSourceId
-        } else {
-          const { dataSourceId, plaintextPassword } = await addDataSource(
-            getDatasourceWithoutModbus(),
-          )
-          dataSource.value.id = dataSourceId
-          if (!nonMQTTDataSourceTypes.includes(dataSource.value.dataSourceType)) {
-            emit('showMqtt', plaintextPassword)
-          }
+        const { dataSourceId, plaintextPassword } = await addDataSource(dataSource.value)
+        dataSource.value.id = dataSourceId
+        if (
+          !nonMQTTDataSourceTypes.includes(dataSource.value.dataSourceType) &&
+          plaintextPassword
+        ) {
+          emit('showMqtt', plaintextPassword)
         }
       }
       if (imageFile.value) {
