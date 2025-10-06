@@ -15,7 +15,7 @@ public class ModbusDataSourceDto extends IntervalBasedDataSourceDto {
     protected UUID modbusVendor;
     @Nullable
     @JsonProperty
-    protected UUID modbusModelL;
+    protected UUID modbusModel;
     @Nullable
     @JsonProperty
     protected UUID modbusDevice;
@@ -31,7 +31,7 @@ public class ModbusDataSourceDto extends IntervalBasedDataSourceDto {
 
     @Nullable
     public UUID modbusModel() {
-        return modbusModelL;
+        return modbusModel;
     }
 
     @Nullable

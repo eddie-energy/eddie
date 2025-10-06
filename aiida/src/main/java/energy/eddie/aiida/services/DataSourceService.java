@@ -120,11 +120,10 @@ public class DataSourceService {
         repository.save(dataSource); // This save generates the datasource ID
 
         if (dataSource instanceof MqttDataSource mqttDataSource) {
-            plaintextPassword = SecretGenerator.generate();
-
             if (mqttDataSource instanceof SinapsiAlfaDataSource sinapsiAlfaDataSource && dto instanceof SinapsiAlfaDataSourceDto sinapsiAlfaDataSourceDto) {
                 sinapsiAlfaDataSource.generateMqttSettings(sinapsiAlfaConfig, sinapsiAlfaDataSourceDto.activationKey());
             } else {
+                plaintextPassword = SecretGenerator.generate();
                 mqttDataSource.generateMqttSettings(mqttConfiguration, bCryptPasswordEncoder, plaintextPassword);
             }
 

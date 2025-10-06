@@ -1,5 +1,6 @@
 package energy.eddie.aiida.dtos.datasource;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -34,6 +35,7 @@ import java.util.UUID;
         @JsonSubTypes.Type(value = ModbusDataSourceDto.class, name = DataSourceType.Identifiers.MODBUS_TCP),
         @JsonSubTypes.Type(value = SimulationDataSourceDto.class, name = DataSourceType.Identifiers.SIMULATION),
 })
+@JsonIgnoreProperties(ignoreUnknown = true)
 @SuppressWarnings({"NullAway.Init"})
 public abstract class DataSourceDto {
     @JsonProperty
