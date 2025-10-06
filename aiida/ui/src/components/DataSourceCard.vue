@@ -27,7 +27,9 @@ const {
   dataSourceType,
   enabled,
   id,
-  mqttSettings,
+  mqttExternalHost,
+  mqttSubscribeTopic,
+  mqttUsername,
   name,
   simulationPeriod,
   icon,
@@ -79,18 +81,18 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
         </div>
       </template>
 
-      <template v-if="mqttSettings">
+      <template v-if="mqttExternalHost && mqttSubscribeTopic && mqttUsername">
         <div>
           <dt>MQTT Server URI</dt>
-          <dd>{{ mqttSettings.externalHost }}</dd>
+          <dd>{{ mqttExternalHost }}</dd>
         </div>
         <div>
           <dt>MQTT Topic</dt>
-          <dd>{{ mqttSettings.subscribeTopic }}</dd>
+          <dd>{{ mqttSubscribeTopic }}</dd>
         </div>
         <div>
           <dt>MQTT Username</dt>
-          <dd>{{ mqttSettings.username }}</dd>
+          <dd>{{ mqttUsername }}</dd>
         </div>
         <div class="button-field">
           <dt>MQTT Password</dt>

@@ -62,6 +62,7 @@ const imageFile = ref<File | null>(null)
 const loading = ref(false)
 const emit = defineEmits(['showMqtt'])
 const nonMQTTDataSourceTypes = ['SIMULATION', 'MODBUS']
+const dataSourceTypesWithExtraField = ['SIMULATION', 'MODBUS', 'SINAPSI_ALFA']
 
 const getInitalFormData = (data?: AiidaDataSource) => {
   if (data) {
@@ -111,8 +112,8 @@ watch(
       }
     })
     if (newVendor && newVendor !== oldVendor) {
-      dataSource.value.modbusSettings.modbusModel = ''
-      dataSource.value.modbusSettings.modbusDevice = ''
+      dataSource.value.modbusModel = ''
+      dataSource.value.modbusDevice = ''
       modbusModelsOptions.value = (await getModbusModels(newVendor)).map((mod) => {
         return {
           label: mod.name,
@@ -121,7 +122,7 @@ watch(
       })
     }
     if (newModel && newModel !== oldModel) {
-      dataSource.value.modbusSettings.modbusDevice = ''
+      dataSource.value.modbusDevice = ''
       modbusDevicesOptions.value = (await getModbusDevices(newModel)).map((dev) => {
         return {
           label: dev.name,
@@ -151,21 +152,31 @@ const validateForm = () => {
 
   if (dataSource.value?.dataSourceType === 'MODBUS') {
     const modBusRequiredFields = [
-      { value: dataSource.value.modbusSettings?.modbusIp, label: 'IP Address', key: 'ipAddress' },
-      { value: dataSource.value.modbusSettings?.modbusVendor, label: 'Vendor', key: 'vendor' },
-      { value: dataSource.value.modbusSettings?.modbusModel, label: 'Model', key: 'model' },
-      { value: dataSource.value.modbusSettings?.modbusDevice, label: 'Device', key: 'device' },
+      { value: dataSource.value.modbusIp, label: 'IP Address', key: 'ipAddress' },
+      { value: dataSource.value.modbusVendor, label: 'Vendor', key: 'vendor' },
+      { value: dataSource.value.modbusModel, label: 'Model', key: 'model' },
+      { value: dataSource.value.modbusDevice, label: 'Device', key: 'device' },
     ]
     modBusRequiredFields.forEach((field) => handleRequired(field.value, field.label, field.key))
   }
   if (dataSource.value?.dataSourceType === 'SIMULATION') {
     handleRequired(dataSource.value?.simulationPeriod, 'Simulation Period', 'simPeriod')
   }
+  if (dataSource.value?.dataSourceType === 'SINAPSI_ALFA') {
+    handleRequired(dataSource.value?.activationKey, 'Activation Key', 'activationKey')
+  }
   if (imageFile.value && !imageFile.value.type.startsWith('image/')) {
     errors.value['image'] = 'Uploaded file must be an image.'
   } else if (imageFile.value && imageFile.value.size > 20 * 1024 * 1024) {
     errors.value['image'] = 'Image size must be less than 20MB.'
   }
+}
+//TODO GH-1945 change back when modbus data sources are fixed
+const getDatasourceWithoutModbus = () => {
+  const { modbusIp, modbusVendor, modbusModel, modbusDevice, ...rest } = dataSource.value
+  console.log('removed modbus settings', modbusIp, modbusVendor, modbusModel, modbusDevice)
+  console.log('Datasource', rest)
+  return rest
 }
 
 const handleFormSubmit = async () => {
@@ -177,14 +188,25 @@ const handleFormSubmit = async () => {
     loading.value = true
     try {
       if (dataSource.value.id) {
-        await saveDataSource(dataSource.value.id, {
-          ...dataSource.value,
-        })
+        if (dataSource.value.dataSourceType !== 'MODBUS') {
+          await saveDataSource(dataSource.value.id, getDatasourceWithoutModbus())
+        } else {
+          await saveDataSource(dataSource.value.id, {
+            ...dataSource.value,
+          })
+        }
       } else {
-        const { dataSourceId, plaintextPassword } = await addDataSource(dataSource.value)
-        dataSource.value.id = dataSourceId
-        if (!nonMQTTDataSourceTypes.includes(dataSource.value.dataSourceType)) {
-          emit('showMqtt', plaintextPassword)
+        if (dataSource.value.dataSourceType === 'MODBUS') {
+          const { dataSourceId } = await addDataSource(dataSource.value)
+          dataSource.value.id = dataSourceId
+        } else {
+          const { dataSourceId, plaintextPassword } = await addDataSource(
+            getDatasourceWithoutModbus(),
+          )
+          dataSource.value.id = dataSourceId
+          if (!nonMQTTDataSourceTypes.includes(dataSource.value.dataSourceType)) {
+            emit('showMqtt', plaintextPassword)
+          }
         }
       }
       if (imageFile.value) {
@@ -292,26 +314,19 @@ defineExpose({ showModal })
       <Transition name="extra-column">
         <div
           class="column"
-          v-if="
-            dataSource.dataSourceType === 'MODBUS' || dataSource.dataSourceType === 'SIMULATION'
-          "
+          v-if="dataSourceTypesWithExtraField.includes(dataSource.dataSourceType)"
         >
-          <template v-if="dataSource.dataSourceType === 'MODBUS' && dataSource.modbusSettings">
+          <template v-if="dataSource.dataSourceType === 'MODBUS'">
             <div class="input-field extra-margin">
               <label for="ipAddress"> Local IP Address</label>
-              <input
-                id="ipAddress"
-                v-model="dataSource.modbusSettings.modbusIp"
-                name="ipAddress"
-                required
-              />
+              <input id="ipAddress" v-model="dataSource.modbusIp" name="ipAddress" required />
               <p v-if="errors['ipAddress']" class="error-message">{{ errors['ipAddress'] }}</p>
             </div>
             <div class="input-field">
               <label for="vendor"> Vendor </label>
               <CustomSelect
                 id="vendor"
-                v-model="dataSource.modbusSettings.modbusVendor"
+                v-model="dataSource.modbusVendor"
                 placeholder="Select Vendor"
                 :options="modbusVendorsOptions"
                 name="vendor"
@@ -323,10 +338,10 @@ defineExpose({ showModal })
               <label for="model"> Model </label>
               <CustomSelect
                 id="model"
-                v-model="dataSource.modbusSettings.modbusModel"
+                v-model="dataSource.modbusModel"
                 placeholder="Select Model"
                 :options="modbusModelsOptions"
-                :disabled="!dataSource.modbusSettings.modbusVendor"
+                :disabled="!dataSource.modbusVendor"
                 name="model"
                 required
               />
@@ -336,17 +351,17 @@ defineExpose({ showModal })
               <label for="device"> Device </label>
               <CustomSelect
                 id="device"
-                v-model="dataSource.modbusSettings.modbusDevice"
+                v-model="dataSource.modbusDevice"
                 placeholder="Select Device"
                 :options="modbusDevicesOptions"
-                :disabled="!dataSource.modbusSettings.modbusModel"
+                :disabled="!dataSource.modbusModel"
                 name="device"
                 required
               />
               <p v-if="errors['device']" class="error-message">{{ errors['device'] }}</p>
             </div>
           </template>
-          <template v-else>
+          <template v-if="dataSource.dataSourceType === 'SIMULATION'">
             <div class="input-field">
               <label for="simPeriod"> Simulation Period </label>
               <input
@@ -359,6 +374,22 @@ defineExpose({ showModal })
                 name="simPeriod"
               />
               <p v-if="errors['simPeriod']" class="error-message">{{ errors['simPeriod'] }}</p>
+            </div>
+          </template>
+          <template v-if="dataSource.dataSourceType === 'SINAPSI_ALFA'">
+            <div class="input-field">
+              <label for="activationKey"> Sinapsi Activation Key </label>
+              <input
+                placeholder="Activation Key"
+                required
+                type="text"
+                id="activationKey"
+                v-model="dataSource.activationKey"
+                name="activationKey"
+              />
+              <p v-if="errors['activationKey']" class="error-message">
+                {{ errors['activationKey'] }}
+              </p>
             </div>
           </template>
         </div>

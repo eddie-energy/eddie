@@ -10,21 +10,6 @@ export type AiidaDataNeed = {
   type: 'outbound-aiida' | 'inbound-aiida'
 }
 
-export type AiidaMqttSettings = {
-  internalHost: string
-  externalHost: string
-  subscribeTopic: string
-  username: string
-  password: string
-}
-
-export type AiidaModbusSettings = {
-  modbusIp: string
-  modbusVendor: string
-  modbusModel: string
-  modbusDevice: string
-}
-
 export type AiidaDataSourceIcon = 'ELECTRICITY' | 'HEAT' | 'METER' | 'WATER' | ''
 
 export type AiidaDataSource = {
@@ -35,10 +20,20 @@ export type AiidaDataSource = {
   countryCode: string
   enabled: boolean
   icon: AiidaDataSourceIcon
-  simulationPeriod?: number
-  mqttSettings?: AiidaMqttSettings
-  modbusSettings?: AiidaModbusSettings
   accessCode?: string
+  mqttInternalHost?: string
+  mqttExternalHost?: string
+  mqttSubscribeTopic?: string
+  mqttUsername?: string
+  //DatasourceType = MODBUS
+  modbusIp?: string
+  modbusVendor?: string
+  modbusModel?: string
+  modbusDevice?: string
+  //DatasourceType = SIMULATION
+  simulationPeriod?: number
+  //DatasourceType = SINAPSI_ALFA
+  activationKey?: string
 }
 
 export type AiidaPermission = {
