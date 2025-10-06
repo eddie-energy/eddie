@@ -55,7 +55,7 @@ public class RealTimeDataService {
             if (permission.getTimeSeriesList() == null) {
                 var timeSeriesList = TimeSeriesList.builder()
                                                    .temporalResolution("n/a")
-                                                   .unit("KWH")
+                                                   .unit("KW")
                                                    .permission(permission)
                                                    .build();
                 newTimeSeries = getTimeSeriesFromRTDEnvelope(rtdEnvelope, timeSeriesList);
