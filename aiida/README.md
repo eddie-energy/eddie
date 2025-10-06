@@ -175,8 +175,8 @@ Currently, the following countries are supported:
 | AT                             | [OesterreichsEnergieAdapter](docs-legacy/datasources/at/OesterreichsEnergieAdapter.md) |
 | FR                             | [MicroTeleinfoV3](docs-legacy/datasources/fr/MicroTeleinfoV3.md)                       |
 | NL, BE, SE, DK, FI, HU, LT, CH | [SmartGatewaysAdapter](docs-legacy/datasources/sga/SmartGatewaysAdapter.md)            |
-| INTERNATIONAL                  | [Shelly](docs-legacy/datasources/shelly/Shelly.md)                                     |
 | IT                             | [Sinapsi Alfa](docs-legacy/datasources/it/SinapsiAlfa.md)                              |
+| INTERNATIONAL                  | [Shelly](docs-legacy/datasources/shelly/Shelly.md)                                     |
 
 ![SupportedMeters](docs/images/supported-smart-meters.png)
 _Map created with https://www.mapchart.net_

@@ -1,7 +1,6 @@
 package energy.eddie.aiida.adapters.datasource.modbus;
 
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
-import energy.eddie.aiida.models.modbus.ModbusDevice;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.services.ModbusDeviceService;

@@ -15,7 +15,6 @@ import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -60,7 +59,6 @@ class AggregatorTest {
     private AiidaRecord unwanted1;
     private AiidaRecord unwanted2;
     private AiidaRecord unwanted3;
-    private AiidaRecord unwanted4;
     private AiidaRecord wanted;
     private Instant expiration;
     private CronExpression transmissionSchedule;
@@ -93,10 +91,8 @@ class AggregatorTest {
                                      "10",
                                      KILO_WATT_HOUR)));
         unwanted2 = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
-                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KILO_WATT, "10", KILO_WATT)));
-        unwanted3 = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:2.8.0", NEGATIVE_ACTIVE_ENERGY, "60", KILO_WATT_HOUR, "10", KILO_WATT_HOUR)));
-        unwanted4 = new AiidaRecord(instant, AiidaAsset.CONTROLLABLE_UNIT, USER_ID, DATA_SOURCE_ID_1, List.of(
+        unwanted3 = new AiidaRecord(instant, AiidaAsset.CONTROLLABLE_UNIT, USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
         wanted = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
@@ -142,7 +138,6 @@ class AggregatorTest {
     }
 
     @Test
-    @Disabled("Disable till better aggregation method: GH-1307")
     void getFilteredFlux_filtersFluxFromDataSources() {
         var instant = Instant.now().plusSeconds(600);
         wanted = new AiidaRecord(instant, AiidaAsset.SUBMETER, USER_ID, DATA_SOURCE_ID_1, List.of(
@@ -170,52 +165,16 @@ class AggregatorTest {
                                                                                    DATA_SOURCE_ID_1))
                                                 .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
                                                         aiidaRecord,
-                                                        unwanted3.aiidaRecordValues().getFirst()))
+                                                        unwanted2.aiidaRecordValues().getFirst()))
                                                 .thenCancel()   // Flux of datasource doesn't terminate except if .close() is called
                                                 .verifyLater();
 
 
         // must not matter which datasource publishes the data
+        publisher1.next(unwanted2);
         publisher1.next(unwanted3);
-        publisher1.next(unwanted4);
         publisher2.next(wanted);
         publisher2.next(unwanted1);
-
-        stepVerifier.verify(Duration.ofSeconds(2));
-    }
-
-    /**
-     * Tests that the Flux returned by {@link Aggregator#getFilteredFlux(Set, AiidaAsset, Instant, CronExpression, UUID, UUID)} only returns
-     * {@link AiidaRecord}s that have been published after the returned Flux has been created.
-     */
-    @Test
-    @Disabled("Disable till better aggregation method: GH-1307")
-    void getFilteredFlux_doesNotReturnDataPublishedBeforeSubscribed() throws InterruptedException {
-        TestPublisher<AiidaRecord> publisher = TestPublisher.create();
-        var mockAdapter = mock(DataSourceAdapter.class);
-        when(mockAdapter.dataSource()).thenReturn(DATA_SOURCE_1);
-        when(mockAdapter.start()).thenReturn(publisher.flux());
-
-        aggregator.addNewDataSourceAdapter(mockAdapter);
-
-        StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
-                                                                                   wantedAsset,
-                                                                                   expiration,
-                                                                                   transmissionSchedule,
-                                                                                   USER_ID,
-                                                                                   DATA_SOURCE_ID_1))
-                                                .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
-                                                        aiidaRecord,
-                                                        wanted.aiidaRecordValues().getFirst()))
-                                                .thenCancel()
-                                                .verifyLater();
-
-        Thread.sleep(200);
-
-        publisher.next(unwanted3);
-        publisher.next(unwanted2);
-        publisher.next(wanted);
-        publisher.next(unwanted1);
 
         stepVerifier.verify(Duration.ofSeconds(2));
     }
@@ -257,6 +216,66 @@ class AggregatorTest {
     }
 
     @Test
+    void getFilteredFlux_mergeRecordsByRawTag() {
+        TestPublisher<AiidaRecord> publisher = TestPublisher.create();
+        var mockAdapter = mock(DataSourceAdapter.class);
+        when(mockAdapter.dataSource()).thenReturn(DATA_SOURCE_1);
+        when(mockAdapter.start()).thenReturn(publisher.flux());
+
+        var record1 = new AiidaRecord(Instant.now().plusSeconds(600), wantedAsset, USER_ID, DATA_SOURCE_ID_1,
+                                      List.of(
+                                              new AiidaRecordValue("1-0:1.8.0",
+                                                                   POSITIVE_ACTIVE_ENERGY,
+                                                                   "50",
+                                                                   KILO_WATT,
+                                                                   "10",
+                                                                   KILO_WATT),
+                                              new AiidaRecordValue("1-0:2.8.0",
+                                                                   POSITIVE_ACTIVE_ENERGY,
+                                                                   "55",
+                                                                   KILO_WATT,
+                                                                   "10",
+                                                                   KILO_WATT)
+                                      ));
+        var record2 = new AiidaRecord(Instant.now().plusSeconds(600), wantedAsset, USER_ID, DATA_SOURCE_ID_1,
+                                      List.of(
+                                              new AiidaRecordValue("1-0:2.8.0",
+                                                                   POSITIVE_ACTIVE_ENERGY,
+                                                                   "60",
+                                                                   KILO_WATT,
+                                                                   "12",
+                                                                   KILO_WATT)
+                                      ));
+
+        aggregator.addNewDataSourceAdapter(mockAdapter);
+
+        StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
+                                                                                   wantedAsset,
+                                                                                   expiration,
+                                                                                   transmissionSchedule,
+                                                                                   USER_ID,
+                                                                                   DATA_SOURCE_ID_1))
+                                                .expectNextMatches(aiidaRecord ->
+                                                                           containsExpectedAiidaRecordValue(
+                                                                                   aiidaRecord,
+                                                                                   record2.aiidaRecordValues()
+                                                                                          .getFirst())
+                                                                           && containsExpectedAiidaRecordValue(
+                                                                                   aiidaRecord,
+                                                                                   record1.aiidaRecordValues()
+                                                                                          .getFirst())
+                                                )
+                                                .thenCancel()
+                                                .log()
+                                                .verifyLater();
+
+        publisher.next(record1);
+        publisher.next(record2);
+
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
     void givenAiidaRecordFromDatasource_isSavedInDatabase() {
         TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
         var mockAdapter1 = Mockito.<DataSourceAdapter<DataSource>>mock();
@@ -287,7 +306,6 @@ class AggregatorTest {
      * expiration time.
      */
     @Test
-    @Disabled("Disable till better aggregation method: GH-1307")
     void givenDataWithTimestampAfterFluxFilterTime_fluxDoesNotPublish() {
         TestPublisher<AiidaRecord> publisher = TestPublisher.create();
         var mockAdapter = mock(DataSourceAdapter.class);

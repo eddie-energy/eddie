@@ -5,6 +5,7 @@ import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
 import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
+import energy.eddie.aiida.adapters.datasource.it.SinapsiAlfaAdapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpClient;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
@@ -17,6 +18,7 @@ import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
@@ -74,6 +76,18 @@ class DataSourceAdapterTest {
 
         // Then
         assertInstanceOf(MicroTeleinfoV3Adapter.class, adapter);
+    }
+
+    @Test
+    void givenSinapsiAlfa_returnsAdapter() {
+        // Given
+        var dataSource = mock(SinapsiAlfaDataSource.class);
+
+        // When
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
+
+        // Then
+        assertInstanceOf(SinapsiAlfaAdapter.class, adapter);
     }
 
     @Test
