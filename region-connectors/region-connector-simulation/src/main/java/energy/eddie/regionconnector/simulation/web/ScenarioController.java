@@ -42,10 +42,10 @@ public class ScenarioController {
             @PathVariable String name,
             @RequestBody ScenarioMetadata metadata
     ) {
-        try {
-            var scenario = predefinedScenarios.getScenario(name);
-            return executeScenario(metadata, scenario);
-        } catch (PredefinedScenarios.ScenarioNotFoundException e) {
+        var scenario = predefinedScenarios.getScenario(name);
+        if (scenario.isPresent()) {
+            return executeScenario(metadata, scenario.get());
+        } else {
             return ResponseEntity.notFound().build();
         }
     }

@@ -4,60 +4,95 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.simulation.engine.steps.Scenario;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
 public class PredefinedScenarios {
-    private static final List<String> SCENARIO_PATHS = List.of(
-            "/scenarios/external-termination-scenario.json",
-            "/scenarios/failed-to-externally-terminate-scenario.json",
-            "/scenarios/unable-to-send-scenario.json",
-            "/scenarios/validated-historical-data-scenario.json"
-    );
     private static final Logger LOGGER = LoggerFactory.getLogger(PredefinedScenarios.class);
     private final ObjectMapper objectMapper;
     private final Map<String, Scenario> scenarios;
 
-    public PredefinedScenarios(ObjectMapper objectMapper) {
+    public PredefinedScenarios(
+            ObjectMapper objectMapper,
+            @Value("${region-connector.sim.scenarios:classpath:/scenarios/*.json}") String path
+    ) {
         this.objectMapper = objectMapper;
-        this.scenarios = loadScenarios();
+        this.scenarios = loadScenarios(path);
     }
 
     public Set<String> scenarioNames() {
         return scenarios.keySet();
     }
 
-    public Scenario getScenario(String scenarioName) throws ScenarioNotFoundException {
+    public Optional<Scenario> getScenario(String scenarioName) {
         if (!scenarios.containsKey(scenarioName)) {
-            throw new ScenarioNotFoundException(scenarioName);
+            return Optional.empty();
         }
-        return scenarios.get(scenarioName);
+        return Optional.of(scenarios.get(scenarioName));
     }
 
-    private Map<String, Scenario> loadScenarios() {
-        Map<String, Scenario> map = HashMap.newHashMap(SCENARIO_PATHS.size());
-        for (var path : SCENARIO_PATHS) {
-            InputStream stream = getClass().getResourceAsStream(path);
-            try {
-                var scenario = objectMapper.readValue(stream, Scenario.class);
-                map.put(scenario.name(), scenario);
-            } catch (IOException e) {
-                LOGGER.warn("Error loading scenario '{}'", path, e);
+    private Map<String, Scenario> loadScenarios(String path) {
+        try {
+            var uri = URI.create(path);
+            return "classpath".equals(uri.getScheme())
+                    ? loadJsonFilesFromClasspath(uri)
+                    : loadJsonFilesFromFileSystem(uri);
+        } catch (IOException e) {
+            LOGGER.warn("Error loading scenario '{}'", path, e);
+            return Map.of();
+        }
+    }
+
+    private Map<String, Scenario> loadJsonFilesFromClasspath(URI classpathLocation) throws IOException {
+        var scenarios = new HashMap<String, Scenario>();
+        var resources = new PathMatchingResourcePatternResolver().getResources("classpath*:" + classpathLocation.getPath());
+        for (var resource : resources) {
+            if (!resource.exists()) {
+                continue;
             }
+            var src = resource.getContentAsString(StandardCharsets.UTF_8);
+            var scenario = objectMapper.readValue(src, Scenario.class);
+            scenarios.put(scenario.name(), scenario);
         }
-        return map;
+        return scenarios;
     }
 
-    public static class ScenarioNotFoundException extends Exception {
-        public ScenarioNotFoundException(String scenarioName) {
-            super("Scenario not found: " + scenarioName);
+    private Map<String, Scenario> loadJsonFilesFromFileSystem(URI uri) throws IOException {
+        var scenarios = new HashMap<String, Scenario>();
+        var path = Paths.get(uri.getPath());
+        if (Files.isDirectory(path)) {
+            try (var walker = Files.walk(path)) {
+                walker.filter(PredefinedScenarios::isJsonFile)
+                      .forEach(p -> {
+                          try {
+                              var scenario = objectMapper.readValue(p.toFile(), Scenario.class);
+                              scenarios.put(scenario.name(), scenario);
+                          } catch (IOException e) {
+                              LOGGER.warn("Couldn't parse scenario file {}", p, e);
+                          }
+                      });
+            }
+        } else if (isJsonFile(path)) {
+            var scenario = objectMapper.readValue(path.toFile(), Scenario.class);
+            scenarios.put(scenario.name(), scenario);
         }
+        return scenarios;
+    }
+
+    private static boolean isJsonFile(Path path) {
+        return path.toString().endsWith(".json");
     }
 }
