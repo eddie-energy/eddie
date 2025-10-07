@@ -34,6 +34,15 @@ spring:
             provider: keycloak
 
 aiida:
+  cleanup:
+    cleanup-interval: P1D
+    entities:
+      aiida-record:
+        retention: P1D
+      failed-to-send-entity:
+        retention: PT5M
+      inbound-record:
+        retention: P1D
   installer:
     host: https://installer.aiida.energy
     token: "Test123!"

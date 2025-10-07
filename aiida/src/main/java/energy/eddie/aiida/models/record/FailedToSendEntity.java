@@ -1,4 +1,4 @@
-package energy.eddie.aiida.models;
+package energy.eddie.aiida.models.record;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -11,7 +11,7 @@ public class FailedToSendEntity {
     @Id
     @SequenceGenerator(name = "failed_to_send_entity_seq", sequenceName = "failed_to_send_entity_seq", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "failed_to_send_entity_seq")
-    private Integer id;
+    private Long id;
     @Column(name = "permission_id", nullable = false)
     private UUID permissionId;
     @Column(name = "topic", nullable = false)
@@ -33,7 +33,7 @@ public class FailedToSendEntity {
         this.json = json;
     }
 
-    public Integer id() {
+    public Long id() {
         return id;
     }
 

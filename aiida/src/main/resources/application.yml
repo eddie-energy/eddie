@@ -38,6 +38,15 @@ spring:
             provider: keycloak
 
 aiida:
+  cleanup:
+    cleanup-interval: P1D
+    entities:
+      aiida-record:
+        retention: P1D
+      failed-to-send-entity:
+        retention: P1D
+      inbound-record:
+        retention: P1D
   public:
     url: ${AIIDA_EXTERNAL_HOST:http://localhost:${server.port}}
   installer:

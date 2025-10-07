@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.errors.formatter.FormatterException;
-import energy.eddie.aiida.models.FailedToSendEntity;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.models.record.FailedToSendEntity;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.SchemaFormatter;
 import energy.eddie.aiida.streamers.AiidaStreamer;
@@ -282,7 +282,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
 
     private void retryFailedToSendMessages() {
         List<FailedToSendEntity> failedToSend = failedToSendRepository.findAllByPermissionId(streamingConfig.permissionId());
-        List<Integer> ids = failedToSend.stream().map(entity -> {
+        List<Long> ids = failedToSend.stream().map(entity -> {
             publishMessage(entity.topic(), entity.json());
             return entity.id();
         }).toList();
