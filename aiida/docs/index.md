@@ -11,7 +11,7 @@ hero:
     alt: EDDIE Lego figure
   actions:
     - text: Run AIIDA
-      link: 1-running/running
+      link: 1-running/OPERATION.md
       theme: alt
     - text: Integrate into your application
       link: 2-integrating/integrating

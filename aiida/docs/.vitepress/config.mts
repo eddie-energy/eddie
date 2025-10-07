@@ -42,7 +42,12 @@ export default withMermaid(
       sidebar: [
         {
           text: "Running",
-          link: "/2-running/running.md",
+          items: [
+            {
+              text: "Operation",
+              link: "/1-running/OPERATION.md",
+            },
+          ],
         },
         {
           text: "Integrating",
@@ -50,7 +55,7 @@ export default withMermaid(
         },
         {
           text: "Extending",
-          link: "/2-running/extending.md",
+          link: "/3-extending/extending.md",
         },
       ],
 
