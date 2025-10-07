@@ -1,6 +1,6 @@
 package energy.eddie.aiida.models.datasource.mqtt.it;
 
-import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfig;
+import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
 import energy.eddie.aiida.errors.SinapsiAlflaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSourceType;
@@ -22,7 +22,7 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
     }
 
     public void generateMqttSettings(
-            SinapsiAlfaConfig config,
+            SinapsiAlfaConfiguration config,
             String activationKey
     ) throws SinapsiAlflaEmptyConfigException {
         if (config.mqttUsername().isEmpty() || config.mqttPassword().isEmpty()) {
@@ -31,11 +31,11 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
 
         this.mqttInternalHost = config.mqttHost();
         this.mqttExternalHost = config.mqttHost();
-        this.mqttSubscribeTopic = SinapsiAlfaConfig.TOPIC_PREFIX
+        this.mqttSubscribeTopic = SinapsiAlfaConfiguration.TOPIC_PREFIX
                                   + config.mqttUsername()
-                                  + SinapsiAlfaConfig.TOPIC_INFIX
+                                  + SinapsiAlfaConfiguration.TOPIC_INFIX
                                   + activationKey
-                                  + SinapsiAlfaConfig.TOPIC_SUFFIX;
+                                  + SinapsiAlfaConfiguration.TOPIC_SUFFIX;
         this.mqttUsername = config.mqttUsername();
         this.mqttPassword = config.mqttPassword();
     }

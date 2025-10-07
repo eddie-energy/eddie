@@ -24,11 +24,12 @@ For that the activation key must be entered.
 
 ## Activation Key
 
-Each Sinapsi Alfa device requires an activation key to connect to the MQTT broker.
-This key is a unique identifier found either:
+> **Example Activation Key:** `a1b2d3-1a2b3-a1b2d-1a2b3-a1b2d`
 
-- on the device label, or
-- in the Sinapsi Alfa mobile app.
+The Activation Key is a Universally Unique Identifier (UUID) assigned to each IoMeter2G and is used by the end user during installation to verify ownership.
+The label on the device has the full activation key and a QR code for it.
+
+Each Sinapsi Alfa device requires an activation key to connect to the MQTT broker.
 
 When creating a new data source of type Sinapsi Alfa in the AIIDA UI, you will be prompted to enter this activation key.
 
@@ -55,3 +56,9 @@ The device publishes its readings as MQTT messages - each containing data per OB
   }
 ]
 ```
+
+- `du`: IoMeter2g fabrication number
+- `pod`: Point of Delivery (Meter ID): This is an alphanumeric code (consisting of 14 or 15 characters) that always begins with “IT” and clearly identifies the point of delivery, i.e., the physical point where the energy is delivered by the seller and collected by the end customer. The code does not change even if the seller changes.
+- `data`: Array of readings
+  - `ts`: Timestamp of the reading (Unix epoch time)
+  - OBIS codes (e.g., `1-0:1.7.0.255_3,0_2`): Corresponding values

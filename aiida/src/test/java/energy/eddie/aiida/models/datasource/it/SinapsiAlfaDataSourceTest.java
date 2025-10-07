@@ -1,6 +1,6 @@
 package energy.eddie.aiida.models.datasource.it;
 
-import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfig;
+import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
 import energy.eddie.aiida.errors.SinapsiAlflaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
@@ -17,7 +17,7 @@ class SinapsiAlfaDataSourceTest {
     void generateMqttSettings_throwsException_whenUsernameIsMissing() {
         // Given
         var dataSource = new SinapsiAlfaDataSource(mock(SinapsiAlfaDataSourceDto.class), UUID.randomUUID());
-        var config = mock(SinapsiAlfaConfig.class);
+        var config = mock(SinapsiAlfaConfiguration.class);
         when(config.mqttUsername()).thenReturn("");
         when(config.mqttPassword()).thenReturn("password");
 
@@ -32,7 +32,7 @@ class SinapsiAlfaDataSourceTest {
     void generateMqttSettings_throwsException_whenPasswordIsMissing() {
         // Given
         var dataSource = new SinapsiAlfaDataSource(mock(SinapsiAlfaDataSourceDto.class), UUID.randomUUID());
-        var config = mock(SinapsiAlfaConfig.class);
+        var config = mock(SinapsiAlfaConfiguration.class);
         when(config.mqttUsername()).thenReturn("username");
         when(config.mqttPassword()).thenReturn("");
 

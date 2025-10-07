@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfig;
+import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfiguration;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
@@ -41,7 +41,7 @@ public class DataSourceService {
     private final MqttConfiguration mqttConfiguration;
     private final ObjectMapper objectMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final SinapsiAlfaConfig sinapsiAlfaConfig;
+    private final SinapsiAlfaConfiguration sinapsiAlfaConfiguration;
 
     @Autowired
     public DataSourceService(
@@ -51,7 +51,7 @@ public class DataSourceService {
             MqttConfiguration mqttConfiguration,
             ObjectMapper objectMapper,
             BCryptPasswordEncoder bCryptPasswordEncoder,
-            SinapsiAlfaConfig sinapsiAlfaConfig
+            SinapsiAlfaConfiguration sinapsiAlfaConfiguration
     ) {
         this.repository = repository;
         this.aggregator = aggregator;
@@ -59,7 +59,7 @@ public class DataSourceService {
         this.mqttConfiguration = mqttConfiguration;
         this.objectMapper = objectMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.sinapsiAlfaConfig = sinapsiAlfaConfig;
+        this.sinapsiAlfaConfiguration = sinapsiAlfaConfiguration;
     }
 
     @EventListener(ContextRefreshedEvent.class)
@@ -122,7 +122,7 @@ public class DataSourceService {
 
         if (dataSource instanceof MqttDataSource mqttDataSource) {
             if (mqttDataSource instanceof SinapsiAlfaDataSource sinapsiAlfaDataSource && dto instanceof SinapsiAlfaDataSourceDto sinapsiAlfaDataSourceDto) {
-                sinapsiAlfaDataSource.generateMqttSettings(sinapsiAlfaConfig, sinapsiAlfaDataSourceDto.activationKey());
+                sinapsiAlfaDataSource.generateMqttSettings(sinapsiAlfaConfiguration, sinapsiAlfaDataSourceDto.activationKey());
             } else {
                 plaintextPassword = SecretGenerator.generate();
                 mqttDataSource.generateMqttSettings(mqttConfiguration, bCryptPasswordEncoder, plaintextPassword);

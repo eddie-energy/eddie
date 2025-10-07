@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 public class SinapsiAlfaAdapter extends MqttDataSourceAdapter<SinapsiAlfaDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SinapsiAlfaAdapter.class);
@@ -55,16 +57,10 @@ public class SinapsiAlfaAdapter extends MqttDataSourceAdapter<SinapsiAlfaDataSou
         try {
             var json = mapper.readValue(message.getPayload(), ENTRY_JSON_TYPE_REF);
 
-            var aiidaRecordValues = json.stream()
-                                        .flatMap(x -> x.data().stream())
-                                        .flatMap(dataEntry -> dataEntry.entries()
-                                                                       .entrySet()
-                                                                       .stream())
-                                        .map(entry -> new SinapsiAlfaMeasurement(
-                                                entry.getKey(),
-                                                String.valueOf(entry.getValue())))
-                                        .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
-                                        .toList();
+            var aiidaRecordValues = flattenEntries(json)
+                    .map(entry -> new SinapsiAlfaMeasurement(entry.getKey(), String.valueOf(entry.getValue())))
+                    .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
+                    .toList();
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (IOException e) {
@@ -82,5 +78,11 @@ public class SinapsiAlfaAdapter extends MqttDataSourceAdapter<SinapsiAlfaDataSou
         connectOptions.setPassword(dataSource().mqttPassword().getBytes(StandardCharsets.UTF_8));
 
         return connectOptions;
+    }
+
+    private Stream<Map.Entry<String, Integer>> flattenEntries(List<SinapsiAlfaEntryJson> json) {
+        return json.stream()
+                   .flatMap(x -> x.data().stream())
+                   .flatMap(data -> data.entries().entrySet().stream());
     }
 }

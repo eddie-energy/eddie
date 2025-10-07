@@ -143,9 +143,9 @@ When using Docker, most of these properties should be configured in the [.env](d
 | MQTT_EXTERNAL_HOST                                     | Network-accessible host of the MQTT broker                                                                                           |
 | MQTT_INTERNAL_HOST                                     | Internal network host of the MQTT broker (e.g. inside Docker network)                                                                |
 | MQTT_BCRYPT_SALT_ROUNDS                                | Number of rounds for bcrypt hashing of MQTT passwords (default: 12)                                                                  |
-| DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_HOST     | Host of the Sinapsi Alfa MQTT broker (default: tcp://hstbrk.sghiot.com:1883)                                                         |
-| DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_USERNAME | Username for the Sinapsi Alfa MQTT broker                                                                                            |
-| DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_PASSWORD | Password for the Sinapsi Alfa MQTT broker                                                                                            |
+| DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_HOST                  | Host of the Sinapsi Alfa MQTT broker (default: tcp://hstbrk.sghiot.com:1883)                                                         |
+| DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_USERNAME              | Username for the Sinapsi Alfa MQTT broker                                                                                            |
+| DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_PASSWORD              | Password for the Sinapsi Alfa MQTT broker                                                                                            |
 
 ### Reverse Proxy Deployment
 
