@@ -12,12 +12,14 @@ It offers a few functionalities to send messages via EDDIE to the active [outbou
 
 To enable this region connector, the following configuration properties are required.
 
-| Configuration Values           | Description                                                                           |
-|--------------------------------|---------------------------------------------------------------------------------------|
-| `region-connector.sim.enabled` | `true` or `false`, `false` per default. Enables the region connector if set to `true` |
+| Configuration Values             | Description                                                                                                                                                                                                                                                                                                                                                                                                     |
+|----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `region-connector.sim.enabled`   | `true` or `false`, `false` per default. Enables the region connector if set to `true`                                                                                                                                                                                                                                                                                                                           |
+| `region-connector.sim.scenarios` | Sets the directory from which predefined scenarios should be loaded, prefix with `classpath:` to load the from the classpath. To load scenarios from the disk use a unix path, like `/path/to/scenarios/`. This should contain json files with the scenario. Can also be pointed to a single scenario file. Default is `classpath:/scenarios/*.json`. Wildcards are only supported when loading from classpath. |
 
 ```properties :spring
 region-connector.sim.enabled=true
+region-connector.sim.scenarios=/path/to/scenarios/
 ```
 
 ## Launch Simulation
