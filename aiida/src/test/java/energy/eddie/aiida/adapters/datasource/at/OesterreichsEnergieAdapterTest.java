@@ -1,14 +1,9 @@
 package energy.eddie.aiida.adapters.datasource.at;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.TestUtils;
@@ -27,7 +22,6 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.UUID;
 
 import static energy.eddie.aiida.utils.ObisCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,43 +33,21 @@ import static org.mockito.Mockito.*;
 class OesterreichsEnergieAdapterTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
-    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final OesterreichsEnergieDataSource DATA_SOURCE = new OesterreichsEnergieDataSource(
-            new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.SMART_METER_ADAPTER,
-                              AiidaAsset.SUBMETER,
-                              "sma",
-                              "AT",
-                              true,
-                              DataSourceIcon.METER,
-                              null,
-                              null,
-                              null),
-            USER_ID,
-            new DataSourceMqttDto("tcp://localhost:1883",
-                                  "tcp://localhost:1883",
-                                  "aiida/test",
-                                  "user",
-                                  "password")
-    );
+    private static final OesterreichsEnergieDataSource DATA_SOURCE = mock(OesterreichsEnergieDataSource.class);
+    private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
     private OesterreichsEnergieAdapter adapter;
-    private ObjectMapper mapper;
-    private MqttConfiguration mqttConfiguration;
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        mapper = new AiidaConfiguration().customObjectMapper().build();
-        mqttConfiguration = new MqttConfiguration(
-                "tcp://localhost:1883",
-                "tcp://localhost:1883",
-                10,
-                "password",
-                ""
-        );
-        adapter = new OesterreichsEnergieAdapter(DATA_SOURCE, mapper, mqttConfiguration);
+        when(DATA_SOURCE.mqttInternalHost()).thenReturn("tcp://localhost:1883");
+        when(DATA_SOURCE.mqttSubscribeTopic()).thenReturn("aiida/test");
+        when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(MQTT_CONFIGURATION.password()).thenReturn("password");
+
+        var mapper = new AiidaConfiguration().customObjectMapper().build();
+        adapter = new OesterreichsEnergieAdapter(DATA_SOURCE, mapper, MQTT_CONFIGURATION);
 
         LOG_CAPTOR_ADAPTER.setLogLevelToTrace();
     }

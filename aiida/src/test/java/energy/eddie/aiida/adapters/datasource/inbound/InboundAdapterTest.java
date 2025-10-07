@@ -2,11 +2,9 @@ package energy.eddie.aiida.adapters.datasource.inbound;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
@@ -36,38 +34,27 @@ class InboundAdapterTest {
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final InboundDataSource DATA_SOURCE = new InboundDataSource(
-            new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.SMART_METER_ADAPTER,
-                              AiidaAsset.SUBMETER,
-                              "sma",
-                              "AT",
-                              true,
-                              DataSourceIcon.METER,
-                              null,
-                              null,
-                              null),
-            USER_ID,
-            new DataSourceMqttDto("tcp://localhost:1883",
-                                  "tcp://localhost:1883",
-                                  "aiida/test",
-                                  "user",
-                                  "password")
-    );
+    private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
+    private static final MqttStreamingConfig MQTT_STREAMING_CONFIG = mock(MqttStreamingConfig.class);
+    private static final InboundDataSourceDto DATA_SOURCE_DTO = mock(InboundDataSourceDto.class);
     private InboundAdapter adapter;
+    private InboundDataSource dataSource;
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        var mqttConfiguration = new MqttConfiguration(
-                "tcp://localhost:1883",
-                "tcp://localhost:1883",
-                10,
-                "password",
-                ""
-        );
-        adapter = new InboundAdapter(DATA_SOURCE, mqttConfiguration);
+        when(DATA_SOURCE_DTO.id()).thenReturn(DATA_SOURCE_ID);
+        when(DATA_SOURCE_DTO.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(MQTT_STREAMING_CONFIG.serverUri()).thenReturn("tcp://localhost:1883");
+        when(MQTT_STREAMING_CONFIG.username()).thenReturn("aiida");
+        when(MQTT_STREAMING_CONFIG.password()).thenReturn("testPassword");
+        when(MQTT_STREAMING_CONFIG.dataTopic()).thenReturn("aiida/testTopic");
+        when(MQTT_CONFIGURATION.password()).thenReturn("aiida");
+
+        dataSource = new InboundDataSource(DATA_SOURCE_DTO, USER_ID, MQTT_STREAMING_CONFIG);
+
+        adapter = new InboundAdapter(dataSource, MQTT_CONFIGURATION);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 
@@ -207,9 +194,9 @@ class InboundAdapterTest {
 
             adapter.start().subscribe();
 
-            adapter.connectComplete(false, DATA_SOURCE.mqttInternalHost());
+            adapter.connectComplete(false, dataSource.mqttInternalHost());
 
-            verify(mockClient).subscribe(DATA_SOURCE.mqttSubscribeTopic(), 2);
+            verify(mockClient).subscribe(dataSource.mqttSubscribeTopic(), 2);
         }
     }
 
@@ -219,11 +206,11 @@ class InboundAdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
-            when(mockClient.subscribe(DATA_SOURCE.mqttSubscribeTopic(), 2)).thenThrow(new MqttException(998877));
+            when(mockClient.subscribe(dataSource.mqttSubscribeTopic(), 2)).thenThrow(new MqttException(998877));
 
             StepVerifier.create(adapter.start())
                         .expectSubscription()
-                        .then(() -> adapter.connectComplete(false, DATA_SOURCE.mqttInternalHost()))
+                        .then(() -> adapter.connectComplete(false, dataSource.mqttInternalHost()))
                         .expectError()
                         .verify();
         }

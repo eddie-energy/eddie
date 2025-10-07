@@ -1,7 +1,6 @@
 package energy.eddie.aiida.models.datasource.mqtt.at;
 
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.at.OesterreichsEnergieDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import jakarta.persistence.DiscriminatorValue;
@@ -15,7 +14,7 @@ public class OesterreichsEnergieDataSource extends MqttDataSource {
     @SuppressWarnings("NullAway")
     protected OesterreichsEnergieDataSource() {}
 
-    public OesterreichsEnergieDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
-        super(dto, userId, dataSourceMqttDto);
+    public OesterreichsEnergieDataSource(OesterreichsEnergieDataSourceDto dto, UUID userId) {
+        super(dto, userId);
     }
 }

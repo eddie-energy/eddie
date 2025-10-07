@@ -1,15 +1,20 @@
 package energy.eddie.aiida.models.datasource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceModbusDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
-import energy.eddie.aiida.dtos.DataSourceProtocolSettings;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.at.OesterreichsEnergieDataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.cim.CimDataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.fr.MicroTeleinfoV3DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.sga.SmartGatewaysDataSourceDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.shelly.ShellyDataSourceDto;
+import energy.eddie.aiida.dtos.datasource.simulation.SimulationDataSourceDto;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.cim.CimDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
-import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
@@ -66,69 +71,20 @@ public abstract class DataSource {
         this.icon = dto.icon();
     }
 
-    public static DataSource createFromDto(
-            DataSourceDto dto,
-            UUID userId,
-            @Nullable DataSourceProtocolSettings settings
-    ) {
-        var dataSourceType = dto.dataSourceType();
-
-        return switch (dataSourceType) {
-            case SMART_METER_ADAPTER -> {
-                if (settings instanceof DataSourceMqttDto mqtt) {
-                    yield new OesterreichsEnergieDataSource(dto, userId, mqtt);
-                }
-                throw createMqttSettingsIllegalStateException(dataSourceType);
-            }
-
-            case MICRO_TELEINFO -> {
-                if (settings instanceof DataSourceMqttDto mqtt) {
-                    yield new MicroTeleinfoV3DataSource(dto, userId, mqtt);
-                }
-                throw createMqttSettingsIllegalStateException(dataSourceType);
-            }
-
-            case SMART_GATEWAYS_ADAPTER -> {
-                if (settings instanceof DataSourceMqttDto mqtt) {
-                    yield new SmartGatewaysDataSource(dto, userId, mqtt);
-                }
-                throw createMqttSettingsIllegalStateException(dataSourceType);
-            }
-
-            case SHELLY -> {
-                if (settings instanceof DataSourceMqttDto mqtt) {
-                    yield new ShellyDataSource(dto, userId, mqtt);
-                }
-                throw createMqttSettingsIllegalStateException(dataSourceType);
-            }
-
-            case INBOUND -> {
-                if (settings instanceof DataSourceMqttDto mqtt) {
-                    yield new InboundDataSource(dto, userId, mqtt);
-                }
-                throw createMqttSettingsIllegalStateException(dataSourceType);
-            }
-
-            case SIMULATION -> new SimulationDataSource(dto, userId);
-
-            case MODBUS -> {
-                if (settings instanceof DataSourceModbusDto modbus) {
-                    yield new ModbusDataSource(dto, userId, modbus);
-                }
-                throw new IllegalStateException("Expected MODBUS settings for %s datasource".formatted(dataSourceType));
-            }
-            case CIM_ADAPTER -> {
-                if (settings instanceof DataSourceMqttDto mqtt) {
-                    yield new CimDataSource(dto, userId, mqtt);
-                }
-                throw createMqttSettingsIllegalStateException(dataSourceType);
-            }
+    public static DataSource createFromDto(DataSourceDto dto, UUID userId) {
+        return switch (dto) {
+            case OesterreichsEnergieDataSourceDto parsedDto -> new OesterreichsEnergieDataSource(parsedDto, userId);
+            case MicroTeleinfoV3DataSourceDto parsedDto -> new MicroTeleinfoV3DataSource(parsedDto, userId);
+            case SinapsiAlfaDataSourceDto parsedDto -> new SinapsiAlfaDataSource(parsedDto, userId);
+            case SmartGatewaysDataSourceDto parsedDto -> new SmartGatewaysDataSource(parsedDto, userId);
+            case ShellyDataSourceDto parsedDto -> new ShellyDataSource(parsedDto, userId);
+            case SimulationDataSourceDto parsedDto -> new SimulationDataSource(parsedDto, userId);
+            case ModbusDataSourceDto parsedDto -> new ModbusDataSource(parsedDto, userId);
+            case CimDataSourceDto parsedDto -> new CimDataSource(parsedDto, userId);
+            default -> throw new IllegalArgumentException(
+                    "Unsupported dto type: " + dto.getClass() + " / " + dto.dataSourceType()
+            );
         };
-    }
-
-
-    public DataSource mergeWithDto(DataSourceDto dto, UUID userId) {
-        return createFromDto(dto, userId, new DataSourceMqttDto());
     }
 
     public UUID id() {
@@ -174,13 +130,5 @@ public abstract class DataSource {
 
     public void setImage(@Nullable Image image) {
         this.image = image;
-    }
-
-    public DataSourceDto toDto() {
-        return new DataSourceDto(id, dataSourceType, asset, name, countryCode, enabled, icon, null, null, null);
-    }
-
-    private static IllegalStateException createMqttSettingsIllegalStateException(DataSourceType dataSourceType) {
-        return new IllegalStateException("Expected MQTT settings for %s datasource".formatted(dataSourceType));
     }
 }

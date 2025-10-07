@@ -4,17 +4,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceModbusDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
-import energy.eddie.aiida.dtos.DataSourceSecretsDto;
+import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfiguration;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
+import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
+import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
 import energy.eddie.aiida.errors.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.ModbusConnectionException;
+import energy.eddie.aiida.errors.SinapsiAlflaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
+import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -39,6 +41,7 @@ public class DataSourceService {
     private final MqttConfiguration mqttConfiguration;
     private final ObjectMapper objectMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final SinapsiAlfaConfiguration sinapsiAlfaConfiguration;
 
     @Autowired
     public DataSourceService(
@@ -47,7 +50,8 @@ public class DataSourceService {
             AuthService authService,
             MqttConfiguration mqttConfiguration,
             ObjectMapper objectMapper,
-            BCryptPasswordEncoder bCryptPasswordEncoder
+            BCryptPasswordEncoder bCryptPasswordEncoder,
+            SinapsiAlfaConfiguration sinapsiAlfaConfiguration
     ) {
         this.repository = repository;
         this.aggregator = aggregator;
@@ -55,6 +59,7 @@ public class DataSourceService {
         this.mqttConfiguration = mqttConfiguration;
         this.objectMapper = objectMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.sinapsiAlfaConfiguration = sinapsiAlfaConfiguration;
     }
 
     @EventListener(ContextRefreshedEvent.class)
@@ -81,13 +86,13 @@ public class DataSourceService {
 
     public DataSource dataSourceByIdOrThrow(UUID dataSourceId) throws DataSourceNotFoundException {
         return repository.findById(dataSourceId)
-                .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
+                         .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
     }
 
     public List<DataSourceType> getOutboundDataSourceTypes() {
         return Arrays.stream(DataSourceType.values())
-              .filter(this::isOutboundDataSourceType)
-              .toList();
+                     .filter(this::isOutboundDataSourceType)
+                     .toList();
     }
 
     public List<DataSource> getInboundDataSources() throws InvalidUserException {
@@ -103,56 +108,32 @@ public class DataSourceService {
         var currentUserId = authService.getCurrentUserId();
 
         return repository.findByUserId(currentUserId)
-                .stream()
-                .filter(dataSource -> isOutboundDataSourceType(dataSource.dataSourceType()))
-                .toList();
+                         .stream()
+                         .filter(dataSource -> isOutboundDataSourceType(dataSource.dataSourceType()))
+                         .toList();
     }
 
-    public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException {
+    public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException, SinapsiAlflaEmptyConfigException {
         var currentUserId = authService.getCurrentUserId();
-
-        UUID dataSourceId = null;
         String plaintextPassword = null;
 
-        if (dto.dataSourceType().equals(DataSourceType.MODBUS)) {
-            var modbusSettings = dto.modbusSettings();
-            if (modbusSettings != null) {
-                var modbusSettingsDto = new DataSourceModbusDto(
-                        modbusSettings.modbusIp(),
-                        modbusSettings.modbusVendor(),
-                        modbusSettings.modbusModel(),
-                        modbusSettings.modbusDevice()
-                );
-                var dataSource = DataSource.createFromDto(dto, currentUserId, modbusSettingsDto);
-                startDataSource(dataSource);
-                repository.save(dataSource);
+        var dataSource = DataSource.createFromDto(dto, currentUserId);
+        repository.save(dataSource); // This save generates the datasource ID
 
-                dataSourceId = dataSource.id();
+        if (dataSource instanceof MqttDataSource mqttDataSource) {
+            if (mqttDataSource instanceof SinapsiAlfaDataSource sinapsiAlfaDataSource && dto instanceof SinapsiAlfaDataSourceDto sinapsiAlfaDataSourceDto) {
+                sinapsiAlfaDataSource.generateMqttSettings(sinapsiAlfaConfiguration, sinapsiAlfaDataSourceDto.activationKey());
+            } else {
+                plaintextPassword = SecretGenerator.generate();
+                mqttDataSource.generateMqttSettings(mqttConfiguration, bCryptPasswordEncoder, plaintextPassword);
             }
-        } else {
-            plaintextPassword = SecretGenerator.generate();
 
-            var mqttSettingsDto = new DataSourceMqttDto(
-                    mqttConfiguration.internalHost(),
-                    mqttConfiguration.externalHost(),
-                    "aiida/" + SecretGenerator.generate(),
-                    SecretGenerator.generate(),
-                    bCryptPasswordEncoder.encode(plaintextPassword)
-            );
-            var dataSource = DataSource.createFromDto(dto, currentUserId, mqttSettingsDto);
-
-            // This save generates the datasource ID
-            repository.save(dataSource);
-            dataSourceId = dataSource.id();
-
-            if (dataSource instanceof MqttDataSource) {
-                // This save now perists the subscribe topic with the generated ID
-                repository.save(dataSource);
-            }
-            startDataSource(dataSource);
+            repository.save(dataSource);  // This save now perists the subscribe topic with the generated ID
         }
 
-        return new DataSourceSecretsDto(dataSourceId, plaintextPassword);
+        startDataSource(dataSource);
+
+        return new DataSourceSecretsDto(dataSource.id(), plaintextPassword);
     }
 
     public void deleteDataSource(UUID dataSourceId) {
@@ -173,7 +154,7 @@ public class DataSourceService {
         var currentEnabledState = currentDataSource.enabled();
 
         var currentUserId = authService.getCurrentUserId();
-        var dataSource = currentDataSource.mergeWithDto(dto, currentUserId);
+        var dataSource = DataSource.createFromDto(dto, currentUserId);
 
         findDataSourceAdapter(currentDataSource.id()).ifPresentOrElse(
                 adapter -> updateDataSourceAdapterState(
@@ -217,7 +198,7 @@ public class DataSourceService {
 
         var dataSourceSecrets = new DataSourceSecretsDto(dataSourceId, null);
 
-        if(dataSource instanceof MqttDataSource mqttDataSource) {
+        if (dataSource instanceof MqttDataSource mqttDataSource) {
             dataSourceSecrets = new DataSourceSecretsDto(dataSourceId, SecretGenerator.generate());
             mqttDataSource.setMqttPassword(bCryptPasswordEncoder.encode(dataSourceSecrets.plaintextPassword()));
 

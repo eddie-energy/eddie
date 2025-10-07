@@ -1,10 +1,6 @@
 package energy.eddie.aiida.adapters.datasource.sga;
 
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysTopic;
 import energy.eddie.aiida.utils.MqttFactory;
@@ -21,7 +17,6 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.UUID;
 
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
@@ -29,39 +24,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class SmartGatewaysAdapterTest {
-
-    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-
-    private static final SmartGatewaysDataSource DATA_SOURCE = new SmartGatewaysDataSource(
-            new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.SMART_GATEWAYS_ADAPTER,
-                              AiidaAsset.SUBMETER,
-                              "sma",
-                              "AT",
-                              true,
-                              DataSourceIcon.METER,
-                              null,
-                              null,
-                              null),
-            USER_ID,
-            new DataSourceMqttDto("tcp://localhost:1883", "tcp://localhost:1883", "aiida/test", "user", "password")
-    );
+    private static final SmartGatewaysDataSource DATA_SOURCE = mock(SmartGatewaysDataSource.class);
+    private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
 
     private SmartGatewaysAdapter adapter;
-    private MqttConfiguration mqttConfiguration;
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
-        mqttConfiguration = new MqttConfiguration(
-                "tcp://localhost:1883",
-                "tcp://localhost:1883",
-                10,
-                "password",
-                ""
-        );
-        adapter = new SmartGatewaysAdapter(DATA_SOURCE, mqttConfiguration);
+
+        when(DATA_SOURCE.mqttInternalHost()).thenReturn("tcp://localhost:1883");
+        when(DATA_SOURCE.mqttSubscribeTopic()).thenReturn("aiida/test");
+        when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(MQTT_CONFIGURATION.password()).thenReturn("password");
+
+        adapter = new SmartGatewaysAdapter(DATA_SOURCE, MQTT_CONFIGURATION);
     }
 
     @AfterEach

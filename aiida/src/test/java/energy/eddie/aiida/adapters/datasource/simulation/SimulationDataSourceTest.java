@@ -1,10 +1,7 @@
 package energy.eddie.aiida.adapters.datasource.simulation;
 
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -15,25 +12,23 @@ import java.time.Duration;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SimulationDataSourceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final SimulationDataSource DATA_SOURCE = new SimulationDataSource(
-            new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.SIMULATION,
-                              AiidaAsset.SUBMETER,
-                              "simulation",
-                              "AT",
-                              true,
-                              DataSourceIcon.METER,
-                              1,
-                              null,
-                              null),
-            USER_ID
-    );
+    private static final SimulationDataSource DATA_SOURCE = mock(SimulationDataSource.class);
     private SimulationAdapter simulator;
+
+    @BeforeEach
+    void setup() {
+        when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
+        when(DATA_SOURCE.userId()).thenReturn(USER_ID);
+        when(DATA_SOURCE.name()).thenReturn("simulation");
+        when(DATA_SOURCE.pollingInterval()).thenReturn(1);
+    }
 
     @Test
     void testConstructorWithoutNameParameter() {

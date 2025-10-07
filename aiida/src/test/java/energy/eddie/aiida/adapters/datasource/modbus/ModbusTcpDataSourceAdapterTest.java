@@ -1,15 +1,9 @@
 package energy.eddie.aiida.adapters.datasource.modbus;
 
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceModbusDto;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
-import energy.eddie.aiida.models.modbus.ModbusDevice;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.services.ModbusDeviceService;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,19 +23,19 @@ import java.util.UUID;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ModbusTcpDataSourceAdapterTest {
     private MockedStatic<ModbusDeviceService> mockedDeviceService;
-    private ModbusDevice modbusDevice;
     private ModbusTcpDataSourceAdapter adapter;
     private MockedConstruction<ModbusTcpClient> mockedClientConstruction;
     private ModbusTcpClient mockClient;
 
     @BeforeEach
-    void setUp() throws Exception {
-        modbusDevice = ModbusDeviceTestHelper.setupModbusDevice();
+    void setUp() {
+        var modbusDevice = ModbusDeviceTestHelper.setupModbusDevice();
 
         mockedDeviceService = Mockito.mockStatic(ModbusDeviceService.class);
         mockedDeviceService.when(() -> ModbusDeviceService.loadConfig(any(UUID.class)))
@@ -57,24 +51,15 @@ class ModbusTcpDataSourceAdapterTest {
                 }
         );
 
-        DataSourceDto dto = new DataSourceDto(
-                UUID.randomUUID(),
-                DataSourceType.MODBUS,
-                AiidaAsset.DEDICATED_MEASUREMENT_DEVICE,
-                "test-datasource",
-                "AT",
-                true,
-                DataSourceIcon.METER,
-                1,
-                null,
-                new DataSourceModbusDto("127.0.0.1", null, null, UUID.randomUUID())
-        );
-
-        ModbusDataSource dataSource = new ModbusDataSource(dto, UUID.randomUUID(), dto.modbusSettings());
+        var dataSource = mock(ModbusDataSource.class);
+        when(dataSource.enabled()).thenReturn(true);
+        when(dataSource.pollingInterval()).thenReturn(1);
+        when(dataSource.modbusIp()).thenReturn("127.0.0.1");
+        when(dataSource.modbusDevice()).thenReturn(UUID.randomUUID());
         adapter = new ModbusTcpDataSourceAdapter(dataSource);
 
         // Grab the actual mock instance created by the constructor
-        mockClient = mockedClientConstruction.constructed().get(0);
+        mockClient = mockedClientConstruction.constructed().getFirst();
     }
 
     @AfterEach

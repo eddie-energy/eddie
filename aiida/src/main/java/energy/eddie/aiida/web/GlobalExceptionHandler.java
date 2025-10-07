@@ -192,4 +192,10 @@ public class GlobalExceptionHandler {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errors);
     }
+
+    @ExceptionHandler(value = {SinapsiAlflaEmptyConfigException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleSinapsiAlflaEmptyConfigException(SinapsiAlflaEmptyConfigException exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+    }
 }

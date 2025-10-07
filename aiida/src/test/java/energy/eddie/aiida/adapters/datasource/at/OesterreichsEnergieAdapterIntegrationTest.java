@@ -3,12 +3,7 @@ package energy.eddie.aiida.adapters.datasource.at;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
@@ -39,6 +34,8 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Also tests that authentication works with username/password
@@ -46,8 +43,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @Testcontainers
 class OesterreichsEnergieAdapterIntegrationTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
-    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID USER_ID = UUID.fromString("9211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final String TOPIC = "aiida/test";
     private static final String USERNAME = "aiida";
     private static final String PASSWORD = "testPassword";
 
@@ -58,6 +54,8 @@ class OesterreichsEnergieAdapterIntegrationTest {
     private static final String EMQX_INIT_USER_CONTAINER_PATH = "/opt/emqx/data/" + EMQX_INIT_USER_FILE.split("/")[1];
 
     private static final String TOXIPROXY_IMAGE = "ghcr.io/shopify/toxiproxy:2.5.0";
+
+    private static final OesterreichsEnergieDataSource DATA_SOURCE = mock(OesterreichsEnergieDataSource.class);
 
     public static Network network = Network.newNetwork();
     @Container
@@ -79,7 +77,6 @@ class OesterreichsEnergieAdapterIntegrationTest {
     private MqttConfiguration mqttConfiguration;
     private ObjectMapper mapper;
     private Proxy proxy;
-    private OesterreichsEnergieDataSource dataSource;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -94,24 +91,11 @@ class OesterreichsEnergieAdapterIntegrationTest {
         var serverURI = "tcp://" + ipAddressViaToxiproxy + ":" + portViaToxiproxy;
         mqttConfiguration = new MqttConfiguration(serverURI, serverURI, 10, PASSWORD, "");
 
-        dataSource = new OesterreichsEnergieDataSource(
-                new DataSourceDto(DATA_SOURCE_ID,
-                                  DataSourceType.SMART_METER_ADAPTER,
-                                  AiidaAsset.SUBMETER,
-                                  "sma",
-                                  "AT",
-                                  true,
-                                  DataSourceIcon.METER,
-                                  null,
-                                  null,
-                                  null),
-                USER_ID,
-                new DataSourceMqttDto(serverURI,
-                                      serverURI,
-                                      "aiida/test",
-                                      USERNAME,
-                                      PASSWORD)
-        );
+        when(DATA_SOURCE.enabled()).thenReturn(true);
+        when(DATA_SOURCE.mqttInternalHost()).thenReturn(serverURI);
+        when(DATA_SOURCE.mqttSubscribeTopic()).thenReturn(TOPIC);
+        when(DATA_SOURCE.mqttUsername()).thenReturn(USERNAME);
+        when(DATA_SOURCE.mqttPassword()).thenReturn(PASSWORD);
 
         LOG_CAPTOR.setLogLevelToTrace();
     }
@@ -129,10 +113,10 @@ class OesterreichsEnergieAdapterIntegrationTest {
     void givenSampleJsonViaMqtt_recordsArePublishedToFlux() {
         var sampleJson = "{\"0-0:96.1.0\":{\"value\":\"90296857\"},\"0-0:1.0.0\":{\"value\":0,\"time\":1697623015},\"1-0:1.8.0\":{\"value\":83403,\"time\":1697623015},\"1-0:2.8.0\":{\"value\":16564,\"time\":1697623015},\"1-0:1.7.0\":{\"value\":40,\"time\":1697623015},\"1-0:2.7.0\":{\"value\":0,\"time\":1697623015},\"0-0:2.0.0\":{\"value\":481,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2435.7}";
 
-        var adapter = new OesterreichsEnergieAdapter(dataSource, mapper, mqttConfiguration);
+        var adapter = new OesterreichsEnergieAdapter(DATA_SOURCE, mapper, mqttConfiguration);
 
         StepVerifier.create(adapter.start())
-                    .then(() -> publishSampleMqttMessage(dataSource.mqttSubscribeTopic(), sampleJson))
+                    .then(() -> publishSampleMqttMessage(TOPIC, sampleJson))
                     .expectNextCount(1)
                     .then(adapter::close)
                     .expectComplete()
@@ -147,14 +131,14 @@ class OesterreichsEnergieAdapterIntegrationTest {
         var expectedValue = String.valueOf(value / 1000f);
         var json = "{\"1-0:2.7.0\":{\"value\":" + value + ",\"time\":1697622970},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2390.6}";
 
-        var adapter = new OesterreichsEnergieAdapter(dataSource, mapper, mqttConfiguration);
+        var adapter = new OesterreichsEnergieAdapter(DATA_SOURCE, mapper, mqttConfiguration);
         adapter.setKeepAliveInterval(1);
 
         var scheduler = Executors.newSingleThreadScheduledExecutor();
 
         scheduler.schedule(this::cutConnection, 1, TimeUnit.SECONDS);
         scheduler.schedule(this::restoreConnection, 3, TimeUnit.SECONDS);
-        scheduler.schedule(() -> publishSampleMqttMessage(dataSource.mqttSubscribeTopic(), json), 4, TimeUnit.SECONDS);
+        scheduler.schedule(() -> publishSampleMqttMessage(TOPIC, json), 4, TimeUnit.SECONDS);
 
 
         StepVerifier.create(adapter.start())

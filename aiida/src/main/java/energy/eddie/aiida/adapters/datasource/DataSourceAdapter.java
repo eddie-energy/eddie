@@ -5,6 +5,7 @@ import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
 import energy.eddie.aiida.adapters.datasource.cim.CimAdapter;
 import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
+import energy.eddie.aiida.adapters.datasource.it.SinapsiAlfaAdapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
 import energy.eddie.aiida.adapters.datasource.shelly.ShellyAdapter;
@@ -16,6 +17,7 @@ import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSourc
 import energy.eddie.aiida.models.datasource.mqtt.cim.CimDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
@@ -62,19 +64,18 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
             ObjectMapper objectMapper,
             MqttConfiguration mqttConfiguration
     ) {
-        return switch (dataSource.dataSourceType()) {
-            case SMART_METER_ADAPTER -> new OesterreichsEnergieAdapter((OesterreichsEnergieDataSource) dataSource,
-                                                                       objectMapper,
-                                                                       mqttConfiguration);
-            case MICRO_TELEINFO ->
-                    new MicroTeleinfoV3Adapter((MicroTeleinfoV3DataSource) dataSource, objectMapper, mqttConfiguration);
-            case SMART_GATEWAYS_ADAPTER ->
-                    new SmartGatewaysAdapter((SmartGatewaysDataSource) dataSource, mqttConfiguration);
-            case SHELLY -> new ShellyAdapter((ShellyDataSource) dataSource, objectMapper, mqttConfiguration);
-            case INBOUND -> new InboundAdapter((InboundDataSource) dataSource, mqttConfiguration);
-            case SIMULATION -> new SimulationAdapter((SimulationDataSource) dataSource);
-            case MODBUS -> new ModbusTcpDataSourceAdapter((ModbusDataSource) dataSource);
-            case CIM_ADAPTER -> new CimAdapter((CimDataSource) dataSource, objectMapper, mqttConfiguration);
+        return switch (dataSource) {
+            case OesterreichsEnergieDataSource ds ->
+                    new OesterreichsEnergieAdapter(ds, objectMapper, mqttConfiguration);
+            case MicroTeleinfoV3DataSource ds -> new MicroTeleinfoV3Adapter(ds, objectMapper, mqttConfiguration);
+            case SinapsiAlfaDataSource ds -> new SinapsiAlfaAdapter(ds, objectMapper, mqttConfiguration);
+            case SmartGatewaysDataSource ds -> new SmartGatewaysAdapter(ds, mqttConfiguration);
+            case ShellyDataSource ds -> new ShellyAdapter(ds, objectMapper, mqttConfiguration);
+            case InboundDataSource ds -> new InboundAdapter(ds, mqttConfiguration);
+            case SimulationDataSource ds -> new SimulationAdapter(ds);
+            case ModbusDataSource ds -> new ModbusTcpDataSourceAdapter(ds);
+            case CimDataSource ds -> new CimAdapter(ds, objectMapper, mqttConfiguration);
+            default -> throw new IllegalArgumentException("Unknown data source: " + dataSource);
         };
     }
 

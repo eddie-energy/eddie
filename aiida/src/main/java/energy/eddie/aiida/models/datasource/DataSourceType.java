@@ -3,6 +3,7 @@ package energy.eddie.aiida.models.datasource;
 public enum DataSourceType {
     SMART_METER_ADAPTER(Identifiers.SMART_METER_ADAPTER, "Österreichs Energie Adapter"),
     MICRO_TELEINFO(Identifiers.MICRO_TELEINFO, "Micro Teleinfo v3"),
+    SINAPSI_ALFA(Identifiers.SINAPSI_ALFA, "Sinapsi ALFA"),
     SMART_GATEWAYS_ADAPTER(Identifiers.SMART_GATEWAYS_ADAPTER, "Smart Gateways Adapter"),
     SHELLY(Identifiers.SHELLY, "Shelly"),
     INBOUND(Identifiers.INBOUND, "Inbound"),
@@ -29,6 +30,7 @@ public enum DataSourceType {
     public static class Identifiers {
         public static final String SMART_METER_ADAPTER = "SMART_METER_ADAPTER";
         public static final String MICRO_TELEINFO = "MICRO_TELEINFO";
+        public static final String SINAPSI_ALFA = "SINAPSI_ALFA";
         public static final String SMART_GATEWAYS_ADAPTER = "SMART_GATEWAYS_ADAPTER";
         public static final String SHELLY = "SHELLY";
         public static final String INBOUND = "INBOUND";

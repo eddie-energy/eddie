@@ -1,9 +1,7 @@
 package energy.eddie.aiida.models.datasource.modbus;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceModbusDto;
-import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.IntervalBasedDataSource;
 import jakarta.persistence.Column;
@@ -11,7 +9,6 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 import java.util.UUID;
 
 @Entity
@@ -41,12 +38,12 @@ public class ModbusDataSource extends IntervalBasedDataSource {
         this.modbusIp = "";
     }
 
-    public ModbusDataSource(DataSourceDto dto, UUID userId, DataSourceModbusDto modbusDto) {
+    public ModbusDataSource(ModbusDataSourceDto dto, UUID userId) {
         super(dto, userId);
-        this.modbusIp = modbusDto.modbusIp();
-        this.modbusDevice = modbusDto.modbusDevice();
-        this.modbusVendor = modbusDto.modbusVendor();
-        this.modbusModel = modbusDto.modbusModel();
+        this.modbusIp = dto.modbusIp();
+        this.modbusDevice = dto.modbusDevice();
+        this.modbusVendor = dto.modbusVendor();
+        this.modbusModel = dto.modbusModel();
     }
 
     @Nullable
@@ -67,35 +64,5 @@ public class ModbusDataSource extends IntervalBasedDataSource {
     @Nullable
     public UUID modbusDevice() {
         return modbusDevice;
-    }
-
-    @Override
-    public DataSourceDto toDto() {
-        return new DataSourceDto(
-                id,
-                dataSourceType,
-                asset,
-                name,
-                countryCode,
-                enabled,
-                icon,
-                pollingInterval,
-                null,
-                new DataSourceModbusDto(modbusIp, modbusVendor, modbusModel, modbusDevice)
-        );
-    }
-
-
-    @Override
-    public DataSource mergeWithDto(DataSourceDto dto, UUID userId) {
-        String updatedIp = Optional.ofNullable(dto.modbusSettings())
-                .map(DataSourceModbusDto::modbusIp)
-                .orElse(this.modbusIp());
-
-        if (updatedIp == null) {
-            throw new IllegalArgumentException("Modbus IP is required and must not be null");
-        }
-
-        return createFromDto(dto, userId, new DataSourceModbusDto(updatedIp, this.modbusVendor(), this.modbusModel(), this.modbusDevice()));
     }
 }

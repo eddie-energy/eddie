@@ -24,6 +24,10 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Comparator.comparing;
+import static java.util.function.BinaryOperator.maxBy;
 
 @Component
 public class Aggregator implements AutoCloseable {
@@ -227,12 +231,33 @@ public class Aggregator implements AutoCloseable {
     }
 
     private List<AiidaRecord> aggregateRecords(List<AiidaRecord> aiidaRecords) {
-        // TODO: GH-1307 Currently only the last record of a data source is kept. This should be changed to a more sophisticated aggregation.
         var aggregatedRecords = aiidaRecords.stream()
-                                            .collect(Collectors.toMap(AiidaRecord::dataSourceId,
-                                                                      Function.identity(),
-                                                                      (existingRecord, newRecord) -> newRecord,
-                                                                      LinkedHashMap::new));
+                                            .collect(Collectors.toMap(
+                                                    AiidaRecord::dataSourceId,
+                                                    Function.identity(),
+                                                    this::mergeRecords,
+                                                    LinkedHashMap::new
+                                            ));
         return new ArrayList<>(aggregatedRecords.values());
+    }
+
+    private AiidaRecord mergeRecords(AiidaRecord r1, AiidaRecord r2) {
+        var latestRecord = r2.timestamp().isAfter(r1.timestamp()) ? r2 : r1;
+        Map<String, AiidaRecordValue> mergedValues = new HashMap<>();
+
+        Stream.concat(r1.aiidaRecordValues().stream(), r2.aiidaRecordValues().stream())
+              .forEach(val -> mergedValues.merge(
+                      val.rawTag(),
+                      val,
+                      maxBy(comparing(v -> v.aiidaRecord().timestamp()))
+              ));
+
+        return new AiidaRecord(
+                latestRecord.timestamp(),
+                latestRecord.asset(),
+                latestRecord.userId(),
+                latestRecord.dataSourceId(),
+                new ArrayList<>(mergedValues.values())
+        );
     }
 }

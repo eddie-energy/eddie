@@ -30,18 +30,15 @@ const getEmptyDataSource = (): AiidaDataSource => {
     enabled: true,
     id: '' as AiidaDataSourceIcon,
     countryCode: '',
-    modbusSettings: {
-      modbusIp: '',
-      modbusVendor: '',
-      modbusModel: '',
-      modbusDevice: '',
-    },
-    simulationPeriod: 0,
+    modbusIp: '',
+    modbusVendor: '',
+    modbusModel: '',
+    modbusDevice: '',
     icon: '' as AiidaDataSourceIcon,
   }
 }
 
-const SUPPORTED_COUNTRY_CODES = ['AT', 'FR', 'NL']
+const SUPPORTED_COUNTRY_CODES = ['AT', 'BE', 'CH', 'DK', 'FI', 'FR', 'HU', 'IT', 'LT', 'NL', 'SE']
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
 const countryOptions = SUPPORTED_COUNTRY_CODES.map((country) => {
@@ -65,6 +62,7 @@ const imageFile = ref<File | null>(null)
 const loading = ref(false)
 const emit = defineEmits(['showMqtt'])
 const nonMQTTDataSourceTypes = ['SIMULATION', 'MODBUS']
+const dataSourceTypesWithExtraField = ['SIMULATION', 'MODBUS', 'SINAPSI_ALFA']
 
 const getInitalFormData = (data?: AiidaDataSource) => {
   if (data) {
@@ -98,13 +96,13 @@ onMounted(async () => {
 })
 
 const dataSourceType = computed(() => dataSource.value.dataSourceType)
-const vendor = computed(() => dataSource.value.modbusSettings?.modbusVendor)
-const model = computed(() => dataSource.value.modbusSettings?.modbusModel)
+const vendor = computed(() => dataSource.value.modbusVendor)
+const model = computed(() => dataSource.value.modbusModel)
 
 watch(
   [dataSourceType, vendor, model],
   async ([newDataSourceType, newVendor, newModel], [, oldVendor, oldModel]) => {
-    if (newDataSourceType !== 'MODBUS' || !dataSource.value.modbusSettings) {
+    if (newDataSourceType !== 'MODBUS') {
       return
     }
     modbusVendorsOptions.value = (await getModbusVendors()).map((vend) => {
@@ -114,8 +112,8 @@ watch(
       }
     })
     if (newVendor && newVendor !== oldVendor) {
-      dataSource.value.modbusSettings.modbusModel = ''
-      dataSource.value.modbusSettings.modbusDevice = ''
+      dataSource.value.modbusModel = ''
+      dataSource.value.modbusDevice = ''
       modbusModelsOptions.value = (await getModbusModels(newVendor)).map((mod) => {
         return {
           label: mod.name,
@@ -124,7 +122,7 @@ watch(
       })
     }
     if (newModel && newModel !== oldModel) {
-      dataSource.value.modbusSettings.modbusDevice = ''
+      dataSource.value.modbusDevice = ''
       modbusDevicesOptions.value = (await getModbusDevices(newModel)).map((dev) => {
         return {
           label: dev.name,
@@ -154,15 +152,18 @@ const validateForm = () => {
 
   if (dataSource.value?.dataSourceType === 'MODBUS') {
     const modBusRequiredFields = [
-      { value: dataSource.value.modbusSettings?.modbusIp, label: 'IP Address', key: 'ipAddress' },
-      { value: dataSource.value.modbusSettings?.modbusVendor, label: 'Vendor', key: 'vendor' },
-      { value: dataSource.value.modbusSettings?.modbusModel, label: 'Model', key: 'model' },
-      { value: dataSource.value.modbusSettings?.modbusDevice, label: 'Device', key: 'device' },
+      { value: dataSource.value.modbusIp, label: 'IP Address', key: 'ipAddress' },
+      { value: dataSource.value.modbusVendor, label: 'Vendor', key: 'vendor' },
+      { value: dataSource.value.modbusModel, label: 'Model', key: 'model' },
+      { value: dataSource.value.modbusDevice, label: 'Device', key: 'device' },
     ]
     modBusRequiredFields.forEach((field) => handleRequired(field.value, field.label, field.key))
   }
   if (dataSource.value?.dataSourceType === 'SIMULATION') {
     handleRequired(dataSource.value?.simulationPeriod, 'Simulation Period', 'simPeriod')
+  }
+  if (dataSource.value?.dataSourceType === 'SINAPSI_ALFA') {
+    handleRequired(dataSource.value?.activationKey, 'Activation Key', 'activationKey')
   }
   if (imageFile.value && !imageFile.value.type.startsWith('image/')) {
     errors.value['image'] = 'Uploaded file must be an image.'
@@ -183,10 +184,16 @@ const handleFormSubmit = async () => {
         await saveDataSource(dataSource.value.id, {
           ...dataSource.value,
         })
+      } else if (dataSource.value.dataSourceType === 'MODBUS') {
+        const { dataSourceId } = await addDataSource(dataSource.value)
+        dataSource.value.id = dataSourceId
       } else {
         const { dataSourceId, plaintextPassword } = await addDataSource(dataSource.value)
         dataSource.value.id = dataSourceId
-        if (!nonMQTTDataSourceTypes.includes(dataSource.value.dataSourceType)) {
+        if (
+          !nonMQTTDataSourceTypes.includes(dataSource.value.dataSourceType) &&
+          plaintextPassword
+        ) {
           emit('showMqtt', plaintextPassword)
         }
       }
@@ -295,26 +302,19 @@ defineExpose({ showModal })
       <Transition name="extra-column">
         <div
           class="column"
-          v-if="
-            dataSource.dataSourceType === 'MODBUS' || dataSource.dataSourceType === 'SIMULATION'
-          "
+          v-if="dataSourceTypesWithExtraField.includes(dataSource.dataSourceType)"
         >
-          <template v-if="dataSource.dataSourceType === 'MODBUS' && dataSource.modbusSettings">
+          <template v-if="dataSource.dataSourceType === 'MODBUS'">
             <div class="input-field extra-margin">
               <label for="ipAddress"> Local IP Address</label>
-              <input
-                id="ipAddress"
-                v-model="dataSource.modbusSettings.modbusIp"
-                name="ipAddress"
-                required
-              />
+              <input id="ipAddress" v-model="dataSource.modbusIp" name="ipAddress" required />
               <p v-if="errors['ipAddress']" class="error-message">{{ errors['ipAddress'] }}</p>
             </div>
             <div class="input-field">
               <label for="vendor"> Vendor </label>
               <CustomSelect
                 id="vendor"
-                v-model="dataSource.modbusSettings.modbusVendor"
+                v-model="dataSource.modbusVendor"
                 placeholder="Select Vendor"
                 :options="modbusVendorsOptions"
                 name="vendor"
@@ -326,10 +326,10 @@ defineExpose({ showModal })
               <label for="model"> Model </label>
               <CustomSelect
                 id="model"
-                v-model="dataSource.modbusSettings.modbusModel"
+                v-model="dataSource.modbusModel"
                 placeholder="Select Model"
                 :options="modbusModelsOptions"
-                :disabled="!dataSource.modbusSettings.modbusVendor"
+                :disabled="!dataSource.modbusVendor"
                 name="model"
                 required
               />
@@ -339,17 +339,17 @@ defineExpose({ showModal })
               <label for="device"> Device </label>
               <CustomSelect
                 id="device"
-                v-model="dataSource.modbusSettings.modbusDevice"
+                v-model="dataSource.modbusDevice"
                 placeholder="Select Device"
                 :options="modbusDevicesOptions"
-                :disabled="!dataSource.modbusSettings.modbusModel"
+                :disabled="!dataSource.modbusModel"
                 name="device"
                 required
               />
               <p v-if="errors['device']" class="error-message">{{ errors['device'] }}</p>
             </div>
           </template>
-          <template v-else>
+          <template v-if="dataSource.dataSourceType === 'SIMULATION'">
             <div class="input-field">
               <label for="simPeriod"> Simulation Period </label>
               <input
@@ -362,6 +362,22 @@ defineExpose({ showModal })
                 name="simPeriod"
               />
               <p v-if="errors['simPeriod']" class="error-message">{{ errors['simPeriod'] }}</p>
+            </div>
+          </template>
+          <template v-if="dataSource.dataSourceType === 'SINAPSI_ALFA'">
+            <div class="input-field">
+              <label for="activationKey"> Sinapsi Activation Key </label>
+              <input
+                placeholder="Activation Key"
+                required
+                type="text"
+                id="activationKey"
+                v-model="dataSource.activationKey"
+                name="activationKey"
+              />
+              <p v-if="errors['activationKey']" class="error-message">
+                {{ errors['activationKey'] }}
+              </p>
             </div>
           </template>
         </div>
@@ -404,6 +420,7 @@ defineExpose({ showModal })
 .data-source-dialog {
   width: fit-content;
 }
+
 .is-loading {
   form,
   p,
@@ -411,6 +428,7 @@ defineExpose({ showModal })
     opacity: 0;
   }
 }
+
 .data-source-form {
   display: flex;
   flex-direction: column;
@@ -424,10 +442,12 @@ defineExpose({ showModal })
     &:not([type='checkbox']) {
       padding: var(--spacing-sm) var(--spacing-md);
     }
+
     border-radius: var(--border-radius);
     border: 1px solid var(--eddie-grey-medium);
   }
 }
+
 .checkbox-field {
   display: flex;
   position: relative;
@@ -443,6 +463,7 @@ defineExpose({ showModal })
     height: var(--spacing-xlg);
     cursor: pointer;
     position: relative;
+
     &:checked {
       background-color: var(--eddie-primary);
     }
@@ -463,16 +484,19 @@ defineExpose({ showModal })
   flex-direction: column;
   gap: var(--spacing-xlg);
 }
+
 .input-field {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
 }
+
 .icon-select {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
 }
+
 .icon-button {
   border-radius: var(--border-radius);
   cursor: pointer;
@@ -523,6 +547,7 @@ defineExpose({ showModal })
   .data-source-form {
     flex-direction: row;
   }
+
   .column {
     width: 20vw;
   }

@@ -1,12 +1,11 @@
 package energy.eddie.aiida.models.datasource.mqtt.inbound;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
+import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
+import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -23,48 +22,36 @@ public class InboundDataSource extends MqttDataSource {
     @SuppressWarnings("NullAway")
     protected InboundDataSource() {}
 
-    public InboundDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
-        this(dto, userId, dataSourceMqttDto, SecretGenerator.generate());
+    public InboundDataSource(InboundDataSourceDto dto, UUID userId, MqttStreamingConfig mqttStreamingConfig) {
+        this(dto, userId, mqttStreamingConfig, SecretGenerator.generate());
     }
 
-    public InboundDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto, String accessCode) {
-        super(dto, userId, dataSourceMqttDto);
+    public InboundDataSource(InboundDataSourceDto dto, UUID userId, MqttStreamingConfig mqttStreamingConfig, String accessCode) {
+        super(dto, userId);
+        this.mqttInternalHost = mqttStreamingConfig.serverUri();
+        this.mqttExternalHost = mqttStreamingConfig.serverUri();
+        this.mqttSubscribeTopic = mqttStreamingConfig.dataTopic();
+        this.mqttUsername = mqttStreamingConfig.username();
+        this.mqttPassword = mqttStreamingConfig.password();
         this.accessCode = accessCode;
     }
 
     public static class Builder  {
-        private final DataSourceDto dataSourceDto;
+        private final InboundDataSourceDto dataSourceDto;
         private final UUID userId;
-        private final DataSourceMqttDto dataSourceMqttDto;
+        private final MqttStreamingConfig mqttStreamingConfig;
 
         @SuppressWarnings("NullAway")
         public Builder(Permission permission) {
             this.userId = Objects.requireNonNull(permission.userId());
             var dataNeed = Objects.requireNonNull(permission.dataNeed());
-            var mqttStreamingConfig = Objects.requireNonNull(permission.mqttStreamingConfig());
+            this.mqttStreamingConfig = Objects.requireNonNull(permission.mqttStreamingConfig());
 
-            this.dataSourceDto = new DataSourceDto(
-                    null,
-                    DataSourceType.INBOUND,
-                    dataNeed.asset(),
-                    permission.permissionId().toString(),
-                    "",
-                    true,
-                    DataSourceIcon.METER,
-                    null, null, null
-            );
-
-            this.dataSourceMqttDto = new DataSourceMqttDto(
-                    mqttStreamingConfig.serverUri(),
-                    mqttStreamingConfig.serverUri(),
-                    mqttStreamingConfig.dataTopic(),
-                    mqttStreamingConfig.username(),
-                    mqttStreamingConfig.password()
-            );
+            this.dataSourceDto = new InboundDataSourceDto(dataNeed.asset(), permission.permissionId());
         }
 
         public InboundDataSource build() {
-            return new InboundDataSource(dataSourceDto, userId, dataSourceMqttDto);
+            return new InboundDataSource(dataSourceDto, userId, mqttStreamingConfig);
         }
     }
 

@@ -17,19 +17,23 @@ public enum ShellyComponent {
     SWITCH_3("switch:3", ShellyPhase.PHASE_L1),
     UNKNOWN("unknown", ShellyPhase.UNKNOWN);
 
-    private final String componentKey;
+    private final String key;
     private final ShellyPhase phase;
 
-    ShellyComponent(String componentKey, ShellyPhase phase) {
-        this.componentKey = componentKey;
+    ShellyComponent(String key, ShellyPhase phase) {
+        this.key = key;
         this.phase = phase;
     }
 
-    public static ShellyComponent fromKey(String key) {
+    public static ShellyComponent fromKey(String componentKey) {
         return Stream.of(values())
-                .filter(component -> key.equals(component.componentKey))
+                .filter(component -> componentKey.equals(component.key))
                 .findFirst()
                 .orElse(UNKNOWN);
+    }
+
+    public String key() {
+        return key;
     }
 
     public ShellyPhase phase() {

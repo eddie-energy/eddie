@@ -3,10 +3,6 @@ package energy.eddie.aiida.adapters.datasource.cim;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
-import energy.eddie.aiida.models.datasource.DataSourceIcon;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.cim.CimDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -24,7 +20,6 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.UUID;
 
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,42 +31,22 @@ import static org.mockito.Mockito.*;
 class CimAdapterTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(CimAdapter.class);
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
-    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final String TOPIC = "aiida/cim";
-    private static final CimDataSource DATA_SOURCE = new CimDataSource(
-            new DataSourceDto(DATA_SOURCE_ID,
-                              DataSourceType.CIM_ADAPTER,
-                              AiidaAsset.SUBMETER,
-                              "cim",
-                              "AT",
-                              true,
-                              DataSourceIcon.METER,
-                              null,
-                              null,
-                              null),
-            USER_ID,
-            new DataSourceMqttDto("tcp://localhost:1883",
-                                  "tcp://localhost:1883",
-                                  TOPIC,
-                                  "user",
-                                  "password")
-    );
+    private static final CimDataSource DATA_SOURCE = mock(CimDataSource.class);
+    private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
     private CimAdapter adapter;
 
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
+        when(DATA_SOURCE.mqttInternalHost()).thenReturn("tcp://localhost:1883");
+        when(DATA_SOURCE.mqttSubscribeTopic()).thenReturn("aiida/test");
+        when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(MQTT_CONFIGURATION.password()).thenReturn("password");
+
         var mapper = new AiidaConfiguration().customObjectMapper().build();
-        var mqttConfiguration = new MqttConfiguration(
-                "tcp://localhost:1883",
-                "tcp://localhost:1883",
-                10,
-                "password",
-                ""
-        );
-        adapter = new CimAdapter(DATA_SOURCE, mapper, mqttConfiguration);
+        adapter = new CimAdapter(DATA_SOURCE, mapper, MQTT_CONFIGURATION);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 

@@ -66,3 +66,9 @@ aiida:
     secret: ${KEYCLOAK_CLIENT_SECRET:REPLACE_ME}
     account-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/account
     end-session-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/protocol/openid-connect/logout
+  data-source:
+    it:
+      sinapsi-alfa:
+        mqtt-host: ${DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_HOST:tcp://hstbrk.sghiot.com:1883}
+        mqtt-username: ${DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_USERNAME}
+        mqtt-password: ${DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_PASSWORD}

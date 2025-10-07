@@ -1,8 +1,9 @@
 package energy.eddie.aiida.models.datasource.mqtt;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.aiida.dtos.DataSourceDto;
-import energy.eddie.aiida.dtos.DataSourceMqttDto;
+import energy.eddie.aiida.config.MqttConfiguration;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
@@ -10,6 +11,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.PostPersist;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.UUID;
 
@@ -27,7 +29,7 @@ public abstract class MqttDataSource extends DataSource {
     protected String mqttSubscribeTopic;
     @JsonProperty
     protected String mqttUsername;
-    @JsonProperty
+    @JsonIgnore
     protected String mqttPassword;
     @Enumerated(EnumType.STRING)
     protected MqttAction action;
@@ -37,41 +39,10 @@ public abstract class MqttDataSource extends DataSource {
     @SuppressWarnings("NullAway")
     protected MqttDataSource() {}
 
-    protected MqttDataSource(DataSourceDto dto, UUID userId, DataSourceMqttDto dataSourceMqttDto) {
+    protected MqttDataSource(DataSourceDto dto, UUID userId) {
         super(dto, userId);
-        this.mqttInternalHost = dataSourceMqttDto.internalHost();
-        this.mqttExternalHost = dataSourceMqttDto.externalHost();
-        this.mqttSubscribeTopic = dataSourceMqttDto.subscribeTopic();
-        this.mqttUsername = dataSourceMqttDto.username();
-        this.mqttPassword = dataSourceMqttDto.password();
         this.action = MqttAction.ALL;
         this.aclType = MqttAclType.ALLOW;
-    }
-
-    @Override
-    public DataSource mergeWithDto(DataSourceDto dto, UUID userId) {
-        var mqttSettingsDto = new DataSourceMqttDto(mqttInternalHost(),
-                                                    mqttExternalHost(),
-                                                    mqttSubscribeTopic(),
-                                                    mqttUsername(),
-                                                    mqttPassword());
-        return createFromDto(dto, userId, mqttSettingsDto);
-    }
-
-    @Override
-    public DataSourceDto toDto() {
-        return new DataSourceDto(
-                id,
-                dataSourceType,
-                asset,
-                name,
-                countryCode,
-                enabled,
-                icon,
-                null,
-                toMqttDto(),
-                null
-        );
     }
 
     public String mqttInternalHost() {
@@ -98,12 +69,12 @@ public abstract class MqttDataSource extends DataSource {
         this.mqttPassword = mqttPassword;
     }
 
-    public DataSourceMqttDto toMqttDto() {
-        return new DataSourceMqttDto(mqttInternalHost,
-                                     mqttExternalHost,
-                                     mqttSubscribeTopic,
-                                     mqttUsername,
-                                     mqttPassword);
+    public void generateMqttSettings(MqttConfiguration config, BCryptPasswordEncoder encoder, String plaintextPassword) {
+        this.mqttInternalHost = config.internalHost();
+        this.mqttExternalHost = config.externalHost();
+        this.mqttSubscribeTopic = TOPIC_PREFIX + SecretGenerator.generate();
+        this.mqttUsername = SecretGenerator.generate();
+        this.mqttPassword = encoder.encode(plaintextPassword);
     }
 
     @PostPersist

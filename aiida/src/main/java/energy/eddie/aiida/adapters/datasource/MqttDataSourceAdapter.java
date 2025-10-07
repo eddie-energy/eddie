@@ -52,7 +52,7 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
 
             MqttConnectionOptions connectOptions = createConnectOptions();
 
-            logger.info("Connecting to broker {}", dataSource().mqttInternalHost());
+            logger.info("Connecting to broker {} with username {}", dataSource().mqttInternalHost(), connectOptions.getUserName());
 
             asyncClient.connect(connectOptions);
         } catch (MqttException ex) {
