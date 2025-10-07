@@ -35,10 +35,6 @@ public enum PermissionStatus {
      */
     REJECTED,
     /**
-     * The user requested a revocation of the permission.
-     */
-    REVOCATION_RECEIVED,
-    /**
      * The user revoked the permission.
      */
     REVOKED,

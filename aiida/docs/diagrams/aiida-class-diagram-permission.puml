@@ -1,0 +1,60 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+hide empty members
+left to right direction
+
+class Permission {
+    - permissionId: UUID
+    - eddieId: UUID
+    - userId: UUID
+    - status PermissionStatus
+    - serviceName: String
+    - startTime: Instant
+    - expirationTime: Instant
+    - grantTime: Instant
+    - revokeTime: Instant
+    - connectionId: String
+    - handshakeUrl: String
+    - acessToken: String
+    - dataNeed: AiidaLocalDataNeed
+    - mqttStreamingConfig: MqttStreamingConfig
+    - dataSource: DataSource
+}
+
+class AiidaLocalDataNeed {
+}
+
+abstract class Datasource {}
+
+class MqttStreamingConfig {
+    - permissionId: UUID
+    - username: String
+    - password: String
+    - serverUri: String
+    - dataTopic: String
+    - statusTopic: String
+    - terminateTopic: String
+}
+
+enum PermissionStatus {
+    CREATED,
+    FETCHED_DETAILS,
+    UNFULFILLABLE,
+    ACCEPTED,
+    FETCHED_MQTT_CREDENTIALS,
+    WAITING_FOR_START,
+    STREAMING_DATA,
+    REJECTED,
+    REVOKED,
+    TERMINATED,
+    FULFILLED,
+    FAILED_TO_START
+}
+
+Permission "n" o-- "1" AiidaLocalDataNeed
+Permission - PermissionStatus
+Permission "1" *-up- "1" MqttStreamingConfig
+Permission "n" o-- "1" Datasource
+
+@enduml

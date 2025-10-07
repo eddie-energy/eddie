@@ -15,9 +15,9 @@ This setup uses Docker Compose to orchestrate the necessary services. To get sta
     - Username: `aiida`
     - Password: `aiida`
 5. For adding datasources, please refer to the INSERT_DATASOURCE_GUIDE.
-6. For adding permissions, please refer to the INSERT_PERMISSION_GUIDE.
+6. For adding permissions, please refer to the [permission section](permission/permission.md).
 
-[//]: # (TODO: Add link to INSERT_DATASOURCE_GUIDE and INSERT_PERMISSION_GUIDE)
+[//]: # (TODO: Add link to INSERT_DATASOURCE_GUIDE)
 ## Installation
 
 The
