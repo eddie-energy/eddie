@@ -1,0 +1,82 @@
+package energy.eddie.aiida.services;
+
+import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
+import energy.eddie.aiida.dtos.record.LatestInboundPermissionRecordDto;
+import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
+import energy.eddie.aiida.dtos.record.LatestSchemaRecordDto;
+import energy.eddie.aiida.errors.*;
+import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
+import energy.eddie.aiida.repositories.AiidaRecordRepository;
+import energy.eddie.aiida.repositories.DataSourceRepository;
+import energy.eddie.aiida.utils.AiidaRecordConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.util.UUID;
+
+@Service
+public class LatestRecordService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LatestRecordService.class);
+
+    private final AiidaRecordRepository aiidaRecordRepository;
+    private final DataSourceRepository dataSourceRepository;
+    private final PermissionLatestRecordMap permissionLatestRecordMap;
+    private final InboundService inboundService;
+
+    @Autowired
+    public LatestRecordService(AiidaRecordRepository aiidaRecordRepository,
+                               DataSourceRepository dataSourceRepository,
+                               PermissionLatestRecordMap permissionLatestRecordMap,
+                               InboundService inboundService) {
+        this.aiidaRecordRepository = aiidaRecordRepository;
+        this.dataSourceRepository = dataSourceRepository;
+        this.permissionLatestRecordMap = permissionLatestRecordMap;
+        this.inboundService = inboundService;
+    }
+
+    public LatestDataSourceRecordDto latestDataSourceRecord(UUID dataSourceId) throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
+        var dataSource = dataSourceRepository.findById(dataSourceId)
+                                             .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId)
+        );
+        var aiidaRecord = aiidaRecordRepository.findFirstByDataSourceIdOrderByIdDesc(dataSourceId)
+                                               .orElseThrow(() -> new LatestAiidaRecordNotFoundException(dataSourceId)
+        );
+
+        LOGGER.info("Found latest data source record with timestamp: {}, for data source: {}", aiidaRecord.timestamp(), dataSource.id());
+
+        return AiidaRecordConverter.recordToLatestDto(aiidaRecord, dataSource);
+    }
+
+    public LatestOutboundPermissionRecordDto latestOutboundPermissionRecord(UUID permissionId) throws LatestPermissionRecordNotFoundException {
+        var permissionRecord = permissionLatestRecordMap
+                .get(permissionId)
+                .orElseThrow(() -> new LatestPermissionRecordNotFoundException(permissionId));
+        var messages = permissionRecord.messages()
+                                       .entrySet()
+                                       .stream()
+                                       .map(latestRecord -> {
+                                           var message = latestRecord.getValue();
+                                           return new LatestSchemaRecordDto(latestRecord.getKey(), message.sentAt(), message.message());
+                                       })
+                                       .toList();
+
+        return new LatestOutboundPermissionRecordDto(
+                permissionId,
+                permissionRecord.topic(),
+                permissionRecord.serverUri(),
+               messages
+        );
+    }
+
+    public LatestInboundPermissionRecordDto latestInboundPermissionRecord(UUID permissionId)
+            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
+        var inboundRecord = inboundService.latestRecord(permissionId);
+
+        return new LatestInboundPermissionRecordDto(
+                inboundRecord.timestamp(),
+                inboundRecord.asset(),
+                inboundRecord.payload()
+        );
+    }
+}

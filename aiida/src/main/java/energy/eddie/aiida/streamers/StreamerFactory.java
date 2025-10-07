@@ -3,6 +3,7 @@ package energy.eddie.aiida.streamers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamer;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamingContext;
@@ -40,7 +41,8 @@ public class StreamerFactory {
             ObjectMapper mapper,
             Permission permission,
             Flux<AiidaRecord> recordFlux,
-            Sinks.One<UUID> terminationRequestSink
+            Sinks.One<UUID> terminationRequestSink,
+            PermissionLatestRecordMap permissionLatestRecordMap
     ) throws MqttException {
         var mqttFilePersistenceDirectory = "mqtt-persistence/{eddieId}/{permissionId}";
         var streamingConfig = requireNonNull(permission.mqttStreamingConfig());
@@ -50,7 +52,7 @@ public class StreamerFactory {
                                                             mqttFilePersistenceDirectory).expand(permission.eddieId(),
                                                                                                  permission.permissionId())
                                                                                          .getPath()));
-        var streamingContext = new MqttStreamingContext(client, streamingConfig);
+        var streamingContext = new MqttStreamingContext(client, streamingConfig, permissionLatestRecordMap);
 
         return new MqttStreamer(aiidaId,
                                 failedToSendRepository,

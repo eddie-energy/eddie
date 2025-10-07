@@ -6,6 +6,7 @@ import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.services.ApplicationInformationService;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -34,6 +35,7 @@ public class StreamerManager implements AutoCloseable {
     private final ObjectMapper mapper;
     private final Map<UUID, AiidaStreamer> streamers;
     private final Sinks.Many<UUID> terminationRequests;
+    private final PermissionLatestRecordMap permissionLatestRecordMap;
 
     /**
      * The mapper is passed to the {@link AiidaStreamer} instances that which use it to convert POJOs to JSON.
@@ -44,12 +46,14 @@ public class StreamerManager implements AutoCloseable {
             Aggregator aggregator,
             ApplicationInformationService applicationInformationService,
             FailedToSendRepository failedToSendRepository,
-            ObjectMapper mapper
+            ObjectMapper mapper,
+            PermissionLatestRecordMap permissionLatestRecordMap
     ) {
         this.mapper = mapper;
         this.aggregator = aggregator;
         this.aiidaId = applicationInformationService.applicationInformation().aiidaId();
         this.failedToSendRepository = failedToSendRepository;
+        this.permissionLatestRecordMap = permissionLatestRecordMap;
 
         streamers = new HashMap<>();
         terminationRequests = Sinks.many().unicast().onBackpressureBuffer();
@@ -104,7 +108,8 @@ public class StreamerManager implements AutoCloseable {
                                                             mapper,
                                                             permission,
                                                             recordFlux,
-                                                            streamerTerminationRequestSink);
+                                                            streamerTerminationRequestSink,
+                                                            permissionLatestRecordMap);
             streamer.connect();
             streamers.put(id, streamer);
         } else {

@@ -1,4 +1,4 @@
-package energy.eddie.aiida.dtos;
+package energy.eddie.aiida.dtos.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.models.record.AiidaRecordValue;

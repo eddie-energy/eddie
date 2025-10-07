@@ -21,7 +21,6 @@ import java.util.UUID;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
         property = "dataSourceType"
 )
 @JsonSubTypes({

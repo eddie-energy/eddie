@@ -15,6 +15,7 @@ import CrossedOutEyeIcon from '@/assets/icons/CrossedOutEyeIcon.svg'
 import ToolTipIcon from '@/assets/icons/ToolTipIcon.svg'
 import { onClickOutside } from '@vueuse/core'
 import CopyButton from './CopyButton.vue'
+import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 
 const { confirm } = useConfirmDialog()
 const target = useTemplateRef('target')
@@ -203,14 +204,15 @@ onClickOutside(target, () => (showToolTip.value = false))
         <dt>Last Data Package sent</dt>
         <dd>PLACEHOLDER</dd>
       </div>
-      <Button
-        button-style="error"
-        class="update-button"
-        v-if="status === 'Active'"
-        @click="handleRevoke"
-      >
-        <RevokeIcon /> Revoke
-      </Button>
+      <div v-if="status === 'Active'" class="actions-row">
+        <MessageDownloadButton :data="permission" class="action-btn">
+          <EyeIcon /> Show Latest Message
+        </MessageDownloadButton>
+
+        <Button button-style="error" class="action-btn" @click="handleRevoke">
+          <RevokeIcon /> Revoke
+        </Button>
+      </div>
       <Button
         v-if="status === 'Pending'"
         @click="updatePermission(permission)"
@@ -227,10 +229,9 @@ onClickOutside(target, () => (showToolTip.value = false))
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
-
-  &:first-child {
-    margin-bottom: var(--spacing-sm);
-  }
+}
+.column:first-child {
+  margin-bottom: var(--spacing-sm);
 }
 
 .permission-field {
@@ -285,6 +286,17 @@ onClickOutside(target, () => (showToolTip.value = false))
   width: 100%;
   justify-content: center;
   margin: auto 0 0 auto;
+}
+
+.actions-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  margin-top: auto;
+}
+.actions-row .action-btn {
+  width: 100%;
+  justify-content: center;
 }
 
 .access-code-field {
@@ -384,6 +396,11 @@ onClickOutside(target, () => (showToolTip.value = false))
     gap: calc(var(--spacing-xlg) + var(--spacing-sm) * 2 + 2px);
   }
   .update-button {
+    width: fit-content;
+    justify-content: flex-start;
+  }
+
+  .actions-row .action-btn {
     width: fit-content;
     justify-content: flex-start;
   }

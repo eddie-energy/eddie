@@ -67,7 +67,7 @@ class InboundServiceTest {
                 INBOUND_RECORD));
 
         // When
-        var inboundRecord = inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID);
+        var inboundRecord = inboundService.latestRecord(PERMISSION_ID, ACCESS_CODE);
 
         // Then
         assertEquals(DATA_SOURCE_ID, inboundRecord.dataSourceId());
@@ -83,7 +83,7 @@ class InboundServiceTest {
 
         // When, Then
         assertThrows(InvalidDataSourceTypeException.class,
-                     () -> inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID));
+                     () -> inboundService.latestRecord(PERMISSION_ID, ACCESS_CODE));
     }
 
     @Test
@@ -92,7 +92,7 @@ class InboundServiceTest {
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(PERMISSION));
 
         // When, Then
-        assertThrows(UnauthorizedException.class, () -> inboundService.latestRecord("wrong", PERMISSION_ID));
+        assertThrows(UnauthorizedException.class, () -> inboundService.latestRecord(PERMISSION_ID, "wrong"));
     }
 
     @Test
@@ -101,7 +101,7 @@ class InboundServiceTest {
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.empty());
 
         // When, Then
-        assertThrows(PermissionNotFoundException.class, () -> inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID));
+        assertThrows(PermissionNotFoundException.class, () -> inboundService.latestRecord(PERMISSION_ID, ACCESS_CODE));
     }
 
     @Test
@@ -111,6 +111,6 @@ class InboundServiceTest {
 
         // When, Then
         assertThrows(InboundRecordNotFoundException.class,
-                     () -> inboundService.latestRecord(ACCESS_CODE, PERMISSION_ID));
+                     () -> inboundService.latestRecord(PERMISSION_ID, ACCESS_CODE));
     }
 }

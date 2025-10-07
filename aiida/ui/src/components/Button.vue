@@ -1,15 +1,33 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-const { buttonStyle = 'primary', size = 'normal' } = defineProps<{
+const {
+  buttonStyle,
+  size,
+  href,
+  download,
+  isLink = false,
+  disabled = undefined,
+} = defineProps<{
   buttonStyle?: 'primary' | 'secondary' | 'error' | 'error-secondary'
   size?: 'small' | 'normal' | 'medium'
+  href?: string
+  download?: string
+  disabled?: boolean
+  isLink?: boolean
 }>()
 </script>
 
 <template>
-  <button class="button" :class="[buttonStyle, size]">
+  <component
+    :is="isLink ? 'a' : 'button'"
+    class="button"
+    :class="[buttonStyle, size, { 'is-disabled': disabled }]"
+    :href
+    :download
+    :disabled
+  >
     <slot />
-  </button>
+  </component>
 </template>
 
 <style scoped>
@@ -33,17 +51,22 @@ const { buttonStyle = 'primary', size = 'normal' } = defineProps<{
   font-weight: 600;
   width: fit-content;
   height: fit-content;
+  text-decoration: none;
+}
 
-  &:hover {
-    color: var(--button-bg-color);
-    background-color: var(--button-color);
-  }
+.button:hover {
+  color: var(--button-bg-color);
+  background-color: var(--button-color);
+}
 
-  &:disabled {
-    color: var(--eddie-grey-medium);
-    border-color: var(--eddie-grey-medium);
-    background-color: var(--eddie-secondary);
-  }
+.button.is-disabled,
+.button[disabled],
+.button[aria-disabled='true'] {
+  color: var(--eddie-grey-medium);
+  border-color: var(--eddie-grey-medium);
+  background-color: var(--eddie-secondary);
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .secondary {

@@ -12,11 +12,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
 public class InboundService {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundService.class);
+
     private final InboundRecordRepository inboundRecordRepository;
     private final PermissionRepository permissionRepository;
 
@@ -28,25 +30,39 @@ public class InboundService {
         this.permissionRepository = permissionRepository;
     }
 
-    public InboundRecord latestRecord(
-            String accessCode,
-            UUID permissionId
-    ) throws PermissionNotFoundException, UnauthorizedException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
+    public InboundRecord latestRecord(UUID permissionId, String accessCode)
+            throws PermissionNotFoundException, UnauthorizedException,
+                   InvalidDataSourceTypeException, InboundRecordNotFoundException {
+        var dataSource = dataSource(permissionId);
+        if (!Objects.equals(dataSource.accessCode(), accessCode)) {
+            throw new UnauthorizedException(
+                    "Access code does not match for data source with ID: " + dataSource.id()
+            );
+        }
+
+        return latestRecord(dataSource);
+    }
+
+    public InboundRecord latestRecord(UUID permissionId)
+            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
+        return latestRecord(dataSource(permissionId));
+    }
+
+    private InboundDataSource dataSource(UUID permissionId)
+            throws PermissionNotFoundException, InvalidDataSourceTypeException {
         LOGGER.trace("Getting latest raw record for permission {}", permissionId);
 
-        var permission = permissionRepository
-                .findById(permissionId)
-                .orElseThrow(() -> new PermissionNotFoundException(permissionId));
-        var dataSource = permission.dataSource();
+        var permission = permissionRepository.findById(permissionId)
+                                             .orElseThrow(() -> new PermissionNotFoundException(permissionId));
 
+        var dataSource = permission.dataSource();
         if (!(dataSource instanceof InboundDataSource inboundDataSource)) {
             throw new InvalidDataSourceTypeException();
         }
+        return inboundDataSource;
+    }
 
-        if (!accessCode.equals(inboundDataSource.accessCode())) {
-            throw new UnauthorizedException("Access code does not match for data source with ID: " + dataSource.id());
-        }
-
+    private InboundRecord latestRecord(InboundDataSource dataSource) throws InboundRecordNotFoundException {
         return inboundRecordRepository
                 .findTopByDataSourceIdOrderByTimestampDesc(dataSource.id())
                 .orElseThrow(() -> new InboundRecordNotFoundException(dataSource.id()));
