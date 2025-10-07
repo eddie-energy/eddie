@@ -16,7 +16,7 @@ on:
 
 jobs:
   docs-deploy:
-    runs-on: [ linux, external ]
+    runs-on: [ linux ]
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
