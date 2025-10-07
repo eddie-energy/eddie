@@ -26,5 +26,5 @@ jobs:
           host: ${{ secrets.WEBSERVER_SFTP_HOST }}
           password: ${{ secrets.WEBSERVER_SFTP_PASSWORD }}
           user: ${{ secrets.WEBSERVER_SFTP_USERNAME }}
-          source: "./docs/.vitepress/dist/"
+          source: "./aiida/docs/.vitepress/dist/"
           destination: "/public_html/aiida/"
