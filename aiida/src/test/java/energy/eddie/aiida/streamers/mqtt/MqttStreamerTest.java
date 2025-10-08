@@ -9,6 +9,7 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.FailedToSendEntity;
+import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -86,6 +87,8 @@ class MqttStreamerTest {
     private ObjectMapper mockMapper;
     @Mock
     private ConnectionStatusMessage mockStatusMessage;
+    @Mock
+    private PermissionLatestRecordMap mockLatestRecordMap;
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
 
@@ -101,7 +104,7 @@ class MqttStreamerTest {
         mqttStreamingConfig = new MqttStreamingConfig(permissionId, mqttDto);
         Permission permissionMock = mock(Permission.class);
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
-        var streamingContext = new MqttStreamingContext(mockClient, mqttStreamingConfig);
+        var streamingContext = new MqttStreamingContext(mockClient, mqttStreamingConfig, mockLatestRecordMap);
 
         streamer = new MqttStreamer(aiidaId,
                                     mockRepository,

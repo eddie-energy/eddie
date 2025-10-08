@@ -30,7 +30,7 @@ class InboundControllerTest {
 
     @Test
     void latestRecord_withHeader_isOk() throws Exception {
-        when(inboundService.latestRecord(ACCESS_CODE, DATA_SOURCE_ID)).thenReturn(mock(InboundRecord.class));
+        when(inboundService.latestRecord(DATA_SOURCE_ID, ACCESS_CODE)).thenReturn(mock(InboundRecord.class));
 
         mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID)
                                 .header("X-API-Key", ACCESS_CODE)
@@ -40,7 +40,7 @@ class InboundControllerTest {
 
     @Test
     void latestRecord_withQueryParam_isOk() throws Exception {
-        when(inboundService.latestRecord(ACCESS_CODE, DATA_SOURCE_ID)).thenReturn(mock(InboundRecord.class));
+        when(inboundService.latestRecord(DATA_SOURCE_ID, ACCESS_CODE)).thenReturn(mock(InboundRecord.class));
 
         mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID + "?apiKey=" + ACCESS_CODE))
                .andExpect(status().isOk());

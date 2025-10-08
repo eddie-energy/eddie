@@ -1,8 +1,9 @@
 package energy.eddie.aiida.utils;
 
-import energy.eddie.aiida.dtos.AiidaRecordStreamingDto;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.dtos.record.AiidaRecordStreamingDto;
+import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -20,6 +21,7 @@ import static energy.eddie.aiida.models.record.UnitOfMeasurement.NONE;
 import static energy.eddie.aiida.utils.ObisCode.METER_SERIAL;
 import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +33,8 @@ class AiidaRecordConverterTest {
     private AiidaLocalDataNeed mockDataNeed;
     @Mock
     private Permission mockPermission;
+    @Mock
+    private DataSource mockDataSource;
 
     @Test
     void givenIntegerAiidaRecord_returnsDtoWithFieldsSet() {
@@ -76,5 +80,35 @@ class AiidaRecordConverterTest {
         assertEquals(permissionId, dto.permissionId());
         assertEquals(dataSourceId, dto.dataSourceId());
         assertEquals(timestamp.toEpochMilli(), dto.timestamp().toEpochMilli());
+    }
+
+    @Test
+    void givenAiidaRecordValue_whenConvertedToLatestDto_thenFieldsAreMappedCorrectly() {
+        // Given
+        Instant timestamp = Instant.now();
+        var value = new AiidaRecordValue(
+                "1-0:1.8.0",
+                POSITIVE_ACTIVE_ENERGY,
+                "23",
+                KILO_WATT,
+                "10",
+                KILO_WATT
+        );
+        var aiidaRecord = new AiidaRecord(timestamp, AiidaAsset.SUBMETER, userId, dataSourceId, List.of(value));
+        when(mockDataSource.name()).thenReturn("datasource");
+
+        // When
+        var dto = AiidaRecordConverter.recordToLatestDto(aiidaRecord, mockDataSource);
+        var v = dto.aiidaRecordValues().getFirst();
+
+        // Then
+        assertEquals("1-0:1.8.0", v.rawTag().toString());
+        assertEquals(POSITIVE_ACTIVE_ENERGY.toString(), v.obisCode());
+        assertEquals("23", v.rawValue());
+        assertEquals(KILO_WATT, v.rawUnit());
+        assertEquals("10", v.value());
+        assertEquals(KILO_WATT, v.unit());
+        assertEquals("datasource", dto.name());
+        assertNull(v.sourceKey(), "sourceKey should be null when using dataTag constructor");
     }
 }

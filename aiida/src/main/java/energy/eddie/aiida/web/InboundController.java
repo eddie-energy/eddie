@@ -49,6 +49,6 @@ public class InboundController {
             throw new UnauthorizedException("API key missing: provide X-API-Key header or ?apiKey= query param.");
         }
 
-        return ResponseEntity.ok(inboundService.latestRecord(apiKey, permissionId));
+        return ResponseEntity.ok(inboundService.latestRecord(permissionId, apiKey));
     }
 }

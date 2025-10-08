@@ -7,6 +7,9 @@ import energy.eddie.aiida.errors.formatter.FormatterException;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.models.record.LatestRecordSchema;
+import energy.eddie.aiida.models.record.PermissionLatestRecord;
+import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.models.record.FailedToSendEntity;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.SchemaFormatter;
@@ -26,6 +29,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -39,6 +43,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private final Permission permission;
     private final MqttStreamingConfig streamingConfig;
     private boolean isBeingTerminated = false;
+    private final PermissionLatestRecordMap permissionLatestRecordMap;
     @Nullable
     private Disposable subscription;
 
@@ -71,6 +76,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         this.mapper = mapper;
         this.permission = permission;
         this.streamingConfig = streamingContext.streamingConfig();
+        this.permissionLatestRecordMap = streamingContext.permissionLatestRecordMap();
 
         client.setCallback(this);
     }
@@ -199,6 +205,11 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                      aiidaRecord);
 
         try {
+            var permissionLatestRecord = new PermissionLatestRecord(
+                    streamingConfig.dataTopic(),
+                    streamingConfig.serverUri()
+            );
+
             var dataNeed = Objects.requireNonNull(permission.dataNeed());
             var schemas = Objects.requireNonNullElse(dataNeed.schemas(), Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
@@ -206,7 +217,14 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                 var schemaFormatter = SchemaFormatter.getFormatter(aiidaId, schema);
                 var messageData = schemaFormatter.toSchema(aiidaRecord, mapper, permission);
                 publishMessage(streamingConfig.dataTopic(), messageData);
+
+                permissionLatestRecord.putSchema(schema, new LatestRecordSchema(
+                        Instant.now(),
+                        messageData != null ? new String(messageData, StandardCharsets.UTF_8) : ""
+                ));
             }
+
+            permissionLatestRecordMap.put(streamingConfig.permissionId(), permissionLatestRecord);
         } catch (FormatterException exception) {
             LOGGER.error("MqttStreamer for permission {} cannot convert AiidaRecord {} to JSON, will ignore it",
                          streamingConfig.permissionId(),

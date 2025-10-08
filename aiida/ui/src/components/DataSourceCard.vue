@@ -3,12 +3,14 @@ import { BASE_URL } from '@/api'
 import Button from '@/components/Button.vue'
 import TrashIcon from '@/assets/icons/TrashIcon.svg'
 import PenIcon from '@/assets/icons/PenIcon.svg'
+import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import DataSourceIcon from '@/components/DataSourceIcon.vue'
 import StatusDotIcon from '@/assets/icons/StatusDotIcon.svg'
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
 import { computed, ref } from 'vue'
 import type { AiidaDataSource } from '@/types'
 import { dataSourceImages } from '@/stores/dataSources'
+import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
@@ -17,7 +19,7 @@ const { dataSource, startOpen } = defineProps<{
   startOpen?: boolean
 }>()
 const isOpen = ref(startOpen)
-const emit = defineEmits(['edit', 'delete', 'reset', 'enableToggle'])
+const emit = defineEmits(['edit', 'delete', 'reset', 'enableToggle', 'showLatestDataSourceMessage'])
 //TODO see #GH-1957
 const mqttCertificate = false
 
@@ -130,6 +132,9 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
 
     <div class="actions">
       <Button button-style="error" @click="emit('delete')"><TrashIcon />Delete</Button>
+      <MessageDownloadButton :data="dataSource">
+        <EyeIcon /> Show Latest Message
+      </MessageDownloadButton>
       <Button @click="emit('edit')"><PenIcon />Edit</Button>
     </div>
   </article>

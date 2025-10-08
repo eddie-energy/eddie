@@ -230,3 +230,21 @@ export async function getDataSourceImage(dataSourceId: string): Promise<Blob> {
     method: 'GET',
   })
 }
+
+export async function getLatestDataSourceMessage(id: string) {
+  return fetch(`/messages/data-source/${id}/latest`, {
+    method: 'GET',
+  })
+}
+
+export async function getLatestOutboundPermissionMessage(id: string) {
+  return fetch(`/messages/permission/${id}/outbound/latest`, {
+    method: 'GET',
+  })
+}
+
+export async function getLatestInboundPermissionMessage(id: string) {
+  return fetch(`/messages/permission/${id}/inbound/latest`, {
+    method: 'GET',
+  })
+}
