@@ -7,7 +7,7 @@ The following MQTT data sources are supported:
 - Smart Gateways
 - Micro Teleinfo V3
 - CIM
-- Inbound
+- [Inbound](inbound/inbound-data-source.md)
 - Sinapsi Alfa
 - Shelly
 

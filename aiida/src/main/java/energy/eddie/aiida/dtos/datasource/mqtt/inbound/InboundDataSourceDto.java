@@ -16,6 +16,7 @@ public class InboundDataSourceDto extends DataSourceDto {
         this.name = permissionId.toString();
         this.asset = asset;
         this.enabled = true;
+        this.countryCode = "AT";
         this.icon = DataSourceIcon.ELECTRICITY;
     }
 }
