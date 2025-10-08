@@ -24,7 +24,7 @@ on:
 jobs:
   build:
     name: Build and analyze
-    runs-on: [ self-hosted, no-dind ]
+    runs-on: [ self-hosted, no-dind, internal ]
     timeout-minutes: 25 # Builds running longer than 25 minutes should be investigated
     steps:
       - uses: actions/checkout@v4
