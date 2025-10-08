@@ -47,6 +47,20 @@ export default withMermaid(
               text: "Operation",
               link: "/1-running/OPERATION.md",
             },
+            {
+              text: "Data Sources",
+              link: "/1-running/datasources/data-sources.md",
+              items: [
+                {
+                  text: "MQTT-based",
+                  link: "/1-running/datasources/mqtt/mqtt-data-sources.md",
+                },
+                {
+                  text: "Interval-based",
+                  link: "/1-running/datasources/interval/interval-data-sources.md",
+                }
+              ]
+            },
           ],
         },
         {
