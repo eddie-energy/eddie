@@ -205,13 +205,12 @@ onClickOutside(target, () => (showToolTip.value = false))
         <dd>PLACEHOLDER</dd>
       </div>
       <div v-if="status === 'Active'" class="actions-row">
-        <MessageDownloadButton :data="permission" class="action-btn">
-          <EyeIcon /> Show Latest Message
-        </MessageDownloadButton>
-
         <Button button-style="error" class="action-btn" @click="handleRevoke">
           <RevokeIcon /> Revoke
         </Button>
+        <MessageDownloadButton :data="permission" class="action-btn">
+          <EyeIcon /> Download Latest Message
+        </MessageDownloadButton>
       </div>
       <Button
         v-if="status === 'Pending'"
@@ -290,9 +289,12 @@ onClickOutside(target, () => (showToolTip.value = false))
 
 .actions-row {
   display: flex;
+  flex-direction: column;
+
   gap: var(--spacing-sm);
   align-items: center;
   margin-top: auto;
+  justify-content: space-between;
 }
 .actions-row .action-btn {
   width: 100%;
@@ -401,8 +403,22 @@ onClickOutside(target, () => (showToolTip.value = false))
   }
 
   .actions-row .action-btn {
-    width: fit-content;
-    justify-content: flex-start;
+    width: 100%;
+    justify-content: center;
+  }
+  .column:first-child {
+    margin-bottom: unset;
+  }
+}
+
+@media screen and (min-width: 1640px) {
+  .actions-row {
+    flex-direction: row;
+    align-items: center;
+    .action-btn {
+      width: fit-content;
+      justify-content: flex-start;
+    }
   }
 }
 </style>

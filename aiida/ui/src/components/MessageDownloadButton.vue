@@ -9,8 +9,9 @@ import {
   getLatestOutboundPermissionMessage,
 } from '@/api'
 
-const { data } = defineProps<{
+const { data, buttonStyle = 'primary' } = defineProps<{
   data: AiidaDataSource | AiidaPermission
+  buttonStyle?: 'primary' | 'secondary' | 'error' | 'error-secondary'
 }>()
 
 const isPreparing = ref(false)
@@ -63,7 +64,7 @@ const handleClick = async () => {
   <Button
     :href="latestUrl || undefined"
     ref="button"
-    button-style="primary"
+    :button-style
     :download="filename"
     @click="handleClick"
     is-link

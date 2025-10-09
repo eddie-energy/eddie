@@ -128,13 +128,14 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
           <StatusDotIcon class="toggle-icon" />
         </button>
       </div>
+      <MessageDownloadButton class="message-download" button-style="secondary" :data="dataSource">
+        <EyeIcon /> Download Latest Message
+      </MessageDownloadButton>
     </dl>
 
     <div class="actions">
       <Button button-style="error" @click="emit('delete')"><TrashIcon />Delete</Button>
-      <MessageDownloadButton :data="dataSource">
-        <EyeIcon /> Show Latest Message
-      </MessageDownloadButton>
+
       <Button @click="emit('edit')"><PenIcon />Edit</Button>
     </div>
   </article>
@@ -307,6 +308,11 @@ div.toggle {
 .fields,
 .actions {
   display: none;
+}
+
+.message-download {
+  width: 100%;
+  justify-content: center;
 }
 
 @media screen and (min-width: 640px) {
