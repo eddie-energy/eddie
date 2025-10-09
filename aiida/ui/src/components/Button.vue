@@ -49,6 +49,8 @@ const {
   border-radius: 2rem;
   font-size: 1rem;
   font-weight: 600;
+  line-height: 1rem;
+  font-family: 'Poppins';
   width: fit-content;
   height: fit-content;
   text-decoration: none;
