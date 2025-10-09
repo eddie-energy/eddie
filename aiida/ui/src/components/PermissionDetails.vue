@@ -289,7 +289,7 @@ onClickOutside(target, () => (showToolTip.value = false))
 
 .actions-row {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
 
   gap: var(--spacing-sm);
   align-items: center;
@@ -403,12 +403,8 @@ onClickOutside(target, () => (showToolTip.value = false))
   }
 
   .actions-row .action-btn {
-    width: fit-content;
-    justify-content: flex-start;
-  }
-  .actions-row {
-    align-items: flex-start;
-    flex-direction: column-reverse;
+    width: 100%;
+    justify-content: center;
   }
   .column:first-child {
     margin-bottom: unset;
@@ -419,6 +415,10 @@ onClickOutside(target, () => (showToolTip.value = false))
   .actions-row {
     flex-direction: row;
     align-items: center;
+    .action-btn {
+      width: fit-content;
+      justify-content: flex-start;
+    }
   }
 }
 </style>
