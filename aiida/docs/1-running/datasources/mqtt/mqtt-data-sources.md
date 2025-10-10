@@ -8,7 +8,7 @@ The following MQTT data sources are supported:
 - Micro Teleinfo V3
 - CIM
 - [Inbound](inbound/inbound-data-source.md)
-- Sinapsi Alfa
+- [Sinapsi Alfa](it/sinapsi-alfa-data-source.md)
 - Shelly
 
 #### Common Properties

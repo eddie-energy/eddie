@@ -1,5 +1,5 @@
 # Data Source: XYZ (Country)
-> MQTT-based Data Source for XYZ in Country
+> [Data Sources](data-sources.md) / [MQTT-based](mqtt/mqtt-data-sources.md)
 
 ## Overview
 
