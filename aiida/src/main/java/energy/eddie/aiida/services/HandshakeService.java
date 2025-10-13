@@ -37,7 +37,7 @@ public class HandshakeService {
      * call is blocking.
      */
     public Mono<PermissionDetailsDto> fetchDetailsForPermission(Permission permission) {
-        LOGGER.info("Fetching details for {}", permission.permissionId());
+        LOGGER.info("Fetching details for {}", permission.id());
 
         return webClient.get()
                         .uri(permission.handshakeUrl())
@@ -58,7 +58,7 @@ public class HandshakeService {
             default -> throw new IllegalArgumentException("Need to pass either UNFULFILLABLE or REJECTED");
         };
 
-        LOGGER.info("Sending {} for permission {}", status, permission.permissionId());
+        LOGGER.info("Sending {} for permission {}", status, permission.id());
 
         var operation = new PermissionUpdateDto(otherStatus, aiidaId);
 
@@ -71,7 +71,7 @@ public class HandshakeService {
                  .retrieve()
                  .bodyToMono(MqttDto.class)
                  .doOnError(error -> LOGGER.atError()
-                                           .addArgument(permission.permissionId())
+                                           .addArgument(permission.id())
                                            .addArgument(status)
                                            .setCause(error)
                                            .log("Error while updating permission {} to new status {} at the EDDIE framework"))
@@ -83,7 +83,7 @@ public class HandshakeService {
      * credentials and topic names that are to be used by the associated permission.
      */
     public Mono<MqttDto> fetchMqttDetails(Permission permission) {
-        LOGGER.info("Fetching mqtt details for permission {}", permission.permissionId());
+        LOGGER.info("Fetching mqtt details for permission {}", permission.id());
 
         var operation = new PermissionUpdateDto(ACCEPT, aiidaId);
 

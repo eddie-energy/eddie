@@ -129,7 +129,7 @@ class PermissionControllerTest {
     void givenIncompletePostBody_permissionRequest_returnsBadRequest() throws Exception {
         // Given
         when(permissionService.setupNewPermission(any())).thenReturn(mockPermission);
-        when(mockPermission.permissionId()).thenReturn(permissionId);
+        when(mockPermission.id()).thenReturn(permissionId);
         var requestJson = "{\"permissionId\":\"" + permissionId + "\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"bearerToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
 
         // When
@@ -146,7 +146,7 @@ class PermissionControllerTest {
         // Given
         when(permissionService.setupNewPermission(any())).thenReturn(mockPermission);
         when(mockPermission.eddieId()).thenReturn(eddieId);
-        when(mockPermission.permissionId()).thenReturn(permissionId);
+        when(mockPermission.id()).thenReturn(permissionId);
         var requestJson = "{\"eddieId\":\"" + eddieId + "\", \"permissionId\":\"" + permissionId + "\",\"serviceName\":\"FUTURE_NEAR_REALTIME_DATA_OUTBOUND\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"bearerToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
         var expectedLocationHeader = "/permissions/" + permissionId;
 

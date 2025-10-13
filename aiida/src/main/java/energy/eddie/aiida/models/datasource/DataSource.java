@@ -19,11 +19,13 @@ import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.image.Image;
+import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import org.springframework.lang.Nullable;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -56,6 +58,8 @@ public abstract class DataSource {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "image_id", referencedColumnName = "id")
     protected Image image;
+    @OneToMany(mappedBy = "dataSource", targetEntity = Permission.class)
+    protected Set<Permission> permissions;
 
     @SuppressWarnings("NullAway")
     protected DataSource() {}
@@ -93,6 +97,7 @@ public abstract class DataSource {
         this.dataSourceType = dto.dataSourceType();
         this.countryCode = dto.countryCode();
         this.icon = dto.icon();
+        this.permissions = Set.of();
     }
 
     public UUID id() {
@@ -138,5 +143,16 @@ public abstract class DataSource {
 
     public void setImage(@Nullable Image image) {
         this.image = image;
+    }
+
+    public Set<Permission> permissions() {
+        return permissions;
+    }
+
+    @PreRemove
+    private void preRemove() {
+        for (var permission : permissions) {
+            permission.setDataSource(null);
+        }
     }
 }

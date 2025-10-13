@@ -43,7 +43,7 @@ class AiidaRecordConverterTest {
         var aiidaRecord = new AiidaRecord(timestamp, AiidaAsset.SUBMETER, userId, dataSourceId, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "23", KILO_WATT, "10", KILO_WATT)));
         when(mockPermission.connectionId()).thenReturn("connectionId");
-        when(mockPermission.permissionId()).thenReturn(permissionId);
+        when(mockPermission.id()).thenReturn(permissionId);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
 
         // When
@@ -67,7 +67,7 @@ class AiidaRecordConverterTest {
                 new AiidaRecordValue("0-0:C.1.0", METER_SERIAL, "Hello!", NONE, "10", NONE)));
 
         when(mockPermission.connectionId()).thenReturn("connectionId");
-        when(mockPermission.permissionId()).thenReturn(permissionId);
+        when(mockPermission.id()).thenReturn(permissionId);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
 
         // When

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.errors.formatter.CimFormatterException;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.schemas.cim.v1_04.utils.CimUtil;
@@ -160,7 +160,7 @@ class SchemaTest {
         var dataNeedMock = mock(AiidaLocalDataNeed.class);
         var dataSource = mock(DataSource.class);
 
-        when(permissionMock.permissionId()).thenReturn(permissionId);
+        when(permissionMock.id()).thenReturn(permissionId);
         when(permissionMock.dataSource()).thenReturn(dataSource);
         when(permissionMock.dataNeed()).thenReturn(dataNeedMock);
         when(permissionMock.connectionId()).thenReturn("connectionId");

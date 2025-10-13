@@ -9,6 +9,7 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.services.ApplicationInformationService;
+import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,15 +67,16 @@ public class StreamerManager implements AutoCloseable {
      * @param permission Permission for which an AiidaStreamer should be created.
      * @throws IllegalArgumentException If an AiidaStreamer for the passed permission has already been created.
      */
+    @Transactional
     public void createNewStreamer(Permission permission) throws IllegalArgumentException, MqttException {
-        LOGGER.info("Will create a new AiidaStreamer for permission {}", permission.permissionId());
-        var id = permission.permissionId();
+        LOGGER.info("Will create a new AiidaStreamer for permission {}", permission.id());
+        var id = permission.id();
 
         if (streamers.get(id) != null) {
             throw new IllegalStateException(
                     "An AiidaStreamer for EDDIE framework '%s' with permission '%s' has already been created.".formatted(
                             permission.eddieId(),
-                            permission.permissionId()));
+                            permission.id()));
         }
 
         var dataNeed = Objects.requireNonNull(permission.dataNeed());
@@ -113,7 +115,7 @@ public class StreamerManager implements AutoCloseable {
             streamer.connect();
             streamers.put(id, streamer);
         } else {
-            LOGGER.error("No data source found for permission {}", permission.permissionId());
+            LOGGER.error("No data source found for permission {}", permission.id());
         }
     }
 

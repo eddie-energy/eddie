@@ -14,7 +14,6 @@ import energy.eddie.cim.v1_04.rtd.*;
 import jakarta.annotation.Nullable;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -51,7 +50,7 @@ public class CimFormatter extends SchemaFormatter {
         var codingSchemeValue = codingScheme != null ? codingScheme.value() : null;
 
         return new RTDEnvelope().withMarketDocument(toMarketDocument(aiidaRecord, codingSchemeValue))
-                                .withMessageDocumentHeaderCreationDateTime(ZonedDateTime.of(LocalDateTime.now(), UTC))
+                                .withMessageDocumentHeaderCreationDateTime(ZonedDateTime.now(UTC))
                                 .withMessageDocumentHeaderMetaInformationAsset(aiidaRecord.asset().toString())
                                 .withMessageDocumentHeaderMetaInformationConnectionId(permission.connectionId())
                                 .withMessageDocumentHeaderMetaInformationDataNeedId(dataNeed.dataNeedId().toString())
@@ -59,8 +58,7 @@ public class CimFormatter extends SchemaFormatter {
                                                                                                  .toString())
                                 .withMessageDocumentHeaderMetaInformationDocumentType(DOCUMENT_TYPE)
                                 .withMessageDocumentHeaderMetaInformationFinalCustomerId(aiidaId.toString())
-                                .withMessageDocumentHeaderMetaInformationPermissionId(permission.permissionId()
-                                                                                                .toString())
+                                .withMessageDocumentHeaderMetaInformationPermissionId(permission.id().toString())
                                 .withMessageDocumentHeaderMetaInformationRegionConnector(REGION_CONNECTOR)
                                 .withMessageDocumentHeaderMetaInformationRegionCountry(countryCode);
     }
@@ -70,7 +68,7 @@ public class CimFormatter extends SchemaFormatter {
             @Nullable String codingScheme
     ) throws CimFormatterException {
         return new RTDMarketDocument()
-                .withCreatedDateTime(ZonedDateTime.of(LocalDateTime.now(), UTC))
+                .withCreatedDateTime(ZonedDateTime.now(UTC))
                 .withMRID(UUID.randomUUID().toString())
                 .withTimeSeries(toTimeSeries(aiidaRecord, codingScheme));
     }

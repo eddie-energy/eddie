@@ -60,7 +60,7 @@ public class PermissionController {
 
         var permission = permissionService.setupNewPermission(qrCodeDto);
 
-        var location = new UriTemplate("/permissions/{permissionId}").expand(permission.permissionId());
+        var location = new UriTemplate("/permissions/{permissionId}").expand(permission.id());
 
         return ResponseEntity.created(location).body(permission);
     }

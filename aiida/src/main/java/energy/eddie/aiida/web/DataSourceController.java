@@ -3,12 +3,14 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceTypeDto;
+import energy.eddie.aiida.errors.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.errors.SinapsiAlflaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.services.DataSourceService;
+import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -20,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -83,7 +86,9 @@ public class DataSourceController {
             operationId = "getAllOutboundDataSources", tags = {"datasource"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceDto.class))))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceDto.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized User",
+                    content = @Content(schema = @Schema(implementation = EddieApiError.class)))
     })
     @GetMapping(path = "/outbound", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<DataSource>> getAllOutboundDataSources() throws InvalidUserException {
@@ -96,7 +101,9 @@ public class DataSourceController {
             operationId = "getAllInboundDataSources", tags = {"datasource"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceDto.class))))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceDto.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized User",
+                    content = @Content(schema = @Schema(implementation = EddieApiError.class)))
     })
     @GetMapping(path = "/inbound", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<DataSource>> getAllInboundDataSources() throws InvalidUserException {
@@ -112,8 +119,12 @@ public class DataSourceController {
                     content = @Content(schema = @Schema(implementation = DataSourceSecretsDto.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input data",
                     content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized User",
+                    content = @Content(schema = @Schema(implementation = EddieApiError.class))),
+            @ApiResponse(responseCode = "404", description = "Sinapsi Alfla configuration not found",
+                    content = @Content(schema = @Schema(implementation = EddieApiError.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error",
-                    content = @Content(schema = @Schema(implementation = String.class)))
+                    content = @Content(schema = @Schema(implementation = EddieApiError.class)))
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DataSourceSecretsDto> addDataSource(
@@ -127,7 +138,7 @@ public class DataSourceController {
 
         var dataSourceSecrets = service.addDataSource(dataSource);
 
-        return ResponseEntity.status(201).body(dataSourceSecrets);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dataSourceSecrets);
     }
 
     @Operation(summary = "Delete a datasource", description = "Delete a datasource by ID.",
@@ -135,7 +146,7 @@ public class DataSourceController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Datasource deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Datasource not found",
-                    content = @Content(schema = @Schema(implementation = String.class)))
+                    content = @Content(schema = @Schema(implementation = EddieApiError.class)))
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDataSource(@PathVariable("id") UUID dataSourceId) {
@@ -153,18 +164,18 @@ public class DataSourceController {
             @ApiResponse(responseCode = "400", description = "Invalid input data",
                     content = @Content(schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "404", description = "Datasource not found",
-                    content = @Content(schema = @Schema(implementation = String.class)))
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
+            @ApiResponse(responseCode = "500", description = "Internal server error",
+                    content = @Content(schema = @Schema(implementation = EddieApiError.class)))
     })
     @PatchMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> updateDataSource(
+    public ResponseEntity<DataSource> updateDataSource(
             @PathVariable("id") UUID dataSourceId,
             @RequestBody DataSourceDto dataSource
-    ) throws InvalidUserException, ModbusConnectionException {
+    ) throws ModbusConnectionException, DataSourceNotFoundException {
         LOGGER.info("Updating datasource with ID: {} - {}", dataSourceId, dataSource);
 
-        service.updateDataSource(dataSource);
-
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(service.updateDataSource(dataSource));
     }
 
     @Operation(summary = "Get datasource by ID", description = "Retrieve a datasource by its ID.",
@@ -173,15 +184,13 @@ public class DataSourceController {
             @ApiResponse(responseCode = "200", description = "Successful operation",
                     content = @Content(schema = @Schema(implementation = DataSourceDto.class))),
             @ApiResponse(responseCode = "404", description = "Datasource not found",
-                    content = @Content(schema = @Schema(implementation = String.class)))
+                    content = @Content(schema = @Schema(implementation = EddieApiError.class)))
     })
     @GetMapping("/{id}")
-    public ResponseEntity<DataSource> getDataSourceById(@PathVariable("id") UUID dataSourceId) {
+    public ResponseEntity<DataSource> getDataSourceById(@PathVariable("id") UUID dataSourceId) throws DataSourceNotFoundException {
         LOGGER.info("Fetching datasource with ID: {}", dataSourceId);
 
-        return service.dataSourceById(dataSourceId)
-                      .map(ResponseEntity::ok)
-                      .orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(service.dataSourceByIdOrThrow(dataSourceId));
     }
 
     @Operation(summary = "Update enabled state of a datasource",
@@ -192,14 +201,13 @@ public class DataSourceController {
             @ApiResponse(responseCode = "200", description = "Datasource enabled state updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data",
                     content = @Content(schema = @Schema(implementation = String.class))),
-            @ApiResponse(responseCode = "404", description = "Datasource not found",
-                    content = @Content(schema = @Schema(implementation = String.class)))
+            @ApiResponse(responseCode = "404", description = "Datasource not found", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
     })
     @PatchMapping(value = "{id}/enabled", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateEnabledState(
             @PathVariable("id") UUID dataSourceId,
             @RequestBody Boolean enabled
-    ) {
+    ) throws DataSourceNotFoundException {
         LOGGER.info("Updating enabled state of datasource with ID: {} - {}", dataSourceId, enabled);
 
         service.updateEnabledState(dataSourceId, enabled);
@@ -214,11 +222,10 @@ public class DataSourceController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Secrets regenerated successfully",
                     content = @Content(schema = @Schema(implementation = DataSourceSecretsDto.class))),
-            @ApiResponse(responseCode = "404", description = "Datasource not found",
-                    content = @Content(schema = @Schema(implementation = String.class)))
+            @ApiResponse(responseCode = "404", description = "Datasource not found", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
     })
     @PostMapping(value = "{id}/regenerate-secrets")
-    public ResponseEntity<DataSourceSecretsDto> regenerateSecrets(@PathVariable("id") UUID dataSourceId) {
+    public ResponseEntity<DataSourceSecretsDto> regenerateSecrets(@PathVariable("id") UUID dataSourceId) throws DataSourceNotFoundException {
         LOGGER.info("Regenerating secrets for datasource with ID: {}", dataSourceId);
 
         var dataSourceSecrets = service.regenerateSecrets(dataSourceId);

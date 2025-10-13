@@ -44,7 +44,7 @@ public class PermissionExpiredRunnable implements Runnable {
         var offsetMs = clock.instant().toEpochMilli() - expirationTime.toEpochMilli();
 
         LOGGER.atInfo()
-              .addArgument(permission.permissionId())
+              .addArgument(permission.id())
               .addArgument(offsetMs)
               .log("Will expire permission permission {}, running {} ms too late compared to target time (negative number would be too early)");
 
@@ -53,13 +53,13 @@ public class PermissionExpiredRunnable implements Runnable {
               permission.status() == PermissionStatus.WAITING_FOR_START ||
               permission.status() == PermissionStatus.STREAMING_DATA)) {
             LOGGER.warn("Permission {} was modified, its status is {}. Will NOT expire the permission",
-                        permission.permissionId(), permission.status());
+                        permission.id(), permission.status());
             return;
         }
 
         if (permission.status() == PermissionStatus.ACCEPTED || permission.status() == PermissionStatus.WAITING_FOR_START) {
             LOGGER.warn("Permission {} has status {}, meaning it was never started. Will expire it anyway.",
-                        permission.permissionId(), permission.status());
+                        permission.id(), permission.status());
         }
 
         var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
@@ -68,7 +68,7 @@ public class PermissionExpiredRunnable implements Runnable {
                                                            dataNeedId,
                                                            clock.instant(),
                                                            PermissionStatus.FULFILLED,
-                                                           permission.permissionId(),
+                                                           permission.id(),
                                                            permission.eddieId()
         );
 

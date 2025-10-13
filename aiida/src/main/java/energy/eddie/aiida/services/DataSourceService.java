@@ -8,6 +8,7 @@ import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfiguration;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
+import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
 import energy.eddie.aiida.errors.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.ModbusConnectionException;
@@ -16,9 +17,12 @@ import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
+import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
-import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +33,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 public class DataSourceService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceService.class);
 
     private final DataSourceRepository repository;
+    private final AiidaEventPublisher aiidaEventPublisher;
     private final Aggregator aggregator;
     private final AuthService authService;
     private final Set<DataSourceAdapter<? extends DataSource>> dataSourceAdapters = new HashSet<>();
@@ -51,7 +57,8 @@ public class DataSourceService {
             MqttConfiguration mqttConfiguration,
             ObjectMapper objectMapper,
             BCryptPasswordEncoder bCryptPasswordEncoder,
-            SinapsiAlfaConfiguration sinapsiAlfaConfiguration
+            SinapsiAlfaConfiguration sinapsiAlfaConfiguration,
+            AiidaEventPublisher aiidaEventPublisher
     ) {
         this.repository = repository;
         this.aggregator = aggregator;
@@ -60,6 +67,7 @@ public class DataSourceService {
         this.objectMapper = objectMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.sinapsiAlfaConfiguration = sinapsiAlfaConfiguration;
+        this.aiidaEventPublisher = aiidaEventPublisher;
     }
 
     @EventListener(ContextRefreshedEvent.class)
@@ -78,10 +86,6 @@ public class DataSourceService {
         if (dataSource.enabled()) {
             aggregator.addNewDataSourceAdapter(dataSourceAdapter);
         }
-    }
-
-    public Optional<DataSource> dataSourceById(UUID dataSourceId) {
-        return repository.findById(dataSourceId);
     }
 
     public DataSource dataSourceByIdOrThrow(UUID dataSourceId) throws DataSourceNotFoundException {
@@ -113,23 +117,27 @@ public class DataSourceService {
                          .toList();
     }
 
+    @Transactional
     public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException, SinapsiAlflaEmptyConfigException {
         var currentUserId = authService.getCurrentUserId();
         String plaintextPassword = null;
 
         var dataSource = DataSource.createFromDto(dto, currentUserId);
         repository.save(dataSource); // This save generates the datasource ID
+        LOGGER.info("Created new data source ({}) of type {}", dataSource.id(), dataSource.dataSourceType());
 
         if (dataSource instanceof MqttDataSource mqttDataSource) {
             if (mqttDataSource instanceof SinapsiAlfaDataSource sinapsiAlfaDataSource && dto instanceof SinapsiAlfaDataSourceDto sinapsiAlfaDataSourceDto) {
                 sinapsiAlfaDataSource.generateMqttSettings(sinapsiAlfaConfiguration,
                                                            sinapsiAlfaDataSourceDto.activationKey());
+                LOGGER.info("Generated MQTT settings for Sinapsi Alfa data source ({})", dataSource.id());
             } else {
                 plaintextPassword = SecretGenerator.generate();
                 mqttDataSource.generateMqttSettings(mqttConfiguration, bCryptPasswordEncoder, plaintextPassword);
+                LOGGER.info("Generated MQTT settings for data source ({})", dataSource.id());
             }
 
-            repository.save(dataSource);  // This save now perists the subscribe topic with the generated ID
+            repository.save(dataSource);  // This save persists the subscribe topic with the generated ID
         }
 
         startDataSource(dataSource);
@@ -137,20 +145,36 @@ public class DataSourceService {
         return new DataSourceSecretsDto(dataSource.id(), plaintextPassword);
     }
 
+    @Transactional
     public void deleteDataSource(UUID dataSourceId) {
         findDataSourceAdapter(dataSourceId).ifPresentOrElse(
                 this::closeDataSourceAdapter,
                 () -> LOGGER.warn(
-                        "Data Source Adapter for data source ID {} not found.",
+                        "Tried to close DataSourceAdapter but could not be found for data source ({}).",
                         dataSourceId));
 
-        repository.deleteById(dataSourceId);
+        repository.findById(dataSourceId)
+                  .ifPresentOrElse(
+                          dataSource -> {
+                              var permissionIds = dataSource.permissions()
+                                                            .stream()
+                                                            .map(Permission::id)
+                                                            .collect(Collectors.toSet());
+
+                              aiidaEventPublisher.publishEvent(new DataSourceDeletionEvent(permissionIds));
+
+                              var dataSourceName = dataSource.name();
+                              repository.delete(dataSource);
+                              LOGGER.info("Deleted data source {} ({})", dataSourceName, dataSourceId);
+                          },
+                          () -> LOGGER.warn("Tried to delete data source ({}) but it could not found be found.",
+                                            dataSourceId));
     }
 
-    public DataSource updateDataSource(DataSourceDto dto) throws EntityNotFoundException, ModbusConnectionException {
+    @Transactional
+    public DataSource updateDataSource(DataSourceDto dto) throws ModbusConnectionException, DataSourceNotFoundException {
         var dataSource = repository.findById(dto.id())
-                                   .orElseThrow(() -> new EntityNotFoundException(
-                                           "Datasource not found with ID: " + dto.id()));
+                                   .orElseThrow(() -> new DataSourceNotFoundException(dto.id()));
 
         dataSource.update(dto);
 
@@ -162,16 +186,15 @@ public class DataSourceService {
                         dto.enabled()),
                 () -> startDataSource(dataSource));
 
-        var savedDataSource = repository.save(dataSource);
         LOGGER.debug("Updated data source {} with content {}", dto.id(), dto);
 
-        return savedDataSource;
+        return dataSource;
     }
 
-    public void updateEnabledState(UUID dataSourceId, boolean enabled) throws EntityNotFoundException {
-        DataSource dataSource = repository.findById(dataSourceId)
-                                          .orElseThrow(() -> new EntityNotFoundException(
-                                                  "Datasource not found with ID: " + dataSourceId));
+    @Transactional
+    public void updateEnabledState(UUID dataSourceId, boolean enabled) throws DataSourceNotFoundException {
+        var dataSource = repository.findById(dataSourceId)
+                                   .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
 
         var currentEnabledState = dataSource.enabled();
         dataSource.setEnabled(enabled);
@@ -184,14 +207,13 @@ public class DataSourceService {
                         enabled),
                 () -> startDataSource(dataSource));
 
-        repository.save(dataSource);
         LOGGER.debug("Updated enabled state of data source {} to {}", dataSourceId, enabled);
     }
 
-    public DataSourceSecretsDto regenerateSecrets(UUID dataSourceId) throws EntityNotFoundException {
-        DataSource dataSource = repository.findById(dataSourceId)
-                                          .orElseThrow(() -> new EntityNotFoundException(
-                                                  "Datasource not found with ID: " + dataSourceId));
+    @Transactional
+    public DataSourceSecretsDto regenerateSecrets(UUID dataSourceId) throws DataSourceNotFoundException {
+        var dataSource = repository.findById(dataSourceId)
+                                   .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
 
         var dataSourceSecrets = new DataSourceSecretsDto(dataSourceId, null);
 
@@ -207,9 +229,9 @@ public class DataSourceService {
                             dataSource.enabled()),
                     () -> startDataSource(dataSource));
 
-            repository.save(dataSource);
             LOGGER.debug("Regenerated secrets for data source {}", dataSourceId);
         }
+
         return dataSourceSecrets;
     }
 
@@ -219,6 +241,13 @@ public class DataSourceService {
 
     public Optional<DataSourceAdapter<? extends DataSource>> findDataSourceAdapter(Predicate<DataSourceAdapter<? extends DataSource>> predicate) {
         return dataSourceAdapters.stream().filter(predicate).findFirst();
+    }
+
+    public InboundDataSource createInboundDataSource(Permission permission) {
+        var inboundDataSource = new InboundDataSource.Builder(permission).build();
+
+        LOGGER.info("Created inbound data source {}", inboundDataSource.id());
+        return repository.save(inboundDataSource);
     }
 
     private boolean isOutboundDataSourceType(DataSourceType dataSourceType) {

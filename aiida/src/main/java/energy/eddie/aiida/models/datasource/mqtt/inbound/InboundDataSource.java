@@ -47,7 +47,7 @@ public class InboundDataSource extends MqttDataSource {
             var dataNeed = Objects.requireNonNull(permission.dataNeed());
             this.mqttStreamingConfig = Objects.requireNonNull(permission.mqttStreamingConfig());
 
-            this.dataSourceDto = new InboundDataSourceDto(dataNeed.asset(), permission.permissionId());
+            this.dataSourceDto = new InboundDataSourceDto(dataNeed.asset(), permission.id());
         }
 
         public InboundDataSource build() {

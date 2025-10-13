@@ -10,6 +10,8 @@ import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.at.OesterreichsEnergieDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.simulation.SimulationDataSourceDto;
+import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
+import energy.eddie.aiida.errors.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.SinapsiAlflaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -18,6 +20,10 @@ import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
+import energy.eddie.aiida.models.permission.MqttStreamingConfig;
+import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,19 +67,20 @@ class DataSourceServiceTest {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Mock
     private SinapsiAlfaConfiguration sinapsiAlfaConfiguration;
+    @Mock
+    private AiidaEventPublisher aiidaEventPublisher;
 
     @InjectMocks
     private DataSourceService dataSourceService;
 
     @Test
-    void shouldReturnDataSourceById() {
+    void shouldReturndataSourceByIdOrThrow() throws DataSourceNotFoundException {
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(INBOUND_DATA_SOURCE));
         when(INBOUND_DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
 
-        var result = dataSourceService.dataSourceById(DATA_SOURCE_ID);
+        var result = dataSourceService.dataSourceByIdOrThrow(DATA_SOURCE_ID);
 
-        assertTrue(result.isPresent());
-        assertEquals(DATA_SOURCE_ID, result.get().id());
+        assertEquals(DATA_SOURCE_ID, result.id());
         verify(repository, times(1)).findById(DATA_SOURCE_ID);
     }
 
@@ -81,9 +88,7 @@ class DataSourceServiceTest {
     void shouldReturnEmptyOptionalWhenDataSourceNotFound() {
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.empty());
 
-        var result = dataSourceService.dataSourceById(DATA_SOURCE_ID);
-
-        assertTrue(result.isEmpty(), "Expected Optional to be empty when DataSource is not found.");
+        assertThrows(DataSourceNotFoundException.class, () -> dataSourceService.dataSourceByIdOrThrow(DATA_SOURCE_ID));
     }
 
     @Test
@@ -183,16 +188,17 @@ class DataSourceServiceTest {
 
     @Test
     void shouldDeleteDataSource() {
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(mock(DataSource.class)));
         dataSourceService.deleteDataSource(DATA_SOURCE_ID);
 
-        verify(repository, times(1)).deleteById(DATA_SOURCE_ID);
+        verify(repository, times(1)).findById(DATA_SOURCE_ID);
+        verify(aiidaEventPublisher, times(1)).publishEvent(any(DataSourceDeletionEvent.class));
+        verify(repository, times(1)).delete(any(DataSource.class));
     }
 
     @Test
-    void shouldUpdateDataSource() {
+    void shouldUpdateDataSource() throws DataSourceNotFoundException {
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(MQTT_OUTBOUND_DATA_SOURCE));
-        when(repository.save(any(OesterreichsEnergieDataSource.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
 
         when(DATA_SOURCE_DTO.id()).thenReturn(DATA_SOURCE_ID);
         dataSourceService.updateDataSource(DATA_SOURCE_DTO);
@@ -222,7 +228,7 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void testEnableDataSource() {
+    void testEnableDataSource() throws DataSourceNotFoundException {
         var dto = mock(SimulationDataSourceDto.class);
         when(dto.id()).thenReturn(DATA_SOURCE_ID);
         var dataSource = new SimulationDataSource(dto, USER_ID);
@@ -241,7 +247,7 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldRegenerateSecrets() {
+    void shouldRegenerateSecrets() throws DataSourceNotFoundException {
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(MQTT_OUTBOUND_DATA_SOURCE));
         when(MQTT_OUTBOUND_DATA_SOURCE.enabled()).thenReturn(true);
 
@@ -251,16 +257,35 @@ class DataSourceServiceTest {
         assertNotEquals(MQTT_OUTBOUND_DATA_SOURCE.mqttPassword(), result.plaintextPassword());
         verify(bCryptPasswordEncoder, times(1)).encode(any());
         verify(aggregator, times(1)).addNewDataSourceAdapter(any());
-        verify(repository, times(1)).save(any(MqttDataSource.class));
     }
 
     @Test
-    void shouldNotRegenerateSecretsIfNotMqtt() {
+    void shouldNotRegenerateSecretsIfNotMqtt() throws DataSourceNotFoundException {
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(OUTBOUND_DATA_SOURCE));
 
         var result = dataSourceService.regenerateSecrets(DATA_SOURCE_ID);
 
         assertNull(result.plaintextPassword());
         verify(bCryptPasswordEncoder, never()).encode(any());
+    }
+
+    @Test
+    void testCreateInboundDatasource() {
+        // Given
+        var permission = mock(Permission.class);
+        var permissionId = UUID.randomUUID();
+        var userId = UUID.randomUUID();
+        var dataNeed = mock(AiidaLocalDataNeed.class);
+        var mqttStreamingConfig = mock(MqttStreamingConfig.class);
+
+        // When
+        when(permission.id()).thenReturn(permissionId);
+        when(permission.userId()).thenReturn(userId);
+        when(permission.dataNeed()).thenReturn(dataNeed);
+        when(permission.mqttStreamingConfig()).thenReturn(mqttStreamingConfig);
+        dataSourceService.createInboundDataSource(permission);
+
+        // Then
+        verify(repository).save(any(InboundDataSource.class));
     }
 }

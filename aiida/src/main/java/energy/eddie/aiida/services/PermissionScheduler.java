@@ -78,7 +78,7 @@ public class PermissionScheduler {
 
     private Permission schedulePermissionStart(Permission permission) {
         var startTime = requireNonNull(permission.startTime());
-        var permissionId = permission.permissionId();
+        var permissionId = permission.id();
 
         LOGGER.info("Scheduling permission start for permission '{}'.", permissionId);
         permission.setStatus(WAITING_FOR_START);
@@ -91,7 +91,7 @@ public class PermissionScheduler {
 
     private Permission startPermission(Permission permission) {
         LOGGER.info("Starting permission '{}' owned by EDDIE framework '{}'",
-                    permission.permissionId(),
+                    permission.id(),
                     permission.eddieId());
 
         try {
@@ -100,7 +100,7 @@ public class PermissionScheduler {
             permission.setStatus(PermissionStatus.STREAMING_DATA);
         } catch (MqttException exception) {
             LOGGER.atError()
-                  .addArgument(permission.permissionId())
+                  .addArgument(permission.id())
                   .addArgument(permission.eddieId())
                   .setCause(exception)
                   .log("Failed to start streaming for permission '{}' owned by EDDIE framework '{}' because the MqttClient could not be created");
@@ -112,7 +112,7 @@ public class PermissionScheduler {
 
     private void schedulePermissionExpirationRunnable(Permission permission) {
         var expirationTime = requireNonNull(permission.expirationTime());
-        var permissionId = permission.permissionId();
+        var permissionId = permission.id();
         LOGGER.info("Will schedule a PermissionExpirationRunnable for permission '{}' to run at  {}",
                     permissionId,
                     expirationTime);

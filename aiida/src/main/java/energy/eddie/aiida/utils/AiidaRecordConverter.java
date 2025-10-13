@@ -31,7 +31,7 @@ public class AiidaRecordConverter {
                                            aiidaRecord.asset(),
                                            connectionId,
                                            dataNeed.dataNeedId(),
-                                           permission.permissionId(),
+                                           permission.id(),
                                            aiidaRecord.dataSourceId(),
                                            aiidaRecord.aiidaRecordValues());
     }

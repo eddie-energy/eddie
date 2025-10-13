@@ -2,6 +2,7 @@ package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
+import energy.eddie.aiida.errors.DataSourceNotFoundException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.services.DataSourceService;
@@ -16,7 +17,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -145,20 +145,20 @@ class DataSourceControllerTest {
 
     @Test
     @WithMockUser
-    void getDataSourceById_shouldReturnDataSource() throws Exception {
-        when(service.dataSourceById(DATA_SOURCE_ID)).thenReturn(Optional.of(DATA_SOURCE));
+    void getdataSourceByIdOrThrow_shouldReturnDataSource() throws Exception {
+        when(service.dataSourceByIdOrThrow(DATA_SOURCE_ID)).thenReturn(DATA_SOURCE);
 
         mockMvc.perform(get("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
 
-        verify(service, times(1)).dataSourceById(DATA_SOURCE_ID);
+        verify(service, times(1)).dataSourceByIdOrThrow(DATA_SOURCE_ID);
     }
 
     @Test
     @WithMockUser
-    void getDataSourceById_shouldReturn404IfNotFound() throws Exception {
-        when(service.dataSourceById(DATA_SOURCE_ID)).thenReturn(Optional.empty());
+    void getdataSourceByIdOrThrow_shouldReturn404IfNotFound() throws Exception {
+        when(service.dataSourceByIdOrThrow(DATA_SOURCE_ID)).thenThrow(DataSourceNotFoundException.class);
 
         mockMvc.perform(get("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .accept(MediaType.APPLICATION_JSON))
