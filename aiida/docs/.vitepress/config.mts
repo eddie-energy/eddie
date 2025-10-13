@@ -54,6 +54,12 @@ export default withMermaid(
                 {
                   text: "MQTT-based",
                   link: "/1-running/datasources/mqtt/mqtt-data-sources.md",
+                  items: [
+                    {
+                      text: "Inbound",
+                      link: "/1-running/datasources/mqtt/inbound-data-source.md",
+                    },
+                  ]
                 },
                 {
                   text: "Interval-based",
