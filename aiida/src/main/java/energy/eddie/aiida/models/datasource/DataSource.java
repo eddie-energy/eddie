@@ -61,14 +61,7 @@ public abstract class DataSource {
     protected DataSource() {}
 
     protected DataSource(DataSourceDto dto, UUID userId) {
-        this.id = dto.id();
-        this.userId = userId;
-        this.asset = dto.asset();
-        this.name = dto.name();
-        this.enabled = dto.enabled();
-        this.dataSourceType = dto.dataSourceType();
-        this.countryCode = dto.countryCode();
-        this.icon = dto.icon();
+        applyDto(dto, userId);
     }
 
     public static DataSource createFromDto(DataSourceDto dto, UUID userId) {
@@ -85,6 +78,21 @@ public abstract class DataSource {
                     "Unsupported dto type: " + dto.getClass() + " / " + dto.dataSourceType()
             );
         };
+    }
+
+    public void update(DataSourceDto dto) {
+        applyDto(dto, this.userId);
+    }
+
+    private void applyDto(DataSourceDto dto, UUID userId) {
+        this.id = dto.id();
+        this.userId = userId;
+        this.asset = dto.asset();
+        this.name = dto.name();
+        this.enabled = dto.enabled();
+        this.dataSourceType = dto.dataSourceType();
+        this.countryCode = dto.countryCode();
+        this.icon = dto.icon();
     }
 
     public UUID id() {

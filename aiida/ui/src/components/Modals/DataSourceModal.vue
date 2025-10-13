@@ -160,7 +160,7 @@ const validateForm = () => {
     modBusRequiredFields.forEach((field) => handleRequired(field.value, field.label, field.key))
   }
   if (dataSource.value?.dataSourceType === 'SIMULATION') {
-    handleRequired(dataSource.value?.simulationPeriod, 'Simulation Period', 'simPeriod')
+    handleRequired(dataSource.value?.pollingInterval, 'Simulation Period', 'simPeriod')
   }
   if (dataSource.value?.dataSourceType === 'SINAPSI_ALFA') {
     handleRequired(dataSource.value?.activationKey, 'Activation Key', 'activationKey')
@@ -357,7 +357,7 @@ defineExpose({ showModal })
                 required
                 type="number"
                 id="simPeriod"
-                v-model="dataSource.simulationPeriod"
+                v-model="dataSource.pollingInterval"
                 min="0"
                 name="simPeriod"
               />

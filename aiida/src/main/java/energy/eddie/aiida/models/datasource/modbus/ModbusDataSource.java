@@ -1,6 +1,7 @@
 package energy.eddie.aiida.models.datasource.modbus;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.IntervalBasedDataSource;
@@ -40,6 +41,18 @@ public class ModbusDataSource extends IntervalBasedDataSource {
 
     public ModbusDataSource(ModbusDataSourceDto dto, UUID userId) {
         super(dto, userId);
+        applyDto(dto);
+    }
+
+    @Override
+    public void update(DataSourceDto dto) {
+        super.update(dto);
+        if (dto instanceof ModbusDataSourceDto modbusDto) {
+            applyDto(modbusDto);
+        }
+    }
+
+    private void applyDto(ModbusDataSourceDto dto) {
         this.modbusIp = dto.modbusIp();
         this.modbusDevice = dto.modbusDevice();
         this.modbusVendor = dto.modbusVendor();

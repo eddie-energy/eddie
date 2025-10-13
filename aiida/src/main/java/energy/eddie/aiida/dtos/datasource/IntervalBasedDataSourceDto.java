@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @SuppressWarnings({"NullAway.Init"})
 public abstract class IntervalBasedDataSourceDto extends DataSourceDto {
     @JsonProperty
-    protected Integer simulationPeriod;
+    protected Integer pollingInterval;
 
-    public Integer simulationPeriod() {
-        return simulationPeriod;
+    public Integer pollingInterval() {
+        return pollingInterval;
     }
 }
 

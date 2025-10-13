@@ -31,7 +31,7 @@ export type AiidaDataSource = {
   modbusModel?: string
   modbusDevice?: string
   //DatasourceType = SIMULATION
-  simulationPeriod?: number
+  pollingInterval?: number
   //DatasourceType = SINAPSI_ALFA
   activationKey?: string
 }

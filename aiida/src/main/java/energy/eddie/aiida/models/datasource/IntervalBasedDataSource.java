@@ -1,6 +1,7 @@
 package energy.eddie.aiida.models.datasource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.IntervalBasedDataSourceDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
@@ -21,7 +22,19 @@ public class IntervalBasedDataSource extends DataSource {
 
     protected IntervalBasedDataSource(IntervalBasedDataSourceDto dto, UUID userId) {
         super(dto, userId);
-        this.pollingInterval = dto.simulationPeriod() != null ? dto.simulationPeriod() : DEFAULT_INTERVAL;
+        applyDto(dto);
+    }
+
+    @Override
+    public void update(DataSourceDto dto) {
+        super.update(dto);
+        if (dto instanceof IntervalBasedDataSourceDto intervalDto) {
+            applyDto(intervalDto);
+        }
+    }
+
+    private void applyDto(IntervalBasedDataSourceDto dto) {
+        this.pollingInterval = dto.pollingInterval() != null ? dto.pollingInterval() : DEFAULT_INTERVAL;
     }
 
     public Integer pollingInterval() {
