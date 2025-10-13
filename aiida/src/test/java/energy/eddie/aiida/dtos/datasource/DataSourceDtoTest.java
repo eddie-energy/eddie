@@ -20,14 +20,14 @@ class DataSourceDtoTest {
     @Test
     void parseJson_givenSimulation() throws JsonProcessingException {
         // Given
-        var json = "{\"name\":\"Test Source\",\"dataSourceType\":\"SIMULATION\", \"simulationPeriod\": 12}";
+        var json = "{\"name\":\"Test Source\",\"dataSourceType\":\"SIMULATION\", \"pollingInterval\": 12}";
 
         // When
         var dto = objectMapper.readValue(json, DataSourceDto.class);
 
         // Then
         assertInstanceOf(SimulationDataSourceDto.class, dto);
-        assertEquals(12, ((SimulationDataSourceDto) dto).simulationPeriod());
+        assertEquals(12, ((SimulationDataSourceDto) dto).pollingInterval());
     }
 
     @Test
