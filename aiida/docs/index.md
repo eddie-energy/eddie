@@ -26,11 +26,11 @@ features:
     linkText: learn more
   - title: EDDIE Architecture
     details: Architecture documentation of the EDDIE components
-    link: https://eddie-web.projekte.fh-hagenberg.at/architecture/
+    link: https://architecture.eddie.energy/architecture/
     linkText: learn more
   - title: EDDIE Framework
     details: Using and Extending the EDDIE Framework
-    link: https://eddie-web.projekte.fh-hagenberg.at/framework/
+    link: https://architecture.eddie.energy/framework/
     linkText: learn more
   - title: EDDIE on GitHub
     details: Sourcecode of the EDDIE project
