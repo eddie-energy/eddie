@@ -78,7 +78,7 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
 
       <template v-if="pollingInterval">
         <div>
-          <dt>Simulation Period</dt>
+          <dt>Polling Interval</dt>
           <dd>{{ pollingInterval }} seconds</dd>
         </div>
       </template>
