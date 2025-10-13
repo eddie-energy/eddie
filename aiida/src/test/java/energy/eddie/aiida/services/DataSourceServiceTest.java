@@ -189,19 +189,15 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldUpdateDataSource() throws InvalidUserException {
-        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(OUTBOUND_DATA_SOURCE));
+    void shouldUpdateDataSource() {
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(MQTT_OUTBOUND_DATA_SOURCE));
         when(repository.save(any(OesterreichsEnergieDataSource.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-
         when(DATA_SOURCE_DTO.id()).thenReturn(DATA_SOURCE_ID);
-        when(DATA_SOURCE_DTO.name()).thenReturn("New Name");
-        when(DATA_SOURCE_DTO.enabled()).thenReturn(false);
-        var savedDataSource = (OesterreichsEnergieDataSource) dataSourceService.updateDataSource(DATA_SOURCE_DTO);
+        dataSourceService.updateDataSource(DATA_SOURCE_DTO);
 
-        assertEquals("New Name", savedDataSource.name());
-        assertFalse(savedDataSource.enabled());
+        verify(MQTT_OUTBOUND_DATA_SOURCE).update(DATA_SOURCE_DTO);
     }
 
     @Test

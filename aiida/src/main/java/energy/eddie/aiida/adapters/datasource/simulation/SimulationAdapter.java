@@ -31,7 +31,7 @@ public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
 
     /**
      * Creates a new SimulationDataSource with the given name.
-     * It will publish an {@link AiidaRecord} with a random value in {@code simulationPeriod} time gaps
+     * It will publish an {@link AiidaRecord} with a random value in {@code pollingInterval} time gaps
      * for these OBIS codes:
      * <ul>
      * <li>1-0:1.8.0</li>
@@ -40,7 +40,7 @@ public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
      * <li>1-0:2.7.0</li>
      * </ul>
      *
-     * @param dataSource     The unique identifier (UUID) of this data source.
+     * @param dataSource The unique identifier (UUID) of this data source.
      */
     public SimulationAdapter(SimulationDataSource dataSource) {
         super(dataSource);

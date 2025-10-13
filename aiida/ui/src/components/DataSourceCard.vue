@@ -33,7 +33,7 @@ const {
   mqttSubscribeTopic,
   mqttUsername,
   name,
-  simulationPeriod,
+  pollingInterval,
   icon,
 } = dataSource
 
@@ -76,10 +76,10 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
         <dd>{{ dataSourceType }}</dd>
       </div>
 
-      <template v-if="simulationPeriod">
+      <template v-if="pollingInterval">
         <div>
-          <dt>Simulation Period</dt>
-          <dd>{{ simulationPeriod }} seconds</dd>
+          <dt>Polling Interval</dt>
+          <dd>{{ pollingInterval }} seconds</dd>
         </div>
       </template>
 

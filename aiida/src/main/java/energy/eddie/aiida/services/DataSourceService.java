@@ -122,7 +122,8 @@ public class DataSourceService {
 
         if (dataSource instanceof MqttDataSource mqttDataSource) {
             if (mqttDataSource instanceof SinapsiAlfaDataSource sinapsiAlfaDataSource && dto instanceof SinapsiAlfaDataSourceDto sinapsiAlfaDataSourceDto) {
-                sinapsiAlfaDataSource.generateMqttSettings(sinapsiAlfaConfiguration, sinapsiAlfaDataSourceDto.activationKey());
+                sinapsiAlfaDataSource.generateMqttSettings(sinapsiAlfaConfiguration,
+                                                           sinapsiAlfaDataSourceDto.activationKey());
             } else {
                 plaintextPassword = SecretGenerator.generate();
                 mqttDataSource.generateMqttSettings(mqttConfiguration, bCryptPasswordEncoder, plaintextPassword);
@@ -146,24 +147,20 @@ public class DataSourceService {
         repository.deleteById(dataSourceId);
     }
 
-    public DataSource updateDataSource(DataSourceDto dto) throws InvalidUserException, EntityNotFoundException, ModbusConnectionException {
-        var currentDataSource = repository.findById(dto.id())
-                                          .orElseThrow(() -> new EntityNotFoundException(
-                                                  "Datasource not found with ID: " + dto.id()));
+    public DataSource updateDataSource(DataSourceDto dto) throws EntityNotFoundException, ModbusConnectionException {
+        var dataSource = repository.findById(dto.id())
+                                   .orElseThrow(() -> new EntityNotFoundException(
+                                           "Datasource not found with ID: " + dto.id()));
 
-        var currentEnabledState = currentDataSource.enabled();
+        dataSource.update(dto);
 
-        var currentUserId = authService.getCurrentUserId();
-        var dataSource = DataSource.createFromDto(dto, currentUserId);
-
-        findDataSourceAdapter(currentDataSource.id()).ifPresentOrElse(
+        findDataSourceAdapter(dataSource.id()).ifPresentOrElse(
                 adapter -> updateDataSourceAdapterState(
                         adapter,
                         dataSource,
-                        currentEnabledState,
+                        dataSource.enabled(),
                         dto.enabled()),
                 () -> startDataSource(dataSource));
-
 
         var savedDataSource = repository.save(dataSource);
         LOGGER.debug("Updated data source {} with content {}", dto.id(), dto);
