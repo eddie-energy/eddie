@@ -10,6 +10,8 @@ const model = defineModel()
 const show = ref(false)
 const parentDiv = useTemplateRef('parent')
 
+const boundingRect = computed(() => parentDiv.value?.getBoundingClientRect())
+
 const labelValueOptions = computed(() => {
   if (typeof options[0] === 'string') {
     return options.map((option) => ({
@@ -52,7 +54,11 @@ const handleBlur = (e: FocusEvent) => {
       <ChevronDownIcon class="icon" />
     </div>
     <Transition>
-      <div class="options" v-if="show">
+      <div
+        class="options"
+        v-if="show"
+        :style="{ width: parentDiv?.offsetWidth + 'px', left: boundingRect?.left + 'px' }"
+      >
         <div
           v-for="option in labelValueOptions as { label?: string; value: string }[]"
           class="option"
@@ -74,9 +80,10 @@ const handleBlur = (e: FocusEvent) => {
 
 <style scoped>
 .select {
+  --inline-padding: var(--spacing-md);
   position: relative;
   border: 1px solid var(--eddie-grey-medium);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-sm) var(--inline-padding);
   color: var(--dark);
   background-color: var(--light);
   border-radius: var(--border-radius);
@@ -109,16 +116,14 @@ const handleBlur = (e: FocusEvent) => {
   }
 }
 .options {
-  position: absolute;
-  left: -1px;
-  z-index: 1;
-  top: 100%;
-  width: calc(100% + 1.5px);
+  position: fixed;
+  z-index: 100;
   background-color: var(--light);
   border: 1px solid var(--eddie-grey-medium);
   border-top: unset;
   border-radius: 0 0 var(--border-radius) var(--border-radius);
-  overflow: hidden;
+  overflow: auto;
+  max-height: 250px;
 }
 .option {
   border-left: 3px solid transparent;

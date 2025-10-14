@@ -54,7 +54,7 @@ const dataSourceOptions = computed(() => {
     <div v-if="!loading">
       <PermissionDetails v-if="permission" :permission />
       <form class="form" v-if="permission?.dataNeed.type === 'outbound-aiida'">
-        <label class="heading-3" id="updatePermLabel">Assign Datasource</label>
+        <label class="heading-3" id="updatePermLabel">Assign Datasource*</label>
         <CustomSelect
           v-model="selectedDataSource"
           id="datasourceSelect"
@@ -62,10 +62,19 @@ const dataSourceOptions = computed(() => {
           placeholder="Select Data Source for Permission"
           aria-labelledby="updatePermLabel"
         />
+
+        <p
+          class="text-normal"
+          v-if="!dataSourceOptions.length && permission?.dataNeed.type === 'outbound-aiida'"
+        >
+          No Data Sources available. Please add a Data Source first before you can accept this
+          permission.
+        </p>
       </form>
+
       <div class="two-item-pair">
         <Button button-style="error-secondary" @click="handleInput(false)">Reject</Button>
-        <Button @click="handleInput(true)">Accept</Button>
+        <Button @click="handleInput(true)" :disabled="!selectedDataSource">Accept</Button>
       </div>
     </div>
     <div v-if="loading" class="loading-indicator"></div>
@@ -78,6 +87,9 @@ const dataSourceOptions = computed(() => {
 }
 .is-loading {
   opacity: 0;
+}
+.error {
+  color: var(--eddie-red-dark);
 }
 .form {
   display: flex;

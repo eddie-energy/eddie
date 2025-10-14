@@ -47,7 +47,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
       'An unexpected error occurred. Please try again.'
     if (!(isImagesEndpoint && response.status == 404)) {
-      danger(message, 0, true)
+      danger(message, response.status == 404 ? 5000 : 0, true)
     }
     throw new Error(message)
   }

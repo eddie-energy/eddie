@@ -67,7 +67,7 @@ const progressBarDuration = `${duration}ms`
       <CloseIcon />
     </button>
 
-    <div class="toast-progress-bar" :class="{ hide: canClose }"></div>
+    <div class="toast-progress-bar" :class="{ hide: !duration }"></div>
   </div>
 </template>
 
