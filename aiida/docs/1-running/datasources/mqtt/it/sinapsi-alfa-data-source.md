@@ -3,6 +3,9 @@
 
 ## Overview
 
+> [!NOTE]
+> As far as known, Sinapsi Alfa over MQTT is only available for B2B customers and therefore not for private customers.
+
 The Sinapsi Alfa device connects Italian Smart Meters with AIIDA. While it is technically possible to access the data
 locally via Modbus, the requirements for Oetzi Strom rely on AIIDA’s cloud-based setup - therefore, the global MQTT
 broker of Sinapsi Alfa is used.
@@ -14,24 +17,18 @@ broker of Sinapsi Alfa is used.
 ### Data Source Configuration
 
 The setup of the device itself was not done by the EDDIE team, therefore please refer to the official documentation.
+Find the documentation for your device on the product page of your device at www.sinapsi.store.
 
 After the device was set up and connected to the internet, it must be registered in the 
 [MySinapsiB2B platform](https://app.sghiot.com/mysinapsibtb) by entering the activation key.
 The Activation Key is a Universally Unique Identifier (UUID) assigned to each IoMeter2G and is used by the end user during installation to verify ownership.
 The label on the device has the full activation key and a QR code for it.
 
-As far as known, Sinapsi Alfa over MQTT is only available for B2B customers and therefore not for private customers.
-
 > **Example Activation Key:** `a1b2d3-1a2b3-a1b2d-1a2b3-a1b2d`
 
 <img src="../../../../images/datasources/mqtt/it/img-my-sinapsi-b2b.jpg.png" alt="MySinapsiB2B Device Management">
 
 ### Setup in AIIDA
-
-Describe what must be done within AIIDA to enable the data source.
-
-- Required environment variables (.env file)
-- Configuration options in the AIIDA web interface
 
 #### Prerequisites
 
@@ -42,9 +39,9 @@ DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_USERNAME=<your_username>
 DATA_SOURCE_IT_SINAPSI_ALFA_MQTT_PASSWORD=<your_password>
 ```
 
-These credentials are required to authenticate with the MQTT broker and, as far as known, are only available for B2B customers.
+These credentials are required to authenticate with the MQTT broker.
 
-> **Attention: Data Exposure Risk.** 
+> [!WARNING]
 > Providing these credentials means all users on this specific AIIDA instance can read the data by supplying the activation key.
 
 #### Adding a data source
