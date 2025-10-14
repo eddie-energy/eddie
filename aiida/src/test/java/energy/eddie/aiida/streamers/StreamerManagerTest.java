@@ -5,8 +5,8 @@ import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.services.ApplicationInformationService;
@@ -86,7 +86,7 @@ class StreamerManagerTest {
         // Given
         when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any(), any())).thenReturn(Flux.empty());
         when(mockPermission.eddieId()).thenReturn(eddieId);
-        when(mockPermission.permissionId()).thenReturn(permissionId);
+        when(mockPermission.id()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockPermission.userId()).thenReturn(userId);
@@ -110,7 +110,7 @@ class StreamerManagerTest {
     @Test
     void givenPermissionWithoutDataSource_createNoStreamer() throws MqttException {
         // Given
-        when(mockPermission.permissionId()).thenReturn(permissionId);
+        when(mockPermission.id()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockPermission.userId()).thenReturn(userId);
@@ -129,7 +129,7 @@ class StreamerManagerTest {
     void givenPermission_createStreamer_callsConnect() throws MqttException {
         // Given
         when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any(), any())).thenReturn(Flux.empty());
-        when(mockPermission.permissionId()).thenReturn(permissionId);
+        when(mockPermission.id()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockPermission.userId()).thenReturn(userId);
@@ -175,7 +175,7 @@ class StreamerManagerTest {
     @Test
     void verify_close_closesAllStreamers() throws MqttException {
         when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any(), any())).thenReturn(Flux.empty());
-        when(mockPermission.permissionId()).thenReturn(permissionId);
+        when(mockPermission.id()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));

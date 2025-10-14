@@ -50,7 +50,7 @@ public class StreamerFactory {
                                                     streamingConfig.username(),
                                                     new MqttDefaultFilePersistence(new UriTemplate(
                                                             mqttFilePersistenceDirectory).expand(permission.eddieId(),
-                                                                                                 permission.permissionId())
+                                                                                                 permission.id())
                                                                                          .getPath()));
         var streamingContext = new MqttStreamingContext(client, streamingConfig, permissionLatestRecordMap);
 

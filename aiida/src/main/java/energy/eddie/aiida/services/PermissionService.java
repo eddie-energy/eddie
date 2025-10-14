@@ -2,20 +2,25 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
+import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
+import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
+import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
 import energy.eddie.aiida.errors.*;
-import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
-import energy.eddie.aiida.repositories.DataSourceRepository;
+import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +32,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
@@ -39,38 +43,35 @@ import static java.util.Objects.requireNonNull;
 public class PermissionService implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
     private final PermissionRepository permissionRepository;
-    private final DataSourceRepository dataSourceRepository;
     private final Clock clock;
     private final StreamerManager streamerManager;
     private final HandshakeService handshakeService;
     private final PermissionScheduler permissionScheduler;
     private final AuthService authService;
     private final AiidaLocalDataNeedService aiidaLocalDataNeedService;
-    private final DataSourceService dataSourceService;
+    private final AiidaEventPublisher aiidaEventPublisher;
 
     @Autowired
     public PermissionService(
             PermissionRepository permissionRepository,
-            DataSourceRepository dataSourceRepository,
             Clock clock,
             StreamerManager streamerManager,
             HandshakeService handshakeService,
             PermissionScheduler permissionScheduler,
             AuthService authService,
             AiidaLocalDataNeedService aiidaLocalDataNeedService,
-            DataSourceService dataSourceService
+            AiidaEventPublisher aiidaEventPublisher
     ) {
         this.permissionRepository = permissionRepository;
-        this.dataSourceRepository = dataSourceRepository;
         this.clock = clock;
         this.streamerManager = streamerManager;
         this.handshakeService = handshakeService;
         this.permissionScheduler = permissionScheduler;
         this.authService = authService;
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
+        this.aiidaEventPublisher = aiidaEventPublisher;
 
         streamerManager.terminationRequestsFlux().subscribe(this::terminationRequestReceived);
-        this.dataSourceService = dataSourceService;
     }
 
     /**
@@ -85,15 +86,16 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      *                                            revocation.
      * @throws UnauthorizedException              If the current user is not the owner of the Permission.
      */
+    @Transactional
     public Permission revokePermission(
             UUID permissionId
     ) throws PermissionNotFoundException, PermissionStateTransitionException, UnauthorizedException, InvalidUserException {
         var permission = findById(permissionId);
-        LOGGER.info("Got request to revoke permission with id '{}'.", permission.permissionId());
+        LOGGER.info("Got request to revoke permission with id '{}'.", permission.id());
         authService.checkAuthorizationForPermission(permission);
 
         if (!isEligibleForRevocation(permission))
-            throw new PermissionStateTransitionException(permission.permissionId().toString(),
+            throw new PermissionStateTransitionException(permission.id().toString(),
                                                          REVOKED.name(),
                                                          List.of(ACCEPTED.name(),
                                                                  STREAMING_DATA.name(),
@@ -106,8 +108,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         Instant revocationTime = clock.instant();
         permission.setStatus(REVOKED);
         permission.setRevokeTime(revocationTime);
-        permission = permissionRepository.save(permission);
-
 
         var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
         var connectionId = requireNonNull(permission.connectionId());
@@ -115,7 +115,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                                          dataNeedId,
                                                          clock.instant(),
                                                          REVOKED,
-                                                         permission.permissionId(),
+                                                         permission.id(),
                                                          permission.eddieId());
         streamerManager.stopStreamer(revokedMessage);
         removeInboundDataSourceIfExists(permission);
@@ -138,6 +138,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @throws PermissionUnfulfillableException If the permission cannot be fulfilled for whatever reason.
      * @throws InvalidUserException             If the id of the current user can not be determined by the token.
      */
+    @Transactional
     public Permission setupNewPermission(QrCodeDto qrCodeDto) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
         var permissionId = qrCodeDto.permissionId();
@@ -146,15 +147,18 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             throw new PermissionAlreadyExistsException(permissionId);
         }
 
-        Permission permission = permissionRepository.save(new Permission(qrCodeDto, currentUserId));
+        var permission = permissionRepository.save(new Permission(qrCodeDto, currentUserId));
+        LOGGER.info("Saved new permission ({}) in database, will fetch details from EDDIE framework ({})",
+                    permission.id(),
+                    permission.eddieId());
 
-        PermissionDetailsDto details = handshakeService.fetchDetailsForPermission(permission)
-                                                       .doOnError(error -> LOGGER.atError()
-                                                                                 .addArgument(qrCodeDto.permissionId())
-                                                                                 .setCause(error)
-                                                                                 .log("Error while fetching details for permission {} from the EDDIE framework"))
-                                                       .onErrorComplete()
-                                                       .block();
+        var details = handshakeService.fetchDetailsForPermission(permission)
+                                      .doOnError(error -> LOGGER.atError()
+                                                                .addArgument(qrCodeDto.permissionId())
+                                                                .setCause(error)
+                                                                .log("Error while fetching details for permission {} from the EDDIE framework"))
+                                      .onErrorComplete()
+                                      .block();
 
         if (details == null) {
             throw new DetailFetchingFailedException(permissionId);
@@ -178,6 +182,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      *                                            {@link PermissionStatus#FETCHED_DETAILS}.
      * @throws UnauthorizedException              If the current user is not the owner of the Permission.
      */
+    @Transactional
     public Permission rejectPermission(
             UUID permissionId
     ) throws PermissionStateTransitionException, PermissionNotFoundException, UnauthorizedException, InvalidUserException {
@@ -185,7 +190,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         authService.checkAuthorizationForPermission(permission);
 
         if (permission.status() != FETCHED_DETAILS) {
-            throw new PermissionStateTransitionException(permission.permissionId().toString(),
+            throw new PermissionStateTransitionException(permission.id().toString(),
                                                          REJECTED.name(),
                                                          List.of(FETCHED_DETAILS.name()),
                                                          permission.status().name());
@@ -194,7 +199,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setStatus(PermissionStatus.REJECTED);
         // revokeTime is also used to keep reject timestamp, the status indicates which of the two happened
         permission.setRevokeTime(Instant.now(clock));
-        permission = permissionRepository.save(permission);
 
         handshakeService.sendUnfulfillableOrRejected(permission, PermissionStatus.REJECTED);
 
@@ -213,6 +217,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      *                                            {@link PermissionStatus#FETCHED_DETAILS}.
      * @throws UnauthorizedException              If the current user is not the owner of the Permission.
      */
+    @Transactional
     public Permission acceptPermission(
             UUID permissionId,
             @Nullable UUID dataSourceId
@@ -221,7 +226,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         authService.checkAuthorizationForPermission(permission);
 
         if (permission.status() != FETCHED_DETAILS) {
-            throw new PermissionStateTransitionException(permission.permissionId().toString(),
+            throw new PermissionStateTransitionException(permission.id().toString(),
                                                          ACCEPTED.name(),
                                                          List.of(FETCHED_DETAILS.name()),
                                                          permission.status().name());
@@ -231,13 +236,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setStatus(ACCEPTED);
 
         if (dataSourceId != null) {
-            var dataSource = dataSourceRepository.findById(dataSourceId);
-            if (dataSource.isPresent()) {
-                permission.setDataSource(dataSource.get());
-            }
+            aiidaEventPublisher.publishEvent(new OutboundPermissionAcceptEvent(permissionId, dataSourceId));
         }
 
         permission = permissionRepository.save(permission);
+        LOGGER.info("Permission ({}) accepted, will fetch MQTT credentials and start or schedule data sharing",
+                    permission.id());
 
         var mqttDto = handshakeService.fetchMqttDetails(permission)
                                       .doOnError(error -> LOGGER.atError()
@@ -255,13 +259,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         permission.setMqttStreamingConfig(mqttStreamingConfig);
         permission.setStatus(FETCHED_MQTT_CREDENTIALS);
-        permission = permissionRepository.save(permission);
 
         if (permission.dataNeed() instanceof InboundAiidaLocalDataNeed) {
-            var inboundDataSource = new InboundDataSource.Builder(permission).build();
-            dataSourceRepository.save(inboundDataSource);
-            permission.setDataSource(inboundDataSource);
-            dataSourceService.startDataSource(inboundDataSource);
+            aiidaEventPublisher.publishEvent(new InboundPermissionAcceptEvent(permission.id()));
         }
 
         return permissionScheduler.scheduleOrStart(permission);
@@ -297,6 +297,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * received, which ensures that all beans are started and the database is set up correctly.
      */
     @Override
+    @Transactional
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
         // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
         List<Permission> allActivePermissions = permissionRepository.findAllActivePermissions();
@@ -309,7 +310,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             var expirationTime = permission.expirationTime();
             if (expirationTime == null) {
                 LOGGER.error("expirationTime of permission {} is null, this is an unexpected error",
-                             permission.permissionId());
+                             permission.id());
                 // don't throw exception so other permissions are not skipped
                 continue;
             }
@@ -318,10 +319,19 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                 permissionScheduler.scheduleOrStart(permission);
             } else {
                 LOGGER.info("Permission {} has expired but AIIDA was not running at that time, will expire it now",
-                            permission.permissionId());
+                            permission.id());
                 permission.setStatus(PermissionStatus.FULFILLED);
-                permissionRepository.save(permission);
             }
+        }
+    }
+
+    @Transactional
+    public void addDataSourceToPermission(DataSource dataSource, UUID permissionId) {
+        try {
+            var permission = findById(permissionId);
+            permission.setDataSource(dataSource);
+        } catch (PermissionNotFoundException e) {
+            LOGGER.error("No permission found with id {}", permissionId, e);
         }
     }
 
@@ -359,7 +369,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         }
 
         LOGGER.debug("Updated permission {} with details fetched from EDDIE {}",
-                     permission.permissionId(),
+                     permission.id(),
                      permission.eddieId());
         return permissionRepository.save(permission);
     }
@@ -404,7 +414,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                                             dataNeedId,
                                                             clock.instant(),
                                                             TERMINATED,
-                                                            permission.permissionId(),
+                                                            permission.id(),
                                                             permission.eddieId());
         streamerManager.stopStreamer(terminatedMessage);
 
@@ -439,10 +449,11 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     private void removeInboundDataSourceIfExists(Permission permission) {
-        if (permission.dataNeed() instanceof InboundAiidaLocalDataNeed && permission.dataSource() != null) {
-            var dataSource = Objects.requireNonNull(permission.dataSource());
+        var dataSource = permission.dataSource();
+
+        if (dataSource != null && dataSource.dataSourceType() == DataSourceType.INBOUND) {
+            aiidaEventPublisher.publishEvent(new InboundPermissionRevokeEvent(dataSource.id()));
             permission.setDataSource(null);
-            dataSourceService.deleteDataSource(dataSource.id());
         }
     }
 }

@@ -119,7 +119,7 @@ public class Permission {
     /**
      * Returns the UUID of this permission.
      */
-    public UUID permissionId() {
+    public UUID id() {
         return permissionId;
     }
 

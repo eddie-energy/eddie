@@ -3,7 +3,6 @@ package energy.eddie.aiida.web;
 import api.ValidationErrors;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.errors.*;
-import energy.eddie.aiida.errors.ModbusConnectionException;
 import energy.eddie.aiida.errors.image.ImageFormatException;
 import energy.eddie.aiida.errors.image.ImageNotFoundException;
 import energy.eddie.aiida.errors.image.ImageReadException;
@@ -209,5 +208,13 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<Map<String, List<EddieApiError>>> handleSinapsiAlflaEmptyConfigException(SinapsiAlflaEmptyConfigException exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+    }
+
+    @ExceptionHandler(value = {InvalidUserException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleSinapsiAlflaEmptyConfigException(
+            InvalidUserException exception
+    ) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errors);
     }
 }
