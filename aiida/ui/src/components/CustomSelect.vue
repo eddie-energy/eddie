@@ -57,7 +57,7 @@ const handleBlur = (e: FocusEvent) => {
       <div
         class="options"
         v-if="show"
-        :style="{ width: parentDiv?.offsetWidth + 'px', left: boundingRect?.left + 'px' }"
+        :style="{ width: `${parentDiv?.offsetWidth}px`, left: `${boundingRect?.left}px` }"
       >
         <div
           v-for="option in labelValueOptions as { label?: string; value: string }[]"
@@ -80,10 +80,9 @@ const handleBlur = (e: FocusEvent) => {
 
 <style scoped>
 .select {
-  --inline-padding: var(--spacing-md);
   position: relative;
   border: 1px solid var(--eddie-grey-medium);
-  padding: var(--spacing-sm) var(--inline-padding);
+  padding: var(--spacing-sm) var(--spacing-md);
   color: var(--dark);
   background-color: var(--light);
   border-radius: var(--border-radius);

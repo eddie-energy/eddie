@@ -88,9 +88,6 @@ const dataSourceOptions = computed(() => {
 .is-loading {
   opacity: 0;
 }
-.error {
-  color: var(--eddie-red-dark);
-}
 .form {
   display: flex;
   flex-direction: column;
