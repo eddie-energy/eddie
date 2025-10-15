@@ -23,7 +23,7 @@ section [Configuration of the Region Connector](#configuration-of-the-region-con
 To create a Java Key Store see this [tutorial](https://docs.oracle.com/cd/E19509-01/820-3503/ggfen/index.html).
 The private key must use the RS256 key algorithm.
 
-For the available test users see [mijnenergiedata.nl](https://www.acc.mijnenergiedata.nl/docs/test-users.html).
+For the available test users see [the test user documentation](https://www.acc.mijnenergiedata.nl/docs/ontwikkelaars/test-users.html#test_users).
 To test use the test users with the correct metering point for specific data.
 For data needs for electricity data pick the test users whose EAN starts with _ELK_, for gas the EAN needs to start with
 _GAS_.
@@ -87,3 +87,11 @@ spring.ssl.bundle.jks.nl.key.password=password
 
 If you are using EDDIE, the region connector should appear in the list of available
 region connectors if it has been configured correctly.
+
+## Documentation
+
+Some important documentation links:
+
+- [Docs](https://www.acc.mijnenergiedata.nl/docs/)
+- [Test users](https://www.acc.mijnenergiedata.nl/docs/ontwikkelaars/test-users.html#test_users)
+- [Registration & Open ID Connect](https://www.mijnenergiedata.nl/docs/afnemers-algemeen.html)
