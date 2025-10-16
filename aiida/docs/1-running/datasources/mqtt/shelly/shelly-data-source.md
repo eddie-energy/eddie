@@ -10,14 +10,12 @@
 They are known for their simple installation and seamless integration into various home automation systems.
 
 The Shelly data source allows the integration of energy systems that do not use an AIIDA-supported smart meter adapter.
-It supports both single-phase and three-phase Shelly energy meters.
+It supports both single-phase and three-phase energy systems.
 
-These devices measure energy either via contactless current transformer (CT) clamps or by being directly integrated into the electrical circuit.
-They connect to smart home ecosystems via Wi-Fi, providing real-time monitoring capabilities.
+These devices measure energy either via contactless current transformer (CT) clamps, by being directly integrated into the electrical circuit, or by other mechanisms.
+They connect to smart home ecosystems via Wi-Fi, providing near real-time monitoring capabilities.
 
 With native MQTT support, they can be seamlessly integrated into AIIDA.
-
-[//]: # (TODO: provided data, supported devices)
 
 ### Tested Devices
 
@@ -27,7 +25,7 @@ With native MQTT support, they can be seamlessly integrated into AIIDA.
 | Shelly Pro EM-50 Gen2 | Shelly EM  | Single-phase             | 1 x `Switch`, 2 x `EM1`, 2 x `EM1Data`                                    | ![Shelly Pro EM-50](../../../../images/datasources/mqtt/shelly/img-shelly-pro-em-50.png) |
 | Shelly 1 PM Gen4      | Shelly PM  | n channels (1 <= n <= 4) | 1 x `Switch`                                                              | ![Shelly 1 PM](../../../../images/datasources/mqtt/shelly/img-shelly-1pm.png)            |
 
-### Supported Signals
+### Supported Data Signals
 
 Theoretically, all devices sending one or more of the following signals are supported by AIIDA:
 
@@ -40,16 +38,49 @@ Theoretically, all devices sending one or more of the following signals are supp
 | `EM1Data` | Total single-phase energy consumption/production | Every full minute             | `em1data:0`, `em1data:1`, `em1data:2`          |
 | `Switch`  | Current single-channel measurements              | On threshold exceeded         | `switch:0`, `switch:1`, `switch:2`, `switch:3` |
 
-<details>
-<summary>Example Payloads</summary>
+## Integration with AIIDA
 
-#### Health
+### Data Source Configuration
+
+> [!WARNING]
+> The Shelly devices must be installed by a qualified person.
+
+Shelly devices can be configured through the mobile Shelly App or the built-in web interface.
+After wiring and mounting, the device can be connected by scanning the QR code in the app (more details: https://kb.shelly.cloud/knowledge-base/add-new-device).
+The Wi-Fi credentials must be provided to connect the device to the local network.
+Once connected, the device can be accessed simply via the app or via its IP address in a web browser.
+
+### Setup in AIIDA
+
+The same inputs have to entered as described in the [general data source documentation](../../data-sources.md).
+
+### Connect with AIIDA
+
+Shelly needs to be set up to transmit near real-time energy data to AIIDA via MQTT.
+
+Same with all the other [MQTT-based data sources](../mqtt-data-sources.md), AIIDA provides the broker URL, topic, username, and password:
+
+<img src="../../../../images/datasources/mqtt/shelly/img-shelly-aiida.png" alt="Shelly Data Source in AIIDA UI"/>
+
+These MQTT details must be entered in the Shelly device configuration (the screenshot shows the web interface, but the app is similar).
+Settings -> MQTT:
+
+<img src="../../../../images/datasources/mqtt/shelly/img-shelly-web-mqtt.png" alt="Shelly MQTT configuration"/>
+
+## Additional things to consider
+
+### Payloads
+
+<details>
+<summary>Health</summary>
 
 ```json
 true OR false
 ```
+</details>
 
-#### EM
+<details>
+<summary>EM</summary>
 
 ```json
 {
@@ -86,8 +117,10 @@ true OR false
   }
 }
 ```
+</details>
 
-#### EM1
+<details>
+<summary>EM1</summary>
 
 ```json
 {
@@ -108,8 +141,10 @@ true OR false
   }
 }
 ```
+</details>
 
-#### EMData
+<details>
+<summary>EMData</summary>
 
 ```json
 {
@@ -132,8 +167,10 @@ true OR false
   }
 }
 ```
+</details>
 
-#### EM1Data
+<details>
+<summary>EM1Data</summary>
 
 ```json
 {
@@ -150,8 +187,10 @@ true OR false
   }
 }
 ```
+</details>
 
-#### Switch
+<details>
+<summary>Switch</summary>
 
 ```json
 {
@@ -187,7 +226,6 @@ true OR false
   }
 }
 ```
-
 </details>
 
 ### Phases
@@ -212,53 +250,6 @@ The phase information is either derived from the prefix or the instance ID.
 | 2     | `em1:1`, `em1data:1`                                                 |
 | 3     | `em1:2`, `em1data:2`                                                 |
 
-## Integration with AIIDA
-
-### Data Source Configuration
-
-> [!WARNING]
-> The Shelly devices must be installed by a qualified person.
-
-Shelly devices can be configured through the mobile Shelly App or the built-in web interface.
-After wiring and mounting, the device must be connected to the Wi-Fi network.
-
-Explain how to configure the **data source device or system itself** before connecting it to AIIDA.
-
-- Available modes (e.g., local MQTT, cloud MQTT, Modbus, etc.)
-- Configuration interface (web UI, app, command line, …)
-- Required credentials or activation keys
-- Example screenshots or configuration snippets
-
-### Setup in AIIDA
-
-Describe what must be done within AIIDA to enable the data source.
-
-- Required environment variables (.env file)
-- Configuration options in the AIIDA web interface
-
-### Connect with AIIDA
-
-In the interfaces of Shelly, the device can be set up to transmit real-time energy data to AIIDA via MQTT.
-
-Document the connection details between the data source and AIIDA.
-
-- MQTT topics and topic structure
-- Authentication details (username, password, tokens)
-- Broker URLs and ports
-- Example `curl` or `mosquitto_sub` commands
-- How to verify successful connection (logs, dashboards, etc.)
-
-## Optional: Additional things to consider
-
-Include any extra information, best practices, or pitfalls, such as:
-
-- Data update frequency or payload format
-- Known issues or compatibility notes
-- Recommended monitoring or troubleshooting steps
-- Device-specific constraints (firmware versions, etc.)
-
 ## Sources
 
-- https://shelly-api-docs.shelly.cloud
-- Official vendor documentation
-- MQTT topic reference
+https://shelly-api-docs.shelly.cloud
