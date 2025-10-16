@@ -50,6 +50,7 @@ export default withMermaid(
             {
               text: "Data Sources",
               link: "/1-running/datasources/data-sources.md",
+              collapsed: true,
               items: [
                 {
                   text: "MQTT-based",
@@ -57,25 +58,66 @@ export default withMermaid(
                   items: [
                     {
                       text: "Inbound",
-                      link: "/1-running/datasources/mqtt/inbound-data-source.md",
+                      link: "/1-running/datasources/mqtt/inbound/inbound-data-source.md",
                     },
-                  ]
+                    {
+                      text: "Sinapsi Alfa (Italy)",
+                      link: "/1-running/datasources/mqtt/it/sinapsi-alfa-data-source.md",
+                    },
+                  ],
                 },
                 {
                   text: "Interval-based",
                   link: "/1-running/datasources/interval/interval-data-sources.md",
-                }
-              ]
+                },
+              ],
             },
           ],
         },
         {
           text: "Integrating",
-          link: "/2-integrating/integrating.md",
+          items: [
+            {
+              text: "EDDIE Framework",
+              link: "/2-integrating/eddie.md",
+            },
+            {
+              text: "Schemas",
+              collapsed: true,
+              items: [
+                {
+                  text: "CIM",
+                  link: "/2-integrating/schemas/cim/cim.md",
+                  items: [
+                    {
+                      text: "Real Time Data Market Document",
+                      link: "/2-integrating/schemas/cim/real-time-data-market-document.md",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         },
         {
           text: "Extending",
-          link: "/3-extending/extending.md",
+          items: [
+            {
+              text: "Adding a data source",
+              link: "/3-extending/datasource/data-source.md",
+              collapsed: true,
+              items: [
+                {
+                  text: "Documentation",
+                  link: "/3-extending/datasource/documentation.md",
+                },
+              ],
+            },
+            {
+              text: "Edit documentation",
+              link: "/3-extending/documentation",
+            },
+          ],
         },
       ],
 
