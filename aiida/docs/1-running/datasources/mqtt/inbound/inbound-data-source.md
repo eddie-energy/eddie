@@ -35,12 +35,12 @@ The data is stored in the `inbound_record` database table and can be accessed vi
 
 ## Accessing Inbound Data
 
-The REST interface is secured with an **API key** stored in the `data_source` table. 
+The REST interface is secured with an **API key** stored in the `data_source` table and shown in the UI. 
 There are two ways to use this key to retrieve the latest inbound record:
 
 > - `{URL_TO_AIIDA}` is the base URL of the AIIDA instance (e.g. `http://192.168.0.12`).
 > - `{PERMISSION_ID}` is the ID of the inbound permission.
-> - `{API_KEY}` is the API key stored in the `data_source` table.
+> - `{API_KEY}` is the API key stored in the `data_source` table and shown in the UI.
 
 1. **Via Query Parameter**
    ```bash
@@ -51,6 +51,18 @@ There are two ways to use this key to retrieve the latest inbound record:
     curl {URL_TO_AIIDA}/inbound/latest/{PERMISSION_ID} \
       --header "X-API-Key: {API_KEY}"
     ```
+   
+### Example Response
+
+```json
+{
+  "timestamp": "2025-10-16T11:39:37.495Z",
+  "asset": "CONNECTION-AGREEMENT-POINT",
+  "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "dataSourceId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "payload": "{ \"exampleKey\": \"exampleValue\" }"
+}
+```
 
 ## Revocation
 

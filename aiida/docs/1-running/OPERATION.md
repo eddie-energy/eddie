@@ -77,4 +77,4 @@ TBD
 
 ### Inbound API
 
-TBD
+See [Inbound Data Source](datasources/mqtt/inbound/inbound-data-source.md#accessing-inbound-data) for more information.
