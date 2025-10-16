@@ -72,6 +72,14 @@ export default withMermaid(
                 },
               ],
             },
+            {
+              text: "Permissions",
+              link: "/1-running/permission/permission.md",
+            },
+            {
+              text: "Keycloak",
+              link: "/1-running/keycloak.md",
+            },
           ],
         },
         {
