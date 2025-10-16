@@ -1,8 +1,6 @@
 # Data Source: Sinapsi Alfa (Italy)
 > [Data Sources](../../data-sources.md) / [MQTT-based](../mqtt-data-sources.md)
 
-## Overview
-
 > [!NOTE]
 > As far as known, Sinapsi Alfa over MQTT is only available for B2B customers and therefore not for private customers.
 
@@ -53,7 +51,7 @@ a Sinapsi Alfa data source needs the activation key to be entered.
 
 AIIDA automatically connects to the broker of Sinapsi. Therefore, no additional configuration has to be done.
 
-## Optional: Additional things to consider
+## Additional things to consider
 
 ### Data Structure
 

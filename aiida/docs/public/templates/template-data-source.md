@@ -1,8 +1,6 @@
 # Data Source: XYZ (Country)
 > [Data Sources](../../1-running/datasources/data-sources.md) / [MQTT-based](../../1-running/datasources/mqtt/mqtt-data-sources.md)
 
-## Overview
-
 Briefly describe the data source, its purpose, and what kind of data it provides.
 
 Optionally include an image or diagram.

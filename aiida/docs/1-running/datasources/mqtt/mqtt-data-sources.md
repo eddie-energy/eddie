@@ -1,4 +1,5 @@
 # MQTT-based Data Sources
+> [Data Sources](../data-sources.md)
 
 The MQTT data sources share the logic of connecting to an MQTT broker, authenticating and subscribing to a topic.
 The following MQTT data sources are supported:

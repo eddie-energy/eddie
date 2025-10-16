@@ -1,8 +1,6 @@
 # Data Source: Shelly (International)
 > [Data Sources](../../data-sources.md) / [MQTT-based](../mqtt-data-sources.md)
 
-## Overview
-
 > [!WARNING]
 > When not using the official smart meter data, measurement accuracy may vary, and billing-relevant values cannot be guaranteed
 
