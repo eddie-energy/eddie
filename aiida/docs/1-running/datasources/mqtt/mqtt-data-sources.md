@@ -9,7 +9,7 @@ The following MQTT data sources are supported:
 - CIM
 - [Inbound](inbound/inbound-data-source.md)
 - [Sinapsi Alfa](it/sinapsi-alfa-data-source.md)
-- Shelly
+- [Shelly](shelly/shelly-data-source.md)
 
 #### Common Properties
 
