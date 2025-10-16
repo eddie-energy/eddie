@@ -28,6 +28,10 @@ features:
     details: Architecture documentation of the EDDIE components
     link: https://architecture.eddie.energy/architecture/
     linkText: learn more
+  - title: AIIDA
+    details: Using and Extending AIIDA
+    link: https://architecture.eddie.energy/aiida/
+    linkText: learn more
   - title: EDDIE on GitHub
     details: Sourcecode of the EDDIE Framework
     link: https://github.com/eddie-energy/eddie

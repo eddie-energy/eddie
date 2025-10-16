@@ -98,6 +98,7 @@ The documentation of EDDIE projects is split into architecture, project, and API
 
 - [Architecture](https://architecture.eddie.energy/architecture/) documents abstract architectural concepts across EDDIE projects for stakeholders and developers.
 - [Framework](https://architecture.eddie.energy/framework/) documents how to operate, integrate, and extend the EDDIE Framework, acting as our operation manual.
+- [AIIDA](https://architecture.eddie.energy/aiida/) documents how to operate, integrate, and extend AIIDA, acting as our operation manual.
 - [Javadoc](https://architecture.eddie.energy/javadoc/) documents Java classes of the EDDIE Framework and is generated on code changes.
 
 The framework documentation is managed in the [`docs`](./docs) folder of this repository.

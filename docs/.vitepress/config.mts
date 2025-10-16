@@ -31,6 +31,10 @@ export default withMermaid(
           text: "Architecture",
           link: "https://architecture.eddie.energy/architecture",
         },
+        {
+          text: "AIIDA",
+          link: "https://architecture.eddie.energy/aiida",
+        },
       ],
       search: {
         provider: "local",
