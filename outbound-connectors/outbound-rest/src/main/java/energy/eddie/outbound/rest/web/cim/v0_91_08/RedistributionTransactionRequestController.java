@@ -33,7 +33,7 @@ public class RedistributionTransactionRequestController {
             operationId = "POST Redistribution Transaction Request",
             summary = "POST Redistribution Transaction Request",
             description = "Create a new Redistribution Transaction Request for a specific region connector and permission request",
-            externalDocs = @ExternalDocumentation(url = "https://eddie-web.projekte.fh-hagenberg.at/framework/2-integrating/messages/cim/redistribution-transaction-request-documents.html"),
+            externalDocs = @ExternalDocumentation(url = "https://architecture.eddie.energy/framework/2-integrating/messages/cim/redistribution-transaction-request-documents.html"),
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = {
                             @Content(

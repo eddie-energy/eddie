@@ -2,7 +2,6 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.DataSourceInformation;
-import energy.eddie.api.agnostic.DataType;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
@@ -76,7 +75,7 @@ class KafkaConnectorTest {
                                                 .withPermissionid("pid")
                                                 .withConnectionid("cid")
                                                 .withDataNeedid("dnid")
-                                                .withDataType(DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA.name())
+                                                .withDataType("validated-historical-data-market-document")
                                 )
                 );
         kafkaConnector.setPermissionMarketDocumentStream(Flux.just(data));
@@ -104,7 +103,7 @@ class KafkaConnectorTest {
                                                 .withPermissionid("pid")
                                                 .withConnectionid("cid")
                                                 .withDataNeedid("dnid")
-                                                .withDataType(DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA.name())
+                                                .withDataType("validated-historical-data-market-document")
                                 )
                 );
         kafkaConnector.setEddieValidatedHistoricalDataMarketDocumentStream(Flux.just(data));
@@ -132,7 +131,7 @@ class KafkaConnectorTest {
                                                 .withPermissionid("pid")
                                                 .withConnectionid("cid")
                                                 .withDataNeedid("dnid")
-                                                .withDataType(DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA.name())
+                                                .withDataType("validated-historical-data-market-document")
                                 )
                 );
         kafkaConnector.setAccountingPointEnvelopeStream(Flux.just(data));
@@ -181,7 +180,7 @@ class KafkaConnectorTest {
                 .withMessageDocumentHeaderMetaInformationPermissionId("pid")
                 .withMessageDocumentHeaderMetaInformationConnectionId("cid")
                 .withMessageDocumentHeaderMetaInformationDataNeedId("dnid")
-                .withMessageDocumentHeaderMetaInformationDocumentType(DataType.HISTORICAL_VALIDATED_CONSUMPTION_DATA.name());
+                .withMessageDocumentHeaderMetaInformationDocumentType("validated-historical-data-market-document");
         kafkaConnector.setValidatedHistoricalDataMarketDocumentStream(Flux.just(data));
         var consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafka);
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,

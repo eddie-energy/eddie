@@ -29,11 +29,11 @@ export default withMermaid(
         { text: "Home", link: "/" },
         {
           text: "Architecture",
-          link: "https://eddie-web.projekte.fh-hagenberg.at/architecture",
+          link: "https://architecture.eddie.energy/architecture",
         },
         {
           text: "EDDIE Framework",
-          link: "https://eddie-web.projekte.fh-hagenberg.at/framework",
+          link: "https://architecture.eddie.energy/framework",
         },
       ],
       search: {

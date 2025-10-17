@@ -40,40 +40,47 @@ The interfaces are separated into two packages:
 
 ### `@OutboundConnector`
 
-The [`@OutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/OutboundConnector.html)-annotation denotes the starting point of an outbound connector.
+The [
+`@OutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/outbound/OutboundConnector.html)-annotation denotes the starting point of an outbound connector.
 Must be used in combination with the `@SpringBootApplication`-annotation.
 The class annotated with the `@OutboundConnector`-annotation will be used to start the Spring context of the outbound connector.
 Furthermore, it is used to set the name of the outbound connector.
 
 ### `ConnectionStatusMessageOutboundConnector`
 
-The [`ConnectionStatusMessageOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/ConnectionStatusMessageOutboundConnector.html) interface provides means to get a stream of [connection status messages](../2-integrating/messages/cim/connection-status-messages.md), which are emitted to the eligible party.
+The [
+`ConnectionStatusMessageOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/outbound/ConnectionStatusMessageOutboundConnector.html) interface provides means to get a stream of [connection status messages](../2-integrating/messages/cim/connection-status-messages.md), which are emitted to the eligible party.
 
 ### `RawDataOutboundConnector`
 
-The [`RawDataOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/RawDataOutboundConnector.html) interface provides a stream of raw data messages.
+The [
+`RawDataOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/outbound/RawDataOutboundConnector.html) interface provides a stream of raw data messages.
 [Raw data messages](../2-integrating/messages/agnostic.md#raw-data-messages) are messages that are received from region connectors and their region as is, without any changes, which can be useful for debugging purposes or operating on the data provided by metered data administrators itself.
 
 ### `PermissionMarketDocumentOutboundConnector`
 
-The [`PermissionMarketDocumentOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/PermissionMarketDocumentOutboundConnector.html) interface provides a stream of permission market documents.
+The [
+`PermissionMarketDocumentOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/outbound/PermissionMarketDocumentOutboundConnector.html) interface provides a stream of permission market documents.
 Their purpose is similar to the connection status messages described in subsubsection [`ConnectionStatusMessageOutboundConnector`](#connectionstatusmessageoutboundconnector).
 They provide information about status changes of a certain permission request in a CIM compliant format.
 For more information see section [permission market documents](../2-integrating/messages/cim/permission-market-documents.md).
 
 ### `ValidatedHistoricalDataMarketDocumentOutboundConnector`
 
-The [`ValidatedHistoricalDataMarketDocumentOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/ValidatedHistoricalDataEnvelopeOutboundConnector.html) interface provides a stream of validated historical data market documents.
+The [
+`ValidatedHistoricalDataMarketDocumentOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/outbound/ValidatedHistoricalDataEnvelopeOutboundConnector.html) interface provides a stream of validated historical data market documents.
 These are CIM compliant documents containing metered data, for more information see section [validated historical data market documents](../2-integrating/messages/cim/validated-historical-data-market-documents.md).
 
 ### `AccountingPointEnvelopeOutboundConnector`
 
-The [`AccountingPointEnvelopeOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/AccountingPointEnvelopeOutboundConnector.html) interface provides a stream of accounting point market documents.
+The [
+`AccountingPointEnvelopeOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/outbound/AccountingPointEnvelopeOutboundConnector.html) interface provides a stream of accounting point market documents.
 The accounting point market documents are CIM compliant documents, for more information see section [accounting point market documents](../2-integrating/messages/cim/accounting-point-data-market-documents.md).
 
 ### `TerminationConnector`
 
-The [`TerminationConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/outbound/TerminationConnector.html) interface provides the eligible party with means to change the status of a permission request.
+The [
+`TerminationConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/outbound/TerminationConnector.html) interface provides the eligible party with means to change the status of a permission request.
 If a permission request has the status accepted, the eligible party can terminate a permission request by sending a termination document, which is a permission market document.
 See subsection [termination documents](../2-integrating/messages/cim/permission-market-documents.md#termination-documents) and the [permission process model](../2-integrating/integrating.md#permission-process-model) documentation for more information.
 This interface does not produce any documents, but receives them.
@@ -83,7 +90,8 @@ This interface does not produce any documents, but receives them.
 > [!WARNING]
 > This interface is still work in progress.
 
-The [`RetransmissionOutboundConnector`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/RetransmissionOutboundConnector.html) interface provides the eligible party with means to request retransmission of data from a permission request.
+The [
+`RetransmissionOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/outbound/RetransmissionOutboundConnector.html) interface provides the eligible party with means to request retransmission of data from a permission request.
 This interface receives retransmission requests and passes them on to the region connectors.
 The interface also informs about the result of the retransmission request in the form of a retransmission results.
 These results are only specific to permission requests and no order is guaranteed.
@@ -162,30 +170,34 @@ The hash `#` at the beginning of the property name is a placeholder for the pref
 ## Shared Functionality
 
 A lot of protocols have similar concepts, for example, AMQP's queue and Apache Kafka's topics.
-To generalize a few aspects, the [outbound-shared](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/package-summary.html) module can be used.
+To generalize a few aspects, the [outbound-shared](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/package-summary.html) module can be used.
 It provides classes for consistent naming or serialization and deserialization(SerDe).
 
 ### Names
 
-To get the names for endpoints, which can be HTTP endpoints, AMQP Queues, or Kafka topics, the [TopicStructure](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/TopicStructure.html) class can be used.
-For names for headers, such as HTTP headers, Kafka headers, or AMQP properties, the [Headers](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/Headers.html) class provides constants for that.
+To get the names for endpoints, which can be HTTP endpoints, AMQP Queues, or Kafka topics, the [TopicStructure](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/TopicStructure.html) class can be used.
+For names for headers, such as HTTP headers, Kafka headers, or AMQP properties, the [Headers](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/Headers.html) class provides constants for that.
 Of course, the endpoints and headers are not limited to those values, but it should provide standard names for endpoints/headers which provide the same data.
 
 ### Serialization/Deserialization
 
 For common formats, there are already serializers and deserializers in place, which can be reused.
 
-- For `JSON` use the [JsonMessageSerde](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/JsonMessageSerde.html) class.
-- For `XML` use the [JsonMessageSerde](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/XmlMessageSerde.html) class.
+- For
+  `JSON` use the [JsonMessageSerde](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/JsonMessageSerde.html) class.
+- For
+  `XML` use the [JsonMessageSerde](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/XmlMessageSerde.html) class.
   Supports CIM documents as well as unknown types, which are serialized using the XmlMapper from jackson.
 
 #### Custom SerDe
 
-To implement a custom SerDe for other formats, such as `CSV` or `protobuf`, implement the [MessageSerde](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/MessageSerde.html) interface and either extend the [DefaultSerdeFactory](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/DefaultSerdeFactory.html) or implement a custom [SerdeFactory](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/outbound/shared/serde/SerdeFactory.html).
+To implement a custom SerDe for other formats, such as `CSV` or
+`protobuf`, implement the [MessageSerde](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/MessageSerde.html) interface and either extend the [DefaultSerdeFactory](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/DefaultSerdeFactory.html) or implement a custom [SerdeFactory](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/SerdeFactory.html).
 
 ## Security Configuration
 
-Outbound Connectors that should be secured using spring security (like the Admin Console), can define a `SecurityFilterChain` using the [OutboundConnectorSecurityConfig](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/outbound/OutboundConnectorSecurityConfig.html) Annotation.
+Outbound Connectors that should be secured using spring security (like the Admin Console), can define a
+`SecurityFilterChain` using the [OutboundConnectorSecurityConfig](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/outbound/OutboundConnectorSecurityConfig.html) Annotation.
 The endpoints can then be secured as follows, but please note that the security config should only define rules for the paths of the certain outbound connector.
 
 ```java

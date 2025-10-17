@@ -36,3 +36,13 @@ jobs:
           destination: "/public_html/javadoc/"
           password: ${{ secrets.WEBSERVER_SFTP_PASSWORD }}
           user: ${{ secrets.WEBSERVER_SFTP_USERNAME }}
+      - name: Copy files via SSH
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.EDDIE_ENERGY_SSH_HOST }}
+          username: ${{ secrets.EDDIE_ENERGY_SSH_USERNAME }}
+          password: ${{ secrets.EDDIE_ENERGY_SSH_PASSWORD }}
+          source: "./build/docs/javadoc-all/"
+          target: "/var/www/vhosts/eddie.energy/architecture.eddie.energy/javadoc/"
+          strip_components: "4"
+          overwrite: true

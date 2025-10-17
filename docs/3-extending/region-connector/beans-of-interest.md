@@ -8,7 +8,8 @@ The following beans are of special interest, because they are either:
 
 ## `DataNeedsService`
 
-The [`DataNeedsService`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/dataneeds/services/DataNeedsService.html) is essential for a region connector.
+The [
+`DataNeedsService`](https://architecture.eddie.energy/javadoc/energy/eddie/dataneeds/services/DataNeedsService.html) is essential for a region connector.
 It provides the means to request certain data needs, which can be used to request specific data for a permission request.
 For example, if a permission request is tied to an accouting point data need via the data need ID, the region connector can request the data need, check its type, and send the correct request to the MDA.
 All this functionality is provided via the `DataNeedsService`.
@@ -21,7 +22,8 @@ The
 
 ## `TimeoutConfiguration`
 
-The [`TimeoutConfiguration`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/timeout/TimeoutConfiguration.html) is provided by the core and contains the time limit for stale permission requests.
+The [
+`TimeoutConfiguration`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/timeout/TimeoutConfiguration.html) is provided by the core and contains the time limit for stale permission requests.
 It can be used to check for stale permission requests.
 
 ## `RegionConnectorsCommonControllerAdvice`

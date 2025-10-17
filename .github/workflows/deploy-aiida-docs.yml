@@ -28,3 +28,13 @@ jobs:
           user: ${{ secrets.WEBSERVER_SFTP_USERNAME }}
           source: "./aiida/docs/.vitepress/dist/"
           destination: "/public_html/aiida/"
+      - name: Copy files via SSH
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.EDDIE_ENERGY_SSH_HOST }}
+          username: ${{ secrets.EDDIE_ENERGY_SSH_USERNAME }}
+          password: ${{ secrets.EDDIE_ENERGY_SSH_PASSWORD }}
+          source: "./aiida/docs/.vitepress/dist/"
+          target: "/var/www/vhosts/eddie.energy/architecture.eddie.energy/aiida/"
+          strip_components: "5"
+          overwrite: true
