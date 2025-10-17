@@ -4,7 +4,7 @@ The Administrative Interface for In-house Data Access (AIIDA)
 connects to various metering devices such as smart meters and home automation systems,
 to stream near real-time energy data and other data to consumers like the EDDIE Framework.
 
-To learn more about the architecture of AIIDA, you can visit its [architecture documentation](https://eddie-web.projekte.fh-hagenberg.at/architecture/aiida/aiida.html).
+To learn more about the architecture of AIIDA, you can visit its [architecture documentation](https://architecture.eddie.energy/architecture/aiida/aiida.html).
 If you want to contribute to this repository, please take a look at our [contributing guide](../CONTRIBUTING.md).
 
 ## Prerequisites

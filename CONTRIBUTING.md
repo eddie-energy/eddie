@@ -69,7 +69,7 @@ The `dev` profile configures the application for development.
 ./gradlew run-core --args=--spring.profiles.active=dev,local
 ```
 
-The EDDIE Core will run a [demo page](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/demo-button.html) on http://localhost:8080/demo, which can be used to test the application with a configurable EDDIE button.
+The EDDIE Core will run a [demo page](https://architecture.eddie.energy/framework/1-running/demo-button.html) on http://localhost:8080/demo, which can be used to test the application with a configurable EDDIE button.
 
 The repository includes IntelliJ run configurations for both the EDDIE Core and AIIDA.
 
@@ -86,7 +86,7 @@ All run configurations enable the `dev` and `local` Spring profiles to load `app
 
 ### Configuration
 
-The [operation manual](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/OPERATION.html#configuration) includes detailed instructions on how to configure the EDDIE Framework.
+The [operation manual](https://architecture.eddie.energy/framework/1-running/OPERATION.html#configuration) includes detailed instructions on how to configure the EDDIE Framework.
 
 If you want to test a specific regional implementation, you will need to enable and configure its region connector.
 This usually includes the configuration of secrets and access to test accounts.
@@ -96,9 +96,9 @@ As a developer on the EDDIE team, you will have access to many configurations th
 
 The documentation of EDDIE projects is split into architecture, project, and API documentation.
 
-- [Architecture](https://eddie-web.projekte.fh-hagenberg.at/architecture/) documents abstract architectural concepts across EDDIE projects for stakeholders and developers.
-- [Framework](https://eddie-web.projekte.fh-hagenberg.at/framework/) documents how to operate, integrate, and extend the EDDIE Framework, acting as our operation manual.
-- [Javadoc](https://eddie-web.projekte.fh-hagenberg.at/javadoc/) documents Java classes of the EDDIE Framework and is generated on code changes.
+- [Architecture](https://architecture.eddie.energy/architecture/) documents abstract architectural concepts across EDDIE projects for stakeholders and developers.
+- [Framework](https://architecture.eddie.energy/framework/) documents how to operate, integrate, and extend the EDDIE Framework, acting as our operation manual.
+- [Javadoc](https://architecture.eddie.energy/javadoc/) documents Java classes of the EDDIE Framework and is generated on code changes.
 
 The framework documentation is managed in the [`docs`](./docs) folder of this repository.
 The architecture documentation has its own repository with [eddie-energy/architecture](https://github.com/eddie-energy/architecture).

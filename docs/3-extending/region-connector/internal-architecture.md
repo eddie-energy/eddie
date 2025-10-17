@@ -112,10 +112,10 @@ The migrations are automatically executed on startup.
 
 Event sourcing utilizes an event bus to send events to event handlers.
 The event bus can be an external component, but it also can be provided via a library.
-In EDDIE's case, Project Reactor is used to provide [the event bus](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/event/sourcing/EventBus.html).
+In EDDIE's case, Project Reactor is used to provide [the event bus](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/event/sourcing/EventBus.html).
 The event bus is an internal component.
 Event handlers can subscribe to specific events via the event bus.
-There are two kinds of [event handlers](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/event/sourcing/handlers/EventHandler.html).
+There are two kinds of [event handlers](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/event/sourcing/handlers/EventHandler.html).
 
 The integration event handler is used to integrate the events to external systems such as Kafka.
 There are already two implementations for [connection status messages](./shared-functionality.md#connectionstatusmessagehandler) and [permission market documents](./shared-functionality.md#permissionmarketdocumentmessagehandler).
@@ -131,7 +131,7 @@ While it is possible to implement an integration event handler to persist events
 Instead [the outbox pattern](https://microservices.io/patterns/data/transactional-outbox.html) has been chosen.
 The outbox first persists the permission event and then emits the event to the event bus.
 That way only persisted events are ever sent to the event bus.
-The implementation can be found [here](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/event/sourcing/Outbox.html).
+The implementation can be found [here](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/event/sourcing/Outbox.html).
 
 ## Implementing the Events
 
@@ -278,9 +278,11 @@ Therefore, the [sent to PA event](#sent-to-pa-event) is emitted after the PA red
 ### Malformed Event
 
 If the validations fail, a malformed event has to be emitted.
-The validation errors should be included as an [`AttributeError`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/process/model/validation/AttributeError.html).
+The validation errors should be included as an [
+`AttributeError`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/process/model/validation/AttributeError.html).
 This contains the erroneous field and the error message.
-To be able to persist a list of `AttributeErrors`, the [`AttributeErrorListConverter`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/event/sourcing/converters/AttributeErrorListConverter.html) can be used.
+To be able to persist a list of `AttributeErrors`, the [
+`AttributeErrorListConverter`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/event/sourcing/converters/AttributeErrorListConverter.html) can be used.
 This converter converts the list into a JSON structure.
 Of course, other converters can be used, or even a dedicated table referenced by the malformed event.
 
@@ -362,7 +364,8 @@ This is done by emitting the requires external termination event.
 
 ### Internal Events
 
-For events that should not be propagated to outbound connectors the [`InternalPermissionEvent`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/process/model/events/InternalPermissionEvent.html) marker interface can be used in addition.
+For events that should not be propagated to outbound connectors the [
+`InternalPermissionEvent`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/process/model/events/InternalPermissionEvent.html) marker interface can be used in addition.
 This events will be persisted and sent to the event bus, but integration event handlers have to ignore them.
 Use them to if you want to send an event that does not change the status of a permission request.
 For example, to trigger periodical polling.

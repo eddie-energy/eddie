@@ -29,7 +29,7 @@ export default withMermaid(
         { text: "Home", link: "/" },
         {
           text: "Architecture",
-          link: "https://eddie-web.projekte.fh-hagenberg.at/architecture",
+          link: "https://architecture.eddie.energy/architecture",
         },
       ],
       search: {

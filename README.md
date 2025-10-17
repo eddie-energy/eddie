@@ -9,15 +9,15 @@ AIIDA lives in the `aiida` folder and has its own [README](aiida/README.md).
 
 ## Getting started
 
-The EDDIE Framework [documentation](https://eddie-web.projekte.fh-hagenberg.at/framework/) is a great place to start for both operators and developers.
+The EDDIE Framework [documentation](https://architecture.eddie.energy/framework/) is a great place to start for both operators and developers.
 It provides different entry points for:
 
-- [Running the EDDIE Framework](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/OPERATION.html)
-- [Integrating EDDIE into your application](https://eddie-web.projekte.fh-hagenberg.at/framework/2-integrating/integrating.html)
-- [Extending or contributing to this repository](https://eddie-web.projekte.fh-hagenberg.at/framework/3-extending/tech-stack.html)
+- [Running the EDDIE Framework](https://architecture.eddie.energy/framework/1-running/OPERATION.html)
+- [Integrating EDDIE into your application](https://architecture.eddie.energy/framework/2-integrating/integrating.html)
+- [Extending or contributing to this repository](https://architecture.eddie.energy/framework/3-extending/tech-stack.html)
 
 To learn more about the architecture of the EDDIE project,
-you can visit our [architecture documentation](https://eddie-web.projekte.fh-hagenberg.at/architecture).
+you can visit our [architecture documentation](https://architecture.eddie.energy/architecture).
 
 ## Contributing
 
@@ -31,18 +31,18 @@ The entry point on your website is the _EDDIE Button_.
 
 ![Visual representation of the EDDIE button](/docs/images/eddie-button.svg)
 
-This button is configured with a [data need](https://eddie-web.projekte.fh-hagenberg.at/framework/2-integrating/data-needs.html) describing the data request.
+This button is configured with a [data need](https://architecture.eddie.energy/framework/2-integrating/data-needs.html) describing the data request.
 When the customer clicks the button, a dialog will guide them through the permission process.
 The customer will usually select their country and data administrator, and input additional data depending on their regional implementation.
 
 ![Showcase of the EDDIE dialog](/docs/images/eddie-dialog.webp)
 
-Any [status messages](https://eddie-web.projekte.fh-hagenberg.at/framework/2-integrating/messages/permission-market-documents.html) as well as the [requested data](https://eddie-web.projekte.fh-hagenberg.at/framework/2-integrating/messages/validated-historical-data-market-documents.html) are published to configured [data sinks](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/outbound-connectors/outbound-connectors.html) (like [Kafka](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/outbound-connectors/outbound-connector-kafka.html)) to be retrieved by your application.
+Any [status messages](https://architecture.eddie.energy/framework/2-integrating/messages/permission-market-documents.html) as well as the [requested data](https://architecture.eddie.energy/framework/2-integrating/messages/validated-historical-data-market-documents.html) are published to configured [data sinks](https://architecture.eddie.energy/framework/1-running/outbound-connectors/outbound-connectors.html) (like [Kafka](https://architecture.eddie.energy/framework/1-running/outbound-connectors/outbound-connector-kafka.html)) to be retrieved by your application.
 
 ## Running the EDDIE Framework
 
 The recommended way of running the EDDIE Framework is using [Docker](https://www.docker.com/) containers.
-Instructions are found in the [operation manual](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/OPERATION.html).
+Instructions are found in the [operation manual](https://architecture.eddie.energy/framework/1-running/OPERATION.html).
 
 It is also possible to run the EDDIE Framework from source.
 This requires [JDK 21](https://www.jetbrains.com/help/idea/sdk.html#set-up-jdk) to be installed.
@@ -88,4 +88,4 @@ The following instructions can be used to perform a local test run with compilin
 
 While Docker Compose and local configurations should run out of the box,
 actual deployments of the EDDIE Framework will require further configuration.
-Please refer to the [Configuration](https://eddie-web.projekte.fh-hagenberg.at/framework/1-running/OPERATION.html#configuration) of the operation manual.
+Please refer to the [Configuration](https://architecture.eddie.energy/framework/1-running/OPERATION.html#configuration) of the operation manual.

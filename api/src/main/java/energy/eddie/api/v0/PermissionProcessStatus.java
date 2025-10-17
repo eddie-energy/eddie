@@ -1,7 +1,7 @@
 package energy.eddie.api.v0;
 
 /**
- * Implements the status of the <a href="https://eddie-web.projekte.fh-hagenberg.at/framework/2-integrating/integrating.html#permission-process-model">Permission Process Model</a>.
+ * Implements the status of the <a href="https://architecture.eddie.energy/framework/2-integrating/integrating.html#permission-process-model">Permission Process Model</a>.
  */
 public enum PermissionProcessStatus {
     /**

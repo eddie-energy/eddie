@@ -81,7 +81,7 @@ The following is an example of a validated historical data market document.
                             <ns3:end>2024-12-01T00:15Z</ns3:end>
                         </ns3:timeInterval>
                         <!-- The resolution of the point list following the ISO 8601 duration -->
-                        <!-- For the resolutions supported by EDDIE see: https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/Granularity.html -->
+                        <!-- For the resolutions supported by EDDIE see: https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/Granularity.html -->
                         <ns3:resolution>PT15M</ns3:resolution>
                         <ns3:PointList>
                             <ns3:Point>

@@ -3,7 +3,7 @@ package energy.eddie.api.agnostic;
 /**
  * Enumeration for all types of data that can be retrieved through EDDIE.
  * <p>
- * See <a href="https://eddie-web.projekte.fh-hagenberg.at/docs/requirements/4_data_requirements/1_logical_data_model/">DataType in logical data model</a>
+ * See <a href="https://architecture.eddie.energy/framework/2-integrating/data-needs.html">DataType in logical data model</a>
  */
 public enum DataType {
     HISTORICAL_VALIDATED_CONSUMPTION_DATA,

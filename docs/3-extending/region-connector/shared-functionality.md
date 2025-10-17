@@ -11,7 +11,8 @@ There are examples to create an instance for each of them.
 
 Sometimes the PA does not provide a unique ID for the eligible party.
 This ID is usually needed to create the CIM documents.
-In cases, where it is not available the [`CommonInformationModelConfiguration`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/v0_82/cim/config/CommonInformationModelConfiguration.html) can be used.
+In cases, where it is not available the [
+`CommonInformationModelConfiguration`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/cim/config/CommonInformationModelConfiguration.html) can be used.
 
 ```java
 @Configuration
@@ -28,7 +29,8 @@ public class Config {
 
 ## `DataNeedCalculationServiceImpl`
 
-The data need calculation can be done by creating the [`DataNeedCalculatioServiceImpl`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/services/data/needs/DataNeedCalculationServiceImpl.html) as a Spring bean.
+The data need calculation can be done by creating the [
+`DataNeedCalculatioServiceImpl`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/services/data/needs/DataNeedCalculationServiceImpl.html) as a Spring bean.
 Each region connector should have one bean of the `DataNeedCalculationService` present.
 This implementation can be heavily customized to match the requirements of the region connector.
 
@@ -44,7 +46,9 @@ public class Config {
 
 ## `ConnectionStatusMessageHandler`
 
-The [`ConnectionStatusMessageHandler`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/event/sourcing/handlers/integration/ConnectionStatusMessageHandler.html) is an implementation of the [`ConnectionStatusMessageProvider`](./api.md#connectionstatusmessageprovider).
+The [
+`ConnectionStatusMessageHandler`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/event/sourcing/handlers/integration/ConnectionStatusMessageHandler.html) is an implementation of the [
+`ConnectionStatusMessageProvider`](./api.md#connectionstatusmessageprovider).
 It provides connection status messages based on permission events provided by an event bus instance.
 It can be started as a Spring bean and does not require further configuration than the required input parameters of the constructor.
 
@@ -66,7 +70,9 @@ public class Config {
 
 ## `PermissionMarketDocumentMessageHandler`
 
-The [`PermissionMarketDocumentMessageHandler`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/event/sourcing/handlers/integration/PermissionMarketDocumentMessageHandler.html) is an implementation of the [`PermissionMarketDocumentProvider`](./api.md#permissionmarketdocumentprovider).
+The [
+`PermissionMarketDocumentMessageHandler`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/event/sourcing/handlers/integration/PermissionMarketDocumentMessageHandler.html) is an implementation of the [
+`PermissionMarketDocumentProvider`](./api.md#permissionmarketdocumentprovider).
 It is an implementation that utilizes permission events and an event bus to create permission market documents.
 
 ```java
@@ -96,9 +102,12 @@ public class Config {
 
 ## `JsonRawDataProvider`
 
-The [`JsonRawDataProvider`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/agnostic/JsonRawDataProvider.html) provides a shared implementation for raw data.
-It requires an implementation of the [`IdentifiablePayload`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/IdentifiablePayload.html), which is a pair of the permission request and the data that was requested from the MDA or PA.
-Should only be used in combination with [`OnRawDataMessagesEnabled`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/agnostic/OnRawDataMessagesEnabled.html).
+The [
+`JsonRawDataProvider`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/agnostic/JsonRawDataProvider.html) provides a shared implementation for raw data.
+It requires an implementation of the [
+`IdentifiablePayload`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/IdentifiablePayload.html), which is a pair of the permission request and the data that was requested from the MDA or PA.
+Should only be used in combination with [
+`OnRawDataMessagesEnabled`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/agnostic/OnRawDataMessagesEnabled.html).
 
 ```java
 
@@ -121,7 +130,8 @@ public class Config {
 
 ## `CommonTimeoutService`
 
-The [common timeout service](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/timeout/CommonTimeoutService.html) can be declared as spring bean in combination with the `@EnableScheduling` annotation.
+The [common timeout service](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/timeout/CommonTimeoutService.html) can be declared as spring bean in combination with the
+`@EnableScheduling` annotation.
 It checks for old permission requests, and emits a timed out event if any are found.
 
 ```java
@@ -147,7 +157,7 @@ public class Config {
 
 ## `FulfillmentService`
 
-The [fullfilment service](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/services/FulfillmentService.html) can be used to fulfill a permission request and provides checks if the permission request was fulfilled.
+The [fullfilment service](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/services/FulfillmentService.html) can be used to fulfill a permission request and provides checks if the permission request was fulfilled.
 
 ```java
 
@@ -162,7 +172,8 @@ public class Config {
 
 ## `MeterReadingPermissionUpdateAndFulfillmentService`
 
-The [`MeterReadingPermissionUpdateAndFulfillmentService`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/services/MeterReadingPermissionUpdateAndFulfillmentService.html) updates a permission request with the latest meter reading and checks if it is fulfilled.
+The [
+`MeterReadingPermissionUpdateAndFulfillmentService`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/services/MeterReadingPermissionUpdateAndFulfillmentService.html) updates a permission request with the latest meter reading and checks if it is fulfilled.
 Only works for permission requests that implement [the
 `MeterReadingPermissionRequest` interface](./api.md#meterreadingpermissionrequest).
 It requires [the fulfillment service](#fulfillmentservice).
@@ -186,7 +197,8 @@ public class Config {
 
 ## `CommonFutureDataService`
 
-The `CommonFutureDataService` can be used to query [FutureData](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/services/CommonFutureDataService.html).
+The
+`CommonFutureDataService` can be used to query [FutureData](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/services/CommonFutureDataService.html).
 It uses the provided cron expression and the region connectors timezone to schedule polling intervals. It requires a `PollingService` that implements `CommonPollingService` to poll data and a `PermissionRequestRepository` to find all active permission requests.
 
 ```java
@@ -214,10 +226,14 @@ public class Config{
 
 ## `CommonRetransmissionService`
 
-The [`CommonRetransmissionService`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/retransmission/CommonRetransmissionService.html) is an implementation of the [`RegionConnectorRetransmissionService`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/api/agnostic/retransmission/RegionConnectorRetransmissionService.html).
+The [
+`CommonRetransmissionService`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/retransmission/CommonRetransmissionService.html) is an implementation of the [
+`RegionConnectorRetransmissionService`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/retransmission/RegionConnectorRetransmissionService.html).
 It validates the retransmission request for the most common error cases, such as invalid timeframes or unknown permission ID.
-The polling of the validated historical data and emittion to the outbound connectors has to be implemented in the [`PollingFunction`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/retransmission/PollingFunction.html).
-If only the validation is needed and not the call to the polling function, only the [`RetransmissionValidation`](https://eddie-web.projekte.fh-hagenberg.at/javadoc/energy/eddie/regionconnector/shared/retransmission/RetransmissionValidation.html) can be used.
+The polling of the validated historical data and emittion to the outbound connectors has to be implemented in the [
+`PollingFunction`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/retransmission/PollingFunction.html).
+If only the validation is needed and not the call to the polling function, only the [
+`RetransmissionValidation`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/retransmission/RetransmissionValidation.html) can be used.
 
 ```java
 @Configuration
