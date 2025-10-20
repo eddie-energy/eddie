@@ -73,6 +73,10 @@ export default withMermaid(
                       link: "/1-running/data-sources/mqtt/fr/micro-teleinfo-v3-data-source.md",
                     },
                     {
+                      text: "Österreichs Energie (Austria)",
+                      link: "/1-running/data-sources/mqtt/at/oesterreichs-energie-data-source.md",
+                    },
+                    {
                       text: "Shelly",
                       link: "/1-running/data-sources/mqtt/shelly/shelly-data-source.md",
                     },
