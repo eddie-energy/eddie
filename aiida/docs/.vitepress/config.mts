@@ -57,6 +57,10 @@ export default withMermaid(
                   link: "/1-running/datasources/mqtt/mqtt-data-sources.md",
                   items: [
                     {
+                      text: "CIM",
+                      link: "/1-running/datasources/mqtt/cim/cim-data-source.md",
+                    },
+                    {
                       text: "Inbound",
                       link: "/1-running/datasources/mqtt/inbound/inbound-data-source.md",
                     },

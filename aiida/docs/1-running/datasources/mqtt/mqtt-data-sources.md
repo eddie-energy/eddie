@@ -4,13 +4,13 @@
 The MQTT data sources share the logic of connecting to an MQTT broker, authenticating and subscribing to a topic.
 The following MQTT data sources are supported:
 
-- Österreichs Energie
-- Smart Gateways
-- Micro Teleinfo V3
-- CIM
+- [CIM](cim/cim-data-source.md)
 - [Inbound](inbound/inbound-data-source.md)
-- [Sinapsi Alfa](it/sinapsi-alfa-data-source.md)
+- Micro Teleinfo V3
+- Österreichs Energie
 - [Shelly](shelly/shelly-data-source.md)
+- [Sinapsi Alfa](it/sinapsi-alfa-data-source.md)
+- Smart Gateways
 
 #### Common Properties
 
