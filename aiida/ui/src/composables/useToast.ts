@@ -14,7 +14,7 @@ export default function useToast() {
   function notify(message: string, severity?: ToastTypes, duration?: number, canClose?: boolean) {
     const id = nextId++
     toasts.set(id, { severity, message, duration, canClose })
-    if (!canClose) {
+    if (duration !== 0) {
       setTimeout(() => remove(id), duration ?? 5000)
     }
   }

@@ -40,9 +40,9 @@ onMounted(() => {
         @edit="emit('edit', dataSource)"
         @delete="handleDelete(dataSource.id)"
         @reset="emit('reset', dataSource.id)"
-        @showLatestDataSourceMessage="handleShowLatestDataSourceMessage(dataSource.id)"
         @enableToggle="handleEnableToggle(dataSource)"
       />
+      <p v-if="!dataSources.length">No Data Sources added.</p>
     </TransitionGroup>
   </div>
 </template>

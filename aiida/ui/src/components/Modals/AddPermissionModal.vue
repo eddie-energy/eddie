@@ -15,6 +15,7 @@ const qrCodeModal = ref<HTMLDialogElement>()
 const qrCodeIsOpen = ref(false)
 const aiidaCode = ref('')
 const aiidaCodeError = ref('')
+const loading = ref(false)
 
 const showModal = () => {
   aiidaCode.value = ''
@@ -52,6 +53,7 @@ const parseAiidaCode = (aiidaCode: string) => {
 }
 
 const executePermissionRequest = async (permissionRequest: AiidaPermissionRequest) => {
+  loading.value = true
   try {
     const permission = await addPermission(permissionRequest)
     fetchPermissions()
@@ -59,6 +61,7 @@ const executePermissionRequest = async (permissionRequest: AiidaPermissionReques
   } catch {
     //catch handled by notify from api functions
   }
+  loading.value = false
   permissionModal.value?.close()
 }
 
@@ -80,7 +83,7 @@ defineExpose({ showModal })
 </script>
 
 <template>
-  <ModalDialog title="Add new Permission" ref="permissionModal">
+  <ModalDialog title="Add new Permission" ref="permissionModal" :class="{ 'is-loading': loading }">
     <form class="permission-form bottom-margin">
       <label for="code">New Permission *</label>
       <input
@@ -92,7 +95,7 @@ defineExpose({ showModal })
         v-model="aiidaCode"
       />
     </form>
-    <Button class="bottom-margin" @click="toggleQrCodeModal(true)">
+    <Button class="bottom-margin hide-on-load" @click="toggleQrCodeModal(true)">
       <ScanQrCodeIcon />
       Scan AIIDA Code
     </Button>
@@ -102,16 +105,23 @@ defineExpose({ showModal })
     </div>
     <div class="action-buttons">
       <Button button-style="error-secondary" @click="permissionModal?.close()">Cancel</Button>
-      <Button @click="handleAddPermission">Add</Button>
+      <Button @click="handleAddPermission" class="hide-on-load">Add</Button>
     </div>
     <ModalDialog title="Scan QR Code" ref="qrCodeModal" @close="qrCodeIsOpen = false">
       <QrCodeScanner :open="qrCodeIsOpen" @valid="handleValidQrCode" />
       <Button button-style="error-secondary" @click="toggleQrCodeModal(false)">Cancel</Button>
     </ModalDialog>
+    <div v-if="loading" class="loading-indicator"></div>
   </ModalDialog>
 </template>
 
 <style scoped>
+.is-loading {
+  .permission-form,
+  .hide-on-load {
+    opacity: 0;
+  }
+}
 .bottom-margin {
   margin-bottom: var(--spacing-xxl);
 }

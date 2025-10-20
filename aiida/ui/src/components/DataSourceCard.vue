@@ -272,14 +272,14 @@ div.button-field {
     background-color: var(--eddie-primary);
     color: var(--light);
     .toggle-icon {
-      transform: translateX(0.75rem);
+      transform: translateX(0.8rem);
     }
 
     &:hover {
       background-color: var(--light);
       color: var(--eddie-primary);
       .toggle-icon {
-        transform: translateX(-0.2rem);
+        transform: translateX(-0.5rem);
       }
     }
   }
