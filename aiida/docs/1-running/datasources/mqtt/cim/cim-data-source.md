@@ -1,6 +1,6 @@
 # Data Source: Common Information Model (CIM)
 
-> [Data Sources](../../1-running/datasources/data-sources.md) / [MQTT-based](../../1-running/datasources/mqtt/mqtt-data-sources.md)
+> [Data Sources](../../data-sources.md) / [MQTT-based](../mqtt-data-sources.md)
 
 The CIM data source is a general purpose MQTT-based data source that allows to connect metering devices for which no data source adapter is implemented yet.
 The CIM data source uses the
