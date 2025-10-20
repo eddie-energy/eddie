@@ -6,7 +6,7 @@ The following MQTT data sources are supported:
 
 - [CIM](cim/cim-data-source.md)
 - [Inbound](inbound/inbound-data-source.md)
-- Micro Teleinfo V3
+- [Micro Teleinfo v3.0](fr/micro-teleinfo-v3-data-source.md)
 - Österreichs Energie
 - [Shelly](shelly/shelly-data-source.md)
 - [Sinapsi Alfa](it/sinapsi-alfa-data-source.md)

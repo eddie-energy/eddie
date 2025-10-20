@@ -14,7 +14,7 @@ This setup uses Docker Compose to orchestrate the necessary services. To get sta
 4. You can log in with the default credentials:
     - Username: `aiida`
     - Password: `aiida`
-5. For adding datasources, please refer to the INSERT_DATASOURCE_GUIDE.
+5. For adding data sources, please refer to the INSERT_DATASOURCE_GUIDE.
 6. For adding permissions, please refer to the [permission section](permission/permission.md).
 
 [//]: # (TODO: Add link to INSERT_DATASOURCE_GUIDE)
@@ -28,8 +28,8 @@ The
 AIIDA requires additional services to function properly. The following services are included in the Docker Compose setup:
 
 - **TimescaleDB
-  **: A time-series database built on PostgreSQL. It is used to store information about permissions, information about datasources and time-series data.
-- **EMQX**: An open-source MQTT broker that facilitates communication between datasources and AIIDA.
+  **: A time-series database built on PostgreSQL. It is used to store information about permissions, information about data sources and time-series data.
+- **EMQX**: An open-source MQTT broker that facilitates communication between data sources and AIIDA.
 - **Keycloak**: An open-source identity and access management solution. It is used for authentication and authorization.
 
 A sample configuration for these services is also provided in AIIDA's [compose file](https://github.com/eddie-energy/eddie/tree/main/aiida/docker/compose.yml).
@@ -67,7 +67,7 @@ AIIDA provides internal APIs for additional information about itself.
 
 ### Actuator API
 
-AIIDA uses Spring to expose health information for datasources.
+AIIDA uses Spring to expose health information for data sources.
 The actuator API is available at `<AIIDA_EXTERNAL_HOST>/actuator` and the health endpoint at
 `<AIIDA_EXTERNAL_HOST>/actuator/health`.
 

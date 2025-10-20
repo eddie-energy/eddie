@@ -65,6 +65,14 @@ export default withMermaid(
                       link: "/1-running/datasources/mqtt/inbound/inbound-data-source.md",
                     },
                     {
+                      text: "Micro Teleinfo v3.0 (France)",
+                      link: "/1-running/datasources/mqtt/fr/micro-teleinfo-v3-data-source.md",
+                    },
+                    {
+                      text: "Shelly",
+                      link: "/1-running/datasources/mqtt/shelly/shelly-data-source.md",
+                    },
+                    {
                       text: "Sinapsi Alfa (Italy)",
                       link: "/1-running/datasources/mqtt/it/sinapsi-alfa-data-source.md",
                     },
