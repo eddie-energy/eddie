@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21;
+package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p30;
 
 import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
@@ -17,54 +17,42 @@ import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CMRequest01p21OutboundMessageFactoryTest extends CMRequestOutboundMessageFactoryTest {
+class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageFactoryTest {
 
 
     @Override
     protected CMRequestOutboundMessageFactory factory() {
-        return new CMRequest01p21OutboundMessageFactory(marshaller);
+        return new CMRequest01p30OutboundMessageFactory(marshaller);
     }
 
     @Test
-    void isActive_on_06_04_2025_returnsFalse() {
+    void isActive_on_12_04_2026_returnsFalse() {
         // given
-        var factory = new CMRequest01p21OutboundMessageFactory(marshaller);
+        var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
 
         // when
-        var active = factory.isActive(LocalDate.of(2025, 4, 6));
+        var active = factory.isActive(LocalDate.of(2026, 4, 12));
 
         // then
         assertFalse(active);
     }
 
     @Test
-    void isActive_on_13_04_2026_returnsFalse() {
+    void isActive_on_13_04_2026_returnsTrue() {
         // given
-        var factory = new CMRequest01p21OutboundMessageFactory(marshaller);
+        var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
 
         // when
         var active = factory.isActive(LocalDate.of(2026, 4, 13));
-
-        // then
-        assertFalse(active);
-    }
-
-    @Test
-    void isActive_on_07_04_2025_returnsTrue() {
-        // given
-        var factory = new CMRequest01p21OutboundMessageFactory(marshaller);
-
-        // when
-        var active = factory.isActive(LocalDate.of(2025, 4, 7));
 
         // then
         assertTrue(active);
     }
 
     @Test
-    void isMessageType_01p21() {
+    void isMessageType_01p30() {
         // Given
-        var factory = new CMRequest01p21OutboundMessageFactory(marshaller);
+        var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
         var ccmoRequest = new CCMORequest(new DsoIdAndMeteringPoint("dso", null),
                                           new CCMOTimeFrame(LocalDate.now(ZoneOffset.UTC), null),
                                           "cmReqId",
@@ -73,7 +61,8 @@ class CMRequest01p21OutboundMessageFactoryTest extends CMRequestOutboundMessageF
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
                                           new PlainAtConfiguration("ep-id"),
-                                          ZonedDateTime.now(ZoneOffset.UTC));
+                                          ZonedDateTime.now(ZoneOffset.UTC),
+                                          "purpose");
 
         // When
         var res = factory.outboundMetaData(ccmoRequest);

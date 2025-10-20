@@ -2,10 +2,13 @@ package energy.eddie.regionconnector.at.eda.handlers;
 
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -45,6 +48,7 @@ class SendingEventHandlerTest {
             null,
             ZonedDateTime.now(AT_ZONE_ID)
     );
+    private final AtConfiguration configuration = new PlainAtConfiguration("AT00000");
     @Mock
     private EdaAdapter edaAdapter;
     @Mock
@@ -56,13 +60,19 @@ class SendingEventHandlerTest {
     @Mock
     private AtPermissionRequestRepository repository;
     @Mock
-    private AtConfiguration configuration;
+    private DataNeedsService dataNeedsService;
 
     @Test
     void testAcceptSendsCmRequest_whenPontonAvailable() throws TransmissionException {
         // Given
         when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
-        var handler = new SendingEventHandler(new EventBusImpl(), repository, edaAdapter, outbox, configuration);
+        when(dataNeedsService.getById("did")).thenReturn(createDataNeed());
+        var handler = new SendingEventHandler(new EventBusImpl(),
+                                              repository,
+                                              edaAdapter,
+                                              outbox,
+                                              configuration,
+                                              dataNeedsService);
         var event = new ValidatedEvent("pid",
                                        permissionRequest.start(),
                                        permissionRequest.end(),
@@ -92,11 +102,16 @@ class SendingEventHandlerTest {
     @Test
     void testAcceptCommitsUnableToSend_whenPontonUnavailable() throws TransmissionException {
         // Given
-        doThrow(new TransmissionException(null))
-                .when(edaAdapter).sendCMRequest(any());
+        doThrow(new TransmissionException(null)).when(edaAdapter).sendCMRequest(any());
+        when(dataNeedsService.getById("did")).thenReturn(createDataNeed());
 
         when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
-        var handler = new SendingEventHandler(new EventBusImpl(), repository, edaAdapter, outbox, configuration);
+        var handler = new SendingEventHandler(new EventBusImpl(),
+                                              repository,
+                                              edaAdapter,
+                                              outbox,
+                                              configuration,
+                                              dataNeedsService);
         var event = new ValidatedEvent("pid",
                                        permissionRequest.start(),
                                        permissionRequest.end(),
@@ -112,5 +127,14 @@ class SendingEventHandlerTest {
         verify(outbox).commit(captor.capture());
         assertThat(captor.getValue().status())
                 .isEqualTo(PermissionProcessStatus.UNABLE_TO_SEND);
+    }
+
+    private static AccountingPointDataNeed createDataNeed() {
+        return new AccountingPointDataNeed("test",
+                                           "description",
+                                           "purpose",
+                                           "https://example.com/policy",
+                                           true,
+                                           null);
     }
 }

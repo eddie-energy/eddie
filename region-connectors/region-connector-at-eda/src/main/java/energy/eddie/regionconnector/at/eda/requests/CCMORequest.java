@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.at.eda.requests;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
+import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -17,8 +18,35 @@ public record CCMORequest(
         AllowedGranularity granularity,
         AllowedTransmissionCycle transmissionCycle,
         AtConfiguration configuration,
-        ZonedDateTime timestamp
+        ZonedDateTime timestamp,
+        @Nullable String purpose
 ) {
+
+    public CCMORequest(
+            DsoIdAndMeteringPoint dsoIdAndMeteringPoint,
+            CCMOTimeFrame timeframe,
+            String cmRequestId,
+            String messageId,
+            RequestDataType requestDataType,
+            AllowedGranularity granularity,
+            AllowedTransmissionCycle transmissionCycle,
+            AtConfiguration configuration,
+            ZonedDateTime timestamp
+    ) {
+        this(
+                dsoIdAndMeteringPoint,
+                timeframe,
+                cmRequestId,
+                messageId,
+                requestDataType,
+                granularity,
+                transmissionCycle,
+                configuration,
+                timestamp,
+                null
+        );
+    }
+
     public String dsoId() {
         return dsoIdAndMeteringPoint.dsoId();
     }
