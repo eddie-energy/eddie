@@ -6,6 +6,8 @@ import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
 import DataSourceIcon from '@/assets/icons/DataSourceIcon.svg'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
 import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
+
+console.log(navigator.language)
 </script>
 
 <template>
@@ -16,33 +18,48 @@ import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
 
     <nav class="header-nav">
       <RouterLink
-        data-text="Permissions"
+        :data-text="$t('header.permissions')"
         to="/"
         class="link-with-bold-hover nav-link"
         :class="{ 'not-selected': selectedPermissionCategory !== 'outbound-aiida' }"
         @click="selectedPermissionCategory = 'outbound-aiida'"
       >
         <PermissionsNavIcon class="icon outbound" />
-        Permissions
+        {{ $t('header.permissions') }}
       </RouterLink>
       <RouterLink
-        data-text="Inbound"
+        :data-text="$t('header.inbound')"
         to="/?category=inbound-aiida"
         class="link-with-bold-hover nav-link inbound-link"
         @click="selectedPermissionCategory = 'inbound-aiida'"
         :class="{ 'not-selected': selectedPermissionCategory !== 'inbound-aiida' }"
       >
         <PermissionsNavIcon class="icon" />
-        Inbound
+        {{ $t('header.inbound') }}
       </RouterLink>
-      <RouterLink data-text="Data Sources" to="/data-sources" class="link-with-bold-hover nav-link">
+      <RouterLink
+        :data-text="$t('header.data-sources')"
+        to="/data-sources"
+        class="link-with-bold-hover nav-link"
+      >
         <DataSourceIcon class="icon" />
-        Data Sources
+        {{ $t('header.data-sources') }}
       </RouterLink>
-      <RouterLink to="/account" data-text="Accountaaa" class="link-with-bold-hover nav-link">
-        <span class="user-profile-link"> <AccountIcon /> Account</span>
+      <RouterLink
+        to="/account"
+        :data-text="$t('header.account') + 'aaa'"
+        class="link-with-bold-hover nav-link"
+      >
+        <span class="user-profile-link"> <AccountIcon /> {{ $t('header.account') }}</span>
       </RouterLink>
     </nav>
+    <div class="locale-changer">
+      <select v-model="$i18n.locale">
+        <option v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`" :value="locale">
+          {{ locale }}
+        </option>
+      </select>
+    </div>
   </header>
 </template>
 

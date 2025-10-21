@@ -25,24 +25,24 @@ const {
 
 const toastTypes: {
   [key: string]: {
-    title: string
+    translation: string
     icon: string
   }
 } = {
   info: {
-    title: 'Did you know?',
+    translation: 'toasts.info',
     icon: InfoToastIcon,
   },
   success: {
-    title: 'Congratulations!',
+    translation: 'toasts.success',
     icon: SuccessToastIcon,
   },
   warning: {
-    title: 'Warning!',
+    translation: 'toasts.warning',
     icon: WarningToastIcon,
   },
   danger: {
-    title: 'Something went wrong!',
+    translation: 'toasts.danger',
     icon: ErrorToastIcon,
   },
 }
@@ -54,7 +54,7 @@ const progressBarDuration = `${duration}ms`
   <div class="toast" :class="[severity]" aria-live="polite" role="alert">
     <component :is="toastTypes[severity].icon" class="icon" />
     <div>
-      <p class="toast-title text-normal">{{ toastTypes[severity].title }}</p>
+      <p class="toast-title text-normal">{{ $t(toastTypes[severity].translation) }}</p>
       <p class="toast-message text-small">{{ message }}</p>
     </div>
     <button

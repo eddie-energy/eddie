@@ -17,6 +17,7 @@
     "cronstrue": "^2.51.0",
     "keycloak-js": "^26.2.0",
     "vue": "^3.5.13",
+    "vue-i18n": "^11.1.12",
     "vue-qrcode-reader": "^5.7.3",
     "vue-router": "^4.5.0"
   },

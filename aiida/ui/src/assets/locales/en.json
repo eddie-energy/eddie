@@ -1,0 +1,121 @@
+{
+  "cancelButton": "Cancel",
+  "acceptButton": "Accept",
+  "rejectButton": "Reject",
+  "addButton": "Add",
+  "deleteButton": "Delete",
+  "editButton": "Edit",
+  "header": {
+    "permissions": "Permissions",
+    "data-sources": "Data Sources",
+    "account": "Account",
+    "inbound": "Inbound"
+  },
+  "datasources": {
+    "title": "Data Sources",
+    "addButton": "Add Data Source",
+    "editButton": "Edit Data Source",
+    "card": {
+      "id": "ID",
+      "country": "Country",
+      "asset": "Asset",
+      "type": "Type",
+      "mqttServerUri": "MQTT Server URI",
+      "mqttTopic": "MQTT Topic",
+      "mqttUsername": "MQTT Username",
+      "mqttPassword": "MQTT Password",
+      "enabled": "Enabled",
+      "resetPasswordButton": "Reset password",
+      "downloadLatestMessageButton": "Download Latest Message"
+    },
+    "modal": {
+      "name": "Name",
+      "pollingInterval": "Polling Interval",
+      "chooseIcon": "Choose an Icon",
+      "enabled": "Enabled",
+      "assetType": "Asset Type",
+      "dataSourceType": "Data Source Type",
+      "country": "Country",
+      "uploadImage": "Upload Image",
+      "uploadImageTitle": "Drag and drop an image to upload",
+      "uploadImageExtra": "or, browse a file on your computer",
+      "uploadImageButton": "Browse files",
+      "requiredFields": "Fields marked with * are required!",
+      "localIpInput": "Local IP Address",
+      "vendorInput": "Vendor",
+      "vendorPlaceholder": "Select Vendor",
+      "modelInput": "Model",
+      "modelPlaceholder": "Select Model",
+      "deviceInput": "Device",
+      "devicePlaceholder": "Select Device"
+    }
+  },
+  "permissions": {
+    "title": "Permissions",
+    "addButton": "Add Permission",
+    "tagActive": "Active",
+    "tagPending": "Pending",
+    "tagComplete": "Complete",
+    "outbound": "Outbound",
+    "inbound": "Inbound",
+    "outboundTab": "Outbound Permissions",
+    "inboundTab": "Inbound Permissions",
+    "emptyList": "No {type} {tab} Permissions",
+    "loadMore": "Load More Permissions",
+    "loadLess": "Load Less Permissions",
+    "dropdown": {
+      "service": "Service",
+      "status": "Status",
+      "creationDate": "Creation Date",
+      "eddieApplication": "EDDIE Application",
+      "start": "Start",
+      "end": "End",
+      "transmissionSchedule": "Transmission Schedule",
+      "schemas": "Schemas",
+      "asset": "Asset",
+      "obisCodes": "OBIS-Codes",
+      "dataSource": "Data Source",
+      "permissionId": "Permission ID",
+      "revokeButton": "Revoke",
+      "downloadLatestMessageButton": "Download Latest Message"
+    },
+    "modal": {
+      "title": "Add new Permission",
+      "inputLabel": "New Permission",
+      "inputPlaceholder": "AIIDA Code",
+      "datasourceInputLabel": "Assign Datasource",
+      "datasourceInputPlaceholder": "Select Data Source for Permission",
+      "qrButton": "Scan AIIDA Code",
+      "qrTitle": "Scan QR Code",
+      "invalidCodeMsg": "Not a valid AIIDA Code",
+      "qrErrorTitle": "Error",
+      "qrErrorNoCam": "Unable to access the camera.",
+      "qrErrorUnkwown": "An unknown error occurred.",
+      "qrErrorInvalidAiidaCode": "The input does not appear to be a valid AIIDA code."
+    }
+  },
+  "account": {
+    "title": "Account",
+    "settings": "Settings",
+    "Logout": "Logout"
+  },
+  "toasts": {
+    "info": "Did you know?",
+    "success": "Congratulations!",
+    "warning": "Warning!",
+    "dange": "Something went wrong!",
+    "saveDataSource": "Changes to this data source have been saved.",
+    "toggleDataSource": "{name} has been {enabled}",
+    "deleteDataSource": "Data source deleted successfully."
+  },
+  "errors": {
+    "400": "This action was declined as invalid. Please check your input.",
+    "401": "Authorization failed. Please log in again.",
+    "403": "Access was denied. The action might not be available anymore. Please try and reload this page.",
+    "404": "The target resource was not found. It might have been removed. Please try and reload this page.",
+    "500": "Something went wrong. Please try again.",
+    "failedTokenUpdate": "Failed to update authentication token. Please reload this page.",
+    "networkError": "Network error. Please check your connection.",
+    "unexpectedError": "An unexpected error occurred. Please try again."
+  }
+}

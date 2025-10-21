@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "title": "Berechtigungen",
+    "addButton": "Berechtigung hinzufügen",
+    "tagActive": "Aktive",
+    "tagPending": "Ausstehende",
+    "tagComplete": "Abgeschlossene",
+    "outbound": "Ausgehende",
+    "inbound": "Eingehende",
+    "outboundTab": "Ausgehende Berechtigungen",
+    "inboundTab": "Eingehende Berechtigungen",
+    "acceptButton": "Akzeptieren",
+    "rejectButton": "Ablehnen",
+    "emptyList": "Keine {type} {tab} Berechtigungen",
+    "dropdownService": "Dienst",
+    "dropdownStatus": "Status",
+    "dropdownCreationDate": "Erstellungsdatum",
+    "dropdownEDDIEApplication": "EDDIE-Anwendung",
+    "dropdownStart": "Start",
+    "dropdownEnd": "Ende",
+    "dropdownTransmissionSchedule": "Übertragungsplan",
+    "dropdownSchemas": "Schemas",
+    "dropdownAsset": "Asset",
+    "dropdownOBISCodes": "OBIS-Codes",
+    "dropdownDataSource": "Datenquelle",
+    "dropdownPermissionID": "Berechtigungs-ID",
+    "dropdownRevokeButton": "Widerrufen",
+    "dropdownDownloadLatestMessageButton": "Neueste Nachricht herunterladen",
+    "modal": {
+      "title": "A"
+    }
+  },
+  "header": {
+    "permissions": "Berechtigungen",
+    "data-sources": "Datenquellen",
+    "account": "Konto"
+  }
+}
