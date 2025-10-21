@@ -92,6 +92,10 @@ export default withMermaid(
               text: "Keycloak",
               link: "/1-running/keycloak.md",
             },
+            {
+              text: "Errors and Logging",
+              link: "/1-running/errors-logging.md",
+            },
           ],
         },
         {
