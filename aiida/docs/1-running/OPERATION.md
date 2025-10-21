@@ -77,9 +77,24 @@ AIIDA uses Spring to expose health information for data sources.
 The actuator API is available at `<AIIDA_EXTERNAL_HOST>/actuator` and the health endpoint at
 `<AIIDA_EXTERNAL_HOST>/actuator/health`.
 
-### AIIDA Record API
+### Record API
 
-TBD
+The **Record API** provides access to the latest record (message) that AIIDA has sent or received.
+
+- **Permission Record:**  
+  Returns the most recent message associated with a specific permission.  
+  For **outbound permissions**, this includes the fields `topic`, `serverUri`, `timestamp`, `schema`, and `payload`.  
+  For **inbound permissions**, see the
+  [Inbound Data Source](data-sources/mqtt/inbound/inbound-data-source.md#accessing-inbound-data) section for details.
+
+- **Data Source Record:**  
+  Returns the most recent message received from a specific data source, converted into the [Raw Message](../2-integrating/messages/raw/raw.md) format.
+
+In the AIIDA web interface, the corresponding record can be downloaded directly from the **data source** or **permission
+detail** views.  
+All records are provided in JSON format to simplify inspection and debugging.
+
+Use this API to monitor and verify the latest communication between AIIDA and connected data sources or permissions.
 
 ### Inbound API
 
