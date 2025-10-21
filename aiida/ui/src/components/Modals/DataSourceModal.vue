@@ -221,7 +221,7 @@ const validateForm = () => {
   if (dataSource.value?.dataSourceType === 'SINAPSI_ALFA') {
     handleRequired(
       dataSource.value?.activationKey,
-      t('datasources.modal.acitvationKey'),
+      t('datasources.modal.activationKey'),
       'activationKey',
     )
   }
@@ -393,7 +393,7 @@ defineExpose({ showModal })
               <CustomSelect
                 id="model"
                 v-model="dataSource.modbusModel"
-                placeholder="t('datasources.modal.modelPlaceholder') "
+                :placeholder="t('datasources.modal.modelPlaceholder')"
                 :options="modbusModelsOptions"
                 :disabled="!dataSource.modbusVendor"
                 name="model"

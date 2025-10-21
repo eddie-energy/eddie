@@ -98,7 +98,7 @@
       "dataSource": "Data Source",
       "permissionId": "Permission ID",
       "downloadLatestMessageButton": "Download Latest Message",
-      "inboundTooltip": "There are two ways to use this API Key to retrieve the latest inbound a:",
+      "inboundTooltip": "There are two ways to use this API Key to retrieve the latest inbound data:",
       "permissionID": "Permission ID"
     },
     "modal": {
