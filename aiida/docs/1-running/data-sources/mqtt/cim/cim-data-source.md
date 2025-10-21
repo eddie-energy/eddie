@@ -54,7 +54,7 @@ Data of the original source must be parsed into the a `TimeSeries` JSON object w
 
 ### Setup in AIIDA
 
-The same inputs have to entered as described in the [general data source documentation](../../data-sources.md).
+The same inputs have to be entered as described in the [general data source documentation](../../data-sources.md).
 
 ### Connect with AIIDA
 

@@ -52,7 +52,7 @@ When data is arriving in the terminal, the meter is operating in the respective 
 
 ### Setup in AIIDA
 
-The same inputs have to entered as described in the [general data source documentation](../../data-sources.md).
+The same inputs have to be entered as described in the [general data source documentation](../../data-sources.md).
 
 ### Connect with AIIDA
 

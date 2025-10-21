@@ -4,7 +4,7 @@
 An interval-based data source gathers data from a specific source at regular intervals. The following interval-based data sources are supported:
 
 - Modbus
-- Simulation
+- [Simulation](simulation/simulation-data-source.md)
 
 #### Common Properties
 

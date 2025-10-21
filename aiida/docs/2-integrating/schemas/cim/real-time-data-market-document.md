@@ -16,9 +16,9 @@ The XSD file for this document can be found [here](https://github.com/eddie-ener
         <!-- The version of the Time Series, currrently always 1.0 -->
         <version>1.0</version>
         <registeredResourceMRID>
-            <!-- The UUID of the datasource which provided the data -->
+            <!-- The UUID of the data source which provided the data -->
             <value>5eef407d-d14f-49d4-b61a-769a20caa540</value>
-            <!-- The coding is based on the country the datasource is located at -->
+            <!-- The coding is based on the country the data source is located at -->
             <codingScheme>NAT</codingScheme>
         </registeredResourceMRID>
         <!-- UTC timestamp of the AIIDA Record -->

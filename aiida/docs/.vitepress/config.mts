@@ -85,6 +85,12 @@ export default withMermaid(
                 {
                   text: "Interval-based",
                   link: "/1-running/data-sources/interval/interval-data-sources.md",
+                  items: [
+                    {
+                      text: "Simulation",
+                      link: "/1-running/data-sources/interval/simulation/simulation-data-source.md",
+                    },
+                  ],
                 },
               ],
             },

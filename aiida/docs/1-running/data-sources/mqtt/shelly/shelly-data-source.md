@@ -50,7 +50,7 @@ Once connected, the device can be accessed simply via the app or via its IP addr
 
 ### Setup in AIIDA
 
-The same inputs have to entered as described in the [general data source documentation](../../data-sources.md).
+The same inputs have to be entered as described in the [general data source documentation](../../data-sources.md).
 
 ### Connect with AIIDA
 
