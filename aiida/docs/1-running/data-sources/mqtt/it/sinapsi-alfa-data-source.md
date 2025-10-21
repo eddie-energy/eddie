@@ -8,7 +8,7 @@ The Sinapsi Alfa device connects Italian Smart Meters with AIIDA. While it is te
 locally via Modbus, the requirements for Oetzi Strom rely on AIIDA’s cloud-based setup - therefore, the global MQTT
 broker of Sinapsi Alfa is used.
 
-<img src="../../../../images/datasources/mqtt/it/img-sinapsi-alfa-device.jpg" alt="Sinapsi Alfa Device">
+<img src="../../../../images/data-sources/mqtt/it/img-sinapsi-alfa-device.jpg" alt="Sinapsi Alfa Device">
 
 ## Integration with AIIDA
 
@@ -24,7 +24,7 @@ The label on the device has the full activation key and a QR code for it.
 
 > **Example Activation Key:** `a1b2d3-1a2b3-a1b2d-1a2b3-a1b2d`
 
-<img src="../../../../images/datasources/mqtt/it/img-my-sinapsi-b2b.jpg.png" alt="MySinapsiB2B Device Management">
+<img src="../../../../images/data-sources/mqtt/it/img-my-sinapsi-b2b.jpg.png" alt="MySinapsiB2B Device Management">
 
 ### Setup in AIIDA
 

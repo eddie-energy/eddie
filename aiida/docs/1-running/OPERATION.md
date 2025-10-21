@@ -77,8 +77,8 @@ TBD
 
 ### Inbound API
 
-Via the [Inbound Data Source](datasources/mqtt/inbound/inbound-data-source.md) the EP can send data to AIIDA via MQTT.
+Via the [Inbound Data Source](data-sources/mqtt/inbound/inbound-data-source.md) the EP can send data to AIIDA via MQTT.
 For that purpose, the user must accept an inbound permission, which automatically creates an inbound data source.
 
-The latest retrieved inbound data can be accessed via the Inbound API. 
-See [Inbound Data Source](datasources/mqtt/inbound/inbound-data-source.md#accessing-inbound-data) for more information.
+The latest retrieved inbound data can be accessed via the Inbound API.
+See [Inbound Data Source](data-sources/mqtt/inbound/inbound-data-source.md#accessing-inbound-data) for more information.

@@ -20,7 +20,7 @@ For an inbound permission, a data need of type `inbound-aiida` must be selected.
 
 Once a permission has been added, it is displayed in the "Inbound Permissions" tab within the "Permissions" section.
 
-<img src="../../../../images/datasources/mqtt/inbound/img-inbound-permission.png" alt="Inbound Permission in AIIDA UI"/>
+<img src="../../../../images/data-sources/mqtt/inbound/img-inbound-permission.png" alt="Inbound Permission in AIIDA UI"/>
 
 The inbound permission also includes an API key that allows access to inbound data through the REST interface.
 In the information dialog, ready-to-use `curl` command examples can be copied.

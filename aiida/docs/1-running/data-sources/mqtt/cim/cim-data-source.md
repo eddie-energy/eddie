@@ -61,7 +61,7 @@ The same inputs have to entered as described in the [general data source documen
 The device must be configured to publish the data in the CIM format to the MQTT broker of the AIIDA instance.
 AIIDA provides the broker URL, topic, username, and password:
 
-<img src="../../../../images/datasources/mqtt/cim/img-cim-data-source.png" alt="CIM Data Source in AIIDA UI"/>
+<img src="../../../../images/data-sources/mqtt/cim/img-cim-data-source.png" alt="CIM Data Source in AIIDA UI"/>
 
 ## Reference Implementations
 

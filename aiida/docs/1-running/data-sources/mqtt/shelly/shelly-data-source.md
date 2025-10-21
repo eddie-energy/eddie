@@ -17,11 +17,11 @@ With native MQTT support, they can be seamlessly integrated into AIIDA.
 
 ### Tested Devices
 
-| Device                | Category   | Phases                   | Data Signals                                                              | Image                                                                                    |
-|-----------------------|------------|--------------------------|---------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| Shelly Pro 3 EM Gen2  | Shelly 3EM | Three-phase              | `triphase`: 1 x `EM`, 1 `EMData`<br>`monophase`: 3 x `EM1`, x 3 `EM1Data` | ![Shelly Pro 3EM](../../../../images/datasources/mqtt/shelly/img-shelly-pro-3em.png)     |
-| Shelly Pro EM-50 Gen2 | Shelly EM  | Single-phase             | 1 x `Switch`, 2 x `EM1`, 2 x `EM1Data`                                    | ![Shelly Pro EM-50](../../../../images/datasources/mqtt/shelly/img-shelly-pro-em-50.png) |
-| Shelly 1 PM Gen4      | Shelly PM  | n channels (1 <= n <= 4) | 1 x `Switch`                                                              | ![Shelly 1 PM](../../../../images/datasources/mqtt/shelly/img-shelly-1pm.png)            |
+| Device                | Category   | Phases                   | Data Signals                                                              | Image                                                                                     |
+|-----------------------|------------|--------------------------|---------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| Shelly Pro 3 EM Gen2  | Shelly 3EM | Three-phase              | `triphase`: 1 x `EM`, 1 `EMData`<br>`monophase`: 3 x `EM1`, x 3 `EM1Data` | ![Shelly Pro 3EM](../../../../images/data-sources/mqtt/shelly/img-shelly-pro-3em.png)     |
+| Shelly Pro EM-50 Gen2 | Shelly EM  | Single-phase             | 1 x `Switch`, 2 x `EM1`, 2 x `EM1Data`                                    | ![Shelly Pro EM-50](../../../../images/data-sources/mqtt/shelly/img-shelly-pro-em-50.png) |
+| Shelly 1 PM Gen4      | Shelly PM  | n channels (1 <= n <= 4) | 1 x `Switch`                                                              | ![Shelly 1 PM](../../../../images/data-sources/mqtt/shelly/img-shelly-1pm.png)            |
 
 ### Supported Data Signals
 
@@ -58,12 +58,12 @@ Shelly needs to be set up to transmit near real-time energy data to AIIDA via MQ
 
 Same with all the other [MQTT-based data sources](../mqtt-data-sources.md), AIIDA provides the broker URL, topic, username, and password:
 
-<img src="../../../../images/datasources/mqtt/shelly/img-shelly-aiida.png" alt="Shelly Data Source in AIIDA UI"/>
+<img src="../../../../images/data-sources/mqtt/shelly/img-shelly-aiida.png" alt="Shelly Data Source in AIIDA UI"/>
 
 These MQTT details must be entered in the Shelly device configuration (the screenshot shows the web interface, but the app is similar).
 Settings -> MQTT:
 
-<img src="../../../../images/datasources/mqtt/shelly/img-shelly-web-mqtt.png" alt="Shelly MQTT configuration"/>
+<img src="../../../../images/data-sources/mqtt/shelly/img-shelly-web-mqtt.png" alt="Shelly MQTT configuration"/>
 
 ## Additional things to consider
 
