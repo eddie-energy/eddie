@@ -7,7 +7,7 @@ read Teleinformation (TIC) data from French
 [Linky Smart Meters](https://particulier.edf.fr/en/home/contract-and-consumption/meter/linky-meter.html).
 
 It provides the TIC data via a serial interface over USB, which can then be processed.
-![Micro Teleinfo v3.0](../../../../images/datasources/mqtt/fr/img-micro-teleinfo-v3.png)
+![Micro Teleinfo v3.0](../../../../images/data-sources/mqtt/fr/img-micro-teleinfo-v3.png)
 
 The Micro Teleinfo v3.0 connects to the Linky smart meter via two small cables that connect to the I1 and I2
 interfaces of the meter. During development, a Raspberry Pi was used to plug in the Mirco Teleinfo v3.0 via USB.
@@ -57,7 +57,7 @@ The same inputs have to entered as described in the [general data source documen
 ### Connect with AIIDA
 
 AIIDA provides the broker URL, topic, username, and password:
-<img src="../../../../images/datasources/mqtt/fr/img-micro-teleinfo-data-source.png" alt="Micro Teleinfo v3.0 Data Source in AIIDA UI"/>
+<img src="../../../../images/data-sources/mqtt/fr/img-micro-teleinfo-data-source.png" alt="Micro Teleinfo v3.0 Data Source in AIIDA UI"/>
 
 #### Configuring teleinfo2mqtt
 

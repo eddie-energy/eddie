@@ -15,7 +15,7 @@ hero:
     - text: Integrate into your application
       link: 2-integrating/integrating
     - text: Extend and Contribute
-      link: 3-extending/datasource/data-source.md
+      link: 3-extending/data-source/data-source.md
       theme: alt
 
 features:

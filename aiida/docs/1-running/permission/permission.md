@@ -40,8 +40,8 @@ After entering a valid AIIDA code, another dialog will appear showing the follow
 - The asset type
 - The required OBIS codes
 
-The user must then select a datasource which will be associated with this permission.
-The datasource represents the source of the data that will be shared under this permission.
+The user must then select a data source which will be associated with this permission.
+The data source represents the source of the data that will be shared under this permission.
 
 <img src="../../images/permission/img-permission-dialog-accept.png" alt="Screenshot of the 'Add Permission' dialog in the AIIDA Web UI showing the permission metadata."/>
 

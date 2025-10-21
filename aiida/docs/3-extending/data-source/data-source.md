@@ -97,7 +97,7 @@ If the default MQTT topic structure is insufficient, override `updateMqttSubscri
 
 ```java
 @Override
-protected void updateMqttSubscribeTopic() {
+private void updateMqttSubscribeTopic() {
     this.mqttSubscribeTopic = "PREFIX/" + id + "/SUFFIX";
 }
 ```

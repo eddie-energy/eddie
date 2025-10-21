@@ -48,39 +48,43 @@ export default withMermaid(
               link: "/1-running/OPERATION.md",
             },
             {
+              text: "Database",
+              link: "/1-running/database/database.md",
+            },
+            {
               text: "Data Sources",
-              link: "/1-running/datasources/data-sources.md",
+              link: "/1-running/data-sources/data-sources.md",
               collapsed: true,
               items: [
                 {
                   text: "MQTT-based",
-                  link: "/1-running/datasources/mqtt/mqtt-data-sources.md",
+                  link: "/1-running/data-sources/mqtt/mqtt-data-sources.md",
                   items: [
                     {
                       text: "CIM",
-                      link: "/1-running/datasources/mqtt/cim/cim-data-source.md",
+                      link: "/1-running/data-sources/mqtt/cim/cim-data-source.md",
                     },
                     {
                       text: "Inbound",
-                      link: "/1-running/datasources/mqtt/inbound/inbound-data-source.md",
+                      link: "/1-running/data-sources/mqtt/inbound/inbound-data-source.md",
                     },
                     {
                       text: "Micro Teleinfo v3.0 (France)",
-                      link: "/1-running/datasources/mqtt/fr/micro-teleinfo-v3-data-source.md",
+                      link: "/1-running/data-sources/mqtt/fr/micro-teleinfo-v3-data-source.md",
                     },
                     {
                       text: "Shelly",
-                      link: "/1-running/datasources/mqtt/shelly/shelly-data-source.md",
+                      link: "/1-running/data-sources/mqtt/shelly/shelly-data-source.md",
                     },
                     {
                       text: "Sinapsi Alfa (Italy)",
-                      link: "/1-running/datasources/mqtt/it/sinapsi-alfa-data-source.md",
+                      link: "/1-running/data-sources/mqtt/it/sinapsi-alfa-data-source.md",
                     },
                   ],
                 },
                 {
                   text: "Interval-based",
-                  link: "/1-running/datasources/interval/interval-data-sources.md",
+                  link: "/1-running/data-sources/interval/interval-data-sources.md",
                 },
               ],
             },
@@ -128,12 +132,12 @@ export default withMermaid(
           items: [
             {
               text: "Adding a data source",
-              link: "/3-extending/datasource/data-source.md",
+              link: "/3-extending/data-source/data-source.md",
               collapsed: true,
               items: [
                 {
                   text: "Documentation",
-                  link: "/3-extending/datasource/documentation.md",
+                  link: "/3-extending/data-source/documentation.md",
                 },
               ],
             },
