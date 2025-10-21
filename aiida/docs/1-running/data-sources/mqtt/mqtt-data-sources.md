@@ -7,10 +7,13 @@ The following MQTT data sources are supported:
 - [CIM](cim/cim-data-source.md)
 - [Inbound](inbound/inbound-data-source.md)
 - [Micro Teleinfo v3.0](fr/micro-teleinfo-v3-data-source.md)
-- Österreichs Energie
+- [Österreichs Energie](at/oesterreichs-energie-data-source.md)
 - [Shelly](shelly/shelly-data-source.md)
 - [Sinapsi Alfa](it/sinapsi-alfa-data-source.md)
 - Smart Gateways
+
+![SupportedMeters](docs/images/supported-smart-meters.png)
+_Map created with https://www.mapchart.net_
 
 #### Common Properties
 
