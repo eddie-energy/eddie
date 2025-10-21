@@ -294,7 +294,7 @@ defineExpose({ showModal })
         <div class="input-field">
           <label for="name"> {{ t('datasources.modal.name') }} </label>
           <input
-            :placeholder="t('datasources.moda.namePlaceholder')"
+            :placeholder="t('datasources.modal.namePlaceholder')"
             required
             type="text"
             id="name"

@@ -129,16 +129,15 @@
     "success": "Congratulations!",
     "warning": "Warning!",
     "danger": "Something went wrong!",
+    "acceptPermission": "Permission request accepted.",
+    "revokePermission": "The permission for this service was revoked.",
+    "rejectPermission": "Permission request rejected",
+    "createDatasource": "Data source created.",
     "saveDataSource": "Changes to this data source have been saved.",
     "toggleDataSource": "{name} has been {enabled}",
     "deleteDataSource": "Data source deleted successfully."
   },
   "errors": {
-    "400": "This action was declined as invalid. Please check your input.",
-    "401": "Authorization failed. Please log in again.",
-    "403": "Access was denied. The action might not be available anymore. Please try and reload this page.",
-    "404": "The target resource was not found. It might have been removed. Please try and reload this page.",
-    "500": "Something went wrong. Please try again.",
     "failedTokenUpdate": "Failed to update authentication token. Please reload this page.",
     "networkError": "Network error. Please check your connection.",
     "unexpectedError": "An unexpected error occurred. Please try again."

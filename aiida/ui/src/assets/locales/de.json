@@ -129,16 +129,15 @@
     "success": "Herzlichen Glückwunsch!",
     "warning": "Warnung!",
     "danger": "Etwas ist schiefgelaufen!",
+    "acceptPermission": "Berechtigungsanfrage akzeptiert.",
+    "revokePermission": "Die Berechtigung für diesen Dienst wurde widerrufen.",
+    "rejectPermission": "Berechtigungsanfrage abgelehnt",
+    "createDatasource": "Datenquelle erstellt.",
     "saveDataSource": "Änderungen an dieser Datenquelle wurden gespeichert.",
     "toggleDataSource": "{name} wurde {enabled}",
     "deleteDataSource": "Datenquelle erfolgreich gelöscht."
   },
   "errors": {
-    "400": "Diese Aktion wurde als ungültig abgelehnt. Bitte überprüfen Sie Ihre Eingaben.",
-    "401": "Autorisierung fehlgeschlagen. Bitte melden Sie sich erneut an.",
-    "403": "Zugriff verweigert. Die Aktion ist möglicherweise nicht mehr verfügbar. Bitte laden Sie diese Seite neu.",
-    "404": "Die angeforderte Ressource wurde nicht gefunden. Sie wurde möglicherweise entfernt. Bitte laden Sie diese Seite neu.",
-    "500": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
     "failedTokenUpdate": "Fehler beim Aktualisieren des Authentifizierungstokens. Bitte laden Sie die Seite neu.",
     "networkError": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung.",
     "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."

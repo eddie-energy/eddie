@@ -50,7 +50,7 @@ const parseAiidaCode = (aiidaCode: string) => {
       console.debug('The decoded AIIDA code could not be parsed into JSON format.', error)
     }
 
-    throw new Error(t('permissions.modal.errorInvalid'))
+    throw new Error(t('permissions.modal.errorInvalidAiidaCode'))
   }
 }
 

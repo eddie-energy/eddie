@@ -15,7 +15,7 @@ const show = ref(false)
 const title = ref('')
 
 const showModal = (password?: string, isNew?: boolean) => {
-  title.value = isNew ? t('datasources.modal.mqttCopyTile') : t('datasources.modal.mqttResetTitle')
+  title.value = isNew ? t('datasources.modal.mqttCopyTitle') : t('datasources.modal.mqttResetTitle')
   pass.value = password
   modal.value?.showModal()
 }

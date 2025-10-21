@@ -57,7 +57,7 @@ const progressBarDuration = `${duration}ms`
     <component :is="toastTypes[severity].icon" class="icon" />
     <div>
       <p class="toast-title text-normal">{{ t(toastTypes[severity].translation) }}</p>
-      <p class="toast-message text-small">{{ message }}</p>
+      <p class="toast-message text-small">{{ t(message) }}</p>
     </div>
     <button
       type="button"
