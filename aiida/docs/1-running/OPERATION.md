@@ -61,6 +61,12 @@ It is recommended to configure AIIDA using the .env file provided in the `aiida/
 | AIIDA_CLEANUP_ENTITIES_FAILED_TO_SEND_ENTITY_RETENTION | Specifies the time-to-live for a FAILED_TO_SEND_ENTITY                               |
 | AIIDA_CLEANUP_ENTITIES_INBOUND_RECORD_RETENTION        | Specifies the time-to-live for an INBOUND_RECORD                                     |
 
+## Application Information
+
+After the first startup of AIIDA, an application UUID is generated and stored in the database.
+This UUID can be found in the `aiida_application_information` table in the [database](database/database.md).
+It is used by the EDDIE instance to differentiate between multiple AIIDA instances.
+
 ## Internal APIs
 
 AIIDA provides internal APIs for additional information about itself.

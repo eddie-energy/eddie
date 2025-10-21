@@ -48,6 +48,10 @@ export default withMermaid(
               link: "/1-running/OPERATION.md",
             },
             {
+              text: "Database",
+              link: "/1-running/database/database.md",
+            },
+            {
               text: "Data Sources",
               link: "/1-running/data-sources/data-sources.md",
               collapsed: true,
