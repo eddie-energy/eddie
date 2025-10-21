@@ -7,6 +7,7 @@ import DataSourceIcon from '@/assets/icons/DataSourceIcon.svg'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
 import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
 import { useI18n } from 'vue-i18n'
+import LanguageSwitcher from './LanguageSwitcher.vue'
 
 const { t } = useI18n()
 </script>
@@ -54,13 +55,7 @@ const { t } = useI18n()
         <span class="user-profile-link"> <AccountIcon /> {{ t('header.account') }}</span>
       </RouterLink>
     </nav>
-    <div class="locale-changer">
-      <select v-model="$i18n.locale">
-        <option v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`" :value="locale">
-          {{ locale }}
-        </option>
-      </select>
-    </div>
+    <LanguageSwitcher />
   </header>
 </template>
 
@@ -69,7 +64,6 @@ const { t } = useI18n()
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
 }
 
 .logo {
@@ -118,6 +112,7 @@ const { t } = useI18n()
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 2rem;
   }
   .nav-link {
     display: flex;
