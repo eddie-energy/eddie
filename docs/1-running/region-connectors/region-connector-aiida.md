@@ -8,13 +8,13 @@ data receiving.
 AIIDA instances are run by customers in their homes, and they can share their in-house data, e.g. near real-time data
 (1-15s) directly from the smart meter, with an eligible party (EP).
 
+![E2E Diagram AIIDA](images/region-connector-aiida/aiida_permission_e2e-AIIDA_E2E_flow.png)
+
+The diagram above shows the end-to-end flow of how the AIIDA region connector (RC) works in conjunction with the AIIDA instance.
 The customer visits the EP's website and clicks on the EDDIE connect button.
 If the EP service requires near real-time data, the connect button sends a request to this region connector, requesting
-a new permission. The region connector sends a response with the handshake information for AIIDA. See
-the [E2E flow diagram](https://github.com/eddie-energy/eddie/blob/main/aiida/docs/diagrams/aiida_permission_e2e.plantuml) for more information in the handshake
-and E2E flow. When the customer grants the permission, their AIIDA instance will send data and status messages to
-separate topics
-on the MQTT broker.
+a new permission. The region connector sends a response with the handshake information for AIIDA. When the customer grants the permission, their AIIDA instance will send data and status messages to
+separate topics on the MQTT broker.
 
 All messages are sent directly from AIIDA to the MQTT broker, nothing is routed through this
 region connector (RC).
@@ -115,7 +115,7 @@ The ACLs are used to authorize the AIIDA instance to publish and subscribe.
 
 | topic_name                              | action      | acl_type | data_need_type |
 |-----------------------------------------|-------------|----------|----------------|
-| `aiida/v1/<permissionId>/outbound-data` | `publish`   | `allow`  | outbound-aiida |
-| `aiida/v1/<permissionId>/inbound-data`  | `subscribe` | `allow`  | inbound-aiida  |
+| `aiida/v1/<permissionId>/data/outbound` | `publish`   | `allow`  | outbound-aiida |
+| `aiida/v1/<permissionId>/data/inbound`  | `subscribe` | `allow`  | inbound-aiida  |
 | `aiida/v1/<permissionId>/status`        | `publish`   | `allow`  | all            |
 | `aiida/v1/<permissionId>/termination`   | `subscribe` | `allow`  | all            |
