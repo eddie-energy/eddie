@@ -12,11 +12,10 @@ hero:
   actions:
     - text: Run AIIDA
       link: 1-running/OPERATION.md
-      theme: alt
     - text: Integrate into your application
       link: 2-integrating/integrating
     - text: Extend and Contribute
-      link: 3-extending/extending
+      link: 3-extending/datasource/data-source.md
       theme: alt
 
 features:
