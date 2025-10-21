@@ -33,7 +33,7 @@ public enum DataSourceType {
 
 ## DTO
 
-Create a Data Transfer Object (DTO) to define the structure for creating or updating the data source.
+Create a DTO (in [`java/.../dtos/datasource`](https://github.com/eddie-energy/eddie/tree/main/aiida/src/main/java/energy/eddie/aiida/dtos/datasource)) to define the structure for creating or updating the data source.
 All DTOs extend the abstract base class `dtos.datasource.DataSourceDto`.
 
 If no additional fields are required, the DTO can be left empty:
@@ -75,7 +75,7 @@ public class ShellyDataSourceDto extends DataSourceDto {
 
 ## Model
 
-Next, create the entity class representing the data source in the database.
+Next, create the entity class (in [`java/.../models/datasource`](https://github.com/eddie-energy/eddie/tree/main/aiida/src/main/java/energy/eddie/aiida/models/datasource))) representing the data source in the database.
 Extend the abstract base class `models.datasource.DataSourceModel` (or `MqttDataSource` for MQTT-based sources):
 
 ```java
@@ -139,7 +139,7 @@ public class ShellyDataSource extends MqttDataSource {
 }
 ```
 
-Don’t forget to add the new column via a migration:
+Don’t forget to add the new column via a migration (in [`resources/db/aiida/migration`](https://github.com/eddie-energy/eddie/tree/main/aiida/src/main/resources/db/aiida/migration)):
 
 ```sql
 ALTER TABLE data_source ADD COLUMN my_custom_property VARCHAR;
@@ -150,7 +150,7 @@ ALTER TABLE data_source ADD COLUMN my_custom_property VARCHAR;
 The adapter converts incoming data into AIIDA’s internal data format.
 MQTT-based adapters extend `MqttDataSourceAdapter` which extends the `DataSourceAdapter`.
 
-Create the adapter class:
+Create the adapter class (in [`java/.../adapters/datasource`](https://github.com/eddie-energy/eddie/tree/main/aiida/src/main/java/energy/eddie/aiida/adapters/datasource)):
 
 ```java
 package energy.eddie.aiida.adapters.datasource.shelly;
@@ -211,4 +211,8 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
 
 ## Testing
 
-Finally, create unit and integration tests to verify that the new data source and adapter behave as expected.
+Create unit and integration tests to verify that the new data source and adapter behave as expected.
+
+## Documentation
+
+Finally, document the new data source in the AIIDA documentation (see [extend data source documentation](documentation.md)).
