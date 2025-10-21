@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p00;
+package energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p10;
 
 import de.ponton.xp.adapter.api.domainvalues.*;
 import de.ponton.xp.adapter.api.messages.OutboundMessage;
@@ -11,34 +11,33 @@ import org.springframework.stereotype.Component;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.time.LocalDate;
 
 @Component
-public class CMRevoke01p00OutboundMessageFactory implements CMRevokeOutboundMessageFactory {
-    public static final LocalDate ACTIVE_UNTIL = LocalDate.of(2026, 4, 12);
+public class CMRevoke01p10OutboundMessageFactory implements CMRevokeOutboundMessageFactory {
+    public static final LocalDate ACTIVE_FROM = LocalDate.of(2026, 4, 13);
     private final Jaxb2Marshaller marshaller;
 
-    public CMRevoke01p00OutboundMessageFactory(Jaxb2Marshaller marshaller) {
+    public CMRevoke01p10OutboundMessageFactory(Jaxb2Marshaller marshaller) {
         this.marshaller = marshaller;
     }
 
     @Override
     public OutboundMessage createOutboundMessage(CCMORevoke ccmoRevoke) {
-        var revoke = new CMRevoke01p00(ccmoRevoke).cmRevoke();
+        var revoke = new CMRevoke01p10(ccmoRevoke).cmRevoke();
         var outputStream = new ByteArrayOutputStream();
         marshaller.marshal(revoke, new StreamResult(outputStream));
-        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-        String senderId = ccmoRevoke.eligiblePartyId();
-        String receiverId = ccmoRevoke.permissionRequest()
-                                      .dataSourceInformation()
-                                      .meteredDataAdministratorId();
+        var inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        var senderId = ccmoRevoke.eligiblePartyId();
+        var receiverId = ccmoRevoke.permissionRequest()
+                                   .dataSourceInformation()
+                                   .meteredDataAdministratorId();
 
-        OutboundMetaData outboundMetaData = OutboundMetaData.newBuilder()
-                                                            .setSenderId(new SenderId(senderId))
-                                                            .setReceiverId(new ReceiverId(receiverId))
-                                                            .setMessageType(createMessageType())
-                                                            .build();
+        var outboundMetaData = OutboundMetaData.newBuilder()
+                                               .setSenderId(new SenderId(senderId))
+                                               .setReceiverId(new ReceiverId(receiverId))
+                                               .setMessageType(createMessageType())
+                                               .build();
         return OutboundMessage.newBuilder()
                               .setInputStream(inputStream)
                               .setOutboundMetaData(outboundMetaData)
@@ -47,7 +46,7 @@ public class CMRevoke01p00OutboundMessageFactory implements CMRevokeOutboundMess
 
     @Override
     public boolean isActive(LocalDate date) {
-        return !date.isAfter(ACTIVE_UNTIL);
+        return !date.isBefore(ACTIVE_FROM);
     }
 
     private static MessageType createMessageType() {

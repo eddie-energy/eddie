@@ -6,7 +6,6 @@ public class SimpleEdaCMRevoke implements EdaCMRevoke {
 
     private String meteringPoint;
     private String consentId;
-    private String reason;
     private LocalDate consentEnd;
 
     @Override
@@ -17,11 +16,6 @@ public class SimpleEdaCMRevoke implements EdaCMRevoke {
     @Override
     public String consentId() {
         return consentId;
-    }
-
-    @Override
-    public String reason() {
-        return reason;
     }
 
     @Override
@@ -36,11 +30,6 @@ public class SimpleEdaCMRevoke implements EdaCMRevoke {
 
     public SimpleEdaCMRevoke setConsentId(String consentId) {
         this.consentId = consentId;
-        return this;
-    }
-
-    public SimpleEdaCMRevoke setReason(String reason) {
-        this.reason = reason;
         return this;
     }
 
