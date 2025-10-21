@@ -5,16 +5,19 @@ import { onMounted } from 'vue'
 import { dataSources, fetchDataSources } from '@/stores/dataSources'
 import type { AiidaDataSource } from '@/types'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const { confirm } = useConfirmDialog()
 const emit = defineEmits(['edit', 'reset'])
 
 async function handleDelete(id: string) {
   if (
     await confirm(
-      'Delete Data Source',
-      'Are you sure you want to delete this data source? This action cannot be undone.',
-      'Delete',
+      t('datasources.deleteDataSource'),
+      t('datasources.deleteText'),
+      t('deleteButton'),
+      t('cancelButton'),
     )
   ) {
     deleteDataSource(id).then(() => fetchDataSources())
@@ -42,7 +45,7 @@ onMounted(() => {
         @reset="emit('reset', dataSource.id)"
         @enableToggle="handleEnableToggle(dataSource)"
       />
-      <p v-if="!dataSources.length">No Data Sources added.</p>
+      <p v-if="!dataSources.length">{{ t('datasources.noDatasources') }}</p>
     </TransitionGroup>
   </div>
 </template>

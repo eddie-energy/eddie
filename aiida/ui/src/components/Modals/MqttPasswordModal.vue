@@ -6,14 +6,16 @@ import Button from '../Button.vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import CrossedOutEyeIcon from '@/assets/icons/CrossedOutEyeIcon.svg'
 import CopyButton from '../CopyButton.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const modal = useTemplateRef<HTMLDialogElement>('modal')
 const pass = ref<string | undefined>()
 const show = ref(false)
 const title = ref('')
 
 const showModal = (password?: string, isNew?: boolean) => {
-  title.value = isNew ? 'Copy Password' : 'Reset Password'
+  title.value = isNew ? t('datasources.modal.mqttCopyTile') : t('datasources.modal.mqttResetTitle')
   pass.value = password
   modal.value?.showModal()
 }
@@ -31,8 +33,8 @@ defineExpose({ showModal })
 
 <template>
   <ModalDialog :title ref="modal" @close="closeModal">
-    <p class="text-limit text-normalc">
-      Make sure to copy the password now. You will not be able to view it again.
+    <p class="text-limit text-normal">
+      {{ t('datasources.modal.mqttPasswordLabel') }}
     </p>
     <div class="input-field text-limit">
       <input readonly :type="show ? 'text' : 'password'" :value="pass" name="password" />
@@ -49,7 +51,9 @@ defineExpose({ showModal })
         </button>
       </div>
     </div>
-    <Button class="close-button" button-style="error" @click="modal?.close()">Close</Button>
+    <Button class="close-button" button-style="error" @click="modal?.close()">{{
+      t('closeButton')
+    }}</Button>
   </ModalDialog>
 </template>
 

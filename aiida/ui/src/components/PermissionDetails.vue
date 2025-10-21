@@ -16,7 +16,9 @@ import ToolTipIcon from '@/assets/icons/ToolTipIcon.svg'
 import { onClickOutside } from '@vueuse/core'
 import CopyButton from './CopyButton.vue'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const { confirm } = useConfirmDialog()
 const target = useTemplateRef('target')
 const { permission, status } = defineProps<{
@@ -40,9 +42,10 @@ const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
 const handleRevoke = async () => {
   if (
     await confirm(
-      'Revoke Permission',
-      'Are you sure you want to revoke this permission? This action cannot be undone.',
-      'Revoke',
+      t('permissions.revokeTitle'),
+      t('permissions.revokeDescription'),
+      t('revokeButton'),
+      t('cancelButton'),
     )
   ) {
     const promise = revokePermission(permission.permissionId)
@@ -65,11 +68,11 @@ onClickOutside(target, () => (showToolTip.value = false))
   <dl class="permission-details">
     <div class="column">
       <div class="permission-field">
-        <dt>Service</dt>
+        <dt>{{ t('permissions.dropdown.service') }}</dt>
         <dd>{{ permission.serviceName }}</dd>
       </div>
       <div class="permission-field status">
-        <dt>Status</dt>
+        <dt>{{ t('permissions.dropdown.status') }}</dt>
         <StatusTag
           :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'"
           class="status-tag"
@@ -77,25 +80,25 @@ onClickOutside(target, () => (showToolTip.value = false))
         >
       </div>
       <div class="permission-field">
-        <dt>Creation Date</dt>
+        <dt>{{ t('permissions.dropdown.creationDate') }}</dt>
         <dd>
           {{ dateTimeFormat.format(new Date(permission.startTime)) }}
         </dd>
       </div>
       <div class="permission-field">
-        <dt>EDDIE Application</dt>
+        <dt>{{ t('permissions.dropdown.eddieApplication') }}</dt>
         <dd>
           {{ permission.eddieId }}
         </dd>
       </div>
       <div class="permission-field">
-        <dt>Start</dt>
+        <dt>{{ t('permissions.dropdown.start') }}</dt>
         <dd>
           {{ permission.grantTime ? dateTimeFormat.format(new Date(permission.grantTime)) : 'N/A' }}
         </dd>
       </div>
       <div class="permission-field">
-        <dt>End</dt>
+        <dt>{{ t('permissions.dropdown.end') }}</dt>
         <dd>{{ dateTimeFormat.format(new Date(permission.expirationTime)) }}</dd>
       </div>
       <div class="permission-field graph" v-if="permission.unimplemented">
@@ -103,14 +106,14 @@ onClickOutside(target, () => (showToolTip.value = false))
         <dd class="graph-data">PLACEHOLDER</dd>
       </div>
       <div class="permission-field schedule">
-        <dt>Transmission Schedule</dt>
+        <dt>{{ t('permissions.dropdown.transmissionSchedule') }}</dt>
         <dd>{{ cronstrue.toString(permission.dataNeed.transmissionSchedule) }}</dd>
       </div>
     </div>
     <div class="column">
       <template v-if="permission.dataNeed.type !== 'inbound-aiida'">
         <div class="permission-field">
-          <dt>Schemas</dt>
+          <dt>{{ t('permissions.dropdown.schemas') }}</dt>
           <div class="column schema">
             <dd v-for="schema in permission.dataNeed.schemas" :key="schema">
               {{ schema }}
@@ -118,13 +121,13 @@ onClickOutside(target, () => (showToolTip.value = false))
           </div>
         </div>
         <div class="permission-field">
-          <dt>Asset</dt>
+          <dt>{{ t('permissions.dropdown.asset') }}</dt>
           <dd>
             {{ permission.dataNeed.asset }}
           </dd>
         </div>
         <div class="permission-field schemas">
-          <dt>OBIS-Codes</dt>
+          <dt>{{ t('permissions.dropdown.obisCodes') }}</dt>
           <div class="column schema">
             <dd v-for="tag in permission.dataNeed.dataTags" :key="tag">
               {{ tag }}
@@ -132,7 +135,7 @@ onClickOutside(target, () => (showToolTip.value = false))
           </div>
         </div>
         <div class="permission-field" v-if="permission.dataSource">
-          <dt>Data Source</dt>
+          <dt>{{ t('permissions.dropdown.dataSource') }}</dt>
           <dd>{{ permission.dataSource?.name ?? 'undefined' }}</dd>
         </div>
         <div
@@ -187,7 +190,7 @@ onClickOutside(target, () => (showToolTip.value = false))
           </dd>
           <Transition>
             <div v-if="showToolTip" class="tool-tip">
-              <p>There are two ways to use this API Key to retrieve the latest inbound data:</p>
+              <p>{{ t('permissions.dropdown.inboundTooltip') }}</p>
               <ul>
                 <li class="copy-link">
                   X-API-Key Header
@@ -207,12 +210,8 @@ onClickOutside(target, () => (showToolTip.value = false))
         </div>
       </template>
       <div class="permission-field" v-if="permission.permissionId">
-        <dt>Permission ID</dt>
+        <dt>{{ t('permissions.dropdown.permissionID') }}</dt>
         <dd>{{ permission.permissionId }}</dd>
-      </div>
-      <div class="permission-field" v-if="permission.unimplemented">
-        <dt>Target IP Adress, Port</dt>
-        <dd>PLACEHOLDER</dd>
       </div>
       <div class="permission-field" v-if="permission.unimplemented">
         <dt>Last Data Package sent</dt>
@@ -220,10 +219,10 @@ onClickOutside(target, () => (showToolTip.value = false))
       </div>
       <div v-if="status === 'Active'" class="actions-row">
         <Button button-style="error" class="action-btn" @click="handleRevoke">
-          <RevokeIcon /> Revoke
+          <RevokeIcon /> {{ t('revokeButton') }}
         </Button>
         <MessageDownloadButton :data="permission" class="action-btn">
-          <EyeIcon /> Download Latest Message
+          <EyeIcon /> {{ t('permissions.dropdown.downloadLatestMessageButton') }}
         </MessageDownloadButton>
       </div>
       <Button
@@ -231,7 +230,7 @@ onClickOutside(target, () => (showToolTip.value = false))
         @click="updatePermission(permission)"
         class="update-button"
       >
-        Continue
+        {{ t('continueButton') }}
       </Button>
     </div>
   </dl>

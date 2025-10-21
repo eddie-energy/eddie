@@ -2,12 +2,14 @@
 import { ref } from 'vue'
 import { QrcodeStream, type DetectedBarcode } from 'vue-qrcode-reader'
 import type { AiidaPermissionRequest } from '@/types'
+import { useI18n } from 'vue-i18n'
 
 const { open } = defineProps<{ open?: boolean }>()
 const loading = ref(true)
 const codeError = ref('')
 const paused = ref(false)
 const notValid = ref(false)
+const { t } = useI18n()
 
 const emit = defineEmits<{
   (e: 'valid', permission: AiidaPermissionRequest): void
@@ -17,7 +19,7 @@ function parseAiidaCode(aiidaCode: string) {
   try {
     return JSON.parse(window.atob(aiidaCode))
   } catch {
-    throw new Error('The input does not appear to be a valid AIIDA code.')
+    throw new Error(t('permissions.modal.errorInvalidAiidaCode'))
   }
 }
 
@@ -39,7 +41,7 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
 }
 
 const onError = () => {
-  codeError.value = 'Unable to access the camera.'
+  codeError.value = t('permissions.modal.qrErrorNoCam')
 }
 
 const onDetect = async (detectedCodes: DetectedBarcode[]) => {
@@ -53,7 +55,7 @@ const onDetect = async (detectedCodes: DetectedBarcode[]) => {
     codeError.value = ''
     emit('valid', permissionRequest)
   } catch (error: any) {
-    codeError.value = error ?? 'An unknown error occurred.'
+    codeError.value = error ?? t('permissions.modal.qrErrorUnknown')
     notValid.value = true
     paused.value = false
   }
@@ -70,10 +72,10 @@ const onDetect = async (detectedCodes: DetectedBarcode[]) => {
       @camera-off="loading = true"
     >
       <div class="loading-indicator" v-if="!codeError"></div>
-      <p v-if="notValid" class="invalid">Not a valid AIIDA Code</p>
+      <p v-if="notValid" class="invalid">{{ t('permissions.modal.invalidCodeMsg') }}</p>
     </QrcodeStream>
     <div class="error" v-if="codeError">
-      <p class="heading-3">Error</p>
+      <p class="heading-3">{{ t('permissions.modal.errorTitle') }}</p>
       <p>{{ codeError }}</p>
     </div>
   </div>

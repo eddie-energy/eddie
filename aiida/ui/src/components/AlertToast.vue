@@ -6,8 +6,10 @@ import WarningToastIcon from '@/assets/icons/WarningToastIcon.svg'
 import SuccessToastIcon from '@/assets/icons/SuccessToastIcon.svg'
 import CloseIcon from '@/assets/icons/CloseIcon.svg'
 import useToast from '@/composables/useToast'
+import { useI18n } from 'vue-i18n'
 
 const { remove } = useToast()
+const { t } = useI18n()
 
 const {
   severity = 'info',
@@ -54,7 +56,7 @@ const progressBarDuration = `${duration}ms`
   <div class="toast" :class="[severity]" aria-live="polite" role="alert">
     <component :is="toastTypes[severity].icon" class="icon" />
     <div>
-      <p class="toast-title text-normal">{{ $t(toastTypes[severity].translation) }}</p>
+      <p class="toast-title text-normal">{{ t(toastTypes[severity].translation) }}</p>
       <p class="toast-message text-small">{{ message }}</p>
     </div>
     <button

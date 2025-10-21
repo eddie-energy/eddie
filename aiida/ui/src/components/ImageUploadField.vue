@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useDropZone } from '@vueuse/core'
+import { useI18n } from 'vue-i18n'
 
 const dropZoneRef = ref<HTMLDivElement>()
 const imageFile = defineModel<File | null>()
 
 const imageUploadInput = ref<HTMLInputElement>()
 const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml']
-
+const { t } = useI18n()
 const onImageDrop = (files: File[] | null) => {
   const file = files && files[0]
   if (file) {
@@ -54,11 +55,15 @@ const previewImage = computed(() => {
 <template>
   <div class="image-upload" ref="dropZoneRef">
     <div class="image-upload-inner" :class="{ 'is-over': isOverDropZone }">
-      <p class="heading-3">Drag and drop an image to upload</p>
-      <p>or, browse a file on your computer</p>
+      <p class="heading-3">{{ t('datasources.modal.uploadImageTitle') }}</p>
+      <p>{{ t('datasources.modal.uploadImageExtra') }}</p>
       <img v-if="previewImage" :src="previewImage" alt="Uploaded Image" class="preview-image" />
-      <label for="image" class="image-upload-label" tabindex="0" @keydown="handleImageUploadKeydown"
-        >Browse files</label
+      <label
+        for="image"
+        class="image-upload-label"
+        tabindex="0"
+        @keydown="handleImageUploadKeydown"
+        >{{ t('datasources.modal.uploadImageButton') }}</label
       >
       <input
         ref="imageUploadInput"

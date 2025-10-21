@@ -21,7 +21,9 @@ import {
 } from '@/api'
 import type { AiidaDataSource, AiidaDataSourceIcon } from '@/types'
 import { fetchDataSources } from '@/stores/dataSources'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const getEmptyDataSource = (): AiidaDataSource => {
   return {
     name: '',
@@ -163,40 +165,68 @@ watch(
 
 const handleRequired = (value: string | number | undefined, label: string, key: string) => {
   if (!value) {
-    errors.value[key] = `* ${label} is a required field`
+    errors.value[key] = `* ${label} ${t('datasources.modal.isRequired')}`
   }
 }
 
 const validateForm = () => {
   errors.value = {}
   const requiredFields = [
-    { value: dataSource.value?.name, label: 'Name', key: 'name' },
-    { value: dataSource.value?.asset, label: 'Asset Type', key: 'assetType' },
-    { value: dataSource.value?.dataSourceType, label: 'Data Source Type', key: 'dataSourceType' },
-    { value: dataSource.value?.countryCode, label: 'Country', key: 'country' },
-    { value: dataSource.value?.icon, label: 'Data Source Icon', key: 'icon' },
+    { value: dataSource.value?.name, label: t('datasources.modal.name'), key: 'name' },
+    { value: dataSource.value?.asset, label: t('datasources.modal.assetType'), key: 'assetType' },
+    {
+      value: dataSource.value?.dataSourceType,
+      label: t('datasources.modal.datasourceType'),
+      key: 'dataSourceType',
+    },
+    { value: dataSource.value?.countryCode, label: t('datasources.modal.country'), key: 'country' },
+    { value: dataSource.value?.icon, label: t('datasources.modal.icon'), key: 'icon' },
   ]
   requiredFields.forEach((field) => handleRequired(field.value, field.label, field.key))
 
   if (dataSource.value?.dataSourceType === 'MODBUS') {
     const modBusRequiredFields = [
-      { value: dataSource.value.modbusIp, label: 'IP Address', key: 'ipAddress' },
-      { value: dataSource.value.modbusVendor, label: 'Vendor', key: 'vendor' },
-      { value: dataSource.value.modbusModel, label: 'Model', key: 'model' },
-      { value: dataSource.value.modbusDevice, label: 'Device', key: 'device' },
+      {
+        value: dataSource.value.modbusIp,
+        label: t('datasources.modal.localIpInput'),
+        key: 'ipAddress',
+      },
+      {
+        value: dataSource.value.modbusVendor,
+        label: t('datasources.modal.vendorInput'),
+        key: 'vendor',
+      },
+      {
+        value: dataSource.value.modbusModel,
+        label: t('datasources.modal.modelInput'),
+        key: 'model',
+      },
+      {
+        value: dataSource.value.modbusDevice,
+        label: t('datasources.modal.deviceInput'),
+        key: 'device',
+      },
     ]
     modBusRequiredFields.forEach((field) => handleRequired(field.value, field.label, field.key))
   }
   if (dataSource.value?.dataSourceType === 'SIMULATION') {
-    handleRequired(dataSource.value?.pollingInterval, 'Polling Interval', 'pollInterval')
+    handleRequired(
+      dataSource.value?.pollingInterval,
+      t('datasources.modal.pollingInterval'),
+      'pollInterval',
+    )
   }
   if (dataSource.value?.dataSourceType === 'SINAPSI_ALFA') {
-    handleRequired(dataSource.value?.activationKey, 'Activation Key', 'activationKey')
+    handleRequired(
+      dataSource.value?.activationKey,
+      t('datasources.modal.acitvationKey'),
+      'activationKey',
+    )
   }
   if (imageFile.value && !imageFile.value.type.startsWith('image/')) {
-    errors.value['image'] = 'Uploaded file must be an image.'
+    errors.value['image'] = t('datasources.modal.uploadImageError')
   } else if (imageFile.value && imageFile.value.size > 20 * 1024 * 1024) {
-    errors.value['image'] = 'Image size must be less than 20MB.'
+    errors.value['image'] = t('datasources.modal.uploadImageSize')
   }
 }
 
@@ -248,7 +278,7 @@ defineExpose({ showModal })
 
 <template>
   <ModalDialog
-    :title="`${operationType} Data Source`"
+    :title="`${operationType === 'Add' ? t('datasources.addButton') : t('datasources.editButton')}`"
     ref="dataSourceModal"
     class="data-source-dialog"
     :class="{ 'is-loading': loading }"
@@ -262,9 +292,9 @@ defineExpose({ showModal })
     >
       <div class="column">
         <div class="input-field">
-          <label for="name"> Name </label>
+          <label for="name"> {{ t('datasources.modal.name') }} </label>
           <input
-            placeholder="Data Source Name"
+            :placeholder="t('datasources.moda.namePlaceholder')"
             required
             type="text"
             id="name"
@@ -275,7 +305,7 @@ defineExpose({ showModal })
           <p v-if="errors['name']" class="error-message">{{ errors['name'] }}</p>
         </div>
         <div class="checkbox-field">
-          <label for="enable">Enabled</label>
+          <label for="enable">{{ t('datasources.modal.enabled') }}</label>
           <input
             type="checkbox"
             id="enable"
@@ -287,10 +317,10 @@ defineExpose({ showModal })
           <CheckmarkIcon class="checkbox-icon" />
         </div>
         <div class="input-field">
-          <label id="assetType"> Asset Type </label>
+          <label id="assetType">{{ t('datasources.modal.assetType') }}</label>
           <CustomSelect
             v-model="dataSource.asset"
-            placeholder="Your Asset Type"
+            :placeholder="t('datasources.modal.assetTypePlaceholder')"
             :options="assetTypeOptions"
             :name="'assetType'"
             required
@@ -299,10 +329,10 @@ defineExpose({ showModal })
           <p v-if="errors['assetType']" class="error-message">{{ errors['assetType'] }}</p>
         </div>
         <div class="input-field">
-          <label id="datasourceType">Data Source Type </label>
+          <label id="datasourceType">{{ t('datasources.modal.dataSourceType') }}</label>
           <CustomSelect
             v-model="dataSource.dataSourceType"
-            placeholder="Your Data Source Type"
+            :placeholder="t('datasources.modal.dataSourceTypePlaceholder')"
             name="datasourceType"
             required
             :options="dataSourceTypeOptions"
@@ -313,10 +343,10 @@ defineExpose({ showModal })
           </p>
         </div>
         <div class="input-field">
-          <label id="country">Country </label>
+          <label id="country">{{ t('datasources.modal.country') }} </label>
           <CustomSelect
             v-model="dataSource.countryCode"
-            placeholder="Select Country"
+            :placeholder="t('datasources.modal.countryPlaceholder')"
             name="country"
             required
             :options="countryOptions"
@@ -334,16 +364,22 @@ defineExpose({ showModal })
         >
           <template v-if="dataSource.dataSourceType === 'MODBUS'">
             <div class="input-field extra-margin">
-              <label for="ipAddress"> Local IP Address</label>
-              <input id="ipAddress" v-model="dataSource.modbusIp" name="ipAddress" required />
+              <label for="ipAddress"> {{ t('datasources.modal.localIpInput') }}</label>
+              <input
+                id="ipAddress"
+                v-model="dataSource.modbusIp"
+                name="ipAddress"
+                placeholder="10.236.46.120"
+                required
+              />
               <p v-if="errors['ipAddress']" class="error-message">{{ errors['ipAddress'] }}</p>
             </div>
             <div class="input-field">
-              <label for="vendor"> Vendor </label>
+              <label for="vendor"> {{ t('datasources.modal.vendorInput') }} </label>
               <CustomSelect
                 id="vendor"
                 v-model="dataSource.modbusVendor"
-                placeholder="Select Vendor"
+                :placeholder="t('datasources.modal.vendorInputPlaceholder')"
                 :options="modbusVendorsOptions"
                 name="vendor"
                 required
@@ -351,11 +387,11 @@ defineExpose({ showModal })
               <p v-if="errors['vendor']" class="error-message">{{ errors['vendor'] }}</p>
             </div>
             <div class="input-field">
-              <label for="model"> Model </label>
+              <label for="model"> {{ t('datasources.modal.modelInput') }} </label>
               <CustomSelect
                 id="model"
                 v-model="dataSource.modbusModel"
-                placeholder="Select Model"
+                placeholder="t('datasources.modal.modelPlaceholder') "
                 :options="modbusModelsOptions"
                 :disabled="!dataSource.modbusVendor"
                 name="model"
@@ -364,11 +400,11 @@ defineExpose({ showModal })
               <p v-if="errors['model']" class="error-message">{{ errors['model'] }}</p>
             </div>
             <div class="input-field">
-              <label for="device"> Device </label>
+              <label for="device"> {{ t('datasources.modal.deviceInput') }} </label>
               <CustomSelect
                 id="device"
                 v-model="dataSource.modbusDevice"
-                placeholder="Select Device"
+                :placeholder="t('datasources.modal.devicePlaceholder')"
                 :options="modbusDevicesOptions"
                 :disabled="!dataSource.modbusModel"
                 name="device"
@@ -379,9 +415,9 @@ defineExpose({ showModal })
           </template>
           <template v-if="dataSource.dataSourceType === 'SIMULATION'">
             <div class="input-field">
-              <label for="pollInterval"> Polling Interval </label>
+              <label for="pollInterval"> {{ t('datasources.modal.pollingInterval') }} </label>
               <input
-                placeholder="Polling Interval"
+                :placeholder="t('datasources.modal.pollingInterval')"
                 required
                 type="number"
                 id="pollInterval"
@@ -396,9 +432,9 @@ defineExpose({ showModal })
           </template>
           <template v-if="dataSource.dataSourceType === 'SINAPSI_ALFA'">
             <div class="input-field">
-              <label for="activationKey"> Sinapsi Activation Key </label>
+              <label for="activationKey"> Sinapsi {{ t('datasources.modal.activationKey') }}</label>
               <input
-                placeholder="Activation Key"
+                :placeholder="t('datasources.modal.activationKey')"
                 required
                 type="text"
                 id="activationKey"
@@ -414,7 +450,7 @@ defineExpose({ showModal })
       </Transition>
       <div class="column last-column">
         <div class="input-field extra-margin">
-          <label>Choose an Icon</label>
+          <label>{{ t('datasources.modal.chooseIcon') }}</label>
           <div class="icon-select">
             <button
               v-for="(dataIcon, key) in dataSourceIcons"
@@ -429,17 +465,19 @@ defineExpose({ showModal })
           <p v-if="errors['icon']" class="error-message">{{ errors['icon'] }}</p>
         </div>
         <div class="input-field">
-          <p class="label">Upload Image</p>
+          <p class="label">{{ t('datasources.modal.uploadImage') }}</p>
           <ImageUploadField v-model="imageFile" />
           <p v-if="errors['image']" class="error-message">{{ errors['image'] }}</p>
         </div>
       </div>
     </form>
-    <p class="info-text">Fields marked with * are required!</p>
+    <p class="info-text">{{ t('datasources.modal.requiredFields') }}</p>
     <div class="action-buttons">
-      <Button button-style="error-secondary" @click="modal?.close()">Cancel</Button>
+      <Button button-style="error-secondary" @click="modal?.close()">
+        {{ t('cancelButton') }}
+      </Button>
       <Button @click="formRef?.requestSubmit()">
-        {{ operationType === 'Edit' ? 'Save' : operationType }}
+        {{ operationType === 'Edit' ? t('editButton') : t('addButton') }}
       </Button>
     </div>
     <div v-if="loading" class="loading-indicator"></div>

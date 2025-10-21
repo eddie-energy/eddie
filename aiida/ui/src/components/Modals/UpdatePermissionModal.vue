@@ -8,9 +8,10 @@ import { acceptPermission, rejectPermission } from '@/api'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import CustomSelect from '../CustomSelect.vue'
 import { dataSources, fetchDataSources } from '@/stores/dataSources'
+import { useI18n } from 'vue-i18n'
 
 const { permission, open } = usePermissionDialog()
-
+const { t } = useI18n()
 const modal = ref<HTMLDialogElement>()
 const loading = ref(false)
 const selectedDataSource = ref<string>('')
@@ -50,16 +51,23 @@ const dataSourceOptions = computed(() => {
 </script>
 
 <template>
-  <ModalDialog title="Add new Permission" ref="modal" @close="handleModalClose" class="modal">
+  <ModalDialog
+    :title="t('permissions.modal.title')"
+    ref="modal"
+    @close="handleModalClose"
+    class="modal"
+  >
     <div v-if="!loading">
       <PermissionDetails v-if="permission" :permission />
       <form class="form" v-if="permission?.dataNeed.type === 'outbound-aiida'">
-        <label class="heading-3" id="updatePermLabel">Assign Datasource*</label>
+        <label class="heading-3" id="updatePermLabel">
+          {{ t('permissions.modal.datasourceInputLabel') }}
+        </label>
         <CustomSelect
           v-model="selectedDataSource"
           id="datasourceSelect"
           :options="dataSourceOptions"
-          placeholder="Select Data Source for Permission"
+          :placeholder="t('permissions.modal.datasourceInputPlaceholder')"
           aria-labelledby="updatePermLabel"
         />
 
@@ -67,18 +75,19 @@ const dataSourceOptions = computed(() => {
           class="text-normal"
           v-if="!dataSourceOptions.length && permission?.dataNeed.type === 'outbound-aiida'"
         >
-          No Data Sources available. Please add a Data Source first before you can accept this
-          permission.
+          {{ t('permissions.modal.datasourceEmpty') }}
         </p>
       </form>
 
       <div class="two-item-pair">
-        <Button button-style="error-secondary" @click="handleInput(false)">Reject</Button>
+        <Button button-style="error-secondary" @click="handleInput(false)">
+          {{ t('rejectButton') }}</Button
+        >
         <Button
           @click="handleInput(true)"
           :disabled="!selectedDataSource && permission?.dataNeed.type === 'outbound-aiida'"
-          >Accept
-        </Button>
+          >{{ t('acceptButton') }}</Button
+        >
       </div>
     </div>
     <div v-if="loading" class="loading-indicator"></div>

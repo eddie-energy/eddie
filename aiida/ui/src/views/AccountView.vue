@@ -4,7 +4,9 @@ import { ref } from 'vue'
 import { getApplicationInformation } from '@/api'
 import Button from '@/components/Button.vue'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const firstName = ref('')
 const lastName = ref('')
 const username = ref('')
@@ -24,7 +26,7 @@ getApplicationInformation().then((data) => {
 
 <template>
   <main class="account-view">
-    <h1 class="heading-2 title">Account</h1>
+    <h1 class="heading-2 title">{{ t('account.title') }}</h1>
     <div class="user-profile">
       <div class="profile-header">
         <img v-if="userAvatar" :src="userAvatar" />
@@ -48,10 +50,10 @@ getApplicationInformation().then((data) => {
           @click="keycloak.accountManagement()"
           class="button settings-button"
         >
-          Settings
+          {{ t('account.settings') }}
         </Button>
         <Button button-style="error-secondary" @click="keycloak.logout()" class="button">
-          Logout
+          {{ t('account.logout') }}
         </Button>
       </div>
     </div>

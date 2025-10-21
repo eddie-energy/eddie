@@ -11,7 +11,9 @@ import PermissionDropdown from './PermissionDropdown.vue'
 import UpdatePermissionModal from './Modals/UpdatePermissionModal.vue'
 import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
 import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const selectedTab = ref<PermissionTypes>('Active')
 const showMore = ref(false)
 const scrollTarget = ref()
@@ -103,14 +105,14 @@ const handleCategoryChange = (category: string) => {
         class="text-normal"
         :class="{ 'active-category': selectedPermissionCategory === 'outbound-aiida' }"
       >
-        <PermissionsNavIcon class="rotate" /> {{ $t('permissions.outboundTab') }}
+        <PermissionsNavIcon class="rotate" /> {{ t('permissions.outboundTab') }}
       </button>
       <button
         @click="handleCategoryChange('inbound-aiida')"
         :class="{ 'active-category': selectedPermissionCategory === 'inbound-aiida' }"
         class="text-normal"
       >
-        <PermissionsNavIcon /> {{ $t('permissions.inboundTab') }}
+        <PermissionsNavIcon /> {{ t('permissions.inboundTab') }}
       </button>
     </div>
     <div class="permission-list-wrapper">
@@ -122,7 +124,7 @@ const handleCategoryChange = (category: string) => {
           @click="handleTabClick(tab.name as 'Active' | 'Pending' | 'Complete')"
           :class="{ active: selectedTab === tab.name }"
         >
-          <component :is="tab.icon" class="icon" /> {{ $t(tab.translation) }}
+          <component :is="tab.icon" class="icon" /> {{ t(tab.translation) }}
         </Button>
       </div>
       <TransitionGroup tag="ul" name="permissions" class="permission-list" ref="scrollTarget">
@@ -138,16 +140,16 @@ const handleCategoryChange = (category: string) => {
           @click="handleShowMore"
           class="show-more-button"
         >
-          {{ showMore ? $t('permissions.loadLess') : $t('permissions.loadMore') }}
+          {{ showMore ? t('permissions.loadLess') : t('permissions.loadMore') }}
         </Button>
         <p v-if="!slicedPermissions.length" class="no-permissions heading-5">
           {{
-            $t('permissions.emptyList', {
-              type: $t(tabs.filter((tab) => tab.name === selectedTab)[0].translation),
+            t('permissions.emptyList', {
+              type: t(tabs.filter((tab) => tab.name === selectedTab)[0].translation),
               tab:
                 selectedPermissionCategory === 'outbound-aiida'
-                  ? $t('permissions.outbound')
-                  : $t('permissions.inbound'),
+                  ? t('permissions.outbound')
+                  : t('permissions.inbound'),
             })
           }}
         </p>
