@@ -31,10 +31,10 @@ the use of the CIM Datasource Adapter.
     <!-- The UUID of the AIIDA application -->
     <messageDocumentHeader.metaInformation.finalCustomerId>008cf1d6-e118-45a8-bc17-a331dfc57e77
     </messageDocumentHeader.metaInformation.finalCustomerId>
-    <!-- The asset type of the datasource  -->
+    <!-- The asset type of the data source  -->
     <messageDocumentHeader.metaInformation.asset>CONNECTION-AGREEMENT-POINT
     </messageDocumentHeader.metaInformation.asset>
-    <!-- The UUID of the datasource which provided the data -->
+    <!-- The UUID of the data source which provided the data -->
     <messageDocumentHeader.metaInformation.dataSourceId>5eef407d-d14f-49d4-b61a-769a20caa540
     </messageDocumentHeader.metaInformation.dataSourceId>
     <!-- The Region Connector used to create the permission -->
