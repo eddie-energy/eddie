@@ -103,6 +103,10 @@ export default withMermaid(
               link: "/1-running/keycloak.md",
             },
             {
+              text: "Data Flow",
+              link: "/1-running/data-flow.md",
+            },
+            {
               text: "Errors and Logging",
               link: "/1-running/errors-logging.md",
             },
