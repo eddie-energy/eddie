@@ -23,7 +23,7 @@ import type { AiidaDataSource, AiidaDataSourceIcon } from '@/types'
 import { fetchDataSources } from '@/stores/dataSources'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const getEmptyDataSource = (): AiidaDataSource => {
   return {
     name: '',
@@ -69,13 +69,15 @@ const SUPPORTED_COUNTRY_CODES = [
   'ES',
   'SE',
 ]
-const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
-const countryOptions = SUPPORTED_COUNTRY_CODES.map((country) => {
-  return {
-    label: COUNTRY_NAMES.of(country),
-    value: country,
-  }
+const countryOptions = computed(() => {
+  const country_names = new Intl.DisplayNames(locale.value, { type: 'region' })
+  return SUPPORTED_COUNTRY_CODES.map((country) => {
+    return {
+      label: country_names.of(country),
+      value: country,
+    }
+  })
 })
 
 const modal = useTemplateRef('dataSourceModal')
