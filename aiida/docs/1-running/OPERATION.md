@@ -88,7 +88,7 @@ The **Record API** provides access to the latest record (message) that AIIDA has
   [Inbound Data Source](data-sources/mqtt/inbound/inbound-data-source.md#accessing-inbound-data) section for details.
 
 - **Data Source Record:**  
-  Returns the most recent message received from a specific data source, converted into the [Raw Message](../2-integrating/messages/raw/raw.md) format.
+  Returns the most recent message received from a specific data source, converted into the [Raw Message](schemas/raw/raw.md) format.
 
 In the AIIDA web interface, the corresponding record can be downloaded directly from the **data source** or **permission
 detail** views.  

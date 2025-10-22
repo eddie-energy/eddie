@@ -12,7 +12,7 @@ The following MQTT data sources are supported:
 - [Sinapsi Alfa](it/sinapsi-alfa-data-source.md)
 - Smart Gateways
 
-![SupportedMeters](docs/images/supported-smart-meters.png)
+![SupportedMeters](../../../../docs/images/supported-smart-meters.png)
 _Map created with https://www.mapchart.net_
 
 #### Common Properties
