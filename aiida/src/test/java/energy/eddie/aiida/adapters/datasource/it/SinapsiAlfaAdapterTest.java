@@ -20,7 +20,6 @@ import java.time.Duration;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
 
 class SinapsiAlfaAdapterTest {
     private static final String TOPIC = "/oetzi/iomtsgdata/abcdef-abcde-abcde-abcde-12345/";
@@ -32,10 +31,10 @@ class SinapsiAlfaAdapterTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        when(DATA_SOURCE.mqttInternalHost()).thenReturn("tcp://localhost:1883");
-        when(DATA_SOURCE.mqttSubscribeTopic()).thenReturn(TOPIC);
-        when(DATA_SOURCE.mqttUsername()).thenReturn("oetzi");
-        when(DATA_SOURCE.mqttPassword()).thenReturn("other-password");
+        when(DATA_SOURCE.internalHost()).thenReturn("tcp://localhost:1883");
+        when(DATA_SOURCE.topic()).thenReturn(TOPIC);
+        when(DATA_SOURCE.username()).thenReturn("oetzi");
+        when(DATA_SOURCE.password()).thenReturn("other-password");
         when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
 

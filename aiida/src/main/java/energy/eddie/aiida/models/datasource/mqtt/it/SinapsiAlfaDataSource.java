@@ -29,19 +29,19 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
             throw new SinapsiAlflaEmptyConfigException();
         }
 
-        this.mqttInternalHost = config.mqttHost();
-        this.mqttExternalHost = config.mqttHost();
-        this.mqttSubscribeTopic = SinapsiAlfaConfiguration.TOPIC_PREFIX
-                                  + config.mqttUsername()
-                                  + SinapsiAlfaConfiguration.TOPIC_INFIX
-                                  + activationKey
-                                  + SinapsiAlfaConfiguration.TOPIC_SUFFIX;
-        this.mqttUsername = config.mqttUsername();
-        this.mqttPassword = config.mqttPassword();
+        this.internalHost = config.mqttHost();
+        this.externalHost = config.mqttHost();
+        this.topic = SinapsiAlfaConfiguration.TOPIC_PREFIX
+                     + config.mqttUsername()
+                     + SinapsiAlfaConfiguration.TOPIC_INFIX
+                     + activationKey
+                     + SinapsiAlfaConfiguration.TOPIC_SUFFIX;
+        this.username = config.mqttUsername();
+        this.password = config.mqttPassword();
     }
 
     @Override
-    public void setMqttPassword(String password) {
+    public void setPassword(String password) {
         // ignore, password is fixed
     }
 }

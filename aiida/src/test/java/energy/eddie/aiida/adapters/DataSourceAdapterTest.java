@@ -69,7 +69,7 @@ class DataSourceAdapterTest {
         // Given
         var dataSource = mock(MicroTeleinfoV3DataSource.class);
         when(dataSource.id()).thenReturn(UUID.randomUUID());
-        when(dataSource.mqttSubscribeTopic()).thenReturn("");
+        when(dataSource.topic()).thenReturn("");
 
         // When
         var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
@@ -94,7 +94,7 @@ class DataSourceAdapterTest {
     void givenSmartGateways_returnsAdapter() {
         // Given
         var dataSource = mock(SmartGatewaysDataSource.class);
-        when(dataSource.mqttSubscribeTopic()).thenReturn("");
+        when(dataSource.topic()).thenReturn("");
 
         // When
         var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);

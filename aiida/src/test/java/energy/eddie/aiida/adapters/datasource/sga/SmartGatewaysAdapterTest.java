@@ -33,8 +33,8 @@ class SmartGatewaysAdapterTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        when(DATA_SOURCE.mqttInternalHost()).thenReturn("tcp://localhost:1883");
-        when(DATA_SOURCE.mqttSubscribeTopic()).thenReturn("aiida/test");
+        when(DATA_SOURCE.internalHost()).thenReturn("tcp://localhost:1883");
+        when(DATA_SOURCE.topic()).thenReturn("aiida/test");
         when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
 

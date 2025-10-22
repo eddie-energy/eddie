@@ -13,9 +13,9 @@ authentication = [
     }
     pool_size = 8
     query = """~
-      SELECT mqtt_password AS password_hash
+      SELECT password AS password_hash
        FROM public.data_source
-       WHERE mqtt_username = ${username} LIMIT 1;~"""
+       WHERE username = ${username} LIMIT 1;~"""
     # Replaced with .env file
     server = "REPLACED_WITH_ENV:5432"
     ssl {
@@ -65,9 +65,9 @@ authorization {
       password = REPLACED_WITH_ENV
       pool_size = 8
       query = """~
-        SELECT LOWER(action) AS action, LOWER(acl_type) AS permission, mqtt_subscribe_topic AS topic
+        SELECT LOWER(action), LOWER(acl_type) AS permission, topic
          FROM public.data_source
-         WHERE mqtt_username = ${username};~"""
+         WHERE username = ${username};~"""
       # Replaced with .env file
       server = "REPLACED_WITH_ENV:5432"
       ssl {

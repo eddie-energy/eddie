@@ -254,7 +254,7 @@ class DataSourceServiceTest {
         var result = dataSourceService.regenerateSecrets(DATA_SOURCE_ID);
 
         assertNotNull(result.plaintextPassword());
-        assertNotEquals(MQTT_OUTBOUND_DATA_SOURCE.mqttPassword(), result.plaintextPassword());
+        assertNotEquals(MQTT_OUTBOUND_DATA_SOURCE.password(), result.plaintextPassword());
         verify(bCryptPasswordEncoder, times(1)).encode(any());
         verify(aggregator, times(1)).addNewDataSourceAdapter(any());
     }

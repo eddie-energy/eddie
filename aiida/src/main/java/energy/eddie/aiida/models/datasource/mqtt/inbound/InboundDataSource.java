@@ -28,11 +28,11 @@ public class InboundDataSource extends MqttDataSource {
 
     public InboundDataSource(InboundDataSourceDto dto, UUID userId, MqttStreamingConfig mqttStreamingConfig, String accessCode) {
         super(dto, userId);
-        this.mqttInternalHost = mqttStreamingConfig.serverUri();
-        this.mqttExternalHost = mqttStreamingConfig.serverUri();
-        this.mqttSubscribeTopic = mqttStreamingConfig.dataTopic();
-        this.mqttUsername = mqttStreamingConfig.username();
-        this.mqttPassword = mqttStreamingConfig.password();
+        this.internalHost = mqttStreamingConfig.serverUri();
+        this.externalHost = mqttStreamingConfig.serverUri();
+        this.topic = mqttStreamingConfig.dataTopic();
+        this.username = mqttStreamingConfig.username();
+        this.password = mqttStreamingConfig.password();
         this.accessCode = accessCode;
     }
 
@@ -56,7 +56,7 @@ public class InboundDataSource extends MqttDataSource {
     }
 
     @Override
-    protected void updateMqttSubscribeTopic() {
+    protected void updateTopic() {
         // Keep the subscribe topic as is, since it is set during the creation of the data source
     }
 

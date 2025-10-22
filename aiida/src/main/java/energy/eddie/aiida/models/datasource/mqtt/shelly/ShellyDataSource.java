@@ -20,7 +20,7 @@ public class ShellyDataSource extends MqttDataSource {
     }
 
     @Override
-    protected void updateMqttSubscribeTopic() {
-        this.mqttSubscribeTopic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
+    protected void updateTopic() {
+        this.topic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
     }
 }

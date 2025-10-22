@@ -219,7 +219,7 @@ public class DataSourceService {
 
         if (dataSource instanceof MqttDataSource mqttDataSource) {
             dataSourceSecrets = new DataSourceSecretsDto(dataSourceId, SecretGenerator.generate());
-            mqttDataSource.setMqttPassword(bCryptPasswordEncoder.encode(dataSourceSecrets.plaintextPassword()));
+            mqttDataSource.setPassword(bCryptPasswordEncoder.encode(dataSourceSecrets.plaintextPassword()));
 
             findDataSourceAdapter(dataSourceId).ifPresentOrElse(
                     adapter -> updateDataSourceAdapterState(

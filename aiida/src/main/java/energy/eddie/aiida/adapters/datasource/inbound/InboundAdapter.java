@@ -58,8 +58,8 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     protected MqttConnectionOptions createConnectOptions() {
         var connectOptions = super.createConnectOptions();
 
-        connectOptions.setUserName(dataSource().mqttUsername());
-        connectOptions.setPassword(dataSource().mqttPassword().getBytes(StandardCharsets.UTF_8));
+        connectOptions.setUserName(dataSource().username());
+        connectOptions.setPassword(dataSource().password().getBytes(StandardCharsets.UTF_8));
 
         return connectOptions;
     }

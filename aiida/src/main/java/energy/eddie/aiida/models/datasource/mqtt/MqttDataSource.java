@@ -22,15 +22,15 @@ public abstract class MqttDataSource extends DataSource {
     private static final String TOPIC_SUFFIX = "/+";
 
     @JsonProperty
-    protected String mqttInternalHost;
+    protected String internalHost;
     @JsonProperty
-    protected String mqttExternalHost;
+    protected String externalHost;
     @JsonProperty
-    protected String mqttSubscribeTopic;
+    protected String topic;
     @JsonProperty
-    protected String mqttUsername;
+    protected String username;
     @JsonIgnore
-    protected String mqttPassword;
+    protected String password;
     @Enumerated(EnumType.STRING)
     protected MqttAction action;
     @Enumerated(EnumType.STRING)
@@ -45,40 +45,44 @@ public abstract class MqttDataSource extends DataSource {
         this.aclType = MqttAclType.ALLOW;
     }
 
-    public String mqttInternalHost() {
-        return mqttInternalHost;
+    public String internalHost() {
+        return internalHost;
     }
 
-    public String mqttExternalHost() {
-        return mqttExternalHost;
+    public String externalHost() {
+        return externalHost;
     }
 
-    public String mqttSubscribeTopic() {
-        return mqttSubscribeTopic;
+    public String topic() {
+        return topic;
     }
 
-    public String mqttUsername() {
-        return mqttUsername;
+    public String username() {
+        return username;
     }
 
-    public String mqttPassword() {
-        return mqttPassword;
+    public String password() {
+        return password;
     }
 
-    public void setMqttPassword(String mqttPassword) {
-        this.mqttPassword = mqttPassword;
+    public void setPassword(String mqttPassword) {
+        this.password = mqttPassword;
     }
 
-    public void generateMqttSettings(MqttConfiguration config, BCryptPasswordEncoder encoder, String plaintextPassword) {
-        this.mqttInternalHost = config.internalHost();
-        this.mqttExternalHost = config.externalHost();
-        this.mqttSubscribeTopic = TOPIC_PREFIX + SecretGenerator.generate();
-        this.mqttUsername = SecretGenerator.generate();
-        this.mqttPassword = encoder.encode(plaintextPassword);
+    public void generateMqttSettings(
+            MqttConfiguration config,
+            BCryptPasswordEncoder encoder,
+            String plaintextPassword
+    ) {
+        this.internalHost = config.internalHost();
+        this.externalHost = config.externalHost();
+        this.topic = TOPIC_PREFIX + SecretGenerator.generate();
+        this.username = SecretGenerator.generate();
+        this.password = encoder.encode(plaintextPassword);
     }
 
     @PostPersist
-    protected void updateMqttSubscribeTopic() {
-        this.mqttSubscribeTopic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
+    protected void updateTopic() {
+        this.topic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
     }
 }

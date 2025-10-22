@@ -22,7 +22,7 @@ public class SmartGatewaysDataSource extends MqttDataSource {
     }
 
     @Override
-    protected void updateMqttSubscribeTopic() {
-        this.mqttSubscribeTopic = SecretGenerator.generate() + TOPIC_SUFFIX;
+    protected void updateTopic() {
+        this.topic = SecretGenerator.generate() + TOPIC_SUFFIX;
     }
 }

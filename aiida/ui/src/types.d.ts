@@ -21,10 +21,10 @@ export type AiidaDataSource = {
   enabled: boolean
   icon: AiidaDataSourceIcon
   accessCode?: string
-  mqttInternalHost?: string
-  mqttExternalHost?: string
-  mqttSubscribeTopic?: string
-  mqttUsername?: string
+  internalHost?: string
+  externalHost?: string
+  topic?: string
+  username?: string
   //DatasourceType = MODBUS
   modbusIp?: string
   modbusVendor?: string
