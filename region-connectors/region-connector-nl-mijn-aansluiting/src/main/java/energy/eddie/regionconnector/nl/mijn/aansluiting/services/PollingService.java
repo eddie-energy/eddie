@@ -202,13 +202,13 @@ public class PollingService implements AutoCloseable, CommonPollingService<MijnA
 
                 // Remove already received meter readings or before the start date from the response
                 var lastTimestamp = start.atStartOfDay(timestamp.getZone());
-                LOGGER.info("Removing all energy data before optional timestamp {} for permission request {}",
+                LOGGER.info("Removing all energy data before timestamp {} for permission request {}",
                             lastTimestamp,
                             permissionId);
                 removeMeterReadingsBefore(register, lastTimestamp);
 
                 // Remove the rest of the meter readings which are not part of the permission request timeframe
-                LOGGER.info("Removing all energy data after optional timestamp {} for permission request {}",
+                LOGGER.info("Removing all energy data after timestamp {} for permission request {}",
                             end,
                             permissionId);
                 removeMeterReadingsAfter(register, endOfDay(end, timestamp.getZone()));
@@ -222,6 +222,10 @@ public class PollingService implements AutoCloseable, CommonPollingService<MijnA
         removeMeterReadings(register, lastTimestamp::isBefore);
     }
 
+    private static void removeMeterReadingsAfter(Register register, ZonedDateTime lastTimestamp) {
+        removeMeterReadings(register, lastTimestamp::isAfter);
+    }
+
     private static void removeMeterReadings(Register register, Predicate<ZonedDateTime> func) {
         List<Reading> list = new ArrayList<>();
         for (Reading reading : register.getReadingList()) {
@@ -230,16 +234,12 @@ public class PollingService implements AutoCloseable, CommonPollingService<MijnA
                 list.add(reading);
             }
         }
-        LOGGER.atInfo()
+        LOGGER.atDebug()
               .addArgument(list::size)
               .addArgument(() -> register.getReadingList().size())
-              .log("Filtered meter readings resulting in a list of {} out of {} initial records");
+              .log("Retained meter readings resulting in a list of {} out of {} initial records");
 
         register.setReadingList(list);
-    }
-
-    private static void removeMeterReadingsAfter(Register register, ZonedDateTime lastTimestamp) {
-        removeMeterReadings(register, lastTimestamp::isAfter);
     }
 
     private List<MijnAansluitingResponse> filterEnergyType(
