@@ -1,0 +1,10 @@
+@startuml
+
+"Data Source" -> "Data Source\nAdapter" : sends data\n(over e.g. MQTT)
+"Data Source\nAdapter" -> Aggregator : forwards data
+Aggregator -> DB : stores data
+"Permission\nScheduler" -> Streamer : creates streamers\nfor permissions
+Aggregator -> Streamer : forwards filtered and processed data
+Streamer <-> EP : streams data\nover MQTT
+
+@enduml
