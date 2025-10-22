@@ -78,10 +78,6 @@
                         <xsd:annotation>
                             <xsd:documentation>Grund der Beendigung fÃ¼r ReasonKey 0</xsd:documentation>
                         </xsd:annotation>
-                        <!-- Custom addition, since docs do not match original schema, remove the simple type to get the original schema
-                            - https://web.archive.org/web/20251020135205/https%3A%2F%2Fwww.ebutilities.at%2Fdocuments%2F2025%2F09%2FCMRevoke_01p10_Schemadoku.pdf
-                            - https://web.archive.org/web/20251020135237/https%3A%2F%2Fwww.ebutilities.at%2Fschemata%2Fcustomerconsent%2Fcmrevoke%2F01p10%2FCMRevoke_01p10.xsd
-                        -->
                         <xsd:simpleType>
                             <xsd:restriction base="xsd:string">
                                 <xsd:maxLength value="50"/>
