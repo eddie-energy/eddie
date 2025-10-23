@@ -63,7 +63,7 @@ public class Permission {
     private String connectionId;
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @PrimaryKeyJoinColumn
-    @JsonIgnore
+    @JsonProperty
     @Nullable
     private MqttStreamingConfig mqttStreamingConfig;
     @Column(nullable = false)

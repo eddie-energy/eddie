@@ -135,6 +135,20 @@ onClickOutside(target, () => (showToolTip.value = false))
           <dt>Data Source</dt>
           <dd>{{ permission.dataSource?.name ?? 'undefined' }}</dd>
         </div>
+        <div
+          class="permission-field"
+          v-if="permission.mqttStreamingConfig && permission.mqttStreamingConfig.serverUri"
+        >
+          <dt>Streaming Uri</dt>
+          <dd>{{ permission.mqttStreamingConfig.serverUri }}</dd>
+        </div>
+        <div
+          class="permission-field"
+          v-if="permission.mqttStreamingConfig && permission.mqttStreamingConfig.dataTopic"
+        >
+          <dt>Streaming Topic</dt>
+          <dd>{{ permission.mqttStreamingConfig.dataTopic }}</dd>
+        </div>
       </template>
       <template v-if="permission.dataNeed.type === 'inbound-aiida' && permission.dataSource">
         <div
