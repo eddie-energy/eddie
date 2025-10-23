@@ -1,5 +1,6 @@
 package energy.eddie.aiida.models.permission;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,8 +20,10 @@ public class MqttStreamingConfig {
     @Column(name = "password", nullable = false)
     private String password;
     @Column(name = "server_uri", nullable = false)
+    @JsonProperty
     private String serverUri;
     @Column(name = "data_topic", nullable = false)
+    @JsonProperty
     private String dataTopic;
     @Column(name = "status_topic", nullable = false)
     private String statusTopic;

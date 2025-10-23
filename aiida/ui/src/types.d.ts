@@ -46,12 +46,18 @@ export type AiidaPermission = {
   grantTime?: string
   dataNeed: AiidaDataNeed
   dataSource?: AiidaDataSource
+  mqttStreamingConfig?: AiidaPermissionStreamingConfig
   userId: string
   unimplemented: {
     packageGraph: any
     targetIP: any
     lastPackageSent: any
   }
+}
+
+export type AiidaPermissionStreamingConfig = {
+  dataTopic: string
+  serverUri: string
 }
 
 export type AiidaDataSourceType = {
