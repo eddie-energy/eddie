@@ -56,8 +56,8 @@ export default withMermaid(
               link: "/1-running/database.md",
             },
             {
-              text: "Keycloak",
-              link: "/1-running/keycloak.md",
+              text: "Data Flow",
+              link: "/1-running/data-flow.md",
             },
             {
               text: "Data Sources",
@@ -111,25 +111,16 @@ export default withMermaid(
               link: "/1-running/emqx.md"
             },
             {
-              text: "Permissions",
-              link: "/1-running/permission.md",
-            },
-            {
-              text: "Data Flow",
-              link: "/1-running/data-flow.md",
-            },
-            {
               text: "Errors and Logging",
               link: "/1-running/errors-logging.md",
             },
-          ],
-        },
-        {
-          text: "Integrating",
-          items: [
             {
-              text: "EDDIE Framework",
-              link: "/2-integrating/eddie.md",
+              text: "Keycloak",
+              link: "/1-running/keycloak.md",
+            },
+            {
+              text: "Permissions",
+              link: "/1-running/permission.md",
             },
             {
               text: "Schemas",
@@ -137,13 +128,17 @@ export default withMermaid(
               items: [
                 {
                   text: "CIM",
-                  link: "/2-integrating/schemas/cim/cim.md",
+                  link: "/1-running/schemas/cim/cim.md",
                   items: [
                     {
                       text: "Real Time Data Market Document",
-                      link: "/2-integrating/schemas/cim/real-time-data-market-document.md",
+                      link: "/1-running/schemas/cim/real-time-data-market-document.md",
                     },
                   ],
+                },
+                {
+                  text: "Raw",
+                  link: "/1-running/schemas/raw/raw.md",
                 },
               ],
             },
@@ -154,7 +149,7 @@ export default withMermaid(
           items: [
             {
               text: "Adding a data source",
-              link: "/3-extending/data-source/data-source.md",
+              link: "/2-extending/data-source/data-source.md",
               collapsed: true,
               items: [
                 {
@@ -164,8 +159,19 @@ export default withMermaid(
               ],
             },
             {
+              text: "Adding a schema",
+              link: "/2-extending/schema/schema.md",
+              collapsed: true,
+              items: [
+                {
+                  text: "Documentation",
+                  link: "/2-extending/schema/documentation",
+                },
+              ],
+            },
+            {
               text: "Edit documentation",
-              link: "/3-extending/documentation",
+              link: "/2-extending/documentation",
             },
           ],
         },

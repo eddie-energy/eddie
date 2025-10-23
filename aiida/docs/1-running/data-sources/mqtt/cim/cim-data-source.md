@@ -4,7 +4,7 @@
 
 The CIM data source is a general purpose MQTT-based data source that allows to connect metering devices for which no data source adapter is implemented yet.
 The CIM data source uses the
-`TimeSeries` object from the [Real Time Data Market Document](../../../../2-integrating/schemas/cim/real-time-data-market-document.md).
+`TimeSeries` object from the [Real Time Data Market Document](../../../schemas/cim/real-time-data-market-document.md).
 
 The device which should be connected must be able to publish its data in the CIM format to an MQTT broker.
 
@@ -47,10 +47,10 @@ Data of the original source must be parsed into the a `TimeSeries` JSON object w
 - `quantities`: An array of quantities with the following fields:
     - `quantity`: The quantity value of the data.
     -
-    `type`: The type of the quantity. See the table in the [Real Time Data Market Document](../../../../2-integrating/schemas/cim/real-time-data-market-document.md) for
+  `type`: The type of the quantity. See the table in the [Real Time Data Market Document](../../../schemas/cim/real-time-data-market-document.md) for
     supported types.
     - `quality`: The quality of the quantity. See the table in
-      the [Real Time Data Market Document](../../../../2-integrating/schemas/cim/real-time-data-market-document.md)for supported qualities.
+      the [Real Time Data Market Document](../../../schemas/cim/real-time-data-market-document.md)for supported qualities.
 
 ### Setup in AIIDA
 
