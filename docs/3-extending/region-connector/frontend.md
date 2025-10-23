@@ -5,6 +5,7 @@ The custom element will be loaded with the following attributes:
 
 - `connection-id`: Optional value that can be used to identify a customer.
 - `data-need-id`: Required by the backend to identify the requested data.
+- `data-need-type`: Can be used to adjust content based on the type of data.
 - `accounting-point-id`: Optional default for the accounting point ID.
 - `jump-off-url`: Optional URL to link or redirect to after the permission request is submitted.
 - `company-id`: Optional identifier of the permission administrator.
