@@ -2,23 +2,31 @@
 import GlobeIcon from '@/assets/icons/GlobeIcon.svg'
 import { useI18n } from 'vue-i18n'
 const { locale, availableLocales } = useI18n()
+
+const localizedLanguageNames = availableLocales.map((loc) => {
+  return {
+    loc,
+    name: new Intl.DisplayNames([loc], { type: 'language' }).of(loc),
+  }
+})
 </script>
 
 <template>
   <div class="wrapper" tabindex="0">
     <div class="lang-switch text-normal" :data-text="locale">
-      {{ locale.toUpperCase() }}
+      {{ new Intl.DisplayNames([locale], { type: 'language' }).of(locale) }}
       <GlobeIcon />
     </div>
     <div class="dropdown">
       <button
-        v-for="loc in availableLocales"
-        :key="loc"
-        @click="locale = loc"
+        v-for="loc in localizedLanguageNames"
+        :data-text="loc.name"
+        :key="loc.loc"
+        @click="locale = loc.loc"
         class="locale text-normal"
-        :class="{ current: loc === locale }"
+        :class="{ current: loc.loc === locale }"
       >
-        {{ loc.toUpperCase() }}
+        {{ loc.name }}
       </button>
     </div>
   </div>
@@ -27,6 +35,7 @@ const { locale, availableLocales } = useI18n()
 <style scoped>
 .wrapper {
   position: relative;
+  text-transform: capitalize;
 }
 .wrapper:hover > .dropdown,
 .wrapper:focus-within > .dropdown {
@@ -44,11 +53,26 @@ const { locale, availableLocales } = useI18n()
   }
 }
 .locale {
+  display: flex;
+  flex-direction: column;
+  text-transform: capitalize;
   cursor: pointer;
   transition:
     color 0.3s ease,
     font-weight 0.3s ease,
     text-decoration 0.3s ease;
+  &:after {
+    content: attr(data-text);
+    height: 0;
+    visibility: hidden;
+    overflow: hidden;
+    user-select: none;
+    pointer-events: none;
+    font-weight: var(--font-weight-bold);
+    @media speech {
+      display: none;
+    }
+  }
   &:hover,
   &:focus {
     color: var(--eddie-primary);
@@ -63,6 +87,7 @@ const { locale, availableLocales } = useI18n()
   top: 100%;
   right: 0;
   flex-direction: column;
+  align-items: flex-start;
   gap: var(--spacing-sm);
   background-color: var(--light);
   padding: var(--spacing-md);

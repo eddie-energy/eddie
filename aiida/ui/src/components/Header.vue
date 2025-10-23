@@ -67,7 +67,7 @@ const { t } = useI18n()
 }
 
 .logo {
-  height: 3rem;
+  height: 2.5rem;
   width: auto;
 }
 
@@ -105,6 +105,12 @@ const { t } = useI18n()
 
 .outbound {
   transform: rotate(180deg);
+}
+
+@media screen and (min-width: 640px) {
+  .logo {
+    height: 3rem;
+  }
 }
 
 @media screen and (min-width: 1024px) {
