@@ -107,6 +107,10 @@ export default withMermaid(
               ],
             },
             {
+              text: "EMQX",
+              link: "/1-running/emqx.md"
+            },
+            {
               text: "Permissions",
               link: "/1-running/permission.md",
             },
