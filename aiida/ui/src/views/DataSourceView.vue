@@ -27,7 +27,7 @@ function edit(target: AiidaDataSource) {
 
 async function reset(id: string) {
   const { plaintextPassword } = await regenerateDataSourceSecrets(id)
-  success('Successfully reset MQTT password')
+  success('datasources.modal.mqttResetSuccess')
   passModal.value?.showModal(plaintextPassword)
 }
 </script>

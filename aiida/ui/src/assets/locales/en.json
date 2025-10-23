@@ -65,6 +65,7 @@
       "mqttPasswordLabel": "Make sure to copy the password now. You will not be able to view it again.",
       "mqttCopyTitle": "Copy Password",
       "mqttResetTitle": "Reset Password",
+      "mqttResetSuccess": "Successfully reset MQTT password",
       "activationKey": "Activation Key",
       "isRequired": "is a required field"
     }

@@ -31,6 +31,7 @@
       "mqttTopic": "MQTT-Topic",
       "mqttUsername": "MQTT-Benutzername",
       "mqttPassword": "MQTT-Passwort",
+      "mqttResetSuccess": "MQTT-Passwort erfolgreich zurückgesetzt",
       "enabled": "Aktiviert",
       "resetPasswordButton": "Passwort zurücksetzen",
       "downloadLatestMessageButton": "Neueste Nachricht herunterladen"

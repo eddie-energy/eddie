@@ -49,7 +49,7 @@ const { t } = useI18n()
       </RouterLink>
       <RouterLink
         to="/account"
-        :data-text="t('header.account') + 'aaa'"
+        :data-text="t('header.account')"
         class="link-with-bold-hover nav-link"
       >
         <span class="user-profile-link"> <AccountIcon /> {{ t('header.account') }}</span>
@@ -134,6 +134,7 @@ const { t } = useI18n()
   }
   .user-profile-link {
     flex-direction: row-reverse;
+    margin-right: 0.15em;
   }
   .header-nav {
     position: unset;
