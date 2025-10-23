@@ -123,7 +123,6 @@ public class DataSourceService {
         String plaintextPassword = null;
 
         var dataSource = DataSource.createFromDto(dto, currentUserId);
-        repository.save(dataSource); // This save generates the datasource ID
         LOGGER.info("Created new data source ({}) of type {}", dataSource.id(), dataSource.dataSourceType());
 
         if (dataSource instanceof MqttDataSource mqttDataSource) {
@@ -136,10 +135,9 @@ public class DataSourceService {
                 mqttDataSource.generateMqttSettings(mqttConfiguration, bCryptPasswordEncoder, plaintextPassword);
                 LOGGER.info("Generated MQTT settings for data source ({})", dataSource.id());
             }
-
-            repository.save(dataSource);  // This save persists the subscribe topic with the generated ID
         }
 
+        repository.save(dataSource);
         startDataSource(dataSource);
 
         return new DataSourceSecretsDto(dataSource.id(), plaintextPassword);

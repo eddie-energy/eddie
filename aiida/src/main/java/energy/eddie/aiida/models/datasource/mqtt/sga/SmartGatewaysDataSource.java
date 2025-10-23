@@ -3,7 +3,6 @@ package energy.eddie.aiida.models.datasource.mqtt.sga;
 import energy.eddie.aiida.dtos.datasource.mqtt.sga.SmartGatewaysDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
-import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
@@ -12,6 +11,8 @@ import java.util.UUID;
 @Entity
 @DiscriminatorValue(DataSourceType.Identifiers.SMART_GATEWAYS_ADAPTER)
 public class SmartGatewaysDataSource extends MqttDataSource {
+    private static final int MAX_CHARACTERS_FOR_SGA_TOPIC_PREFIX = 10;
+    private static final int MAX_CHARACTERS_FOR_SECRET = MAX_CHARACTERS_FOR_SGA_TOPIC_PREFIX - TOPIC_PREFIX.length();
     private static final String TOPIC_SUFFIX = "/dsmr/reading/+";
 
     @SuppressWarnings("NullAway")
@@ -22,7 +23,12 @@ public class SmartGatewaysDataSource extends MqttDataSource {
     }
 
     @Override
-    protected void updateTopic() {
-        this.topic = SecretGenerator.generate() + TOPIC_SUFFIX;
+    protected String topicFormattedForUi() {
+        return topic.replace(TOPIC_SUFFIX, "");
+    }
+
+    @Override
+    protected void generateTopic() {
+        this.topic = TOPIC_PREFIX + id.toString().substring(0, MAX_CHARACTERS_FOR_SECRET) + TOPIC_SUFFIX;
     }
 }

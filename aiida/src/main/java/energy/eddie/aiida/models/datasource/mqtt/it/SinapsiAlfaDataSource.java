@@ -41,7 +41,12 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
     }
 
     @Override
-    public void setPassword(String password) {
-        // ignore, password is fixed
+    public void setPassword(String hashedPassword) {
+        // Ignore, as the password is set in the constructor
+    }
+
+    @Override
+    protected void generateTopicAndUsername() {
+        // Ignore, as the username and the topic are set in the constructor
     }
 }

@@ -56,8 +56,8 @@ public class InboundDataSource extends MqttDataSource {
     }
 
     @Override
-    protected void updateTopic() {
-        // Keep the subscribe topic as is, since it is set during the creation of the data source
+    protected void generateTopicAndUsername() {
+        // Ignore, as the username and the topic are set in the constructor
     }
 
     public String accessCode() {

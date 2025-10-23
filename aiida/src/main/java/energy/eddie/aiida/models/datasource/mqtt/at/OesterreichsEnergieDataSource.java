@@ -11,10 +11,17 @@ import java.util.UUID;
 @Entity
 @DiscriminatorValue(DataSourceType.Identifiers.SMART_METER_ADAPTER)
 public class OesterreichsEnergieDataSource extends MqttDataSource {
+    private static final String TOPIC_SUFFIX = "/data";
+
     @SuppressWarnings("NullAway")
     protected OesterreichsEnergieDataSource() {}
 
     public OesterreichsEnergieDataSource(OesterreichsEnergieDataSourceDto dto, UUID userId) {
         super(dto, userId);
+    }
+
+    @Override
+    protected void generateTopic() {
+        this.topic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
     }
 }
