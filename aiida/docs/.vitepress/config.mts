@@ -48,8 +48,16 @@ export default withMermaid(
               link: "/1-running/OPERATION.md",
             },
             {
+              text: "Components",
+              link: "/1-running/components.md",
+            },
+            {
               text: "Database",
-              link: "/1-running/database/database.md",
+              link: "/1-running/database.md",
+            },
+            {
+              text: "Keycloak",
+              link: "/1-running/keycloak.md",
             },
             {
               text: "Data Sources",
@@ -100,11 +108,7 @@ export default withMermaid(
             },
             {
               text: "Permissions",
-              link: "/1-running/permission/permission.md",
-            },
-            {
-              text: "Keycloak",
-              link: "/1-running/keycloak.md",
+              link: "/1-running/permission.md",
             },
             {
               text: "Data Flow",

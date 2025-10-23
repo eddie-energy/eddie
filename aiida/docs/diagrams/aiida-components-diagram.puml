@@ -1,0 +1,57 @@
+@startuml aiida_deployment_view
+' component diagram
+
+' skinparam linetype ortho
+
+skinparam artifact{
+  BorderColor black
+  BackgroundColor transparent
+}
+skinparam node{
+  BorderColor black
+  BackgroundColor white
+}
+skinparam rectangle{
+  ' BorderColor transparent
+  BackgroundColor transparent
+  FontColor black
+}
+
+rectangle "AIIDA System" {
+  node "In-house Device" as aiida {
+    artifact "AIIDA Application" as aiidaApp
+    artifact "EMQX \nMQTT Broker" as emqx
+    artifact "TimescaleDB" as db
+    artifact "Keycloak" as keycloak
+
+    aiidaApp -down- emqx : MQTT
+    aiidaApp -down- db : SQL
+    aiidaApp -down- keycloak : OIDC
+    db -[hidden]left- keycloak
+    db -right- emqx : SQL
+  }
+
+  node "Eligible Party Infrastructure"  as epInfra{
+    artifact "AIIDA Region\nConnector" as regionConnector
+    artifact "EMQX \nMQTT Broker" as emqxEp
+    artifact "EMQX \nIAM DB" as emqxIam
+
+    emqxEp -left- emqxIam : SQL
+    regionConnector -down- emqxEp : MQTT
+    regionConnector -down- emqxIam : SQL
+
+  }
+
+  aiidaApp -left- emqxEp : MQTT
+  aiidaApp -up- REST : HTTP
+  aiidaApp -up- UI : HTTP
+
+}
+node "Data Source" as dataSource
+
+dataSource -left- aiidaApp : Modbus
+dataSource -left- emqx : MQTT
+
+}
+
+@enduml
