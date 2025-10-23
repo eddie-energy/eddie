@@ -72,8 +72,8 @@ public abstract class MqttDataSource extends DataSource {
         return password;
     }
 
-    public void setPassword(String hashedPassword) {
-        this.password = hashedPassword;
+    public void setPassword(String plaintextPassword, BCryptPasswordEncoder passwordEncoder) {
+        this.password = passwordEncoder.encode(plaintextPassword);
     }
 
     public void generateMqttSettings(
@@ -83,7 +83,7 @@ public abstract class MqttDataSource extends DataSource {
     ) {
         this.internalHost = config.internalHost();
         this.externalHost = config.externalHost();
-        this.password = encoder.encode(plaintextPassword);
+        setPassword(plaintextPassword, encoder);
     }
 
     /**
@@ -108,7 +108,6 @@ public abstract class MqttDataSource extends DataSource {
     /**
      * This method generates the Topic and Username for a MQTT data source using the ID of the data source.
      * This is a lifecycle event and is executed before persisting it to the database.
-     *
      * This is the default behaviour of a MQTT data source.
      */
     @PrePersist

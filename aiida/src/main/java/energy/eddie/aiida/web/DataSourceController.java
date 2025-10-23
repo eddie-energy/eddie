@@ -3,10 +3,7 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceTypeDto;
-import energy.eddie.aiida.errors.DataSourceNotFoundException;
-import energy.eddie.aiida.errors.InvalidUserException;
-import energy.eddie.aiida.errors.ModbusConnectionException;
-import energy.eddie.aiida.errors.SinapsiAlflaEmptyConfigException;
+import energy.eddie.aiida.errors.*;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.services.DataSourceService;
@@ -222,10 +219,13 @@ public class DataSourceController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Secrets regenerated successfully",
                     content = @Content(schema = @Schema(implementation = DataSourceSecretsDto.class))),
-            @ApiResponse(responseCode = "404", description = "Datasource not found", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
+            @ApiResponse(responseCode = "403", description = "Regenerating secrets is not allowed for this data source.",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
+            @ApiResponse(responseCode = "404", description = "Datasource not found",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
     })
     @PostMapping(value = "{id}/regenerate-secrets")
-    public ResponseEntity<DataSourceSecretsDto> regenerateSecrets(@PathVariable("id") UUID dataSourceId) throws DataSourceNotFoundException {
+    public ResponseEntity<DataSourceSecretsDto> regenerateSecrets(@PathVariable("id") UUID dataSourceId) throws DataSourceNotFoundException, DataSourceSecretGenerationNotSupportedException {
         LOGGER.info("Regenerating secrets for datasource with ID: {}", dataSourceId);
 
         var dataSourceSecrets = service.regenerateSecrets(dataSourceId);

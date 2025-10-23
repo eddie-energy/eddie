@@ -9,10 +9,7 @@ import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
 import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
-import energy.eddie.aiida.errors.DataSourceNotFoundException;
-import energy.eddie.aiida.errors.InvalidUserException;
-import energy.eddie.aiida.errors.ModbusConnectionException;
-import energy.eddie.aiida.errors.SinapsiAlflaEmptyConfigException;
+import energy.eddie.aiida.errors.*;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
@@ -120,7 +117,7 @@ public class DataSourceService {
     @Transactional
     public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException, SinapsiAlflaEmptyConfigException {
         var currentUserId = authService.getCurrentUserId();
-        String plaintextPassword = null;
+        var plaintextPassword = "";
 
         var dataSource = DataSource.createFromDto(dto, currentUserId);
         LOGGER.info("Created new data source ({}) of type {}", dataSource.id(), dataSource.dataSourceType());
@@ -209,26 +206,24 @@ public class DataSourceService {
     }
 
     @Transactional
-    public DataSourceSecretsDto regenerateSecrets(UUID dataSourceId) throws DataSourceNotFoundException {
+    public DataSourceSecretsDto regenerateSecrets(UUID dataSourceId) throws DataSourceNotFoundException, DataSourceSecretGenerationNotSupportedException {
         var dataSource = repository.findById(dataSourceId)
                                    .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
 
-        var dataSourceSecrets = new DataSourceSecretsDto(dataSourceId, null);
+        var mqttDataSource = castToMqttDataSourceIfSecretRegenerationIsSupported(dataSource);
+        var dataSourceSecrets = new DataSourceSecretsDto(dataSourceId, SecretGenerator.generate());
 
-        if (dataSource instanceof MqttDataSource mqttDataSource) {
-            dataSourceSecrets = new DataSourceSecretsDto(dataSourceId, SecretGenerator.generate());
-            mqttDataSource.setPassword(bCryptPasswordEncoder.encode(dataSourceSecrets.plaintextPassword()));
+        mqttDataSource.setPassword(dataSourceSecrets.plaintextPassword(), bCryptPasswordEncoder);
 
-            findDataSourceAdapter(dataSourceId).ifPresentOrElse(
-                    adapter -> updateDataSourceAdapterState(
-                            adapter,
-                            dataSource,
-                            dataSource.enabled(),
-                            dataSource.enabled()),
-                    () -> startDataSource(dataSource));
+        findDataSourceAdapter(dataSourceId).ifPresentOrElse(
+                adapter -> updateDataSourceAdapterState(
+                        adapter,
+                        dataSource,
+                        dataSource.enabled(),
+                        dataSource.enabled()),
+                () -> startDataSource(dataSource));
 
-            LOGGER.debug("Regenerated secrets for data source {}", dataSourceId);
-        }
+        LOGGER.debug("Regenerated secrets for data source {}", dataSourceId);
 
         return dataSourceSecrets;
     }
@@ -259,6 +254,19 @@ public class DataSourceService {
     private void closeDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
         aggregator.removeDataSourceAdapter(dataSourceAdapter);
         dataSourceAdapters.remove(dataSourceAdapter);
+    }
+
+    private MqttDataSource castToMqttDataSourceIfSecretRegenerationIsSupported(DataSource dataSource) throws DataSourceSecretGenerationNotSupportedException {
+        if (dataSource instanceof MqttDataSource mqttDataSource) {
+            if (mqttDataSource.dataSourceType() == DataSourceType.INBOUND ||
+                mqttDataSource.dataSourceType() == DataSourceType.SINAPSI_ALFA) {
+                throw new DataSourceSecretGenerationNotSupportedException(dataSource.dataSourceType());
+            }
+
+            return mqttDataSource;
+        }
+
+        throw new DataSourceSecretGenerationNotSupportedException(dataSource.dataSourceType());
     }
 
     private void updateDataSourceAdapterState(

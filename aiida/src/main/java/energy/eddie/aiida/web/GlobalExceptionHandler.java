@@ -217,4 +217,12 @@ public class GlobalExceptionHandler {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errors);
     }
+
+    @ExceptionHandler(value = {DataSourceSecretGenerationNotSupportedException.class})
+    protected ResponseEntity<Map<String, List<EddieApiError>>> handleDataSourceSecretGenerationNotSupportedException(
+            DataSourceSecretGenerationNotSupportedException exception
+    ) {
+        var message = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(message);
+    }
 }

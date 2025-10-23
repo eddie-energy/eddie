@@ -7,6 +7,7 @@ import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.UUID;
 
@@ -41,7 +42,7 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
     }
 
     @Override
-    public void setPassword(String hashedPassword) {
+    public void setPassword(String hashedPassword, BCryptPasswordEncoder passwordEncoder) {
         // Ignore, as the password is set in the constructor
     }
 
