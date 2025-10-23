@@ -65,10 +65,6 @@ watch([selectedTab, permissions, selectedPermissionCategory], () => {
   }
 })
 
-console.log(
-  `permissions.emptyList${selectedTab.value}${selectedPermissionCategory.value === 'outbound-aiida' ? 'Inbound' : 'Outbound'}`,
-)
-
 const slicedPermissions = computed(() => {
   if (showMore.value) {
     return activePermissions.value
