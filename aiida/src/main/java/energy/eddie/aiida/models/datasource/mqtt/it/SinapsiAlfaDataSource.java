@@ -7,6 +7,7 @@ import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.UUID;
 
@@ -29,19 +30,24 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
             throw new SinapsiAlflaEmptyConfigException();
         }
 
-        this.mqttInternalHost = config.mqttHost();
-        this.mqttExternalHost = config.mqttHost();
-        this.mqttSubscribeTopic = SinapsiAlfaConfiguration.TOPIC_PREFIX
-                                  + config.mqttUsername()
-                                  + SinapsiAlfaConfiguration.TOPIC_INFIX
-                                  + activationKey
-                                  + SinapsiAlfaConfiguration.TOPIC_SUFFIX;
-        this.mqttUsername = config.mqttUsername();
-        this.mqttPassword = config.mqttPassword();
+        this.internalHost = config.mqttHost();
+        this.externalHost = config.mqttHost();
+        this.topic = SinapsiAlfaConfiguration.TOPIC_PREFIX
+                     + config.mqttUsername()
+                     + SinapsiAlfaConfiguration.TOPIC_INFIX
+                     + activationKey
+                     + SinapsiAlfaConfiguration.TOPIC_SUFFIX;
+        this.username = config.mqttUsername();
+        this.password = config.mqttPassword();
     }
 
     @Override
-    public void setMqttPassword(String password) {
-        // ignore, password is fixed
+    public void setPassword(String hashedPassword, BCryptPasswordEncoder passwordEncoder) {
+        // Ignore, as the password is set in the constructor
+    }
+
+    @Override
+    protected void generateTopicAndUsername() {
+        // Ignore, as the username and the topic are set in the constructor
     }
 }

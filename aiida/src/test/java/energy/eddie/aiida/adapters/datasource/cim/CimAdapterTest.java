@@ -40,8 +40,8 @@ class CimAdapterTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        when(DATA_SOURCE.mqttInternalHost()).thenReturn("tcp://localhost:1883");
-        when(DATA_SOURCE.mqttSubscribeTopic()).thenReturn("aiida/test");
+        when(DATA_SOURCE.internalHost()).thenReturn("tcp://localhost:1883");
+        when(DATA_SOURCE.topic()).thenReturn("aiida/test");
         when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
 
@@ -206,9 +206,9 @@ class CimAdapterTest {
 
             adapter.start().subscribe();
 
-            adapter.connectComplete(false, DATA_SOURCE.mqttInternalHost());
+            adapter.connectComplete(false, DATA_SOURCE.internalHost());
 
-            verify(mockClient).subscribe(DATA_SOURCE.mqttSubscribeTopic(), 2);
+            verify(mockClient).subscribe(DATA_SOURCE.topic(), 2);
         }
     }
 
@@ -218,11 +218,11 @@ class CimAdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
-            when(mockClient.subscribe(DATA_SOURCE.mqttSubscribeTopic(), 2)).thenThrow(new MqttException(998877));
+            when(mockClient.subscribe(DATA_SOURCE.topic(), 2)).thenThrow(new MqttException(998877));
 
             StepVerifier.create(adapter.start())
                         .expectSubscription()
-                        .then(() -> adapter.connectComplete(false, DATA_SOURCE.mqttInternalHost()))
+                        .then(() -> adapter.connectComplete(false, DATA_SOURCE.internalHost()))
                         .expectError()
                         .verify();
         }

@@ -1,5 +1,6 @@
 package energy.eddie.aiida.models.datasource.mqtt;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.config.MqttConfiguration;
@@ -10,7 +11,7 @@ import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.PostPersist;
+import jakarta.persistence.PrePersist;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.UUID;
@@ -22,17 +23,23 @@ public abstract class MqttDataSource extends DataSource {
     private static final String TOPIC_SUFFIX = "/+";
 
     @JsonProperty
-    protected String mqttInternalHost;
+    protected String internalHost;
+
     @JsonProperty
-    protected String mqttExternalHost;
-    @JsonProperty
-    protected String mqttSubscribeTopic;
-    @JsonProperty
-    protected String mqttUsername;
+    protected String externalHost;
+
     @JsonIgnore
-    protected String mqttPassword;
+    protected String topic;
+
+    @JsonProperty
+    protected String username;
+
+    @JsonIgnore
+    protected String password;
+
     @Enumerated(EnumType.STRING)
     protected MqttAction action;
+
     @Enumerated(EnumType.STRING)
     protected MqttAclType aclType;
 
@@ -45,40 +52,67 @@ public abstract class MqttDataSource extends DataSource {
         this.aclType = MqttAclType.ALLOW;
     }
 
-    public String mqttInternalHost() {
-        return mqttInternalHost;
+    public String internalHost() {
+        return internalHost;
     }
 
-    public String mqttExternalHost() {
-        return mqttExternalHost;
+    public String externalHost() {
+        return externalHost;
     }
 
-    public String mqttSubscribeTopic() {
-        return mqttSubscribeTopic;
+    public String topic() {
+        return topic;
     }
 
-    public String mqttUsername() {
-        return mqttUsername;
+    public String username() {
+        return username;
     }
 
-    public String mqttPassword() {
-        return mqttPassword;
+    public String password() {
+        return password;
     }
 
-    public void setMqttPassword(String mqttPassword) {
-        this.mqttPassword = mqttPassword;
+    public void setPassword(String plaintextPassword, BCryptPasswordEncoder passwordEncoder) {
+        this.password = passwordEncoder.encode(plaintextPassword);
     }
 
-    public void generateMqttSettings(MqttConfiguration config, BCryptPasswordEncoder encoder, String plaintextPassword) {
-        this.mqttInternalHost = config.internalHost();
-        this.mqttExternalHost = config.externalHost();
-        this.mqttSubscribeTopic = TOPIC_PREFIX + SecretGenerator.generate();
-        this.mqttUsername = SecretGenerator.generate();
-        this.mqttPassword = encoder.encode(plaintextPassword);
+    public void generateMqttSettings(
+            MqttConfiguration config,
+            BCryptPasswordEncoder encoder,
+            String plaintextPassword
+    ) {
+        this.internalHost = config.internalHost();
+        this.externalHost = config.externalHost();
+        setPassword(plaintextPassword, encoder);
     }
 
-    @PostPersist
-    protected void updateMqttSubscribeTopic() {
-        this.mqttSubscribeTopic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
+    /**
+     * This method formats the topic to correctly display it to the user in the UI.
+     * This topic can then be copied by the user without making any changes to it.
+     *
+     * @return The topic formatted for the UI
+     */
+    @JsonGetter("topic")
+    protected String topicFormattedForUi() {
+        return this.topic.replace(TOPIC_SUFFIX, "");
+    }
+
+    protected void generateTopic() {
+        this.topic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
+    }
+
+    protected void generateUsername() {
+        this.username = id.toString();
+    }
+
+    /**
+     * This method generates the Topic and Username for a MQTT data source using the ID of the data source.
+     * This is a lifecycle event and is executed before persisting it to the database.
+     * This is the default behaviour of a MQTT data source.
+     */
+    @PrePersist
+    protected void generateTopicAndUsername() {
+        generateTopic();
+        generateUsername();
     }
 }

@@ -56,7 +56,7 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
         this.mapper = mapper;
 
         healthSink.asFlux().subscribe(this::setHealthState);
-        this.healthTopic = dataSource.mqttSubscribeTopic().replaceFirst("/#", HEALTH_TOPIC);
+        this.healthTopic = dataSource.topic().replaceFirst("/#", HEALTH_TOPIC);
     }
 
 

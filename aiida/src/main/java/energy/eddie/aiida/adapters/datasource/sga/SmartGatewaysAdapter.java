@@ -37,7 +37,7 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
      */
     public SmartGatewaysAdapter(SmartGatewaysDataSource dataSource, MqttConfiguration mqttConfiguration) {
         super(dataSource, LOGGER, mqttConfiguration);
-        this.topicPrefix = topicPrefixOf(dataSource.mqttSubscribeTopic());
+        this.topicPrefix = topicPrefixOf(dataSource.topic());
         this.expectedTopics = Arrays.stream(SmartGatewaysTopic.values())
                                     .filter(SmartGatewaysTopic::isExpected)
                                     .toList();

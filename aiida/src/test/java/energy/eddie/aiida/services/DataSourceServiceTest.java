@@ -12,6 +12,7 @@ import energy.eddie.aiida.dtos.datasource.mqtt.at.OesterreichsEnergieDataSourceD
 import energy.eddie.aiida.dtos.datasource.simulation.SimulationDataSourceDto;
 import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
 import energy.eddie.aiida.errors.DataSourceNotFoundException;
+import energy.eddie.aiida.errors.DataSourceSecretGenerationNotSupportedException;
 import energy.eddie.aiida.errors.InvalidUserException;
 import energy.eddie.aiida.errors.SinapsiAlflaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -81,7 +82,7 @@ class DataSourceServiceTest {
         var result = dataSourceService.dataSourceByIdOrThrow(DATA_SOURCE_ID);
 
         assertEquals(DATA_SOURCE_ID, result.id());
-        verify(repository, times(1)).findById(DATA_SOURCE_ID);
+        verify(repository).findById(DATA_SOURCE_ID);
     }
 
     @Test
@@ -116,7 +117,7 @@ class DataSourceServiceTest {
 
         assertTrue(result.contains(INBOUND_DATA_SOURCE));
         assertFalse(result.contains(OUTBOUND_DATA_SOURCE));
-        verify(repository, times(1)).findByUserId(USER_ID);
+        verify(repository).findByUserId(USER_ID);
     }
 
     @Test
@@ -130,7 +131,7 @@ class DataSourceServiceTest {
 
         assertTrue(result.contains(OUTBOUND_DATA_SOURCE));
         assertFalse(result.contains(INBOUND_DATA_SOURCE));
-        verify(repository, times(1)).findByUserId(USER_ID);
+        verify(repository).findByUserId(USER_ID);
     }
 
     @Test
@@ -142,9 +143,9 @@ class DataSourceServiceTest {
         var result = dataSourceService.addDataSource(DATA_SOURCE_DTO);
 
         assertNotNull(result.plaintextPassword());
-        verify(bCryptPasswordEncoder, times(1)).encode(anyString());
-        verify(repository, times(2)).save(any());
-        verify(aggregator, times(1)).addNewDataSourceAdapter(any());
+        verify(bCryptPasswordEncoder).encode(anyString());
+        verify(repository).save(any());
+        verify(aggregator).addNewDataSourceAdapter(any());
     }
 
     @Test
@@ -168,9 +169,9 @@ class DataSourceServiceTest {
 
             var result = dataSourceService.addDataSource(dto);
 
-            assertNull(result.plaintextPassword());
-            verify(repository, times(1)).save(any());
-            verify(aggregator, times(1)).addNewDataSourceAdapter(any());
+            assertEquals("", result.plaintextPassword());
+            verify(repository).save(any());
+            verify(aggregator).addNewDataSourceAdapter(any());
         }
     }
 
@@ -182,7 +183,7 @@ class DataSourceServiceTest {
 
         dataSourceService.addDataSource(DATA_SOURCE_DTO);
 
-        verify(repository, times(2)).save(any());
+        verify(repository).save(any());
         verify(aggregator, never()).addNewDataSourceAdapter(any());
     }
 
@@ -191,9 +192,9 @@ class DataSourceServiceTest {
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(mock(DataSource.class)));
         dataSourceService.deleteDataSource(DATA_SOURCE_ID);
 
-        verify(repository, times(1)).findById(DATA_SOURCE_ID);
-        verify(aiidaEventPublisher, times(1)).publishEvent(any(DataSourceDeletionEvent.class));
-        verify(repository, times(1)).delete(any(DataSource.class));
+        verify(repository).findById(DATA_SOURCE_ID);
+        verify(aiidaEventPublisher).publishEvent(any(DataSourceDeletionEvent.class));
+        verify(repository).delete(any(DataSource.class));
     }
 
     @Test
@@ -247,26 +248,24 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldRegenerateSecrets() throws DataSourceNotFoundException {
+    void shouldRegenerateSecrets() throws DataSourceNotFoundException, DataSourceSecretGenerationNotSupportedException {
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(MQTT_OUTBOUND_DATA_SOURCE));
         when(MQTT_OUTBOUND_DATA_SOURCE.enabled()).thenReturn(true);
 
         var result = dataSourceService.regenerateSecrets(DATA_SOURCE_ID);
 
         assertNotNull(result.plaintextPassword());
-        assertNotEquals(MQTT_OUTBOUND_DATA_SOURCE.mqttPassword(), result.plaintextPassword());
-        verify(bCryptPasswordEncoder, times(1)).encode(any());
-        verify(aggregator, times(1)).addNewDataSourceAdapter(any());
+        assertNotEquals(MQTT_OUTBOUND_DATA_SOURCE.password(), result.plaintextPassword());
+        verify(MQTT_OUTBOUND_DATA_SOURCE).setPassword(anyString(), eq(bCryptPasswordEncoder));
+        verify(aggregator).addNewDataSourceAdapter(any());
     }
 
     @Test
-    void shouldNotRegenerateSecretsIfNotMqtt() throws DataSourceNotFoundException {
+    void shouldNotRegenerateSecretsIfNotMqtt() {
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(OUTBOUND_DATA_SOURCE));
 
-        var result = dataSourceService.regenerateSecrets(DATA_SOURCE_ID);
-
-        assertNull(result.plaintextPassword());
-        verify(bCryptPasswordEncoder, never()).encode(any());
+        assertThrows(DataSourceSecretGenerationNotSupportedException.class,
+                     () -> dataSourceService.regenerateSecrets(DATA_SOURCE_ID));
     }
 
     @Test

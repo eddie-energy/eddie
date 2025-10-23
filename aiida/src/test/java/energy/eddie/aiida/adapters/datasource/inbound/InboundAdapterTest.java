@@ -194,9 +194,9 @@ class InboundAdapterTest {
 
             adapter.start().subscribe();
 
-            adapter.connectComplete(false, dataSource.mqttInternalHost());
+            adapter.connectComplete(false, dataSource.internalHost());
 
-            verify(mockClient).subscribe(dataSource.mqttSubscribeTopic(), 2);
+            verify(mockClient).subscribe(dataSource.topic(), 2);
         }
     }
 
@@ -206,11 +206,11 @@ class InboundAdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
-            when(mockClient.subscribe(dataSource.mqttSubscribeTopic(), 2)).thenThrow(new MqttException(998877));
+            when(mockClient.subscribe(dataSource.topic(), 2)).thenThrow(new MqttException(998877));
 
             StepVerifier.create(adapter.start())
                         .expectSubscription()
-                        .then(() -> adapter.connectComplete(false, dataSource.mqttInternalHost()))
+                        .then(() -> adapter.connectComplete(false, dataSource.internalHost()))
                         .expectError()
                         .verify();
         }

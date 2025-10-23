@@ -41,8 +41,8 @@ class OesterreichsEnergieAdapterTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        when(DATA_SOURCE.mqttInternalHost()).thenReturn("tcp://localhost:1883");
-        when(DATA_SOURCE.mqttSubscribeTopic()).thenReturn("aiida/test");
+        when(DATA_SOURCE.internalHost()).thenReturn("tcp://localhost:1883");
+        when(DATA_SOURCE.topic()).thenReturn("aiida/test");
         when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
 
@@ -274,9 +274,9 @@ class OesterreichsEnergieAdapterTest {
 
             adapter.start().subscribe();
 
-            adapter.connectComplete(false, DATA_SOURCE.mqttInternalHost());
+            adapter.connectComplete(false, DATA_SOURCE.internalHost());
 
-            verify(mockClient).subscribe(DATA_SOURCE.mqttSubscribeTopic(), 2);
+            verify(mockClient).subscribe(DATA_SOURCE.topic(), 2);
         }
     }
 
@@ -286,11 +286,11 @@ class OesterreichsEnergieAdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
-            when(mockClient.subscribe(DATA_SOURCE.mqttSubscribeTopic(), 2)).thenThrow(new MqttException(998877));
+            when(mockClient.subscribe(DATA_SOURCE.topic(), 2)).thenThrow(new MqttException(998877));
 
             StepVerifier.create(adapter.start())
                         .expectSubscription()
-                        .then(() -> adapter.connectComplete(false, DATA_SOURCE.mqttInternalHost()))
+                        .then(() -> adapter.connectComplete(false, DATA_SOURCE.internalHost()))
                         .expectError()
                         .verify();
         }
@@ -310,9 +310,9 @@ class OesterreichsEnergieAdapterTest {
                                                 .expectComplete()
                                                 .verifyLater();
 
-        adapter.messageArrived(DATA_SOURCE.mqttSubscribeTopic(),
+        adapter.messageArrived(DATA_SOURCE.topic(),
                                new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
-        adapter.messageArrived(DATA_SOURCE.mqttSubscribeTopic(),
+        adapter.messageArrived(DATA_SOURCE.topic(),
                                new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
@@ -331,7 +331,7 @@ class OesterreichsEnergieAdapterTest {
         var json = "{\"1-0:1.8.0\":{\"value\":83622,\"time\":1698218800},\"UNKNOWN-OBIS-CODE\":{\"value\":0,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":83854.3}";
 
         StepVerifier.create(adapter.start())
-                    .then(() -> adapter.messageArrived(DATA_SOURCE.mqttSubscribeTopic(),
+                    .then(() -> adapter.messageArrived(DATA_SOURCE.topic(),
                                                        new MqttMessage(json.getBytes(StandardCharsets.UTF_8))))
                     .expectNextMatches(received -> received.aiidaRecordValues()
                                                            .stream()

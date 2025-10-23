@@ -47,17 +47,17 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
         try {
             // persistence is only required when publishing messages with QOS 1 or 2
             var clientId = UUID.randomUUID();
-            asyncClient = MqttFactory.getMqttAsyncClient(dataSource().mqttInternalHost(), clientId.toString(), null);
+            asyncClient = MqttFactory.getMqttAsyncClient(dataSource().internalHost(), clientId.toString(), null);
             asyncClient.setCallback(this);
 
             MqttConnectionOptions connectOptions = createConnectOptions();
 
-            logger.info("Connecting to broker {} with username {}", dataSource().mqttInternalHost(), connectOptions.getUserName());
+            logger.info("Connecting to broker {} with username {}", dataSource().internalHost(), connectOptions.getUserName());
 
             asyncClient.connect(connectOptions);
         } catch (MqttException ex) {
             logger.error("Error while connecting to MQTT server {} for {}",
-                         dataSource().mqttPassword(),
+                         dataSource().password(),
                          dataSource().name(),
                          ex);
 
@@ -128,15 +128,15 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
                     dataSource().name(),
                     serverURI,
                     reconnect);
-        logger.info("Will subscribe to topic {}", dataSource().mqttSubscribeTopic());
+        logger.info("Will subscribe to topic {}", dataSource().topic());
 
         try {
             if (asyncClient != null) {
-                asyncClient.subscribe(dataSource().mqttSubscribeTopic(), 2);
+                asyncClient.subscribe(dataSource().topic(), 2);
                 subscribeToHealthTopic();
             }
         } catch (MqttException ex) {
-            logger.error("Error while subscribing to topic {}", dataSource().mqttSubscribeTopic(), ex);
+            logger.error("Error while subscribing to topic {}", dataSource().topic(), ex);
             recordSink.tryEmitError(ex);
         }
     }

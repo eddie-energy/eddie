@@ -92,10 +92,10 @@ class OesterreichsEnergieAdapterIntegrationTest {
         mqttConfiguration = new MqttConfiguration(serverURI, serverURI, 10, PASSWORD, "");
 
         when(DATA_SOURCE.enabled()).thenReturn(true);
-        when(DATA_SOURCE.mqttInternalHost()).thenReturn(serverURI);
-        when(DATA_SOURCE.mqttSubscribeTopic()).thenReturn(TOPIC);
-        when(DATA_SOURCE.mqttUsername()).thenReturn(USERNAME);
-        when(DATA_SOURCE.mqttPassword()).thenReturn(PASSWORD);
+        when(DATA_SOURCE.internalHost()).thenReturn(serverURI);
+        when(DATA_SOURCE.topic()).thenReturn(TOPIC);
+        when(DATA_SOURCE.username()).thenReturn(USERNAME);
+        when(DATA_SOURCE.password()).thenReturn(PASSWORD);
 
         LOG_CAPTOR.setLogLevelToTrace();
     }
