@@ -79,7 +79,12 @@
     "inbound": "Inbound",
     "outboundTab": "Outbound Permissions",
     "inboundTab": "Inbound Permissions",
-    "emptyList": "No {type} {tab} Permissions",
+    "emptyListCompleteInbound": "No Complete Inbound Permissions",
+    "emptyListPendingInbound": "No Pending Inbound Permissions",
+    "emptyListActiveInbound": "No Active Inbound Permissions",
+    "emptyListCompleteOutbound": "No Complete Outbound Permissions",
+    "emptyListPendingOutbound": "No Pending Outbound Permissions",
+    "emptyListActiveOutbound": "No Active Outbound Permissions",
     "loadMore": "Load More Permissions",
     "loadLess": "Load Less Permissions",
     "revokeTitle": "Revoke Permission",
@@ -141,5 +146,18 @@
     "failedTokenUpdate": "Failed to update authentication token. Please reload this page.",
     "networkError": "Network error. Please check your connection.",
     "unexpectedError": "An unexpected error occurred. Please try again."
-  }
+  },
+  "ACCEPTED": "Accepted",
+  "WAITING_FOR_START": "Waiting for Start",
+  "STREAMING_DATA": "Streaming Data",
+  "REJECTED": "Rejected",
+  "REVOCATION_RECEIVED": "Revocation Received",
+  "REVOKED": "Revoked",
+  "TERMINATED": "Terminated",
+  "FULFILLED": "Fulfilled",
+  "FAILED_TO_START": "Failed to Start",
+  "CREATED": "Created",
+  "FETCHED_DETAILS": "Fetched details",
+  "UNFULFILLABLE": "Unable to fulfill",
+  "FETCHED_MQTT_CREDENTIALS": "Fetched MQTT details"
 }

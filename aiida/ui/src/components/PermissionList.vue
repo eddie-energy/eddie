@@ -65,6 +65,10 @@ watch([selectedTab, permissions, selectedPermissionCategory], () => {
   }
 })
 
+console.log(
+  `permissions.emptyList${selectedTab.value}${selectedPermissionCategory.value === 'outbound-aiida' ? 'Inbound' : 'Outbound'}`,
+)
+
 const slicedPermissions = computed(() => {
   if (showMore.value) {
     return activePermissions.value
@@ -144,13 +148,9 @@ const handleCategoryChange = (category: string) => {
         </Button>
         <p v-if="!slicedPermissions.length" class="no-permissions heading-5">
           {{
-            t('permissions.emptyList', {
-              type: t(tabs.filter((tab) => tab.name === selectedTab)[0].translation),
-              tab:
-                selectedPermissionCategory === 'outbound-aiida'
-                  ? t('permissions.outbound')
-                  : t('permissions.inbound'),
-            })
+            t(
+              `permissions.emptyList${selectedTab}${selectedPermissionCategory === 'outbound-aiida' ? 'Inbound' : 'Outbound'}`,
+            )
           }}
         </p>
       </TransitionGroup>

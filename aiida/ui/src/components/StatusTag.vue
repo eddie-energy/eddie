@@ -37,8 +37,6 @@ const { statusType = 'healthy', minimalOnMobile } = defineProps<{
 
   &.minimal {
     padding: unset;
-    border: unset;
-    background-color: unset;
     > span {
       display: none;
     }

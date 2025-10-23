@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import STATUS from '@/constants/permission-status'
 import type { AiidaPermission, PermissionTypes } from '@/types'
 import StatusTag from './StatusTag.vue'
-import cronstrue from 'cronstrue'
+import cronstrue from 'cronstrue/i18n'
 import Button from '@/components/Button.vue'
 import RevokeIcon from '@/assets/icons/RevokeIcon.svg'
 import { usePermissionDialog } from '@/composables/permission-dialog'
@@ -18,7 +17,7 @@ import CopyButton from './CopyButton.vue'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { confirm } = useConfirmDialog()
 const target = useTemplateRef('target')
 const { permission, status } = defineProps<{
@@ -76,7 +75,7 @@ onClickOutside(target, () => (showToolTip.value = false))
         <StatusTag
           :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'"
           class="status-tag"
-          >{{ STATUS[permission.status].title }}</StatusTag
+          >{{ t(permission.status) }}</StatusTag
         >
       </div>
       <div class="permission-field">
@@ -107,7 +106,13 @@ onClickOutside(target, () => (showToolTip.value = false))
       </div>
       <div class="permission-field schedule">
         <dt>{{ t('permissions.dropdown.transmissionSchedule') }}</dt>
-        <dd>{{ cronstrue.toString(permission.dataNeed.transmissionSchedule) }}</dd>
+        <dd>
+          {{
+            cronstrue.toString(permission.dataNeed.transmissionSchedule, {
+              locale: locale,
+            })
+          }}
+        </dd>
       </div>
     </div>
     <div class="column">
@@ -271,6 +276,7 @@ onClickOutside(target, () => (showToolTip.value = false))
   padding: unset;
   border: unset;
   gap: 0.5rem;
+  align-items: center;
 
   dt {
     padding: var(--spacing-sm) var(--spacing-sm);

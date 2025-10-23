@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import STATUS from '@/constants/permission-status'
 import type { AiidaPermission, PermissionTypes } from '@/types'
 import PermissionIcon from '@/assets/icons/PermissionIcon.svg'
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
 import StatusTag from './StatusTag.vue'
 import { ref } from 'vue'
 import PermissionDetails from './PermissionDetails.vue'
+import { useI18n } from 'vue-i18n'
 
 const { permission, status } = defineProps<{
   permission: AiidaPermission
   status?: PermissionTypes
 }>()
+const { t } = useI18n()
 
 const isOpen = ref(false)
 </script>
@@ -36,7 +37,7 @@ const isOpen = ref(false)
         </time>
       </div>
       <StatusTag :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'" minimal-on-mobile>
-        {{ STATUS[permission.status].title }}
+        {{ t(permission.status) }}
       </StatusTag>
       <button class="chevron" aria-label="Open Permission Details">
         <ChevronDownIcon />
