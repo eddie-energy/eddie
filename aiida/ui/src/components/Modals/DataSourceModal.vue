@@ -294,7 +294,7 @@ defineExpose({ showModal })
     >
       <div class="column">
         <div class="input-field">
-          <label for="name"> {{ t('datasources.modal.name') }} </label>
+          <label for="name">{{ t('datasources.modal.name') }}</label>
           <input
             :placeholder="t('datasources.modal.namePlaceholder')"
             required
@@ -366,7 +366,7 @@ defineExpose({ showModal })
         >
           <template v-if="dataSource.dataSourceType === 'MODBUS'">
             <div class="input-field extra-margin">
-              <label for="ipAddress"> {{ t('datasources.modal.localIpInput') }}</label>
+              <label for="ipAddress">{{ t('datasources.modal.localIpInput') }}</label>
               <input
                 id="ipAddress"
                 v-model="dataSource.modbusIp"
@@ -377,7 +377,7 @@ defineExpose({ showModal })
               <p v-if="errors['ipAddress']" class="error-message">{{ errors['ipAddress'] }}</p>
             </div>
             <div class="input-field">
-              <label for="vendor"> {{ t('datasources.modal.vendorInput') }} </label>
+              <label for="vendor">{{ t('datasources.modal.vendorInput') }}</label>
               <CustomSelect
                 id="vendor"
                 v-model="dataSource.modbusVendor"
@@ -389,7 +389,7 @@ defineExpose({ showModal })
               <p v-if="errors['vendor']" class="error-message">{{ errors['vendor'] }}</p>
             </div>
             <div class="input-field">
-              <label for="model"> {{ t('datasources.modal.modelInput') }} </label>
+              <label for="model">{{ t('datasources.modal.modelInput') }}</label>
               <CustomSelect
                 id="model"
                 v-model="dataSource.modbusModel"
@@ -434,7 +434,7 @@ defineExpose({ showModal })
           </template>
           <template v-if="dataSource.dataSourceType === 'SINAPSI_ALFA'">
             <div class="input-field">
-              <label for="activationKey"> Sinapsi {{ t('datasources.modal.activationKey') }}</label>
+              <label for="activationKey">Sinapsi {{ t('datasources.modal.activationKey') }}</label>
               <input
                 :placeholder="t('datasources.modal.activationKey')"
                 required

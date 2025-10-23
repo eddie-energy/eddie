@@ -122,8 +122,8 @@ defineExpose({ showModal })
     >
       <QrCodeScanner :open="qrCodeIsOpen" @valid="handleValidQrCode" />
       <Button button-style="error-secondary" @click="toggleQrCodeModal(false)">
-        {{ t('cancelButton') }}</Button
-      >
+        {{ t('cancelButton') }}
+      </Button>
     </ModalDialog>
     <div v-if="loading" class="loading-indicator"></div>
   </ModalDialog>

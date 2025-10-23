@@ -81,13 +81,14 @@ const dataSourceOptions = computed(() => {
 
       <div class="two-item-pair">
         <Button button-style="error-secondary" @click="handleInput(false)">
-          {{ t('rejectButton') }}</Button
-        >
+          {{ t('rejectButton') }}
+        </Button>
         <Button
           @click="handleInput(true)"
           :disabled="!selectedDataSource && permission?.dataNeed.type === 'outbound-aiida'"
-          >{{ t('acceptButton') }}</Button
         >
+          {{ t('acceptButton') }}
+        </Button>
       </div>
     </div>
     <div v-if="loading" class="loading-indicator"></div>
