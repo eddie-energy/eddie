@@ -4,7 +4,7 @@
 
 The smart meter adapter from Österreichs Energie supports all smart meters used in Austria, regardless of their physical interface.
 
-> [!WARNING]
+> [!NOTE]
 > There are different versions of the smart meter adapter, which do not all support all interfaces at the same time.
 > Therefore, the correct version must be purchased according to the interface of the smart meter (e.g., (wireless) MBUS, DSMR, infrared, etc.).
 

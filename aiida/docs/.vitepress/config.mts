@@ -154,7 +154,7 @@ export default withMermaid(
               items: [
                 {
                   text: "Documentation",
-                  link: "/3-extending/data-source/documentation.md",
+                  link: "/2-extending/data-source/documentation.md",
                 },
               ],
             },

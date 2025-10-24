@@ -8,6 +8,12 @@ Data sources are the origin of data which are processed by AIIDA. They have the 
 - Store data in the database.
 - Queue data for further processing by different permissions.
 
+## Supported countries
+
+<img src="../../images/supported-smart-meters.png" alt="Supported Smart Meters Map" />
+
+_Map created with https://www.mapchart.net_
+
 ## Common properties
 
 - `id`: Unique identifier of the data source.

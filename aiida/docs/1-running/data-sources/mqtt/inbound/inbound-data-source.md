@@ -15,7 +15,7 @@ This data source is not visible in the AIIDA UI, as it is automatically created 
 
 ## Add Inbound Permission
 
-The process of adding a permission is described in the [Permission documentation](../../../permission/permission.md).
+The process of adding a permission is described in the [Permission documentation](../../../permission.md).
 For an inbound permission, a data need of type `inbound-aiida` must be selected.
 
 Once a permission has been added, it is displayed in the "Inbound Permissions" tab within the "Permissions" section.
