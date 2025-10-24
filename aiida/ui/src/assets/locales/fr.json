@@ -8,6 +8,7 @@
   "revokeButton": "Révoquer",
   "continueButton": "Continuer",
   "closeButton": "Fermer",
+  "scrollToTop": "Revenir en haut de la page",
   "header": {
     "permissions": "Autorisations",
     "data-sources": "Sources de données",
@@ -21,6 +22,8 @@
     "deleteDataSource": "Supprimer la source de données",
     "deleteText": "Êtes-vous sûr de vouloir supprimer cette source de données ? Cette action est irréversible.",
     "noDatasources": "Aucune source de données ajoutée.",
+    "enableDataSource": "Activer la source de données",
+    "disableDataSource": "Désactiver la source de données",
     "card": {
       "id": "ID",
       "country": "Pays",
@@ -90,6 +93,10 @@
     "loadLess": "Charger moins d’autorisations",
     "revokeTitle": "Révoquer l’autorisation",
     "revokeDescription": "Êtes-vous sûr de vouloir révoquer cette autorisation ? Cette action est irréversible.",
+    "toggleTooltip": "Basculer l’infobulle du code d’accès",
+    "showMqttPassword": "Afficher le mot de passe MQTT",
+    "hideMqttPassword": "Masquer le mot de passe MQTT",
+    "copyMqttPassword": "Copier le mot de passe MQTT",
     "dropdown": {
       "service": "Service",
       "status": "Statut",
@@ -105,7 +112,8 @@
       "permissionId": "ID d’autorisation",
       "downloadLatestMessageButton": "Télécharger le dernier message",
       "inboundTooltip": "Il existe deux façons d’utiliser cette clé API pour récupérer les dernières données entrantes :",
-      "permissionID": "ID d’autorisation"
+      "permissionID": "ID d’autorisation",
+      "openDetails": "Ouvrir les détails de l’autorisation"
     },
     "modal": {
       "title": "Ajouter une nouvelle autorisation",

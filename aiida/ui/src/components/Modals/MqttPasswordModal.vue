@@ -45,11 +45,11 @@ defineExpose({ showModal })
         name="password"
       />
       <div class="actions">
-        <CopyButton :copy-text="pass" aria-label="Copy MQTT password" />
+        <CopyButton :copy-text="pass" :aria-label="t('permissions.copyMqttPassword')" />
         <button
           class="show-button"
           @click="handleShow"
-          :aria-label="show ? 'Hide MQTT password' : 'Show MQTT password'"
+          :aria-label="show ? t('permissions.hideMqttPassword') : t('permissions.showMqttPassword')"
         >
           <Transition mode="out-in">
             <component :is="show ? EyeIcon : CrossedOutEyeIcon" />

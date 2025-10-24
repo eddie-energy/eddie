@@ -39,7 +39,7 @@ const isOpen = ref(false)
       <StatusTag :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'" minimal-on-mobile>
         {{ t(permission.status) }}
       </StatusTag>
-      <button class="chevron" aria-label="Open Permission Details">
+      <button class="chevron" :aria-label="t('permissions.dropdown.openDetails')">
         <ChevronDownIcon />
       </button>
     </header>

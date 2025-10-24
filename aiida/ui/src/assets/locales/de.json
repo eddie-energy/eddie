@@ -8,6 +8,7 @@
   "revokeButton": "Widerrufen",
   "continueButton": "Fortfahren",
   "closeButton": "Schließen",
+  "scrollToTop": "Nach oben scrollen",
   "header": {
     "permissions": "Berechtigungen",
     "data-sources": "Datenquellen",
@@ -21,6 +22,8 @@
     "deleteDataSource": "Datenquelle löschen",
     "deleteText": "Sind Sie sicher, dass Sie diese Datenquelle löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "noDatasources": "Keine Datenquellen hinzugefügt.",
+    "enableDataSource": "Datenquelle aktivieren",
+    "disableDataSource": "Datenquelle deaktivieren",
     "card": {
       "id": "ID",
       "country": "Land",
@@ -90,6 +93,10 @@
     "loadLess": "Weniger Berechtigungen laden",
     "revokeTitle": "Berechtigung widerrufen",
     "revokeDescription": "Sind Sie sicher, dass Sie diese Berechtigung widerrufen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "toggleTooltip": "Zugriffscode-Tooltip umschalten",
+    "showMqttPassword": "MQTT-Passwort anzeigen",
+    "hideMqttPassword": "MQTT-Passwort ausblenden",
+    "copyMqttPassword": "MQTT-Passwort kopieren",
     "dropdown": {
       "service": "Dienst",
       "status": "Status",
@@ -105,7 +112,8 @@
       "permissionId": "Berechtigungs-ID",
       "downloadLatestMessageButton": "Neueste Nachricht herunterladen",
       "inboundTooltip": "Es gibt zwei Möglichkeiten, diesen API-Schlüssel zu verwenden, um die neuesten eingehenden Daten abzurufen:",
-      "permissionID": "Berechtigungs-ID"
+      "permissionID": "Berechtigungs-ID",
+      "openDetails": "Berechtigungsdetails öffnen"
     },
     "modal": {
       "title": "Neue Berechtigung hinzufügen",

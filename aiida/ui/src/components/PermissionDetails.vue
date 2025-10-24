@@ -168,7 +168,7 @@ onClickOutside(target, () => (showToolTip.value = false))
             API Key
             <button
               @click="showToolTip = !showToolTip"
-              aria-label="Toggle Access Code tooltip"
+              :aria-label="t('permissions.toggleTooltip')"
               class="tool-tip-button"
               :class="{ active: showToolTip }"
             >
@@ -186,7 +186,9 @@ onClickOutside(target, () => (showToolTip.value = false))
             <button
               class="show-button"
               @click="showInboundApiKey"
-              :aria-label="show ? 'Hide MQTT password' : 'Show MQTT password'"
+              :aria-label="
+                show ? t('permissions.showMqttPassword') : t('permissions.hideMqttPassword')
+              "
             >
               <Transition mode="out-in">
                 <component :is="show ? EyeIcon : CrossedOutEyeIcon" />

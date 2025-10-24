@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import CloseIcon from '@/assets/icons/CloseIcon.svg'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const { title } = defineProps<{
   title: string
 }>()
@@ -22,7 +24,7 @@ defineExpose({ showModal, close })
   <dialog class="dialog" ref="modal" closedby="any">
     <div class="dialog-header">
       <p class="heading-2">{{ title }}</p>
-      <button type="button" @click="close" aria-label="Close" class="close-button">
+      <button type="button" @click="close" :aria-label="t('closeButton')" class="close-button">
         <CloseIcon />
       </button>
     </div>

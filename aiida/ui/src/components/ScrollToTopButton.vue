@@ -3,8 +3,10 @@ import { ref, watch } from 'vue'
 import Button from './Button.vue'
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
 import { useWindowScroll } from '@vueuse/core'
+import { useI18n } from 'vue-i18n'
 
 const { y } = useWindowScroll()
+const { t } = useI18n()
 const show = ref(false)
 
 const scrollToTop = () => {
@@ -21,7 +23,7 @@ watch(y, () => {
 
 <template>
   <Transition mode="in-out">
-    <Button class="scroll-button" @click="scrollToTop" v-if="show" aria-label="Scroll back to top">
+    <Button class="scroll-button" @click="scrollToTop" v-if="show" :aria-label="t('scrollToTop')">
       <ChevronDownIcon class="chevron" />
     </Button>
   </Transition>

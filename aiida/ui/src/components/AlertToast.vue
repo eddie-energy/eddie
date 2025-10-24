@@ -63,7 +63,7 @@ const progressBarDuration = `${duration}ms`
       type="button"
       v-if="canClose"
       @click="remove(id)"
-      aria-label="Close"
+      :aria-label="t('closeButton')"
       class="close-button"
     >
       <CloseIcon />

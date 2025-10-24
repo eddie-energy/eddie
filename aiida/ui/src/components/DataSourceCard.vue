@@ -127,7 +127,9 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
           class="toggle-button"
           :class="{ enabled: enabled }"
           @click="emit('enableToggle')"
-          :aria-label="`${enabled ? 'Disable' : 'Enable'} Data Source`"
+          :aria-label="
+            enabled ? t('datasources.enableDatasource') : t('datasources.disableDataSource')
+          "
         >
           <StatusDotIcon class="toggle-icon" />
         </button>
