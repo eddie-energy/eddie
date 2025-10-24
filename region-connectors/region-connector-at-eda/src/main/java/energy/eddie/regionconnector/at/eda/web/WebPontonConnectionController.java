@@ -71,10 +71,6 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
                     content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_XML_VALUE,
-                                    schema = @Schema(implementation = at.ebutilities.schemata.customerconsent.cmnotification._01p12.CMNotification.class)
-                            ),
-                            @Content(
-                                    mediaType = MediaType.APPLICATION_XML_VALUE,
                                     schema = @Schema(implementation = at.ebutilities.schemata.customerconsent.cmnotification._01p20.CMNotification.class)
                             ),
                     }
@@ -109,10 +105,6 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
                             @Content(
                                     mediaType = MediaType.APPLICATION_XML_VALUE,
                                     schema = @Schema(implementation = at.ebutilities.schemata.customerconsent.cmrevoke._01p10.CMRevoke.class)
-                            ),
-                            @Content(
-                                    mediaType = MediaType.APPLICATION_XML_VALUE,
-                                    schema = @Schema(implementation = at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke.class)
                             ),
                     }
             )
@@ -241,10 +233,6 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
                     content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_XML_VALUE,
-                                    schema = @Schema(implementation = at.ebutilities.schemata.customerconsent.cmrequest._01p21.CMRequest.class)
-                            ),
-                            @Content(
-                                    mediaType = MediaType.APPLICATION_XML_VALUE,
                                     schema = @Schema(implementation = at.ebutilities.schemata.customerconsent.cmrequest._01p30.CMRequest.class)
                             ),
                     }
@@ -258,10 +246,6 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
     @Operation(
             responses = @ApiResponse(
                     content = {
-                            @Content(
-                                    mediaType = MediaType.APPLICATION_XML_VALUE,
-                                    schema = @Schema(implementation = at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke.class)
-                            ),
                             @Content(
                                     mediaType = MediaType.APPLICATION_XML_VALUE,
                                     schema = @Schema(implementation = at.ebutilities.schemata.customerconsent.cmrevoke._01p10.CMRevoke.class)

@@ -26,16 +26,13 @@ repositories {
 // They are generated using the md5sum.
 
 val cmNotificationVersions = mapOf(
-    "01p12" to "7e9b168104f25071b92a7d894d0d1249", // current
-    "01p20" to "1cc5bca4a252263039b4617a68686df3" // active from 2026-04-13
+    "01p20" to "1cc5bca4a252263039b4617a68686df3" // current, active from 2026-04-13
 )
 val cmRequestVersions = mapOf(
-    "01p21" to "5e0c0e505e9ffe4e36125434702ef3c4", // current
-    "01p30" to "97c03cb478e13b0ecd744a5804b289c1" // active from 2026-04-13
+    "01p30" to "97c03cb478e13b0ecd744a5804b289c1" // current, active from 2026-04-13
 )
 val cmRevokeVersions = mapOf(
-    "01p00" to "ea294e7dd7df3d806a5221632bcfdbb8", // current
-    "01p10" to "ddcfcad87aca9751c227230e7d523371" // active from 2026-04-13
+    "01p10" to "ddcfcad87aca9751c227230e7d523371" // current, active from 2026-04-13
 )
 val consumptionRecordVersions = mapOf("01p41" to "256671cf2e7ccd736d6b1ec379177e6e")
 val cpCommonTypesVersions = mapOf("01p20" to "2482726eb973718551dcb006b3a65405")
