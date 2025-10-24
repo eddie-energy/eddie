@@ -4,7 +4,7 @@ This README will guide you through the process of configuring a region connector
 
 ## Prerequisites
 
-- Register a user with Datadis [here](https://datadis.es/register).
+- Register a user with Datadis [here](https://datadis.es/login).
 
 ## Configuration of the Region Connector
 

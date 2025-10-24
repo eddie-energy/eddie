@@ -2,7 +2,7 @@
 
 The region connector for CDS allows the EP to request data from CDS compatible servers.
 No registration is required, but can be done anyway to create test CDS servers.
-See https://cds.utilityapi.com/en/
+See https://demo.cdsgateway.com/en/
 
 ## Configuration of the Region Connector
 

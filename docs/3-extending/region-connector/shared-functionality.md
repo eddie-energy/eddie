@@ -11,8 +11,7 @@ There are examples to create an instance for each of them.
 
 Sometimes the PA does not provide a unique ID for the eligible party.
 This ID is usually needed to create the CIM documents.
-In cases, where it is not available the [
-`CommonInformationModelConfiguration`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/cim/config/CommonInformationModelConfiguration.html) can be used.
+In cases, where it is not available the [`CommonInformationModelConfiguration`](https://architecture.eddie.energy/javadoc/energy/eddie/api/cim/config/CommonInformationModelConfiguration.html) can be used.
 
 ```java
 @Configuration
@@ -29,8 +28,7 @@ public class Config {
 
 ## `DataNeedCalculationServiceImpl`
 
-The data need calculation can be done by creating the [
-`DataNeedCalculatioServiceImpl`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/services/data/needs/DataNeedCalculationServiceImpl.html) as a Spring bean.
+The data need calculation can be done by creating the [`DataNeedCalculatioServiceImpl`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/services/data/needs/DataNeedCalculationServiceImpl.html) as a Spring bean.
 Each region connector should have one bean of the `DataNeedCalculationService` present.
 This implementation can be heavily customized to match the requirements of the region connector.
 
@@ -46,9 +44,7 @@ public class Config {
 
 ## `ConnectionStatusMessageHandler`
 
-The [
-`ConnectionStatusMessageHandler`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/event/sourcing/handlers/integration/ConnectionStatusMessageHandler.html) is an implementation of the [
-`ConnectionStatusMessageProvider`](./api.md#connectionstatusmessageprovider).
+The [`ConnectionStatusMessageHandler`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/event/sourcing/handlers/integration/ConnectionStatusMessageHandler.html) is an implementation of the [`ConnectionStatusMessageProvider`](./api.md#connectionstatusmessageprovider).
 It provides connection status messages based on permission events provided by an event bus instance.
 It can be started as a Spring bean and does not require further configuration than the required input parameters of the constructor.
 
