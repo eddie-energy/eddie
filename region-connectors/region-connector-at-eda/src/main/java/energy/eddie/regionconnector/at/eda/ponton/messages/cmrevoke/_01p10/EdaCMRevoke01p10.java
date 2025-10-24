@@ -1,13 +1,11 @@
-package energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p00;
+package energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p10;
 
-import at.ebutilities.schemata.customerconsent.cmrevoke._01p00.CMRevoke;
+import at.ebutilities.schemata.customerconsent.cmrevoke._01p10.CMRevoke;
 import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
 
 import java.time.LocalDate;
 
-public record EdaCMRevoke01p00(
-        CMRevoke cmRevoke
-) implements EdaCMRevoke {
+public record EdaCMRevoke01p10(CMRevoke cmRevoke) implements EdaCMRevoke {
     @Override
     public String meteringPoint() {
         return cmRevoke.getProcessDirectory().getMeteringPoint();

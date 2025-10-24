@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.at.eda.handlers;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
@@ -26,25 +27,24 @@ public class SendingEventHandler implements EventHandler<ValidatedEvent> {
     private final EdaAdapter edaAdapter;
     private final Outbox outbox;
     private final AtConfiguration configuration;
+    private final DataNeedsService dataNeedsService;
 
     protected SendingEventHandler(
             EventBus eventBus,
             AtPermissionRequestRepository repository,
             EdaAdapter edaAdapter,
             Outbox outbox,
-            AtConfiguration configuration
+            AtConfiguration configuration,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
     ) {
         this.repository = repository;
         this.edaAdapter = edaAdapter;
         this.outbox = outbox;
         this.configuration = configuration;
+        this.dataNeedsService = dataNeedsService;
         eventBus.filteredFlux(ValidatedEvent.class)
                 .filter(ValidatedEvent::needsToBeSent)
                 .subscribe(this::threadedAccept);
-    }
-
-    private void threadedAccept(ValidatedEvent permissionEvent) {
-        Thread.startVirtualThread(() -> accept(permissionEvent));
     }
 
     @Override
@@ -60,6 +60,10 @@ public class SendingEventHandler implements EventHandler<ValidatedEvent> {
         }
     }
 
+    private void threadedAccept(ValidatedEvent permissionEvent) {
+        Thread.startVirtualThread(() -> accept(permissionEvent));
+    }
+
     private CCMORequest ccmoRequest(AtPermissionRequest permissionRequest, ValidatedEvent event) {
         return new CCMORequest(
                 new DsoIdAndMeteringPoint(
@@ -73,7 +77,8 @@ public class SendingEventHandler implements EventHandler<ValidatedEvent> {
                 event.granularity() == null ? permissionRequest.granularity() : event.granularity(),
                 AllowedTransmissionCycle.D,
                 configuration,
-                permissionRequest.created()
+                permissionRequest.created(),
+                dataNeedsService.getById(permissionRequest.dataNeedId()).purpose()
         );
     }
 

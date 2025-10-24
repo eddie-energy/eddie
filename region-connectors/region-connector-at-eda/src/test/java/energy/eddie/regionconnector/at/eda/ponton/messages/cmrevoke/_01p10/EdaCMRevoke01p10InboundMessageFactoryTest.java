@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p00;
+package energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p10;
 
 import energy.eddie.regionconnector.at.eda.ponton.messages.MarshallerConfig;
 import org.junit.jupiter.api.Test;
@@ -19,15 +19,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = MarshallerConfig.class)
-class EdaCMRevoke01p00InboundMessageFactoryTest {
+class EdaCMRevoke01p10InboundMessageFactoryTest {
     @Autowired
     private Jaxb2Marshaller marshaller;
 
     public static Stream<Arguments> activeDates() {
         return Stream.of(
-                Arguments.of(LocalDate.of(2023, 1, 7)),
-                Arguments.of(LocalDate.of(2024, 4, 7)),
-                Arguments.of(LocalDate.of(2025, 6, 8)),
+                Arguments.of(LocalDate.of(2026, 4, 13)),
+                Arguments.of(LocalDate.of(2027, 4, 7)),
+                Arguments.of(LocalDate.of(2028, 6, 8)),
+                Arguments.of(LocalDate.of(2029, 7, 9))
+        );
+    }
+
+    public static Stream<Arguments> inactiveDates() {
+        return Stream.of(
                 Arguments.of(LocalDate.of(2026, 4, 12))
         );
     }
@@ -36,7 +42,7 @@ class EdaCMRevoke01p00InboundMessageFactoryTest {
     @MethodSource("activeDates")
     void isActive_returnsTrue(LocalDate date) {
         // Given
-        var factory = new EdaCMRevoke01p00InboundMessageFactory(marshaller);
+        var factory = new EdaCMRevoke01p10InboundMessageFactory(marshaller);
 
         // When
         var active = factory.isActive(date);
@@ -45,14 +51,14 @@ class EdaCMRevoke01p00InboundMessageFactoryTest {
         assertTrue(active);
     }
 
-    @Test
-    void isActive_afterEndDate_returnsFalse() {
+    @ParameterizedTest
+    @MethodSource("inactiveDates")
+    void isActive_returnsFalse(LocalDate date) {
         // Given
-        var afterEndDate = LocalDate.of(2026, 4, 13);
-        var factory = new EdaCMRevoke01p00InboundMessageFactory(marshaller);
+        var factory = new EdaCMRevoke01p10InboundMessageFactory(marshaller);
 
         // When
-        var active = factory.isActive(afterEndDate);
+        var active = factory.isActive(date);
 
         // Then
         assertFalse(active);
@@ -61,9 +67,9 @@ class EdaCMRevoke01p00InboundMessageFactoryTest {
     @Test
     void parseInputStream() throws IOException {
         // Given
-        ClassLoader classLoader = EdaCMRevoke01p00InboundMessageFactoryTest.class.getClassLoader();
-        try (var inputStream = classLoader.getResourceAsStream("xsd/cmrevoke/_01p00/cmrevoke.xml")) {
-            var factory = new EdaCMRevoke01p00InboundMessageFactory(marshaller);
+        ClassLoader classLoader = EdaCMRevoke01p10InboundMessageFactoryTest.class.getClassLoader();
+        try (var inputStream = classLoader.getResourceAsStream("xsd/cmrevoke/_01p10/cmrevoke.xml")) {
+            var factory = new EdaCMRevoke01p10InboundMessageFactory(marshaller);
             // When
             var result = factory.parseInputStream(inputStream);
 

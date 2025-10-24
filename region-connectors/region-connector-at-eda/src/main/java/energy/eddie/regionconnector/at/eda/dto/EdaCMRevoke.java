@@ -7,7 +7,5 @@ public interface EdaCMRevoke {
 
     String consentId();
 
-    String reason();
-
     LocalDate consentEnd();
 }

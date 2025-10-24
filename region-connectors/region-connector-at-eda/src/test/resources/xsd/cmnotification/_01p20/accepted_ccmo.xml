@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:CMNotification xmlns:ns0="http://www.ebutilities.at/schemata/customerconsent/cmnotification/01p20"
+                    xmlns:ns1="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20">
+    <ns0:MarketParticipantDirectory DocumentMode="PROD" Duplicate="false" SchemaVersion="01.20">
+        <ns1:RoutingHeader>
+            <ns1:Sender AddressType="ECNumber">
+                <ns1:MessageAddress>ATXXXXXX</ns1:MessageAddress>
+            </ns1:Sender>
+            <ns1:Receiver AddressType="ECNumber">
+                <ns1:MessageAddress>EPXXXXXX</ns1:MessageAddress>
+            </ns1:Receiver>
+            <ns1:DocumentCreationDateTime>2024-04-02T14:40:47.4699220Z</ns1:DocumentCreationDateTime>
+        </ns1:RoutingHeader>
+        <ns1:Sector>01</ns1:Sector>
+        <ns0:MessageCode>ZUSTIMMUNG_CCMO</ns0:MessageCode>
+    </ns0:MarketParticipantDirectory>
+    <ns0:ProcessDirectory>
+        <ns1:MessageId>ATXXXXXX202404021640408050262904881</ns1:MessageId>
+        <ns1:ConversationId>EPXXXXXXT1712068829927</ns1:ConversationId>
+        <ns0:CMRequestId>BI2AWUO2</ns0:CMRequestId>
+        <ns0:ResponseData>
+            <ns0:ConsentId>ATXXXXXX20240402164046426BI2AWUO2</ns0:ConsentId>
+            <ns0:MeteringPoint>ATXXXXXX00000000000000000XXXXXXXX</ns0:MeteringPoint>
+            <ns0:ResponseCode>175</ns0:ResponseCode>
+        </ns0:ResponseData>
+        <ns0:PortalApprovalURL>https://wienernetze.at</ns0:PortalApprovalURL>
+        <ns0:Supplier>AT000000000</ns0:Supplier>
+    </ns0:ProcessDirectory>
+</ns0:CMNotification>
