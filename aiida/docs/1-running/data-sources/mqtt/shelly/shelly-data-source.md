@@ -58,12 +58,12 @@ Shelly needs to be set up to transmit near real-time energy data to AIIDA via MQ
 
 Same with all the other [MQTT-based data sources](../mqtt-data-sources.md), AIIDA provides the broker URL, topic, username, and password:
 
-<img src="../../../../images/data-sources/mqtt/shelly/img-shelly-aiida.png" alt="Shelly Data Source in AIIDA UI"/>
+![Shelly Data Source in AIIDA UI](../../../../images/data-sources/mqtt/shelly/img-shelly-aiida.png)
 
 These MQTT details must be entered in the Shelly device configuration (the screenshot shows the web interface, but the app is similar).
 Settings -> MQTT:
 
-<img src="../../../../images/data-sources/mqtt/shelly/img-shelly-web-mqtt.png" alt="Shelly MQTT configuration"/>
+![Shelly MQTT configuration](../../../../images/data-sources/mqtt/shelly/img-shelly-web-mqtt.png)
 
 ## Additional things to consider
 

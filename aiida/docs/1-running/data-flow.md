@@ -1,7 +1,8 @@
 # Data Flow
 
 This section describes the data flow within **AIIDA** - from data acquisition via data sources, through collection, parsing, and aggregation, to the final streaming process toward **EDDIE**.
-<img src="../diagrams/data-flow.svg" alt="Sequence Diagram of the core components">
+
+![Sequence Diagram of the core components](../diagrams/data-flow.svg)
 
 ## Data Source
 

@@ -3,7 +3,7 @@
 This section provides an overview of the core components and functionalities of AIIDA.
 The following diagram illustrates the main components and their interaction interfaces:
 
-<img src="../diagrams/aiida-components-diagram.svg" alt="Core components of AIIDA">
+![Core components of AIIDA](../diagrams/aiida-components-diagram.svg)
 
 ## AIIDA System
 

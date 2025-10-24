@@ -10,7 +10,7 @@ Data sources are the origin of data which are processed by AIIDA. They have the 
 
 ## Supported countries
 
-<img src="../../images/supported-smart-meters.png" alt="Supported Smart Meters Map" />
+![Supported Smart Meters Map](../../images/supported-smart-meters.png)
 
 _Map created with https://www.mapchart.net_
 
@@ -51,11 +51,11 @@ The following data source types are supported:
 Adding a data source is done via the AIIDA Web UI. 
 After logging in, navigate to the "Data Sources" section and click on "Add Data Source".
 
-<img src="../../images/data-sources/img-add-data-source-button.png" alt="Screenshot of the 'Add Data Source' button in the AIIDA Web UI."/>
+![Screenshot of the 'Add Data Source' button in the AIIDA Web UI.](../../images/data-sources/img-add-data-source-button.png)
 
 A dialog will appear in which the details of the new data source can be specified.
 The fields in the dialog correspond to the properties described above.
 
-<img src="../../images/data-sources/img-data-source-dialog.png" alt="Screenshot of the 'Add Data Source' dialog in the AIIDA Web UI."/>
+![Screenshot of the 'Add Data Source' dialog in the AIIDA Web UI](../../images/data-sources/img-data-source-dialog.png)
 
 After filling in the required fields, click "Add" to create the data source.

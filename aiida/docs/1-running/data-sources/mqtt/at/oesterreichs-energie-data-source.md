@@ -8,7 +8,7 @@ The smart meter adapter from Österreichs Energie supports all smart meters used
 > There are different versions of the smart meter adapter, which do not all support all interfaces at the same time.
 > Therefore, the correct version must be purchased according to the interface of the smart meter (e.g., (wireless) MBUS, DSMR, infrared, etc.).
 
-<img src="../../../../images/data-sources/mqtt/at/img-oesterreichs-energie-data-source.png">
+![Image of the Oesterreichs Energie Adapter](../../../../images/data-sources/mqtt/at/img-oesterreichs-energie-data-source.png)
 
 ## Integration with AIIDA
 
@@ -36,12 +36,12 @@ The same inputs have to be entered as described in the [general data source docu
 
 ### Connect with AIIDA
 
-<img src="../../../../images/data-sources/mqtt/at/img-oesterreichs-energie-data-source-aiida.png">
+![Screenshot of the Oesterreichs Energie data source in the AIIDA UI](../../../../images/data-sources/mqtt/at/img-oesterreichs-energie-data-source-aiida.png)
 
 In the web interface of the smart meter adapter (accessible via the IP address), the settings for the “MQTT API” can be configured under
 ‘API’ -> “MQTT”. The following settings are required for the data source created in AIIDA (as shown in the figure above):
 
-<img src="../../../../images/data-sources/mqtt/at/img-oesterreichs-energie-data-source-mqtt.png">
+![Screenshot of the MQTT configuration in the adapters's web interface](../../../../images/data-sources/mqtt/at/img-oesterreichs-energie-data-source-mqtt.png)
 
 ## Sources
 
