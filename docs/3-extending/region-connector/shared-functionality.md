@@ -98,12 +98,9 @@ public class Config {
 
 ## `JsonRawDataProvider`
 
-The [
-`JsonRawDataProvider`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/agnostic/JsonRawDataProvider.html) provides a shared implementation for raw data.
-It requires an implementation of the [
-`IdentifiablePayload`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/IdentifiablePayload.html), which is a pair of the permission request and the data that was requested from the MDA or PA.
-Should only be used in combination with [
-`OnRawDataMessagesEnabled`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/agnostic/OnRawDataMessagesEnabled.html).
+The [`JsonRawDataProvider`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/agnostic/JsonRawDataProvider.html) provides a shared implementation for raw data.
+It requires an implementation of the [`IdentifiablePayload`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/IdentifiablePayload.html), which is a pair of the permission request and the data that was requested from the MDA or PA.
+Should only be used in combination with [`OnRawDataMessagesEnabled`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/agnostic/OnRawDataMessagesEnabled.html).
 
 ```java
 
@@ -126,8 +123,7 @@ public class Config {
 
 ## `CommonTimeoutService`
 
-The [common timeout service](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/timeout/CommonTimeoutService.html) can be declared as spring bean in combination with the
-`@EnableScheduling` annotation.
+The [common timeout service](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/timeout/CommonTimeoutService.html) can be declared as spring bean in combination with the `@EnableScheduling` annotation.
 It checks for old permission requests, and emits a timed out event if any are found.
 
 ```java
