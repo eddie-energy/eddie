@@ -38,7 +38,7 @@ these mechanisms:
 The [emqx.hocon](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/emqx/emqx.hocon) file has two authentication
 backends defined: `postgresql` and `built_in_database`.
 
-The `postgresql` backend uses AIIDA's [database](database/database.md) to authenticate data sources.
+The `postgresql` backend uses AIIDA's [database](database.md) to authenticate data sources.
 
 The `built_in_database` backend on the other hand is stored in EMQX and is used to authenticate AIIDA itself.
 To prefill the `built_in_database` backend the
@@ -61,7 +61,7 @@ are mounted in the container.
 
 The [emqx.hocon](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/emqx/emqx.hocon) file has `postgresql` as
 authorization backend defined.
-It uses AIIDA's [database](database/database.md) to check if a user is allowed to publish or subscribe to a certain topic.
+It uses AIIDA's [database](database.md) to check if a user is allowed to publish or subscribe to a certain topic.
 It determines this by querying for the `topic` the user performed an action on, the `action` the user is allowed to perform
 and the `acl_type` for this topic.
 

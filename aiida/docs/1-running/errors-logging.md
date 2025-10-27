@@ -33,7 +33,7 @@ Streaming for a given permission automatically stops when the permission expires
 
 When an error occurs in the UI, a clear and user-friendly message is displayed to the user.
 
-<img src="../images/img-error-ui.png" alt="Error message in the UI">
+![Error message in the UI](../images/img-error-ui.png)
 
 ## Logging
 

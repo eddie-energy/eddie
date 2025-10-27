@@ -12,9 +12,6 @@ The following MQTT data sources are supported:
 - [Sinapsi Alfa](it/sinapsi-alfa-data-source.md)
 - Smart Gateways
 
-![SupportedMeters](../../../images/supported-smart-meters.png)
-_Map created with https://www.mapchart.net_
-
 #### Common Properties
 
 - `internalHost`: URL (with protocol and port) of the broker reachable by AIIDA itself (e.g. `tcp://broker:1883`).

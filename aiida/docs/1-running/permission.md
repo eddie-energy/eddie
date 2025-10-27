@@ -6,7 +6,8 @@ One permission in AIIDA correlates to one permission of an EDDIE instance.
 ## Stored Data
 
 The following class diagram shows the main entities involved in the permission system.
-<img src="../../images/permission/aiida-class-diagram-permission.png" alt="Class diagram showing the main entities involved in the permission system."/>
+
+![Class diagram showing the main entities involved in the permission system.](../images/permission/aiida-class-diagram-permission.png)
 
 Each permission is associated with a `PermissionStatus` indicating its current state.
 Each permission is also associated with a single `Datasource` and a single `DataNeed` (`LocalAiidaDataNeed`).
@@ -21,12 +22,12 @@ It also specifies the topics on which AIIDA can publish and subscribe to.
 Adding a permission is done via the AIIDA Web UI.
 After logging in, navigate to the "Permissions" section and click on "Add Permission".
 
-<img src="../../images/permission/img-add-permission-button.png" alt="Screenshot of the 'Add Permission' button in the AIIDA Web UI."/>
+![Screenshot of the 'Add Permission' button in the AIIDA Web UI.](../images/permission/img-add-permission-button.png)
 
 A dialog will appear in which the AIIDA code of the permission can be entered.
 The AIIDA code can be obtained from the EDDIE permission facade.
 
-<img src="../../images/permission/img-permission-dialog-aiida-code.png" alt="Screenshot of the 'Add Permission' dialog in the AIIDA Web UI."/>
+![Screenshot of the 'Add Permission' dialog in the AIIDA Web UI.](../images/permission/img-permission-dialog-aiida-code.png)
 
 After entering a valid AIIDA code, another dialog will appear showing the following metadata:
 
@@ -43,7 +44,7 @@ After entering a valid AIIDA code, another dialog will appear showing the follow
 The user must then select a data source which will be associated with this permission.
 The data source represents the source of the data that will be shared under this permission.
 
-<img src="../../images/permission/img-permission-dialog-accept.png" alt="Screenshot of the 'Add Permission' dialog in the AIIDA Web UI showing the permission metadata."/>
+![Screenshot of the 'Add Permission' dialog in the AIIDA Web UI showing the permission metadata](../images/permission/img-permission-dialog-accept.png)
 
 The user must now either accept or reject the permission using the respective buttons.
 Depending on the permission's metadata, the permission will start immediately after accepting or will be scheduled to start at a later date.

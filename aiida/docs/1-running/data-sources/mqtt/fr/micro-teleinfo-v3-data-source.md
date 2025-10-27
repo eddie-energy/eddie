@@ -57,7 +57,8 @@ The same inputs have to be entered as described in the [general data source docu
 ### Connect with AIIDA
 
 AIIDA provides the broker URL, topic, username, and password:
-<img src="../../../../images/data-sources/mqtt/fr/img-micro-teleinfo-data-source.png" alt="Micro Teleinfo v3.0 Data Source in AIIDA UI"/>
+
+![Micro Teleinfo v3.0 Data Source in AIIDA UI](../../../../images/data-sources/mqtt/fr/img-micro-teleinfo-data-source.png)
 
 #### Configuring teleinfo2mqtt
 

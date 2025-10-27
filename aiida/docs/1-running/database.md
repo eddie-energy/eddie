@@ -3,7 +3,7 @@
 AIIDA uses a [TimescaleDB](https://github.com/timescale/timescaledb) as its primary database.
 It was chosen because it is a relational database (PostgreSQL) optimized for time-series data.
 
-![](../../images/database/database-data-model.png)
+![](../images/database/database-data-model.png)
 
 The figure above shows the relational data model of AIIDA's database.
 On the first start of the AIIDA application, a UUID is generated and stored in the `aiida_application_information`
@@ -27,5 +27,5 @@ Additionally, a dedicated topic is created for each data source.
 This user is both used by the virtual data source created by AIIDA and the physical data source (e.g., a smart meter or
 IoT device) to subscribe and publish to this topic.
 
-[Inbound data sources](../../1-running/data-sources/mqtt/inbound/inbound-data-source.md) allow an EP to send data to AIIDA.
+[Inbound data sources](../1-running/data-sources/mqtt/inbound/inbound-data-source.md) allow an EP to send data to AIIDA.
 The incoming payload is stored in the `inbound_record` table.

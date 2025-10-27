@@ -15,7 +15,7 @@ This setup uses Docker Compose to orchestrate the necessary services. To get sta
     - Username: `aiida`
     - Password: `aiida`
 5. For adding data sources, please refer to the [data source section](data-sources/data-sources.md).
-6. For adding permissions, please refer to the [permission section](permission/permission.md).
+6. For adding permissions, please refer to the [permission section](permission.md).
 
 ## Installation
 
@@ -64,7 +64,7 @@ It is recommended to configure AIIDA using the .env file provided in the `aiida/
 ## Application Information
 
 After the first startup of AIIDA, an application UUID is generated and stored in the database.
-This UUID can be found in the `aiida_application_information` table in the [database](database/database.md).
+This UUID can be found in the `aiida_application_information` table in the [database](database.md).
 It is used by the EDDIE instance to differentiate between multiple AIIDA instances.
 
 ## Internal APIs
