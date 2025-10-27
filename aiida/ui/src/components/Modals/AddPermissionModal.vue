@@ -8,6 +8,7 @@ import { fetchPermissions } from '@/stores/permissions'
 import QrCodeScanner from '@/components/QrCodeScanner.vue'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import type { AiidaPermissionRequest } from '@/types'
+import { useI18n } from 'vue-i18n'
 
 const { updatePermission } = usePermissionDialog()
 const permissionModal = ref<HTMLDialogElement>()
@@ -16,6 +17,7 @@ const qrCodeIsOpen = ref(false)
 const aiidaCode = ref('')
 const aiidaCodeError = ref('')
 const loading = ref(false)
+const { t } = useI18n()
 
 const showModal = () => {
   aiidaCode.value = ''
@@ -35,20 +37,20 @@ const toggleQrCodeModal = (open: boolean) => {
 
 const parseAiidaCode = (aiidaCode: string) => {
   if (!aiidaCode?.trim()) {
-    throw new Error('Please fill out this field')
+    throw new Error(t('permissions.modal.errorEmpty'))
   }
   try {
     return JSON.parse(window.atob(aiidaCode))
   } catch (error: any) {
     if (error?.name === 'InvalidCharacterError') {
       console.debug('The AIIDA code does not appear to be encoded in Base64 format.', error)
-      throw new Error('The AIIDA code should only contain letters, numbers, and "=" characters.')
+      throw new Error(t('permissions.modal.errorWrong'))
     }
     if (error instanceof SyntaxError) {
       console.debug('The decoded AIIDA code could not be parsed into JSON format.', error)
     }
 
-    throw new Error('The input does not appear to be a valid AIIDA code.')
+    throw new Error(t('permissions.modal.errorInvalidAiidaCode'))
   }
 }
 
@@ -70,7 +72,7 @@ const handleAddPermission = async () => {
     const permissionRequest = parseAiidaCode(aiidaCode.value)
     executePermissionRequest(permissionRequest)
   } catch (error: any) {
-    aiidaCodeError.value = error?.message ?? error?.toString() ?? 'An unknown error occurred.'
+    aiidaCodeError.value = error?.message ?? error?.toString() ?? t('errors.unexpectedError')
   }
 }
 
@@ -83,13 +85,17 @@ defineExpose({ showModal })
 </script>
 
 <template>
-  <ModalDialog title="Add new Permission" ref="permissionModal" :class="{ 'is-loading': loading }">
+  <ModalDialog
+    :title="t('permissions.modal.title')"
+    ref="permissionModal"
+    :class="{ 'is-loading': loading }"
+  >
     <form class="permission-form bottom-margin">
-      <label for="code">New Permission *</label>
+      <label for="code">{{ t('permissions.modal.inputLabel') }}*</label>
       <input
         type="text"
         id="code"
-        placeholder="AIIDA Code"
+        :placeholder="t('permissions.modal.inputPlaceholder')"
         required
         class="code-input text-normal"
         v-model="aiidaCode"
@@ -97,19 +103,27 @@ defineExpose({ showModal })
     </form>
     <Button class="bottom-margin hide-on-load" @click="toggleQrCodeModal(true)">
       <ScanQrCodeIcon />
-      Scan AIIDA Code
+      {{ t('permissions.modal.qrButton') }}
     </Button>
     <div class="bottom-margin" v-if="aiidaCodeError">
-      <p class="heading-3">Error</p>
+      <p class="heading-3">{{ t('permissions.modal.errorTitle') }}</p>
       {{ aiidaCodeError }}
     </div>
     <div class="action-buttons">
-      <Button button-style="error-secondary" @click="permissionModal?.close()">Cancel</Button>
-      <Button @click="handleAddPermission" class="hide-on-load">Add</Button>
+      <Button button-style="error-secondary" @click="permissionModal?.close()">
+        {{ t('cancelButton') }}
+      </Button>
+      <Button @click="handleAddPermission" class="hide-on-load"> {{ t('addButton') }}</Button>
     </div>
-    <ModalDialog title="Scan QR Code" ref="qrCodeModal" @close="qrCodeIsOpen = false">
+    <ModalDialog
+      :title="t('permissions.modal.qrTitle')"
+      ref="qrCodeModal"
+      @close="qrCodeIsOpen = false"
+    >
       <QrCodeScanner :open="qrCodeIsOpen" @valid="handleValidQrCode" />
-      <Button button-style="error-secondary" @click="toggleQrCodeModal(false)">Cancel</Button>
+      <Button button-style="error-secondary" @click="toggleQrCodeModal(false)">
+        {{ t('cancelButton') }}
+      </Button>
     </ModalDialog>
     <div v-if="loading" class="loading-indicator"></div>
   </ModalDialog>

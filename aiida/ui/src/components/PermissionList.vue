@@ -11,7 +11,9 @@ import PermissionDropdown from './PermissionDropdown.vue'
 import UpdatePermissionModal from './Modals/UpdatePermissionModal.vue'
 import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
 import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const selectedTab = ref<PermissionTypes>('Active')
 const showMore = ref(false)
 const scrollTarget = ref()
@@ -31,14 +33,17 @@ const tabs = [
   {
     name: 'Active',
     icon: ActiveIcon,
+    translation: 'permissions.tagActive',
   },
   {
     name: 'Pending',
     icon: PendingIcon,
+    translation: 'permissions.tagPending',
   },
   {
     name: 'Complete',
     icon: CompleteIcon,
+    translation: 'permissions.tagComplete',
   },
 ]
 const initialPermissionsCount = 6
@@ -59,6 +64,10 @@ watch([selectedTab, permissions, selectedPermissionCategory], () => {
     )
   }
 })
+
+console.log(
+  `permissions.emptyList${selectedTab.value}${selectedPermissionCategory.value === 'outbound-aiida' ? 'Inbound' : 'Outbound'}`,
+)
 
 const slicedPermissions = computed(() => {
   if (showMore.value) {
@@ -100,14 +109,14 @@ const handleCategoryChange = (category: string) => {
         class="text-normal"
         :class="{ 'active-category': selectedPermissionCategory === 'outbound-aiida' }"
       >
-        <PermissionsNavIcon class="rotate" /> Outbound Permissions
+        <PermissionsNavIcon class="rotate" /> {{ t('permissions.outboundTab') }}
       </button>
       <button
         @click="handleCategoryChange('inbound-aiida')"
         :class="{ 'active-category': selectedPermissionCategory === 'inbound-aiida' }"
         class="text-normal"
       >
-        <PermissionsNavIcon /> Inbound Permissions
+        <PermissionsNavIcon /> {{ t('permissions.inboundTab') }}
       </button>
     </div>
     <div class="permission-list-wrapper">
@@ -119,7 +128,7 @@ const handleCategoryChange = (category: string) => {
           @click="handleTabClick(tab.name as 'Active' | 'Pending' | 'Complete')"
           :class="{ active: selectedTab === tab.name }"
         >
-          <component :is="tab.icon" class="icon" /> {{ tab.name }}
+          <component :is="tab.icon" class="icon" /> {{ t(tab.translation) }}
         </Button>
       </div>
       <TransitionGroup tag="ul" name="permissions" class="permission-list" ref="scrollTarget">
@@ -135,11 +144,14 @@ const handleCategoryChange = (category: string) => {
           @click="handleShowMore"
           class="show-more-button"
         >
-          {{ showMore ? 'Show Less Permissions' : 'Load More Permissions' }}
+          {{ showMore ? t('permissions.loadLess') : t('permissions.loadMore') }}
         </Button>
         <p v-if="!slicedPermissions.length" class="no-permissions heading-5">
-          No {{ selectedTab }}
-          {{ selectedPermissionCategory === 'outbound-aiida' ? 'Outbound' : 'Inbound' }} Permissions
+          {{
+            t(
+              `permissions.emptyList${selectedTab}${selectedPermissionCategory === 'outbound-aiida' ? 'Inbound' : 'Outbound'}`,
+            )
+          }}
         </p>
       </TransitionGroup>
     </div>

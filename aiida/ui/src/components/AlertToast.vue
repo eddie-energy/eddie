@@ -6,8 +6,10 @@ import WarningToastIcon from '@/assets/icons/WarningToastIcon.svg'
 import SuccessToastIcon from '@/assets/icons/SuccessToastIcon.svg'
 import CloseIcon from '@/assets/icons/CloseIcon.svg'
 import useToast from '@/composables/useToast'
+import { useI18n } from 'vue-i18n'
 
 const { remove } = useToast()
+const { t } = useI18n()
 
 const {
   severity = 'info',
@@ -25,24 +27,24 @@ const {
 
 const toastTypes: {
   [key: string]: {
-    title: string
+    translation: string
     icon: string
   }
 } = {
   info: {
-    title: 'Did you know?',
+    translation: 'toasts.info',
     icon: InfoToastIcon,
   },
   success: {
-    title: 'Congratulations!',
+    translation: 'toasts.success',
     icon: SuccessToastIcon,
   },
   warning: {
-    title: 'Warning!',
+    translation: 'toasts.warning',
     icon: WarningToastIcon,
   },
   danger: {
-    title: 'Something went wrong!',
+    translation: 'toasts.danger',
     icon: ErrorToastIcon,
   },
 }
@@ -54,14 +56,14 @@ const progressBarDuration = `${duration}ms`
   <div class="toast" :class="[severity]" aria-live="polite" role="alert">
     <component :is="toastTypes[severity].icon" class="icon" />
     <div>
-      <p class="toast-title text-normal">{{ toastTypes[severity].title }}</p>
-      <p class="toast-message text-small">{{ message }}</p>
+      <p class="toast-title text-normal">{{ t(toastTypes[severity].translation) }}</p>
+      <p class="toast-message text-small">{{ t(message) }}</p>
     </div>
     <button
       type="button"
       v-if="canClose"
       @click="remove(id)"
-      aria-label="Close"
+      :aria-label="t('closeButton')"
       class="close-button"
     >
       <CloseIcon />

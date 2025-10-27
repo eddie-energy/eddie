@@ -23,7 +23,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
   try {
     await keycloak.updateToken(5)
   } catch (error) {
-    danger('Failed to update authentication token. Please reload this page.')
+    danger('errors.failedTokenUpdate')
     throw error
   }
   const isImagesEndpoint = path.startsWith('/datasources/images')
@@ -37,7 +37,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       ...init,
     })
     .catch((error: unknown) => {
-      danger('Network error. Please check your connection.')
+      danger('errors.networkError')
       throw error
     })
 
@@ -45,7 +45,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
     const message =
       (await parseErrorResponse(response)) ??
       FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
-      'An unexpected error occurred. Please try again.'
+      'errors.unexpectedError'
     if (!(isImagesEndpoint && response.status == 404)) {
       danger(message, response.status == 404 ? 5000 : 0, true)
     }
@@ -142,7 +142,7 @@ export async function rejectPermission(permissionId: string): Promise<any> {
       operation: 'REJECT',
     }),
   })
-  success('Permission request rejected.')
+  success('toasts.rejectPermission')
   return result
 }
 
@@ -154,7 +154,7 @@ export async function acceptPermission(permissionId: string, dataSourceId: strin
       dataSourceId,
     }),
   })
-  success('Permission request accepted.')
+  success('toasts.acceptPermission')
 }
 
 export async function revokePermission(permissionId: string): Promise<void> {
@@ -164,7 +164,7 @@ export async function revokePermission(permissionId: string): Promise<void> {
       operation: 'REVOKE',
     }),
   })
-  success('The permission for this service was revoked.')
+  success('toasts.revokePermission')
 }
 
 export async function addDataSource(dataSource: Omit<AiidaDataSource, 'id'>): Promise<{
@@ -175,7 +175,7 @@ export async function addDataSource(dataSource: Omit<AiidaDataSource, 'id'>): Pr
     method: 'POST',
     body: JSON.stringify(dataSource),
   })
-  success('Data source created.')
+  success('toasts.createDatasource')
   return result
 }
 
@@ -187,7 +187,7 @@ export async function saveDataSource(
     method: 'PATCH',
     body: JSON.stringify(dataSource),
   })
-  success('Changes to this data source have been saved.')
+  success('toasts.saveDataSource')
 }
 
 export async function toggleDataSource(
@@ -206,7 +206,7 @@ export async function deleteDataSource(dataSourceId: string): Promise<void> {
   await fetch(`/datasources/${dataSourceId}`, {
     method: 'DELETE',
   })
-  success('Data source deleted successfully.')
+  success('toasts.deleteDatasource')
 }
 
 export function regenerateDataSourceSecrets(

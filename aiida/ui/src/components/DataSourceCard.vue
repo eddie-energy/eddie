@@ -11,7 +11,9 @@ import { computed, ref } from 'vue'
 import type { AiidaDataSource } from '@/types'
 import { dataSourceImages } from '@/stores/dataSources'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
 const { dataSource, startOpen } = defineProps<{
@@ -55,51 +57,53 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
 
     <dl class="fields" :class="{ 'with-image': image }">
       <div>
-        <dt>ID</dt>
+        <dt>{{ t('datasources.card.id') }}</dt>
         <dd>{{ id }}</dd>
       </div>
 
       <template v-if="countryCode">
         <div>
-          <dt>Country</dt>
+          <dt>{{ t('datasources.card.country') }}</dt>
           <dd>{{ COUNTRY_NAMES.of(countryCode) }}</dd>
         </div>
       </template>
 
       <div>
-        <dt>Asset</dt>
+        <dt>{{ t('datasources.card.asset') }}</dt>
         <dd>{{ asset }}</dd>
       </div>
 
       <div>
-        <dt>Type</dt>
+        <dt>{{ t('datasources.card.type') }}</dt>
         <dd>{{ dataSourceType }}</dd>
       </div>
 
       <template v-if="pollingInterval">
         <div>
-          <dt>Polling Interval</dt>
-          <dd>{{ pollingInterval }} seconds</dd>
+          <dt>{{ t('datasources.card.pollingInterval') }}</dt>
+          <dd>{{ pollingInterval }} s</dd>
         </div>
       </template>
 
       <template v-if="externalHost && topic && username">
         <div>
-          <dt>MQTT Server URI</dt>
+          <dt>{{ t('datasources.card.mqttServerUri') }}</dt>
           <dd>{{ externalHost }}</dd>
         </div>
         <div>
-          <dt>MQTT Topic</dt>
+          <dt>{{ t('datasources.card.mqttTopic') }}</dt>
           <dd>{{ topic }}</dd>
         </div>
         <div>
-          <dt>MQTT Username</dt>
+          <dt>{{ t('datasources.card.mqttUsername') }}</dt>
           <dd>{{ username }}</dd>
         </div>
         <div class="button-field">
-          <dt>MQTT Password</dt>
+          <dt>{{ t('datasources.card.mqttPassword') }}</dt>
           <dd>
-            <Button button-style="secondary" @click="emit('reset')">Reset password</Button>
+            <Button button-style="secondary" @click="emit('reset')">{{
+              t('datasources.card.resetPasswordButton')
+            }}</Button>
           </dd>
         </div>
         <div class="button-field" v-if="mqttCertificate">
@@ -118,25 +122,29 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
       </template>
 
       <div class="button-field toggle">
-        <dt>Enabled</dt>
+        <dt>{{ t('datasources.card.enabled') }}</dt>
         <button
           class="toggle-button"
           :class="{ enabled: enabled }"
           @click="emit('enableToggle')"
-          :aria-label="`${enabled ? 'Disable' : 'Enable'} Data Source`"
+          :aria-label="
+            enabled ? t('datasources.enableDatasource') : t('datasources.disableDataSource')
+          "
         >
           <StatusDotIcon class="toggle-icon" />
         </button>
       </div>
       <MessageDownloadButton class="message-download" button-style="secondary" :data="dataSource">
-        <EyeIcon /> Download Latest Message
+        <EyeIcon /> {{ t('datasources.card.downloadLatestMessageButton') }}
       </MessageDownloadButton>
     </dl>
 
     <div class="actions">
-      <Button button-style="error" @click="emit('delete')"><TrashIcon />Delete</Button>
+      <Button button-style="error" @click="emit('delete')"
+        ><TrashIcon />{{ t('deleteButton') }}</Button
+      >
 
-      <Button @click="emit('edit')"><PenIcon />Edit</Button>
+      <Button @click="emit('edit')"><PenIcon />{{ t('editButton') }}</Button>
     </div>
   </article>
 </template>

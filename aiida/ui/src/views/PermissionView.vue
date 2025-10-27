@@ -4,9 +4,10 @@ import Button from '@/components/Button.vue'
 import PlusIcon from '@/assets/icons/PlusIcon.svg'
 import AddPermissionModal from '@/components/Modals/AddPermissionModal.vue'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const permissionModalRef = ref<HTMLDialogElement>()
-
+const { t } = useI18n()
 const showAddPermissionModal = () => {
   permissionModalRef.value?.showModal()
 }
@@ -15,10 +16,11 @@ const showAddPermissionModal = () => {
 <template>
   <main>
     <header class="two-item-pair bottom-margin">
-      <h1 class="heading-2">Permissions</h1>
-      <Button @click="showAddPermissionModal" class="add-button"><PlusIcon />Add Permission</Button>
+      <h1 class="heading-2">{{ t('permissions.title') }}</h1>
+      <Button @click="showAddPermissionModal" class="add-button">
+        <PlusIcon />{{ t('permissions.addButton') }}
+      </Button>
     </header>
-
     <PermissionList />
     <AddPermissionModal ref="permissionModalRef" />
   </main>

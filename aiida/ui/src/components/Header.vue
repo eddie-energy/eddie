@@ -6,6 +6,10 @@ import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
 import DataSourceIcon from '@/assets/icons/DataSourceIcon.svg'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
 import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
+import { useI18n } from 'vue-i18n'
+import LanguageSwitcher from './LanguageSwitcher.vue'
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -16,33 +20,42 @@ import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
 
     <nav class="header-nav">
       <RouterLink
-        data-text="Permissions"
+        :data-text="t('header.permissions')"
         to="/"
         class="link-with-bold-hover nav-link"
         :class="{ 'not-selected': selectedPermissionCategory !== 'outbound-aiida' }"
         @click="selectedPermissionCategory = 'outbound-aiida'"
       >
         <PermissionsNavIcon class="icon outbound" />
-        Permissions
+        {{ t('header.permissions') }}
       </RouterLink>
       <RouterLink
-        data-text="Inbound"
+        :data-text="t('header.inbound')"
         to="/?category=inbound-aiida"
         class="link-with-bold-hover nav-link inbound-link"
         @click="selectedPermissionCategory = 'inbound-aiida'"
         :class="{ 'not-selected': selectedPermissionCategory !== 'inbound-aiida' }"
       >
         <PermissionsNavIcon class="icon" />
-        Inbound
+        {{ t('header.inbound') }}
       </RouterLink>
-      <RouterLink data-text="Data Sources" to="/data-sources" class="link-with-bold-hover nav-link">
+      <RouterLink
+        :data-text="t('header.data-sources')"
+        to="/data-sources"
+        class="link-with-bold-hover nav-link"
+      >
         <DataSourceIcon class="icon" />
-        Data Sources
+        {{ t('header.data-sources') }}
       </RouterLink>
-      <RouterLink to="/account" data-text="Accountaaa" class="link-with-bold-hover nav-link">
-        <span class="user-profile-link"> <AccountIcon /> Account</span>
+      <RouterLink
+        to="/account"
+        :data-text="t('header.account')"
+        class="link-with-bold-hover nav-link"
+      >
+        <span class="user-profile-link"> <AccountIcon /> {{ t('header.account') }}</span>
       </RouterLink>
     </nav>
+    <LanguageSwitcher />
   </header>
 </template>
 
@@ -51,11 +64,10 @@ import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
 }
 
 .logo {
-  height: 3rem;
+  height: 2.5rem;
   width: auto;
 }
 
@@ -95,11 +107,18 @@ import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
   transform: rotate(180deg);
 }
 
+@media screen and (min-width: 640px) {
+  .logo {
+    height: 3rem;
+  }
+}
+
 @media screen and (min-width: 1024px) {
   .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 2rem;
   }
   .nav-link {
     display: flex;
@@ -115,6 +134,7 @@ import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
   }
   .user-profile-link {
     flex-direction: row-reverse;
+    margin-right: 0.15em;
   }
   .header-nav {
     position: unset;

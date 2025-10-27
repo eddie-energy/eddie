@@ -8,8 +8,10 @@ import DataSourceModal from '@/components/Modals/DataSourceModal.vue'
 import MqttPasswordModal from '@/components/Modals/MqttPasswordModal.vue'
 import { regenerateDataSourceSecrets } from '@/api'
 import useToast from '@/composables/useToast'
+import { useI18n } from 'vue-i18n'
 
 const { success } = useToast()
+const { t } = useI18n()
 
 const modal = useTemplateRef('modal')
 const passModal = useTemplateRef('passModal')
@@ -25,7 +27,7 @@ function edit(target: AiidaDataSource) {
 
 async function reset(id: string) {
   const { plaintextPassword } = await regenerateDataSourceSecrets(id)
-  success('Successfully reset MQTT password')
+  success('datasources.modal.mqttResetSuccess')
   passModal.value?.showModal(plaintextPassword)
 }
 </script>
@@ -35,10 +37,10 @@ async function reset(id: string) {
     <MqttPasswordModal ref="passModal" />
     <DataSourceModal ref="modal" @showMqtt="(pass) => passModal?.showModal(pass, true)" />
     <header class="header">
-      <h1 class="heading-2">Data sources</h1>
+      <h1 class="heading-2">{{ t('datasources.title') }}</h1>
       <Button @click="add">
         <PlusIcon />
-        Add Data Source
+        {{ t('datasources.addButton') }}
       </Button>
     </header>
     <DataSourceList @edit="edit" @reset="reset" />
