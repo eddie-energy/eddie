@@ -5,6 +5,36 @@
     "manage-account"
   ],
   "loginTheme": "eddie-theme",
+  "clientScopes": [
+    {
+      "name": "agnostic-connection-status-messages:read",
+      "protocol": "openid-connect"
+    },
+    {
+      "name": "agnostic-raw-data-messages:read",
+      "protocol": "openid-connect"
+    },
+    {
+      "name": "cim-permission-md:read",
+      "protocol": "openid-connect"
+    },
+    {
+      "name": "cim-accounting-point-data-md:read",
+      "protocol": "openid-connect"
+    },
+    {
+      "name": "cim-validated-historical-data-md:read",
+      "protocol": "openid-connect"
+    },
+    {
+      "name": "cim-termination-md:write",
+      "protocol": "openid-connect"
+    },
+    {
+      "name": "cim-redistribution-transaction-rd:write",
+      "protocol": "openid-connect"
+    }
+  ],
   "clients": [
     {
       "id": "eddie-client",
@@ -14,10 +44,20 @@
       "redirectUris": ["http://localhost:*"],
       "webOrigins": ["*"],
       "protocol": "openid-connect",
-      "publicClient": true,
+      "publicClient": false,
       "serviceAccountsEnabled": true,
       "standardFlowEnabled": true,
-      "directAccessGrantsEnabled": true
+      "directAccessGrantsEnabled": true,
+      "optionalClientScopes": [
+        "offline_access",
+        "agnostic-connection-status-messages:read",
+        "agnostic-raw-data-messages:read",
+        "cim-permission-md:read",
+        "cim-accounting-point-data-md:read",
+        "cim-validated-historical-data-md:read",
+        "cim-termination-md:write",
+        "cim-redistribution-transaction-rd:write"
+      ]
     }
   ],
   "users": [
