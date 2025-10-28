@@ -144,6 +144,7 @@ class HomeControllerTest {
                .andExpect(view().name("index"))
                .andExpect(model().attribute("eddiePublicUrl", publicUrl))
                .andExpect(model().attribute("eddieAdminConsoleUrl", managementUrl + ADMIN_CONSOLE_BASE_URL))
-               .andExpect(model().attribute("eddieManagementUrl", managementUrl + "/" + managementUrlPrefix));
+               .andExpect(model().attribute("eddieManagementUrl", managementUrl))
+               .andExpect(model().attribute("eddieManagementUrlPrefix", managementUrlPrefix));
     }
 }
