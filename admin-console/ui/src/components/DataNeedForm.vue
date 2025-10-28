@@ -17,8 +17,10 @@ import type {
   OutboundAiidaDataNeed,
   ValidatedHistoricalDataDataNeed
 } from '@/types'
+import { useToast } from 'primevue'
 
 const emit = defineEmits(['created'])
+const toast = useToast()
 
 type DataNeedForm =
   | Omit<AccountingPointDataNeed, 'id' | 'createdAt'>
@@ -92,10 +94,10 @@ async function submitForm() {
       throw new Error(text || `HTTP ${response.status}`)
     }
 
-    message.value = 'Data need created.'
+    toast.add({ severity: 'success', detail: 'Data need created' })
     emit('created')
-  } catch (err: any) {
-    message.value = `Error: ${err.message}`
+  } catch (error: any) {
+    toast.add({ severity: 'error', detail: `Error: ${error.message}` })
   } finally {
     submitting.value = false
   }

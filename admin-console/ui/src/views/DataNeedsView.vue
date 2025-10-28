@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
 import { getDataNeeds } from '@/api'
+import Button from 'primevue/button'
 import DataNeedForm from '@/components/DataNeedForm.vue'
 import type { AnyDataNeed } from '@/types'
 import { CSRF_HEADER, CSRF_TOKEN, DATA_NEEDS_API_URL } from '@/config'
@@ -127,10 +128,12 @@ onMounted(() => refresh())
       </template>
     </dl>
 
-    <button @click="toggleEnabled(dn.id, dn.enabled)">
-      {{ dn.enabled ? 'Disable' : 'Enable' }}
-    </button>
-    <button @click="deleteDataNeed(dn.id)">Delete</button>
+    <Button
+      @click="toggleEnabled(dn.id, dn.enabled)"
+      :label="dn.enabled ? 'Disable' : 'Enable'"
+      severity="warn"
+    />
+    <Button @click="deleteDataNeed(dn.id)" icon="pi pi-trash" label="Delete" severity="danger" />
   </article>
 
   <DataNeedForm @created="refresh" />
