@@ -71,3 +71,5 @@ export type AnyDataNeed =
   | InboundAiidaDataNeed
   | OutboundAiidaDataNeed
   | ValidatedHistoricalDataDataNeed
+
+export type DataNeedType = AnyDataNeed['type']

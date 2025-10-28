@@ -8,21 +8,26 @@ import MultiSelect from 'primevue/multiselect'
 import Button from 'primevue/button'
 import { DATA_NEEDS_API_URL } from '@/config'
 import { ASSETS, ENERGY_TYPES, GRANULARITIES, REGION_CONNECTORS, SCHEMAS } from '@/constants'
-import type { AiidaDataNeed, AnyDataNeed, ValidatedHistoricalDataDataNeed } from '@/types'
+import type {
+  AccountingPointDataNeed,
+  AiidaDataNeed,
+  DataNeed,
+  DataNeedType,
+  InboundAiidaDataNeed,
+  OutboundAiidaDataNeed,
+  ValidatedHistoricalDataDataNeed
+} from '@/types'
 
 const emit = defineEmits(['created'])
 
-type DataNeedForm = Omit<AnyDataNeed, 'id' | 'createdAt'>
+type DataNeedForm =
+  | Omit<AccountingPointDataNeed, 'id' | 'createdAt'>
+  | Omit<InboundAiidaDataNeed, 'id' | 'createdAt'>
+  | Omit<OutboundAiidaDataNeed, 'id' | 'createdAt'>
+  | Omit<ValidatedHistoricalDataDataNeed, 'id' | 'createdAt'>
 
-type ValidatedFields = Pick<
-  ValidatedHistoricalDataDataNeed,
-  'duration' | 'energyType' | 'minGranularity' | 'maxGranularity'
->
-
-type AiidaFields = Pick<
-  AiidaDataNeed,
-  'duration' | 'transmissionSchedule' | 'schemas' | 'asset' | 'dataTags'
->
+type ValidatedFields = Omit<ValidatedHistoricalDataDataNeed, keyof DataNeed>
+type AiidaFields = Omit<AiidaDataNeed, keyof DataNeed>
 
 const commonDefaults: Omit<DataNeedForm, 'type'> = {
   name: '',
@@ -60,15 +65,15 @@ const form = ref<DataNeedForm>({
 const submitting = ref(false)
 const message = ref<string | null>(null)
 
-function onTypeChanged(value: AnyDataNeed['type']) {
+function onTypeChanged(value: DataNeedType) {
   const next = { ...commonDefaults, type: value }
 
   if (value === 'validated') {
-    form.value = { ...next, ...validatedDefaults }
+    form.value = { ...next, ...validatedDefaults } as DataNeedForm
   }
 
   if (value === 'inbound-aiida' || value === 'outbound-aiida') {
-    form.value = { ...next, ...aiidaDefaults }
+    form.value = { ...next, ...aiidaDefaults } as DataNeedForm
   }
 }
 
@@ -144,7 +149,7 @@ async function submitForm() {
         <label for="filterType">Region Filter Type</label>
         <Select
           id="filterType"
-          v-model="form.regionConnectorFilter.type"
+          v-model="form.regionConnectorFilter!.type"
           :options="[
             { label: 'Blocklist', value: 'blocklist' },
             { label: 'Allowlist', value: 'allowlist' }
@@ -159,13 +164,19 @@ async function submitForm() {
         <label for="regionIds">Region Connector IDs</label>
         <MultiSelect
           id="regionIds"
-          v-model="form.regionConnectorFilter.regionConnectorIds"
+          v-model="form.regionConnectorFilter!.regionConnectorIds"
           :options="REGION_CONNECTORS"
           placeholder="Select region connectors"
         />
       </div>
 
-      <template v-if="form.type !== 'account'">
+      <template
+        v-if="
+          form.type === 'validated' ||
+          form.type === 'inbound-aiida' ||
+          form.type === 'outbound-aiida'
+        "
+      >
         <legend>Duration</legend>
 
         <div class="field">
@@ -268,12 +279,11 @@ async function submitForm() {
             id="dataTags"
             :value="form.dataTags?.join(', ')"
             @valueChange="
-              (value: string) => {
-                form.dataTags = value
+              (value: string) =>
+                ((form as AiidaDataNeed).dataTags = value
                   .split(',')
                   .map((s) => s.trim())
-                  .filter(Boolean)
-              }
+                  .filter(Boolean))
             "
           />
         </div>

@@ -84,7 +84,11 @@ onMounted(() => refresh())
         <dd>{{ dn.regionConnectorFilter.regionConnectorIds.join(', ') }}</dd>
       </template>
 
-      <template v-if="dn.duration">
+      <template
+        v-if="
+          dn.type === 'validated' || dn.type === 'inbound-aiida' || dn.type === 'outbound-aiida'
+        "
+      >
         <dt>Duration Type</dt>
         <dd>{{ dn.duration.type }}</dd>
         <dt v-if="dn.duration.start">Start</dt>
