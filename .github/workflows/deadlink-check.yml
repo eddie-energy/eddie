@@ -1,0 +1,30 @@
+name: deadlink-check.yml
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - "**.md"
+  schedule:
+    - cron: "00 10 * * *"
+
+jobs:
+  deadlink-check:
+    runs-on: linux
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deadlink check
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # Checks for dead links in the referenced files.
+          # Ignores private github links and localhost links, which would make it fail.
+          # Furthermore, it ignores specific links that do not accept requests using automated means, such as npmjs.
+          # User agent is set to Mozilla for most compatibility.
+          args: --exclude '^https://github\.com/eddie-energy/' --exclude '^https://gw.ext.prod.api.enedis.fr' --exclude '^https://www.eancodeboek.nl' --exclude '^https://particulier.edf.fr/en/home/contract-and-consumption/meter/linky-meter.html$' --exclude '^https://www.npmjs.com/' --exclude-all-private --user-agent 'Mozilla/5.0' --exclude-path 'node_modules' --hidden --extensions md --root-dir $(pwd) --insecure .
+          fail: 'true'
+      - name: Comment Broken Links
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: lychee/out.md

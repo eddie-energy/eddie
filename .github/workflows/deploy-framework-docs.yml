@@ -5,13 +5,6 @@ on:
       - 'docs/**'
     branches:
       - main
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-    paths:
-      - 'docs/**'
   workflow_dispatch:
 
 jobs:
@@ -24,18 +17,9 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Deadlink check
-        uses: lycheeverse/lychee-action@v2
-        with:
-          # Checks for dead links in the referenced files.
-          # Ignores private github links, localhost links, and two API links, which would make it fail.
-          # User agent is set to Mozilla for most compatibility.
-          args: docs/1-running docs/2-integrating docs/3-extending docs/images docs/index.md docs/parts docs/public --exclude '^https://github\.com/eddie-energy/' --exclude '^https?://localhost:\d{0,4}/' --exclude '^https://gw.ext.prod.api.enedis.fr' --exclude '^https://www.eancodeboek.nl' --user-agent 'Mozilla/5.0' --verbose --no-progress
-          fail: 'true'
       - name: Gradle build framework-docs
         run: ./gradlew pnpmBuildFrameworkDocs
       - name: Deploy docs to webserver
-        if: github.ref_name == 'main'
         uses: eddie-energy/ftp-deploy-action@main
         timeout-minutes: 5
         with:
@@ -45,7 +29,6 @@ jobs:
           source: "./docs/.vitepress/dist/"
           destination: "/public_html/framework/"
       - name: Copy files via SSH
-        if: github.ref_name == 'main'
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.EDDIE_ENERGY_SSH_HOST }}
