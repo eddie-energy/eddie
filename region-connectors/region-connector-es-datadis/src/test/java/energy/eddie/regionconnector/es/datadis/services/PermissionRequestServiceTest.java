@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
@@ -8,7 +7,6 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
@@ -69,55 +67,6 @@ class PermissionRequestServiceTest {
                 Arguments.of(List.of(Granularity.PT15M)),
                 Arguments.of(List.of(Granularity.PT1H))
         );
-    }
-
-    @Test
-    void findConnectionStatusMessageById_nonExistingId_returnsEmptyOptional() {
-        // Given
-        var permissionId = "nonExisting";
-        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.empty());
-
-        // When
-        Optional<ConnectionStatusMessage> statusMessage = service.findConnectionStatusMessageById(permissionId);
-
-        // Then
-        assertTrue(statusMessage.isEmpty());
-    }
-
-    @Test
-    void findConnectionStatusMessageById_existingId_returnsPopulatedStatusMessage() {
-        // Given
-        var permissionId = "Existing";
-        var connectionId = "bar";
-        var dataNeedId = "luu";
-        var nif = "muh";
-        var meteringPointId = "kuh";
-        var now = LocalDate.now(ZONE_ID_SPAIN);
-        var requestDataFrom = now.minusDays(10);
-        var requestDataTo = now.minusDays(5);
-        var permissionRequest = new DatadisPermissionRequestBuilder()
-                .setPermissionId(permissionId)
-                .setConnectionId(connectionId)
-                .setDataNeedId(dataNeedId)
-                .setNif(nif)
-                .setMeteringPointId(meteringPointId)
-                .setGranularity(Granularity.PT1H)
-                .setStart(requestDataFrom)
-                .setEnd(requestDataTo)
-                .setStatus(PermissionProcessStatus.CREATED)
-                .build();
-        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
-
-        // When
-        Optional<ConnectionStatusMessage> optional = service.findConnectionStatusMessageById(permissionId);
-
-        // Then
-        assertTrue(optional.isPresent());
-        var statusMessage = optional.get();
-        assertEquals(permissionId, statusMessage.permissionId());
-        assertEquals(connectionId, statusMessage.connectionId());
-        assertEquals(dataNeedId, statusMessage.dataNeedId());
-        assertEquals(PermissionProcessStatus.CREATED, statusMessage.status());
     }
 
     @Test
