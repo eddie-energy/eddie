@@ -295,7 +295,6 @@ async function submitForm() {
 <style scoped>
 form {
   display: grid;
-  grid-template-columns: subgrid;
   justify-items: start;
   gap: 1rem;
 }
