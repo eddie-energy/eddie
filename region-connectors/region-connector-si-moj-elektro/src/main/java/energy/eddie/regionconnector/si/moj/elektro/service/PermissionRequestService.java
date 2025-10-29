@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.si.moj.elektro.service;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
@@ -13,13 +12,11 @@ import energy.eddie.regionconnector.si.moj.elektro.dtos.PermissionRequestForCrea
 import energy.eddie.regionconnector.si.moj.elektro.permission.events.CreatedEvent;
 import energy.eddie.regionconnector.si.moj.elektro.permission.events.MalformedEvent;
 import energy.eddie.regionconnector.si.moj.elektro.permission.events.ValidatedEvent;
-import energy.eddie.regionconnector.si.moj.elektro.persistence.SiPermissionRequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.si.moj.elektro.MojElektroRegionConnectorMetadata.REGION_CONNECTOR_ID;
@@ -29,14 +26,10 @@ public class PermissionRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
     private static final String DATA_NEED_ID = "dataNeedId";
-    private final SiPermissionRequestRepository siPermissionRequestRepository;
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     private final Outbox outbox;
 
-    public PermissionRequestService(SiPermissionRequestRepository siPermissionRequestRepository,
-                                    DataNeedCalculationService<DataNeed> dataNeedCalculationService,
-                                    Outbox outbox) {
-        this.siPermissionRequestRepository = siPermissionRequestRepository;
+    public PermissionRequestService(DataNeedCalculationService<DataNeed> dataNeedCalculationService, Outbox outbox) {
         this.dataNeedCalculationService = dataNeedCalculationService;
         this.outbox = outbox;
     }
@@ -80,16 +73,12 @@ public class PermissionRequestService {
             ) -> {
                 LOGGER.info("Validated permission request {}", permissionId);
                 outbox.commit(new ValidatedEvent(permissionId,
-                        energyTimeframe.start(),
-                        energyTimeframe.end(),
-                        granularities.getFirst(),
-                        requestForCreation.apiToken()));
+                                                 energyTimeframe.start(),
+                                                 energyTimeframe.end(),
+                                                 granularities.getFirst(),
+                                                 requestForCreation.apiToken()));
                 return new CreatedPermissionRequest(permissionId);
             }
         }
-    }
-
-    public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
-        return siPermissionRequestRepository.findByPermissionId(permissionId).map(ConnectionStatusMessage::new);
     }
 }
