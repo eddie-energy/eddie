@@ -5,7 +5,6 @@ spring-dependency-management = "1.1.2"
 spring-retry = "2.0.4"
 spring-aspects = "6.1.1"
 spring-kafka = "3.3.0"
-spring-websocket = "6.1.2"
 spring-oxm = "6.1.5"
 spring-security-test = "6.3.3"
 junit = "5.10.0"
@@ -158,7 +157,6 @@ spring-boot-starter-oauth2-client = { module = "org.springframework.boot:spring-
 spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-kafka = { module = "org.springframework.kafka:spring-kafka", version.ref = "spring-kafka" }
 spring-kafka-test = { module = "org.springframework.kafka:spring-kafka-test", version.ref = "spring-kafka" }
-spring-websocket = { module = "org.springframework:spring-websocket", version.ref = "spring-websocket" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "spring-retry" }
 spring-aspects = { module = "org.springframework:spring-aspects", version.ref = "spring-aspects" }
 spring-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "openapi-webmvc-ui" }

@@ -1,6 +1,2 @@
-### Websocket connection status messages
-WEBSOCKET ws://localhost:8080/api/connection-status-messages
-Content-Type: application/json // used only for IDE highlighting.
-
 ### SSE connection status message by permission ID
 GET http://localhost:8080/api/connection-status-messages/{id}
