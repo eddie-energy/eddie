@@ -2,14 +2,10 @@ package energy.eddie.regionconnector.at.eda.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.web.DataNeedsAdvice;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
-import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
-import energy.eddie.regionconnector.at.eda.services.ConnectionStatusService;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationAndValidationService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
@@ -28,11 +24,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.util.UriTemplate;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -47,8 +42,6 @@ class PermissionRequestControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
-    private ConnectionStatusService connectionStatusService;
-    @MockitoBean
     private PermissionRequestCreationAndValidationService permissionRequestCreationAndValidationService;
 
     private static Stream<Arguments> permissionRequestArguments() {
@@ -60,44 +53,6 @@ class PermissionRequestControllerTest {
                 Arguments.of(null, "0".repeat(33), "dnid", "0".repeat(8), "connectionId"),
                 Arguments.of("cid", "0".repeat(33), null, "0".repeat(8), "dataNeedId")
         );
-    }
-
-    @Test
-    void permissionStatus_permissionExists_returnsOk() throws Exception {
-        // Given
-        String permissionId = "permissionId";
-        when(connectionStatusService.findConnectionStatusMessageById(permissionId))
-                .thenReturn(Optional.of(new ConnectionStatusMessage(
-                        "cid",
-                        permissionId,
-                        "dnid",
-                        new EdaDataSourceInformation("dsoId"),
-                        PermissionProcessStatus.ACCEPTED,
-                        ""
-                )));
-        // When
-        mockMvc.perform(
-                       MockMvcRequestBuilders.get("/permission-status/{permissionId}", permissionId)
-                                             .accept(MediaType.APPLICATION_JSON))
-               // Then
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.permissionId", is(permissionId)))
-               .andExpect(jsonPath("$.connectionId", is("cid")));
-    }
-
-    @Test
-    void permissionStatus_permissionDoesNotExist_returnsNotFound() throws Exception {
-        // Given
-        when(connectionStatusService.findConnectionStatusMessageById("pid"))
-                .thenReturn(Optional.empty());
-        // When
-        mockMvc.perform(
-                       MockMvcRequestBuilders.get("/permission-status/{permissionId}", "123")
-                                             .accept(MediaType.APPLICATION_JSON))
-               // Then
-               .andExpect(status().isNotFound())
-               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No permission with ID '123' found.")));
     }
 
     @Test
@@ -167,7 +122,7 @@ class PermissionRequestControllerTest {
     @Test
     void createPermissionRequest_returnsPermissionRequest_andSetsLocationHeader() throws Exception {
         // Given
-        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand("pid").toString();
+        var expectedLocationHeader = new UriTemplate(CONNECTION_STATUS_STREAM).expand("pid").toString();
         CreatedPermissionRequest expected = new CreatedPermissionRequest("pid");
         when(permissionRequestCreationAndValidationService.createAndValidatePermissionRequest(any()))
                 .thenReturn(expected);
