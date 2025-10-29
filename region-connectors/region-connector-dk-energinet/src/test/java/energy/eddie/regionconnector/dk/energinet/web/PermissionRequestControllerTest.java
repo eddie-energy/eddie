@@ -2,19 +2,15 @@ package energy.eddie.regionconnector.dk.energinet.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.web.DataNeedsAdvice;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
-import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetDataSourceInformation;
 import energy.eddie.regionconnector.dk.energinet.services.InvalidRefreshTokenException;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionCreationService;
-import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +26,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.util.UriTemplate;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -49,8 +44,6 @@ class PermissionRequestControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
-    private PermissionRequestService service;
-    @MockitoBean
     private PermissionCreationService creationService;
     @Autowired
     private ObjectMapper mapper;
@@ -59,41 +52,6 @@ class PermissionRequestControllerTest {
     void givenNoPermissionId_returnsNotFound() throws Exception {
         mockMvc.perform(get("/permission-status"))
                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void givenNonExistingPermissionId_returnsNotFound() throws Exception {
-        String permissionId = "NonExistingId";
-        mockMvc.perform(
-                       get("/permission-status/{permissionId}", permissionId)
-                               .accept(MediaType.APPLICATION_JSON)
-               )
-               .andExpect(status().isNotFound())
-               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
-                                   startsWith("No permission with ID 'NonExistingId' found.")));
-    }
-
-    @Test
-    void givenExistingPermissionId_returnsConnectionStatusMessage() throws Exception {
-        String permissionId = "68916faf-9020-4453-a469-068f076e6d87";
-        ConnectionStatusMessage statusMessage = new ConnectionStatusMessage(
-                "foo",
-                permissionId,
-                "bar",
-                new EnerginetDataSourceInformation(),
-                PermissionProcessStatus.ACCEPTED);
-        when(service.findConnectionStatusMessageById(permissionId)).thenReturn(Optional.of(statusMessage));
-
-        mockMvc.perform(
-                       get("/permission-status/{permissionId}", permissionId)
-                               .accept(MediaType.APPLICATION_JSON)
-               )
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.status", is("ACCEPTED")))
-               .andExpect(jsonPath("$.connectionId", is("foo")))
-               .andExpect(jsonPath("$.permissionId", is(permissionId)))
-               .andExpect(jsonPath("$.dataNeedId", is("bar")));
     }
 
     @Test
@@ -186,8 +144,7 @@ class PermissionRequestControllerTest {
     @Test
     void givenAdditionalFields_areIgnored() throws Exception {
         var permissionId = UUID.randomUUID().toString();
-        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
-                                                                                            .toString();
+        var expectedLocationHeader = new UriTemplate(CONNECTION_STATUS_STREAM).expand(permissionId).toString();
 
         when(creationService.createPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(permissionId));
 
@@ -212,8 +169,7 @@ class PermissionRequestControllerTest {
     @Test
     void givenValidInput_returnsLocationAndPermissionRequestId() throws Exception {
         var permissionId = UUID.randomUUID().toString();
-        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
-                                                                                            .toString();
+        var expectedLocationHeader = new UriTemplate(CONNECTION_STATUS_STREAM).expand(permissionId).toString();
 
         when(creationService.createPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(permissionId));
 
