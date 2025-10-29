@@ -172,13 +172,7 @@ async function submitForm() {
         />
       </div>
 
-      <template
-        v-if="
-          form.type === 'validated' ||
-          form.type === 'inbound-aiida' ||
-          form.type === 'outbound-aiida'
-        "
-      >
+      <template v-if="form.type !== 'account'">
         <legend>Duration</legend>
 
         <div class="field">

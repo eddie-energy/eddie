@@ -85,17 +85,17 @@ onMounted(() => refresh())
         <dd>{{ dn.regionConnectorFilter.regionConnectorIds.join(', ') }}</dd>
       </template>
 
-      <template
-        v-if="
-          dn.type === 'validated' || dn.type === 'inbound-aiida' || dn.type === 'outbound-aiida'
-        "
-      >
+      <template v-if="dn.type !== 'account'">
         <dt>Duration Type</dt>
         <dd>{{ dn.duration.type }}</dd>
-        <dt v-if="dn.duration.start">Start</dt>
-        <dd v-if="dn.duration.start">{{ dn.duration.start }}</dd>
-        <dt v-if="dn.duration.end">End</dt>
-        <dd v-if="dn.duration.end">{{ dn.duration.end }}</dd>
+        <template v-if="dn.duration.start">
+          <dt>Start</dt>
+          <dd>{{ dn.duration.start }}</dd>
+        </template>
+        <template v-if="dn.duration.end">
+          <dt>End</dt>
+          <dd>{{ dn.duration.end }}</dd>
+        </template>
 
         <template v-if="dn.duration.type === 'relativeDuration'">
           <dt>Sticky Start Calendar Unit</dt>
