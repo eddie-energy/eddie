@@ -3,16 +3,12 @@ package energy.eddie.regionconnector.fi.fingrid.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.fi.fingrid.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.fi.fingrid.permission.FingridDataSourceInformation;
 import energy.eddie.regionconnector.fi.fingrid.services.PermissionCreationService;
-import energy.eddie.regionconnector.fi.fingrid.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
@@ -47,39 +43,6 @@ class PermissionRequestControllerTest {
     private MockMvc mockMvc;
     @MockitoBean
     private PermissionCreationService creationService;
-    @MockitoBean
-    private PermissionRequestService requestService;
-
-    @Test
-    void connectionStatusMessage_returns() throws Exception {
-        // Given
-        when(requestService.connectionStatusMessage("pid"))
-                .thenReturn(new ConnectionStatusMessage("cid",
-                                                        "pid",
-                                                        "dnid",
-                                                        new FingridDataSourceInformation(),
-                                                        PermissionProcessStatus.CREATED));
-
-        // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/permission-status/{permissionId}", "pid")
-                                              .accept(MediaType.APPLICATION_JSON))
-               // Then
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.permissionId", is("pid")));
-    }
-
-    @Test
-    void connectionStatusMessage_throwsOnUnknownPermissionId() throws Exception {
-        // Given
-        when(requestService.connectionStatusMessage("pid"))
-                .thenThrow(PermissionNotFoundException.class);
-
-        // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/permission-status/{permissionId}", "pid")
-                                              .accept(MediaType.APPLICATION_JSON))
-               // Then
-               .andExpect(status().isNotFound());
-    }
 
     @Test
     void organisationInformation_respondsOk() throws Exception {
@@ -109,7 +72,7 @@ class PermissionRequestControllerTest {
                                               .content(objectMapper.writeValueAsString(permissionRequest)))
                .andExpect(status().isCreated())
                .andExpect(jsonPath("$.permissionId", is("pid")))
-               .andExpect(header().string("location", "/permission-status/pid"));
+               .andExpect(header().string("location", "/api/connection-status-messages/pid"));
     }
 
     @Test

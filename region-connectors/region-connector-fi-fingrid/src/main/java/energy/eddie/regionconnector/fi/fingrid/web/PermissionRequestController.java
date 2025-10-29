@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.fi.fingrid.web;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -10,8 +9,6 @@ import energy.eddie.regionconnector.fi.fingrid.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.dtos.OrganisationInformation;
 import energy.eddie.regionconnector.fi.fingrid.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fi.fingrid.services.PermissionCreationService;
-import energy.eddie.regionconnector.fi.fingrid.services.PermissionRequestService;
-import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -28,21 +25,13 @@ public class PermissionRequestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final PermissionCreationService creationService;
     private final FingridConfiguration fingridConfiguration;
-    private final PermissionRequestService permissionRequestService;
 
     public PermissionRequestController(
             PermissionCreationService creationService,
-            FingridConfiguration fingridConfiguration,
-            PermissionRequestService permissionRequestService
+            FingridConfiguration fingridConfiguration
     ) {
         this.creationService = creationService;
         this.fingridConfiguration = fingridConfiguration;
-        this.permissionRequestService = permissionRequestService;
-    }
-
-    @GetMapping(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
-    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@PathVariable String permissionId) throws PermissionNotFoundException {
-        return ResponseEntity.ok(permissionRequestService.connectionStatusMessage(permissionId));
     }
 
     @GetMapping(value = "/organisation-information")
@@ -56,11 +45,11 @@ public class PermissionRequestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedPermissionRequest> createPermissionRequest(
             @RequestBody @Valid PermissionRequestForCreation permissionRequestForCreation
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
         LOGGER.info("Creating new permission request");
         var createdRequest = creationService.createAndValidatePermissionRequest(permissionRequestForCreation);
         var permissionId = createdRequest.permissionId();
-        var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
+        var location = new UriTemplate(CONNECTION_STATUS_STREAM)
                 .expand(permissionId);
 
         return ResponseEntity.created(location).body(createdRequest);
