@@ -13,7 +13,8 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.CE_FILE_NAME;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.SWAGGER_DOC_PATH;
 
 /**
  * This class provides methods that create a security config for region-connectors that require a manuel response by the
@@ -47,6 +48,14 @@ public class SecurityUtils {
                 .build();
     }
 
+    public static MvcRequestMatcher.Builder mvcRequestMatcher(
+            HandlerMappingIntrospector introspector,
+            String regionConnectorId
+    ) {
+        return new MvcRequestMatcher.Builder(introspector)
+                .servletPath("/" + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + regionConnectorId);
+    }
+
     private static void configureAuthorization(
             MvcRequestMatcher.Builder mvcRequestMatcher,
             JwtAuthorizationManager jwtHeaderAuthorizationManager,
@@ -54,9 +63,7 @@ public class SecurityUtils {
             Iterable<String> authorizationPaths,
             Iterable<String> publicPaths
     ) {
-        auth
-                .requestMatchers(mvcRequestMatcher.pattern(PATH_PERMISSION_REQUEST)).permitAll()
-                .requestMatchers(mvcRequestMatcher.pattern(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)).permitAll();
+        auth.requestMatchers(mvcRequestMatcher.pattern(PATH_PERMISSION_REQUEST)).permitAll();
 
         for (String path : authorizationPaths) {
             auth.requestMatchers(mvcRequestMatcher.pattern(path)).access(jwtHeaderAuthorizationManager);
@@ -70,14 +77,5 @@ public class SecurityUtils {
                 .requestMatchers(mvcRequestMatcher.pattern("/" + CE_FILE_NAME)).permitAll()
                 .requestMatchers(mvcRequestMatcher.pattern("/" + SWAGGER_DOC_PATH)).permitAll()
                 .anyRequest().denyAll();
-    }
-
-
-    public static MvcRequestMatcher.Builder mvcRequestMatcher(
-            HandlerMappingIntrospector introspector,
-            String regionConnectorId
-    ) {
-        return new MvcRequestMatcher.Builder(introspector).servletPath(
-                "/" + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + regionConnectorId);
     }
 }
