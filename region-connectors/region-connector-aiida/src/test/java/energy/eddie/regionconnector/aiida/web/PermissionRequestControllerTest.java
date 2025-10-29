@@ -46,7 +46,6 @@ import java.util.UUID;
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
 import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_HANDSHAKE_PERMISSION_REQUEST;
 import static energy.eddie.regionconnector.aiida.web.PermissionRequestControllerTest.HMAC_SECRET;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -107,8 +106,9 @@ class PermissionRequestControllerTest {
         var qrCodeDto = new QrCodeDto(UUID.randomUUID(), permissionId, "serviceName", "http://localhost:8080/example");
         when(mockService.createValidateAndSendPermissionRequest(any())).thenReturn(qrCodeDto);
         var requestJson = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"11\",\"extra\":\"information\"}";
-        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
-                                                                                            .toString();
+        var expectedLocationHeader = new UriTemplate(PATH_HANDSHAKE_PERMISSION_REQUEST)
+                .expand(permissionId)
+                .toString();
 
         // When
         mockMvc.perform(post("/permission-request").content(requestJson).contentType(MediaType.APPLICATION_JSON))
@@ -127,8 +127,9 @@ class PermissionRequestControllerTest {
                                                                                                  "serviceName",
                                                                                                  "http://localhost:8080/example"));
         var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
-        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId)
-                                                                                            .toString();
+        var expectedLocationHeader = new UriTemplate(PATH_HANDSHAKE_PERMISSION_REQUEST)
+                .expand(permissionId)
+                .toString();
 
         // When
         mockMvc.perform(post("/permission-request").content(json).contentType(MediaType.APPLICATION_JSON))
