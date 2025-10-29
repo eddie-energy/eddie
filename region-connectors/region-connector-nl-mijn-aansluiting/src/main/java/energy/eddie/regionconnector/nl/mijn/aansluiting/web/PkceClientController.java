@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.web;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -25,8 +24,8 @@ import org.springframework.web.util.UriTemplate;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 
 @RestController
 public class PkceClientController {
@@ -39,12 +38,13 @@ public class PkceClientController {
     }
 
     @PostMapping(value = PATH_PERMISSION_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("java:S2092") // Will be removed in GH-1889
     public ResponseEntity<CreatedPermissionRequest> permissionRequest(
             @RequestBody @Valid PermissionRequestForCreation permissionRequest,
             HttpServletResponse response
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, NlValidationException {
         var newPermission = service.createPermissionRequest(permissionRequest);
-        URI location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
+        URI location = new UriTemplate(CONNECTION_STATUS_STREAM)
                 .expand(newPermission.permissionId());
 
         Cookie cookie = new Cookie(SESSION_ID, newPermission.permissionId());
@@ -53,12 +53,6 @@ public class PkceClientController {
         return ResponseEntity
                 .created(location)
                 .body(newPermission);
-    }
-
-    @GetMapping(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
-    public ResponseEntity<ConnectionStatusMessage> permissionRequestStatus(@PathVariable String permissionId) throws PermissionNotFoundException {
-        var csm = service.connectionStatusMessage(permissionId);
-        return ResponseEntity.ok(csm);
     }
 
     @GetMapping("/oauth2/code/mijn-aansluiting")
