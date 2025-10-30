@@ -3,20 +3,19 @@ package energy.eddie.aiida.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.config.InstallerConfiguration;
+import energy.eddie.aiida.dtos.installer.InstallerResponseDto;
 import energy.eddie.aiida.dtos.installer.InstallerSetupDto;
 import energy.eddie.aiida.dtos.installer.LoginDto;
-import energy.eddie.aiida.dtos.installer.InstallerResponseDto;
 import energy.eddie.aiida.dtos.installer.VersionInfoDto;
-import energy.eddie.aiida.errors.InstallerException;
-import energy.eddie.aiida.errors.InvalidUserException;
+import energy.eddie.aiida.errors.auth.InvalidUserException;
+import energy.eddie.aiida.errors.installer.InstallerException;
+import jakarta.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import jakarta.annotation.Nullable;
 
 import java.io.IOException;
 import java.net.URI;
@@ -124,7 +123,9 @@ public class InstallerService {
             String chartName,
             String releaseName
     ) throws InstallerException, InvalidUserException {
-        return sendAuthenticatedRequest(releaseServicePath(chartName, releaseName), HttpMethod.GET, VersionInfoDto.class);
+        return sendAuthenticatedRequest(releaseServicePath(chartName, releaseName),
+                                        HttpMethod.GET,
+                                        VersionInfoDto.class);
     }
 
     @Nullable
@@ -132,7 +133,9 @@ public class InstallerService {
             String chartName,
             String releaseName
     ) throws InstallerException, InvalidUserException {
-        return sendAuthenticatedRequest(releaseServicePath(chartName, releaseName), HttpMethod.POST, VersionInfoDto.class);
+        return sendAuthenticatedRequest(releaseServicePath(chartName, releaseName),
+                                        HttpMethod.POST,
+                                        VersionInfoDto.class);
     }
 
     public void deleteService(String chartName, String releaseName) throws InstallerException, InvalidUserException {
@@ -153,7 +156,10 @@ public class InstallerService {
             HttpMethod httpMethod,
             Class<T> installerResponseDataType
     ) throws InstallerException, InvalidUserException {
-        return sendAuthenticatedRequest(path, httpMethod, installerResponseDataType, HttpRequest.BodyPublishers.noBody());
+        return sendAuthenticatedRequest(path,
+                                        httpMethod,
+                                        installerResponseDataType,
+                                        HttpRequest.BodyPublishers.noBody());
     }
 
     @Nullable

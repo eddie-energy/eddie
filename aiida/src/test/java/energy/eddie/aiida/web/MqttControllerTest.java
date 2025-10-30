@@ -1,6 +1,6 @@
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.errors.MqttTlsCertificateNotFoundException;
+import energy.eddie.aiida.errors.datasource.mqtt.MqttTlsCertificateNotFoundException;
 import energy.eddie.aiida.services.MqttService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

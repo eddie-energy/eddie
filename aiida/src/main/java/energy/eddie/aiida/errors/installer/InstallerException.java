@@ -1,4 +1,4 @@
-package energy.eddie.aiida.errors;
+package energy.eddie.aiida.errors.installer;
 
 import jakarta.annotation.Nullable;
 import org.springframework.http.HttpStatus;

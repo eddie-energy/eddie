@@ -1,6 +1,6 @@
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.errors.DataSourceNotFoundException;
+import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.image.ImageFormatException;
 import energy.eddie.aiida.errors.image.ImageNotFoundException;
 import energy.eddie.aiida.errors.image.ImageReadException;
@@ -27,7 +27,10 @@ public class DataSourceImageController {
     private final DataSourceService dataSourceService;
 
     @Autowired
-    public DataSourceImageController(DataSourceImageService dataSourceImageService, DataSourceService dataSourceService) {
+    public DataSourceImageController(
+            DataSourceImageService dataSourceImageService,
+            DataSourceService dataSourceService
+    ) {
         this.dataSourceImageService = dataSourceImageService;
         this.dataSourceService = dataSourceService;
     }
@@ -38,14 +41,14 @@ public class DataSourceImageController {
             @ApiResponse(responseCode = "404", description = "Data source or image not found")
     })
     @GetMapping(path = "/{dataSourceId}")
-    public ResponseEntity<byte[]> imageByDataSourceId(@PathVariable UUID dataSourceId){
+    public ResponseEntity<byte[]> imageByDataSourceId(@PathVariable UUID dataSourceId) {
         try {
             var dataSource = dataSourceService.dataSourceByIdOrThrow(dataSourceId);
             var image = dataSourceImageService.imageByDataSource(dataSource);
 
             return ResponseEntity.status(HttpStatus.OK)
-                    .contentType(MediaType.parseMediaType(image.contentType()))
-                    .body(image.data());
+                                 .contentType(MediaType.parseMediaType(image.contentType()))
+                                 .body(image.data());
         } catch (ImageNotFoundException | DataSourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }

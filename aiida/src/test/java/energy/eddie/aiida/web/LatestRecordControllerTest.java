@@ -1,11 +1,8 @@
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.dtos.record.AiidaRecordValueDto;
-import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
-import energy.eddie.aiida.dtos.record.LatestInboundPermissionRecordDto;
-import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
-import energy.eddie.aiida.dtos.record.LatestSchemaRecordDto;
-import energy.eddie.aiida.errors.*;
+import energy.eddie.aiida.dtos.record.*;
+import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
+import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.models.record.UnitOfMeasurement;
 import energy.eddie.aiida.services.LatestRecordService;
 import energy.eddie.aiida.utils.ObisCode;

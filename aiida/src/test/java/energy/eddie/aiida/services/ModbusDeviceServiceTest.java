@@ -1,6 +1,6 @@
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.errors.ModbusDeviceConfigException;
+import energy.eddie.aiida.errors.datasource.modbus.ModbusDeviceConfigException;
 import energy.eddie.aiida.models.modbus.Device;
 import energy.eddie.aiida.models.modbus.ModbusDevice;
 import energy.eddie.aiida.models.modbus.ModbusModel;
@@ -26,16 +26,30 @@ class ModbusDeviceServiceTest {
         );
 
         var testModels = List.of(
-                new ModbusModel("15b77548-8a5e-41ab-a48a-93e024da6ef0", "Simulation", String.valueOf(testVendors.get(0).id())),
-                new ModbusModel("9875b409-2040-4a2e-b8df-80c3e81bd3d7", "Carlo Gavazzi EM24", String.valueOf(testVendors.get(1).id())),
-                new ModbusModel("91d8b15b-bb88-47d3-8425-15cf997bd1d9", "Oesterreichs Energie Adapter", String.valueOf(testVendors.get(2).id()))
+                new ModbusModel("15b77548-8a5e-41ab-a48a-93e024da6ef0",
+                                "Simulation",
+                                String.valueOf(testVendors.get(0).id())),
+                new ModbusModel("9875b409-2040-4a2e-b8df-80c3e81bd3d7",
+                                "Carlo Gavazzi EM24",
+                                String.valueOf(testVendors.get(1).id())),
+                new ModbusModel("91d8b15b-bb88-47d3-8425-15cf997bd1d9",
+                                "Oesterreichs Energie Adapter",
+                                String.valueOf(testVendors.get(2).id()))
         );
 
         var testDevices = List.of(
-                new Device("b69031ea-8b95-4323-a09e-2348cbf460d2", "Simulation Device A", String.valueOf(testModels.get(0).id())),
-                new Device("b69031ea-8b95-4323-a09e-2348cbf460d2", "Simulation Device B", String.valueOf(testModels.get(0).id())),
-                new Device("26f5dbb2-d1a3-42cb-93d0-5e71ac62e5fc", "Carlo Gavazzi EM24 Default", String.valueOf(testModels.get(1).id())),
-                new Device("cfd870cd-fc1d-4288-bba5-414ceaf6e2d7", "Oesterreichs Energie Adapter", String.valueOf(testModels.get(2).id()))
+                new Device("b69031ea-8b95-4323-a09e-2348cbf460d2",
+                           "Simulation Device A",
+                           String.valueOf(testModels.get(0).id())),
+                new Device("b69031ea-8b95-4323-a09e-2348cbf460d2",
+                           "Simulation Device B",
+                           String.valueOf(testModels.get(0).id())),
+                new Device("26f5dbb2-d1a3-42cb-93d0-5e71ac62e5fc",
+                           "Carlo Gavazzi EM24 Default",
+                           String.valueOf(testModels.get(1).id())),
+                new Device("cfd870cd-fc1d-4288-bba5-414ceaf6e2d7",
+                           "Oesterreichs Energie Adapter",
+                           String.valueOf(testModels.get(2).id()))
         );
 
         service = new ModbusDeviceService(testVendors, testModels, testDevices);

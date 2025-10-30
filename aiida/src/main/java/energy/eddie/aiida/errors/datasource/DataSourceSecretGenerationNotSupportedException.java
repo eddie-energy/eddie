@@ -1,4 +1,4 @@
-package energy.eddie.aiida.errors;
+package energy.eddie.aiida.errors.datasource;
 
 import energy.eddie.aiida.models.datasource.DataSourceType;
 

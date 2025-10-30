@@ -1,7 +1,7 @@
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.errors.InvalidUserException;
-import energy.eddie.aiida.errors.UnauthorizedException;
+import energy.eddie.aiida.errors.auth.InvalidUserException;
+import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,4 +1,4 @@
-package energy.eddie.aiida.errors;
+package energy.eddie.aiida.errors.datasource.mqtt.it;
 
 public class SinapsiAlflaEmptyConfigException extends Exception {
     public SinapsiAlflaEmptyConfigException() {

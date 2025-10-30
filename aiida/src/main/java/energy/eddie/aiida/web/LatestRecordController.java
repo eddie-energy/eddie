@@ -3,7 +3,12 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
 import energy.eddie.aiida.dtos.record.LatestInboundPermissionRecordDto;
 import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
-import energy.eddie.aiida.errors.*;
+import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
+import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
+import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
+import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.services.LatestRecordService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,7 +19,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
@@ -57,7 +65,7 @@ public class LatestRecordController {
     }
 
     @GetMapping(value = "permission/{id}/inbound/latest")
-    public LatestInboundPermissionRecordDto latestInboundPermissionRecord (
+    public LatestInboundPermissionRecordDto latestInboundPermissionRecord(
             @PathVariable("id") UUID permissionId
     ) throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
         LOGGER.info("Fetching latest inbound permission record for permission with ID: {}", permissionId);

@@ -5,13 +5,13 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.InstallerConfiguration;
 import energy.eddie.aiida.dtos.installer.InstallerSetupDto;
 import energy.eddie.aiida.dtos.installer.VersionInfoDto;
-import energy.eddie.aiida.errors.InstallerException;
+import energy.eddie.aiida.errors.installer.InstallerException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings("unchecked")

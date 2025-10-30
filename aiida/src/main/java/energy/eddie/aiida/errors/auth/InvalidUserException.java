@@ -1,4 +1,4 @@
-package energy.eddie.aiida.errors;
+package energy.eddie.aiida.errors.auth;
 
 public class InvalidUserException extends Exception {
     public InvalidUserException() {
