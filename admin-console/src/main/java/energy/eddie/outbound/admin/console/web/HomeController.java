@@ -86,7 +86,8 @@ public class HomeController {
     ) {
         model.addAttribute("eddiePublicUrl", publicUrl);
         model.addAttribute("eddieAdminConsoleUrl", managementUrl + ADMIN_CONSOLE_BASE_URL);
-        model.addAttribute("eddieManagementUrl", managementUrl + "/" + managementUrlPrefix);
+        model.addAttribute("eddieManagementUrl", managementUrl);
+        model.addAttribute("eddieManagementUrlPrefix", managementUrlPrefix);
 
         return "index";
     }

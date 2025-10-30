@@ -9,6 +9,7 @@ import {
   REGION_CONNECTORS_SUPPORTED_FEATURES_API_URL,
   TERMINATION_API_URL
 } from '@/config'
+import type { AnyDataNeed } from '@/types'
 
 export type PageModel<Type> = {
   content: Type[]
@@ -90,7 +91,10 @@ export async function getPermissions(): Promise<StatusMessage[]> {
   return await fetch(PERMISSIONS_API_URL).then((res) => res.json())
 }
 
-export async function getPermissionsPaginated(page: number, size: number): Promise<PageModel<StatusMessage>> {
+export async function getPermissionsPaginated(
+  page: number,
+  size: number
+): Promise<PageModel<StatusMessage>> {
   return await fetch(`${PERMISSIONS_API_URL}?page=${page}&size=${size}`).then((res) => res.json())
 }
 
@@ -112,7 +116,7 @@ export async function terminatePermission(permissionId: string) {
   }
 }
 
-export async function getDataNeeds(): Promise<DataNeed[]> {
+export async function getDataNeeds(): Promise<AnyDataNeed[]> {
   return await fetch(DATA_NEEDS_API_URL).then((res) => res.json())
 }
 
