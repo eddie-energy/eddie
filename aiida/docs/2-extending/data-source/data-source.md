@@ -213,6 +213,115 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
 
 Create unit and integration tests to verify that the new data source and adapter behave as expected.
 
+## User Interface
+
+If your new data source DTO uses fields not used by other data sources, like the `pollingInterval` for Modbus data sources, you will need to do the following to make it work properly with the user interface:
+
+### Types
+
+Update the AiidaDataSource type in [types.d.ts](https://github.com/eddie-energy/eddie/blob/main/aiida/ui/src/types.d.ts) to handle the optional props:
+
+```js
+export type AiidaDataSource = {
+  id: string
+  dataSourceType: string
+  asset: string
+  name: string
+  // .... other props
+  //DatasourceType = YOUR_NEW_DATASOURCE
+  newField?: string 
+}
+```
+
+### DataSourceModal
+
+Update the form in the [DataSourceModal](https://github.com/eddie-energy/eddie/blob/main/aiida/ui/src/components/Modals/DataSourceModal.vue) component to include any new input fields for your new data source props. These extra fields should be put into the `extra-column` and only be displayed if the selected `dataSourceType` matches your type:
+
+```html
+<template>
+  <ModalDialog>
+    <form
+    ...
+
+    <Transition name="extra-column">
+        <div
+          class="column"
+          v-if="dataSourceTypesWithExtraField.includes(dataSource.dataSourceType)"
+        >
+            <template v-if="dataSource.dataSourceType === 'MyNewType'">
+                <div class="input-field extra-margin">
+                    <label for="myNewField">
+                        {{ t('datasources.modal.newField') }}
+                    </label>
+                    <!--- Make sure to choose an appropriate input tag -->
+                    <input
+                        id="myNewField"
+                        v-model="dataSource.newField"
+                        name="myNewField"
+                        placeholder="add my new field"
+                        required
+                    />
+                    <p v-if="errors['myNewField']" class="error-message">
+                        {{ errors['myNewField'] }}
+                    </p>
+                </div>
+            </template>
+```
+
+In addition validation for new fields should also be added in the `validateForm()` function:
+
+```js
+const validateForm = () => {
+  ...
+  if (dataSource.value?.dataSourceType === 'MyNewType') {
+    handleRequired(
+      dataSource.value?.newField,
+      t('datasources.modal.newField'),
+      'myNewField',
+    )
+  }
+}
+```
+
+### DataSourceCard
+
+As a last step you need to update the [DataSourceCard](https://github.com/eddie-energy/eddie/blob/main/aiida/ui/src/components/DataSourceCard.vue) component to include the new field(s).
+
+```html
+<script>
+...
+
+const {
+  countryCode,
+  asset,
+  dataSourceType,
+  enabled,
+  id,
+  externalHost,
+  topic,
+  username,
+  name,
+  pollingInterval,
+  icon,
+} = dataSource
+
+...
+</script>
+
+<template>
+  <article class="card" :class="{ 'is-open': isOpen }">
+    ...
+
+    <dl class="fields" :class="{ 'with-image': image }">
+      ...
+        <template v-if="newField">
+            <div>
+                <dt>{{ t('datasources.card.newField') }}</dt>
+                <dd>{{ newField }}</dd>
+            </div>
+        </template>
+```
+
 ## Documentation
 
 Finally, document the new data source in the AIIDA documentation (see [extend data source documentation](documentation.md)).
