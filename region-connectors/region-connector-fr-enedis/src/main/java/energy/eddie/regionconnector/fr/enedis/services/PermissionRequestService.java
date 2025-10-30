@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
@@ -83,40 +82,6 @@ public class PermissionRequestService {
         return new CreatedPermissionRequest(permissionId, redirectUri);
     }
 
-    private void handleAccountingPointDataNeed(String permissionId, Timeframe timeframe) {
-        outbox.commit(new FrValidatedEvent(permissionId,
-                                           timeframe.start(),
-                                           timeframe.end(),
-                                           null));
-    }
-
-    private void handleValidatedHistoricalDataNeed(
-            ValidatedHistoricalDataDataNeedResult calculation,
-            String permissionId
-    ) {
-        outbox.commit(new FrValidatedEvent(permissionId,
-                                           calculation.energyTimeframe().start(),
-                                           calculation.energyTimeframe().end(),
-                                           calculation.granularities().getFirst()));
-    }
-
-
-    private URI buildRedirectUri(String permissionId, LocalDate end) {
-        try {
-            return new URIBuilder()
-                    .setScheme("https")
-                    .setHost("mon-compte-particulier.enedis.fr")
-                    .setPath("/dataconnect/v1/oauth2/authorize")
-                    .addParameter("client_id", configuration.clientId())
-                    .addParameter("response_type", "code")
-                    .addParameter("state", permissionId)
-                    .addParameter("duration", new EnedisDuration(end).toString())
-                    .build();
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException("Unable to create redirect URI");
-        }
-    }
-
     public void authorizePermissionRequest(
             String permissionId,
             String[] usagePointIds
@@ -151,13 +116,33 @@ public class PermissionRequestService {
         return repository.findByPermissionId(permissionId).map(PermissionRequest::dataNeedId);
     }
 
-    public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
-        return repository.findByPermissionId(permissionId)
-                         .map(request -> new ConnectionStatusMessage(
-                                 request.connectionId(),
-                                 request.permissionId(),
-                                 request.dataNeedId(),
-                                 null,
-                                 request.status()));
+    private void handleAccountingPointDataNeed(String permissionId, Timeframe timeframe) {
+        outbox.commit(new FrValidatedEvent(permissionId, timeframe.start(), timeframe.end(), null));
+    }
+
+    private void handleValidatedHistoricalDataNeed(
+            ValidatedHistoricalDataDataNeedResult calculation,
+            String permissionId
+    ) {
+        outbox.commit(new FrValidatedEvent(permissionId,
+                                           calculation.energyTimeframe().start(),
+                                           calculation.energyTimeframe().end(),
+                                           calculation.granularities().getFirst()));
+    }
+
+    private URI buildRedirectUri(String permissionId, LocalDate end) {
+        try {
+            return new URIBuilder()
+                    .setScheme("https")
+                    .setHost("mon-compte-particulier.enedis.fr")
+                    .setPath("/dataconnect/v1/oauth2/authorize")
+                    .addParameter("client_id", configuration.clientId())
+                    .addParameter("response_type", "code")
+                    .addParameter("state", permissionId)
+                    .addParameter("duration", new EnedisDuration(end).toString())
+                    .build();
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Unable to create redirect URI");
+        }
     }
 }

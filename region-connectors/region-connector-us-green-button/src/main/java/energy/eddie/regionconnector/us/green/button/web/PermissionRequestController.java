@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.web;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingCredentialsException;
@@ -11,34 +10,23 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriTemplate;
 
 import java.net.URI;
-import java.util.Optional;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 
 @RestController
 public class PermissionRequestController {
     private final PermissionRequestCreationService permissionRequestCreationService;
 
-    public PermissionRequestController(
-            PermissionRequestCreationService permissionRequestCreationService
-    ) {
+    public PermissionRequestController(PermissionRequestCreationService permissionRequestCreationService) {
         this.permissionRequestCreationService = permissionRequestCreationService;
-    }
-
-    @GetMapping(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
-    public ConnectionStatusMessage permissionStatus(@PathVariable String permissionId) {
-        Optional<ConnectionStatusMessage> connectionStatusMessage =
-                permissionRequestCreationService.findConnectionStatusMessageById(permissionId);
-        if (connectionStatusMessage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find permission request");
-        }
-        return connectionStatusMessage.get();
     }
 
     @PostMapping(
@@ -55,7 +43,7 @@ public class PermissionRequestController {
         var createdPermissionRequest = permissionRequestCreationService.createPermissionRequest(
                 permissionRequest
         );
-        URI location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
+        URI location = new UriTemplate(CONNECTION_STATUS_STREAM)
                 .expand(createdPermissionRequest.permissionId());
         return ResponseEntity
                 .created(location)

@@ -15,7 +15,6 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.exceptions.NlValidationE
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthManager;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.OAuthRequestPayload;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.oauth.exceptions.*;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.MijnAansluitingDataSourceInformation;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.events.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
@@ -248,40 +247,6 @@ class PermissionRequestServiceTest {
         // Then
         assertThrows(PermissionNotFoundException.class,
                      () -> permissionRequestService.receiveResponse(URI.create(""), "pid"));
-    }
-
-    @Test
-    void testConnectionStatusMessage_throwsOnUnknownPermissionRequest() {
-        // Given
-        when(permissionRequestRepository.findByPermissionId(any()))
-                .thenReturn(Optional.empty());
-
-        // When, Then
-        assertThrows(PermissionNotFoundException.class,
-                     () -> permissionRequestService.connectionStatusMessage("pid"));
-    }
-
-    @Test
-    void testConnectionStatusMessage_returnsMessage() throws PermissionNotFoundException {
-        // Given
-        var pr = new MijnAansluitingPermissionRequest(
-                "pid", "cid", "dnid", PermissionProcessStatus.ACCEPTED,
-                null, null, null, null, null, null,
-                "11", "999AB");
-        when(permissionRequestRepository.findByPermissionId(any()))
-                .thenReturn(Optional.of(pr));
-
-        // When
-        var res = permissionRequestService.connectionStatusMessage("pid");
-
-        // Then
-        assertAll(
-                () -> assertEquals("cid", res.connectionId()),
-                () -> assertEquals("pid", res.permissionId()),
-                () -> assertEquals("dnid", res.dataNeedId()),
-                () -> assertEquals(PermissionProcessStatus.ACCEPTED, res.status()),
-                () -> assertEquals(new MijnAansluitingDataSourceInformation(), res.dataSourceInformation())
-        );
     }
 
     private static MijnAansluitingPermissionRequest createPermissionRequest() {

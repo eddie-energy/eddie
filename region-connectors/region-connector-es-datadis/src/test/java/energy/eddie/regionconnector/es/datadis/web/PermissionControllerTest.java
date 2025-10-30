@@ -2,14 +2,10 @@ package energy.eddie.regionconnector.es.datadis.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.es.datadis.CimTestConfiguration;
 import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.health.DatadisApiHealthIndicator;
-import energy.eddie.regionconnector.es.datadis.permission.request.DatadisDataSourceInformation;
-import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionEventRepository;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
@@ -24,25 +20,22 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import java.util.Optional;
+import org.springframework.web.util.UriTemplate;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = {PermissionController.class}, properties = {"eddie.jwt.hmac.secret=RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=", "eddie.permission.request.timeout.duration=24"})
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
@@ -60,39 +53,6 @@ class PermissionControllerTest {
     private EsPermissionEventRepository unusedPermissionEventRepository;
     @MockitoBean
     private DatadisApiHealthIndicator healthIndicator;
-
-    @Test
-    void permissionStatus_permissionExists_returnsOk() throws Exception {
-        // Given
-        var datadisDataSourceInformation = new DatadisDataSourceInformation(mock(EsPermissionRequest.class));
-        String permissionId = "ValidId";
-        var statusMessage = new ConnectionStatusMessage("cid",
-                                                        permissionId,
-                                                        "dnid",
-                                                        datadisDataSourceInformation,
-                                                        PermissionProcessStatus.ACCEPTED);
-        when(mockService.findConnectionStatusMessageById(anyString())).thenReturn(Optional.of(statusMessage));
-
-        // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/permission-status/{permissionId}", permissionId)
-                                              .accept(MediaType.APPLICATION_JSON))
-               // Then
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.permissionId", is(permissionId)));
-    }
-
-    @Test
-    void permissionStatus_permissionDoesNotExist_returnsNotFound() throws Exception {
-        // Given
-
-        // When
-        mockMvc.perform(MockMvcRequestBuilders.get("/permission-status/{permissionId}", "123")
-                                              .accept(MediaType.APPLICATION_JSON))
-               // Then
-               .andExpect(status().isNotFound())
-               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", is("No permission with ID '123' found.")));
-    }
 
     @Test
     void acceptPermission_permissionExists_returnsOk_andCallsService() throws Exception {
@@ -229,16 +189,16 @@ class PermissionControllerTest {
                                     .put("nif", "NOICE");
 
         // When
-        MockHttpServletResponse response = mockMvc.perform(post("/permission-request")
-                                                                   .content(mapper.writeValueAsString(jsonNode))
-                                                                   .contentType(MediaType.APPLICATION_JSON)
-                                                                   .accept(MediaType.APPLICATION_JSON))
-                                                  // Then
-                                                  .andExpect(status().isCreated())
-                                                  .andExpect(jsonPath("$.permissionId").value(testPermissionId))
-                                                  .andReturn().getResponse();
+        var expectedUri = new UriTemplate(CONNECTION_STATUS_STREAM).expand(testPermissionId).toString();
+        mockMvc.perform(post("/permission-request")
+                                .content(mapper.writeValueAsString(jsonNode))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isCreated())
+               .andExpect(jsonPath("$.permissionId").value(testPermissionId))
+               .andExpect(header().string(HttpHeaders.LOCATION, expectedUri));
 
-        assertEquals("/permission-status/MyTestId", response.getHeader("Location"));
         verify(mockService).createAndSendPermissionRequest(any());
     }
 

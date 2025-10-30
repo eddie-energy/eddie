@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.services;
 
 import com.nimbusds.oauth2.sdk.ParseException;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -124,19 +123,6 @@ public class PermissionRequestService {
         outbox.commit(new NlSimpleEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
         outbox.commit(new NlSimpleEvent(permissionId, status));
         return status;
-    }
-
-    public ConnectionStatusMessage connectionStatusMessage(String permissionId) throws PermissionNotFoundException {
-        var permissionRequest
-                = permissionRequestRepository.findByPermissionId(permissionId)
-                                             .orElseThrow(() -> new PermissionNotFoundException(permissionId));
-        return new ConnectionStatusMessage(
-                permissionRequest.connectionId(),
-                permissionId,
-                permissionRequest.dataNeedId(),
-                permissionRequest.dataSourceInformation(),
-                permissionRequest.status()
-        );
     }
 
     private OAuthRequestPayload createAccountingPointDataPermissionRequest(

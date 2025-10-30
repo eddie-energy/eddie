@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.be.fluvius.web;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -42,19 +41,8 @@ public class PermissionRequestController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CreatedPermissionRequest> createPermissionRequest(@Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation) throws DataNeedNotFoundException, UnsupportedDataNeedException {
         var permissionRequest = permissionRequestService.createPermissionRequest(permissionRequestForCreation);
-        return ResponseEntity.created(new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionRequest.permissionId()))
+        return ResponseEntity.created(new UriTemplate(CONNECTION_STATUS_STREAM).expand(permissionRequest.permissionId()))
                              .body(permissionRequest);
-    }
-
-    @GetMapping(
-            value = PATH_PERMISSION_STATUS_WITH_PATH_PARAM,
-            produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@PathVariable String permissionId) throws PermissionNotFoundException {
-        var statusMessage = permissionRequestService.findConnectionStatusMessageById(permissionId)
-                                                    .orElseThrow(() -> new PermissionNotFoundException(permissionId));
-        return ResponseEntity.ok(statusMessage);
     }
 
     @GetMapping(PATH_PERMISSION_ACCEPTED)

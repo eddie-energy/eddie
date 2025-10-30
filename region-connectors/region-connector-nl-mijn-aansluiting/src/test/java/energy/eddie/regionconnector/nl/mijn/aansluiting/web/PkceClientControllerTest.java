@@ -1,12 +1,10 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.MijnAansluitingDataSourceInformation;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PermissionRequestService;
 import jakarta.servlet.http.Cookie;
@@ -23,8 +21,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.net.URI;
 import java.security.PrivateKey;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -108,42 +104,6 @@ class PkceClientControllerTest {
                                 .content(content))
                // Then
                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void testPermissionRequestStatus_returnsPermissionRequestStatus() throws Exception {
-        // Given
-        var timestamp = ZonedDateTime.of(2024, 4, 18, 0, 0, 0, 0, ZoneOffset.UTC);
-        when(service.connectionStatusMessage(any()))
-                .thenReturn(new ConnectionStatusMessage("cid",
-                                                        "pid",
-                                                        "dnid",
-                                                        new MijnAansluitingDataSourceInformation(),
-                                                        timestamp,
-                                                        PermissionProcessStatus.ACCEPTED,
-                                                        "",
-                                                        null));
-
-        // When
-        mockMvc.perform(get("/permission-status/pid"))
-               // Then
-               .andExpect(content().json(
-                       """
-                               {
-                                   "connectionId":  "cid",
-                                   "permissionId":  "pid",
-                                   "dataNeedId":  "dnid",
-                                   "dataSourceInformation": {
-                                        "countryCode": "NL",
-                                        "meteredDataAdministratorId":"Miijn Aansluiting",
-                                        "permissionAdministratorId":"Miijn Aansluiting",
-                                        "regionConnectorId":"nl-mijn-aansluiting"
-                                   },
-                                   "timestamp": "2024-04-18T00:00:00Z",
-                                   "status":  "ACCEPTED",
-                                   "message": ""
-                               }
-                               """));
     }
 
     @Test

@@ -28,7 +28,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -234,61 +233,6 @@ class PermissionRequestServiceTest {
         // Given, When, Then
         assertThrows(PermissionNotFoundException.class,
                      () -> permissionRequestService.authorizePermissionRequest("NonExistingPid", new String[]{"upid"}));
-    }
-
-    @Test
-    @DirtiesContext
-    void testFindConnectionStatusById_returnsConnectionStatus() {
-        // Given
-        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
-        var end = LocalDate.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid",
-                                                  "cid",
-                                                  "dnid",
-                                                  start,
-                                                  end,
-                                                  Granularity.P1D,
-                                                  PermissionProcessStatus.VALIDATED,
-                                                  null,
-                                                  null,
-                                                  ZonedDateTime.now(ZoneOffset.UTC),
-                                                  UsagePointType.CONSUMPTION);
-        when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(request));
-
-        // When
-        var res = permissionRequestService.findConnectionStatusMessageById("pid");
-
-        // Then
-        assertTrue(res.isPresent());
-        assertEquals("pid", res.get().permissionId());
-    }
-
-    @Test
-    @DirtiesContext
-    void testFindConnectionStatusById_withNotExistingPermissionId_returnsEmpty() {
-        // Given
-        var start = LocalDate.now(ZoneOffset.UTC).minusDays(3);
-        var end = LocalDate.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest("pid",
-                                                  "cid",
-                                                  "dnid",
-                                                  start,
-                                                  end,
-                                                  Granularity.P1D,
-                                                  PermissionProcessStatus.VALIDATED,
-                                                  null,
-                                                  null,
-                                                  ZonedDateTime.now(ZoneOffset.UTC),
-                                                  UsagePointType.CONSUMPTION);
-        when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(request));
-
-        // When
-        var res = permissionRequestService.findConnectionStatusMessageById("asdfasdfadsf");
-
-        // Then
-        assertTrue(res.isEmpty());
     }
 
     @TestConfiguration

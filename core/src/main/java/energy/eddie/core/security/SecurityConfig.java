@@ -31,9 +31,10 @@ public class SecurityConfig {
                 .securityMatcher("/api/connection-status-messages/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(mvcMatcherBuilder.pattern("/api/connection-status-messages/{permissionId}"))
-                        .access(jwtHeaderAuthorizationManager)
+                        // @formatter:off
+                        .requestMatchers(mvcMatcherBuilder.pattern("/api/connection-status-messages/{permissionId}")).access(jwtHeaderAuthorizationManager)
                         .anyRequest().denyAll()
+                       // @formatter
                 )
                 .exceptionHandling(new SecurityExceptionHandler(mapper))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -137,8 +137,6 @@ Authorization: Bearer {{$auth.token("keycloak")}}
     </Permission_MarketDocument>
 </Permission_Envelope>
 
-# Redistribution Transaction Request
-
 ### POST Redistribution Transaction Request as JSON
 POST http://localhost:9090/outbound-connectors/rest/cim_0_91_08/redistribution-transaction-rd
 Accept: application/json

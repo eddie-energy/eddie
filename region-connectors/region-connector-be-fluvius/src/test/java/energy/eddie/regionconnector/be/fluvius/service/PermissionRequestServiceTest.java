@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.be.fluvius.service;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
@@ -11,8 +10,6 @@ import energy.eddie.regionconnector.be.fluvius.permission.events.CreatedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.MalformedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.ValidatedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
-import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
-import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +25,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,8 +38,6 @@ class PermissionRequestServiceTest {
     private DataNeedCalculationService<DataNeed> calculationService;
     @Mock
     private Outbox outbox;
-    @Mock
-    private BePermissionRequestRepository repository;
     @Captor
     private ArgumentCaptor<ValidatedEvent> validatedCaptor;
 
@@ -106,31 +100,6 @@ class PermissionRequestServiceTest {
                 () -> assertEquals(now.minusDays(1), event.end()),
                 () -> assertEquals(Granularity.PT15M, event.granularity()),
                 () -> assertEquals(Flow.B2B, event.flow())
-        );
-    }
-
-    @Test
-    void testFindConnectionStatusMessage_mapsCorrectly() {
-        // Given
-        when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(
-                                    DefaultFluviusPermissionRequestBuilder.create()
-                                                                          .status(PermissionProcessStatus.ACCEPTED)
-                                                                          .build()
-                            )
-                );
-
-        // When
-        var res = permissionRequestService.findConnectionStatusMessageById("pid");
-
-        // Then
-        assertTrue(res.isPresent());
-        var csm = res.get();
-        assertAll(
-                () -> assertEquals("cid", csm.connectionId()),
-                () -> assertEquals("pid", csm.permissionId()),
-                () -> assertEquals("did", csm.dataNeedId()),
-                () -> assertEquals(PermissionProcessStatus.ACCEPTED, csm.status())
         );
     }
 }

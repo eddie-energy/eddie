@@ -1,13 +1,11 @@
 package energy.eddie.regionconnector.es.datadis.web;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.exceptions.EsValidationException;
 import energy.eddie.regionconnector.es.datadis.services.PermissionRequestService;
-import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -25,8 +23,8 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 
 @RestController
 public class PermissionController {
@@ -55,13 +53,6 @@ public class PermissionController {
         });
     }
 
-    @GetMapping(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
-    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@PathVariable String permissionId) throws PermissionNotFoundException {
-        var statusMessage = service.findConnectionStatusMessageById(permissionId)
-                                   .orElseThrow(() -> new PermissionNotFoundException(permissionId));
-        return ResponseEntity.ok(statusMessage);
-    }
-
     /**
      * Creates a new permission request. The included JWT token can be passed in the Authorization header, so that the
      * {@link energy.eddie.regionconnector.shared.security.JwtAuthorizationManager} will allow further state changing
@@ -72,13 +63,13 @@ public class PermissionController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedPermissionRequest> requestPermission(
             @Valid @RequestBody PermissionRequestForCreation requestForCreation
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException, EsValidationException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, EsValidationException {
         var permissionRequest = service.createAndSendPermissionRequest(requestForCreation);
 
         var permissionId = permissionRequest.permissionId();
         LOGGER.info("New Permission Request created with PermissionId {}", permissionId);
 
-        var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
+        var location = new UriTemplate(CONNECTION_STATUS_STREAM)
                 .expand(permissionId);
         return ResponseEntity.created(location).body(permissionRequest);
     }

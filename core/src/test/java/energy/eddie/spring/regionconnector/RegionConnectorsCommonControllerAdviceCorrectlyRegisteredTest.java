@@ -25,7 +25,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -117,16 +116,5 @@ class RegionConnectorsCommonControllerAdviceCorrectlyRegisteredTest {
                        "dataNeedId: must not be null or blank",
                        "connectionId: must not be null or blank"
                )));
-    }
-
-    @Test
-    void givenNonExistingPermissionId_handlePermissionNotFoundException_returnsNotFound() throws Exception {
-        // When
-        mockMvc.perform(get("/permission-status/NonExistingId"))
-               // Then
-               .andExpect(status().isNotFound())
-               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-               .andExpect(
-                       jsonPath(ERRORS_JSON_PATH + "[0].message", is("No permission with ID 'NonExistingId' found.")));
     }
 }

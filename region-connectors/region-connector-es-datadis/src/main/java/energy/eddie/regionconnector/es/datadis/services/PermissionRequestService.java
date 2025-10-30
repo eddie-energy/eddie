@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.es.datadis.services;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
@@ -30,7 +29,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -58,18 +56,6 @@ public class PermissionRequestService {
         this.permissionRequestConsumer = permissionRequestConsumer;
         this.outbox = outbox;
         this.calculationService = calculationService;
-    }
-
-    public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
-        return repository.findByPermissionId(permissionId)
-                         .map(permissionRequest -> new ConnectionStatusMessage(
-                                 permissionRequest.connectionId(),
-                                 permissionRequest.permissionId(),
-                                 permissionRequest.dataNeedId(),
-                                 permissionRequest.dataSourceInformation(),
-                                 permissionRequest.status(),
-                                 permissionRequest.errorMessage()
-                         ));
     }
 
     public void acceptPermission(String permissionId) throws PermissionNotFoundException {

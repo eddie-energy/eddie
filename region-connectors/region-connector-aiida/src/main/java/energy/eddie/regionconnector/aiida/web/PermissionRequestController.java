@@ -26,7 +26,6 @@ import java.util.Map;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 
 @RestController
 public class PermissionRequestController {
@@ -47,7 +46,7 @@ public class PermissionRequestController {
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
         var qrCodeDto = permissionService.createValidateAndSendPermissionRequest(permissionRequestForCreation);
 
-        var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
+        var location = new UriTemplate(PATH_HANDSHAKE_PERMISSION_REQUEST)
                 .expand(qrCodeDto.permissionId());
 
         return ResponseEntity.created(location).body(qrCodeDto);

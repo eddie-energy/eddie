@@ -1,8 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.CimTestConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
@@ -22,13 +20,11 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.util.UriTemplate;
 
 import java.net.URI;
-import java.util.Optional;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -45,41 +41,9 @@ class PermissionRequestControllerTest {
     private PermissionRequestService permissionRequestService;
 
     @Test
-    void permissionStatus_permissionExists_returnsOk() throws Exception {
-        // Given
-        when(permissionRequestService.findConnectionStatusMessageById(anyString()))
-                .thenReturn(Optional.of(new ConnectionStatusMessage("cid",
-                                                                    "permissionId",
-                                                                    "dnid",
-                                                                    null,
-                                                                    PermissionProcessStatus.CREATED)));
-        // When
-        mockMvc.perform(
-                       MockMvcRequestBuilders.get("/permission-status/" + "cid")
-                                             .accept(MediaType.APPLICATION_JSON)
-               )
-               // Then
-               .andExpect(status().isOk());
-    }
-
-    @Test
-    void permissionStatus_permissionDoesNotExists_returnsNotFound() throws Exception {
-        // Given
-        when(permissionRequestService.findConnectionStatusMessageById(anyString()))
-                .thenReturn(Optional.empty());
-        // When
-        mockMvc.perform(
-                       MockMvcRequestBuilders.get("/permission-status/" + "cid")
-                                             .accept(MediaType.APPLICATION_JSON)
-               )
-               // Then
-               .andExpect(status().isNotFound());
-    }
-
-    @Test
     void createPermissionRequest_returnsCreated() throws Exception {
         // Given
-        var expectedLocationHeader = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand("pid").toString();
+        var expectedLocationHeader = new UriTemplate(CONNECTION_STATUS_STREAM).expand("pid").toString();
         when(permissionRequestService.createPermissionRequest(any()))
                 .thenReturn(new CreatedPermissionRequest("pid", URI.create("https://redirect.com")));
         PermissionRequestForCreation pr = new PermissionRequestForCreation(

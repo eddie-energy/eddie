@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.services;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
@@ -36,7 +35,6 @@ import java.util.UUID;
 import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 @Service
-@SuppressWarnings("NullAway")
 public class PermissionRequestCreationService {
     public static final String SCOPE = "scope";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestCreationService.class);
@@ -99,15 +97,6 @@ public class PermissionRequestCreationService {
 
         LOGGER.info("Permission request {} validated", permissionId);
         return new CreatedPermissionRequest(permissionId, redirectUri);
-    }
-
-    public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
-        return repository.findByPermissionId(permissionId)
-                         .map(request -> new ConnectionStatusMessage(request.connectionId(),
-                                                                     request.permissionId(),
-                                                                     request.dataNeedId(),
-                                                                     request.dataSourceInformation(),
-                                                                     request.status()));
     }
 
     public Optional<String> findDataNeedIdByPermissionId(String permissionId) {

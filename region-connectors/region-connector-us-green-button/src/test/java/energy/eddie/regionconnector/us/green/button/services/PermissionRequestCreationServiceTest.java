@@ -60,39 +60,6 @@ class PermissionRequestCreationServiceTest {
     @InjectMocks
     private PermissionRequestCreationService creationService;
 
-    @Test
-    void findConnectionStatusMessageById_returnsConnectionStatusMessage() {
-        // Given
-        var pr = getPermissionRequest();
-        when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(pr));
-        // When
-        var res = creationService.findConnectionStatusMessageById("pid");
-
-        // Then
-        assertTrue(res.isPresent());
-        var csm = res.get();
-        assertAll(
-                () -> assertEquals("cid", csm.connectionId()),
-                () -> assertEquals("pid", csm.permissionId()),
-                () -> assertEquals("dnid", csm.dataNeedId()),
-                () -> assertEquals(pr.dataSourceInformation(), csm.dataSourceInformation()),
-                () -> assertEquals(pr.status(), csm.status())
-        );
-    }
-
-    @Test
-    void findConnectionStatusMessageById_returnsEmptyOptional_onMissingPermissionRequest() {
-        // Given
-        when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.empty());
-        // When
-        var res = creationService.findConnectionStatusMessageById("pid");
-
-        // Then
-        assertTrue(res.isEmpty());
-    }
-
     @ParameterizedTest
     @MethodSource("createPermissionRequest_returnsPermissionRequest")
     void createPermissionRequest_returnsPermissionRequest(DataNeedCalculationResult calc) throws DataNeedNotFoundException, UnsupportedDataNeedException, MissingCredentialsException {

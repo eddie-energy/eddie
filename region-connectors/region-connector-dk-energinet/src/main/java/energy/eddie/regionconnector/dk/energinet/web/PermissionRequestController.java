@@ -1,14 +1,11 @@
 package energy.eddie.regionconnector.dk.energinet.web;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.services.InvalidRefreshTokenException;
 import energy.eddie.regionconnector.dk.energinet.services.PermissionCreationService;
-import energy.eddie.regionconnector.dk.energinet.services.PermissionRequestService;
-import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriTemplate;
 
 import java.beans.PropertyEditorSupport;
@@ -25,19 +25,17 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_STATUS_WITH_PATH_PARAM;
 
 
 @RestController
 public class PermissionRequestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
-    private final PermissionRequestService service;
     private final PermissionCreationService permissionCreationService;
 
     @Autowired
-    public PermissionRequestController(PermissionRequestService service, PermissionCreationService permissionCreationService) {
-        this.service = service;
+    public PermissionRequestController(PermissionCreationService permissionCreationService) {
         this.permissionCreationService = permissionCreationService;
     }
 
@@ -55,13 +53,6 @@ public class PermissionRequestController {
         });
     }
 
-    @GetMapping(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
-    public ResponseEntity<ConnectionStatusMessage> permissionStatus(@PathVariable String permissionId) throws PermissionNotFoundException {
-        var statusMessage = service.findConnectionStatusMessageById(permissionId)
-                .orElseThrow(() -> new PermissionNotFoundException(permissionId));
-        return ResponseEntity.ok(statusMessage);
-    }
-
     @PostMapping(value = PATH_PERMISSION_REQUEST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -70,7 +61,7 @@ public class PermissionRequestController {
         var permissionId = permissionCreationService.createPermissionRequest(requestForCreation).permissionId();
         LOGGER.info("New Permission Request with PermissionId: {}", permissionId);
 
-        var location = new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM)
+        var location = new UriTemplate(CONNECTION_STATUS_STREAM)
                 .expand(permissionId);
 
         return ResponseEntity.created(location).body(new CreatedPermissionRequest(permissionId));

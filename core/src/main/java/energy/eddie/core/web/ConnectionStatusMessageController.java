@@ -6,12 +6,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
+
 @RestController
-@RequestMapping("/api/connection-status-messages")
 public class ConnectionStatusMessageController {
     private final PermissionService permissionService;
 
@@ -19,7 +19,7 @@ public class ConnectionStatusMessageController {
         this.permissionService = permissionService;
     }
 
-    @GetMapping(value = "{permission-id}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = CONNECTION_STATUS_STREAM, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<ConnectionStatusMessage>> connectionStatusMessageByPermissionId(
             @PathVariable("permission-id") String permissionId
     ) {

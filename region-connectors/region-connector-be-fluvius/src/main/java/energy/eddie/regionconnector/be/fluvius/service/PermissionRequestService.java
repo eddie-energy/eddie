@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.be.fluvius.service;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
@@ -13,14 +12,12 @@ import energy.eddie.regionconnector.be.fluvius.dtos.PermissionRequestForCreation
 import energy.eddie.regionconnector.be.fluvius.permission.events.CreatedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.MalformedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.ValidatedEvent;
-import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -29,15 +26,10 @@ public class PermissionRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
     private final DataNeedCalculationService<DataNeed> calculationService;
     private final Outbox outbox;
-    private final BePermissionRequestRepository bePermissionRequestRepository;
 
-    public PermissionRequestService(
-            DataNeedCalculationService<DataNeed> calculationService, Outbox outbox,
-            BePermissionRequestRepository bePermissionRequestRepository
-    ) {
+    public PermissionRequestService(DataNeedCalculationService<DataNeed> calculationService, Outbox outbox) {
         this.calculationService = calculationService;
         this.outbox = outbox;
-        this.bePermissionRequestRepository = bePermissionRequestRepository;
     }
 
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequestForCreation)
@@ -81,10 +73,5 @@ public class PermissionRequestService {
                 return new CreatedPermissionRequest(permissionId);
             }
         }
-    }
-
-    public Optional<ConnectionStatusMessage> findConnectionStatusMessageById(String permissionId) {
-        return bePermissionRequestRepository.findByPermissionId(permissionId)
-                                            .map(ConnectionStatusMessage::new);
     }
 }
