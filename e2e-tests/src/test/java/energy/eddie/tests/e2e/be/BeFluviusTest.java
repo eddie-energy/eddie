@@ -13,7 +13,7 @@ class BeFluviusTest extends E2eTestSetup {
         this.navigateToRegionConnector(null, "Belgium", null);
 
         // Click create button
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Create")).click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
         // Check if button shows the correct page
         assertThat(page.getByText("Permission granted")).isVisible();
