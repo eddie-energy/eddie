@@ -7,8 +7,8 @@ hero:
   tagline: "Administrative Interface for In-House Data Access"
   text: "Using and Extending AIIDA"
   image:
-    src: /images/Lego-Eddie.png
-    alt: EDDIE Lego figure
+    src: /images/lego-aiida.png
+    alt: AIIDA Lego figure
   actions:
     - text: Run AIIDA
       link: 1-running/OPERATION.md
