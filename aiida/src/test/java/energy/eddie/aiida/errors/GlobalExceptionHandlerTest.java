@@ -1,9 +1,13 @@
-package energy.eddie.aiida.web;
+package energy.eddie.aiida.errors;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.dtos.PatchOperation;
-import energy.eddie.aiida.errors.*;
+import energy.eddie.aiida.errors.installer.InstallerException;
+import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
+import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
+import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.errors.permission.PermissionUnfulfillableException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.junit.jupiter.api.Test;
@@ -110,7 +114,7 @@ class GlobalExceptionHandlerTest {
         var exception = new PermissionNotFoundException(permissionId);
 
         // When
-        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handlePermissionNotFoundException(exception);
+        ResponseEntity<Map<String, List<EddieApiError>>> response = advice.handleNotFoundExceptions(exception);
 
         // Then
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -123,30 +127,12 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void givenInvalidPatchOperation_returnsBadRequest() {
-        // Given
-        var exception = new InvalidPatchOperationException();
-
-        // When
-        var response = advice.handleInvalidPatchOperationException(exception);
-
-        // Then
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        var responseBody = response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(1, responseBody.size());
-        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertEquals("Invalid PatchOperation, permitted values are: [REVOKE, ACCEPT, REJECT].",
-                     responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
-    }
-
-    @Test
     void givenPermissionAlreadyExistsException_returnsBadRequest() {
         // Given
         var exception = new PermissionAlreadyExistsException(permissionId);
 
         // When
-        var response = advice.handlePermissionAlreadyExistsException(exception);
+        var response = advice.handleBadRequestExceptions(exception);
 
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -164,7 +150,7 @@ class GlobalExceptionHandlerTest {
         var exception = new PermissionUnfulfillableException("My Service");
 
         // When
-        var response = advice.handlePermissionUnfulfillableException(exception);
+        var response = advice.handleConflictExceptions(exception);
 
         // Then
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
@@ -182,7 +168,7 @@ class GlobalExceptionHandlerTest {
         var exception = new PermissionStateTransitionException("fooBar", "desired", List.of("allowed"), "current");
 
         // When
-        var response = advice.handlePermissionStateTransitionException(exception);
+        var response = advice.handleConflictExceptions(exception);
 
         // Then
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
@@ -200,7 +186,7 @@ class GlobalExceptionHandlerTest {
         var exception = new DetailFetchingFailedException(permissionId);
 
         // When
-        var response = advice.handleDetailFetchingFailedException(exception);
+        var response = advice.handleServiceUnavailableExceptions(exception);
 
         // Then
         assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());

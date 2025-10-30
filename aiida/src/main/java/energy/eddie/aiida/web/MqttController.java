@@ -1,6 +1,6 @@
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.errors.MqttTlsCertificateNotFoundException;
+import energy.eddie.aiida.errors.datasource.mqtt.MqttTlsCertificateNotFoundException;
 import energy.eddie.aiida.services.MqttService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

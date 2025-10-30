@@ -4,7 +4,7 @@ import energy.eddie.aiida.dtos.installer.ChartMetadataDto;
 import energy.eddie.aiida.dtos.installer.InstallerSetupDto;
 import energy.eddie.aiida.dtos.installer.ReleaseInfoDto;
 import energy.eddie.aiida.dtos.installer.VersionInfoDto;
-import energy.eddie.aiida.errors.InstallerException;
+import energy.eddie.aiida.errors.installer.InstallerException;
 import energy.eddie.aiida.services.InstallerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

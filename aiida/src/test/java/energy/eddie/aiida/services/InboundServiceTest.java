@@ -1,9 +1,9 @@
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.errors.InboundRecordNotFoundException;
-import energy.eddie.aiida.errors.InvalidDataSourceTypeException;
-import energy.eddie.aiida.errors.PermissionNotFoundException;
-import energy.eddie.aiida.errors.UnauthorizedException;
+import energy.eddie.aiida.errors.auth.UnauthorizedException;
+import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.permission.Permission;

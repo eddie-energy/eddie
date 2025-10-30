@@ -1,7 +1,7 @@
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.errors.InvalidUserException;
-import energy.eddie.aiida.errors.UnauthorizedException;
+import energy.eddie.aiida.errors.auth.InvalidUserException;
+import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.models.permission.Permission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

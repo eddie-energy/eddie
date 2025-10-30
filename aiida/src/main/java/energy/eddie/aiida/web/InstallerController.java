@@ -2,8 +2,8 @@ package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.installer.InstallerSetupDto;
 import energy.eddie.aiida.dtos.installer.VersionInfoDto;
-import energy.eddie.aiida.errors.InstallerException;
-import energy.eddie.aiida.errors.InvalidUserException;
+import energy.eddie.aiida.errors.auth.InvalidUserException;
+import energy.eddie.aiida.errors.installer.InstallerException;
 import energy.eddie.aiida.services.InstallerService;
 import energy.eddie.api.agnostic.EddieApiError;
 import io.swagger.v3.oas.annotations.Operation;

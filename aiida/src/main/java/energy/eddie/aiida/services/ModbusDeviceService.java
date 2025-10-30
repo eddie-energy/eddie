@@ -2,7 +2,7 @@ package energy.eddie.aiida.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import energy.eddie.aiida.errors.ModbusDeviceConfigException;
+import energy.eddie.aiida.errors.datasource.modbus.ModbusDeviceConfigException;
 import energy.eddie.aiida.models.modbus.*;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -26,13 +26,21 @@ public class ModbusDeviceService {
         );
 
         this.modbusModels = List.of(
-                new ModbusModel("9875b409-2040-4a2e-b8df-80c3e81bd3d7", "Carlo Gavazzi EM24", String.valueOf(vendors.getFirst().id())),
-                new ModbusModel("91d8b15b-bb88-47d3-8425-15cf997bd1d9", "Oesterreichs Energie Adapter", String.valueOf(vendors.get(1).id()))
+                new ModbusModel("9875b409-2040-4a2e-b8df-80c3e81bd3d7",
+                                "Carlo Gavazzi EM24",
+                                String.valueOf(vendors.getFirst().id())),
+                new ModbusModel("91d8b15b-bb88-47d3-8425-15cf997bd1d9",
+                                "Oesterreichs Energie Adapter",
+                                String.valueOf(vendors.get(1).id()))
         );
 
         this.devices = List.of(
-                new Device("26f5dbb2-d1a3-42cb-93d0-5e71ac62e5fc", "Carlo Gavazzi EM24 Default", String.valueOf(modbusModels.getFirst().id())),
-                new Device("cfd870cd-fc1d-4288-bba5-414ceaf6e2d7", "Oesterreichs Energie Adapter", String.valueOf(modbusModels.get(1).id()))
+                new Device("26f5dbb2-d1a3-42cb-93d0-5e71ac62e5fc",
+                           "Carlo Gavazzi EM24 Default",
+                           String.valueOf(modbusModels.getFirst().id())),
+                new Device("cfd870cd-fc1d-4288-bba5-414ceaf6e2d7",
+                           "Oesterreichs Energie Adapter",
+                           String.valueOf(modbusModels.get(1).id()))
         );
     }
 
@@ -48,8 +56,8 @@ public class ModbusDeviceService {
 
     public List<ModbusModel> models(UUID vendorId) {
         return modbusModels.stream()
-                .filter(m -> m.vendorId().equals(vendorId))
-                .toList();
+                           .filter(m -> m.vendorId().equals(vendorId))
+                           .toList();
     }
 
     public List<ModbusModel> models(String vendorId) {
@@ -58,8 +66,8 @@ public class ModbusDeviceService {
 
     public List<Device> devices(UUID modelId) {
         return devices.stream()
-                .filter(m -> m.modelId().equals(modelId))
-                .toList();
+                      .filter(m -> m.modelId().equals(modelId))
+                      .toList();
     }
 
     public List<Device> devices(String modelId) {
@@ -86,5 +94,4 @@ public class ModbusDeviceService {
             throw new ModbusDeviceConfigException("Failed to load device config for " + deviceId, e);
         }
     }
-
 }

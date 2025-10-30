@@ -1,7 +1,7 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.errors.MqttTlsCertificateNotFoundException;
+import energy.eddie.aiida.errors.datasource.mqtt.MqttTlsCertificateNotFoundException;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +20,7 @@ public class MqttService {
     public ByteArrayResource tlsCertificate() throws MqttTlsCertificateNotFoundException {
         try {
             var path = config.tlsCertificatePath();
-            if(path.isEmpty()) {
+            if (path.isEmpty()) {
                 throw new MqttTlsCertificateNotFoundException("Path for TLS certificate for MQTT broker not specified!");
             }
 

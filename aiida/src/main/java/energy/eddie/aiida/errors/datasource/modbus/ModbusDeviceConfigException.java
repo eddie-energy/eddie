@@ -1,4 +1,4 @@
-package energy.eddie.aiida.errors;
+package energy.eddie.aiida.errors.datasource.modbus;
 
 public class ModbusDeviceConfigException extends RuntimeException {
     public ModbusDeviceConfigException(String message) {

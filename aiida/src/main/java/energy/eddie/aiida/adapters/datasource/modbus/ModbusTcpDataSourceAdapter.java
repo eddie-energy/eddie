@@ -1,7 +1,7 @@
 package energy.eddie.aiida.adapters.datasource.modbus;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
-import energy.eddie.aiida.errors.ModbusConnectionException;
+import energy.eddie.aiida.errors.datasource.modbus.ModbusConnectionException;
 import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.modbus.ModbusDataPoint;
 import energy.eddie.aiida.models.modbus.ModbusDevice;
@@ -21,6 +21,7 @@ import reactor.core.scheduler.Schedulers;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ModbusTcpDataSourceAdapter.class);
@@ -43,7 +44,8 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
     public ModbusTcpDataSourceAdapter(ModbusDataSource dataSource) throws IllegalArgumentException, ModbusConnectionException {
         super(dataSource);
         this.modbusDevice = ModbusDeviceService.loadConfig(dataSource.modbusDevice());
-        this.pollingInterval = Math.max(dataSource.pollingInterval() * 1000L, this.modbusDevice.intervals().read().minInterval());
+        this.pollingInterval = Math.max(TimeUnit.SECONDS.toMillis(dataSource.pollingInterval()),
+                                        this.modbusDevice.intervals().read().minInterval());
 
         if (!dataSource.enabled()) return;
 
@@ -57,7 +59,8 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
         try {
             this.modbusTcpClient = new ModbusTcpClient(ip, modbusDevice.port(), modbusDevice.unitId());
         } catch (Exception e) {
-            throw new ModbusConnectionException("Failed to create ModbusClientHelper for device: " + dataSource.modbusDevice() + ", IP: " + dataSource.modbusIp(), e);
+            throw new ModbusConnectionException("Failed to create ModbusClientHelper for device: " + dataSource.modbusDevice() + ", IP: " + dataSource.modbusIp(),
+                                                e);
         }
 
         LOGGER.info(
@@ -72,9 +75,10 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
         long delayUntilNextAlignedInterval = this.pollingInterval - (now % this.pollingInterval);
 
 
-        periodicFlux = Flux.interval(Duration.ofMillis(delayUntilNextAlignedInterval), Duration.ofMillis(this.pollingInterval))
-                .subscribeOn(Schedulers.parallel())
-                .subscribe(unused -> readModbusValues());
+        periodicFlux = Flux.interval(Duration.ofMillis(delayUntilNextAlignedInterval),
+                                     Duration.ofMillis(this.pollingInterval))
+                           .subscribeOn(Schedulers.parallel())
+                           .subscribe(unused -> readModbusValues());
 
         // use a separate Flux instead of just returning periodicFlux to be able to emit complete signal in close()
         return recordSink.asFlux();
@@ -175,7 +179,11 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
         });
     }
 
-    private void readVirtualModbusDataPoint(ModbusSource source, ModbusDataPoint dp, List<AiidaRecordValue> recordValues) {
+    private void readVirtualModbusDataPoint(
+            ModbusSource source,
+            ModbusDataPoint dp,
+            List<AiidaRecordValue> recordValues
+    ) {
         if (!dp.isValidVirtualDatapoint()) {
             LOGGER.warn("Misconfigured virtual datapoint {}", dp.id());
             return;
@@ -212,7 +220,6 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
                     valueObj.toString(),
                     UnitOfMeasurement.UNKNOWN
             ));
-
         } catch (Exception e) {
             LOGGER.warn("Failed to calculate virtual value for datapoint {}: {}", dp.id(), e.getMessage());
         }
@@ -226,5 +233,4 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
         expr = expr.replace("-", "_");
         return expr;
     }
-
 }

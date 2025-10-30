@@ -1,7 +1,12 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.PatchPermissionDto;
-import energy.eddie.aiida.errors.*;
+import energy.eddie.aiida.errors.auth.InvalidUserException;
+import energy.eddie.aiida.errors.auth.UnauthorizedException;
+import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
+import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
+import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.errors.permission.PermissionUnfulfillableException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
 import energy.eddie.api.agnostic.EddieApiError;

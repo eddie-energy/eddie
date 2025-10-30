@@ -1,4 +1,4 @@
-package energy.eddie.aiida.errors;
+package energy.eddie.aiida.errors.record;
 
 import java.util.UUID;
 

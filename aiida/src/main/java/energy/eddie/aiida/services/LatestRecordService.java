@@ -4,7 +4,12 @@ import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
 import energy.eddie.aiida.dtos.record.LatestInboundPermissionRecordDto;
 import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
 import energy.eddie.aiida.dtos.record.LatestSchemaRecordDto;
-import energy.eddie.aiida.errors.*;
+import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
+import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
+import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
+import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.DataSourceRepository;
@@ -13,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.UUID;
 
 @Service
@@ -25,10 +31,12 @@ public class LatestRecordService {
     private final InboundService inboundService;
 
     @Autowired
-    public LatestRecordService(AiidaRecordRepository aiidaRecordRepository,
-                               DataSourceRepository dataSourceRepository,
-                               PermissionLatestRecordMap permissionLatestRecordMap,
-                               InboundService inboundService) {
+    public LatestRecordService(
+            AiidaRecordRepository aiidaRecordRepository,
+            DataSourceRepository dataSourceRepository,
+            PermissionLatestRecordMap permissionLatestRecordMap,
+            InboundService inboundService
+    ) {
         this.aiidaRecordRepository = aiidaRecordRepository;
         this.dataSourceRepository = dataSourceRepository;
         this.permissionLatestRecordMap = permissionLatestRecordMap;
@@ -38,12 +46,14 @@ public class LatestRecordService {
     public LatestDataSourceRecordDto latestDataSourceRecord(UUID dataSourceId) throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
         var dataSource = dataSourceRepository.findById(dataSourceId)
                                              .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId)
-        );
+                                             );
         var aiidaRecord = aiidaRecordRepository.findFirstByDataSourceIdOrderByIdDesc(dataSourceId)
                                                .orElseThrow(() -> new LatestAiidaRecordNotFoundException(dataSourceId)
-        );
+                                               );
 
-        LOGGER.info("Found latest data source record with timestamp: {}, for data source: {}", aiidaRecord.timestamp(), dataSource.id());
+        LOGGER.info("Found latest data source record with timestamp: {}, for data source: {}",
+                    aiidaRecord.timestamp(),
+                    dataSource.id());
 
         return AiidaRecordConverter.recordToLatestDto(aiidaRecord, dataSource);
     }
@@ -57,7 +67,9 @@ public class LatestRecordService {
                                        .stream()
                                        .map(latestRecord -> {
                                            var message = latestRecord.getValue();
-                                           return new LatestSchemaRecordDto(latestRecord.getKey(), message.sentAt(), message.message());
+                                           return new LatestSchemaRecordDto(latestRecord.getKey(),
+                                                                            message.sentAt(),
+                                                                            message.message());
                                        })
                                        .toList();
 
@@ -65,7 +77,7 @@ public class LatestRecordService {
                 permissionId,
                 permissionRecord.topic(),
                 permissionRecord.serverUri(),
-               messages
+                messages
         );
     }
 
