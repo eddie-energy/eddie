@@ -1,7 +1,6 @@
 package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.aggregator.Aggregator;
-import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
@@ -10,6 +9,7 @@ import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.aiida.schemas.SchemaFormatterRegistry;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -48,10 +48,6 @@ class StreamerManagerTest {
     @Mock
     private Aggregator aggregatorMock;
     @Mock
-    private ApplicationInformationService applicationInformationServiceMock;
-    @Mock
-    private ApplicationInformation applicationInformationMock;
-    @Mock
     private FailedToSendRepository mockRepository;
     @Mock
     private AiidaConnectionStatusMessageDto mockStatusMessage;
@@ -68,17 +64,17 @@ class StreamerManagerTest {
     private Map<UUID, AiidaStreamer> mockMap;
     @Mock
     private PermissionLatestRecordMap mockLatestRecordMap;
+    @Mock
+    private SchemaFormatterRegistry schemaFormatterRegistry;
 
     @BeforeEach
     void setUp() {
         var mapper = new AiidaConfiguration().customObjectMapper().build();
-        when(applicationInformationMock.aiidaId()).thenReturn(UUID.randomUUID());
-        when(applicationInformationServiceMock.applicationInformation()).thenReturn(applicationInformationMock);
 
         manager = new StreamerManager(aggregatorMock,
-                                      applicationInformationServiceMock,
                                       mockRepository,
                                       mapper,
+                                      schemaFormatterRegistry,
                                       mockLatestRecordMap);
     }
 
