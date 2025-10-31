@@ -55,3 +55,11 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.2.2 - 2026-01-26
 
 - Add copyright notices to source files
+
+## 3.3.0 - 2025-xx-xx
+- Add (near) real-time data for CIM version `1.12`
+- Fixes wrong wording of `QuantityTypeKind` values
+- Adds additional `QuantityTypeKind` values
+- AIIDA now depends on this version of the CIM
+
+[//]: # (TODO: Adapt the changelog before pushing to main)
