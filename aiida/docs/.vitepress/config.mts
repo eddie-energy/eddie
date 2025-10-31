@@ -142,6 +142,10 @@ export default withMermaid(
                 },
               ],
             },
+            {
+              text: "User Interface",
+              link: "/1-running/ui.md",
+            }
           ],
         },
         {

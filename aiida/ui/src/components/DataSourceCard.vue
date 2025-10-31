@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { BASE_URL } from '@/api'
 import Button from '@/components/Button.vue'
 import TrashIcon from '@/assets/icons/TrashIcon.svg'
 import PenIcon from '@/assets/icons/PenIcon.svg'
@@ -21,9 +20,7 @@ const { dataSource, startOpen } = defineProps<{
   startOpen?: boolean
 }>()
 const isOpen = ref(startOpen)
-const emit = defineEmits(['edit', 'delete', 'reset', 'enableToggle', 'showLatestDataSourceMessage'])
-//TODO see #GH-1957
-const mqttCertificate = false
+const emit = defineEmits(['edit', 'delete', 'reset', 'enableToggle'])
 
 const {
   countryCode,
@@ -106,19 +103,6 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
             }}</Button>
           </dd>
         </div>
-        <div class="button-field" v-if="mqttCertificate">
-          <dt>MQTT Certificate</dt>
-          <dd>
-            <Button
-              button-style="secondary"
-              :href="BASE_URL + '/mqtt/download/tls-certificate'"
-              download="certificate.pem"
-              target="_blank"
-            >
-              Download certificate
-            </Button>
-          </dd>
-        </div>
       </template>
 
       <div class="button-field toggle">
@@ -140,10 +124,9 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
     </dl>
 
     <div class="actions">
-      <Button button-style="error" @click="emit('delete')"
-        ><TrashIcon />{{ t('deleteButton') }}</Button
-      >
-
+      <Button button-style="error" @click="emit('delete')">
+        <TrashIcon />{{ t('deleteButton') }}
+      </Button>
       <Button @click="emit('edit')"><PenIcon />{{ t('editButton') }}</Button>
     </div>
   </article>

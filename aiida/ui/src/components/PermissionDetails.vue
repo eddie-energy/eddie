@@ -269,6 +269,7 @@ onClickOutside(target, () => (showToolTip.value = false))
   }
   dd {
     line-height: 1;
+    font-size: 0.9rem;
     color: var(--eddie-grey-medium);
     font-weight: 600;
   }
