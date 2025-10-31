@@ -3,14 +3,20 @@
 
 package energy.eddie.aiida.schemas;
 
-import energy.eddie.aiida.ObjectMapperCreatorUtil;
-import energy.eddie.aiida.errors.formatter.CimFormatterException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
+import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
+import energy.eddie.aiida.errors.formatter.SchemaFormatterRegistryException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.schemas.cim.v1_04.utils.CimUtil;
+import energy.eddie.aiida.schemas.cim.BaseCimFormatterStrategy;
+import energy.eddie.aiida.schemas.cim.v1_04.CimFormatter;
+import energy.eddie.aiida.schemas.raw.RawFormatter;
+import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import nl.altindag.log.LogCaptor;
@@ -21,7 +27,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.test.json.JsonAssert;
-import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -38,9 +43,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SchemaTest {
-    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(CimUtil.class);
+    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(BaseCimFormatterStrategy.class);
     private static final Instant timestamp = Instant.ofEpochMilli(1729334059);
-    private static final UUID aiidaId = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final AiidaRecord aiidaRecordAT = new AiidaRecord(
@@ -132,24 +136,34 @@ class SchemaTest {
             )
     );
 
+    private final ObjectMapper objectMapper = new AiidaConfiguration().customObjectMapper().build();
+
     @Mock
-    private ObjectMapper objectMapper;
+    private ApplicationInformationService applicationInformationService;
+
+    @Mock
+    private SchemaFormatterRegistry schemaFormatterRegistry;
 
     @BeforeEach
     void setUp() {
-        objectMapper = ObjectMapperCreatorUtil.mapper();
+        var applicationInformation = mock(ApplicationInformation.class);
+        when(applicationInformationService.applicationInformation()).thenReturn(applicationInformation);
+        when(applicationInformation.aiidaId()).thenReturn(UUID.randomUUID());
     }
 
     @Test
-    void schemaRaw() {
+    void schemaRaw() throws SchemaFormatterRegistryException, SchemaFormatterException {
         var permissionMock = mock(Permission.class);
+        var rawFormatter = new RawFormatter(applicationInformationService, objectMapper);
 
         var rawAiidaRecordAT = "{\"timestamp\":\"1970-01-21T00:22:14.059Z\",\"asset\":\"SUBMETER\",\"userId\":\"5211ea05-d4ab-48ff-8613-8f4791a56606\",\"dataSourceId\":\"4211ea05-d4ab-48ff-8613-8f4791a56606\",\"values\":[{\"rawTag\":\"1-0:1.7.0\",\"dataTag\":\"1-0:1.7.0\",\"rawValue\":\"10\",\"rawUnitOfMeasurement\":\"kW\",\"value\":\"10\",\"unitOfMeasurement\":\"kW\"},{\"rawTag\":\"1-0:2.7.0\",\"dataTag\":\"1-0:2.7.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"kW\",\"value\":\"50\",\"unitOfMeasurement\":\"kW\"},{\"rawTag\":\"1-0:1.8.0\",\"dataTag\":\"1-0:1.8.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"kWh\",\"value\":\"50\",\"unitOfMeasurement\":\"kWh\"},{\"rawTag\":\"1-0:2.8.0\",\"dataTag\":\"1-0:2.8.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"kWh\",\"value\":\"50\",\"unitOfMeasurement\":\"kWh\"},{\"rawTag\":\"1-0:31.7.0\",\"dataTag\":\"1-0:31.7.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"A\",\"value\":\"50\",\"unitOfMeasurement\":\"A\"},{\"rawTag\":\"1-0:51.7.0\",\"dataTag\":\"1-0:51.7.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"A\",\"value\":\"50\",\"unitOfMeasurement\":\"A\"},{\"rawTag\":\"1-0:71.7.0\",\"dataTag\":\"1-0:71.7.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"A\",\"value\":\"50\",\"unitOfMeasurement\":\"A\"},{\"rawTag\":\"1-0:13.7.0\",\"dataTag\":\"1-0:13.7.0\",\"rawValue\":\"5\",\"rawUnitOfMeasurement\":\"none\",\"value\":\"5\",\"unitOfMeasurement\":\"none\"},{\"rawTag\":\"1-0:32.7.0\",\"dataTag\":\"1-0:32.7.0\",\"rawValue\":\"10\",\"rawUnitOfMeasurement\":\"V\",\"value\":\"10\",\"unitOfMeasurement\":\"V\"},{\"rawTag\":\"1-0:52.7.0\",\"dataTag\":\"1-0:52.7.0\",\"rawValue\":\"10\",\"rawUnitOfMeasurement\":\"V\",\"value\":\"10\",\"unitOfMeasurement\":\"V\"},{\"rawTag\":\"1-0:52.7.0\",\"dataTag\":\"1-0:72.7.0\",\"rawValue\":\"10\",\"rawUnitOfMeasurement\":\"V\",\"value\":\"10\",\"unitOfMeasurement\":\"V\"},{\"rawTag\":\"1-0:96.1.0\",\"dataTag\":\"0-0:96.1.0\",\"rawValue\":\"Device123\",\"rawUnitOfMeasurement\":\"none\",\"value\":\"Device123\",\"unitOfMeasurement\":\"none\"}]}";
         var rawAiidaRecordFR = "{\"timestamp\":\"1970-01-21T00:22:14.059Z\",\"asset\":\"SUBMETER\",\"userId\":\"5211ea05-d4ab-48ff-8613-8f4791a56606\",\"dataSourceId\":\"4211ea05-d4ab-48ff-8613-8f4791a56606\",\"values\":[{\"rawTag\":\"PAPP\",\"dataTag\":\"1-0:1.7.0\",\"rawValue\":\"10\",\"rawUnitOfMeasurement\":\"VA\",\"value\":\"10\",\"unitOfMeasurement\":\"VA\"},{\"rawTag\":\"BASE\",\"dataTag\":\"1-0:1.8.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"Wh\",\"value\":\"50\",\"unitOfMeasurement\":\"Wh\"}]}";
 
-        var rawFormatter = SchemaFormatter.getFormatter(aiidaId, AiidaSchema.SMART_METER_P1_RAW);
-        var resultAT = rawFormatter.toSchema(aiidaRecordAT, objectMapper, permissionMock);
-        var resultFR = rawFormatter.toSchema(aiidaRecordFR, objectMapper, permissionMock);
+        when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_RAW)).thenReturn(rawFormatter);
+
+        var formatter = schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_RAW);
+        var resultAT = formatter.format(aiidaRecordAT, permissionMock);
+        var resultFR = formatter.format(aiidaRecordFR, permissionMock);
 
         var comparator = JsonAssert.comparator(JSONCompareMode.LENIENT);
         comparator.assertIsMatch(rawAiidaRecordAT, new String(resultAT, StandardCharsets.UTF_8));
@@ -157,11 +171,12 @@ class SchemaTest {
     }
 
     @Test
-    void schemaCim() {
+    void schemaCim_v1_04() throws SchemaFormatterException, SchemaFormatterRegistryException {
         LOG_CAPTOR.setLogLevelToTrace();
 
         var dataNeedId = UUID.fromString("1211ea05-d4ab-48ff-8613-8f4791a56606");
         var permissionId = UUID.fromString("2211ea05-d4ab-48ff-8613-8f4791a56606");
+        var cimFormatter = new CimFormatter(applicationInformationService, objectMapper);
 
         var permissionMock = mock(Permission.class);
         var dataNeedMock = mock(AiidaLocalDataNeed.class);
@@ -176,12 +191,14 @@ class SchemaTest {
 
         when(dataSource.countryCode()).thenReturn("AT");
 
-        var cimFormatter = SchemaFormatter.getFormatter(aiidaId, AiidaSchema.SMART_METER_P1_CIM);
-        assertDoesNotThrow(() -> cimFormatter.toSchema(aiidaRecordAT, objectMapper, permissionMock));
-        assertThrows(CimFormatterException.class,
-                     () -> cimFormatter.toSchema(aiidaRecordWithFaultyRecord, objectMapper, permissionMock));
+        when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM)).thenReturn(cimFormatter);
 
-        cimFormatter.toSchema(aiidaRecordWithUnsupportedQuantityType, objectMapper, permissionMock);
+        var formatter = schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM);
+        assertDoesNotThrow(() -> formatter.format(aiidaRecordAT, permissionMock));
+        assertThrows(CimSchemaFormatterException.class,
+                     () -> formatter.format(aiidaRecordWithFaultyRecord, permissionMock));
+
+        formatter.format(aiidaRecordWithUnsupportedQuantityType, permissionMock);
         assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(
                 POSITIVE_REACTIVE_INSTANTANEOUS_POWER));
     }

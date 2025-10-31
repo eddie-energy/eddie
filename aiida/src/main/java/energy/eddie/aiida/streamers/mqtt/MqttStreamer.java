@@ -3,12 +3,14 @@
 
 package energy.eddie.aiida.streamers.mqtt;
 
-import energy.eddie.aiida.errors.formatter.FormatterException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
+import energy.eddie.aiida.errors.formatter.SchemaFormatterRegistryException;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
-import energy.eddie.aiida.schemas.SchemaFormatter;
+import energy.eddie.aiida.schemas.SchemaFormatterRegistry;
 import energy.eddie.aiida.streamers.AiidaStreamer;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
@@ -24,7 +26,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -49,26 +50,26 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     /**
      * Creates a new MqttStreamer and initialized the client callback.
      *
-     * @param aiidaId                UUID of the AIIDA instance for which to create the AiidaStreamer.
-     * @param failedToSendRepository Repository where messages that could not be transmitted are stored.
-     * @param mapper                 {@link ObjectMapper} used to transform the values to be sent into JSON strings.
-     * @param permission             Permission for which this streamer is created.
-     * @param recordFlux             Flux, where records that should be sent are published.
-     * @param streamingContext       Holds the {@link MqttAsyncClient} used to send to MQTT broker and the necessary
-     *                               MQTT configuration values.
-     * @param terminationRequestSink Sink, to which the ID of the permission will be published when the EP requests a
-     *                               termination.
+     * @param failedToSendRepository  Repository where messages that could not be transmitted are stored.
+     * @param mapper                  {@link ObjectMapper} used to transform the values to be sent into JSON strings.
+     * @param permission              Permission for which this streamer is created.
+     * @param recordFlux              Flux, where records that should be sent are published.
+     * @param schemaFormatterRegistry Registry of all available schema formatters
+     * @param streamingContext        Holds the {@link MqttAsyncClient} used to send to MQTT broker and the necessary
+     *                                MQTT configuration values.
+     * @param terminationRequestSink  Sink, to which the ID of the permission will be published when the EP requests a
+     *                                termination.
      */
     public MqttStreamer(
-            UUID aiidaId,
             FailedToSendRepository failedToSendRepository,
             ObjectMapper mapper,
             Permission permission,
             Flux<AiidaRecord> recordFlux,
+            SchemaFormatterRegistry schemaFormatterRegistry,
             MqttStreamingContext streamingContext,
             Sinks.One<UUID> terminationRequestSink
     ) {
-        super(aiidaId, recordFlux, terminationRequestSink);
+        super(recordFlux, schemaFormatterRegistry, terminationRequestSink);
 
         this.client = streamingContext.client();
         this.failedToSendRepository = failedToSendRepository;
@@ -213,8 +214,8 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             var schemas = Objects.requireNonNullElse(dataNeed.schemas(), Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
             for (var schema : schemas) {
-                var schemaFormatter = SchemaFormatter.getFormatter(aiidaId, schema);
-                var messageData = schemaFormatter.toSchema(aiidaRecord, mapper, permission);
+                var schemaFormatter = schemaFormatterRegistry.formatterFor(schema);
+                var messageData = schemaFormatter.format(aiidaRecord, permission);
                 publishMessage(schema.buildTopicPath(streamingConfig.dataTopic()), messageData);
 
                 permissionLatestRecord.putSchema(schema, new LatestRecordSchema(
@@ -224,11 +225,15 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             }
 
             permissionLatestRecordMap.put(streamingConfig.permissionId(), permissionLatestRecord);
-        } catch (FormatterException exception) {
+        } catch (SchemaFormatterException exception) {
             LOGGER.error("MqttStreamer for permission {} cannot convert AiidaRecord {} to JSON, will ignore it",
                          streamingConfig.permissionId(),
                          aiidaRecord,
                          exception);
+        } catch (SchemaFormatterRegistryException e) {
+            LOGGER.error("No SchemaFormatter for this permission {}, will ignore it",
+                         streamingConfig.permissionId(),
+                         e);
         }
     }
 

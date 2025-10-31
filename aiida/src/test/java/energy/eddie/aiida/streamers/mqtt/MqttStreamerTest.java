@@ -3,6 +3,11 @@
 
 package energy.eddie.aiida.streamers.mqtt;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.application.information.ApplicationInformation;
+import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.errors.formatter.SchemaFormatterRegistryException;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -12,6 +17,9 @@ import energy.eddie.aiida.models.record.FailedToSendEntity;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.aiida.schemas.SchemaFormatterRegistry;
+import energy.eddie.aiida.schemas.raw.RawFormatter;
+import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
@@ -27,7 +35,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
-import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -49,7 +56,6 @@ class MqttStreamerTest {
     private static final String EXPECTED_DATA_TOPIC = DATA_TOPIC + "/smart-meter-p1-raw";
     private static final String EXPECTED_STATUS_TOPIC = "aiida/v1/permission-id/status";
     private static final String EXPECTED_TERMINATION_TOPIC = "aiida/v1/permission-id/termination";
-    private static final UUID AIIDA_ID = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID PERMISSION_ID = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -92,6 +98,10 @@ class MqttStreamerTest {
     private AiidaConnectionStatusMessageDto mockStatusMessage;
     @Mock
     private PermissionLatestRecordMap mockLatestRecordMap;
+    @Mock
+    private SchemaFormatterRegistry schemaFormatterRegistry;
+    @Mock
+    private ApplicationInformationService  mockApplicationInformationService;
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
 
@@ -109,13 +119,14 @@ class MqttStreamerTest {
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
         var streamingContext = new MqttStreamingContext(mockClient, mqttStreamingConfig, mockLatestRecordMap);
 
-        streamer = new MqttStreamer(AIIDA_ID,
-                                    mockRepository,
-                                    mockMapper,
-                                    permissionMock,
-                                    recordPublisher.flux(),
-                                    streamingContext,
-                                    terminationSink);
+        streamer = new MqttStreamer(
+                mockRepository,
+                mockMapper,
+                permissionMock,
+                recordPublisher.flux(),
+                schemaFormatterRegistry,
+                streamingContext,
+                terminationSink);
     }
 
 
@@ -163,11 +174,20 @@ class MqttStreamerTest {
 
     @Test
     @SuppressWarnings("java:S2925")
-    void givenAiidaRecord_sendsViaMqtt() throws MqttException, InterruptedException {
+    void givenAiidaRecord_sendsViaMqtt() throws MqttException, InterruptedException, SchemaFormatterRegistryException {
+        // Given
         useReflectionToSetPermissionMock();
 
-        // Given
+        var applicationInformation = mock(ApplicationInformation.class);
+        when(applicationInformation.aiidaId()).thenReturn(UUID.randomUUID());
+        when(mockApplicationInformationService.applicationInformation()).thenReturn(applicationInformation);
+
+        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
+        var schemaFormatter = new RawFormatter(mockApplicationInformationService, objectMapper);
+        when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_RAW)).thenReturn(schemaFormatter);
+
         streamer.connect();
+
         // manually call callback
         streamer.connectComplete(false, "fooTest");
 
@@ -258,13 +278,19 @@ class MqttStreamerTest {
 
     @Test
     @SuppressWarnings("java:S2925")
-    void givenExceptionWhileSending_savesToRepository() throws MqttException, InterruptedException {
+    void givenExceptionWhileSending_savesToRepository() throws Exception {
+        // Given
         useReflectionToSetPermissionMock();
 
-        // Given
+        var applicationInformation = mock(ApplicationInformation.class);
+        when(applicationInformation.aiidaId()).thenReturn(UUID.randomUUID());
+        when(mockApplicationInformationService.applicationInformation()).thenReturn(applicationInformation);
+
+        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
+        var schemaFormatter = new RawFormatter(mockApplicationInformationService, objectMapper);
+        when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_RAW)).thenReturn(schemaFormatter);
+
         when(mockClient.publish(any(), any(), anyInt(), anyBoolean())).thenThrow(new MqttException(999));
-        var json = "MyJson".getBytes(StandardCharsets.UTF_8);
-        when(mockMapper.writeValueAsBytes(any())).thenReturn(json);
         streamer.connect();
 
         // When

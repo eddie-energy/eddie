@@ -5,14 +5,15 @@ package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.aiida.schemas.SchemaFormatterRegistry;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.util.UUID;
 
 public abstract class AiidaStreamer implements AutoCloseable {
-    protected final UUID aiidaId;
     protected final Flux<AiidaRecord> recordFlux;
+    protected final SchemaFormatterRegistry schemaFormatterRegistry;
     protected final Sinks.One<UUID> terminationRequestSink;
 
     /**
@@ -24,9 +25,13 @@ public abstract class AiidaStreamer implements AutoCloseable {
      * @param terminationRequestSink Sink, to which the permissionId will be published when the EP requests a
      *                               termination.
      */
-    protected AiidaStreamer(UUID aiidaId, Flux<AiidaRecord> recordFlux, Sinks.One<UUID> terminationRequestSink) {
-        this.aiidaId = aiidaId;
+    protected AiidaStreamer(
+            Flux<AiidaRecord> recordFlux,
+            SchemaFormatterRegistry schemaFormatterRegistry,
+            Sinks.One<UUID> terminationRequestSink
+    ) {
         this.recordFlux = recordFlux;
+        this.schemaFormatterRegistry = schemaFormatterRegistry;
         this.terminationRequestSink = terminationRequestSink;
     }
 

@@ -23,6 +23,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<OesterreichsEnergieDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(OesterreichsEnergieAdapter.class);
@@ -61,7 +62,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
         try {
             var json = mapper.readValue(message.getPayload(), OesterreichsEnergieAdapterJson.class);
 
-            var aiidaRecordValues = new ArrayList<>(convertEnergyDataToAiidaRecordValues(json));
+            var aiidaRecordValues = convertEnergyDataToAiidaRecordValues(json);
             if (!json.name().isEmpty()) {
                 aiidaRecordValues.add(convertNameToAiidaRecordValue(json.name()));
             }

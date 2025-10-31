@@ -7,6 +7,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import energy.eddie.aiida.schemas.SchemaFormatterRegistry;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamer;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamingContext;
 import energy.eddie.aiida.utils.MqttFactory;
@@ -29,21 +30,21 @@ public class StreamerFactory {
     /**
      * Creates a new {@link AiidaStreamer} applying the specified streamingConfig.
      *
-     * @param aiidaId                UUID of the AIIDA instance for which to create the AiidaStreamer.
-     * @param failedToSendRepository Repository to save messages that could not be sent.
-     * @param mapper                 {@link ObjectMapper} that should be used to convert the records to JSON.
-     * @param permission             Permission for which to create the AiidaStreamer.
-     * @param recordFlux             Flux on which the records that should be sent are published.
-     * @param terminationRequestSink Sink, to which the permissionId will be published when the EP requests a
-     *                               termination.
+     * @param failedToSendRepository  Repository to save messages that could not be sent.
+     * @param mapper                  {@link ObjectMapper} that should be used to convert the records to JSON.
+     * @param permission              Permission for which to create the AiidaStreamer.
+     * @param recordFlux              Flux on which the records that should be sent are published.
+     * @param schemaFormatterRegistry Registry of all available schema formatters
+     * @param terminationRequestSink  Sink, to which the permissionId will be published when the EP requests a
+     *                                termination.
      * @throws MqttException If the creation of the MqttClient failed.
      */
     protected static AiidaStreamer getAiidaStreamer(
-            UUID aiidaId,
             FailedToSendRepository failedToSendRepository,
             ObjectMapper mapper,
             Permission permission,
             Flux<AiidaRecord> recordFlux,
+            SchemaFormatterRegistry schemaFormatterRegistry,
             Sinks.One<UUID> terminationRequestSink,
             PermissionLatestRecordMap permissionLatestRecordMap
     ) throws MqttException {
@@ -57,11 +58,11 @@ public class StreamerFactory {
                                                                                          .getPath()));
         var streamingContext = new MqttStreamingContext(client, streamingConfig, permissionLatestRecordMap);
 
-        return new MqttStreamer(aiidaId,
-                                failedToSendRepository,
+        return new MqttStreamer(failedToSendRepository,
                                 mapper,
                                 permission,
                                 recordFlux,
+                                schemaFormatterRegistry,
                                 streamingContext,
                                 terminationRequestSink);
     }
