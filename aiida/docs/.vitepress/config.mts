@@ -102,6 +102,16 @@ export default withMermaid(
                       text: "Simulation",
                       link: "/1-running/data-sources/interval/simulation/simulation-data-source.md",
                     },
+                    {
+                      text: "Modbus TCP",
+                      link: "/1-running/data-sources/interval/modbus/modbus-data-source.md",
+                      items: [
+                        {
+                          text: "Modbus Configuration Documentation",
+                          link: "/1-running/data-sources/interval/modbus/modbus-configuration-documentation.md",
+                        }
+                      ]
+                    },
                   ],
                 },
               ],
