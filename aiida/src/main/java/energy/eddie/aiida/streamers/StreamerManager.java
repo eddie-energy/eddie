@@ -116,7 +116,8 @@ public class StreamerManager implements AutoCloseable {
                     recordFlux,
                     schemaFormatterRegistry,
                     streamerTerminationRequestSink,
-                    permissionLatestRecordMap);
+                    permissionLatestRecordMap
+            );
             streamer.connect();
             streamers.put(id, streamer);
         } else {
