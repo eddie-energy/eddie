@@ -73,16 +73,6 @@ export default withMermaid(
                       link: "/1-running/data-sources/mqtt/fr/micro-teleinfo-v3-data-source.md",
                     },
                     {
-                      text: "Modbus TCP",
-                      link: "/1-running/data-sources/interval/modbus/modbus-data-source.md",
-                      items: [
-                        {
-                          text: "Modbus Configuration Documentation",
-                          link: "/1-running/data-sources/interval/modbus/modbus-configuration-documentation.md",
-                        }
-                      ]
-                    },
-                    {
                       text: "Österreichs Energie (Austria)",
                       link: "/1-running/data-sources/mqtt/at/oesterreichs-energie-data-source.md",
                     },
@@ -103,6 +93,16 @@ export default withMermaid(
                     {
                       text: "Simulation",
                       link: "/1-running/data-sources/interval/simulation/simulation-data-source.md",
+                    },
+                    {
+                      text: "Modbus TCP",
+                      link: "/1-running/data-sources/interval/modbus/modbus-data-source.md",
+                      items: [
+                        {
+                          text: "Modbus Configuration Documentation",
+                          link: "/1-running/data-sources/interval/modbus/modbus-configuration-documentation.md",
+                        }
+                      ]
                     },
                   ],
                 },
