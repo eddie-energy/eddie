@@ -38,9 +38,6 @@ Which fields are present and required may vary between region connectors.
 Fields and instructions should be provided in English and use the same terminology as the permission administrator.
 Help texts on input fields are encouraged to guide the user in providing the correct information.
 
-> [!Important]
-> The `import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/input/input.js"` line is required, otherwise the event handler is not attached to the `handleSubmit` method.
-
 ```javascript
 
 import { html } from "lit";

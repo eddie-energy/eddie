@@ -1,6 +1,12 @@
 import { LitElement } from "lit";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 
+/**
+ * Always import Shoelace input to consistently attach the form submit handler after the input element is loaded.
+ * See GH-899 for details.
+ */
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/input/input.js";
+
 const TERMINAL_STATES = [
   "TERMINATED",
   "REVOKED",
