@@ -36,7 +36,6 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     return html`
       <div>
         <header>
-          <h2>Green Button</h2>
           <p>
             <a href="https://greenbuttondata.org/">Green Button&trade;</a>
             is an international standard for sharing utility customer bill and usage data. 
