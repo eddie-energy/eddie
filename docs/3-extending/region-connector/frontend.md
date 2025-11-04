@@ -1,6 +1,15 @@
 # Implementing a Region Connector Frontend
 
-The frontend of each region connector is to be implemented as a custom element.
+The EDDIE button can include any custom element that is served on the `/ce.js` path.
+While any setup can be used as long as it results in a custom element, existing region connector elements use the [Lit](https://lit.dev/) library, build with Vite, and extend a shared base class.
+To replicate this setup simply copy the following files from an existing region connector. For example [/region-connectors/region-connector-at-eda](../../../region-connectors/region-connector-at-eda).
+
+- `src/main/web/permission-request-form.js`
+- `package.json`
+- `vite.config.js`
+
+You can then adjust the `permission-request-form.js` to match the requirements of your new region connector.
+
 The custom element will be loaded with the following attributes:
 
 - `core-url`: URL of the EDDIE Core for requesting additional application or data need information.
@@ -15,21 +24,14 @@ The custom element will be loaded with the following attributes:
 - `company-id`: Unique identifier of the permission administrator.
 - `company-name`: The full legal name of the permission administrator.
 
-Elements should extend the [`PermissionRequestFormBase`](https://github.com/eddie-energy/eddie/blob/main/region-connectors/shared/src/main/web/permission-request-form-base.js) class, which provides helpers for sending the permission request and sending user notifications.
-The custom element should reside in `src/main/web` of the region connector.
-
-The form base allows sending permission requests to the region connector.
-This requires a form with the id `request-form` to be present and the custom element has to override the
-`handleSubmit` method.
-This method is responsible for creating the payload and sending the request to the region connector.
-
 Elements should only use existing components from the [Shoelace](https://shoelace.style/) library or shared custom elements.
 There should be no need for custom CSS.
+All used Shoelace elements need to be imported in the JS file to ensure they are loaded correctly.
 
 Region connectors will typically include a form for the user to input the necessary data for the permission request.
 The envisioned order of elements is:
 
-1. Accounting Point ID (using the name used by the permission administrator)
+1. Accounting point, customer identification (using the name used by the permission administrator)
 2. Refresh tokens, API keys, address, or similar
 3. Additional and optional fields
 4. Submit button
@@ -40,6 +42,13 @@ Which fields are present and required may vary between region connectors.
 
 Fields and instructions should be provided in English and use the same terminology as the permission administrator.
 Help texts on input fields are encouraged to guide the user in providing the correct information.
+
+The [`PermissionRequestFormBase`](https://github.com/eddie-energy/eddie/blob/main/region-connectors/shared/src/main/web/permission-request-form-base.js) class provides helpers for sending the permission request, retrieving status updates, and sending user notifications.
+To send permission requests through the base class a form with the id `request-form` has to be present and the custom element has to override the `handleSubmit` method.
+This method is responsible for creating the payload and sending the request to the region connector.
+
+To retrieve updates on the permission request status the element can subscribe to `eddie-request-status` events.
+The event detail will include a `status` property matching the status.
 
 ```javascript
 import { html } from "lit";
@@ -73,7 +82,10 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   handleSubmit(event) {
     event.preventDefault();
 
+    const formData = new FormData(event.target);
+
     const payload = {
+      accountingPoint: formData.get("accountingPoint"),
       connectionId: this.connectionId,
       dataNeedId: this.dataNeedId,
     };
@@ -85,13 +97,27 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   render() {
-    return html`
-      <div>
-        <form id="request-form">
-          <sl-button type="submit" variant="primary">Create</sl-button>
-        </form>
-      </div>
-    `;
+    return this._requestStatus !== "SENT_TO_PERMISSION_ADMINISTRATOR"
+      ? html`
+          <div>
+            <form id="request-form">
+              <sl-input
+                label="Accounting Point"
+                name="accountingPoint"
+                type="text"
+                required
+              ></sl-input>
+              <sl-button type="submit" variant="primary">Create</sl-button>
+            </form>
+          </div>
+        `
+      : html`
+          <p>
+            Your permission request was created.
+            Please continue on the website of your permission administrator.
+          </p>
+          <sl-button href="${this.jumpOffUrl}>Continue</sl-button>
+      `;
   }
 }
 

@@ -850,7 +850,18 @@ public class PermissionRequestController {
   :::
 
 Now that we can create permission requests via the REST API provided by the region connector, we have to connect it to the EDDIE button.
-First initialize a new pnpm module in the same directory as the region connector subproject.
+The EDDIE button can include any custom element that is served on the `/ce.js` path.
+
+Existing region connector elements use the [Lit](https://lit.dev/) library, build with Vite, and extend a shared base class.
+To replicate this setup simply copy the following files from an existing region connector. For example [/region-connectors/region-connector-at-eda](../../../region-connectors/region-connector-at-eda).
+- `src/main/web/permission-request-form.js`
+- `package.json`
+- `vite.config.js`
+
+You can then adjust the `permission-request-form.js` to match the requirements of your new region connector.
+Remember to inform the customer on what steps and information are required to create a permission request and link to the website of the permission administrator.
+Frontends should use the [Shoelace](https://shoelace.style/) component library for all elements to match the styling of the EDDIE button.
+Remember to import all used Shoelace elements to ensure they are loaded correctly.
 
 ## Enable Permission Market Documents and Connection Status Messages
 
