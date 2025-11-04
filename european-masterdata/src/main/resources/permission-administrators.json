@@ -1012,7 +1012,7 @@
     "company": "Fingrid Datahub",
     "name": "Fingrid",
     "companyId": "fingrid",
-    "jumpOffUrl": "https://oma.datahub.fi/#/login",
+    "jumpOffUrl": "https://oma.fingrid.fi",
     "regionConnector": "fi-fingrid"
   },
   {
