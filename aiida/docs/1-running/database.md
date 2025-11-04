@@ -3,6 +3,40 @@
 AIIDA uses a [TimescaleDB](https://github.com/timescale/timescaledb) as its primary database.
 It was chosen because it is a relational database (PostgreSQL) optimized for time-series data.
 
+## Configuration
+
+> [!NOTE]
+> We recommend using the files provided in the [docker folder](https://github.com/eddie-energy/eddie/tree/main/aiida/docker) when using TimescaleDB.
+
+The following values in the [.env](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/.env) file adapt the database:
+
+| Environment Variable       | Description                                                                                                            |
+|----------------------------|------------------------------------------------------------------------------------------------------------------------|
+| SPRING_DATASOURCE_DATABASE | The name of the database. This name is used when the database is first created.                                        |
+| SPRING_DATASOURCE_USERNAME | The username AIIDA will use to connect to the database. This user is created on the first startup.                     |
+| SPRING_DATASOURCE_PASSWORD | The password AIIDA will use to connect to the database. This password is used to create the user on the first startup. |
+| EMQX_DATABASE_PASSWORD     | The password for the `emqx` database user.                                                                             |                                                                             
+
+### EMQX User
+
+The [postgres folder](https://github.com/eddie-energy/eddie/tree/main/aiida/docker/postgres) contains the Infrastructure as Code (IaC) files for AIIDA's TimescaleDB:
+
+- [create-emqx-user.sql](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/postgres/create-emqx-user.sql)
+- [replace-password-with-env.sh](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/postgres/replace-password-with-env.sh)
+
+The [create-emqx-user.sql](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/postgres/create-emqx-user.sql)
+file contains an SQL query for creating a user with the username `emqx`.
+This user will later be used by [EMQX](emqx.md) to connect to the database.
+This user has limited privileges and is therefore only allowed to access the `data_source` table.
+
+The [replace-password-with-env.sh](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/postgres/replace-password-with-env.sh)
+replaces the password of the `emqx` user with the value of the `EMQX_DATABASE_PASSWORD` environment variable.
+
+Both files are mounted in the
+`timescaledb` container in the [compose.yml](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/compose.yml).
+
+## Data Model
+
 ![](../images/database/database-data-model.png)
 
 The figure above shows the relational data model of AIIDA's database.
