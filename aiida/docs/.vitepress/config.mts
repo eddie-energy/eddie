@@ -89,6 +89,10 @@ export default withMermaid(
                       link: "/1-running/data-sources/mqtt/shelly/shelly-data-source.md",
                     },
                     {
+                      text: "Smart Gateways",
+                      link: "/1-running/data-sources/mqtt/sga/sga-data-source.md",
+                    },
+                    {
                       text: "Sinapsi Alfa (Italy)",
                       link: "/1-running/data-sources/mqtt/it/sinapsi-alfa-data-source.md",
                     },

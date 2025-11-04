@@ -10,7 +10,7 @@ The following MQTT data sources are supported:
 - [Österreichs Energie](at/oesterreichs-energie-data-source.md)
 - [Shelly](shelly/shelly-data-source.md)
 - [Sinapsi Alfa](it/sinapsi-alfa-data-source.md)
-- Smart Gateways
+- [Smart Gateways](sga/sga-data-source.md)
 
 #### Common Properties
 
