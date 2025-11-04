@@ -34,9 +34,6 @@ setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn");
 
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
-const CORE_URL =
-  import.meta.env.VITE_CORE_URL ?? import.meta.url.split("/lib/")[0];
-
 const SPECIAL_PERMISSION_ADMINISTRATORS = {
   AIIDA: {
     country: "aiida",
@@ -91,6 +88,7 @@ const dialogCloseEvent = new Event("eddie-dialog-close", {
 class EddieConnectButton extends LitElement {
   static properties = {
     // Public properties
+    coreUrl: { attribute: "core-url", type: String },
     connectionId: { attribute: "connection-id", type: String },
     dataNeedId: { attribute: "data-need-id", type: String },
     permissionAdministratorId: {
@@ -168,6 +166,15 @@ class EddieConnectButton extends LitElement {
 
   constructor() {
     super();
+
+    /**
+     * Public URL pointing to the EDDIE Core.
+     * Will be inferred from an environment variable when run locally,
+     * or the import path when deployed with Spring.
+     * @type {string}
+     */
+    this.coreUrl =
+      import.meta.env.VITE_CORE_URL ?? import.meta.url.split("/lib/")[0];
 
     /**
      * Undefined until the configuration has been validated.
@@ -299,7 +306,7 @@ class EddieConnectButton extends LitElement {
     const { country, name, companyId, regionConnector, jumpOffUrl } =
       this._selectedPermissionAdministrator;
 
-    const baseUrl = `${CORE_URL}/region-connectors/${regionConnector}`;
+    const baseUrl = `${this.coreUrl}/region-connectors/${regionConnector}`;
     const elementUrl = `${baseUrl}/ce.js`;
 
     console.debug(`Loading region connector element for ${regionConnector}`);
@@ -322,7 +329,7 @@ class EddieConnectButton extends LitElement {
     }
 
     const element = document.createElement(customElementName);
-    element.setAttribute("core-url", CORE_URL);
+    element.setAttribute("core-url", this.coreUrl);
     element.setAttribute("base-url", baseUrl);
     element.setAttribute("connection-id", this.connectionId);
     element.setAttribute("data-need-id", this.dataNeedId);

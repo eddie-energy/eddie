@@ -11,8 +11,7 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 class DemoControllerTest {
@@ -36,7 +35,7 @@ class DemoControllerTest {
 
     @WebMvcTest(
             value = DemoController.class,
-            properties = "eddie.demo.button.enabled=true",
+            properties = {"eddie.demo.button.enabled=true", "eddie.public.url=http://localhost:8080"},
             excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtIssuerFilter.class)
     )
     @AutoConfigureMockMvc(addFilters = false)
@@ -49,6 +48,7 @@ class DemoControllerTest {
         void testDemoPageEnabled() throws Exception {
             mockMvc.perform(get("/demo"))
                    .andExpect(status().isOk())
+                   .andExpect(model().attribute("publicUrl", "http://localhost:8080"))
                    .andExpect(view().name("demo"));
         }
     }
