@@ -14,6 +14,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
     accountingPointId: { attribute: "accounting-point-id" },
+    customerIdentification: { attribute: "customer-identification" },
     jumpOffUrl: { attribute: "jump-off-url" },
     _isSentToPermissionAdministrator: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
@@ -114,7 +115,11 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           id="nif"
           name="nif"
           placeholder="25744101M"
-          help-text="We require the identification number you use to log into the Datadis web portal to request permission."
+          .help-text=${this.customerIdentification
+            ? "We require the identification number you use to log into the Datadis web portal to request permission."
+            : nothing}
+          .value="${ifDefined(this.customerIdentification)}"
+          .disabled="${!!this.customerIdentification}"
           required
           pattern="[a-zA-Z0-9]{9}"
         ></sl-input>

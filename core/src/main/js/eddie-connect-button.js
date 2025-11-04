@@ -96,6 +96,10 @@ class EddieConnectButton extends LitElement {
       type: String,
     },
     accountingPointId: { attribute: "accounting-point-id", type: String },
+    customerIdentification: {
+      attribute: "customer-identification",
+      type: String,
+    },
     rememberPermissionAdministrator: {
       attribute: "remember-permission-administrator",
       type: Object,
@@ -341,6 +345,13 @@ class EddieConnectButton extends LitElement {
 
     if (this.accountingPointId) {
       element.setAttribute("accounting-point-id", this.accountingPointId);
+    }
+
+    if (this.customerIdentification) {
+      element.setAttribute(
+        "customer-identification",
+        this.customerIdentification
+      );
     }
 
     return html`
