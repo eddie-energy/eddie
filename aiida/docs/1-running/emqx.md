@@ -11,7 +11,7 @@ AIIDA's EMQX broker is responsible for:
 
 ## Configuration
 > [!NOTE]
-> It is suggested to use the files provided in the [docker folder](https://github.com/eddie-energy/eddie/tree/main/aiida/docker) when using EMQX.
+> We recommend using the files provided in the [docker folder](https://github.com/eddie-energy/eddie/tree/main/aiida/docker) when using EMQX.
 
 The [emqx folder](https://github.com/eddie-energy/eddie/tree/main/aiida/docker/emqx) contains the Infrastructure as Code (IaC) files for AIIDA's EMQX:
 
