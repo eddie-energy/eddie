@@ -7,13 +7,13 @@ import { fetchEventSource } from "@microsoft/fetch-event-source";
  */
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/input/input.js";
 
-const TERMINAL_STATES = [
+const TERMINAL_STATES = new Set([
   "TERMINATED",
   "REVOKED",
   "FULFILLED",
   "INVALID",
   "MALFORMED",
-];
+]);
 
 /**
  * URL of the core service inferred from the import URL. Used as a fallback if no core-url attribute is provided.
@@ -215,7 +215,7 @@ class PermissionRequestFormBase extends LitElement {
           })
         );
 
-        if (TERMINAL_STATES.includes(data.status)) {
+        if (TERMINAL_STATES.has(data.status)) {
           abortController.abort("Terminal state reached");
         }
       },

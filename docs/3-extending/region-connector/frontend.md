@@ -3,16 +3,19 @@
 The frontend of each region connector is to be implemented as a custom element.
 The custom element will be loaded with the following attributes:
 
+- `core-url`: URL of the EDDIE Core for requesting additional application or data need information.
+- `base-url`: URL of the region connector for making requests to the backend APIs.
 - `connection-id`: Optional value that can be used to identify a customer.
 - `data-need-id`: Required by the backend to identify the requested data.
 - `data-need-type`: Can be used to adjust content based on the type of data.
+- `country-code`: Country of the customer to adjust content if the region connector supports multiple countries.
 - `accounting-point-id`: Optional default for the accounting point ID.
 - `customer-identification`: Optional default for the customer identification.
 - `jump-off-url`: Optional URL to link or redirect to after the permission request is submitted.
-- `company-id`: Optional identifier of the permission administrator.
+- `company-id`: Unique identifier of the permission administrator.
+- `company-name`: The full legal name of the permission administrator.
 
-Elements should extend the [
-`PermissionRequestFormBase`](https://github.com/eddie-energy/eddie/blob/main/region-connectors/shared/src/main/web/permission-request-form-base.js) class, which provides helpers for sending the permission request and sending user notifications.
+Elements should extend the [`PermissionRequestFormBase`](https://github.com/eddie-energy/eddie/blob/main/region-connectors/shared/src/main/web/permission-request-form-base.js) class, which provides helpers for sending the permission request and sending user notifications.
 The custom element should reside in `src/main/web` of the region connector.
 
 The form base allows sending permission requests to the region connector.
@@ -39,7 +42,6 @@ Fields and instructions should be provided in English and use the same terminolo
 Help texts on input fields are encouraged to guide the user in providing the correct information.
 
 ```javascript
-
 import { html } from "lit";
 import PermissionRequestFormBase from "../../../../shared/src/main/web/permission-request-form-base.js";
 
@@ -73,7 +75,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     const payload = {
       connectionId: this.connectionId,
-      dataNeedId: this.dataNeedId
+      dataNeedId: this.dataNeedId,
     };
     this.createPermissionRequest(payload)
       .catch((error) => this.error(error))

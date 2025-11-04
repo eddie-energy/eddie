@@ -337,11 +337,11 @@ class EddieConnectButton extends LitElement {
     element.setAttribute("base-url", baseUrl);
     element.setAttribute("connection-id", this.connectionId);
     element.setAttribute("data-need-id", this.dataNeedId);
+    element.setAttribute("data-need-type", this._dataNeedAttributes.type);
     element.setAttribute("country-code", country);
     element.setAttribute("jump-off-url", jumpOffUrl);
     element.setAttribute("company-id", companyId);
     element.setAttribute("company-name", name);
-    element.setAttribute("data-need-type", this._dataNeedAttributes.type);
 
     if (this.accountingPointId) {
       element.setAttribute("accounting-point-id", this.accountingPointId);
