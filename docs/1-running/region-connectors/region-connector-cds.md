@@ -26,7 +26,7 @@ When using environment variables, the configuration values need to be converted 
 
 ```properties :spring
 region-connector.cds.enabled=true
-region-connector.cds.redirect.url=${eddie.public.url}/region-connectors/cds/callback
+region-connector.cds.redirect-url=${eddie.public.url}/region-connectors/cds/callback
 region-connector.cds.client-name=EDDIE
 region-connector.cds.par.enabled=false
 region-connector.cds.retry=0 0 * * * *
