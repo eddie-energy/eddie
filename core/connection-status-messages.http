@@ -1,2 +1,0 @@
-### SSE connection status message by permission ID
-GET http://localhost:8080/api/connection-status-messages/{id}

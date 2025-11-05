@@ -23,12 +23,14 @@ public class CCMOAnswerHandler {
 
 
     public void handleCCMOAnswer(CMRequestStatus cmRequestStatus) {
-        for (var request : repository.findByConversationIdOrCMRequestId(
-                cmRequestStatus.conversationId(),
-                cmRequestStatus.cmRequestId())
-                                     .stream()
-                                     .map(EdaPermissionRequest::fromProjection)
-                                     .toList()) {
+        var permissionRequests = repository.findByConversationIdOrCMRequestId(
+                                                   cmRequestStatus.conversationId(),
+                                                   cmRequestStatus.cmRequestId()
+                                           )
+                                           .stream()
+                                           .map(EdaPermissionRequest::fromProjection)
+                                           .toList();
+        for (var request : permissionRequests) {
             if (request.status() != PermissionProcessStatus.VALIDATED) {
                 LOGGER.atError()
                       .addArgument(request::permissionId)

@@ -49,23 +49,28 @@ public class ConnectionStatusMessageHandler<T extends PermissionRequest> impleme
 
     @Override
     public void accept(PermissionEvent permissionEvent) {
+        var permissionId = permissionEvent.permissionId();
+        var status = permissionEvent.status();
+        LOGGER.trace("Received permission event: {} with status {}", permissionId, status);
         if (permissionEvent instanceof InternalPermissionEvent) {
+            LOGGER.debug("Ignoring internal permission event {} with status {}", permissionId, status);
             return;
         }
-        String permissionId = permissionEvent.permissionId();
         var optionalRequest = repository.findByPermissionId(permissionId);
         if (optionalRequest.isEmpty()) {
-            LOGGER.warn("Got event without permission request for permission id {}", permissionId);
+            LOGGER.warn("Got event without permission request for permission id {} with status {}", permissionId,
+                        status);
             return;
         }
+        LOGGER.trace("Publishing connection status message for permission id {} with status {}", permissionId, status);
         var permissionRequest = optionalRequest.get();
         messages.tryEmitNext(
                 new ConnectionStatusMessage(
                         permissionRequest.connectionId(),
-                        permissionRequest.permissionId(),
+                        permissionId,
                         permissionRequest.dataNeedId(),
                         permissionRequest.dataSourceInformation(),
-                        permissionEvent.status(),
+                        status,
                         messageFunc.apply(permissionRequest),
                         additionalDataFunc.apply(permissionRequest)
                 )

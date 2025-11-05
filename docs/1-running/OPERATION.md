@@ -173,7 +173,7 @@ Please refer to the [readme.md](example-app.md) of the example app.
 ## Internal APIs
 
 EDDIE provides internal APIs for additional information about it.
-For usages for the endpoints see [internal.http](https://github.com/eddie-energy/eddie/blob/main/core/internal.http).
+For usages for the endpoints see [api.http](https://github.com/eddie-energy/eddie/blob/main/core/api.http).
 
 ### Actuator API
 

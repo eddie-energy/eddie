@@ -1,6 +1,25 @@
 ### GET region connector metadata
 GET http://localhost:8080/api/region-connectors-metadata
 
+### GET actuator endpoint
+GET http://localhost:8080/actuator
+
+### GET health information of region-connectors
+GET http://localhost:8080/actuator/health
+
+### GET health information for region connector group
+GET http://localhost:8080/actuator/health/region-connector-at-eda
+
+### GET supported features of region-connectors
+GET http://localhost:9090/management/region-connectors/supported-features
+
+### GET supported data needs of region-connectors
+GET http://localhost:9090/management/region-connectors/supported-data-needs
+
 ### GET data need calculations of region connectors for a specific data need
 @dataNeedId = 9bd0668f-cc19-40a8-99db-dc2cb2802b17
 GET http://localhost:8080/api/region-connectors/data-needs/{{dataNeedId}}
+
+### SSE connection status message by permission ID only used by the frontend with the correct authorization for the permission request
+# @timeout 10 min
+GET http://localhost:8080/api/connection-status-messages/{permissionId}

@@ -30,6 +30,7 @@ public class ConnectionStatusMessageController {
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
                              .header("X-Accel-Buffering", "no")
+                             .header("Connection", "keep-alive")
                              .body(messages);
     }
 }

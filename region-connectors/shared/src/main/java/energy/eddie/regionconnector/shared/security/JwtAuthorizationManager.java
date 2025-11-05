@@ -70,7 +70,7 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
                     permissions);
             throw new AccessDeniedException("Not authorized to access the requested resource");
         }
-        LOGGER.info("Authorized request URI {} successfully", requestURI);
+        LOGGER.trace("Authorized request URI {} successfully", requestURI);
         return new AuthorizationDecision(true);
     }
 
