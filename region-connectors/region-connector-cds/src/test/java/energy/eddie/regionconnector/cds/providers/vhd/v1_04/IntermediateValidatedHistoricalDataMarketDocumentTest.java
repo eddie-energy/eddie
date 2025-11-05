@@ -1,13 +1,13 @@
 package energy.eddie.regionconnector.cds.providers.vhd.v1_04;
 
+import energy.eddie.cim.serde.SerdeInitializationException;
+import energy.eddie.cim.serde.SerializationException;
+import energy.eddie.cim.serde.XmlMessageSerde;
+import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v1_04.StandardBusinessTypeList;
 import energy.eddie.cim.v1_04.StandardDirectionTypeList;
 import energy.eddie.cim.v1_04.StandardUnitOfMeasureTypeList;
 import energy.eddie.cim.v1_04.vhd.*;
-import energy.eddie.outbound.shared.serde.SerdeInitializationException;
-import energy.eddie.outbound.shared.serde.SerializationException;
-import energy.eddie.outbound.shared.serde.XmlMessageSerde;
-import energy.eddie.outbound.shared.testing.XmlValidator;
 import energy.eddie.regionconnector.cds.openapi.model.UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
 import energy.eddie.regionconnector.cds.providers.cim.*;

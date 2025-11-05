@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.cds.providers.vhd.v1_04;
 
-import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.vhd.DirectionTypeList;
 import energy.eddie.cim.v1_04.*;
 import energy.eddie.cim.v1_04.vhd.*;

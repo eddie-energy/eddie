@@ -134,6 +134,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         return CimUtils.getCodingSchemeVhd(permissionRequest.dataSourceInformation().countryCode());
     }
 
+    @SuppressWarnings("DuplicatedCode")
     private List<PointComplexType> toPoints(
             UsageSegment usageSegment,
             List<BigDecimal> values,
@@ -150,9 +151,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             if (dateTime.isAfter(end) || dateTime.isBefore(start)) {
                 continue;
             }
-            var position = timestamp.getEpochSecond();
             var point = new PointComplexType()
-                    .withPosition(String.valueOf(position))
+                    .withPosition(Integer.toString(i + 1))
                     .withEnergyQuantityQuantity(value)
                     .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED);
             points.add(point);

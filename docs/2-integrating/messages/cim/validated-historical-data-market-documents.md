@@ -85,9 +85,9 @@ The following is an example of a validated historical data market document.
                         <ns3:resolution>PT15M</ns3:resolution>
                         <ns3:PointList>
                             <ns3:Point>
-                                <!-- Can contain a timestamp of the start of the measurement of the point or a simple index -->
+                                <!-- Is the index of the Point, the index starts with 1 and is always positive -->
                                 <!-- The smallest value is always first, the points should be read in an ascending order -->
-                                <ns3:position>1733011200</ns3:position>
+                                <ns3:position>1</ns3:position>
                                 <!-- Measurement quantity -->
                                 <ns3:energy_Quantity.quantity>80000</ns3:energy_Quantity.quantity>
                                 <!-- Describes if the value was measured, interpolated, etc -->
@@ -107,3 +107,16 @@ The following is an example of a validated historical data market document.
     </ns3:ValidatedHistoricalData_MarketDocument>
 </ns3:ValidatedHistoricalData_Envelope>
 ```
+
+The validated historical data market document contains the `Point` class, which represents a single measurement for a certain resolution.
+To get the timestamp of a point, use the following equation:
+
+```math
+TimeStepPosition = (start of timeInterval) + ((position-1) * resolution)
+```
+
+> [!WARNING] Incorrect Position
+> Some region connectors implement the position incorrectly, and return a timestamp instead of an index.
+> We are currently working on fixing this issue.
+> See https://github.com/eddie-energy/eddie/issues/2132
+ 
