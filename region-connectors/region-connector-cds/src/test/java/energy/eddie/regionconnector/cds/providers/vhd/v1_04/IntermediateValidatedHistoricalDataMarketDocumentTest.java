@@ -41,8 +41,6 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
 
     @ParameterizedTest
     @MethodSource
-    @SuppressWarnings("java:S5961")
-        // The mapping requires that many asserts and splitting in multiple tests doesn't make sense
     void testToVhds_returnsVhds(
             UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner.FormatEnum format,
             StandardBusinessTypeList businessType,
@@ -95,8 +93,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 					<ns5:end>2025-01-01T00:00Z</ns5:end>
                 				</ns5:timeInterval>
                 				<ns5:Point>
-                				    <!-- TODO: Fix position integer in schema -->
-                					<ns5:position>1735689600</ns5:position>
+                					<ns5:position>1</ns5:position>
                 					<ns5:energy_Quantity.quantity>%s</ns5:energy_Quantity.quantity>
                 					<ns5:energy_Quantity.quality>A04</ns5:energy_Quantity.quality>
                 				</ns5:Point>

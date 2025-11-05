@@ -141,9 +141,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             if (dateTime.isAfter(end) || dateTime.isBefore(start)) {
                 continue;
             }
-            var position = timestamp.getEpochSecond();
             var point = new Point()
-                    .withPosition((int) position)
+                    .withPosition(i + 1)
                     .withEnergyQuantityQuantity(value)
                     .withEnergyQuantityQuality(StandardQualityTypeList.AS_PROVIDED.value());
             points.add(point);
