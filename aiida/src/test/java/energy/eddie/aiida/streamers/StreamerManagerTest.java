@@ -3,13 +3,13 @@ package energy.eddie.aiida.streamers;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.services.ApplicationInformationService;
+import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +53,7 @@ class StreamerManagerTest {
     @Mock
     private FailedToSendRepository mockRepository;
     @Mock
-    private ConnectionStatusMessage mockStatusMessage;
+    private AiidaConnectionStatusMessageDto mockStatusMessage;
     @Mock
     private Permission mockPermission;
     @Mock

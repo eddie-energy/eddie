@@ -1,7 +1,7 @@
-package energy.eddie.aiida.dtos;
+package energy.eddie.api.agnostic.aiida;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.api.v0.PermissionProcessStatus;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -16,11 +16,11 @@ import java.util.UUID;
  * @param permissionId unique id of the permission
  * @param eddieId      unique id of the eddie application
  */
-public record ConnectionStatusMessage(
+public record AiidaConnectionStatusMessageDto(
         @JsonProperty String connectionId,
         @JsonProperty UUID dataNeedId,
         @JsonProperty Instant timestamp,
-        @JsonProperty PermissionStatus status,
+        @JsonProperty PermissionProcessStatus status,
         @JsonProperty UUID permissionId,
-        @JsonProperty UUID eddieId) {
-}
+        @JsonProperty UUID eddieId
+) {}

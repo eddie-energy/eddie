@@ -2,18 +2,14 @@ package energy.eddie.aiida.streamers.mqtt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.errors.formatter.FormatterException;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.aiida.models.record.LatestRecordSchema;
-import energy.eddie.aiida.models.record.PermissionLatestRecord;
-import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
-import energy.eddie.aiida.models.record.FailedToSendEntity;
+import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.SchemaFormatter;
 import energy.eddie.aiida.streamers.AiidaStreamer;
+import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.*;
@@ -129,7 +125,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     }
 
     @Override
-    public void closeTerminally(ConnectionStatusMessage statusMessage) {
+    public void closeTerminally(AiidaConnectionStatusMessageDto statusMessage) {
         isBeingTerminated = true;
         if (subscription != null) subscription.dispose();
         LOGGER.atInfo()
@@ -216,7 +212,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             for (var schema : schemas) {
                 var schemaFormatter = SchemaFormatter.getFormatter(aiidaId, schema);
                 var messageData = schemaFormatter.toSchema(aiidaRecord, mapper, permission);
-                publishMessage(streamingConfig.dataTopic(), messageData);
+                publishMessage(schema.buildTopicPath(streamingConfig.dataTopic()), messageData);
 
                 permissionLatestRecord.putSchema(schema, new LatestRecordSchema(
                         Instant.now(),
@@ -263,7 +259,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         }
     }
 
-    private void publishStatusMessageSynchronously(ConnectionStatusMessage statusMessage) {
+    private void publishStatusMessageSynchronously(AiidaConnectionStatusMessageDto statusMessage) {
         LOGGER.trace("MqttStreamer for permission {} synchronously publishing connectionStatusMessage {}",
                      streamingConfig.permissionId(),
                      statusMessage);

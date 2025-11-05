@@ -7,11 +7,13 @@ import energy.eddie.api.agnostic.outbound.RawDataOutboundConnector;
 import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
+import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.ap.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
@@ -36,7 +38,8 @@ public class KafkaConnector implements
         PermissionMarketDocumentOutboundConnector,
         RawDataOutboundConnector,
         AccountingPointEnvelopeOutboundConnector,
-        ValidatedHistoricalDataMarketDocumentOutboundConnector {
+        ValidatedHistoricalDataMarketDocumentOutboundConnector,
+        NearRealTimeDataMarketDocumentOutboundConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final TopicConfiguration config;
@@ -104,6 +107,17 @@ public class KafkaConnector implements
                 .onBackpressureBuffer()
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext(this::produceValidatedHistoricalDataMarketDocument)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
+    }
+
+
+    @Override
+    public void setNearRealTimeDataMarketDocumentStream(Flux<RTDEnvelope> marketDocumentStream) {
+        marketDocumentStream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceNearRealTimeDataMarketDocument)
                 .onErrorContinue(this::logStreamerError)
                 .subscribe();
     }
@@ -205,6 +219,27 @@ public class KafkaConnector implements
         sendToKafka(toSend, "Could not produce accounting point market document message");
         LOGGER.debug("Produced accounting point market document message for permission request {}",
                      header.getPermissionid());
+    }
+
+    private void produceNearRealTimeDataMarketDocument(RTDEnvelope marketDocument) {
+        var toSend = new ProducerRecord<String, Object>(
+                config.nearRealTimeDataMarketDocument(),
+                null,
+                marketDocument.getMessageDocumentHeaderMetaInformationConnectionId(),
+                marketDocument,
+                cimToHeaders(marketDocument)
+        );
+        sendToKafka(toSend, "Could not produce near real-time market document message");
+        LOGGER.debug("Produced near real-time market document message for permission request {}",
+                     marketDocument.getMessageDocumentHeaderMetaInformationPermissionId());
+    }
+
+    private Iterable<Header> cimToHeaders(energy.eddie.cim.v1_04.rtd.RTDEnvelope header) {
+        return List.of(
+                new StringHeader(Headers.PERMISSION_ID, header.getMessageDocumentHeaderMetaInformationPermissionId()),
+                new StringHeader(Headers.CONNECTION_ID, header.getMessageDocumentHeaderMetaInformationConnectionId()),
+                new StringHeader(Headers.DATA_NEED_ID, header.getMessageDocumentHeaderMetaInformationDataNeedId())
+        );
     }
 
     private void sendToKafka(ProducerRecord<String, Object> toSend, String errorMessage) {

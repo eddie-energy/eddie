@@ -28,7 +28,7 @@ dependencies {
     implementation(libs.spring.boot.security)
     implementation(libs.reactor.core)
     implementation(libs.eclipse.paho.mqttv5.client)
-
+    implementation(libs.jackson.jakarta.xmlbind.annotations)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)

@@ -214,33 +214,33 @@ class AiidaPermissionServiceTest {
     }
 
     @Test
-    void givenNonExistingPermissionId_unableToFulFillPermission_throwsException() {
+    void givenNonExistingPermissionId_unableToFulfillPermission_throwsException() {
         // Given
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.empty());
 
         // When, Then
-        assertThrows(PermissionNotFoundException.class, () -> service.unableToFulFillPermission(permissionId, aiidaId));
+        assertThrows(PermissionNotFoundException.class, () -> service.unableToFulfillPermission(permissionId, aiidaId));
     }
 
     @Test
-    void givenPermissionInInvalidState_unableToFulFillPermission_throwsException() {
+    void givenPermissionInInvalidState_unableToFulfillPermission_throwsException() {
         // Given
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
         when(mockRequest.status()).thenReturn(PermissionProcessStatus.CREATED);
 
         // When, Then
         assertThrows(PermissionStateTransitionException.class,
-                     () -> service.unableToFulFillPermission(permissionId, aiidaId));
+                     () -> service.unableToFulfillPermission(permissionId, aiidaId));
     }
 
     @Test
-    void givenValidInput_unableToFulFillPermission_emitsUnfulfillableStatusEvent() throws PermissionNotFoundException, PermissionStateTransitionException, NoSuchFieldException, IllegalAccessException {
+    void givenValidInput_unableToFulfillPermission_emitsUnfulfillableStatusEvent() throws PermissionNotFoundException, PermissionStateTransitionException, NoSuchFieldException, IllegalAccessException {
         // Given
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
         when(mockRequest.status()).thenReturn(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
 
         // When
-        service.unableToFulFillPermission(permissionId, aiidaId);
+        service.unableToFulfillPermission(permissionId, aiidaId);
 
         // Then
         verify(mockOutbox, times(1)).commit(permissionEventCaptor.capture());
@@ -381,7 +381,7 @@ class AiidaPermissionServiceTest {
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.FAILED_TO_TERMINATE
                                                    && event instanceof FailedToTerminateEvent failedEvent
                                                    && failedEvent.message()
-                                                                                                                                                                                      .equals(expectedMessage)));
+                                                                 .equals(expectedMessage)));
     }
 
     @Test

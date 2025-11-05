@@ -1,7 +1,7 @@
 package energy.eddie.aiida.streamers;
 
-import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -41,10 +41,10 @@ public abstract class AiidaStreamer implements AutoCloseable {
     public abstract void close();
 
     /**
-     * Sends a {@link ConnectionStatusMessage} with the passed  {@code status} before closing this streamer for good.
+     * Sends a {@link AiidaConnectionStatusMessageDto} with the passed {@code status} before closing this streamer for good.
      * May block until the passed {@code statusMessage} is transmitted.
      *
      * @see AiidaStreamer#close()
      */
-    public abstract void closeTerminally(ConnectionStatusMessage statusMessage);
+    public abstract void closeTerminally(AiidaConnectionStatusMessageDto statusMessage);
 }

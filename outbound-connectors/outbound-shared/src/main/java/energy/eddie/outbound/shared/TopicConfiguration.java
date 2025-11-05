@@ -52,6 +52,16 @@ public class TopicConfiguration {
     }
 
     /**
+     * Endpoint for CIM near real-time data market documents.
+     * Used to emit messages to the eligible party.
+     */
+    public String nearRealTimeDataMarketDocument() {
+        return toTopic(TopicStructure.Direction.EP,
+                       TopicStructure.DataModels.CIM_1_04,
+                       TopicStructure.DocumentTypes.NEAR_REAL_TIME_DATA_MD);
+    }
+
+    /**
      * Endpoint for CIM accounting point market documents.
      * Used to emit messages to the eligible party.
      */

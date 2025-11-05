@@ -1,11 +1,16 @@
 package energy.eddie.regionconnector.aiida;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
+import energy.eddie.api.agnostic.RawDataMessage;
+import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
@@ -33,6 +38,7 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import reactor.core.publisher.Sinks;
@@ -71,14 +77,27 @@ public class AiidaBeanConfig {
     }
 
     @Bean
+    @Primary
     public ObjectMapper objectMapper() {
         return new ObjectMapper()
                 .registerModule(new JavaTimeModule())
-                .registerModule(new Jdk8Module());
+                .registerModule(new Jdk8Module())
+                .registerModule(new JakartaXmlBindAnnotationModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     @Bean
-    public Sinks.Many<String> revocationSink() {
+    public Sinks.Many<RTDEnvelope> nearRealTimeDataSink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Sinks.Many<RawDataMessage> rawDataMessageSink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Sinks.Many<AiidaConnectionStatusMessageDto> statusSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 
@@ -188,8 +207,20 @@ public class AiidaBeanConfig {
     }
 
     @Bean
-    public MqttMessageCallback mqttMessageCallback(Sinks.Many<String> revocationSink, ObjectMapper objectMapper) {
-        return new MqttMessageCallback(revocationSink, objectMapper);
+    public MqttMessageCallback mqttMessageCallback(
+            AiidaPermissionRequestViewRepository permissionRequestViewRepository,
+            Sinks.Many<AiidaConnectionStatusMessageDto> statusSink,
+            Sinks.Many<RTDEnvelope> nearRealTimeDataSink,
+            Sinks.Many<RawDataMessage> rawDataMessageSink,
+            ObjectMapper objectMapper
+    ) {
+        return new MqttMessageCallback(
+                permissionRequestViewRepository,
+                statusSink,
+                nearRealTimeDataSink,
+                rawDataMessageSink,
+                objectMapper
+        );
     }
 
     @Bean

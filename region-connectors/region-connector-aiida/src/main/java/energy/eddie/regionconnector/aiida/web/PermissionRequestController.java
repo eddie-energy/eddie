@@ -71,7 +71,7 @@ public class PermissionRequestController {
                 return ResponseEntity.noContent().build();
             }
             case UNFULFILLABLE -> {
-                permissionService.unableToFulFillPermission(permissionId, aiidaId);
+                permissionService.unableToFulfillPermission(permissionId, aiidaId);
                 return ResponseEntity.noContent().build();
             }
             default -> {

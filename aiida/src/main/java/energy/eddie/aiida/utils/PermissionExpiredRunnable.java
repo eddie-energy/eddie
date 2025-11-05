@@ -1,10 +1,11 @@
 package energy.eddie.aiida.utils;
 
-import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
+import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,12 +65,12 @@ public class PermissionExpiredRunnable implements Runnable {
 
         var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
         var connectionId = requireNonNull(permission.connectionId());
-        var fulfilledMessage = new ConnectionStatusMessage(connectionId,
-                                                           dataNeedId,
-                                                           clock.instant(),
-                                                           PermissionStatus.FULFILLED,
-                                                           permission.id(),
-                                                           permission.eddieId()
+        var fulfilledMessage = new AiidaConnectionStatusMessageDto(connectionId,
+                                                                   dataNeedId,
+                                                                   clock.instant(),
+                                                                   PermissionProcessStatus.FULFILLED,
+                                                                   permission.id(),
+                                                                   permission.eddieId()
         );
 
         permission.setStatus(PermissionStatus.FULFILLED);

@@ -1,8 +1,16 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
-import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.api.agnostic.RawDataMessage;
+import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
+import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
+import energy.eddie.regionconnector.aiida.exceptions.MqttTopicException;
+import energy.eddie.regionconnector.aiida.exceptions.PermissionInvalidException;
+import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
+import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttCallback;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
@@ -13,15 +21,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Sinks;
 
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 
 public class MqttMessageCallback implements MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttMessageCallback.class);
-    private final Sinks.Many<String> revocationSink;
+
+    private static final String STATUS_TOPIC_SUFFIX = MqttTopicType.STATUS.topicName();
+    private static final String SMART_METER_P1_CIM_SUFFIX =
+            AiidaSchema.SMART_METER_P1_CIM.buildTopicPath(MqttTopicType.OUTBOUND_DATA.topicName());
+    private static final String SMART_METER_P1_RAW_SUFFIX =
+            AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.topicName());
+
+    private final AiidaPermissionRequestViewRepository permissionRequestViewRepository;
+    private final Sinks.Many<AiidaConnectionStatusMessageDto> statusSink;
+    private final Sinks.Many<RTDEnvelope> nearRealTimeDataSink;
+    private final Sinks.Many<RawDataMessage> rawDataMessageSink;
     private final ObjectMapper objectMapper;
 
-    public MqttMessageCallback(Sinks.Many<String> revocationSink, ObjectMapper objectMapper) {
-        this.revocationSink = revocationSink;
+    public MqttMessageCallback(
+            AiidaPermissionRequestViewRepository permissionRequestViewRepository,
+            Sinks.Many<AiidaConnectionStatusMessageDto> statusSink,
+            Sinks.Many<RTDEnvelope> nearRealTimeDataSink,
+            Sinks.Many<RawDataMessage> rawDataMessageSink,
+            ObjectMapper objectMapper
+    ) {
+        this.permissionRequestViewRepository = permissionRequestViewRepository;
+        this.statusSink = statusSink;
+        this.nearRealTimeDataSink = nearRealTimeDataSink;
+        this.rawDataMessageSink = rawDataMessageSink;
         this.objectMapper = objectMapper;
     }
 
@@ -36,14 +64,24 @@ public class MqttMessageCallback implements MqttCallback {
     }
 
     @Override
-    public void messageArrived(String topic, MqttMessage message) throws IOException {
-        if (topic.endsWith(TopicType.STATUS.topicName())) {
-            var statusMessage = objectMapper.readValue(message.toString(), ConnectionStatusMessage.class);
-
-            if (statusMessage.status().equals(PermissionProcessStatus.REVOKED)) {
-                LOGGER.info("Received connection status message to revoke permission {}", statusMessage.permissionId());
-                revocationSink.tryEmitNext(statusMessage.permissionId());
+    public void messageArrived(
+            String topic,
+            MqttMessage message
+    ) throws JsonProcessingException, PermissionNotFoundException, PermissionInvalidException, MqttTopicException {
+        try {
+            if (topic.endsWith(STATUS_TOPIC_SUFFIX)) {
+                handleStatusMessage(message);
+            } else if (topic.endsWith(SMART_METER_P1_CIM_SUFFIX)) {
+                handleSmartMeterP1CimMessage(message);
+            } else if (topic.endsWith(SMART_METER_P1_RAW_SUFFIX)) {
+                handleSmartMeterP1RawMessage(topic, message);
             }
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Could not process MQTT message on topic {}", topic, e);
+            throw e;
+        } catch (PermissionNotFoundException | PermissionInvalidException | MqttTopicException e) {
+            LOGGER.error("Could not handle MQTT message on topic {}", topic, e);
+            throw e;
         }
     }
 
@@ -60,5 +98,64 @@ public class MqttMessageCallback implements MqttCallback {
     @Override
     public void authPacketArrived(int reasonCode, MqttProperties properties) {
         // Not needed, as no advanced authentication is required
+    }
+
+    private void handleStatusMessage(
+            MqttMessage message
+    ) throws JsonProcessingException, PermissionNotFoundException, PermissionInvalidException {
+        var statusMessage = objectMapper.readValue(message.toString(), AiidaConnectionStatusMessageDto.class);
+        var permissionId = statusMessage.permissionId();
+
+        LOGGER.info("Received connection status message for permission {} with status {}",
+                    permissionId,
+                    statusMessage.status());
+        statusSink.tryEmitNext(statusMessage);
+    }
+
+    private void handleSmartMeterP1CimMessage(
+            MqttMessage message
+    ) throws JsonProcessingException, PermissionNotFoundException, PermissionInvalidException {
+        var nearRealTimeDataEnvelope = objectMapper.readValue(message.toString(), RTDEnvelope.class);
+        var permissionId = nearRealTimeDataEnvelope.getMessageDocumentHeaderMetaInformationPermissionId();
+        getAndValidatePermissionRequest(permissionId);
+
+        LOGGER.info("Received near real-time data market document for permission {} and final customer {}",
+                    permissionId,
+                    nearRealTimeDataEnvelope.getMessageDocumentHeaderMetaInformationFinalCustomerId());
+        nearRealTimeDataSink.tryEmitNext(nearRealTimeDataEnvelope);
+    }
+
+    private void handleSmartMeterP1RawMessage(
+            String topic,
+            MqttMessage message
+    ) throws PermissionNotFoundException, PermissionInvalidException, MqttTopicException {
+        var permissionId = MqttTopic.extractPermissionIdFromTopic(
+                topic,
+                MqttTopicType.OUTBOUND_DATA,
+                AiidaSchema.SMART_METER_P1_RAW
+        );
+        var permissionRequest = getAndValidatePermissionRequest(permissionId);
+
+        var rawDataMessage = new RawDataMessage(
+                permissionRequest,
+                new String(message.getPayload(), StandardCharsets.UTF_8)
+        );
+
+        LOGGER.info("Received RawDataMessage for permission {} and AIIDA {}",
+                    permissionId,
+                    permissionRequest.aiidaId());
+        rawDataMessageSink.tryEmitNext(rawDataMessage);
+    }
+
+    private AiidaPermissionRequest getAndValidatePermissionRequest(
+            String permissionId
+    ) throws PermissionNotFoundException, PermissionInvalidException {
+        var permissionRequest = permissionRequestViewRepository
+                .findByPermissionId(permissionId)
+                .orElseThrow(() -> new PermissionNotFoundException(permissionId));
+
+        permissionRequest.validate(LocalDate.now());
+
+        return permissionRequest;
     }
 }

@@ -1,6 +1,5 @@
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
@@ -21,8 +20,10 @@ import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
+import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import jakarta.transaction.Transactional;
@@ -41,7 +42,6 @@ import java.util.UUID;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
 import static energy.eddie.aiida.models.permission.PermissionStatus.*;
-import static energy.eddie.api.v0.PermissionProcessStatus.REJECTED;
 import static java.util.Objects.requireNonNull;
 
 @Service
@@ -81,7 +81,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
     /**
      * Revokes the specified permission by updating its status and records the timestamp and persisting the changes. If
-     * an error during shutdown of the AiidaStreamer or sending of the {@link ConnectionStatusMessage} occurs, they are
+     * an error during shutdown of the AiidaStreamer or sending of the {@link AiidaConnectionStatusMessageDto} occurs, they are
      * logged but not propagated to the caller.
      *
      * @param permissionId The ID of the permission that should be revoked.
@@ -116,12 +116,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
         var connectionId = requireNonNull(permission.connectionId());
-        var revokedMessage = new ConnectionStatusMessage(connectionId,
-                                                         dataNeedId,
-                                                         clock.instant(),
-                                                         REVOKED,
-                                                         permission.id(),
-                                                         permission.eddieId());
+        var revokedMessage = new AiidaConnectionStatusMessageDto(connectionId,
+                                                                 dataNeedId,
+                                                                 clock.instant(),
+                                                                 PermissionProcessStatus.REVOKED,
+                                                                 permission.id(),
+                                                                 permission.eddieId());
         streamerManager.stopStreamer(revokedMessage);
         removeInboundDataSourceIfExists(permission);
 
@@ -415,12 +415,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
         var connectionId = requireNonNull(permission.connectionId());
-        var terminatedMessage = new ConnectionStatusMessage(connectionId,
-                                                            dataNeedId,
-                                                            clock.instant(),
-                                                            TERMINATED,
-                                                            permission.id(),
-                                                            permission.eddieId());
+        var terminatedMessage = new AiidaConnectionStatusMessageDto(connectionId,
+                                                                    dataNeedId,
+                                                                    clock.instant(),
+                                                                    PermissionProcessStatus.EXTERNALLY_TERMINATED,
+                                                                    permission.id(),
+                                                                    permission.eddieId());
         streamerManager.stopStreamer(terminatedMessage);
 
         removeInboundDataSourceIfExists(permission);

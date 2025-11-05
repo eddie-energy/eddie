@@ -1,12 +1,11 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
-import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
-import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
+import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
@@ -21,7 +20,6 @@ import java.util.List;
 public class MqttService implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttService.class);
     private static final int PASSWORD_LENGTH = 24;
-    private static final String AIIDA_TOPIC_NAME_PREFIX = "aiida/v1";
     private final MqttUserRepository userRepository;
     private final MqttAclRepository aclRepository;
     private final PasswordGenerator passwordGenerator;
@@ -59,7 +57,10 @@ public class MqttService implements AutoCloseable {
      * @return MqttDto that contains the topics and the {@link MqttUser} with its password.
      * @throws IllegalArgumentException If there is already a MqttUser for the permissionId.
      */
-    public MqttDto createCredentialsAndAclForPermission(String permissionId, boolean isInbound) throws CredentialsAlreadyExistException {
+    public MqttDto createCredentialsAndAclForPermission(
+            String permissionId,
+            boolean isInbound
+    ) throws CredentialsAlreadyExistException {
         LOGGER.info("Creating MQTT credentials and ACLs for permission {}", permissionId);
 
         if (userRepository.existsByPermissionId(permissionId))
@@ -71,9 +72,9 @@ public class MqttService implements AutoCloseable {
         return new MqttDto(aiidaConfiguration.mqttServerUri(),
                            wrapper.user().username(),
                            wrapper.rawPassword(),
-                           topics.publishTopic(),
-                           topics.statusMessageTopic(),
-                           topics.terminationTopic());
+                           topics.publishTopic().baseTopic(),
+                           topics.statusMessageTopic().baseTopic(),
+                           topics.terminationTopic().baseTopic());
     }
 
     /**
@@ -98,33 +99,28 @@ public class MqttService implements AutoCloseable {
      * No other ACLs are defined, make sure to properly configure your MQTT server with a deny-all for unmatched topics.
      */
     private Topics createAclsForUser(MqttUser mqttUser, boolean isInbound) {
-        var dataTopicType = isInbound ? TopicType.INBOUND_DATA : TopicType.OUTBOUND_DATA;
-        var topics = new Topics(getTopicForPermission(mqttUser.permissionId(), dataTopicType),
-                                getTopicForPermission(mqttUser.permissionId(), TopicType.STATUS),
-                                getTopicForPermission(mqttUser.permissionId(), TopicType.TERMINATION));
+        var dataTopicType = isInbound ? MqttTopicType.INBOUND_DATA : MqttTopicType.OUTBOUND_DATA;
+        var topics = new Topics(MqttTopic.of(mqttUser.permissionId(), dataTopicType),
+                                MqttTopic.of(mqttUser.permissionId(), MqttTopicType.STATUS),
+                                MqttTopic.of(mqttUser.permissionId(), MqttTopicType.TERMINATION));
 
-        var dataAcl = new MqttAcl(mqttUser.username(),
-                                  isInbound ? MqttAction.SUBSCRIBE : MqttAction.PUBLISH,
-                                  MqttAclType.ALLOW,
-                                  topics.publishTopic());
+        aclRepository.saveAll(List.of(
+                topics.publishTopic.aiidaAcl(mqttUser.username()),
+                topics.statusMessageTopic().aiidaAcl(mqttUser.username()),
+                topics.terminationTopic().aiidaAcl(mqttUser.username())));
 
-        var statusAcl = new MqttAcl(mqttUser.username(),
-                                    MqttAction.PUBLISH,
-                                    MqttAclType.ALLOW,
-                                    topics.statusMessageTopic());
-
-        var terminationAcl = new MqttAcl(mqttUser.username(),
-                                         MqttAction.SUBSCRIBE,
-                                         MqttAclType.ALLOW,
-                                         topics.terminationTopic());
-
-
-        aclRepository.saveAll(List.of(dataAcl, statusAcl, terminationAcl));
         return topics;
     }
 
-    private static String getTopicForPermission(String permissionId, TopicType topicType) {
-        return AIIDA_TOPIC_NAME_PREFIX + "/" + permissionId + "/" + topicType.topicName();
+    /**
+     * Deletes all associated ACLs for the specified permission ID.
+     *
+     * @param permissionId The permission ID for which to delete the credentials and ACLs.
+     */
+    @Transactional
+    public void deleteAclsForPermission(String permissionId) {
+        LOGGER.info("Deleting MQTT ACLs for permission {}", permissionId);
+        aclRepository.deleteByUsername(permissionId);
     }
 
     @Override
@@ -135,10 +131,20 @@ public class MqttService implements AutoCloseable {
 
     private record UserPasswordWrapper(MqttUser user, String rawPassword) {}
 
-    private record Topics(String publishTopic, String statusMessageTopic, String terminationTopic) {}
+    private record Topics(MqttTopic publishTopic, MqttTopic statusMessageTopic, MqttTopic terminationTopic) {}
+
+    public void subscribeToOutboundDataTopic(String permissionId) throws MqttException {
+        var topic = MqttTopic.of(permissionId, MqttTopicType.OUTBOUND_DATA).topicPattern();
+        LOGGER.info("Subscribing to outbound data topic {}", topic);
+
+        mqttClient.subscribe(topic, 1);
+    }
 
     public void subscribeToStatusTopic(String permissionId) throws MqttException {
-        mqttClient.subscribe(getTopicForPermission(permissionId, TopicType.STATUS), 1);
+        var topic = MqttTopic.of(permissionId, MqttTopicType.STATUS).topicPattern();
+        LOGGER.info("Subscribing to status topic {}", topic);
+
+        mqttClient.subscribe(topic, 1);
     }
 
     public void sendTerminationRequest(AiidaPermissionRequest permissionRequest) throws MqttException {

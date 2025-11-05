@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
+import energy.eddie.regionconnector.aiida.exceptions.PermissionInvalidException;
 import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermissionRequestInterface;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -134,5 +135,28 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     @Nullable
     public UUID aiidaId() {
         return aiidaId;
+    }
+
+    public void validate(LocalDate date) throws PermissionInvalidException {
+        validateStatus();
+        validateTimespan(date);
+    }
+
+    private void validateStatus() throws PermissionInvalidException {
+        if (status != PermissionProcessStatus.ACCEPTED) {
+            throw new PermissionInvalidException(
+                    permissionId,
+                    "Permission status is not ACCEPTED but %s".formatted(status)
+            );
+        }
+    }
+
+    private void validateTimespan(LocalDate date) throws PermissionInvalidException {
+        if (date.isBefore(start) || date.isAfter(end)) {
+            throw new PermissionInvalidException(
+                    permissionId,
+                    "Current date is outside of permission timespan (%s - %s)".formatted(start, end)
+            );
+        }
     }
 }

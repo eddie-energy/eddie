@@ -2,13 +2,13 @@ package energy.eddie.aiida.streamers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.aggregator.Aggregator;
-import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.services.ApplicationInformationService;
+import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
@@ -136,7 +136,7 @@ public class StreamerManager implements AutoCloseable {
      *                {@link PermissionStatus#TERMINATED}, {@link PermissionStatus#REVOKED} or
      *                {@link PermissionStatus#FULFILLED}.
      */
-    public void stopStreamer(ConnectionStatusMessage message) {
+    public void stopStreamer(AiidaConnectionStatusMessageDto message) {
         var id = message.permissionId();
         AiidaStreamer streamer = streamers.get(id);
 
