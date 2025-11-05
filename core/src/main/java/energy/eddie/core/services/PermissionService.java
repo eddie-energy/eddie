@@ -15,7 +15,7 @@ public class PermissionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink = Sinks.many()
                                                                                          .replay()
-                                                                                         .limit(Duration.ofSeconds(10));
+                                                                                         .limit(Duration.ofSeconds(60));
 
     public void registerProvider(ConnectionStatusMessageProvider statusMessageProvider) {
         LOGGER.info("PermissionService: Registering {}", statusMessageProvider.getClass().getName());
