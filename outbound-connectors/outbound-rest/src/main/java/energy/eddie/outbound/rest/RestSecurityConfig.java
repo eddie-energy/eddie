@@ -85,6 +85,7 @@ public class RestSecurityConfig {
                 .requestMatchers(restRequestMatcher.pattern("/cim_0_82/permission-md")).hasAuthority("SCOPE_cim-permission-md:read")
                 .requestMatchers(restRequestMatcher.pattern("/cim_0_82/accounting-point-data-md")).hasAuthority("SCOPE_cim-accounting-point-data-md:read")
                 .requestMatchers(restRequestMatcher.pattern("/cim_0_82/validated-historical-data-md")).hasAuthority("SCOPE_cim-validated-historical-data-md:read")
+                .requestMatchers(restRequestMatcher.pattern("/cim_1_04/near-real-time-data-md")).hasAuthority("SCOPE_cim-near-real-time-data-md:read")
                 .requestMatchers(restRequestMatcher.pattern("/cim_0_82/termination-md")).hasAuthority("SCOPE_cim-termination-md:write")
                 .requestMatchers(restRequestMatcher.pattern("/cim_0_91_08/redistribution-transaction-rd")).hasAuthority("SCOPE_cim-redistribution-transaction-rd:write")
                 .anyRequest().denyAll();

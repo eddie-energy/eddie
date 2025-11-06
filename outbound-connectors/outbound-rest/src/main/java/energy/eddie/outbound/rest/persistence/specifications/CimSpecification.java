@@ -58,4 +58,27 @@ public class CimSpecification {
                      .toList()
         );
     }
+
+    // Disable name rule, for readable CIM version
+    @SuppressWarnings("java:S100")
+    public static <T> Specification<T> buildQueryForV1_04(
+            Optional<String> permissionId,
+            Optional<String> connectionId,
+            Optional<String> dataNeedId,
+            Optional<String> countryCode,
+            Optional<String> regionConnectorId,
+            Optional<ZonedDateTime> from,
+            Optional<ZonedDateTime> to
+    ) {
+        // For CIM v1.04, the query structure is identical to v0.82
+        return buildQueryForV0_82(
+                permissionId,
+                connectionId,
+                dataNeedId,
+                countryCode,
+                regionConnectorId,
+                from,
+                to
+        );
+    }
 }

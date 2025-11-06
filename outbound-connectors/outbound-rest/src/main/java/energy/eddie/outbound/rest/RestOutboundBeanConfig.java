@@ -9,6 +9,7 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
+import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.dto.*;
 import energy.eddie.outbound.rest.mixins.AgnosticMessageMixin;
@@ -41,6 +42,8 @@ public class RestOutboundBeanConfig {
                 AccountingPointEnvelope.class,
                 // CIM v0.91.08
                 RTREnvelope.class,
+                // CIM v1.04
+                RTDEnvelope.class,
                 // DTOs
                 CimCollection.class,
                 ValidatedHistoricalDataMarketDocuments.class,
