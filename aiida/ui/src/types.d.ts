@@ -14,7 +14,7 @@ export type AiidaDataSourceIcon = 'ELECTRICITY' | 'HEAT' | 'METER' | 'WATER' | '
 
 export type AiidaDataSource = {
   id: string
-  dataSourceType: string
+  type: string
   asset: string
   name: string
   countryCode: string
@@ -26,10 +26,10 @@ export type AiidaDataSource = {
   topic?: string
   username?: string
   //DatasourceType = MODBUS
-  modbusIp?: string
-  modbusVendor?: string
-  modbusModel?: string
-  modbusDevice?: string
+  ipAddress?: string
+  vendorId?: string
+  modelId?: string
+  deviceId?: string
   //DatasourceType = SIMULATION
   pollingInterval?: number
   //DatasourceType = SINAPSI_ALFA

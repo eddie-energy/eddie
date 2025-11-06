@@ -2,7 +2,7 @@ package energy.eddie.aiida.adapters.datasource.modbus;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusConnectionException;
-import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
+import energy.eddie.aiida.models.datasource.interval.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.modbus.ModbusDataPoint;
 import energy.eddie.aiida.models.modbus.ModbusDevice;
 import energy.eddie.aiida.models.modbus.ModbusSource;
@@ -10,6 +10,7 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.UnitOfMeasurement;
 import energy.eddie.aiida.services.ModbusDeviceService;
+import jakarta.annotation.Nullable;
 import org.mvel2.MVEL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,6 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -43,13 +43,13 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
      */
     public ModbusTcpDataSourceAdapter(ModbusDataSource dataSource) throws IllegalArgumentException, ModbusConnectionException {
         super(dataSource);
-        this.modbusDevice = ModbusDeviceService.loadConfig(dataSource.modbusDevice());
+        this.modbusDevice = ModbusDeviceService.loadConfig(dataSource.deviceId());
         this.pollingInterval = Math.max(TimeUnit.SECONDS.toMillis(dataSource.pollingInterval()),
                                         this.modbusDevice.intervals().read().minInterval());
 
         if (!dataSource.enabled()) return;
 
-        String ip = dataSource.modbusIp();
+        String ip = dataSource.ipAddress();
 
         if (ip == null) {
             LOGGER.error("Failed to create ModbusClientHelper -> Modbus IP is required and must not be null");
@@ -59,7 +59,7 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
         try {
             this.modbusTcpClient = new ModbusTcpClient(ip, modbusDevice.port(), modbusDevice.unitId());
         } catch (Exception e) {
-            throw new ModbusConnectionException("Failed to create ModbusClientHelper for device: " + dataSource.modbusDevice() + ", IP: " + dataSource.modbusIp(),
+            throw new ModbusConnectionException("Failed to create ModbusClientHelper for device: " + dataSource.deviceId() + ", IP: " + dataSource.ipAddress(),
                                                 e);
         }
 

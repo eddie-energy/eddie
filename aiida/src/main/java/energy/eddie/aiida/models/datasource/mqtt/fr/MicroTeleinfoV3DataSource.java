@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @Entity
 @DiscriminatorValue(DataSourceType.Identifiers.MICRO_TELEINFO)
-@SuppressWarnings("NullAway")
 public class MicroTeleinfoV3DataSource extends MqttDataSource {
     @SuppressWarnings("NullAway")
     protected MicroTeleinfoV3DataSource() {}

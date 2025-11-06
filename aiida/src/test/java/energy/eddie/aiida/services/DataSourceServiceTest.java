@@ -17,10 +17,10 @@ import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupport
 import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlflaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -108,8 +108,8 @@ class DataSourceServiceTest {
 
     @Test
     void shouldReturnInboundDataSources() throws InvalidUserException {
-        when(INBOUND_DATA_SOURCE.dataSourceType()).thenReturn(DataSourceType.INBOUND);
-        when(OUTBOUND_DATA_SOURCE.dataSourceType()).thenReturn(DataSourceType.SIMULATION);
+        when(INBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.INBOUND);
+        when(OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SIMULATION);
         when(repository.findByUserId(USER_ID)).thenReturn(List.of(INBOUND_DATA_SOURCE, OUTBOUND_DATA_SOURCE));
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
 
@@ -122,8 +122,8 @@ class DataSourceServiceTest {
 
     @Test
     void shouldReturnOutboundDataSources() throws InvalidUserException {
-        when(INBOUND_DATA_SOURCE.dataSourceType()).thenReturn(DataSourceType.INBOUND);
-        when(OUTBOUND_DATA_SOURCE.dataSourceType()).thenReturn(DataSourceType.SIMULATION);
+        when(INBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.INBOUND);
+        when(OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SIMULATION);
         when(repository.findByUserId(USER_ID)).thenReturn(List.of(INBOUND_DATA_SOURCE, OUTBOUND_DATA_SOURCE));
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
 
@@ -160,11 +160,11 @@ class DataSourceServiceTest {
 
             var dto = mock(ModbusDataSourceDto.class);
             when(dto.id()).thenReturn(DATA_SOURCE_ID);
-            when(dto.dataSourceType()).thenReturn(DataSourceType.MODBUS);
-            when(dto.modbusIp()).thenReturn("192.168.1.100");
-            when(dto.modbusVendor()).thenReturn(VENDOR_ID);
-            when(dto.modbusModel()).thenReturn(MODEL_ID);
-            when(dto.modbusDevice()).thenReturn(DEVICE_ID);
+            when(dto.type()).thenReturn(DataSourceType.MODBUS);
+            when(dto.ipAddress()).thenReturn("192.168.1.100");
+            when(dto.vendorId()).thenReturn(VENDOR_ID);
+            when(dto.modelId()).thenReturn(MODEL_ID);
+            when(dto.deviceId()).thenReturn(DEVICE_ID);
             when(dto.enabled()).thenReturn(true);
 
             var result = dataSourceService.addDataSource(dto);
@@ -256,7 +256,7 @@ class DataSourceServiceTest {
 
         assertNotNull(result.plaintextPassword());
         assertNotEquals(MQTT_OUTBOUND_DATA_SOURCE.password(), result.plaintextPassword());
-        verify(MQTT_OUTBOUND_DATA_SOURCE).setPassword(anyString(), eq(bCryptPasswordEncoder));
+        verify(MQTT_OUTBOUND_DATA_SOURCE).updatePassword(eq(bCryptPasswordEncoder), anyString());
         verify(aggregator).addNewDataSourceAdapter(any());
     }
 

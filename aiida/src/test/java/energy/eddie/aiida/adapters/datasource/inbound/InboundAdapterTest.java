@@ -2,9 +2,7 @@ package energy.eddie.aiida.adapters.datasource.inbound;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
@@ -34,9 +32,8 @@ class InboundAdapterTest {
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID MQTT_USERNAME = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
-    private static final MqttStreamingConfig MQTT_STREAMING_CONFIG = mock(MqttStreamingConfig.class);
-    private static final InboundDataSourceDto DATA_SOURCE_DTO = mock(InboundDataSourceDto.class);
     private InboundAdapter adapter;
     private InboundDataSource dataSource;
 
@@ -44,15 +41,17 @@ class InboundAdapterTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        when(DATA_SOURCE_DTO.id()).thenReturn(DATA_SOURCE_ID);
-        when(DATA_SOURCE_DTO.asset()).thenReturn(AiidaAsset.SUBMETER);
-        when(MQTT_STREAMING_CONFIG.serverUri()).thenReturn("tcp://localhost:1883");
-        when(MQTT_STREAMING_CONFIG.username()).thenReturn("aiida");
-        when(MQTT_STREAMING_CONFIG.password()).thenReturn("testPassword");
-        when(MQTT_STREAMING_CONFIG.dataTopic()).thenReturn("aiida/testTopic");
+        // Mock mqtt configuration
         when(MQTT_CONFIGURATION.password()).thenReturn("aiida");
 
-        dataSource = new InboundDataSource(DATA_SOURCE_DTO, USER_ID, MQTT_STREAMING_CONFIG);
+        // Mock inbound data source
+        dataSource = mock(InboundDataSource.class);
+        when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
+        when(dataSource.userId()).thenReturn(USER_ID);
+        when(dataSource.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(dataSource.internalHost()).thenReturn("tcp://localhost:1883");
+        when(dataSource.username()).thenReturn(String.valueOf(MQTT_USERNAME));
+        when(dataSource.password()).thenReturn("testPassword");
 
         adapter = new InboundAdapter(dataSource, MQTT_CONFIGURATION);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();

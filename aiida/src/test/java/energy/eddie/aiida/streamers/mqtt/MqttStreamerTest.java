@@ -47,15 +47,17 @@ class MqttStreamerTest {
     private static final String EXPECTED_DATA_TOPIC = DATA_TOPIC + "/smart-meter-p1-raw";
     private static final String EXPECTED_STATUS_TOPIC = "aiida/v1/permission-id/status";
     private static final String EXPECTED_TERMINATION_TOPIC = "aiida/v1/permission-id/termination";
-    private static final UUID aiidaId = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID AIIDA_ID = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID PERMISSION_ID = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
+
     private final TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
     private final Sinks.One<UUID> terminationSink = Sinks.one();
     private final AiidaRecord record1 = new AiidaRecord(Instant.now(),
                                                         AiidaAsset.SUBMETER,
-                                                        userId,
-                                                        dataSourceId,
+                                                        USER_ID,
+                                                        DATA_SOURCE_ID,
                                                         List.of(new AiidaRecordValue("1-0:1.8.0",
                                                                                      POSITIVE_ACTIVE_ENERGY,
                                                                                      "444",
@@ -64,16 +66,14 @@ class MqttStreamerTest {
                                                                                      KILO_WATT_HOUR)));
     private final AiidaRecord record2 = new AiidaRecord(Instant.now(),
                                                         AiidaAsset.SUBMETER,
-                                                        userId,
-                                                        dataSourceId,
+                                                        USER_ID,
+                                                        DATA_SOURCE_ID,
                                                         List.of(new AiidaRecordValue("1-0:2.8.0",
                                                                                      NEGATIVE_ACTIVE_ENERGY,
                                                                                      "888",
                                                                                      KILO_WATT_HOUR,
                                                                                      "10",
                                                                                      KILO_WATT_HOUR)));
-    private final UUID permissionId = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a5");
-
     @Mock
     private MqttAsyncClient mockClient;
     @Mock
@@ -95,19 +95,19 @@ class MqttStreamerTest {
 
     @BeforeEach()
     void setUp() {
-        var mqttDto = new MqttDto("mqttUsername",
+        var mqttDto = new MqttDto("tcp://localhost:1883",
+                                  PERMISSION_ID.toString(),
                                   "mqttPassword",
-                                  "tcp://localhost:1883",
-                                  DATA_TOPIC,
+                                  EXPECTED_DATA_TOPIC,
                                   EXPECTED_STATUS_TOPIC,
                                   EXPECTED_TERMINATION_TOPIC);
 
-        mqttStreamingConfig = new MqttStreamingConfig(permissionId, mqttDto);
+        mqttStreamingConfig = new MqttStreamingConfig(mqttDto);
         Permission permissionMock = mock(Permission.class);
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
         var streamingContext = new MqttStreamingContext(mockClient, mqttStreamingConfig, mockLatestRecordMap);
 
-        streamer = new MqttStreamer(aiidaId,
+        streamer = new MqttStreamer(AIIDA_ID,
                                     mockRepository,
                                     mockMapper,
                                     permissionMock,
@@ -137,7 +137,8 @@ class MqttStreamerTest {
 
         // Then
         verify(mockClient).connect(argThat(options -> options.getUserName()
-                                                             .equals(mqttStreamingConfig.username()) && !options.isCleanStart() && options.isAutomaticReconnect() && new String(
+                                                             .equals(mqttStreamingConfig.username()
+                                                                                        .toString()) && !options.isCleanStart() && options.isAutomaticReconnect() && new String(
                 options.getPassword(),
                 StandardCharsets.UTF_8).equals(mqttStreamingConfig.password())));
     }
@@ -195,10 +196,10 @@ class MqttStreamerTest {
     @Test
     void givenTerminationRequest_publishesOnMono() throws MqttException {
         // Given
-        when(mockMessage.getPayload()).thenReturn(permissionId.toString().getBytes(StandardCharsets.UTF_8));
+        when(mockMessage.getPayload()).thenReturn(PERMISSION_ID.toString().getBytes(StandardCharsets.UTF_8));
         when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
-                                                .expectNext(permissionId)
+                                                .expectNext(PERMISSION_ID)
                                                 .then(streamer::close)
                                                 .expectComplete()
                                                 .verifyLater();
@@ -238,7 +239,7 @@ class MqttStreamerTest {
         streamer.connect();
         // manually call callback
         streamer.connectComplete(false, "fooTest");
-        when(mockMessage.getPayload()).thenReturn(permissionId.toString().getBytes(StandardCharsets.UTF_8));
+        when(mockMessage.getPayload()).thenReturn(PERMISSION_ID.toString().getBytes(StandardCharsets.UTF_8));
 
         // When
         streamer.messageArrived(EXPECTED_TERMINATION_TOPIC, mockMessage);
@@ -294,10 +295,11 @@ class MqttStreamerTest {
     @Test
     void verify_connectComplete_retransmitFailedMessages() throws MqttException {
         // Given
-        when(mockRepository.findAllByPermissionId(permissionId)).thenReturn(List.of(new FailedToSendEntity(permissionId,
-                                                                                                           "bar",
-                                                                                                           "json".getBytes(
-                                                                                                                   StandardCharsets.UTF_8))));
+        when(mockRepository.findAllByPermissionId(PERMISSION_ID)).thenReturn(List.of(new FailedToSendEntity(
+                PERMISSION_ID,
+                "bar",
+                "json".getBytes(
+                        StandardCharsets.UTF_8))));
         streamer.connect();
 
         // When

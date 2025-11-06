@@ -1,6 +1,7 @@
 package energy.eddie.aiida.models.modbus;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
+
 import java.util.List;
 
 public record DeviceConfigWrapper(@Nullable ModbusWrapper modbus) {

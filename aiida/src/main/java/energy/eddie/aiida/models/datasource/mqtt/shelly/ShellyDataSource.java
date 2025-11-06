@@ -2,6 +2,7 @@ package energy.eddie.aiida.models.datasource.mqtt.shelly;
 
 import energy.eddie.aiida.dtos.datasource.mqtt.shelly.ShellyDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -12,6 +13,7 @@ import java.util.UUID;
 @DiscriminatorValue(DataSourceType.Identifiers.SHELLY)
 public class ShellyDataSource extends MqttDataSource {
     private static final String TOPIC_SUFFIX = "/#";
+
     @SuppressWarnings("NullAway")
     protected ShellyDataSource() {}
 
@@ -20,12 +22,13 @@ public class ShellyDataSource extends MqttDataSource {
     }
 
     @Override
-    protected String topicFormattedForUi() {
-        return topic.replace(TOPIC_SUFFIX, "");
+    protected void createAccessControlEntry() {
+        var topic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
+        accessControlEntry = new MqttAccessControlEntry(id, topic);
     }
 
     @Override
-    protected void generateTopic() {
-        this.topic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
+    protected String topicFormattedForUi() {
+        return accessControlEntry.topic().replace(TOPIC_SUFFIX, "");
     }
 }

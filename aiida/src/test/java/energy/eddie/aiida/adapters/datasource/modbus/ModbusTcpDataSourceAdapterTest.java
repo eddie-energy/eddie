@@ -1,6 +1,6 @@
 package energy.eddie.aiida.adapters.datasource.modbus;
 
-import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
+import energy.eddie.aiida.models.datasource.interval.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.services.ModbusDeviceService;
@@ -54,8 +54,8 @@ class ModbusTcpDataSourceAdapterTest {
         var dataSource = mock(ModbusDataSource.class);
         when(dataSource.enabled()).thenReturn(true);
         when(dataSource.pollingInterval()).thenReturn(1);
-        when(dataSource.modbusIp()).thenReturn("127.0.0.1");
-        when(dataSource.modbusDevice()).thenReturn(UUID.randomUUID());
+        when(dataSource.ipAddress()).thenReturn("127.0.0.1");
+        when(dataSource.deviceId()).thenReturn(UUID.randomUUID());
         adapter = new ModbusTcpDataSourceAdapter(dataSource);
 
         // Grab the actual mock instance created by the constructor

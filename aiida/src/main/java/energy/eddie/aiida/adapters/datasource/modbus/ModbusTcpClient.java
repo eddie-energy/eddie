@@ -6,10 +6,10 @@ import com.ghgande.j2mod.modbus.net.TCPMasterConnection;
 import com.ghgande.j2mod.modbus.procimg.InputRegister;
 import energy.eddie.aiida.models.modbus.Endian;
 import energy.eddie.aiida.models.modbus.ModbusDataPoint;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

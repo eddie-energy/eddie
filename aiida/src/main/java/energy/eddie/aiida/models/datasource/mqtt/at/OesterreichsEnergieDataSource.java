@@ -2,6 +2,7 @@ package energy.eddie.aiida.models.datasource.mqtt.at;
 
 import energy.eddie.aiida.dtos.datasource.mqtt.at.OesterreichsEnergieDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -21,7 +22,8 @@ public class OesterreichsEnergieDataSource extends MqttDataSource {
     }
 
     @Override
-    protected void generateTopic() {
-        this.topic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
+    public void createAccessControlEntry() {
+        var topic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
+        accessControlEntry = new MqttAccessControlEntry(id, topic);
     }
 }

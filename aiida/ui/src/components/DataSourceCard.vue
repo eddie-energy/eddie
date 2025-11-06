@@ -25,7 +25,7 @@ const emit = defineEmits(['edit', 'delete', 'reset', 'enableToggle'])
 const {
   countryCode,
   asset,
-  dataSourceType,
+  type,
   enabled,
   id,
   externalHost,
@@ -44,7 +44,7 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
     <header class="header" @click="isOpen = !isOpen">
       <DataSourceIcon :icon />
       <h2 class="heading-4 headline">{{ name }}</h2>
-      <span class="text-xsmall data-source-type">{{ dataSourceType }}</span>
+      <span class="text-xsmall data-source-type">{{ type }}</span>
       <button class="chevron" aria-label="Open Data Source Card">
         <ChevronDownIcon />
       </button>
@@ -72,7 +72,7 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
 
       <div>
         <dt>{{ t('datasources.card.type') }}</dt>
-        <dd>{{ dataSourceType }}</dd>
+        <dd>{{ type }}</dd>
       </div>
 
       <template v-if="pollingInterval">

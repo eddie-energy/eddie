@@ -1,10 +1,11 @@
 package energy.eddie.aiida.adapters.datasource.simulation;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
-import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
+import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.ObisCode;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.health.Health;
@@ -12,7 +13,6 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
-import javax.annotation.Nullable;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.ArrayList;

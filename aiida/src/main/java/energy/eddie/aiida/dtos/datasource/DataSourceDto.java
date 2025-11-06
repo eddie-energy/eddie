@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
-        property = "dataSourceType"
+        property = "type"
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = OesterreichsEnergieDataSourceDto.class, name = DataSourceType.Identifiers.SMART_METER_ADAPTER),
@@ -40,7 +40,7 @@ public abstract class DataSourceDto {
     @JsonProperty
     protected UUID id;
     @JsonProperty
-    protected DataSourceType dataSourceType;
+    protected DataSourceType type;
     @JsonProperty
     protected AiidaAsset asset;
     @JsonProperty
@@ -56,8 +56,8 @@ public abstract class DataSourceDto {
         return id;
     }
 
-    public DataSourceType dataSourceType() {
-        return dataSourceType;
+    public DataSourceType type() {
+        return type;
     }
 
     public AiidaAsset asset() {

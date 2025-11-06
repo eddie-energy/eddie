@@ -38,8 +38,8 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private final ObjectMapper mapper;
     private final Permission permission;
     private final MqttStreamingConfig streamingConfig;
-    private boolean isBeingTerminated = false;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
+    private boolean isBeingTerminated = false;
     @Nullable
     private Disposable subscription;
 
@@ -83,7 +83,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         connOpts.setCleanStart(false);
         connOpts.setAutomaticReconnect(true);
         connOpts.setAutomaticReconnectDelay(30, 60 * 5);
-        connOpts.setUserName(streamingConfig.username());
+        connOpts.setUserName(streamingConfig.username().toString());
         connOpts.setPassword(streamingConfig.password().getBytes(StandardCharsets.UTF_8));
 
         // pending tokens are messages that are saved by the MqttClient to its persistence config

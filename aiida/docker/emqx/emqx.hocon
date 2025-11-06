@@ -14,7 +14,7 @@ authentication = [
     pool_size = 8
     query = """~
       SELECT password AS password_hash
-       FROM public.data_source
+       FROM public.data_source_mqtt_user
        WHERE username = ${username} LIMIT 1;~"""
     # Replaced with .env file
     server = "REPLACED_WITH_ENV:5432"
@@ -66,7 +66,7 @@ authorization {
       pool_size = 8
       query = """~
         SELECT LOWER(action), LOWER(acl_type) AS permission, topic
-         FROM public.data_source
+         FROM public.data_source_mqtt_acl
          WHERE username = ${username};~"""
       # Replaced with .env file
       server = "REPLACED_WITH_ENV:5432"

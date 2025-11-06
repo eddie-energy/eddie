@@ -63,8 +63,8 @@ import static org.mockito.Mockito.*;
 class PermissionServiceTest {
     private final UUID eddieId = UUID.fromString("a69f9bc2-e16c-4de4-8c3e-00d219dcd819");
     private final UUID permissionId = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a5");
-    private final UUID dataSourceId = UUID.fromString("92831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final UUID dataNeedId = UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5");
+    private final UUID dataSourceId = UUID.fromString("92831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final String handshakeUrl = "https://example.org";
     private final String serviceName = "Hello Service";
     private final String connectionId = "NewAiidaRandomConnectionId";
@@ -370,6 +370,7 @@ class PermissionServiceTest {
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
         when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
+        when(mockMqttDto.username()).thenReturn(permissionId.toString());
 
         // When
         service.acceptPermission(permissionId, dataSourceId);
@@ -396,6 +397,7 @@ class PermissionServiceTest {
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
         when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
+        when(mockMqttDto.username()).thenReturn(permissionId.toString());
         when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
 
         // When
@@ -469,7 +471,7 @@ class PermissionServiceTest {
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.id()).thenReturn(permissionId);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
-        when(mockDataSource.dataSourceType()).thenReturn(DataSourceType.INBOUND);
+        when(mockDataSource.type()).thenReturn(DataSourceType.INBOUND);
 
         // When
         service.revokePermission(permissionId);

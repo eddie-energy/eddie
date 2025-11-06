@@ -28,14 +28,14 @@ const getEmptyDataSource = (): AiidaDataSource => {
   return {
     name: '',
     asset: '',
-    dataSourceType: '',
+    type: '',
     enabled: true,
     id: '' as AiidaDataSourceIcon,
     countryCode: '',
-    modbusIp: '',
-    modbusVendor: '',
-    modbusModel: '',
-    modbusDevice: '',
+    ipAddress: '',
+    vendorId: '',
+    modelId: '',
+    deviceId: '',
     icon: '' as AiidaDataSourceIcon,
   }
 }
@@ -127,9 +127,9 @@ onMounted(async () => {
   }))
 })
 
-const dataSourceType = computed(() => dataSource.value.dataSourceType)
-const vendor = computed(() => dataSource.value.modbusVendor)
-const model = computed(() => dataSource.value.modbusModel)
+const dataSourceType = computed(() => dataSource.value.type)
+const vendor = computed(() => dataSource.value.vendorId)
+const model = computed(() => dataSource.value.modelId)
 
 watch(
   [dataSourceType, vendor, model],
@@ -144,8 +144,8 @@ watch(
       }
     })
     if (newVendor && newVendor !== oldVendor) {
-      dataSource.value.modbusModel = ''
-      dataSource.value.modbusDevice = ''
+      dataSource.value.modelId = ''
+      dataSource.value.deviceId = ''
       modbusModelsOptions.value = (await getModbusModels(newVendor)).map((mod) => {
         return {
           label: mod.name,
@@ -154,7 +154,7 @@ watch(
       })
     }
     if (newModel && newModel !== oldModel) {
-      dataSource.value.modbusDevice = ''
+      dataSource.value.deviceId = ''
       modbusDevicesOptions.value = (await getModbusDevices(newModel)).map((dev) => {
         return {
           label: dev.name,
@@ -177,7 +177,7 @@ const validateForm = () => {
     { value: dataSource.value?.name, label: t('datasources.modal.name'), key: 'name' },
     { value: dataSource.value?.asset, label: t('datasources.modal.assetType'), key: 'assetType' },
     {
-      value: dataSource.value?.dataSourceType,
+      value: dataSource.value?.type,
       label: t('datasources.modal.datasourceType'),
       key: 'dataSourceType',
     },
@@ -186,39 +186,39 @@ const validateForm = () => {
   ]
   requiredFields.forEach((field) => handleRequired(field.value, field.label, field.key))
 
-  if (dataSource.value?.dataSourceType === 'MODBUS') {
+  if (dataSource.value?.type === 'MODBUS') {
     const modBusRequiredFields = [
       {
-        value: dataSource.value.modbusIp,
+        value: dataSource.value.ipAddress,
         label: t('datasources.modal.localIpInput'),
         key: 'ipAddress',
       },
       {
-        value: dataSource.value.modbusVendor,
+        value: dataSource.value.vendorId,
         label: t('datasources.modal.vendorInput'),
         key: 'vendor',
       },
       {
-        value: dataSource.value.modbusModel,
+        value: dataSource.value.modelId,
         label: t('datasources.modal.modelInput'),
         key: 'model',
       },
       {
-        value: dataSource.value.modbusDevice,
+        value: dataSource.value.deviceId,
         label: t('datasources.modal.deviceInput'),
         key: 'device',
       },
     ]
     modBusRequiredFields.forEach((field) => handleRequired(field.value, field.label, field.key))
   }
-  if (dataSource.value?.dataSourceType === 'SIMULATION') {
+  if (dataSource.value?.type === 'SIMULATION') {
     handleRequired(
       dataSource.value?.pollingInterval,
       t('datasources.modal.pollingInterval'),
       'pollInterval',
     )
   }
-  if (dataSource.value?.dataSourceType === 'SINAPSI_ALFA') {
+  if (dataSource.value?.type === 'SINAPSI_ALFA') {
     handleRequired(
       dataSource.value?.activationKey,
       t('datasources.modal.activationKey'),
@@ -244,16 +244,13 @@ const handleFormSubmit = async () => {
         await saveDataSource(dataSource.value.id, {
           ...dataSource.value,
         })
-      } else if (dataSource.value.dataSourceType === 'MODBUS') {
+      } else if (dataSource.value.type === 'MODBUS') {
         const { dataSourceId } = await addDataSource(dataSource.value)
         dataSource.value.id = dataSourceId
       } else {
         const { dataSourceId, plaintextPassword } = await addDataSource(dataSource.value)
         dataSource.value.id = dataSourceId
-        if (
-          !nonMQTTDataSourceTypes.includes(dataSource.value.dataSourceType) &&
-          plaintextPassword
-        ) {
+        if (!nonMQTTDataSourceTypes.includes(dataSource.value.type) && plaintextPassword) {
           emit('showMqtt', plaintextPassword)
         }
       }
@@ -289,7 +286,7 @@ defineExpose({ showModal })
       ref="form"
       novalidate
       class="data-source-form"
-      :class="{ 'columns-3': dataSource?.dataSourceType === 'MODBUS' }"
+      :class="{ 'columns-3': dataSource?.type === 'MODBUS' }"
       @submit.prevent="handleFormSubmit"
     >
       <div class="column">
@@ -333,7 +330,7 @@ defineExpose({ showModal })
         <div class="input-field">
           <label id="datasourceType">{{ t('datasources.modal.dataSourceType') }}</label>
           <CustomSelect
-            v-model="dataSource.dataSourceType"
+            v-model="dataSource.type"
             :placeholder="t('datasources.modal.dataSourceTypePlaceholder')"
             name="datasourceType"
             required
@@ -360,16 +357,13 @@ defineExpose({ showModal })
         </div>
       </div>
       <Transition name="extra-column">
-        <div
-          class="column"
-          v-if="dataSourceTypesWithExtraField.includes(dataSource.dataSourceType)"
-        >
-          <template v-if="dataSource.dataSourceType === 'MODBUS'">
+        <div v-if="dataSourceTypesWithExtraField.includes(dataSource.type)" class="column">
+          <template v-if="dataSource.type === 'MODBUS'">
             <div class="input-field extra-margin">
               <label for="ipAddress">{{ t('datasources.modal.localIpInput') }}</label>
               <input
                 id="ipAddress"
-                v-model="dataSource.modbusIp"
+                v-model="dataSource.ipAddress"
                 name="ipAddress"
                 placeholder="10.236.46.120"
                 required
@@ -380,7 +374,7 @@ defineExpose({ showModal })
               <label for="vendor">{{ t('datasources.modal.vendorInput') }}</label>
               <CustomSelect
                 id="vendor"
-                v-model="dataSource.modbusVendor"
+                v-model="dataSource.vendorId"
                 :placeholder="t('datasources.modal.vendorInputPlaceholder')"
                 :options="modbusVendorsOptions"
                 name="vendor"
@@ -392,10 +386,10 @@ defineExpose({ showModal })
               <label for="model">{{ t('datasources.modal.modelInput') }}</label>
               <CustomSelect
                 id="model"
-                v-model="dataSource.modbusModel"
+                v-model="dataSource.modelId"
                 :placeholder="t('datasources.modal.modelPlaceholder')"
                 :options="modbusModelsOptions"
-                :disabled="!dataSource.modbusVendor"
+                :disabled="!dataSource.vendorId"
                 name="model"
                 required
               />
@@ -405,17 +399,17 @@ defineExpose({ showModal })
               <label for="device"> {{ t('datasources.modal.deviceInput') }} </label>
               <CustomSelect
                 id="device"
-                v-model="dataSource.modbusDevice"
+                v-model="dataSource.deviceId"
                 :placeholder="t('datasources.modal.devicePlaceholder')"
                 :options="modbusDevicesOptions"
-                :disabled="!dataSource.modbusModel"
+                :disabled="!dataSource.modelId"
                 name="device"
                 required
               />
               <p v-if="errors['device']" class="error-message">{{ errors['device'] }}</p>
             </div>
           </template>
-          <template v-if="dataSource.dataSourceType === 'SIMULATION'">
+          <template v-if="dataSource.type === 'SIMULATION'">
             <div class="input-field">
               <label for="pollInterval"> {{ t('datasources.modal.pollingInterval') }} </label>
               <input
@@ -432,7 +426,7 @@ defineExpose({ showModal })
               </p>
             </div>
           </template>
-          <template v-if="dataSource.dataSourceType === 'SINAPSI_ALFA'">
+          <template v-if="dataSource.type === 'SINAPSI_ALFA'">
             <div class="input-field">
               <label for="activationKey">Sinapsi {{ t('datasources.modal.activationKey') }}</label>
               <input

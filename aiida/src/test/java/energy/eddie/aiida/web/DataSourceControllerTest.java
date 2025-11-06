@@ -4,7 +4,7 @@ import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
+import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.services.DataSourceService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -87,7 +87,7 @@ class DataSourceControllerTest {
 
         mockMvc.perform(post("/datasources")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"name\":\"Test Source\",\"dataSourceType\":\"SIMULATION\"}")
+                                .content("{\"name\":\"Test Source\",\"type\":\"SIMULATION\"}")
                                 .with(csrf()))
                .andExpect(status().isCreated())
                .andExpect(jsonPath("$.plaintextPassword").value(PLAIN_TEXT_PASSWORD));
@@ -122,7 +122,7 @@ class DataSourceControllerTest {
     void updateDataSource_shouldReturn200() throws Exception {
         mockMvc.perform(patch("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"name\":\"Updated Source\",\"dataSourceType\":\"SIMULATION\"}")
+                                .content("{\"name\":\"Updated Source\",\"type\":\"SIMULATION\"}")
                                 .with(csrf()))
                .andExpect(status().isOk());
 

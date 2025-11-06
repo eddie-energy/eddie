@@ -19,73 +19,88 @@ import static java.util.Objects.requireNonNull;
 @Table(name = "permission")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Permission {
-    @Schema(description = "Unique ID of this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "a4dc1bad-b9fe-47ae-9336-690cfb4aada9")
     @Id
-    @Column(nullable = false, updatable = false, name = "permission_id")
+    @Column(name = "permission_id", nullable = false, updatable = false)
+    @Schema(description = "Unique ID of this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "a4dc1bad-b9fe-47ae-9336-690cfb4aada9")
     @JsonProperty
     private UUID permissionId;
+
+    @Column(name = "eddie_id", updatable = false)
     @Schema(description = "Unique ID of the EDDIE application that created this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "a4dc1bad-b9fe-47ae-9336-690cfb4aada9")
-    @Column(updatable = false, name = "eddie_id")
     @JsonProperty
     private UUID eddieId;
-    @Schema(description = "Status of this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "ACCEPTED")
-    @Enumerated(EnumType.STRING)
+
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Schema(description = "Status of this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "ACCEPTED")
     @JsonProperty
     private PermissionStatus status;
+
+    @Column(name = "service_name", nullable = false)
     @Schema(description = "Name of the EP service that requested near real-time data.", example = "My Energy Visualization Service")
-    @Column(nullable = false)
     @JsonProperty
     private String serviceName;
+
+    @Column(name = "start_time")
     @Schema(description = "UTC timestamp when the data sharing should start.")
-    @Column
     @JsonProperty
     @Nullable
     private Instant startTime;
+
+    @Nullable
+    @Column(name = "expiration_time")
     @Schema(description = "UTC timestamp the data sharing should automatically stop. Must be after startTime.")
-    @Column
     @JsonProperty
-    @Nullable
     private Instant expirationTime;
-    @Schema(description = "UTC timestamp when the customer granted the sharing permission.")
-    @Column
-    @JsonProperty
+
     @Nullable
+    @Column(name = "grant_time")
+    @Schema(description = "UTC timestamp when the customer granted the sharing permission.")
+    @JsonProperty
     private Instant grantTime;
+
+    @Nullable
+    @Column(name = "revoke_time")
     @Schema(description = "UTC timestamp when the permission was revoked or terminated. See status for the exact reason.")
     @JsonProperty
-    @Nullable
     private Instant revokeTime = null;
+
+    @Nullable
+    @Column(name = "connection_id")
     @Schema(description = "Connection ID as supplied by EDDIE/EP.", example = "SomeRandomString")
-    @Column
     @JsonIgnore
-    @Nullable
     private String connectionId;
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @PrimaryKeyJoinColumn
-    @JsonProperty
+
     @Nullable
+    @PrimaryKeyJoinColumn
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonProperty
     private MqttStreamingConfig mqttStreamingConfig;
-    @Column(nullable = false)
+
+    @Column(name = "handshake_url", nullable = false)
     @JsonIgnore
     private String handshakeUrl;
-    @Column(nullable = false)
+
+    @Column(name = "access_token", nullable = false)
     @JsonIgnore
     private String accessToken;
-    @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
+
+    @Nullable
     @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id", insertable = false)
+    @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     @JsonProperty
-    @Nullable
     private AiidaLocalDataNeed dataNeed;
+
+    @Nullable
+    @Column(name = "user_id", nullable = false)
     @Schema(description = "UUID of the user that owns the permission.")
-    @Column
     @JsonProperty
-    @Nullable
     private UUID userId;
-    @ManyToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name = "data_source_id", referencedColumnName = "id", insertable = false)
-    @JsonProperty
+
     @Nullable
+    @JoinColumn(name = "data_source_id", referencedColumnName = "id", insertable = false)
+    @ManyToOne(cascade = CascadeType.DETACH)
+    @JsonProperty
     private DataSource dataSource;
 
     /**

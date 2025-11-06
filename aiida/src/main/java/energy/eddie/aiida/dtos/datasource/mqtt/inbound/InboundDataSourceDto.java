@@ -12,7 +12,7 @@ public class InboundDataSourceDto extends DataSourceDto {
             AiidaAsset asset,
             UUID permissionId
     ) {
-        this.dataSourceType = DataSourceType.INBOUND;
+        this.type = DataSourceType.INBOUND;
         this.name = permissionId.toString();
         this.asset = asset;
         this.enabled = true;
