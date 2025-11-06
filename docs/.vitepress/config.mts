@@ -2,6 +2,7 @@ import { defineConfig } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
 import { transformerTwoslash } from "@shikijs/vitepress-twoslash";
 import { propertiesPlugin } from "./propertiesPlugin.mjs";
+import { imageToFigurePlugin } from "./imageToFigurePlugin.mts";
 
 // https://vitepress.dev/reference/site-config
 export default withMermaid(
@@ -19,6 +20,7 @@ export default withMermaid(
     markdown: {
       config: (md) => {
         md.use(propertiesPlugin);
+        md.use(imageToFigurePlugin)
       },
       codeTransformers: [transformerTwoslash()],
     },
@@ -188,6 +190,10 @@ export default withMermaid(
                     {
                       text: "Client Libraries",
                       link: "/2-integrating/messages/cim/client-libraries.md",
+                    },
+                    {
+                      text: "Existing Mappings",
+                      link: "/2-integrating/messages/cim/mappings.md",
                     },
                   ],
                 },
