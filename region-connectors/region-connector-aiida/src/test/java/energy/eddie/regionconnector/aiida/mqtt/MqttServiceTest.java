@@ -105,7 +105,7 @@ class MqttServiceTest {
         verify(mockAclRepository).saveAll(mqttAclCaptor.capture());
         List<MqttAcl> acls = StreamSupport.stream(mqttAclCaptor.getValue().spliterator(), false).toList();
 
-        assertEquals("aiida/v1/testId/data/outbound", acls.getFirst().topic());
+        assertEquals("aiida/v1/testId/data/outbound/#", acls.getFirst().topic());
         assertEquals(MqttAction.PUBLISH, acls.getFirst().action());
         assertEquals(MqttAclType.ALLOW, acls.getFirst().aclType());
         assertEquals(permissionId, acls.getFirst().username());
@@ -147,7 +147,7 @@ class MqttServiceTest {
         verify(mockAclRepository).saveAll(mqttAclCaptor.capture());
         List<MqttAcl> acls = StreamSupport.stream(mqttAclCaptor.getValue().spliterator(), false).toList();
 
-        assertEquals("aiida/v1/testId/data/inbound", acls.getFirst().topic());
+        assertEquals("aiida/v1/testId/data/inbound/#", acls.getFirst().topic());
         assertEquals(MqttAction.SUBSCRIBE, acls.getFirst().action());
         assertEquals(MqttAclType.ALLOW, acls.getFirst().aclType());
         assertEquals(permissionId, acls.getFirst().username());

@@ -43,7 +43,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MqttStreamerTest {
-    private static final String EXPECTED_DATA_TOPIC = "aiida/v1/permission-id/data/outbound";
+    private static final String DATA_TOPIC = "aiida/v1/permission-id/data/outbound";
+    private static final String EXPECTED_DATA_TOPIC = DATA_TOPIC + "/smart-meter-p1-raw";
     private static final String EXPECTED_STATUS_TOPIC = "aiida/v1/permission-id/status";
     private static final String EXPECTED_TERMINATION_TOPIC = "aiida/v1/permission-id/termination";
     private static final UUID aiidaId = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -97,7 +98,7 @@ class MqttStreamerTest {
         var mqttDto = new MqttDto("mqttUsername",
                                   "mqttPassword",
                                   "tcp://localhost:1883",
-                                  EXPECTED_DATA_TOPIC,
+                                  DATA_TOPIC,
                                   EXPECTED_STATUS_TOPIC,
                                   EXPECTED_TERMINATION_TOPIC);
 

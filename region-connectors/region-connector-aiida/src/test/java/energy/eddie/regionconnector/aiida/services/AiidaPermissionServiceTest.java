@@ -327,7 +327,7 @@ class AiidaPermissionServiceTest {
 
         // Then
         assertTrue(logCaptor.getErrorLogs()
-                            .contains("Something went wrong when subscribing to the status topic for permission " + permissionId));
+                            .contains("Something went wrong when subscribing to a topic for permission " + permissionId));
     }
 
     @Test

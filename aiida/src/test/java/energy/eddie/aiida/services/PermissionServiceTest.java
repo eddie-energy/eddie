@@ -22,6 +22,7 @@ import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
@@ -54,7 +55,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Stream;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
-import static energy.eddie.aiida.models.permission.PermissionStatus.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -133,8 +133,8 @@ class PermissionServiceTest {
         // Then
         testPublisher.assertSubscribers(1);
         verify(mockPermissionScheduler).removePermission(permissionId);
-        verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == TERMINATED));
-        verify(mockPermission).setStatus(TERMINATED);
+        verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == PermissionProcessStatus.EXTERNALLY_TERMINATED));
+        verify(mockPermission).setStatus(PermissionStatus.TERMINATED);
         verify(mockPermission).setRevokeTime(any());
         verify(mockPermissionRepository).save(any());
     }
@@ -205,7 +205,7 @@ class PermissionServiceTest {
         // verify all fields have been set
         assertEquals(eddieId, permissionWithDetails.eddieId());
         assertEquals(permissionId, permissionWithDetails.id());
-        assertEquals(FETCHED_DETAILS, permissionWithDetails.status());
+        assertEquals(PermissionStatus.FETCHED_DETAILS, permissionWithDetails.status());
         assertEquals(connectionId, permissionWithDetails.connectionId());
         assertEquals(expectedStart, permissionWithDetails.startTime());
         assertEquals(expectedEnd, permissionWithDetails.expirationTime());
@@ -249,7 +249,7 @@ class PermissionServiceTest {
         // verify all fields have been set
         assertEquals(eddieId, permissionWithDetails.eddieId());
         assertEquals(permissionId, permissionWithDetails.id());
-        assertEquals(UNFULFILLABLE, permissionWithDetails.status());
+        assertEquals(PermissionStatus.UNFULFILLABLE, permissionWithDetails.status());
         assertEquals(connectionId, permissionWithDetails.connectionId());
         assertEquals(expectedStart, permissionWithDetails.startTime());
         assertEquals(expectedEnd, permissionWithDetails.expirationTime());
@@ -281,12 +281,12 @@ class PermissionServiceTest {
 
         // Then
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId)));
-        verify(mockHandshakeService).sendUnfulfillableOrRejected(any(), eq(UNFULFILLABLE));
+        verify(mockHandshakeService).sendUnfulfillableOrRejected(any(), eq(PermissionStatus.UNFULFILLABLE));
         verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
         assertEquals(permissionId, permissionCaptor.getAllValues().getFirst().id());
-        assertEquals(UNFULFILLABLE, permissionCaptor.getAllValues().getFirst().status());
+        assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getAllValues().getFirst().status());
         assertEquals(permissionId, permissionCaptor.getAllValues().get(1).id());
-        assertEquals(UNFULFILLABLE, permissionCaptor.getAllValues().get(1).status());
+        assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getAllValues().get(1).status());
     }
 
     @Disabled("// TODO GH-1040")  // TODO GH-1040
@@ -298,12 +298,12 @@ class PermissionServiceTest {
 
         // Then
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId)));
-        verify(mockHandshakeService).sendUnfulfillableOrRejected(any(), eq(UNFULFILLABLE));
+        verify(mockHandshakeService).sendUnfulfillableOrRejected(any(), eq(PermissionStatus.UNFULFILLABLE));
         verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
         assertEquals(permissionId, permissionCaptor.getAllValues().getFirst().id());
-        assertEquals(CREATED, permissionCaptor.getAllValues().getFirst().status());
+        assertEquals(PermissionStatus.CREATED, permissionCaptor.getAllValues().getFirst().status());
         assertEquals(permissionId, permissionCaptor.getAllValues().get(1).id());
-        assertEquals(UNFULFILLABLE, permissionCaptor.getAllValues().get(1).status());
+        assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getAllValues().get(1).status());
     }
 
     @Test
@@ -311,7 +311,7 @@ class PermissionServiceTest {
         // Given
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.id()).thenReturn(permissionId);
-        when(mockPermission.status()).thenReturn(STREAMING_DATA);
+        when(mockPermission.status()).thenReturn(PermissionStatus.STREAMING_DATA);
 
         // When, Then
         assertThrows(PermissionStateTransitionException.class, () -> service.rejectPermission(permissionId));
@@ -321,14 +321,14 @@ class PermissionServiceTest {
     void givenValidPermission_rejectPermission_updatesState_andRecordsTimestamp_andCallsHandshakeService() throws PermissionStateTransitionException, PermissionNotFoundException, UnauthorizedException, InvalidUserException {
         // Given
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
-        when(mockPermission.status()).thenReturn(FETCHED_DETAILS);
+        when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
 
         // When
         service.rejectPermission(permissionId);
 
         // Then
-        verify(mockHandshakeService).sendUnfulfillableOrRejected(any(), eq(REJECTED));
-        verify(mockPermission).setStatus(REJECTED);
+        verify(mockHandshakeService).sendUnfulfillableOrRejected(any(), eq(PermissionStatus.REJECTED));
+        verify(mockPermission).setStatus(PermissionStatus.REJECTED);
         verify(mockPermission).setRevokeTime(fixedInstant);
     }
 
@@ -337,7 +337,7 @@ class PermissionServiceTest {
         // Given
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.id()).thenReturn(permissionId);
-        when(mockPermission.status()).thenReturn(STREAMING_DATA);
+        when(mockPermission.status()).thenReturn(PermissionStatus.STREAMING_DATA);
 
         // When, Then
         assertThrows(PermissionStateTransitionException.class,
@@ -356,7 +356,7 @@ class PermissionServiceTest {
         when(mockPermissionRepository.findById(any())).thenReturn(Optional.of(mockPermission));
         when(mockPermissionRepository.save(any(Permission.class))).thenReturn(mockPermission);
         when(mockPermission.id()).thenReturn(permissionId);
-        when(mockPermission.status()).thenReturn(FETCHED_DETAILS);
+        when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
 
         // When, Then
         assertThrows(DetailFetchingFailedException.class, () -> service.acceptPermission(permissionId, dataSourceId));
@@ -367,7 +367,7 @@ class PermissionServiceTest {
         // Given
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
-        when(mockPermission.status()).thenReturn(FETCHED_DETAILS);
+        when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
         when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
 
@@ -376,8 +376,8 @@ class PermissionServiceTest {
 
         // Then
         verify(mockHandshakeService).fetchMqttDetails(any());
-        verify(mockPermission).setStatus(ACCEPTED);
-        verify(mockPermission).setStatus(FETCHED_MQTT_CREDENTIALS);
+        verify(mockPermission).setStatus(PermissionStatus.ACCEPTED);
+        verify(mockPermission).setStatus(PermissionStatus.FETCHED_MQTT_CREDENTIALS);
         verify(mockPermission).setGrantTime(fixedInstant);
         verify(mockPermission).setMqttStreamingConfig(assertArg(conf -> assertAll(() -> assertEquals("dataTopic",
                                                                                                      conf.dataTopic()),
@@ -393,7 +393,7 @@ class PermissionServiceTest {
         // Given
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
-        when(mockPermission.status()).thenReturn(FETCHED_DETAILS);
+        when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
         when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
         when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
@@ -433,7 +433,7 @@ class PermissionServiceTest {
         // Given
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.id()).thenReturn(permissionId);
-        when(mockPermission.status()).thenReturn(REJECTED);
+        when(mockPermission.status()).thenReturn(PermissionStatus.REJECTED);
 
         // When, Then
         assertThrows(PermissionStateTransitionException.class, () -> service.revokePermission(permissionId));
@@ -445,7 +445,7 @@ class PermissionServiceTest {
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
-        when(mockPermission.status()).thenReturn(STREAMING_DATA);
+        when(mockPermission.status()).thenReturn(PermissionStatus.STREAMING_DATA);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.id()).thenReturn(permissionId);
 
@@ -454,9 +454,9 @@ class PermissionServiceTest {
 
         // Then
         verify(mockPermissionScheduler).removePermission(permissionId);
-        verify(mockPermission).setStatus(REVOKED);
+        verify(mockPermission).setStatus(PermissionStatus.REVOKED);
         verify(mockPermission).setRevokeTime(fixedInstant);
-        verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == REVOKED));
+        verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == PermissionProcessStatus.REVOKED));
     }
 
     @Test
@@ -465,7 +465,7 @@ class PermissionServiceTest {
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
-        when(mockPermission.status()).thenReturn(STREAMING_DATA);
+        when(mockPermission.status()).thenReturn(PermissionStatus.STREAMING_DATA);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.id()).thenReturn(permissionId);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
@@ -476,9 +476,9 @@ class PermissionServiceTest {
 
         // Then
         verify(mockPermissionScheduler).removePermission(permissionId);
-        verify(mockPermission).setStatus(REVOKED);
+        verify(mockPermission).setStatus(PermissionStatus.REVOKED);
         verify(mockPermission).setRevokeTime(fixedInstant);
-        verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == REVOKED));
+        verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == PermissionProcessStatus.REVOKED));
         verify(mockAiidaEventPublisher, times(1)).publishEvent(any(InboundPermissionRevokeEvent.class));
     }
 
@@ -510,14 +510,14 @@ class PermissionServiceTest {
                                                    UUID.fromString("25ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
                                                    "Test Service Name",
                                                    "https://example.org"), UUID.randomUUID());
-            return Stream.of(Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-12-24T00:00:00.000Z", STREAMING_DATA),
-                             Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-09-19T00:00:00.000Z", FULFILLED),
-                             Arguments.of(per, "2023-09-11T00:00:00.000Z", "2023-09-30T00:00:00.000Z", FULFILLED),
-                             Arguments.of(per, "2023-09-11T00:00:00.000Z", "2023-10-31T00:00:00.000Z", STREAMING_DATA),
+            return Stream.of(Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-12-24T00:00:00.000Z", PermissionStatus.STREAMING_DATA),
+                             Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-09-19T00:00:00.000Z", PermissionStatus.FULFILLED),
+                             Arguments.of(per, "2023-09-11T00:00:00.000Z", "2023-09-30T00:00:00.000Z", PermissionStatus.FULFILLED),
+                             Arguments.of(per, "2023-09-11T00:00:00.000Z", "2023-10-31T00:00:00.000Z", PermissionStatus.STREAMING_DATA),
                              Arguments.of(per,
                                           "2023-10-12T00:00:00.000Z",
                                           "2023-10-15T00:00:00.000Z",
-                                          WAITING_FOR_START));
+                                          PermissionStatus.WAITING_FOR_START));
         }
 
         @BeforeEach
@@ -560,7 +560,7 @@ class PermissionServiceTest {
             when(mockPermissionRepository.findAllActivePermissions()).thenReturn(List.of(permission));
 
             // strict stubbing requires us to only stub the .schedule if a runnable will be scheduled
-            if (expectedState == WAITING_FOR_START || expectedState == STREAMING_DATA)
+            if (expectedState == PermissionStatus.WAITING_FOR_START || expectedState == PermissionStatus.STREAMING_DATA)
                 doReturn(mockScheduledFuture).when(mockScheduler).schedule(any(), any(Instant.class));
 
             // When

@@ -3,7 +3,10 @@ package energy.eddie.regionconnector.aiida.mqtt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.regionconnector.aiida.exceptions.MqttTopicException;
+import energy.eddie.regionconnector.aiida.exceptions.PermissionInvalidException;
+import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
@@ -32,7 +35,7 @@ class MqttMessageCallbackTest {
             .registerModule(new JavaTimeModule())
             .registerModule(new Jdk8Module());
     @Mock
-    private Sinks.Many<String> revocationSink;
+    private Sinks.Many<AiidaConnectionStatusMessageDto> statusSink;
     @Mock
     private ObjectMapper objectMapper;
     @InjectMocks
@@ -45,47 +48,46 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void testMessageArrived_StatusMessageRevoked() throws IOException {
+    void testMessageArrived_StatusMessageRevoked() throws IOException, MqttTopicException, PermissionInvalidException, PermissionNotFoundException {
         // Given
         String topic = "test/status";
-        String permissionId = "test";
-        String payload = "{\"connectionId\":\"30\",\"dataNeedId\":\"test\",\"timestamp\":1725458241.237425343,\"status\":\"REVOKED\",\"permissionId\":\"test\"}";
+        String payload = "{\"connectionId\":\"30\",\"dataNeedId\":\"00000000-0000-0000-0000-000000000000\",\"timestamp\":1725458241.237425343,\"status\":\"REVOKED\",\"permissionId\":\"00000000-0000-0000-0000-000000000001\",\"eddieId\":\"00000000-0000-0000-0000-000000000002\"}";
 
         MqttMessage mqttMessage = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
-        ConnectionStatusMessage connectionStatusMessage = realObjectMapper.readValue(payload.getBytes(StandardCharsets.UTF_8),
-                                                                                     ConnectionStatusMessage.class);
+        AiidaConnectionStatusMessageDto connectionStatusMessage = realObjectMapper.readValue(payload.getBytes(StandardCharsets.UTF_8),
+                                                                                             AiidaConnectionStatusMessageDto.class);
 
         when(objectMapper.readValue(anyString(),
-                                    eq(ConnectionStatusMessage.class))).thenReturn(connectionStatusMessage);
+                                    eq(AiidaConnectionStatusMessageDto.class))).thenReturn(connectionStatusMessage);
         Sinks.EmitResult successResult = Sinks.EmitResult.OK;
-        when(revocationSink.tryEmitNext(permissionId)).thenReturn(successResult);
+        when(statusSink.tryEmitNext(connectionStatusMessage)).thenReturn(successResult);
 
         // When
         mqttMessageCallback.messageArrived(topic, mqttMessage);
 
         // Then
-        verify(objectMapper).readValue(mqttMessage.toString(), ConnectionStatusMessage.class);
-        verify(revocationSink).tryEmitNext(permissionId);
+        verify(objectMapper).readValue(mqttMessage.toString(), AiidaConnectionStatusMessageDto.class);
+        verify(statusSink).tryEmitNext(connectionStatusMessage);
     }
 
     @Test
-    void testMessageArrived_StatusMessageNotRevoked() throws IOException {
+    void testMessageArrived_StatusMessageNotRevoked() throws IOException, MqttTopicException, PermissionInvalidException, PermissionNotFoundException {
         // Given
         String topic = "some/topic/status";
-        String payload = "{\"connectionId\":\"30\",\"dataNeedId\":\"test\",\"timestamp\":1725458241.237425343,\"status\":\"ACCEPTED\",\"permissionId\":\"test\"}";
+        String payload = "{\"connectionId\":\"30\",\"dataNeedId\":\"00000000-0000-0000-0000-000000000000\",\"timestamp\":1725458241.237425343,\"status\":\"ACCEPTED\",\"permissionId\":\"00000000-0000-0000-0000-000000000001\",\"eddieId\":\"00000000-0000-0000-0000-000000000002\"}";
 
         MqttMessage mqttMessage = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
-        ConnectionStatusMessage connectionStatusMessage = realObjectMapper.readValue(payload.getBytes(StandardCharsets.UTF_8),
-                                                                                     ConnectionStatusMessage.class);
+        AiidaConnectionStatusMessageDto connectionStatusMessage = realObjectMapper.readValue(payload.getBytes(StandardCharsets.UTF_8),
+                                                                                             AiidaConnectionStatusMessageDto.class);
 
         when(objectMapper.readValue(anyString(),
-                                    eq(ConnectionStatusMessage.class))).thenReturn(connectionStatusMessage);
+                                    eq(AiidaConnectionStatusMessageDto.class))).thenReturn(connectionStatusMessage);
 
         // When
         mqttMessageCallback.messageArrived(topic, mqttMessage);
 
         // Then
-        verify(revocationSink, never()).tryEmitNext(anyString());
+        verify(statusSink).tryEmitNext(connectionStatusMessage);
     }
 
     @Test
