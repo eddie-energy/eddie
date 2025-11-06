@@ -110,7 +110,7 @@ public record IntermediateValidatedHistoricalDataMarketDocument(SimulatedMeterRe
     ) {
         String resolution = simulatedMeterReading.meteringInterval();
         List<PointComplexType> points = new ArrayList<>();
-        int position = 0;
+        int position = 1;
         for (var measurement : simulatedMeterReading.measurements()) {
             PointComplexType point = new PointComplexType()
                     .withPosition("%d".formatted(position))

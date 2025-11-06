@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.simulation.engine;
 
-import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.simulation.dtos.ScenarioMetadata;
 import energy.eddie.regionconnector.simulation.engine.results.SimulationConstraintViolations;
@@ -19,16 +18,13 @@ import org.springframework.stereotype.Component;
 public class SimulationEngine {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimulationEngine.class);
     private final DocumentStreams streams;
-    private final CommonInformationModelConfiguration cimConfig;
     private final DataNeedsService dataNeedsService;
 
     public SimulationEngine(
             DocumentStreams streams,
-            CommonInformationModelConfiguration cimConfig,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
     ) {
         this.streams = streams;
-        this.cimConfig = cimConfig;
         this.dataNeedsService = dataNeedsService;
     }
 
@@ -48,7 +44,6 @@ public class SimulationEngine {
 
     private SimulationContext createSimulationContext(ScenarioMetadata metadata) {
         return new SimulationContext(streams,
-                                     cimConfig,
                                      metadata.permissionId(),
                                      metadata.connectionId(),
                                      metadata.dataNeedId());

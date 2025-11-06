@@ -8,9 +8,7 @@ import energy.eddie.regionconnector.simulation.providers.DocumentStreams;
 public class TestSimulationContext {
     public static SimulationContext create() {
         return new SimulationContext(
-                new DocumentStreams(),
-                new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.FINLAND_NATIONAL_CODING_SCHEME,
-                                                             "EP-ID"),
+                new DocumentStreams(new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.FINLAND_NATIONAL_CODING_SCHEME, "EP-ID")),
                 "pid",
                 "cid",
                 "dnid"
