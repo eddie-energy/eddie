@@ -1,3 +1,12 @@
+
+### Create CDS client with EDDIE
+POST http://localhost:9090/region-connectors/cds/management/register
+Content-Type: application/json
+
+{
+  "cdsServerUri": "https://s-87117472.demo.cdsgateway.com"
+}
+
 ### Get CDS Metadata
 GET {{cds_server}}/.well-known/carbon-data-spec.json
 

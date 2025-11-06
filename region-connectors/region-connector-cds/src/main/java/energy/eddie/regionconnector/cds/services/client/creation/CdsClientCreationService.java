@@ -81,7 +81,17 @@ public class CdsClientCreationService {
                                  .onErrorReturn(OAuthNotSupportedException.class::isInstance,
                                                 new UnsupportedFeatureResponse("OAuth not supported"))
                                  .onErrorReturn(NoCustomerDataClientFoundException.class::isInstance,
-                                                new UnsupportedFeatureResponse("Customer data not supported"));
+                                                new UnsupportedFeatureResponse("Customer data not supported"))
+                                 .onErrorResume(throwable -> {
+                                     LOGGER.info("Failed to create admin client for CDS server {}",
+                                                 cdsBaseUri,
+                                                 throwable);
+                                     return Mono.just(
+                                             new UnableToRegisterClientResponse(
+                                                     "Failed to create admin client for CDS server because of an unknown error"
+                                             )
+                                     );
+                                 });
     }
 
 

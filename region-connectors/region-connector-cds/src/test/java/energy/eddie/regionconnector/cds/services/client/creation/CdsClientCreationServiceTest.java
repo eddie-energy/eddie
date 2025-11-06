@@ -277,4 +277,21 @@ class CdsClientCreationServiceTest {
         var response = assertInstanceOf(UnableToRegisterClientResponse.class, res);
         assertEquals("bla", response.message());
     }
+
+
+    @Test
+    void testGetOrCreate_forUnknownCdsServer_returnsNotACdsServer_forUnexpectedException() throws MalformedURLException {
+        // Given
+        var baseUrl = "http://localhost:8080";
+        var baseUri = URI.create(baseUrl);
+        when(repository.findByBaseUri(baseUrl)).thenReturn(Optional.empty());
+        when(metadataCollection.metadata(baseUri))
+                .thenReturn(Mono.error(new NullPointerException("Unexpected NullPointerException")));
+
+        // When
+        var res = clientCreationService.createOAuthClients(baseUri.toURL());
+
+        // Then
+        assertThat(res).isInstanceOf(UnableToRegisterClientResponse.class);
+    }
 }
