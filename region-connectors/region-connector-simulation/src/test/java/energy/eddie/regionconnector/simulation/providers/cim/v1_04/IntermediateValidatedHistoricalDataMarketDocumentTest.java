@@ -39,7 +39,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                   <messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document</messageDocumentHeader.metaInformation.documentType>
                   <messageDocumentHeader.metaInformation.permissionId>pid</messageDocumentHeader.metaInformation.permissionId>
                   <messageDocumentHeader.metaInformation.region.connector>sim</messageDocumentHeader.metaInformation.region.connector>
-                  <messageDocumentHeader.metaInformation.region.country>DE</messageDocumentHeader.metaInformation.region.country>
+                  <messageDocumentHeader.metaInformation.region.country>NDE</messageDocumentHeader.metaInformation.region.country>
                   <MarketDocument>
                     <mRID>1023ff30-35f5-4c8c-ac4a-32356278bab2</mRID>
                     <revisionNumber>104</revisionNumber>
