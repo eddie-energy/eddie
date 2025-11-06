@@ -2,7 +2,7 @@
 
 The EDDIE button can include any custom element that is served on the `/ce.js` path.
 While any setup can be used as long as it results in a custom element, existing region connector elements use the [Lit](https://lit.dev/) library, build with Vite, and extend a shared base class.
-To replicate this setup simply copy the following files from an existing region connector. For example [/region-connectors/region-connector-at-eda](../../../region-connectors/region-connector-at-eda).
+To replicate this setup simply copy the following files from an existing region connector. For example [/region-connectors/region-connector-at-eda](https://github.com/eddie-energy/eddie/tree/main/region-connectors/region-connector-at-eda).
 
 - `src/main/web/permission-request-form.js`
 - `package.json`
