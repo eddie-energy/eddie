@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { keycloak } from '@/keycloak'
 import { ref } from 'vue'
-import { getApplicationInformation } from '@/api'
+import { getApplicationInformation, getMQTTCertificate } from '@/api'
 import Button from '@/components/Button.vue'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
 import { useI18n } from 'vue-i18n'
@@ -22,6 +22,11 @@ keycloak.loadUserProfile().then((user) => {
 getApplicationInformation().then((data) => {
   aiidaId.value = data.aiidaId
 })
+
+const downloadMQTTCertificate = async () => {
+  const cert = await getMQTTCertificate()
+  console.log(cert)
+}
 </script>
 
 <template>
@@ -42,6 +47,12 @@ getApplicationInformation().then((data) => {
         <div class="info-field">
           <dt>AIIDA ID</dt>
           <dd>{{ aiidaId }}</dd>
+        </div>
+        <div class="button-field">
+          <dt>MQTT Certificate</dt>
+          <dd>
+            <Button button-style="secondary" @click="downloadMQTTCertificate">Download</Button>
+          </dd>
         </div>
       </dl>
       <div class="user-buttons">
@@ -88,26 +99,52 @@ getApplicationInformation().then((data) => {
   border: 1px solid var(--eddie-grey-light);
 }
 
-.info-field {
+.user-info {
   display: flex;
-  justify-content: space-between;
   flex-direction: column;
-
-  border: 1px solid var(--eddie-grey-medium);
-  color: var(--eddie-grey-medium);
-  padding: var(--spacing-sm) var(--spacing-sm);
-  border-radius: var(--border-radius);
-  font-size: 1rem;
-  line-height: 1.5;
-  word-break: break-all;
-  gap: 0.25rem;
-
+  gap: var(--spacing-md);
+  dt {
+    font-size: 1rem;
+    line-height: 1.5;
+    word-break: break-all;
+  }
   dd {
     line-height: 1;
     color: var(--eddie-grey-medium);
     font-weight: 600;
   }
 }
+
+.info-field {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  border: 1px solid var(--eddie-grey-medium);
+  color: var(--eddie-grey-medium);
+  padding: var(--spacing-sm) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  gap: 0.25rem;
+}
+
+.button-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: center;
+
+  dt {
+    flex-grow: 2;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-sm) var(--spacing-sm);
+    border: 1px solid var(--eddie-grey-medium);
+    width: 100%;
+  }
+
+  dd {
+    width: 100%;
+  }
+}
+
 .user-buttons {
   margin-top: auto;
 }
@@ -141,6 +178,12 @@ getApplicationInformation().then((data) => {
   .info-field {
     flex-direction: row;
     align-items: center;
+  }
+  .button-field {
+    flex-direction: row;
+    dd {
+      width: fit-content;
+    }
   }
 }
 </style>

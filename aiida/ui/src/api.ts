@@ -248,3 +248,9 @@ export async function getLatestInboundPermissionMessage(id: string) {
     method: 'GET',
   })
 }
+
+export async function getMQTTCertificate() {
+  return fetch('/mqtt/download/tls-certificate', {
+    method: 'GET',
+  })
+}
