@@ -1,4 +1,4 @@
-package energy.eddie.outbound.shared.serde;
+package energy.eddie.cim.serde;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

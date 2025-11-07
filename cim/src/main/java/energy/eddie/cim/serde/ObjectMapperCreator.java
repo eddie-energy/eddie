@@ -1,4 +1,5 @@
-package energy.eddie.outbound.shared.serde;
+package energy.eddie.cim.serde;
+
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -19,7 +20,7 @@ class ObjectMapperCreator {
      * @param format The format that the object mapper should be able to serialize and deserialize.
      * @return object mapper instance for given format.
      */
-    public static ObjectMapper create(Format format) {
+    public static ObjectMapper create(SerializationFormat format) {
         return get(format)
                 .registerModule(new JavaTimeModule())
                 .registerModule(new Jdk8Module())
@@ -27,7 +28,7 @@ class ObjectMapperCreator {
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    private static ObjectMapper get(Format format) {
+    private static ObjectMapper get(SerializationFormat format) {
         return switch (format) {
             case XML -> new XmlMapper();
             case JSON -> new JsonMapper();

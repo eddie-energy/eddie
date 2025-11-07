@@ -1,4 +1,4 @@
-package energy.eddie.outbound.shared.serde;
+package energy.eddie.cim.serde;
 
 /**
  * A serde is a SERializer-DEserializer, which supports one or multiple formats to serialize and deserialize objects to and from.

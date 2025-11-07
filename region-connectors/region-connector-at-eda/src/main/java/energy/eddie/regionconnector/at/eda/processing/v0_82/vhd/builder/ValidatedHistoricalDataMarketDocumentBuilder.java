@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder;
 
-import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;

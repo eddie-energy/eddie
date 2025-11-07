@@ -1,6 +1,6 @@
 package energy.eddie.outbound.shared;
 
-import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.cim.CommonInformationModelVersions;
 import jakarta.annotation.Nullable;
 
 

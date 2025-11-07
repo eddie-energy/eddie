@@ -2,11 +2,11 @@ package energy.eddie.regionconnector.be.fluvius.provider.v0_82;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,6 +46,7 @@ class IntermediateValidatedHistoricalDocumentTest {
     private FluviusOAuthConfiguration fluviusConfig;
 
     @Test
+    @SuppressWarnings("java:S5961")
     void testGetGasVHD_hourly_differentUnits() throws IOException {
 
         // Given

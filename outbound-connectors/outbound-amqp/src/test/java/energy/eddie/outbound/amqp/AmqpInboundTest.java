@@ -2,13 +2,13 @@ package energy.eddie.outbound.amqp;
 
 import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Publisher;
+import energy.eddie.cim.serde.MessageSerde;
+import energy.eddie.cim.serde.SerializationException;
+import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_91_08.ESMPDateTimeInterval;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.outbound.shared.TopicConfiguration;
-import energy.eddie.outbound.shared.serde.MessageSerde;
-import energy.eddie.outbound.shared.serde.SerializationException;
-import energy.eddie.outbound.shared.serde.XmlMessageSerde;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;

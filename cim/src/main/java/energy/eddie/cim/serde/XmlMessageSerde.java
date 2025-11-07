@@ -1,4 +1,4 @@
-package energy.eddie.outbound.shared.serde;
+package energy.eddie.cim.serde;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
@@ -46,7 +46,7 @@ public class XmlMessageSerde implements MessageSerde {
         } catch (JAXBException e) {
             throw new SerdeInitializationException(e);
         }
-        objectMapper = ObjectMapperCreator.create(Format.XML);
+        objectMapper = ObjectMapperCreator.create(SerializationFormat.XML);
     }
 
     @Override

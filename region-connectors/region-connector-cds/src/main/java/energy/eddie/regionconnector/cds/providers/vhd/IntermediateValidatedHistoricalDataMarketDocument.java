@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.cds.providers.vhd;
 
-import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.cds.openapi.model.UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner.FormatEnum;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;

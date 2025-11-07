@@ -61,7 +61,6 @@ dependencies {
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.okhttp3.mockwebserver)
-    testImplementation(project(":outbound-connectors:outbound-shared"))
     testImplementation(libs.xmlunit.core)
     testImplementation(libs.opentelemetry.sdk.testing)
     testRuntimeOnly(libs.flyway.core)

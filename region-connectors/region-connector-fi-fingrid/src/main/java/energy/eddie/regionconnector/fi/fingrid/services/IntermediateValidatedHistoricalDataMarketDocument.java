@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fi.fingrid.services;
 
-import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.fi.fingrid.client.model.Observation;
 import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeries;
@@ -10,7 +10,10 @@ import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 final class IntermediateValidatedHistoricalDataMarketDocument {
     private final List<TimeSeriesResponse> timeSeriesResponses;

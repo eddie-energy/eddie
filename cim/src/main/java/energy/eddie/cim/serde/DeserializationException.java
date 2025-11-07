@@ -1,4 +1,4 @@
-package energy.eddie.outbound.shared.serde;
+package energy.eddie.cim.serde;
 
 public class DeserializationException extends Exception {
     public DeserializationException(Exception e) {

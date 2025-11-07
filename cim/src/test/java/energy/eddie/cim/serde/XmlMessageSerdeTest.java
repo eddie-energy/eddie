@@ -1,6 +1,7 @@
-package energy.eddie.outbound.shared.serde;
+package energy.eddie.cim.serde;
 
-import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.cim.CommonInformationModelVersions;
+import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.cim.v0_82.ap.CommodityKind;
 import energy.eddie.cim.v0_82.ap.DirectionTypeList;
@@ -16,7 +17,6 @@ import energy.eddie.cim.v0_82.vhd.MeasurementPointIDStringComplexType;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.cim.v1_04.*;
 import energy.eddie.cim.v1_04.vhd.*;
-import energy.eddie.outbound.shared.testing.XmlValidator;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -239,7 +239,7 @@ class XmlMessageSerdeTest {
                                                 .withMessageDocumentHeaderRegion(
                                                         new energy.eddie.cim.v0_82.vhd.MessageDocumentHeaderRegionComplexType()
                                                                 .withConnector("at-ed")
-                                                                .withCountry(energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
+                                                                .withCountry(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
                                                 )
                                 )
                 )
@@ -254,13 +254,13 @@ class XmlMessageSerdeTest {
                                 .withSenderMarketParticipantMarketRoleType(energy.eddie.cim.v0_82.vhd.RoleTypeList.METERING_POINT_ADMINISTRATOR)
                                 .withSenderMarketParticipantMRID(
                                         new energy.eddie.cim.v0_82.vhd.PartyIDStringComplexType()
-                                                .withCodingScheme(energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
+                                                .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
                                                 .withValue("EDA")
                                 )
                                 .withReceiverMarketParticipantMarketRoleType(energy.eddie.cim.v0_82.vhd.RoleTypeList.PARTY_CONNECTED_TO_GRID)
                                 .withReceiverMarketParticipantMRID(
                                         new energy.eddie.cim.v0_82.vhd.PartyIDStringComplexType()
-                                                .withCodingScheme(energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
+                                                .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
                                                 .withValue("eligible-party")
                                 )
                                 .withProcessProcessType(energy.eddie.cim.v0_82.vhd.ProcessTypeList.REALISED)
@@ -334,12 +334,12 @@ class XmlMessageSerdeTest {
                                                                 )
                                                                 .withInDomainMRID(
                                                                         new AreaIDStringComplexType()
-                                                                                .withCodingScheme(energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
+                                                                                .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
                                                                                 .withValue("id")
                                                                 )
                                                                 .withOutDomainMRID(
                                                                         new AreaIDStringComplexType()
-                                                                                .withCodingScheme(energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
+                                                                                .withCodingScheme(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME)
                                                                                 .withValue("id")
                                                                 )
                                                                 .withSeriesPeriodList(

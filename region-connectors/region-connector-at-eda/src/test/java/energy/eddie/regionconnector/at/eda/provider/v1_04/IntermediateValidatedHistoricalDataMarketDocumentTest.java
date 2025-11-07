@@ -2,13 +2,13 @@ package energy.eddie.regionconnector.at.eda.provider.v1_04;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.serde.SerdeInitializationException;
+import energy.eddie.cim.serde.SerializationException;
+import energy.eddie.cim.serde.XmlMessageSerde;
+import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.cim.v1_04.StandardDirectionTypeList;
 import energy.eddie.cim.v1_04.StandardQualityTypeList;
-import energy.eddie.outbound.shared.serde.SerdeInitializationException;
-import energy.eddie.outbound.shared.serde.SerializationException;
-import energy.eddie.outbound.shared.serde.XmlMessageSerde;
-import energy.eddie.outbound.shared.testing.XmlValidator;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.*;
 import org.junit.jupiter.api.Test;

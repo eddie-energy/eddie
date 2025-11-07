@@ -1,12 +1,12 @@
 package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
+import energy.eddie.cim.serde.MessageSerde;
+import energy.eddie.cim.serde.SerdeFactory;
+import energy.eddie.cim.serde.SerdeInitializationException;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.outbound.shared.TopicConfiguration;
-import energy.eddie.outbound.shared.serde.MessageSerde;
-import energy.eddie.outbound.shared.serde.SerdeFactory;
-import energy.eddie.outbound.shared.serde.SerdeInitializationException;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;

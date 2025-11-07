@@ -1,4 +1,4 @@
-package energy.eddie.outbound.shared.serde;
+package energy.eddie.cim.serde;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -14,14 +14,14 @@ class ObjectMapperCreatorTest {
 
     public static Stream<Arguments> testCreate_createsMapperForFormat() {
         return Stream.of(
-                Arguments.of(Format.JSON, JsonMapper.class),
-                Arguments.of(Format.XML, XmlMapper.class)
+                Arguments.of(SerializationFormat.JSON, JsonMapper.class),
+                Arguments.of(SerializationFormat.XML, XmlMapper.class)
         );
     }
 
     @ParameterizedTest
     @MethodSource
-    void testCreate_createsMapperForFormat(Format format, Class<?> clazz) {
+    void testCreate_createsMapperForFormat(SerializationFormat format, Class<?> clazz) {
         // Given
         // When
         var mapper = ObjectMapperCreator.create(format);

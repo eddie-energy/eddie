@@ -1,4 +1,5 @@
-package energy.eddie.outbound.shared.serde;
+package energy.eddie.cim.serde;
+
 
 public class DefaultSerdeFactory implements SerdeFactory {
     /**

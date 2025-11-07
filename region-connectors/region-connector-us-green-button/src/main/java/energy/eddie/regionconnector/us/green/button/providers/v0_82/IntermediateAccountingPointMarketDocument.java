@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.us.green.button.providers.v0_82;
 
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
-import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.agnostic.IdentifiablePayload;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.shared.cim.v0_82.CimUtils;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;

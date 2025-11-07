@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.us.green.button.providers.v0_82;
 
 import com.rometools.rome.feed.synd.SyndFeed;
-import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.IdentifiablePayload;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;

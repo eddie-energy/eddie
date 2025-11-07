@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fi.fingrid.services;
 
 
-import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.fi.fingrid.client.model.Address;
 import energy.eddie.regionconnector.fi.fingrid.client.model.Agreements;

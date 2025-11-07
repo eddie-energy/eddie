@@ -1,4 +1,4 @@
-package energy.eddie.outbound.shared.serde;
+package energy.eddie.outbound.shared.utils;
 
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
