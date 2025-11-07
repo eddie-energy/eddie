@@ -145,7 +145,7 @@ const handleCategoryChange = (category: string) => {
         <p v-if="!slicedPermissions.length" class="no-permissions heading-5">
           {{
             t(
-              `permissions.emptyList${selectedTab}${selectedPermissionCategory === 'outbound-aiida' ? 'Inbound' : 'Outbound'}`,
+              `permissions.emptyList${selectedTab}${selectedPermissionCategory === 'inbound-aiida' ? 'Inbound' : 'Outbound'}`,
             )
           }}
         </p>
