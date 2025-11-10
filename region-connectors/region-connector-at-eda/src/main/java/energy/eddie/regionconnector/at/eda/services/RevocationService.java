@@ -2,9 +2,11 @@ package energy.eddie.regionconnector.at.eda.services;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestProjection;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
@@ -30,7 +32,8 @@ public class RevocationService {
         String consentId = cmRevoke.consentId();
         var optionalRequest = repository.findByConsentId(consentId);
         if (optionalRequest.isPresent()) {
-            revoke(optionalRequest.get());
+            var projection = EdaPermissionRequest.fromProjection(optionalRequest.get());
+            revoke(projection);
             return;
         }
         LOGGER.atWarn()
@@ -42,7 +45,9 @@ public class RevocationService {
             LOGGER.error("Got Revoke Message with unknown consent id: {}; Could not revoke.", consentId);
         } else {
             // Revoke every permission since we do not know which permission request was actually revoked
-            requests.forEach(this::revoke);
+            requests.forEach((request ->
+                revoke(EdaPermissionRequest.fromProjection(request))
+            ));
         }
     }
 
@@ -56,7 +61,7 @@ public class RevocationService {
               .log("Revoking permission for permission id {}");
     }
 
-    private List<AtPermissionRequest> fallback(EdaCMRevoke cmRevoke) {
+    private List<AtPermissionRequestProjection> fallback(EdaCMRevoke cmRevoke) {
         return repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(cmRevoke.meteringPoint(),
                                                                            cmRevoke.consentEnd());
     }

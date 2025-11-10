@@ -1,10 +1,12 @@
 package energy.eddie.regionconnector.at.eda.services;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.at.api.AtPermissionRequestProjection;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
 import energy.eddie.regionconnector.at.eda.dto.SimpleEdaCMRevoke;
+import energy.eddie.regionconnector.at.eda.handlers.integration.inbound.AtPermissionRequestProjectionTest;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -18,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.publisher.TestPublisher;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -49,7 +52,7 @@ class RevocationServiceTest {
         TestPublisher<EdaCMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());
         var repository = mock(AtPermissionRequestRepository.class);
-        when(repository.findByConsentId("consentId")).thenReturn(Optional.of(permissionRequest));
+        when(repository.findByConsentId("consentId")).thenReturn(Optional.of(projection(permissionRequest)));
         EdaCMRevoke cmRevoke = new SimpleEdaCMRevoke().setConsentId("consentId");
         new RevocationService(edaAdapter, repository, outbox);
 
@@ -77,7 +80,7 @@ class RevocationServiceTest {
         when(repository.findByConsentId("consentId")).thenReturn(Optional.empty());
 
         when(repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(anyString(), any()))
-                .thenReturn(List.of(permissionRequest));
+                .thenReturn(List.of(projection(permissionRequest)));
         EdaCMRevoke cmRevoke = new SimpleEdaCMRevoke()
                 .setConsentEnd(now)
                 .setMeteringPoint("mpid")
@@ -108,7 +111,7 @@ class RevocationServiceTest {
         when(repository.findByConsentId("consentId")).thenReturn(Optional.empty());
 
         when(repository.findAcceptedAndFulfilledByMeteringPointIdAndDate(anyString(), any()))
-                .thenReturn(List.of(permissionRequest));
+                .thenReturn(List.of(projection(permissionRequest)));
         EdaCMRevoke cmRevoke = new SimpleEdaCMRevoke()
                 .setConsentEnd(now)
                 .setMeteringPoint("mpid")
@@ -120,5 +123,13 @@ class RevocationServiceTest {
 
         // Then
         verify(outbox, never()).commit(any());
+    }
+
+    private static AtPermissionRequestProjection projection(EdaPermissionRequest epm) {
+        return new AtPermissionRequestProjectionTest(
+                epm.permissionId(), epm.connectionId(), epm.cmRequestId(), epm.conversationId(),
+                LocalDate.now(), LocalDate.now(), epm.dataNeedId(), "dnid", null, null,
+                epm.message(), AllowedGranularity.PT15M.name(), epm.status().name(), Instant.now()
+        );
     }
 }

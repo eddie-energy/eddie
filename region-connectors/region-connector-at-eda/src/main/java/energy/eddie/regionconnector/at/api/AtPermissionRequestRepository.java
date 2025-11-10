@@ -49,12 +49,12 @@ public interface AtPermissionRequestRepository extends PermissionRequestReposito
      * @param date            to filter time relevant permission requests
      * @return a list of matching permission requests
      */
-    List<AtPermissionRequest> findAcceptedAndFulfilledByMeteringPointIdAndDate(
+    List<AtPermissionRequestProjection> findAcceptedAndFulfilledByMeteringPointIdAndDate(
             String meteringPointId,
             LocalDate date
     );
 
-    Optional<AtPermissionRequest> findByConsentId(String consentId);
+    Optional<AtPermissionRequestProjection> findByConsentId(String consentId);
 
     List<AtPermissionRequest> findByStatusIn(Set<PermissionProcessStatus> status);
 }
