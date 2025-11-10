@@ -262,12 +262,12 @@ onClickOutside(target, () => (showToolTip.value = false))
   border-radius: var(--border-radius);
   font-size: 1rem;
   line-height: 1.5;
-  word-break: break-all;
   gap: 0.25rem;
   &:not(.status) {
     flex-direction: column;
   }
   dd {
+    word-break: break-all;
     line-height: 1;
     font-size: 0.9rem;
     color: var(--eddie-grey-medium);
@@ -410,6 +410,9 @@ onClickOutside(target, () => (showToolTip.value = false))
     }
     &.schemas {
       align-items: flex-start;
+    }
+    dd {
+      text-align: right;
     }
   }
   .schedule {

@@ -282,7 +282,7 @@ const handleCategoryChange = (category: string) => {
     border: 1px solid var(--eddie-primary);
     border-top: none;
     border-radius: 0 0 var(--border-radius) var(--border-radius);
-    grid-template-columns: 1fr 6fr;
+    grid-template-columns: minmax(160px, 1fr) 6fr;
     grid-template-rows: min-content;
   }
   .permission-list {
