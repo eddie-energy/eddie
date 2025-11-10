@@ -131,6 +131,10 @@ Configurations for both should be applied automatically from the repository.
 
 ## Pull Requests
 
+To add new functionality, you need to open a pull request.
+All new code should be tested, especially when adding new functionality.
+Sonars Quality Gate is set to only accept code that has at least 80% test coverage.
+
 We **merge** commits **into** the **main** branch when pushing changes and **rebase onto main** when pulling changes from it.
 
 If you are using Git from the command line, you can set rebase as the default approach with
@@ -168,7 +172,7 @@ We do not squash commits when merging pull requests, so your commit messages mat
 The commit message should include the ticket number associated with it: `GH-123 Add this feature`.
 The `GH-` prefix is short for GitHub and is used by IntelliJ to hyperlink ticket numbers.
 This is done to later check why a change was implemented.
-You should always reference a ticket in your commits. If no ticket exists, you want ot create one.
+You should always reference a ticket in your commits. If no ticket exists, you want to create one.
 If it does not make sense to create a new ticket for trivial changes, NOISSUE can be used instead (e.g., `NOISSUE Fix typo in README`).
 This should be used sparingly, as it makes it harder to understand why a change was made.
 Take a look at the commit history as a point of reference.
