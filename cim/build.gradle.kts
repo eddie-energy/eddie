@@ -16,8 +16,7 @@ plugins {
 }
 
 group = "energy.eddie"
-
-version = "3.2.2"
+version = "3.3.0"
 
 repositories {
     mavenCentral()
@@ -101,6 +100,8 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
         cimSchemaFiles.resolve("v0_82/pmd/Permission_Envelope_2024-06-21T11.51.02.xsd"),
         // V0.91.08
         cimSchemaFiles.resolve("v0_91_08/RedistributionTransactionRequest Document_Annotated.xsd"),
+        // V0.92
+        cimSchemaFiles.resolve( "v0_92/nrtmd/ReferenceEnergyCurveNearRealTimeMeasurement.xsd"),
         // V1.04
         cimSchemaFiles.resolve("v1_04/vhd/ValidatedHistoricalData Document_v1.04_annotated.xsd"),
         cimSchemaFiles.resolve("v1_04/rtd/RealTimeData Document_v1.04_Annotated.xsd"),

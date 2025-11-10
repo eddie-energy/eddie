@@ -7,6 +7,7 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
+import energy.eddie.cim.v0_92.nrtmd.ReferenceEnergyCurveNearRealTimeMeasurementMarketDocument;
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import jakarta.xml.bind.JAXBContext;
@@ -35,6 +36,8 @@ public class XmlMessageSerde implements MessageSerde {
             AccountingPointEnvelope.class,
             // CIM v0.91.08
             RTREnvelope.class,
+            // CIM v0.92
+            ReferenceEnergyCurveNearRealTimeMeasurementMarketDocument.class,
             // CIM v1.04
             VHDEnvelope.class,
             RTDEnvelope.class

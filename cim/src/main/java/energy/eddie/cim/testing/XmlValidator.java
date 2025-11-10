@@ -17,7 +17,7 @@ public class XmlValidator {
     }
 
     // Only used during testing
-    @SuppressWarnings({"CallToPrintStackTrace", "java:S4507", "java:S2755"})
+    @SuppressWarnings({"CallToPrintStackTrace", "java:S4507", "java:S2755", "java:S106"})
     public static boolean validateXMLSchema(URL xsdPath, String xml) {
         try {
             var factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -28,6 +28,7 @@ public class XmlValidator {
             validator.validate(new StreamSource(new StringReader(xml)));
         } catch (Exception e) {
             e.printStackTrace();
+            System.err.println(xml);
             return false;
         }
         return true;
@@ -61,6 +62,11 @@ public class XmlValidator {
     public static boolean validateV104ValidatedHistoricalDataMarketDocument(byte[] xml) {
         var xsd = XmlValidator.class.getResource(
                 "/cim/xsd/v1_04/vhd/ValidatedHistoricalData Document_v1.04_annotated.xsd");
+        return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
+    }
+
+    public static boolean validateV092ReferenceEnergyCurveNearRealTimeMeasurementMarketDocument(byte[] xml) {
+        var xsd = XmlValidator.class.getResource("/cim/xsd/v0_92/nrtmd/ReferenceEnergyCurveNearRealTimeMeasurement.xsd");
         return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
     }
 }

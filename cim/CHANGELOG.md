@@ -55,3 +55,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.2.2 - 2026-01-26
 
 - Add copyright notices to source files
+
+## 3.3.0 - 2026-01-30
+
+- Add Reference Energy Curve Near Real Time Measurement Market Document v1.04
