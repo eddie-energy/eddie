@@ -1,4 +1,4 @@
-package energy.eddie.outbound.shared.serde;
+package energy.eddie.cim.serde;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +12,7 @@ import java.io.IOException;
 public class JsonMessageSerde implements MessageSerde {
     private final ObjectMapper objectMapper;
 
-    public JsonMessageSerde() {objectMapper = ObjectMapperCreator.create(Format.JSON);}
+    public JsonMessageSerde() {objectMapper = ObjectMapperCreator.create(SerializationFormat.JSON);}
 
     @Override
     public byte[] serialize(Object message) throws SerializationException {

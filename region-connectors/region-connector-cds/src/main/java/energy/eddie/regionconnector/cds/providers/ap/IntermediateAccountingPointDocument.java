@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.cds.providers.ap;
 
-import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.cds.providers.cim.Account;
 import energy.eddie.regionconnector.cds.providers.cim.CimStruct;

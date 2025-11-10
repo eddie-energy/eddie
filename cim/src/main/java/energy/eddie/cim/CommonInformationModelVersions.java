@@ -1,4 +1,4 @@
-package energy.eddie.api;
+package energy.eddie.cim;
 
 /**
  * The supported versions of the CIM

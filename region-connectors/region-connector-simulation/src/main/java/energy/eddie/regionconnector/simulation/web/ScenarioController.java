@@ -27,7 +27,7 @@ public class ScenarioController {
         this.predefinedScenarios = predefinedScenarios;
     }
 
-    @GetMapping("/scenarios")
+    @GetMapping(value = "/scenarios", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<String>> predefinedScenarios() {
         return ResponseEntity.ok(predefinedScenarios.scenarioNames());
     }

@@ -1,8 +1,8 @@
 package energy.eddie.outbound.kafka;
 
+import energy.eddie.cim.serde.SerdeFactory;
+import energy.eddie.cim.serde.SerdeInitializationException;
 import energy.eddie.cim.v0_82.pmd.*;
-import energy.eddie.outbound.shared.serde.SerdeFactory;
-import energy.eddie.outbound.shared.serde.SerdeInitializationException;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;

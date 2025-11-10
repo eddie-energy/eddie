@@ -2,13 +2,13 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataMessage;
+import energy.eddie.cim.serde.MessageSerde;
+import energy.eddie.cim.serde.SerializationException;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
-import energy.eddie.outbound.shared.serde.MessageSerde;
-import energy.eddie.outbound.shared.serde.SerializationException;
 import jakarta.annotation.Nullable;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;

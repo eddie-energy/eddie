@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.providers.v0_82;
 
-import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MeteringPoint;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;

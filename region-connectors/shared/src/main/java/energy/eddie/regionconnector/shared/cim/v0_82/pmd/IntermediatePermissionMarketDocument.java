@@ -7,11 +7,7 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
-import energy.eddie.regionconnector.shared.cim.v0_82.CimUtils;
-import energy.eddie.regionconnector.shared.cim.v0_82.DocumentType;
-import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
-import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
-import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v0_82.*;
 import jakarta.annotation.Nullable;
 
 import java.time.Clock;
@@ -21,7 +17,7 @@ import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
 
-import static energy.eddie.api.CommonInformationModelVersions.V0_82;
+import static energy.eddie.cim.CommonInformationModelVersions.V0_82;
 import static java.util.Map.entry;
 
 public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {

@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
-import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;

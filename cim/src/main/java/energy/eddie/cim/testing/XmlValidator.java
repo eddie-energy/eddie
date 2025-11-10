@@ -1,4 +1,4 @@
-package energy.eddie.outbound.shared.testing;
+package energy.eddie.cim.testing;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;

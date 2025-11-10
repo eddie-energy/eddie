@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fi.fingrid.services;
 
-import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.fi.fingrid.TestResourceProvider;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;

@@ -43,3 +43,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
 
 - Add Accounting Point Data Market Document Schema v1.04
 - Add Permission Market Document Schema v1.04
+
+## 3.2.0 - 2025-11-07
+
+- Add serialization and deserialization capabilities for CIM messages for JSON and XML format

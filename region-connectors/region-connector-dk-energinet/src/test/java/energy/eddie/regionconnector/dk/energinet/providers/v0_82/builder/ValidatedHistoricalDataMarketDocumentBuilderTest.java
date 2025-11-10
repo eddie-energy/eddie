@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.api.CommonInformationModelVersions;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.cim.v0_82.vhd.MessageTypeList;
 import energy.eddie.cim.v0_82.vhd.ProcessTypeList;

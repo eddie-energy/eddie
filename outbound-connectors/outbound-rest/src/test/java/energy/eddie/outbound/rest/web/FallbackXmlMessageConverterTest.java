@@ -2,13 +2,13 @@ package energy.eddie.outbound.rest.web;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocumentComplexType;
 import energy.eddie.outbound.rest.RestOutboundBeanConfig;
 import energy.eddie.outbound.rest.TestDataSourceInformation;
 import energy.eddie.outbound.rest.dto.ConnectionStatusMessages;
 import energy.eddie.outbound.rest.dto.ValidatedHistoricalDataMarketDocuments;
-import energy.eddie.outbound.shared.testing.XmlValidator;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

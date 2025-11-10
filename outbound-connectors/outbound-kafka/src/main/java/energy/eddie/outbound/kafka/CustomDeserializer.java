@@ -1,7 +1,7 @@
 package energy.eddie.outbound.kafka;
 
-import energy.eddie.outbound.shared.serde.DeserializationException;
-import energy.eddie.outbound.shared.serde.MessageSerde;
+import energy.eddie.cim.serde.DeserializationException;
+import energy.eddie.cim.serde.MessageSerde;
 import jakarta.annotation.Nullable;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.slf4j.Logger;

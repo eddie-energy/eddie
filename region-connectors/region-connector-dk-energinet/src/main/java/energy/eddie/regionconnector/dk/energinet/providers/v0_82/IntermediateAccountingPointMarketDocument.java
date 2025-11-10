@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
-import energy.eddie.api.CommonInformationModelVersions;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 import energy.eddie.regionconnector.dk.energinet.customer.model.ContactAddressDto;
