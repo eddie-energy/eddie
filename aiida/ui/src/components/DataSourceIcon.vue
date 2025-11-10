@@ -10,7 +10,7 @@ const { icon } = defineProps<{ icon: AiidaDataSourceIcon }>()
 
 <template>
   <span class="icon">
-    <ElectricityIcon v-if="icon === 'ELECTRICITY'" />
+    <ElectricityIcon v-if="icon === 'ELECTRICITY'" class="elec-icon" />
     <HeatIcon v-if="icon === 'HEAT'" />
     <MeterIcon v-if="icon === 'METER'" />
     <WaterIcon v-if="icon === 'WATER'" />
@@ -26,5 +26,9 @@ const { icon } = defineProps<{ icon: AiidaDataSourceIcon }>()
   align-items: center;
   border: 1px solid var(--eddie-grey-light);
   border-radius: var(--border-radius);
+
+  .elec-icon {
+    width: 0.85rem;
+  }
 }
 </style>

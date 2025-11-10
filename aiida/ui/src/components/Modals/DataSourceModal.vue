@@ -108,10 +108,10 @@ const getInitalFormData = (data?: AiidaDataSource) => {
 }
 
 const dataSourceIcons = {
-  ELECTRICITY: ElectricityIcon,
-  HEAT: HeatIcon,
   METER: MeterIcon,
+  HEAT: HeatIcon,
   WATER: WaterIcon,
+  ELECTRICITY: ElectricityIcon,
 }
 
 onMounted(async () => {
@@ -461,7 +461,7 @@ defineExpose({ showModal })
               class="icon-button"
               :class="{ selected: dataSource.icon === key }"
             >
-              <component :is="dataIcon" />
+              <component :is="dataIcon" :class="{ 'electricity-icon': key === 'ELECTRICITY' }" />
             </button>
           </div>
           <p v-if="errors['icon']" class="error-message">{{ errors['icon'] }}</p>
@@ -586,6 +586,14 @@ defineExpose({ showModal })
   &.selected {
     background-color: var(--eddie-primary);
     color: var(--light);
+  }
+
+  svg {
+    width: 1.25rem;
+  }
+
+  .electricity-icon {
+    width: 0.85rem;
   }
 }
 
