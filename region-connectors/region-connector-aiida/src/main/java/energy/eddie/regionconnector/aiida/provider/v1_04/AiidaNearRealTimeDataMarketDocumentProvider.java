@@ -15,7 +15,7 @@ public class AiidaNearRealTimeDataMarketDocumentProvider implements NearRealTime
     }
 
     @Override
-    public Flux<RTDEnvelope> getNearRealTimeMarketDocumentsStream() {
+    public Flux<RTDEnvelope> getNearRealTimeDataMarketDocumentsStream() {
         return flux;
     }
 }

@@ -9,7 +9,7 @@ import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.connectors.cim.v0_82.CimConnector;
-import energy.eddie.outbound.rest.connectors.cim.v1_04.CimConnectorV1_04CIM;
+import energy.eddie.outbound.rest.connectors.cim.v1_04.CimConnectorV1_04;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
 import energy.eddie.outbound.rest.model.RawDataMessageModel;
 import energy.eddie.outbound.rest.model.cim.v0_82.AccountingPointDataMarketDocumentModel;
@@ -57,7 +57,7 @@ public class TaskConfig {
 
     @Bean
     InsertionTask<RTDEnvelope, NearRealTimeDataMarketDocumentModel> rtdInsertionTask(
-            CimConnectorV1_04CIM cimConnector,
+            CimConnectorV1_04 cimConnector,
             NearRealTImeDataMarketDocumentRepository repository
     ) {
         return new InsertionTask<>(cimConnector.getNearRealTimeDataMarketDocumentStream(),

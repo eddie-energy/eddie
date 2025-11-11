@@ -16,8 +16,8 @@ If the EP service requires near real-time data, the connect button sends a reque
 a new permission. The region connector sends a response with the handshake information for AIIDA. When the customer grants the permission, their AIIDA instance will send data and status messages to
 separate topics on the MQTT broker.
 
-All messages are sent directly from AIIDA to the MQTT broker, nothing is routed through this
-region connector (RC).
+All messages are sent directly from AIIDA to the MQTT broker and routed through the Region Connector (RC),
+which then forwards them to the active outbound connectors.
 
 This RC also subscribes to the status message topic and updates the internal status of a permission when
 such a message is received.
@@ -113,9 +113,11 @@ The actual password remains on AIIDA's side and is transferred when AIIDA and ED
 For each permission there are ACLs for dedicated topics created in the `aiida_mqtt_acl` table.
 The ACLs are used to authorize the AIIDA instance to publish and subscribe.
 
-| topic_name                              | action      | acl_type | data_need_type |
-|-----------------------------------------|-------------|----------|----------------|
-| `aiida/v1/<permissionId>/data/outbound` | `publish`   | `allow`  | outbound-aiida |
-| `aiida/v1/<permissionId>/data/inbound`  | `subscribe` | `allow`  | inbound-aiida  |
-| `aiida/v1/<permissionId>/status`        | `publish`   | `allow`  | all            |
-| `aiida/v1/<permissionId>/termination`   | `subscribe` | `allow`  | all            |
+The `<schema>` part must use the `topicName()` defined in the corresponding `AiidaSchema` (for example, `AiidaSchema.SMART_METER_P1_CIM.topicName()`).
+
+| topic_name                                       | action      | acl_type | data_need_type |
+|--------------------------------------------------|-------------|----------|----------------|
+| `aiida/v1/<permissionId>/data/outbound/<schema>` | `publish`   | `allow`  | outbound-aiida |
+| `aiida/v1/<permissionId>/data/inbound/<schema>`  | `subscribe` | `allow`  | inbound-aiida  |
+| `aiida/v1/<permissionId>/status`                 | `publish`   | `allow`  | all            |
+| `aiida/v1/<permissionId>/termination`            | `subscribe` | `allow`  | all            |

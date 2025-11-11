@@ -3,15 +3,16 @@ package energy.eddie.spring.outboundconnector.extensions.v1_04;
 import energy.eddie.api.agnostic.outbound.OutboundConnectorExtension;
 import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnector;
 import energy.eddie.core.services.v1_04.NearRealTimeDataMarketDocumentService;
-import org.springframework.beans.factory.ObjectProvider;
+
+import java.util.Optional;
 
 @OutboundConnectorExtension
 public class NearRealTimeDataOutboundRegistrar {
-    // TODO: add tests for this class
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public NearRealTimeDataOutboundRegistrar(
-            ObjectProvider<NearRealTimeDataMarketDocumentOutboundConnector> rtdConnector,
+            Optional<NearRealTimeDataMarketDocumentOutboundConnector> rtdConnector,
             NearRealTimeDataMarketDocumentService cimService
     ) {
-        rtdConnector.ifAvailable(service -> service.setNearRealTimeDataMarketDocumentStream(cimService.getNearRealTimeDataMarketDocumentStream()));
+        rtdConnector.ifPresent(service -> service.setNearRealTimeDataMarketDocumentStream(cimService.getNearRealTimeDataMarketDocumentStream()));
     }
 }

@@ -12,7 +12,6 @@ import org.springframework.beans.factory.ObjectProvider;
  */
 @RegionConnectorExtension
 public class NearRealTimeDataMarketDocumentServiceRegistrar {
-    // TODO: add tests for this class
     public NearRealTimeDataMarketDocumentServiceRegistrar(
             ObjectProvider<NearRealTimeDataMarketDocumentProvider> NearRealTimeDataEnvelopeProvider,
             NearRealTimeDataMarketDocumentService cimService

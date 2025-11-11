@@ -13,6 +13,7 @@ If you do not have access to the EDDIE repository, contact the developers to gai
 The library includes many classes, but the most important ones to get started are:
 
 - `energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope` for [validated historical date market documents](./validated-historical-data-market-documents.md)
+- `energy.eddie.cim.v0_1_04.rtd.RTDEnvelope` for [near real-time data market documents](./near-real-time-data-market-documents.md)
 - `energy.eddie.cim.v0_82.ap.AccountingPointEnvelope` for [accounting point date market documents](./accounting-point-data-market-documents.md)
 - `energy.eddie.cim.v0_82.pmd.PermissionEnvelope` for [permission market documents](./permission-market-documents.md) and [termination documents](./permission-market-documents.md#termination-documents)
 - `energy.eddie.cim.v0_91_08.RTREnvelope` for [redistribution transaction request documents](./redistribution-transaction-request-documents.md)

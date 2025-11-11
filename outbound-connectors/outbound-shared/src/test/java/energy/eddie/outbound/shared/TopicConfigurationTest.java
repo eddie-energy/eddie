@@ -48,6 +48,16 @@ class TopicConfigurationTest {
     }
 
     @Test
+    void testNearRealTimeDataMarketDocument_returnsCorrectTopicName() {
+        // Given
+        // When
+        var res = config.nearRealTimeDataMarketDocument();
+
+        // Then
+        assertEquals("ep.e123.cim_1_04.near-real-time-data-md", res);
+    }
+
+    @Test
     void testAccountingPointDataMarketDocument_returnsCorrectTopicName() {
         // Given
         // When

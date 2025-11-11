@@ -18,8 +18,11 @@ public class NearRealTimeDataMarketDocumentService {
 
     public void registerProvider(NearRealTimeDataMarketDocumentProvider provider) {
         LOGGER.info("Registering {}", provider.getClass().getName());
-        provider.getNearRealTimeMarketDocumentsStream()
-                .subscribe(rtdSink::tryEmitNext, rtdSink::tryEmitError);
+        provider.getNearRealTimeDataMarketDocumentsStream()
+                .onErrorContinue((err, obj) -> LOGGER.warn(
+                        "Encountered error while processing near real-time data market document",
+                        err))
+                .subscribe(rtdSink::tryEmitNext);
     }
 
     public Flux<RTDEnvelope> getNearRealTimeDataMarketDocumentStream() {

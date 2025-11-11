@@ -47,6 +47,7 @@ public class RestOutboundBeanConfig {
                 // DTOs
                 CimCollection.class,
                 ValidatedHistoricalDataMarketDocuments.class,
+                NearRealTimeDataMarketDocuments.class,
                 PermissionMarketDocuments.class,
                 AccountingPointDataMarketDocuments.class
         );

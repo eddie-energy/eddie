@@ -13,5 +13,5 @@ public interface NearRealTimeDataMarketDocumentProvider {
      *
      * @return RTDEnvelope stream
      */
-    Flux<RTDEnvelope> getNearRealTimeMarketDocumentsStream();
+    Flux<RTDEnvelope> getNearRealTimeDataMarketDocumentsStream();
 }

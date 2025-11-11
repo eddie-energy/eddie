@@ -27,6 +27,10 @@
       "protocol": "openid-connect"
     },
     {
+      "name": "cim-near-real-time-data-md:read",
+      "protocol": "openid-connect"
+    },
+    {
       "name": "cim-termination-md:write",
       "protocol": "openid-connect"
     },
@@ -55,6 +59,7 @@
         "cim-permission-md:read",
         "cim-accounting-point-data-md:read",
         "cim-validated-historical-data-md:read",
+        "cim-near-real-time-data-md:read",
         "cim-termination-md:write",
         "cim-redistribution-transaction-rd:write"
       ]

@@ -1,7 +1,7 @@
 package energy.eddie.outbound.rest.web.cim.v1_04;
 
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
-import energy.eddie.outbound.rest.connectors.cim.v1_04.CimConnectorV1_04CIM;
+import energy.eddie.outbound.rest.connectors.cim.v1_04.CimConnectorV1_04;
 import energy.eddie.outbound.rest.dto.NearRealTimeDataMarketDocuments;
 import energy.eddie.outbound.rest.model.cim.v1_04.NearRealTimeDataMarketDocumentModel;
 import energy.eddie.outbound.rest.persistence.cim.v1_04.NearRealTImeDataMarketDocumentRepository;
@@ -28,11 +28,11 @@ import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 @SuppressWarnings("java:S101") // Names shouldn't contain underscores, but this is required to not have bean name clashes with the other CimController
 public class CimControllerV1_04 implements CimSwaggerV1_04 {
     public static final String X_ACCEL_BUFFERING = "X-Accel-Buffering";
-    private final CimConnectorV1_04CIM cimConnector;
+    private final CimConnectorV1_04 cimConnector;
     private final NearRealTImeDataMarketDocumentRepository rtdRepository;
 
     public CimControllerV1_04(
-            CimConnectorV1_04CIM cimConnector,
+            CimConnectorV1_04 cimConnector,
             NearRealTImeDataMarketDocumentRepository rtdRepository
     ) {
         this.cimConnector = cimConnector;

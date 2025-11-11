@@ -11,8 +11,9 @@ public record MqttTopic(
         String permissionId,
         MqttTopicType topicType
 ) {
+    private static final String TOPIC_REGEX_TEMPLATE = "^%s/(.+?)/%s(/%s)?$";
     private static final String DEFAULT_PREFIX = "aiida/v1";
-    private static final String SUFFIX_WILDCARD = "#";
+    private static final String SUFFIX_WILDCARD = "+";
 
     public static MqttTopic of(String permissionId, MqttTopicType topicType) {
         return new MqttTopic(DEFAULT_PREFIX, permissionId, topicType);
@@ -24,7 +25,7 @@ public record MqttTopic(
             AiidaSchema schema
     ) throws MqttTopicException {
         var regex = String.format(
-                "^%s/(.+?)/%s(/%s)?$",
+                TOPIC_REGEX_TEMPLATE,
                 DEFAULT_PREFIX,
                 Pattern.quote(topicType.topicName()),
                 Pattern.quote(schema.topicName())

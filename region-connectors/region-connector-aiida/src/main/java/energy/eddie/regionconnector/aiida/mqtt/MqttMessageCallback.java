@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import energy.eddie.regionconnector.aiida.exceptions.MqttTopicException;
@@ -75,6 +76,8 @@ public class MqttMessageCallback implements MqttCallback {
                 handleSmartMeterP1CimMessage(message);
             } else if (topic.endsWith(SMART_METER_P1_RAW_SUFFIX)) {
                 handleSmartMeterP1RawMessage(topic, message);
+            } else {
+                LOGGER.warn("Received MQTT message on unknown topic {}", topic);
             }
         } catch (JsonProcessingException e) {
             LOGGER.error("Could not process MQTT message on topic {}", topic, e);
@@ -154,8 +157,34 @@ public class MqttMessageCallback implements MqttCallback {
                 .findByPermissionId(permissionId)
                 .orElseThrow(() -> new PermissionNotFoundException(permissionId));
 
-        permissionRequest.validate(LocalDate.now());
+        validatePermissionRequest(permissionRequest);
 
         return permissionRequest;
+    }
+
+    private void validatePermissionRequest(AiidaPermissionRequest permissionRequest) throws PermissionInvalidException {
+        validateStatus(permissionRequest);
+        validateTimespan(permissionRequest);
+    }
+
+    private void validateStatus(AiidaPermissionRequest permissionRequest) throws PermissionInvalidException {
+        if (permissionRequest.status() != PermissionProcessStatus.ACCEPTED) {
+            throw new PermissionInvalidException(
+                    permissionRequest.permissionId(),
+                    "Permission status is not ACCEPTED but %s".formatted(permissionRequest.status())
+            );
+        }
+    }
+
+    private void validateTimespan(AiidaPermissionRequest permissionRequest) throws PermissionInvalidException {
+        var now = LocalDate.now();
+
+        if (now.isBefore(permissionRequest.start()) || now.isAfter(permissionRequest.end())) {
+            throw new PermissionInvalidException(
+                    permissionRequest.permissionId(),
+                    "Current date is outside of permission timespan (%s - %s)".formatted(permissionRequest.start(),
+                                                                                         permissionRequest.end())
+            );
+        }
     }
 }

@@ -105,7 +105,7 @@ class MqttServiceTest {
         verify(mockAclRepository).saveAll(mqttAclCaptor.capture());
         List<MqttAcl> acls = StreamSupport.stream(mqttAclCaptor.getValue().spliterator(), false).toList();
 
-        assertEquals("aiida/v1/testId/data/outbound/#", acls.getFirst().topic());
+        assertEquals("aiida/v1/testId/data/outbound/+", acls.getFirst().topic());
         assertEquals(MqttAction.PUBLISH, acls.getFirst().action());
         assertEquals(MqttAclType.ALLOW, acls.getFirst().aclType());
         assertEquals(permissionId, acls.getFirst().username());
@@ -147,7 +147,7 @@ class MqttServiceTest {
         verify(mockAclRepository).saveAll(mqttAclCaptor.capture());
         List<MqttAcl> acls = StreamSupport.stream(mqttAclCaptor.getValue().spliterator(), false).toList();
 
-        assertEquals("aiida/v1/testId/data/inbound/#", acls.getFirst().topic());
+        assertEquals("aiida/v1/testId/data/inbound/+", acls.getFirst().topic());
         assertEquals(MqttAction.SUBSCRIBE, acls.getFirst().action());
         assertEquals(MqttAclType.ALLOW, acls.getFirst().aclType());
         assertEquals(permissionId, acls.getFirst().username());
@@ -156,7 +156,42 @@ class MqttServiceTest {
     }
 
     @Test
-    void verify_sendTerminationRequest_sendsViaMqttClient() throws MqttException {
+    void deleteAclsForPermission_deletesAclsFromRepository() {
+        // When
+        mqttService.deleteAclsForPermission("myPermissionId");
+
+        // Then
+        verify(mockAclRepository).deleteByUsername("myPermissionId");
+    }
+
+    @Test
+    void subscribeToOutboundDataTopic_subscribesViaMqttClient() throws MqttException {
+        // Given
+        var permissionId = "test";
+        var expected = "aiida/v1/test/data/outbound/+";
+
+        // When
+        mqttService.subscribeToOutboundDataTopic(permissionId);
+
+        // Then
+        verify(mockAsyncClient).subscribe(expected, 1);
+    }
+
+    @Test
+    void subscribeToStatusTopic_subscribesViaMqttClient() throws MqttException {
+        // Given
+        var permissionId = "test";
+        var expected = "aiida/v1/test/status";
+
+        // When
+        mqttService.subscribeToStatusTopic(permissionId);
+
+        // Then
+        verify(mockAsyncClient).subscribe(expected, 1);
+    }
+
+    @Test
+    void sendTerminationRequest_sendsViaMqttClient() throws MqttException {
         // Given
         var permissionId = "testMyId";
         when(mockRequest.permissionId()).thenReturn(permissionId);
@@ -170,7 +205,7 @@ class MqttServiceTest {
     }
 
     @Test
-    void verify_close_disconnectsAndCloses() throws MqttException {
+    void close_disconnectsAndCloses() throws MqttException {
         // When
         mqttService.close();
 
@@ -180,7 +215,7 @@ class MqttServiceTest {
     }
 
     @Test
-    void verify_subscribeToStatusTopic() throws MqttException {
+    void subscribeToStatusTopic() throws MqttException {
         // Given
         var permissionId = "test";
         var expected = "aiida/v1/" + permissionId + "/status";
