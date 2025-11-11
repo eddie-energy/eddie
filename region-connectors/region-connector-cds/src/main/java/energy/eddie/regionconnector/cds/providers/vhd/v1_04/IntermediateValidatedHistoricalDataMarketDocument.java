@@ -1,22 +1,24 @@
-package energy.eddie.regionconnector.cds.providers.vhd;
+package energy.eddie.regionconnector.cds.providers.vhd.v1_04;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.cim.CommonInformationModelVersions;
-import energy.eddie.cim.v0_82.vhd.*;
+import energy.eddie.cim.v0_82.vhd.DirectionTypeList;
+import energy.eddie.cim.v1_04.*;
+import energy.eddie.cim.v1_04.vhd.*;
 import energy.eddie.regionconnector.cds.openapi.model.UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner.FormatEnum;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
 import energy.eddie.regionconnector.cds.providers.cim.Account;
 import energy.eddie.regionconnector.cds.providers.cim.Meter;
 import energy.eddie.regionconnector.cds.providers.cim.UsageSegment;
 import energy.eddie.regionconnector.shared.cim.v0_82.CimUtils;
-import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
-import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
+import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
 import jakarta.annotation.Nullable;
 
+import javax.xml.datatype.DatatypeFactory;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -35,82 +37,69 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         this.accounts = accounts;
     }
 
-    public List<ValidatedHistoricalDataEnvelope> toVhds() {
+    public List<VHDEnvelope> toVhds() {
         return accounts.stream()
                        .map(this::toVhds)
                        .flatMap(List::stream)
                        .toList();
     }
 
-    public List<ValidatedHistoricalDataEnvelope> toVhds(Account account) {
-        EsmpDateTime created = EsmpDateTime.now();
-        List<ValidatedHistoricalDataEnvelope> envelopes = new ArrayList<>();
+    public List<VHDEnvelope> toVhds(Account account) {
+        var created = ZonedDateTime.now(ZoneOffset.UTC);
+        List<VHDEnvelope> envelopes = new ArrayList<>();
         for (var meter : account.meters()) {
             for (var usageSegment : meter.usageSegments()) {
                 var interval = new EsmpTimeInterval(usageSegment.start(), usageSegment.end());
                 var vhd = getVhd(account, created)
-                        .withPeriodTimeInterval(new ESMPDateTimeIntervalComplexType()
+                        .withPeriodTimeInterval(new ESMPDateTimeInterval()
                                                         .withStart(interval.start())
                                                         .withEnd(interval.end()))
-                        .withTimeSeriesList(
-                                new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList()
-                                        .withTimeSeries(
-                                                getTimeSeriesList(meter, usageSegment, interval)
-                                        )
-                        );
-                envelopes.add(new VhdEnvelope(vhd, permissionRequest).wrap());
+                        .withTimeSeries(getTimeSeriesList(meter, usageSegment, interval));
+                envelopes.add(new VhdEnvelopeWrapper(vhd, permissionRequest).wrap());
             }
         }
         return envelopes;
     }
 
-    private List<TimeSeriesComplexType> getTimeSeriesList(
+    private List<TimeSeries> getTimeSeriesList(
             Meter meter,
             UsageSegment usageSegment,
             EsmpTimeInterval interval
     ) {
-        List<TimeSeriesComplexType> timeSeriesList = new ArrayList<>();
+        List<TimeSeries> timeSeriesList = new ArrayList<>();
         var resolution = getResolution(usageSegment);
         for (var entry : usageSegment.usageSegmentValues().entrySet()) {
             var format = entry.getKey();
             var converter = new CimUnitConverter(format);
             var direction = getFlowDirection(format);
-            var timeSeries = new TimeSeriesComplexType()
+            var unit = converter.unit();
+            var timeSeries = new TimeSeries()
+                    .withVersion("1")
                     .withMRID(UUID.randomUUID().toString())
                     .withBusinessType(getBusinessType(direction))
-                    .withProduct(EnergyProductTypeList.ACTIVE_POWER)
-                    .withFlowDirectionDirection(direction)
-                    .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation(AggregateKind.SUM)
+                    .withProduct(StandardEnergyProductTypeList.ACTIVE_POWER.value())
+                    .withFlowDirectionDirection(direction.value())
+                    .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregate(AggregateKind.SUM)
                     .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(getCommodity(format))
-                    .withEnergyMeasurementUnitName(converter.unit())
+                    .withEnergyMeasurementUnitName(unit == null ? null : unit.value())
                     .withMarketEvaluationPointMRID(
-                            new MeasurementPointIDStringComplexType()
+                            new MeasurementPointIDString()
                                     .withCodingScheme(getCodingScheme())
                                     .withValue(meter.meterNumber())
                     )
-                    .withReasonList(
-                            new TimeSeriesComplexType.ReasonList()
-                                    .withReasons(new ReasonComplexType()
-                                                         .withCode(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED))
-                    )
-                    .withSeriesPeriodList(
-                            new TimeSeriesComplexType.SeriesPeriodList()
-                                    .withSeriesPeriods(
-                                            new SeriesPeriodComplexType()
-                                                    .withResolution(resolution)
-                                                    .withTimeInterval(
-                                                            new ESMPDateTimeIntervalComplexType()
-                                                                    .withStart(interval.start())
-                                                                    .withEnd(interval.end())
-                                                    )
-                                                    .withPointList(
-                                                            new SeriesPeriodComplexType.PointList()
-                                                                    .withPoints(
-                                                                            toPoints(usageSegment,
-                                                                                     entry.getValue(),
-                                                                                     converter)
-                                                                    )
-                                                    )
+                    .withReasonCode(StandardReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED.value())
+                    .withPeriods(
+                            new SeriesPeriod()
+                                    .withResolution(resolution)
+                                    .withTimeInterval(
+                                            new ESMPDateTimeInterval()
+                                                    .withStart(interval.start())
+                                                    .withEnd(interval.end())
+                                    )
+                                    .withPoints(
+                                            toPoints(usageSegment,
+                                                     entry.getValue(),
+                                                     converter)
                                     )
                     );
             timeSeriesList.add(timeSeries);
@@ -118,29 +107,30 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         return timeSeriesList;
     }
 
-    @Nullable
     private CommodityKind getCommodity(FormatEnum format) {
         return switch (format) {
             case KWH_NET, KWH_FWD, KWH_REV, USAGE_KWH, USAGE_FWD_KWH, USAGE_REV_KWH, USAGE_NET_KWH, AGGREGATED_KWH,
                  DEMAND_KW, SUPPLY_MIX -> CommodityKind.ELECTRICITYPRIMARYMETERED;
             case WATER_M3, WATER_GAL, WATER_FT3 -> CommodityKind.POTABLEWATER;
             case GAS_THERM, GAS_CCF, GAS_MCF, GAS_MMBTU -> CommodityKind.NATURALGAS;
-            case EACS -> null;
+            case EACS -> CommodityKind.NONE;
         };
     }
 
     @Nullable
-    private CodingSchemeTypeList getCodingScheme() {
-        return CimUtils.getCodingSchemeVhd(permissionRequest.dataSourceInformation().countryCode());
+    private String getCodingScheme() {
+        var countryCode = permissionRequest.dataSourceInformation().countryCode();
+        return CimUtils.getCodingSchemeVhdV104(countryCode);
     }
 
+    // Same mapping as for CIM v0.82
     @SuppressWarnings("DuplicatedCode")
-    private List<PointComplexType> toPoints(
+    private List<Point> toPoints(
             UsageSegment usageSegment,
             List<BigDecimal> values,
             CimUnitConverter converter
     ) {
-        List<PointComplexType> points = new ArrayList<>();
+        List<Point> points = new ArrayList<>();
         var start = permissionRequest.start().atStartOfDay(ZoneOffset.UTC);
         var end = endOfDay(permissionRequest.end(), ZoneOffset.UTC);
         for (var i = 0; i < values.size(); i++) {
@@ -151,10 +141,10 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             if (dateTime.isAfter(end) || dateTime.isBefore(start)) {
                 continue;
             }
-            var point = new PointComplexType()
-                    .withPosition(Integer.toString(i + 1))
+            var point = new Point()
+                    .withPosition(i + 1)
                     .withEnergyQuantityQuantity(value)
-                    .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED);
+                    .withEnergyQuantityQuality(StandardQualityTypeList.AS_PROVIDED.value());
             points.add(point);
         }
         return points;
@@ -169,41 +159,36 @@ class IntermediateValidatedHistoricalDataMarketDocument {
     }
 
     @Nullable
-    private static BusinessTypeList getBusinessType(DirectionTypeList flowDirection) {
+    private static String getBusinessType(DirectionTypeList flowDirection) {
         return switch (flowDirection) {
-            case UP -> BusinessTypeList.PRODUCTION;
-            case DOWN -> BusinessTypeList.CONSUMPTION;
+            case UP -> StandardBusinessTypeList.PRODUCTION.value();
+            case DOWN -> StandardBusinessTypeList.CONSUMPTION.value();
             case UP_AND_DOWN, STABLE -> null;
         };
     }
 
-    @Nullable
-    private static String getResolution(UsageSegment usageSegment) {
-        try {
-            var duration = Duration.ofSeconds(usageSegment.interval().longValue());
-            return Granularity.fromMinutes((int) duration.toMinutes()).toString();
-        } catch (Exception e) {
-            return usageSegment.interval().toString() + "s";
-        }
+    private static javax.xml.datatype.Duration getResolution(UsageSegment usageSegment) {
+        var duration = Duration.ofSeconds(usageSegment.interval().longValue());
+        return DatatypeFactory.newDefaultInstance().newDuration(duration.toMillis());
     }
 
-    private ValidatedHistoricalDataMarketDocumentComplexType getVhd(Account account, EsmpDateTime created) {
+    private VHDMarketDocument getVhd(Account account, ZonedDateTime created) {
         var codingScheme = getCodingScheme();
-        return new ValidatedHistoricalDataMarketDocumentComplexType()
+        return new VHDMarketDocument()
                 .withMRID(UUID.randomUUID().toString())
-                .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
-                .withType(MessageTypeList.MEASUREMENT_VALUE_DOCUMENT)
-                .withCreatedDateTime(created.toString())
-                .withSenderMarketParticipantMarketRoleType(RoleTypeList.METERING_POINT_ADMINISTRATOR)
-                .withReceiverMarketParticipantMarketRoleType(RoleTypeList.CONSUMER)
-                .withProcessProcessType(ProcessTypeList.REALISED)
+                .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
+                .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
+                .withCreatedDateTime(created)
+                .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value())
+                .withReceiverMarketParticipantMarketRoleType(StandardRoleTypeList.CONSUMER.value())
+                .withProcessProcessType(StandardProcessTypeList.REALISED.value())
                 .withSenderMarketParticipantMRID(
-                        new PartyIDStringComplexType()
+                        new PartyIDString()
                                 .withCodingScheme(codingScheme)
                                 .withValue("CDSC")
                 )
                 .withReceiverMarketParticipantMRID(
-                        new PartyIDStringComplexType()
+                        new PartyIDString()
                                 .withCodingScheme(codingScheme)
                                 .withValue(account.cdsCustomerNumber())
                 );

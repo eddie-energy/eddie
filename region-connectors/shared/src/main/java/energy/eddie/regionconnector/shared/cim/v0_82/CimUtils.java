@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.shared.cim.v0_82;
 
 import energy.eddie.cim.v0_82.pmd.CodingSchemeTypeList;
+import energy.eddie.cim.v1_04.LocalCodingSchemeType;
+import energy.eddie.cim.v1_04.StandardCodingSchemeTypeList;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +37,16 @@ public class CimUtils {
     @Nullable
     public static energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList getCodingSchemeVhd(String countryCode) {
         return fromValue(countryCode, energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList::fromValue);
+    }
+
+    @Nullable
+    public static String getCodingSchemeVhdV104(String countryCode) {
+        var codingScheme = fromValue(countryCode, StandardCodingSchemeTypeList::fromValue);
+        if (codingScheme == null) {
+            var localCodingScheme = fromValue(countryCode, LocalCodingSchemeType::fromValue);
+            return localCodingScheme == null ? null : localCodingScheme.value();
+        }
+        return codingScheme.value();
     }
 
     @Nullable

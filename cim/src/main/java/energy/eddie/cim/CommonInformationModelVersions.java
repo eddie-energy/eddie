@@ -15,4 +15,8 @@ public enum CommonInformationModelVersions {
     public String version() {
         return version;
     }
+
+    public String cimify() {
+        return version.replace(".", "");
+    }
 }

@@ -108,7 +108,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 .asInstanceOf(InstanceOfAssertFactories.list(PointComplexType.class))
                 .singleElement()
                 .satisfies(p -> {
-                    assertThat(p.getPosition()).isEqualTo("" + now.toInstant().getEpochSecond());
+                    assertThat(p.getPosition()).isEqualTo(Integer.toString(1));
                     assertThat(p.getEnergyQuantityQuantity()).isEqualTo(value);
                 });
     }
@@ -183,6 +183,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 .asInstanceOf(InstanceOfAssertFactories.list(PointComplexType.class))
                 .isEmpty();
     }
+
     @SuppressWarnings("unused") // errorprone  false positive
     private static Stream<Arguments> testToVhds_returnsVhds() {
         return Stream.of(
