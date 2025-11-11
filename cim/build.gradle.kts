@@ -276,7 +276,14 @@ fun generateBindingsForReferencedFile(xsdFile: File): String {
     val xsdDocument = documentBuilderFactory
         .newDocumentBuilder()
         .parse(xsdFile)
-    val schemaLocation = xsdFile.absolutePath
+    var schemaLocation = xsdFile.absolutePath
+
+    if (System.getProperty("os.name").lowercase().contains("win")) {
+        schemaLocation = file(xsdFile).toURI().toString()
+
+        schemaLocation.prependIndent("file:/")
+        schemaLocation.replace("\\", "/")
+    }
 
     val xmlSchemaNs = "http://www.w3.org/2001/XMLSchema"
     val packageName = if (xsdFile.parentFile.parentFile.name.equals("generateCIMSchemaClasses")) {
