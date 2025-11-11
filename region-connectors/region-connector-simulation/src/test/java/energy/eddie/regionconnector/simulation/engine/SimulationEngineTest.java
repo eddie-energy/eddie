@@ -74,8 +74,8 @@ class SimulationEngineTest {
                 )
         );
         var metadata = new ScenarioMetadata("cid", "pid", "dnid");
-        var streams = new DocumentStreams();
-        var engine = new SimulationEngine(streams, cimConfig, dataNeedsService);
+        var streams = new DocumentStreams(cimConfig);
+        var engine = new SimulationEngine(streams, dataNeedsService);
 
         // When
         var res = engine.run(scenario, metadata);
@@ -123,8 +123,8 @@ class SimulationEngineTest {
                 )
         );
         var metadata = new ScenarioMetadata("cid", "pid", "dnid");
-        var streams = new DocumentStreams();
-        var engine = new SimulationEngine(streams, cimConfig, dataNeedsService);
+        var streams = new DocumentStreams(cimConfig);
+        var engine = new SimulationEngine(streams, dataNeedsService);
 
         // When
         var res = engine.run(scenario, metadata);
