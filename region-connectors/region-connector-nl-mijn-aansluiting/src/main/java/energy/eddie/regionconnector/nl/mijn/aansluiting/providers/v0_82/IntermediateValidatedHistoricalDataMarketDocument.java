@@ -87,10 +87,11 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                 var readingUnit = readingUnit(readingType);
 
                 var pointList = new ArrayList<PointComplexType>();
+                var pos = 1;
                 for (var reading : register.readingList()) {
                     pointList.add(
                             new PointComplexType()
-                                    .withPosition(reading.dateAndOrTime().dateTime().toString())
+                                    .withPosition(Integer.toString(pos++))
                                     .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED)
                                     .withEnergyQuantityQuantity(reading.value())
                     );
