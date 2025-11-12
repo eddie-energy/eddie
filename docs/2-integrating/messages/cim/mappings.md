@@ -70,7 +70,7 @@ This is the mapping for the [Mijn Aansluiting Region Connector](../../../1-runni
 There are two APIs used by the Mijn Aansluiting Region Connector.
 First, the [www.acc.mijnenergiedata.nl](https://www.acc.mijnenergiedata.nl/docs/) for validated historical data and second the [www.eancodeboek.nl](https://www.eancodeboek.nl/)  for accounting point data.
 
-![Mapping for Validated Historical Data](./images/mijn-aansluiting-vhd.png "Validated historical data market document mapping")
+![Mapping for Validated Historical Data](images/mijn-aansluiting-nrtmd.png "Reference Energy Curve Near Real Time Measurement Market Document and Validated historical data market document mapping")
 
 ![Mapping for Accounting Point Data](./images/mijn-aansluiting-ap.png "Accounting point data market document mapping")
 
