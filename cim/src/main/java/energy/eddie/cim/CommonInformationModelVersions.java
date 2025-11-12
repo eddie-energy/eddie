@@ -1,5 +1,7 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-// SPDX-License-Identifier: Apache-2.0
+/*
+ * SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package energy.eddie.cim;
 
@@ -20,6 +22,10 @@ public enum CommonInformationModelVersions {
     }
 
     public String cimify() {
-        return version.replace(".", "");
+        var cimVersion = version();
+        if (version.startsWith("0")) {
+            cimVersion = cimVersion.substring(1);
+        }
+        return cimVersion.replace(".", "");
     }
 }
