@@ -19,7 +19,7 @@ These credentials are required to authenticate with the MQTT broker and, as far 
 
 > **Note:** Sinapsi Alfa is not available for private customers.
 
-In [MySinapsiB2B](https://app.sghiot.com/mysinapsibtb) the Sinapsi Alfa device must be registered.
+In [MySinapsiB2B](https://app.sghiot.com/mysinapsibtb/) the Sinapsi Alfa device must be registered.
 For that the activation key must be entered.
 
 ## Activation Key

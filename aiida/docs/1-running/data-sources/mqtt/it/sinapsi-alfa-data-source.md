@@ -17,8 +17,8 @@ broker of Sinapsi Alfa is used.
 The setup of the device itself was not done by the EDDIE team, therefore please refer to the official documentation.
 Find the documentation for your device on the product page of your device at www.sinapsi.store.
 
-After the device was set up and connected to the internet, it must be registered in the 
-[MySinapsiB2B platform](https://app.sghiot.com/mysinapsibtb) by entering the activation key.
+After the device was set up and connected to the internet, it must be registered in the
+[MySinapsiB2B platform](https://app.sghiot.com/mysinapsibtb/) by entering the activation key.
 The Activation Key is a Universally Unique Identifier (UUID) assigned to each IoMeter2G and is used by the end user during installation to verify ownership.
 The label on the device has the full activation key and a QR code for it.
 

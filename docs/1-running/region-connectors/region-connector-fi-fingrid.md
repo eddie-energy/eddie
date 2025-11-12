@@ -4,7 +4,7 @@ This README will guide you through the process of configuring a region connector
 
 ## Prerequisites
 
-- Register a user with Fingrid [here](https://fingrid.fi).
+- Register a user with Fingrid [here](https://www.fingrid.fi/).
 - Download the certificate from Fingrid.
 - Create a Java Keystore containing the certificate.
   To create a Java Keystore see this [tutorial](https://docs.oracle.com/cd/E19509-01/820-3503/ggfen/index.html).

@@ -64,17 +64,17 @@ In the `monophase` profile there are three energy meters `EM1`, one per measured
 ![Shelly 1PM](Shelly1PM.png)
 
 - **n channels** (Shelly 1PM: 1 channel, Shelly 2PM: 2 channels, Shelly 4PM: 4 channels)
-- **Shelly Plus 1 PM (Mini) Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPlus1PM
-- **Shelly Plus 2 PM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPlus2PM
-- **Shelly Pro 1 PM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPro1PM
-- **Shelly Pro 2 PM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPro2PM
-- **Shelly Plus 4 PM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPlus4PM
-- **Shelly 1 PM Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly1PMG3
-- **Shelly 1 PM Mini Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/ShellyMini1PMG3
-- **Shelly 2 PM Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly2PMG3
-- **Shelly 1 PM Gen4:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly1PMG4
-- **Shelly 1 PM Mini Gen4:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen4/ShellyMini1PMG4
-- **Shelly 2 PM Gen4:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly2PMG4
+- **Shelly Plus 1 PM (Mini) Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPlus1PM/
+- **Shelly Plus 2 PM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPlus2PM/
+- **Shelly Pro 1 PM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPro1PM/
+- **Shelly Pro 2 PM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPro2PM/
+- **Shelly Plus 4 PM Gen2**
+- **Shelly 1 PM Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly1PMG3/
+- **Shelly 1 PM Mini Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/ShellyMini1PMG3/
+- **Shelly 2 PM Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly2PMG3/
+- **Shelly 1 PM Gen4**
+- **Shelly 1 PM Mini Gen4:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen4/ShellyMini1PMG4/
+- **Shelly 2 PM Gen4**
 
 #### Data
 

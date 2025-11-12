@@ -7,7 +7,7 @@ This README will guide you through the process of configuring a region connector
 - Register as a service provider at [ebUtilities.at](https://www.ebutilities.at/registrierung) in order to get a
   company identification number (e.g. `EP100129`).
 - Download and set up a PontonXP Messenger instance (
-  see [PontonXP Messenger](https://www.ponton.de/ponton-x-p-licensing-download/)). This is a licensed product, so you
+  see [PontonXP Messenger](https://www.ponton.de/ponton-x-p-licensing-download)). This is a licensed product, so you
   will need to contact Ponton for a license, they will also help you with the setup.
 - After you have set up the PontonXP Messenger, you should change the default adapter of the messenger. The default
   adapter is used for inbound messages that arrive asynchronously. The default adapter is configured via
