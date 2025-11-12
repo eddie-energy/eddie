@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 const { options, placeholder } = defineProps<{
   options: { label?: string; value: string }[] | string[]
@@ -10,7 +10,13 @@ const model = defineModel()
 const show = ref(false)
 const parentDiv = useTemplateRef('parent')
 
-const boundingRect = computed(() => parentDiv.value?.getBoundingClientRect())
+const boundingRect = ref()
+
+watch([show], () => {
+  if (show.value) {
+    boundingRect.value = parentDiv.value?.getBoundingClientRect()
+  }
+})
 
 const labelValueOptions = computed(() => {
   if (typeof options[0] === 'string') {
@@ -36,6 +42,12 @@ const handleBlur = (e: FocusEvent) => {
     show.value = false
   }
 }
+
+onMounted(() => {
+  window.addEventListener('resize', () => {
+    boundingRect.value = parentDiv.value?.getBoundingClientRect()
+  })
+})
 </script>
 
 <template>
