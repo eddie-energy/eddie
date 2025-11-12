@@ -9,7 +9,7 @@ If you want to contribute to this repository, please take a look at our [contrib
 
 ## Prerequisites
 
-In order for AIIDA to run, it is necessary to start a [TimescaleDB](https://www.timescale.com/) and a [Keycloak](https://www.keycloak.org/) instance.
+In order for AIIDA to run, it is necessary to start a [TimescaleDB](https://www.tigerdata.com/timescaledb) and a [Keycloak](https://www.keycloak.org/) instance.
 The predefined docker-compose.yml for starting those services can be found in the [docker](docker) folder.
 To use data sources that use MQTT, an EMQX instance is required additionally, which is also included in the
 docker-compose.yml.

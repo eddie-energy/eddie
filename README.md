@@ -19,7 +19,7 @@ It provides different entry points for:
 - [Extending or contributing to this repository](https://architecture.eddie.energy/framework/3-extending/tech-stack.html)
 
 To learn more about the architecture of the EDDIE project,
-you can visit our [architecture documentation](https://architecture.eddie.energy/architecture).
+you can visit our [architecture documentation](https://architecture.eddie.energy/architecture/).
 
 ## Contributing
 
@@ -39,7 +39,7 @@ The customer will usually select their country and data administrator, and input
 
 ![Showcase of the EDDIE dialog](/docs/images/eddie-dialog.webp)
 
-Any [status messages](https://architecture.eddie.energy/framework/2-integrating/messages/permission-market-documents.html) as well as the [requested data](https://architecture.eddie.energy/framework/2-integrating/messages/validated-historical-data-market-documents.html) are published to configured [data sinks](https://architecture.eddie.energy/framework/1-running/outbound-connectors/outbound-connectors.html) (like [Kafka](https://architecture.eddie.energy/framework/1-running/outbound-connectors/outbound-connector-kafka.html)) to be retrieved by your application.
+Any [status messages](https://architecture.eddie.energy/framework/2-integrating/messages/cim/permission-market-documents.html) as well as the [requested data](https://architecture.eddie.energy/framework/2-integrating/messages/cim/validated-historical-data-market-documents.html) are published to configured [outbound connectors](https://architecture.eddie.energy/framework/1-running/outbound-connectors/outbound-connectors.html) (like [Kafka](https://architecture.eddie.energy/framework/1-running/outbound-connectors/outbound-connector-kafka.html)) to be retrieved by your application.
 
 ## Running the EDDIE Framework
 

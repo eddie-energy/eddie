@@ -4,7 +4,7 @@
 > [!WARNING]
 > When not using the official smart meter data, measurement accuracy may vary, and billing-relevant values cannot be guaranteed
 
-[Shelly](https://shelly.com/) devices are a range of smart home products for various purposes, including switching, dimming, and metering energy and power usage.
+[Shelly](https://www.shelly.com/ ) devices are a range of smart home products for various purposes, including switching, dimming, and metering energy and power usage.
 They are known for their simple installation and seamless integration into various home automation systems.
 
 The Shelly data source allows the integration of energy systems that do not use an AIIDA-supported smart meter adapter.

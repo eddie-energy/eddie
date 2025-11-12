@@ -7,7 +7,7 @@ Inspired by [common-changelog](https://github.com/vweevers/common-changelog).
 
 Introduction of the changelog for the CIM.
 The CIM model now contains classes for CIM v0.82 and v0.91.08.
-For more information, see [Common Information Model Client Libraries](https://architecture.eddie.energy/framework/2-integrating/messages/cim-client-libraries.html#common-information-model-client-libraries).
+For more information, see [Common Information Model Client Libraries](https://architecture.eddie.energy/framework/2-integrating/messages/cim/client-libraries.html).
 
 ## 1.0.0 - 2025-05-15
 

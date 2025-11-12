@@ -13,9 +13,9 @@ But the documents might violate the names and structures that are defined in the
 There are three types of CIM documents currently supported by EDDIE:
 
 - [Permission Market Documents](./permission-market-documents.md)
-- [Accounting Point Market Documents](./accounting-point-data-market-documents)
+- [Accounting Point Market Documents](./accounting-point-data-market-documents.md)
 - [Validated Historical Data Market Documents](./validated-historical-data-market-documents.md)
-- [Retransmission Requests](./redistribution-transaction-request-documents)
+- [Retransmission Requests](./redistribution-transaction-request-documents.md)
 
 ## CIM envelope for v0.82
 

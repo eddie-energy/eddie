@@ -69,7 +69,7 @@ The `dev` profile configures the application for development.
 ./gradlew run-core --args=--spring.profiles.active=dev,local
 ```
 
-The EDDIE Core will run a [demo page](https://architecture.eddie.energy/framework/1-running/demo-button.html) on http://localhost:8080/demo, which can be used to test the application with a configurable EDDIE button.
+The EDDIE Core will run a [demo page](https://architecture.eddie.energy/framework/3-extending/demo-button.html#demo-button) on http://localhost:8080/demo, which can be used to test the application with a configurable EDDIE button.
 
 The repository includes IntelliJ run configurations for both the EDDIE Core and AIIDA.
 
@@ -110,7 +110,7 @@ The architecture documentation has its own repository with [eddie-energy/archite
 
 We use SonarQube to analyze our code in the IDE and on pull requests.
 When first opening the project, your IDE should ask you to set up the SonarQube plugin.
-If you are not sure if SonarQube was installed, please follow the [instructions](https://docs.sonarsource.com/sonarqube-for-ide/intellij/getting-started/installation/) for your IDE.
+If you are not sure if SonarQube was installed, please follow the [instructions](https://docs.sonarsource.com/sonarqube-for-intellij/getting-started/installation) for your IDE.
 
 ### Guidelines
 

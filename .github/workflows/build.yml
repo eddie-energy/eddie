@@ -11,6 +11,7 @@ on:
       - ".sonarlint/**"
       - ".run/**"
       - "**.md"
+      - ".github/**"
   push:
     branches:
       - main
