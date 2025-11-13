@@ -60,6 +60,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          DOCKER_MIN_API_VERSION: '1.24'  # TODO: remove when testcontainers supports higher API versions
         run: ./gradlew build integrationTest codeCoverageReport sonar --info
 
   publish-docker-images:
