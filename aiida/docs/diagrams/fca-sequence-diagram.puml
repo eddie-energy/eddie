@@ -1,0 +1,36 @@
+@startuml
+
+== 1. Initialization of the Digital Customer Interface (DCI) ==
+AIIDA -> "Connecting System Operator" as CSO: Request DCI registration
+CSO --> AIIDA: Certificate
+AIIDA --> AIIDA: Store certificate
+
+== 2. Onboarding of a flexible customer to FCA in the DCI ==
+CSO -> AIIDA: Combined permission request\nfor outbound and/or inbound data
+"Final Customer" as FC -> AIIDA: Confirm or reject permission(s)
+AIIDA --> CSO: Send permission status
+CSO -> AIIDA: Start activation test
+CSO -> AIIDA: Inform about activation test result
+
+== 3. Revocation of a FCA by the final customer ==
+
+FC -> AIIDA: Revoke permission(s)
+AIIDA --> CSO: Send updated permission status
+
+== 4. Termination of a FCA by the CSO ==
+
+CSO -> AIIDA: Terminate permission(s)
+AIIDA --> FC: Inform about termination
+AIIDA --> CSO: Send updated permission status
+
+== 5. Activation limitation of Flexibility event ==
+
+CSO -> AIIDA: Receive activation per final customer
+AIIDA --> "Customer Energy Management Systems" as CEMS: Provide activation
+AIIDA --> CSO: Send acknowledgement of the activation
+
+alt no active activation present
+   AIIDA -> CEMS: Provide default value
+end
+
+@enduml

@@ -113,8 +113,8 @@ export default withMermaid(
                         {
                           text: "Modbus Configuration Documentation",
                           link: "/1-running/data-sources/interval/modbus/modbus-configuration-documentation.md",
-                        }
-                      ]
+                        },
+                      ],
                     },
                   ],
                 },
@@ -122,7 +122,7 @@ export default withMermaid(
             },
             {
               text: "EMQX",
-              link: "/1-running/emqx.md"
+              link: "/1-running/emqx.md",
             },
             {
               text: "Errors and Logging",
@@ -159,7 +159,7 @@ export default withMermaid(
             {
               text: "User Interface",
               link: "/1-running/ui.md",
-            }
+            },
           ],
         },
         {
@@ -192,6 +192,10 @@ export default withMermaid(
               link: "/2-extending/documentation",
             },
           ],
+        },
+        {
+          text: "Roadmap",
+          link: "/3-roadmap/roadmap.md",
         },
       ],
 
