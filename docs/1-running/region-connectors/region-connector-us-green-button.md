@@ -14,7 +14,7 @@ Currently, it emits the following information:
 - Register at [UtilityAPI](https://utilityapi.com/register)
 - Register at the utility you want to support, those can be found [here](https://utilityapi.com/docs/utilities)
 - After registration, all your utilities will be listed under _Utility Registration_ in
-  your [settings](https://utilityapi.com/settings)
+  your [settings](https://utilityapi.com/login?next=/settings)
 - For each registered utility, you will have OAuth settings in which you can find the following needed information for
   the configuration:
     - `Client ID`

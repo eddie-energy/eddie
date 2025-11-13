@@ -24,7 +24,7 @@ After wiring and mounting, connect the device to your Wi-Fi network and configur
 
 - **Three-phase**
 - **Shelly Pro 3 EM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyPro3EM/
-- **Shelly 3EM:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly3EMG3
+- **Shelly 3EM:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/Shelly3EMG3/
 
 #### Data
 
@@ -48,8 +48,8 @@ In the `monophase` profile there are three energy meters `EM1`, one per measured
 ![Shelly EM Gen3](ShellyEMGen3.png)
 
 - **Single-phase**
-- **Shelly Pro EM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyProEM
-- **Shelly EM Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/ShellyEMG3
+- **Shelly Pro EM Gen2:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen2/ShellyProEM/
+- **Shelly EM Gen3:** https://shelly-api-docs.shelly.cloud/gen2/Devices/Gen3/ShellyEMG3/
 
 #### Data
 
