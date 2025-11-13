@@ -39,27 +39,44 @@ A sample configuration for these services is also provided in AIIDA's [compose f
 It is recommended to configure AIIDA using the .env file provided in the `aiida/docker` folder in combination with the
 `compose.yml` file.
 
-| Parameter                                              | Description                                                                          |
-|--------------------------------------------------------|--------------------------------------------------------------------------------------|
-| MQTT_INTERNAL_HOST                                     | The hostname for docker internal communication                                       |
-| MQTT_EXTERNAL_HOST                                     | The hostname for external communication                                              |
-| MQTT_BCRYPT_SALT_ROUNDS                                | The bcrypt salt rounds for hashing passwords                                         |
-| MQTT_PASSWORD                                          | The password for the MQTT user `aiida`                                               |
-| AIIDA_EXTERNAL_HOST                                    | The hostname for accessing the AIIDA web UI                                          |
-| SPRING_DATASOURCE_HOST                                 | The hostname of the TimescaleDB service                                              |
-| SPRING_DATASOURCE_PORT                                 | The port of the TimescaleDB service                                                  |
-| SPRING_DATASOURCE_DATABASE                             | The database name for AIIDA in TimescaleDB                                           |
-| SPRING_DATASOURCE_USERNAME                             | The username for accessing the database                                              |
-| SPRING_DATASOURCE_PASSWORD                             | The password for accessing the database                                              |
-| EMQX_DATABASE_PASSWORD                                 | The password for the `emqx` user in TimescaleDB                                      |
-| KEYCLOAK_ADMIN_USERNAME                                | The admin username for Keycloak                                                      |
-| KEYCLOAK_ADMIN_PASSWORD                                | The admin password for Keycloak                                                      |
-| KEYCLOAK_EXTERNAL_HOST                                 | The hostname for accessing Keycloak                                                  |
-| KEYCLOAK_INTERNAL_HOST                                 | The hostname for docker internal communication                                       |
-| AIIDA_CLEANUP_CLEANUP_INTERVAL                         | Specifies in which fixed duration the cleanup task is scheduled (Default: Every 24h) |
-| AIIDA_CLEANUP_ENTITIES_AIIDA_RECORD_RETENTION          | Specifies the time-to-live for an AIIDA_RECORD                                       |
-| AIIDA_CLEANUP_ENTITIES_FAILED_TO_SEND_ENTITY_RETENTION | Specifies the time-to-live for a FAILED_TO_SEND_ENTITY                               |
-| AIIDA_CLEANUP_ENTITIES_INBOUND_RECORD_RETENTION        | Specifies the time-to-live for an INBOUND_RECORD                                     |
+| Parameter                                              | Description                                                                                                                          |
+|--------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| AIIDA_EXTERNAL_HOST                                    | Network-accessible host of the AIIDA instance (defaults to http://localhost:8080)                                                    |
+| AIIDA_CORS_ALLOWED_ORIGINS                             | The origins that are allowed to communicate with AIIDA (see [reverse proxy deployments](#reverse-proxy-deployment))                  |
+| AIIDA_KEYCLOAK_ACCOUNT_URI                             | Specifies the URI to which users are redirected for account settings. By default, this points to Keycloak's account management page. |
+| AIIDA_CLEANUP_CLEANUP_INTERVAL                         | Specifies in which fixed duration the cleanup task is scheduled (Default: Every 24h)                                                 |
+| AIIDA_CLEANUP_ENTITIES_AIIDA_RECORD_RETENTION          | Specifies the time-to-live for an AIIDA_RECORD                                                                                       |
+| AIIDA_CLEANUP_ENTITIES_FAILED_TO_SEND_ENTITY_RETENTION | Specifies the time-to-live for a FAILED_TO_SEND_ENTITY                                                                               |
+| AIIDA_CLEANUP_ENTITIES_INBOUND_RECORD_RETENTION        | Specifies the time-to-live for an INBOUND_RECORD                                                                                     |
+| SPRING_DATASOURCE_HOST                                 | The hostname of the TimescaleDB service                                                                                              |
+| SPRING_DATASOURCE_PORT                                 | The port of the TimescaleDB service                                                                                                  |
+| SPRING_DATASOURCE_DATABASE                             | The database name for AIIDA in TimescaleDB                                                                                           |
+| SPRING_DATASOURCE_USERNAME                             | The username for accessing the database                                                                                              |
+| SPRING_DATASOURCE_PASSWORD                             | The password for accessing the database                                                                                              |
+| MQTT_INTERNAL_HOST                                     | The hostname for docker internal communication                                                                                       |
+| MQTT_EXTERNAL_HOST                                     | The hostname for external communication                                                                                              |
+| MQTT_BCRYPT_SALT_ROUNDS                                | The bcrypt salt rounds for hashing passwords                                                                                         |
+| MQTT_PASSWORD                                          | The password for the MQTT user `aiida`                                                                                               |
+| MQTT_TLS_CERTIFICATE_PATH                              | Filepath of TLS certificate for MQTT broker (can be mounted to Docker container)                                                     |
+| EMQX_DATABASE_PASSWORD                                 | The password for the `emqx` user in TimescaleDB                                                                                      |
+| KEYCLOAK_ADMIN_USERNAME                                | The admin username for Keycloak                                                                                                      |
+| KEYCLOAK_ADMIN_PASSWORD                                | The admin password for Keycloak                                                                                                      |
+| KEYCLOAK_EXTERNAL_HOST                                 | The hostname for accessing Keycloak                                                                                                  |
+| KEYCLOAK_INTERNAL_HOST                                 | The hostname for docker internal communication                                                                                       |
+| KEYCLOAK_REALM                                         | The Keycloak realm used for AIIDA                                                                                                    |
+| KEYCLOAK_CLIENT ID                                     | The Keycloak client ID used for AIIDA                                                                                                |
+| KEYCLOAK_CLIENT_SECRET                                 | The Keycloak client secret used for AIIDA                                                                                            |
+
+### Reverse Proxy Deployment
+
+If you are running an AIIDA instance behind a reverse proxy (e.g. nginx) to make it accessible everywhere, it is
+necessary to add the origin of the AIIDA instance to the allowed origins.
+This can be done by setting the config `aiida.cors.allowed-origins` or using the
+`AIIDA_CORS_ALLOWED_ORIGINS` environment variable.
+For example, if your AIIDA instance is reachable at the url `https://aiida.eddie.energy` you have to set the value of
+`AIIDA_CORS_ALLOWED_ORIGINS` to `https://aiida.eddie.energy`.
+To the best of our knowledge, this is only necessary for reverse proxy deployments and not e.g. using Kubernetes.
+
 
 ## Application Information
 
@@ -70,6 +87,12 @@ It is used by the EDDIE instance to differentiate between multiple AIIDA instanc
 ## Internal APIs
 
 AIIDA provides internal APIs for additional information about itself.
+
+### OpenAPI Documentation
+
+OpenAPI documentation can be found here: `<AIIDA_EXTERNAL_HOST>/v3/api-docs`
+
+SwaggerUI is also included and can be found here: `<AIIDA_EXTERNAL_HOST>/swagger-ui/index.html`
 
 ### Actuator API
 
