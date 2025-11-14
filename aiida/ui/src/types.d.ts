@@ -77,5 +77,10 @@ export type AiidaPermissionRequest = {
   bearerToken: string
 }
 
+export type AiidaDataSourceHealthStatus = {
+    status: string,
+    details: string
+}
+
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'
 export type ToastTypes = 'info' | 'success' | 'warning' | 'danger'

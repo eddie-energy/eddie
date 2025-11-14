@@ -1,13 +1,33 @@
 import { ref } from 'vue'
-import { getDataSourceImage, getDataSources } from '@/api.js'
-import type { AiidaDataSource } from '@/types'
+import { getDataSourceImage, getDataSources, getDataSourceHealthStatus } from '@/api.js'
+import type { AiidaDataSource, AiidaDataSourceHealthStatus } from '@/types'
 
 export const dataSources = ref<AiidaDataSource[]>([])
 export const dataSourceImages = ref<Record<string, string | undefined>>({})
+export const dataSourceHealthStatuses = ref<Record<string, AiidaDataSourceHealthStatus | undefined>>({})
 
-export async function fetchDataSources() {
+export async function fetchDataSourcesFull() {
+  await fetchDataSources()
+  await fetchDataSourcesHealthStatus()
+  await fetchDataSourceImages()
+}
+
+export async function fetchDataSources(){
   dataSources.value = await getDataSources()
-  dataSources.value.map(async (datasource) => {
+}
+
+export async function fetchDataSourcesHealthStatus() {
+  for (const datasource of dataSources.value) {
+    try {
+      dataSourceHealthStatuses.value[datasource.id] = await getDataSourceHealthStatus(datasource.id)
+    } catch {
+      dataSourceHealthStatuses.value[datasource.id] = undefined
+    }
+  }
+}
+
+export async function fetchDataSourceImages() {
+  for (const datasource of dataSources.value) {
     try {
       dataSourceImages.value[datasource.id] = URL.createObjectURL(
         await getDataSourceImage(datasource.id),
@@ -15,5 +35,5 @@ export async function fetchDataSources() {
     } catch {
       dataSourceImages.value[datasource.id] = undefined
     }
-  })
+  }
 }
