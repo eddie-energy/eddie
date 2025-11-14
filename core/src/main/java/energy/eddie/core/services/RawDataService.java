@@ -19,9 +19,10 @@ public class RawDataService {
     public void registerProvider(RawDataProvider rawDataProvider) {
         LOGGER.info("RawDataService: Registering {}", rawDataProvider.getClass().getName());
         rawDataProvider.getRawDataStream()
-                .doOnNext(rawDataSink::tryEmitNext)
-                .doOnError(rawDataSink::tryEmitError)
-                .subscribe();
+                       .onErrorContinue((err, obj) -> LOGGER.warn(
+                               "Encountered error while processing raw data",
+                               err))
+                       .subscribe(rawDataSink::tryEmitNext);
     }
 
     public Flux<RawDataMessage> getRawDataStream() {

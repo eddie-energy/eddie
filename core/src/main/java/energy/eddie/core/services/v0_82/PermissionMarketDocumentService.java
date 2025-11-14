@@ -18,9 +18,10 @@ public class PermissionMarketDocumentService {
     public void registerProvider(PermissionMarketDocumentProvider statusMessageProvider) {
         LOGGER.info("PermissionService: Registering {}", statusMessageProvider.getClass().getName());
         statusMessageProvider.getPermissionMarketDocumentStream()
-                             .doOnNext(permissionMarketDocumentSink::tryEmitNext)
-                             .doOnError(permissionMarketDocumentSink::tryEmitError)
-                             .subscribe();
+                             .onErrorContinue((err, obj) -> LOGGER.warn(
+                                     "Encountered error while processing permission market document",
+                                     err))
+                             .subscribe(permissionMarketDocumentSink::tryEmitNext);
     }
 
     public Flux<PermissionEnvelope> getPermissionMarketDocumentStream() {

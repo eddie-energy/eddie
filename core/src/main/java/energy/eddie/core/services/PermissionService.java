@@ -20,9 +20,10 @@ public class PermissionService {
     public void registerProvider(ConnectionStatusMessageProvider statusMessageProvider) {
         LOGGER.info("PermissionService: Registering {}", statusMessageProvider.getClass().getName());
         statusMessageProvider.getConnectionStatusMessageStream()
-                             .doOnNext(connectionStatusMessageSink::tryEmitNext)
-                             .doOnError(connectionStatusMessageSink::tryEmitError)
-                             .subscribe();
+                             .onErrorContinue((err, obj) -> LOGGER.warn(
+                                     "Encountered error while processing connection status message",
+                                     err))
+                             .subscribe(connectionStatusMessageSink::tryEmitNext);
     }
 
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {

@@ -24,9 +24,10 @@ public class ValidatedHistoricalDataEnvelopeService {
         LOGGER.info("EddieValidatedHistoricalDataMarketDocumentService: Registering {}",
                     validatedHistoricalDataEnvelopeProvider.getClass().getName());
         validatedHistoricalDataEnvelopeProvider.getValidatedHistoricalDataMarketDocumentsStream()
-                                               .doOnNext(consumptionRecordSink::tryEmitNext)
-                                               .doOnError(consumptionRecordSink::tryEmitError)
-                                               .subscribe();
+                                               .onErrorContinue((err, obj) -> LOGGER.warn(
+                                                       "Encountered error while processing validated historical data market document",
+                                                       err))
+                                               .subscribe(consumptionRecordSink::tryEmitNext);
     }
 
     public Flux<ValidatedHistoricalDataEnvelope> getEddieValidatedHistoricalDataMarketDocumentStream() {
