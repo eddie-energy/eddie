@@ -48,6 +48,9 @@ onMounted(() => {
     boundingRect.value = parentDiv.value?.getBoundingClientRect()
   })
 })
+
+const optionsLeft = computed(() => `${boundingRect.value?.left ?? 0}px`)
+const optionsWidth = computed(() => `${boundingRect.value?.width ?? 0}px`)
 </script>
 
 <template>
@@ -66,11 +69,7 @@ onMounted(() => {
       <ChevronDownIcon class="icon" />
     </div>
     <Transition>
-      <div
-        class="options"
-        v-if="show"
-        :style="{ width: `${parentDiv?.offsetWidth}px`, left: `${boundingRect?.left}px` }"
-      >
+      <div class="options" v-if="show">
         <div
           v-for="option in labelValueOptions as { label?: string; value: string }[]"
           class="option"
@@ -127,7 +126,9 @@ onMounted(() => {
   }
 }
 .options {
-  position: fixed;
+  position: absolute;
+  left: -1px;
+  width: v-bind('optionsWidth');
   z-index: 100;
   background-color: var(--light);
   border: 1px solid var(--eddie-grey-medium);
@@ -161,5 +162,12 @@ onMounted(() => {
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
+}
+
+@media screen and (min-width: 1024px) {
+  .options {
+    position: fixed;
+    left: v-bind('optionsLeft');
+  }
 }
 </style>
