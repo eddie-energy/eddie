@@ -331,6 +331,7 @@ div.toggle {
     padding: var(--spacing-xlg);
   }
   .header {
+    cursor: unset;
     grid-column: span 2;
   }
   .fields {
