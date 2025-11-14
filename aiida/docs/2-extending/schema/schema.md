@@ -5,6 +5,7 @@ To create a new schema in AIIDA, typically the following components are required
 - [Schema Type](#schema-type)
 - [Formatter Exception](#formatter-exception)
 - [Schema Formatter](#schema-formatter)
+- [Region Connector](#region-connector)
 
 ## Schema Type
 
@@ -60,7 +61,7 @@ public abstract class SchemaFormatter {
 }
 ```
 
-Lastly, the logic of the `CustomFormatter` has to be implemented.
+The logic of the `CustomFormatter` has to be implemented.
 
 ```java
 public class CustomFormatter extends SchemaFormatter {
@@ -82,3 +83,55 @@ public class CustomFormatter extends SchemaFormatter {
     }
 }
 ```
+
+## Region Connector
+
+> `region-connectors/region-connector-aiida`
+
+### 1. Add Sink bean
+
+Add a new bean for the Sink in the `AiidaBeanConfig` class.
+
+```java
+@Bean
+public Sinks.Many<RTDEnvelope> nearRealTimeDataSink() {
+    return Sinks.many().multicast().onBackpressureBuffer();
+}
+```
+
+### 2. Integrate Sink in `MqttMessageCallback`
+
+Inject the new sink into the constructor of the `MqttMessageCallback` class.
+Extend this class to support the new schema.
+Update the `messageArrived` method to parse messages of the new schema and emit them to the sink.
+
+### 3. Register Sink in `IdentifiableStreams`
+
+Add the newly created sink to the `IdentifiableStreams` class so that it can be accessed throughout the application.
+
+### 4. Create Schema Provider
+
+Each schema requires a dedicated provider that implements the corresponding interface from the `api` package.
+This provider retrieves the `IdentifiableStreams` bean and exposes the sink as a `Flux`.
+
+Example implementation:
+
+```java
+@Component
+public class AiidaNearRealTimeDataMarketDocumentProvider implements NearRealTimeDataMarketDocumentProvider {
+    private final Flux<RTDEnvelope> flux;
+
+    public AiidaNearRealTimeDataMarketDocumentProvider(IdentifiableStreams streams) {
+        this.flux = streams.nearRealTimeDataFlux();
+    }
+
+    @Override
+    public Flux<RTDEnvelope> getNearRealTimeMarketDocumentsStream() {
+        return flux;
+    }
+}
+```
+
+### 5. Continue with CIM Integration
+
+Continue with CIM Integration [CIM README](https://github.com/eddie-energy/eddie/blob/ce4ae20303bcdae7d247c607a89727a82e8c4865/cim/README.md)

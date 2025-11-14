@@ -1,6 +1,7 @@
 @startuml
 title AIIDA E2E flow
 
+actor "Eligible Party" as EP
 actor Customer as C
 participant "EDDIE Core" as EC
 participant "MQTT Broker" as M
@@ -37,25 +38,38 @@ else does not exist yet
         EC -> EC: Produce ACCEPTED event
         EC -> M: Create dedicated MQTT user & ACLs for AIIDA instance
         EC -> A: Return MQTT user & pw
+        EC -> M: Subscribe to data topic
+        EC -> M: Subscribe to status topic
 
         group Later, when permission start date is reached
             A -> M: Open connection
             A -> M: Subscribe to termination topic
             A -> M: Send data messages
+            M -> EC: Forward data messages
+            EC -> EP: Forward data messages
 
             opt When end date is reached
             A -> M: Send FULFILLED status messages
             A -> A: Fulfill permission
+            M -> EC: Forward FULFILLED status messages
+            EC -> EP: Forward FULFILLED status messages
 
             opt When customer revokes permission
             A -> M: Send REVOKED status messages
             A -> A: Revoke permission
+            M -> EC: Forward REVOKED status messages
+            EC -> EP: Forward REVOKED status messages
 
             opt
-            [-> EC: Received termination request from EP
+            EP -> EC: Received termination request
+            EC -> EP: Send TERMINATION status message
+            EC -> EP: Send REQUIRES_EXTERNAL_TERMINATION status message
             EC -> M: Send termination request\n(= permissionId on dedicated terminationTopic)
             M -> A: Forward termination request
             A -> A: Terminate permission
+            A -> M: Send EXTERNALLY_TERMINATED status messages
+            M -> EC: Forward EXTERNALLY_TERMINATED status messages
+            EC -> EP: Forward EXTERNALLY_TERMINATED status messages
         end
     end
 end

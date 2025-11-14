@@ -13,6 +13,7 @@ import energy.eddie.cim.v0_82.pmd.*;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocumentComplexType;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
+import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -101,6 +102,26 @@ class CustomSerializerTest {
                 .withValidatedHistoricalDataMarketDocument(
                         new ValidatedHistoricalDataMarketDocumentComplexType()
                 );
+
+        // When
+        byte[] result = customSerializer.serialize(topic, data);
+
+        // Then
+        assertNotNull(result);
+
+        // Clean-Up
+        customSerializer.close();
+    }
+
+    @Test
+    void testSerialize_EddieNearRealTimeMarketDocument() throws SerdeInitializationException {
+        // Given
+        var customSerializer = new CustomSerializer(SerdeFactory.getInstance().create("json"));
+        String topic = "test";
+        var data = new RTDEnvelope()
+                .withMessageDocumentHeaderMetaInformationPermissionId("permissionId")
+                .withMessageDocumentHeaderMetaInformationConnectionId("connectionId")
+                .withMessageDocumentHeaderMetaInformationDataNeedId("dataNeedId");
 
         // When
         byte[] result = customSerializer.serialize(topic, data);

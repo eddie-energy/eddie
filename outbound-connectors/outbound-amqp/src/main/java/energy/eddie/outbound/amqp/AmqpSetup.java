@@ -20,6 +20,7 @@ public class AmqpSetup {
                 configuration.permissionMarketDocument(),
                 configuration.accountingPointMarketDocument(),
                 configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_0_82),
+                configuration.nearRealTimeDataMarketDocument(),
                 configuration.terminationMarketDocument(),
                 configuration.redistributionTransactionRequestDocument()
         };

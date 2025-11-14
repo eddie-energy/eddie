@@ -1,11 +1,12 @@
 package energy.eddie.aiida.utils;
 
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -48,7 +49,7 @@ class PermissionExpiredRunnableTest {
         runnable.run();
 
         // Then
-        verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == PermissionStatus.FULFILLED));
+        verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == PermissionProcessStatus.FULFILLED));
         verify(mockPermission).setStatus(PermissionStatus.FULFILLED);
         verify(repository).save(any());
     }

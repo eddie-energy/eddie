@@ -68,6 +68,9 @@ public class TopicStructure {
          * Common Information Model version 0.91.08
          */
         CIM_0_91_08(CIM_0_91_08_VALUE, CommonInformationModelVersions.V0_91_08),
+        /**
+         * Common Information Model version 0.1.04
+         */
         CIM_1_04(CIM_1_04_VALUE, CommonInformationModelVersions.V1_04),
         /**
          * Eddie's internal model.
@@ -109,6 +112,7 @@ public class TopicStructure {
         ACCOUNTING_POINT_MD("accounting-point-md"),
         VALIDATED_HISTORICAL_DATA_MD("validated-historical-data-md"),
         REDISTRIBUTION_TRANSACTION_RD(TopicStructure.REDISTRIBUTION_TRANSACTION_RD_VALUE),
+        NEAR_REAL_TIME_DATA_MD("near-real-time-data-md"),
         // AGNOSTIC
         RAW_DATA_MESSAGE("raw-data-message"),
         CONNECTION_STATUS_MESSAGE(CONNECTION_STATUS_MESSAGE_VALUE),

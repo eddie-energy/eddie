@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.aiida.services;
 
 import energy.eddie.api.agnostic.ApplicationInformationAware;
+import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.data.needs.*;
@@ -17,15 +18,21 @@ import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.mqtt.MqttService;
+import energy.eddie.regionconnector.aiida.mqtt.MqttTopic;
+import energy.eddie.regionconnector.aiida.mqtt.MqttTopicType;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.events.*;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriTemplate;
 import reactor.core.publisher.Sinks;
@@ -36,7 +43,7 @@ import java.util.UUID;
 import static energy.eddie.api.v0.PermissionProcessStatus.*;
 
 @Component
-public class AiidaPermissionService {
+public class AiidaPermissionService implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaPermissionService.class);
     private final Outbox outbox;
     private final DataNeedsService dataNeedsService;
@@ -54,7 +61,7 @@ public class AiidaPermissionService {
             MqttService mqttService,
             AiidaPermissionRequestViewRepository viewRepository,
             DataNeedCalculationService<DataNeed> calculationService,
-            Sinks.Many<String> revocationSink,
+            Sinks.Many<AiidaConnectionStatusMessageDto> statusSink,
             ApplicationContext applicationContext
     ) {
         this.outbox = outbox;
@@ -63,18 +70,31 @@ public class AiidaPermissionService {
         this.mqttService = mqttService;
         this.viewRepository = viewRepository;
         this.calculationService = calculationService;
-        revocationSink.asFlux().subscribe(this::revokePermission);
+        statusSink.asFlux().subscribe(this::statusChangedExternally);
         this.eddieId = applicationContext.getBean(ApplicationInformationAware.BEAN_NAME, UUID.class);
     }
 
-    public void revokePermission(String permissionId) {
-        try {
-            checkIfPermissionHasValidStatus(permissionId, ACCEPTED, REVOKED);
-            outbox.commit(new SimpleEvent(permissionId, REVOKED));
-        } catch (PermissionNotFoundException e) {
-            LOGGER.error("Permission with permission id {} not found", permissionId);
-        } catch (PermissionStateTransitionException e) {
-            LOGGER.error("Permission with permission id {} could not be revoked", permissionId);
+    @Override
+    @Transactional
+    public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
+        var activePermissions = viewRepository.findActivePermissionRequests();
+        LOGGER.info("Found {} active permissions on startup", activePermissions.size());
+
+        for (var permission : activePermissions) {
+            subscribeToPermissionTopics(permission.permissionId());
+        }
+    }
+
+    public void statusChangedExternally(AiidaConnectionStatusMessageDto message) {
+        var permissionId = message.permissionId().toString();
+
+        switch (message.status()) {
+            case REVOKED -> revokePermission(permissionId);
+            case EXTERNALLY_TERMINATED -> externallyTerminatePermission(permissionId);
+            case FULFILLED -> fulfillPermission(permissionId);
+            default -> LOGGER.warn("Received unsupported external status {} for permission {}",
+                                   message.status(),
+                                   message.permissionId());
         }
     }
 
@@ -94,13 +114,13 @@ public class AiidaPermissionService {
                     dataNeedId,
                     "Data need not supported");
             case ValidatedHistoricalDataDataNeedResult vhdResult -> {
-                var terminationTopic = terminationTopicForPermissionId(permissionId);
+                var terminationTopic = MqttTopic.of(permissionId, MqttTopicType.TERMINATION);
                 var createdEvent = new CreatedEvent(permissionId,
                                                     forCreation.connectionId(),
                                                     dataNeedId,
                                                     vhdResult.energyTimeframe().start(),
                                                     vhdResult.energyTimeframe().end(),
-                                                    terminationTopic);
+                                                    terminationTopic.topicPattern());
                 outbox.commit(createdEvent);
                 // no validation for AIIDA requests necessary
                 outbox.commit(new SimpleEvent(permissionId, VALIDATED));
@@ -114,7 +134,7 @@ public class AiidaPermissionService {
         }
     }
 
-    public void unableToFulFillPermission(
+    public void unableToFulfillPermission(
             String permissionId,
             UUID aiidaId
     ) throws PermissionNotFoundException, PermissionStateTransitionException {
@@ -144,31 +164,53 @@ public class AiidaPermissionService {
         var dataNeed = permissionDetails.dataNeed();
         var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId,
                                                                        dataNeed instanceof InboundAiidaDataNeed);
-
         outbox.commit(new MqttCredentialsCreatedEvent(permissionId, mqttDto.username()));
-
-        try {
-            mqttService.subscribeToStatusTopic(permissionId);
-        } catch (MqttException e) {
-            LOGGER.error("Something went wrong when subscribing to the status topic for permission {}",
-                         permissionId,
-                         e);
-        }
+        subscribeToPermissionTopics(permissionId);
 
         return mqttDto;
     }
 
-    public void terminatePermission(String permissionId) {
-        LOGGER.info("Got request to terminate permission {}", permissionId);
+    public void revokePermission(String permissionId) {
+        try {
+            checkIfPermissionHasValidStatus(permissionId, ACCEPTED, REVOKED);
+            mqttService.deleteAclsForPermission(permissionId);
+            outbox.commit(new SimpleEvent(permissionId, REVOKED));
+        } catch (PermissionNotFoundException e) {
+            LOGGER.error("Permission with permission id {} not found", permissionId);
+        } catch (PermissionStateTransitionException e) {
+            LOGGER.error("Permission with permission id {} could not be revoked", permissionId);
+        }
+    }
 
-        // TODO How to handle ACLs for both events? Delete immediately? Schedule task? --> GH-970
+    public void terminatePermission(String permissionId) {
         try {
             AiidaPermissionRequest request = checkIfPermissionHasValidStatus(permissionId, ACCEPTED, TERMINATED);
             mqttService.sendTerminationRequest(request);
             outbox.commit(new SimpleEvent(permissionId, TERMINATED));
+            outbox.commit(new SimpleEvent(permissionId, REQUIRES_EXTERNAL_TERMINATION));
         } catch (Exception e) {
             outbox.commit(new FailedToTerminateEvent(permissionId, e.getMessage()));
             LOGGER.warn("Cannot terminate permission {}", permissionId, e);
+        }
+    }
+
+    public void externallyTerminatePermission(String permissionId) {
+        try {
+            checkIfPermissionHasValidStatus(permissionId, REQUIRES_EXTERNAL_TERMINATION, EXTERNALLY_TERMINATED);
+            mqttService.deleteAclsForPermission(permissionId);
+            outbox.commit(new SimpleEvent(permissionId, EXTERNALLY_TERMINATED));
+        } catch (Exception e) {
+            LOGGER.warn("Cannot externally terminate permission {}", permissionId, e);
+        }
+    }
+
+    public void fulfillPermission(String permissionId) {
+        try {
+            checkIfPermissionHasValidStatus(permissionId, ACCEPTED, FULFILLED);
+            mqttService.deleteAclsForPermission(permissionId);
+            outbox.commit(new SimpleEvent(permissionId, FULFILLED));
+        } catch (Exception e) {
+            LOGGER.warn("Cannot fulfill permission {}", permissionId, e);
         }
     }
 
@@ -215,7 +257,14 @@ public class AiidaPermissionService {
         return request;
     }
 
-    private String terminationTopicForPermissionId(String permissionId) {
-        return "aiida/v1/" + permissionId + "/termination";
+    private void subscribeToPermissionTopics(String permissionId) {
+        try {
+            mqttService.subscribeToOutboundDataTopic(permissionId);
+            mqttService.subscribeToStatusTopic(permissionId);
+        } catch (MqttException e) {
+            LOGGER.error("Something went wrong when subscribing to a topic for permission {}",
+                         permissionId,
+                         e);
+        }
     }
 }

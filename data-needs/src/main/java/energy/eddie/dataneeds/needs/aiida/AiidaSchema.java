@@ -18,13 +18,21 @@ public enum AiidaSchema {
     @JsonCreator
     public static AiidaSchema forValue(String value) {
         return Arrays.stream(AiidaSchema.values())
-                     .filter(op -> op.getValue().equals(value))
+                     .filter(op -> op.value().equals(value))
                      .findFirst()
                      .orElseThrow();
     }
 
     @JsonValue
-    public String getValue() {
+    public String value() {
         return schema;
+    }
+
+    public String topicName() {
+        return schema.toLowerCase();
+    }
+
+    public String buildTopicPath(String baseTopic) {
+        return String.join("/", baseTopic, topicName());
     }
 }

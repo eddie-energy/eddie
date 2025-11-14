@@ -2,7 +2,6 @@ package energy.eddie.aiida.streamers.mqtt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.dtos.ConnectionStatusMessage;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -11,6 +10,7 @@ import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.FailedToSendEntity;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
@@ -43,7 +43,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MqttStreamerTest {
-    private static final String EXPECTED_DATA_TOPIC = "aiida/v1/permission-id/data/outbound";
+    private static final String DATA_TOPIC = "aiida/v1/permission-id/data/outbound";
+    private static final String EXPECTED_DATA_TOPIC = DATA_TOPIC + "/smart-meter-p1-raw";
     private static final String EXPECTED_STATUS_TOPIC = "aiida/v1/permission-id/status";
     private static final String EXPECTED_TERMINATION_TOPIC = "aiida/v1/permission-id/termination";
     private static final UUID aiidaId = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -86,7 +87,7 @@ class MqttStreamerTest {
     @Mock
     private ObjectMapper mockMapper;
     @Mock
-    private ConnectionStatusMessage mockStatusMessage;
+    private AiidaConnectionStatusMessageDto mockStatusMessage;
     @Mock
     private PermissionLatestRecordMap mockLatestRecordMap;
     private MqttStreamingConfig mqttStreamingConfig;
@@ -97,7 +98,7 @@ class MqttStreamerTest {
         var mqttDto = new MqttDto("mqttUsername",
                                   "mqttPassword",
                                   "tcp://localhost:1883",
-                                  EXPECTED_DATA_TOPIC,
+                                  DATA_TOPIC,
                                   EXPECTED_STATUS_TOPIC,
                                   EXPECTED_TERMINATION_TOPIC);
 

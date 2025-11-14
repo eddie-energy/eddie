@@ -33,6 +33,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.ContextRefreshedEvent;
 import reactor.core.publisher.Sinks;
 
 import java.time.LocalDate;
@@ -78,11 +79,11 @@ class AiidaPermissionServiceTest {
     private MqttDto mockMqttDto;
     @Mock
     private DataNeedCalculationService<DataNeed> calculationService;
-    @Captor
-    private ArgumentCaptor<PermissionEvent> permissionEventCaptor;
-    private AiidaPermissionService service;
     @Mock
     private ApplicationContext applicationContext;
+    private AiidaPermissionService service;
+    @Captor
+    private ArgumentCaptor<PermissionEvent> permissionEventCaptor;
 
     @BeforeEach
     void setUp() {
@@ -99,6 +100,26 @@ class AiidaPermissionServiceTest {
     @AfterEach
     void tearDown() {
         logCaptor.clearLogs();
+    }
+
+    @Test
+    void givenContextRefreshedEvent_subscribesToActivePermissions() throws MqttException {
+        // given
+        var permission1 = mock(AiidaPermissionRequest.class);
+        var permission2 = mock(AiidaPermissionRequest.class);
+        when(permission1.permissionId()).thenReturn("perm-1");
+        when(permission2.permissionId()).thenReturn("perm-2");
+        when(mockViewRepository.findActivePermissionRequests()).thenReturn(List.of(permission1, permission2));
+
+        // when
+        service.onApplicationEvent(mock(ContextRefreshedEvent.class));
+
+        // then
+        verify(mockViewRepository).findActivePermissionRequests();
+        verify(mockMqttService).subscribeToOutboundDataTopic("perm-1");
+        verify(mockMqttService).subscribeToStatusTopic("perm-1");
+        verify(mockMqttService).subscribeToOutboundDataTopic("perm-2");
+        verify(mockMqttService).subscribeToStatusTopic("perm-2");
     }
 
     @Test
@@ -214,33 +235,33 @@ class AiidaPermissionServiceTest {
     }
 
     @Test
-    void givenNonExistingPermissionId_unableToFulFillPermission_throwsException() {
+    void givenNonExistingPermissionId_unableToFulfillPermission_throwsException() {
         // Given
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.empty());
 
         // When, Then
-        assertThrows(PermissionNotFoundException.class, () -> service.unableToFulFillPermission(permissionId, aiidaId));
+        assertThrows(PermissionNotFoundException.class, () -> service.unableToFulfillPermission(permissionId, aiidaId));
     }
 
     @Test
-    void givenPermissionInInvalidState_unableToFulFillPermission_throwsException() {
+    void givenPermissionInInvalidState_unableToFulfillPermission_throwsException() {
         // Given
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
         when(mockRequest.status()).thenReturn(PermissionProcessStatus.CREATED);
 
         // When, Then
         assertThrows(PermissionStateTransitionException.class,
-                     () -> service.unableToFulFillPermission(permissionId, aiidaId));
+                     () -> service.unableToFulfillPermission(permissionId, aiidaId));
     }
 
     @Test
-    void givenValidInput_unableToFulFillPermission_emitsUnfulfillableStatusEvent() throws PermissionNotFoundException, PermissionStateTransitionException, NoSuchFieldException, IllegalAccessException {
+    void givenValidInput_unableToFulfillPermission_emitsUnfulfillableStatusEvent() throws PermissionNotFoundException, PermissionStateTransitionException, NoSuchFieldException, IllegalAccessException {
         // Given
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
         when(mockRequest.status()).thenReturn(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
 
         // When
-        service.unableToFulFillPermission(permissionId, aiidaId);
+        service.unableToFulfillPermission(permissionId, aiidaId);
 
         // Then
         verify(mockOutbox, times(1)).commit(permissionEventCaptor.capture());
@@ -260,7 +281,6 @@ class AiidaPermissionServiceTest {
         service.revokePermission(permissionId);
 
         // Then
-
         assertTrue(logCaptor.getErrorLogs().contains("Permission with permission id " + permissionId + " not found"));
     }
 
@@ -279,7 +299,7 @@ class AiidaPermissionServiceTest {
     }
 
     @Test
-    void givenValidInput_revokePermission_emitsRevokedStatusEvent() {
+    void givenValidInput_revokePermission_deletesAclsAndEmitsRevokedStatusEvent() {
         // Given
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
         when(mockRequest.status()).thenReturn(ACCEPTED);
@@ -288,8 +308,67 @@ class AiidaPermissionServiceTest {
         service.revokePermission(permissionId);
 
         // Then
+        verify(mockMqttService).deleteAclsForPermission(permissionId);
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.REVOKED && event.permissionId()
                                                                                                              .equals(permissionId)));
+    }
+
+    @Test
+    void givenPermissionInInvalidState_externallyTerminatePermission_throwsException() {
+        // Given
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(TERMINATED);
+
+        // When
+        service.externallyTerminatePermission(permissionId);
+
+        // Then
+        verify(mockMqttService, never()).deleteAclsForPermission(permissionId);
+        verify(mockOutbox, never()).commit(any());
+    }
+
+    @Test
+    void givenValidInput_externallyTerminatePermission_deletesAclsAndEmitsTerminatedStatusEvent() {
+        // Given
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(REQUIRES_EXTERNAL_TERMINATION);
+
+        // When
+        service.externallyTerminatePermission(permissionId);
+
+        // Then
+        verify(mockMqttService).deleteAclsForPermission(permissionId);
+        verify(mockOutbox).commit(argThat(event -> event.status() == EXTERNALLY_TERMINATED && event.permissionId()
+                                                                                                   .equals(permissionId)));
+    }
+
+    @Test
+    void givenPermissionInInvalidState_fulfillPermission_throwsException() {
+        // Given
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(PermissionProcessStatus.CREATED);
+
+        // When
+        service.fulfillPermission(permissionId);
+
+        // Then
+        verify(mockMqttService, never()).deleteAclsForPermission(permissionId);
+        verify(mockOutbox, never()).commit(any());
+    }
+
+    @Test
+    void givenValidInput_fulfillPermission_deletesAclsAndEmitsFulfilledStatusEvent() {
+        // Given
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(ACCEPTED);
+
+        // When
+        service.fulfillPermission(permissionId);
+
+        // Then
+        verify(mockMqttService).deleteAclsForPermission(permissionId);
+        verify(mockOutbox).commit(argThat(event -> event.status() == FULFILLED && event.permissionId()
+                                                                                       .equals(permissionId)));
     }
 
     @Test
@@ -327,7 +406,7 @@ class AiidaPermissionServiceTest {
 
         // Then
         assertTrue(logCaptor.getErrorLogs()
-                            .contains("Something went wrong when subscribing to the status topic for permission " + permissionId));
+                            .contains("Something went wrong when subscribing to a topic for permission " + permissionId));
     }
 
     @Test
@@ -360,6 +439,7 @@ class AiidaPermissionServiceTest {
         assertEquals(ACCEPTED, permissionEventCaptor.getAllValues().get(1).status());
         assertEquals(permissionId, permissionEventCaptor.getAllValues().get(1).permissionId());
 
+        verify(mockMqttService).subscribeToOutboundDataTopic(permissionId);
         verify(mockMqttService).subscribeToStatusTopic(permissionId);
     }
 
@@ -381,7 +461,7 @@ class AiidaPermissionServiceTest {
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.FAILED_TO_TERMINATE
                                                    && event instanceof FailedToTerminateEvent failedEvent
                                                    && failedEvent.message()
-                                                                                                                                                                                      .equals(expectedMessage)));
+                                                                 .equals(expectedMessage)));
     }
 
     @Test
@@ -401,7 +481,7 @@ class AiidaPermissionServiceTest {
     }
 
     @Test
-    void givenSuccessfulSend_terminatePermission_emitsTerminatedEvent() {
+    void givenSuccessfulSend_terminatePermission_emitsTerminatedEvents() {
         // Given
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
         when(mockRequest.status()).thenReturn(ACCEPTED);
@@ -411,6 +491,7 @@ class AiidaPermissionServiceTest {
 
         // Then
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.TERMINATED));
+        verify(mockOutbox).commit(argThat(event -> event.status() == REQUIRES_EXTERNAL_TERMINATION));
     }
 
     @Test

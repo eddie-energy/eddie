@@ -19,8 +19,8 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public interface AiidaPermissionRequestViewRepository extends
         PermissionRequestRepository<AiidaPermissionRequest>,
-        org.springframework.data.repository.Repository<AiidaPermissionRequest, String>,
-        StalePermissionRequestRepository<AiidaPermissionRequest> {
+        StalePermissionRequestRepository<AiidaPermissionRequest>,
+        org.springframework.data.repository.Repository<AiidaPermissionRequest, String> {
     @Override
     default void save(AiidaPermissionRequest request) {
         throw new UnsupportedOperationException("Not supported by this repository as it is just reading a database view");
@@ -45,4 +45,11 @@ public interface AiidaPermissionRequestViewRepository extends
     )
     @Override
     List<AiidaPermissionRequest> findStalePermissionRequests(@Param("hours") int duration);
+
+    @Query(
+            value = "SELECT permission_id, status, connection_id, data_need_id, permission_start, permission_end, termination_topic, created, mqtt_username, message, aiida_id " +
+                    "FROM aiida.aiida_permission_request_view WHERE status = 'ACCEPTED' AND permission_start <= NOW() AND permission_end >= NOW()",
+            nativeQuery = true
+    )
+    List<AiidaPermissionRequest> findActivePermissionRequests();
 }

@@ -82,7 +82,7 @@ public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConn
         terminationSink.tryEmitComplete();
     }
 
-    private static <T> Sinks.Many<T> createSink() {
+    public static <T> Sinks.Many<T> createSink() {
         return Sinks.many()
                     .replay()
                     .limit(Duration.ofSeconds(10));
