@@ -20,9 +20,10 @@ public class AccountingPointEnvelopeService {
         LOGGER.info("EddieAccountingPointMarketDocumentService: Registering {}",
                     accountingPointEnvelopeProvider.getClass().getName());
         accountingPointEnvelopeProvider.getAccountingPointEnvelopeFlux()
-                                        .doOnNext(accountingPointSink::tryEmitNext)
-                                        .doOnError(accountingPointSink::tryEmitError)
-                                        .subscribe();
+                                       .onErrorContinue((err, obj) -> LOGGER.warn(
+                                               "Encountered error while processing accounting point envelope",
+                                               err))
+                                        .subscribe(accountingPointSink::tryEmitNext);
     }
 
     public Flux<AccountingPointEnvelope> getAccountingPointEnvelopeStream() {

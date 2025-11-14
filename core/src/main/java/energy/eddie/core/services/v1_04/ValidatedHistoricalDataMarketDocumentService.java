@@ -23,7 +23,10 @@ public class ValidatedHistoricalDataMarketDocumentService {
     public void registerProvider(ValidatedHistoricalDataMarketDocumentProvider provider) {
         LOGGER.info("Registering {}", provider.getClass().getName());
         provider.getValidatedHistoricalDataMarketDocumentsStream()
-                .subscribe(consumptionRecordSink::tryEmitNext, consumptionRecordSink::tryEmitError);
+                .onErrorContinue((err, obj) -> LOGGER.warn(
+                        "Encountered error while processing validated historical data market document",
+                        err))
+                .subscribe(consumptionRecordSink::tryEmitNext);
     }
 
     public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentStream() {
