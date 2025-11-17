@@ -106,7 +106,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_statusMessage_accepted() throws IOException, MqttTopicException, PermissionInvalidException, PermissionNotFoundException {
+    void messageArrived_statusMessage_accepted() throws IOException {
         // Given
         String topic = "aiida/v1/00000000-0000-0000-0000-000000000001/status";
         String payload = "{\"connectionId\":\"30\",\"dataNeedId\":\"00000000-0000-0000-0000-000000000000\",\"timestamp\":1725458241.237425343,\"status\":\"ACCEPTED\",\"permissionId\":\"00000000-0000-0000-0000-000000000001\",\"eddieId\":\"00000000-0000-0000-0000-000000000002\"}";
@@ -137,7 +137,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1CimMessage_valid() throws IOException, MqttTopicException, PermissionInvalidException, PermissionNotFoundException {
+    void messageArrived_smartMeterP1CimMessage_valid() throws IOException {
         // Given
         var topic = "aiida/v1/perm-1/data/outbound/smart-meter-p1-cim";
 
@@ -160,9 +160,7 @@ class MqttMessageCallbackTest {
                             throw new RuntimeException(e);
                         }
                     })
-                    .assertNext(msg -> {
-                        assertEquals(rtdEnvelope, msg);
-                    })
+                    .assertNext(msg -> assertEquals(rtdEnvelope, msg))
                     .thenCancel()
                     .verify();
 
@@ -247,7 +245,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1RawMessage_valid() throws MqttTopicException, PermissionInvalidException, PermissionNotFoundException, JsonProcessingException {
+    void messageArrived_smartMeterP1RawMessage_valid() {
         // Given
         var topic = "aiida/v1/perm-1/data/outbound/smart-meter-p1-raw";
         var payload = "{\"some\":\"data\"}";

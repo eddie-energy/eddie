@@ -8,7 +8,7 @@ import java.util.NoSuchElementException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AiidaSchemaTest {
+class AiidaSchemaTest {
     @Test
     void forValue_returnsEnum_whenKnown() {
         assertEquals(AiidaSchema.SMART_METER_P1_RAW, AiidaSchema.forValue("SMART-METER-P1-RAW"));

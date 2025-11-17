@@ -13,9 +13,9 @@ import org.springframework.beans.factory.ObjectProvider;
 @RegionConnectorExtension
 public class NearRealTimeDataMarketDocumentServiceRegistrar {
     public NearRealTimeDataMarketDocumentServiceRegistrar(
-            ObjectProvider<NearRealTimeDataMarketDocumentProvider> NearRealTimeDataEnvelopeProvider,
+            ObjectProvider<NearRealTimeDataMarketDocumentProvider> nearRealTimeDataEnvelopeProvider,
             NearRealTimeDataMarketDocumentService cimService
     ) {
-        NearRealTimeDataEnvelopeProvider.ifAvailable(cimService::registerProvider);
+        nearRealTimeDataEnvelopeProvider.ifAvailable(cimService::registerProvider);
     }
 }
