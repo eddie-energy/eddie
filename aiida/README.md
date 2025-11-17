@@ -4,14 +4,14 @@ The Administrative Interface for In-house Data Access (AIIDA)
 connects to various metering devices such as smart meters and home automation systems,
 to stream near real-time energy data and other data to consumers like the EDDIE Framework.
 
-To learn more about AIIDA, you can visit its [framework documentation](https://architecture.eddie.energy/aiida) and its [architecture documentation](https://architecture.eddie.energy/architecture/aiida/aiida.html).
+To learn more about AIIDA, you can visit its [framework documentation](https://architecture.eddie.energy/aiida/) and its [architecture documentation](https://architecture.eddie.energy/architecture/aiida/aiida.html).
 If you want to contribute to this repository, please take a look at our [contributing guide](../CONTRIBUTING.md).
 
 ## Prerequisites
 
 In order for AIIDA to run, it is necessary to start a [TimescaleDB](https://www.tigerdata.com/timescaledb) and a [Keycloak](https://www.keycloak.org/) instance.
 The predefined docker-compose.yml for starting those services can be found in the [docker](docker) folder.
-To use data sources that use MQTT, an [EMQX](https://www.emqx.com/) instance is required additionally, which is also included in the
+To use data sources that use MQTT, an [EMQX](https://www.emqx.com/en) instance is required additionally, which is also included in the
 docker-compose.yml.
 Before starting the services, the environment variables in the [.env](docker/.env) file should be configured,
 especially the `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD`.
