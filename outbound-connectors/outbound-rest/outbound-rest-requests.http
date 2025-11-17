@@ -43,6 +43,21 @@ GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical
 Accept: text/event-stream
 Authorization: Bearer {{$auth.token("keycloak")}}
 
+### Get validated historical data market documents as json V1.04
+GET http://localhost:9090/outbound-connectors/rest/cim_1_04/validated-historical-data-md
+Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get validated historical data market documents as xml V1.04
+GET http://localhost:9090/outbound-connectors/rest/cim_1_04/validated-historical-data-md
+Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get validated historical data market documents as event stream V1.04
+GET http://localhost:9090/outbound-connectors/rest/cim_1_04/validated-historical-data-md
+Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
 ### Get near real-time data market documents as json
 GET http://localhost:9090/outbound-connectors/rest/cim_1_04/near-real-time-data-md
 Accept: application/json

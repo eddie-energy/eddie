@@ -23,6 +23,26 @@ public class CimUtils {
     }
 
     @Nullable
+    public static energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList getCodingSchemeVhd(String countryCode) {
+        return fromValue(countryCode, energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList::fromValue);
+    }
+
+    @Nullable
+    public static String getCodingSchemeVhdV104(String countryCode) {
+        var codingScheme = fromValueSilent(countryCode, StandardCodingSchemeTypeList::fromValue);
+        if (codingScheme == null) {
+            var localCodingScheme = fromValue(countryCode, LocalCodingSchemeType::fromValue);
+            return localCodingScheme == null ? null : localCodingScheme.value();
+        }
+        return codingScheme.value();
+    }
+
+    @Nullable
+    public static energy.eddie.cim.v0_82.ap.CodingSchemeTypeList getCodingSchemeAp(String countryCode) {
+        return fromValue(countryCode, energy.eddie.cim.v0_82.ap.CodingSchemeTypeList::fromValue);
+    }
+
+    @Nullable
     private static <T> T fromValue(String countryCode, Function<String, T> fromValue) {
         try {
             return fromValue.apply("N" + countryCode.toUpperCase(Locale.ROOT));
@@ -35,22 +55,11 @@ public class CimUtils {
     }
 
     @Nullable
-    public static energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList getCodingSchemeVhd(String countryCode) {
-        return fromValue(countryCode, energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList::fromValue);
-    }
-
-    @Nullable
-    public static String getCodingSchemeVhdV104(String countryCode) {
-        var codingScheme = fromValue(countryCode, StandardCodingSchemeTypeList::fromValue);
-        if (codingScheme == null) {
-            var localCodingScheme = fromValue(countryCode, LocalCodingSchemeType::fromValue);
-            return localCodingScheme == null ? null : localCodingScheme.value();
+    private static <T> T fromValueSilent(String countryCode, Function<String, T> fromValue) {
+        try {
+            return fromValue.apply("N" + countryCode.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            return null;
         }
-        return codingScheme.value();
-    }
-
-    @Nullable
-    public static energy.eddie.cim.v0_82.ap.CodingSchemeTypeList getCodingSchemeAp(String countryCode) {
-        return fromValue(countryCode, energy.eddie.cim.v0_82.ap.CodingSchemeTypeList::fromValue);
     }
 }

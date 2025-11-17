@@ -8,6 +8,8 @@ import energy.eddie.regionconnector.shared.cim.v0_82.DocumentType;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
+import static energy.eddie.regionconnector.shared.cim.v0_82.CimUtils.getCodingSchemeVhdV104;
+
 public class VhdEnvelopeWrapper {
     private final VHDMarketDocument vhdMarketDocument;
     private final PermissionRequest permissionRequest;
@@ -26,6 +28,7 @@ public class VhdEnvelopeWrapper {
                 .withMessageDocumentHeaderMetaInformationDataNeedId(permissionRequest.dataNeedId())
                 .withMessageDocumentHeaderMetaInformationConnectionId(permissionRequest.connectionId())
                 .withMessageDocumentHeaderMetaInformationPermissionId(permissionRequest.permissionId())
-                .withMessageDocumentHeaderMetaInformationRegionCountry(permissionRequest.dataSourceInformation().countryCode());
+                .withMessageDocumentHeaderMetaInformationRegionCountry(getCodingSchemeVhdV104(permissionRequest.dataSourceInformation()
+                                                                                                               .countryCode()));
     }
 }

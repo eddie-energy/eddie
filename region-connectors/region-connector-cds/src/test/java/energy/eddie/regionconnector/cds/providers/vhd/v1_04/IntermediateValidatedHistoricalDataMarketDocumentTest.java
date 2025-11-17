@@ -64,7 +64,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 	<ns5:messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document</ns5:messageDocumentHeader.metaInformation.documentType>
                 	<ns5:messageDocumentHeader.metaInformation.permissionId>pid</ns5:messageDocumentHeader.metaInformation.permissionId>
                 	<ns5:messageDocumentHeader.metaInformation.region.connector>cds</ns5:messageDocumentHeader.metaInformation.region.connector>
-                	<ns5:messageDocumentHeader.metaInformation.region.country>us</ns5:messageDocumentHeader.metaInformation.region.country>
+                	<ns5:messageDocumentHeader.metaInformation.region.country>NUS</ns5:messageDocumentHeader.metaInformation.region.country>
                 	<ns5:MarketDocument>
                 		<ns5:mRID>any</ns5:mRID>
                 		<ns5:revisionNumber>104</ns5:revisionNumber>

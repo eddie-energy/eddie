@@ -66,7 +66,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 	<ns2:messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document</ns2:messageDocumentHeader.metaInformation.documentType>
                 	<ns2:messageDocumentHeader.metaInformation.permissionId>pid</ns2:messageDocumentHeader.metaInformation.permissionId>
                 	<ns2:messageDocumentHeader.metaInformation.region.connector>at-eda</ns2:messageDocumentHeader.metaInformation.region.connector>
-                	<ns2:messageDocumentHeader.metaInformation.region.country>AT</ns2:messageDocumentHeader.metaInformation.region.country>
+                	<ns2:messageDocumentHeader.metaInformation.region.country>NAT</ns2:messageDocumentHeader.metaInformation.region.country>
                 	<ns2:MarketDocument>
                 		<ns2:mRID>messageId</ns2:mRID>
                 		<ns2:createdDateTime>2025-07-16T08:03:09Z</ns2:createdDateTime>
