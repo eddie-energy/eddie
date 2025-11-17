@@ -103,9 +103,7 @@ public class MqttMessageCallback implements MqttCallback {
         // Not needed, as no advanced authentication is required
     }
 
-    private void handleStatusMessage(
-            MqttMessage message
-    ) throws JsonProcessingException, PermissionNotFoundException, PermissionInvalidException {
+    private void handleStatusMessage(MqttMessage message) throws JsonProcessingException {
         var statusMessage = objectMapper.readValue(message.toString(), AiidaConnectionStatusMessageDto.class);
         var permissionId = statusMessage.permissionId();
 
