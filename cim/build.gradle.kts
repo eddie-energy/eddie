@@ -11,6 +11,7 @@ plugins {
 }
 
 group = "energy.eddie"
+
 version = "3.2.0"
 
 repositories {
