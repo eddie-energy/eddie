@@ -23,7 +23,7 @@ import reactor.test.StepVerifier;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
-import static energy.eddie.aiida.utils.ObisCode.*;
+import static energy.eddie.api.agnostic.aiida.ObisCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;

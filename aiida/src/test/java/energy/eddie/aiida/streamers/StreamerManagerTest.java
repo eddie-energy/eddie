@@ -10,6 +10,7 @@ import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,7 +92,7 @@ class StreamerManagerTest {
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockPermission.userId()).thenReturn(userId);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
-        when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
+        when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
         when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
@@ -114,7 +115,7 @@ class StreamerManagerTest {
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockPermission.userId()).thenReturn(userId);
-        when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
+        when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
         when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
 
@@ -134,7 +135,7 @@ class StreamerManagerTest {
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockPermission.userId()).thenReturn(userId);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
-        when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
+        when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
         when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
@@ -178,7 +179,7 @@ class StreamerManagerTest {
         when(mockPermission.id()).thenReturn(permissionId);
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
-        when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0"));
+        when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
         when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(mockPermission.userId()).thenReturn(userId);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);

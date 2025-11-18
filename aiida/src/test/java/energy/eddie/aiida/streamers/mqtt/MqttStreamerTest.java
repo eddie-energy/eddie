@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static energy.eddie.aiida.models.record.UnitOfMeasurement.KILO_WATT_HOUR;
-import static energy.eddie.aiida.utils.ObisCode.NEGATIVE_ACTIVE_ENERGY;
-import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
+import static energy.eddie.api.agnostic.aiida.ObisCode.NEGATIVE_ACTIVE_ENERGY;
+import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_ENERGY;
+import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.KILO_WATT_HOUR;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;

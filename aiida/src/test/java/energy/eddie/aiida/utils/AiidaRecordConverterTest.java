@@ -16,19 +16,18 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static energy.eddie.aiida.models.record.UnitOfMeasurement.KILO_WATT;
-import static energy.eddie.aiida.models.record.UnitOfMeasurement.NONE;
-import static energy.eddie.aiida.utils.ObisCode.METER_SERIAL;
-import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
+import static energy.eddie.api.agnostic.aiida.ObisCode.METER_SERIAL;
+import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_ENERGY;
+import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.KILO_WATT;
+import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.NONE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AiidaRecordConverterTest {
-    private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
     @Mock
     private AiidaLocalDataNeed mockDataNeed;
     @Mock
@@ -102,13 +101,12 @@ class AiidaRecordConverterTest {
         var v = dto.aiidaRecordValues().getFirst();
 
         // Then
-        assertEquals("1-0:1.8.0", v.rawTag().toString());
-        assertEquals(POSITIVE_ACTIVE_ENERGY.toString(), v.obisCode());
+        assertEquals(POSITIVE_ACTIVE_ENERGY.toString(), v.rawTag());
+        assertEquals(POSITIVE_ACTIVE_ENERGY, v.obisCode());
         assertEquals("23", v.rawValue());
         assertEquals(KILO_WATT, v.rawUnit());
         assertEquals("10", v.value());
         assertEquals(KILO_WATT, v.unit());
         assertEquals("datasource", dto.name());
-        assertNull(v.sourceKey(), "sourceKey should be null when using dataTag constructor");
     }
 }

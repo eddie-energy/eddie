@@ -2,8 +2,8 @@ package energy.eddie.aiida.adapters.datasource.fr.transformer;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.standard.StandardModeEntry;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;

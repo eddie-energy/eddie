@@ -8,6 +8,7 @@ import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,7 +110,7 @@ public class Aggregator implements AutoCloseable {
      * by the {@code transmissionSchedule}.
      */
     public Flux<AiidaRecord> getFilteredFlux(
-            Set<String> allowedDataTags,
+            Set<ObisCode> allowedDataTags,
             AiidaAsset allowedAsset,
             Instant permissionExpirationTime,
             CronExpression transmissionSchedule,
@@ -163,12 +164,12 @@ public class Aggregator implements AutoCloseable {
     }
 
     private void saveInboundRecordToDatabase(InboundRecord inboundRecord) {
-        LOGGER.trace("Saving new raw record to db");
+        LOGGER.trace("New raw record saved to the database.");
         inboundRecordRepository.save(inboundRecord);
     }
 
     private void handleCombinedSinkError(Throwable throwable) {
-        LOGGER.error("Got error from combined sink", throwable);
+        LOGGER.error("Error from combindes sink", throwable);
     }
 
     private synchronized void publishRecordToCombinedFlux(AiidaRecord data) {
@@ -218,11 +219,11 @@ public class Aggregator implements AutoCloseable {
         return aiidaRecord.timestamp().isBefore(permissionExpirationTime);
     }
 
-    private AiidaRecord filterAllowedDataTags(AiidaRecord aiidaRecord, Set<String> allowedDataTags) {
+    private AiidaRecord filterAllowedDataTags(AiidaRecord aiidaRecord, Set<ObisCode> allowedDataTags) {
         if (!allowedDataTags.isEmpty()) {
             var filteredValues = aiidaRecord.aiidaRecordValues()
                                             .stream()
-                                            .filter(value -> allowedDataTags.contains(value.dataPointKey()))
+                                            .filter(value -> allowedDataTags.contains(value.dataTag()))
                                             .toList();
             aiidaRecord.setAiidaRecordValues(filteredValues);
         }

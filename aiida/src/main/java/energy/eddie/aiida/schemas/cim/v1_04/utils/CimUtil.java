@@ -5,7 +5,7 @@ import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.cim.v1_04.rtd.QuantityTypeKind;
 import energy.eddie.cim.v1_04.rtd.TimeSeries;
 import jakarta.annotation.Nullable;

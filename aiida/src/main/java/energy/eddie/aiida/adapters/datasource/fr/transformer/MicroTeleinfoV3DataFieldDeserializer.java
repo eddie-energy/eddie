@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 import jakarta.annotation.Nullable;
 
 import java.io.IOException;

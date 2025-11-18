@@ -5,7 +5,7 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.common.MqttMessage;

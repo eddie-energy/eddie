@@ -3,17 +3,21 @@ package energy.eddie.aiida.models.permission.dataneed;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import energy.eddie.dataneeds.needs.aiida.*;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCodeConverter;
+import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeedInterface;
+import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
 import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
 import jakarta.persistence.*;
 import org.springframework.scheduling.support.CronExpression;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-
-import static java.util.Objects.requireNonNullElse;
 
 /**
  * Stores the locally required information about a data need of a permission.
@@ -66,8 +70,9 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_local_data_need_data_tags", joinColumns = {@JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id")})
     @Column(name = "data_tag")
+    @Convert(converter = ObisCodeConverter.class)
     @JsonProperty
-    protected Set<String> dataTags;
+    protected Set<ObisCode> dataTags;
 
     /**
      * Constructor only for JPA.
@@ -85,7 +90,7 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
         this.transmissionSchedule = dataNeed.transmissionSchedule();
         this.schemas = dataNeed.schemas();
         this.asset = dataNeed.asset();
-        this.dataTags = requireNonNullElse(dataNeed.dataTags(), Set.of());
+        this.dataTags = Objects.requireNonNullElse(dataNeed.dataTags(), Set.of());
     }
 
     public String name() {
@@ -103,7 +108,7 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     }
 
     @Override
-    public Set<String> dataTags() {
+    public Set<ObisCode> dataTags() {
         return dataTags;
     }
 

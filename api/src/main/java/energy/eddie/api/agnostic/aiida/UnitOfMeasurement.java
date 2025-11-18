@@ -1,4 +1,4 @@
-package energy.eddie.aiida.models.record;
+package energy.eddie.api.agnostic.aiida;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

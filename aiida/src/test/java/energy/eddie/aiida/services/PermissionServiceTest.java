@@ -19,6 +19,7 @@ import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
@@ -189,7 +190,8 @@ class PermissionServiceTest {
         when(mockDataNeed.name()).thenReturn("My Name");
         when(mockDataNeed.purpose()).thenReturn("Some purpose");
         when(mockDataNeed.policyLink()).thenReturn("https://example.org");
-        when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0", "2.7.0"));
+        when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
+                                                        ObisCode.NEGATIVE_ACTIVE_ENERGY));
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
@@ -216,7 +218,8 @@ class PermissionServiceTest {
         assertEquals(dataNeedId, dataNeed.dataNeedId());
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
         assertEquals(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE, dataNeed.type());
-        assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of("1.8.0", "2.7.0"));
+        assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
+                                                                 ObisCode.NEGATIVE_ACTIVE_ENERGY));
         assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of(AiidaSchema.SMART_METER_P1_RAW));
     }
 
@@ -235,7 +238,8 @@ class PermissionServiceTest {
         when(mockDataNeed.name()).thenReturn("My Name");
         when(mockDataNeed.purpose()).thenReturn("Some purpose");
         when(mockDataNeed.policyLink()).thenReturn("https://example.org");
-        when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0", "2.7.0"));
+        when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
+                                                        ObisCode.NEGATIVE_ACTIVE_ENERGY));
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
@@ -260,7 +264,8 @@ class PermissionServiceTest {
         assertEquals(dataNeedId, dataNeed.dataNeedId());
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
         assertEquals("illegalValue", dataNeed.type());
-        assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of("1.8.0", "2.7.0"));
+        assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
+                                                                 ObisCode.NEGATIVE_ACTIVE_ENERGY));
         assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of(AiidaSchema.SMART_METER_P1_RAW));
     }
 

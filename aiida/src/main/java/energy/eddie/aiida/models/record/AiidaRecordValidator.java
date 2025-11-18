@@ -1,6 +1,6 @@
 package energy.eddie.aiida.models.record;
 
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 
 import java.util.List;
 

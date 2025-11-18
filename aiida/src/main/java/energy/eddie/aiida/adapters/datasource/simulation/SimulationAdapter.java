@@ -4,7 +4,7 @@ import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +18,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import static energy.eddie.aiida.utils.ObisCode.*;
 
 public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimulationAdapter.class);
@@ -46,10 +44,10 @@ public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
         super(dataSource);
 
         random = new SecureRandom();
-        obisCodes = List.of(POSITIVE_ACTIVE_ENERGY,
-                            NEGATIVE_ACTIVE_ENERGY,
-                            POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
-                            NEGATIVE_ACTIVE_INSTANTANEOUS_POWER);
+        obisCodes = List.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
+                            ObisCode.NEGATIVE_ACTIVE_ENERGY,
+                            ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
+                            ObisCode.NEGATIVE_ACTIVE_INSTANTANEOUS_POWER);
 
         LOGGER.info(
                 "Created new SimulationDataSource that will publish random values every {} seconds for obis codes {}",

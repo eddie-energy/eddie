@@ -1,8 +1,8 @@
 package energy.eddie.aiida.adapters.datasource.at.transformer;
 
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -18,8 +18,8 @@ import reactor.test.StepVerifier;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
-import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
-import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
+import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_ENERGY;
+import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 

@@ -6,8 +6,8 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.utils.MqttFactory;
-import energy.eddie.aiida.utils.ObisCode;
 import energy.eddie.aiida.utils.TestUtils;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
@@ -26,7 +26,7 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
 
-import static energy.eddie.aiida.utils.ObisCode.*;
+import static energy.eddie.api.agnostic.aiida.ObisCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

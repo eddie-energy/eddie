@@ -2,8 +2,8 @@ package energy.eddie.aiida.adapters.datasource.fr.transformer.history;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 
 import java.util.Arrays;
 import java.util.Map;
