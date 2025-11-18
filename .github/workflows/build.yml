@@ -111,33 +111,33 @@ jobs:
           echo "$CHANGED"
 
           # Flags
-          XSD_CHANGED=false
+          SRC_CHANGED=false
           BUILD_CHANGED=false
           CHANGELOG_CHANGED=false
 
-          echo "$CHANGED" | grep -qE '^cim/src/main/schemas/cim/.*\.xsd$' && XSD_CHANGED=true
+          echo "$CHANGED" | grep -qE '^cim/src/main/.*$' && SRC_CHANGED=true
           echo "$CHANGED" | grep -qE '^cim/build\.gradle\.kts$' && BUILD_CHANGED=true
           echo "$CHANGED" | grep -qE '^cim/CHANGELOG\.md$' && CHANGELOG_CHANGED=true
 
-          echo "XSD changed: $XSD_CHANGED"
+          echo "source changed: $SRC_CHANGED"
           echo "Build file changed: $BUILD_CHANGED"
           echo "Changelog changed: $CHANGELOG_CHANGED"
 
-          # If the XSDs changed the build has to include the updated version and the CHANGELOG needs to be updated
-          if $XSD_CHANGED; then
+          # If the source changed the build has to include the updated version and the CHANGELOG needs to be updated
+          if $SRC_CHANGED; then
             if ! $BUILD_CHANGED; then
-              echo "❌ XSD files changed but cim/build.gradle.kts was not updated."
+              echo "❌ Source files changed but cim/build.gradle.kts was not updated."
               exit 1
             fi
             if ! $CHANGELOG_CHANGED; then
-              echo "❌ XSD files changed but cim/CHANGELOG.md was not updated."
+              echo "❌ Source files changed but cim/CHANGELOG.md was not updated."
               exit 1
             fi
           fi
 
           # Output for downstream jobs
           MATCH=false
-          if $XSD_CHANGED || $CHANGELOG_CHANGED; then MATCH=true; fi
+          if $SRC_CHANGED || $CHANGELOG_CHANGED; then MATCH=true; fi
           echo "changed=$MATCH" >> $GITHUB_OUTPUT
       - name: Set up JDK 21
         if: steps.check.outputs.changed == 'true' && github.ref_name == 'main'
