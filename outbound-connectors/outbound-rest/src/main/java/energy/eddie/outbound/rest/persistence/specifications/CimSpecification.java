@@ -9,8 +9,8 @@ import java.util.Optional;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class CimSpecification {
-    private static final String MESSAGE_DOCUMENT_HEADER = "messageDocumentHeader";
-    private static final String META_INFORMATION = "messageDocumentHeaderMetaInformation";
+    private static final String MESSAGE_DOCUMENT_HEADER = "MessageDocumentHeader";
+    private static final String META_INFORMATION = "MessageDocumentHeader_MetaInformation";
 
     private CimSpecification() {
         // No-Op
@@ -41,11 +41,11 @@ public class CimSpecification {
                         did
                 )),
                 countryCode.map(cc -> new JsonPathSpecification<T>(
-                        List.of(MESSAGE_DOCUMENT_HEADER, META_INFORMATION, "messageDocumentHeaderRegion", "country"),
+                        List.of(MESSAGE_DOCUMENT_HEADER, META_INFORMATION, "MessageDocumentHeader_Region", "country"),
                         cc.toUpperCase(Locale.ROOT)
                 )),
                 regionConnectorId.map(rc -> new JsonPathSpecification<T>(
-                        List.of(MESSAGE_DOCUMENT_HEADER, META_INFORMATION, "messageDocumentHeaderRegion", "connector"),
+                        List.of(MESSAGE_DOCUMENT_HEADER, META_INFORMATION, "MessageDocumentHeader_Region", "connector"),
                         rc
                 )),
                 from.map(InsertionTimeSpecification::<T>insertedAfterEquals),
