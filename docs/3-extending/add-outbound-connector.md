@@ -6,7 +6,8 @@ The starting point is a configuration class annotated with:
 - `@SpringBootApplication`
 - `@OutboundConnector(name = "outbound-connector-name")`
 
-The core module scans the classpath for all classes residing in the `energy.eddie` package and annotated with the `@OutboundConnector`-annotation.
+The core module scans the classpath for all classes residing in the `energy.eddie` package and annotated with the
+`@OutboundConnector`-annotation.
 For the outbound connector to be on the classpath, it needs to be added as a dependency to the core module.
 Outbound connectors are started in their own spring context and dispatcher servlet, which is registered in the parent context (core module).
 The outbound connector will behave like it is its own spring application with a few deviations.
@@ -43,7 +44,8 @@ The interfaces are separated into two packages:
 The [
 `@OutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/outbound/OutboundConnector.html)-annotation denotes the starting point of an outbound connector.
 Must be used in combination with the `@SpringBootApplication`-annotation.
-The class annotated with the `@OutboundConnector`-annotation will be used to start the Spring context of the outbound connector.
+The class annotated with the
+`@OutboundConnector`-annotation will be used to start the Spring context of the outbound connector.
 Furthermore, it is used to set the name of the outbound connector.
 
 ### `ConnectionStatusMessageOutboundConnector`
@@ -61,7 +63,8 @@ The [
 
 The [
 `PermissionMarketDocumentOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/outbound/PermissionMarketDocumentOutboundConnector.html) interface provides a stream of permission market documents.
-Their purpose is similar to the connection status messages described in subsubsection [`ConnectionStatusMessageOutboundConnector`](#connectionstatusmessageoutboundconnector).
+Their purpose is similar to the connection status messages described in subsubsection [
+`ConnectionStatusMessageOutboundConnector`](#connectionstatusmessageoutboundconnector).
 They provide information about status changes of a certain permission request in a CIM compliant format.
 For more information see section [permission market documents](../2-integrating/messages/cim/permission-market-documents.md).
 
@@ -138,34 +141,11 @@ Applied to the different solutions:
 | permission-md                 | ep        | informs about changes of the current permission status                  |
 | accounting-point-md           | ep        | contains accounting point metadata from the MDA                         |
 | validated-historical-data-md  | ep        | contains validated historical consumption data (VHCD) from the MDA      |
-| redistribution-transaction-rd | ep        | contains VHCD updates to already received VHCD documents _cim_1_0 only_ |
+| redistribution-transaction-rd | fw        | contains VHCD updates to already received VHCD documents _cim_1_0 only_ |
+| near-real-time-data-md        | ep        | contains real time data from an AIIDA instance                          |
 
 - _-md_: market document
 - _-rd_: request document
-
-### CIM 1.0 Kafka
-
-The hash `#` at the beginning of the property name is a placeholder for the prefix `eddie`.
-
-| Kafka Topic                                          | Document Structure Link                                                                                        |
-|------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
-| `queue://fw.#.cim_1_0.termination-md`                | [termination-md](../2-integrating/messages/cim/permission-market-documents.md)                                 |
-| `queue://ep.#.cim_1_0.permission-md`                 | [permission-md](../2-integrating/messages/cim/permission-market-documents.md)                                  |
-| `queue://ep.#.cim_1_0.accounting-point-md`           | [accounting-point-md](../2-integrating/messages/cim/accounting-point-data-market-documents.md)                 |
-| `queue://ep.#.cim_1_0.validated-historical-data-md`  | [validated-historical-data-md](../2-integrating/messages/cim/validated-historical-data-market-documents.md)    |
-| `queue://ep.#.cim_1_0.redistribution-transaction-rd` | [redistribution-transaction-rd](../2-integrating/messages/cim/redistribution-transaction-request-documents.md) |
-
-### CIM 1.0 AMQP 1.0
-
- The hash `#` at the beginning of the property name is a placeholder for the prefix `eddie.outbound.amqp10.cim10`.
-
-| AMQP 1.0 Address                             | Document Structure Link                                                                                        |
-|----------------------------------------------|----------------------------------------------------------------------------------------------------------------|
-| `fw.#.cim_1_0.termination-md`                | [termination-md](../2-integrating/messages/cim/permission-market-documents.md)                                 |
-| `ep.#.cim_1_0.permission-md`                 | [permission-md](../2-integrating/messages/cim/permission-market-documents.md)                                  |
-| `ep.#.cim_1_0.accounting-point-md`           | [accounting-point-md](../2-integrating/messages/cim/accounting-point-data-market-documents.md)                 |
-| `ep.#.cim_1_0.validated-historical-data-md`  | [validated-historical-data-md](../2-integrating/messages/cim/validated-historical-data-market-documents.md)    |
-| `ep.#.cim_1_0.redistribution-transaction-rd` | [redistribution-transaction-rd](../2-integrating/messages/cim/redistribution-transaction-request-documents.md) |
 
 ## Shared Functionality
 
