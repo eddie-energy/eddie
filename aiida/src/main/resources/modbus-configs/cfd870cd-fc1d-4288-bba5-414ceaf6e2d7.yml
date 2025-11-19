@@ -14,7 +14,9 @@ modbus:
           datapoints:
             - id: "M_Imported"
               register: 116
-              obis: "1.8.0"
+              unit: "Wh"
+              obisCode: "1-0:1.8.0"
+              transform: "(@self / 1000.0)"
               registerType: "holding"
               valueType: "uint32"
               length: 2
@@ -22,7 +24,9 @@ modbus:
               access: "read"
             - id: "M_Exported"
               register: 108
-              obis: "2.8.0"
+              unit: "Wh"
+              obisCode: "1-0:2.8.0"
+              transform: "(@self / 1000.0)"
               registerType: "holding"
               valueType: "uint32"
               length: 2
@@ -30,7 +34,9 @@ modbus:
               access: "read"
             - id: "M_Imported_VA"
               register: 133
-              obis: "3.8.0"
+              unit: "VArh"
+              obisCode: "1-0:3.8.0"
+              transform: "(@self / 1000.0)"
               registerType: "holding"
               valueType: "uint32"
               length: 2
@@ -38,7 +44,9 @@ modbus:
               access: "read"
             - id: "M_Exported_VA"
               register: 125
-              obis: "4.8.0"
+              unit: "VArh"
+              obisCode: "1-0:4.8.0"
+              transform: "(@self / 1000.0)"
               registerType: "holding"
               valueType: "uint32"
               length: 2
@@ -46,7 +54,9 @@ modbus:
               access: "read"
             - id: "M_AC_Power"
               register: 88
-              obis: "1.7.0"
+              unit: "W"
+              obisCode: "1-0:1.7.0"
+              transform: "(@self / 1000.0)"
               registerType: "holding"
               valueType: "int16"
               length: 1
@@ -54,10 +64,12 @@ modbus:
               access: "read"
             - id: "M_AC_VAR"
               register: 98
-              obis: "3.7.0"
+              unit: "VAr"
+              obisCode: "1-0:3.7.0"
+              transform: "(@self / 1000.0)"
               registerType: "holding"
               valueType: "int16"
               length: 1
               endian: "big"
               access: "read"
-              transform: "Math.abs(@self)"
+              #transform: "Math.abs(@self)"

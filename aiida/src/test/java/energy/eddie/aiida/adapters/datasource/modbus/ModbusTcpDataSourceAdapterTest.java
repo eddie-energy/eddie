@@ -39,16 +39,19 @@ class ModbusTcpDataSourceAdapterTest {
 
         mockedDeviceService = Mockito.mockStatic(ModbusDeviceService.class);
         mockedDeviceService.when(() -> ModbusDeviceService.loadConfig(any(UUID.class)))
-                .thenReturn(modbusDevice);
+                           .thenReturn(modbusDevice);
 
         // Construct mock client before adapter instantiation (intercepts new ModbusTcpClient(...))
         mockedClientConstruction = Mockito.mockConstruction(ModbusTcpClient.class,
-                (mock, context) -> {
-                    when(mock.readHoldingRegister(any())).thenReturn(Optional.of(123));
-                    when(mock.readInputRegister(any())).thenReturn(Optional.of(456));
-                    when(mock.readCoil(any())).thenReturn(Optional.of(true));
-                    when(mock.readDiscreteInput(any())).thenReturn(Optional.of(false));
-                }
+                                                            (mock, context) -> {
+                                                                when(mock.readHoldingRegister(any())).thenReturn(
+                                                                        Optional.of(123));
+                                                                when(mock.readInputRegister(any())).thenReturn(Optional.of(
+                                                                        456));
+                                                                when(mock.readCoil(any())).thenReturn(Optional.of(true));
+                                                                when(mock.readDiscreteInput(any())).thenReturn(Optional.of(
+                                                                        false));
+                                                            }
         );
 
         var dataSource = mock(ModbusDataSource.class);
@@ -73,17 +76,16 @@ class ModbusTcpDataSourceAdapterTest {
         Flux<AiidaRecord> flux = adapter.start();
 
         StepVerifier.create(flux)
-                .thenAwait(java.time.Duration.ofSeconds(2))
-                .assertNext(aiidaRecord -> {
-                    List<AiidaRecordValue> values = aiidaRecord.aiidaRecordValues();
-                    assertThat(values).hasSize(21);
-                    assertThat(values)
-                            .extracting(AiidaRecordValue::dataPointKey, AiidaRecordValue::value)
-                            .containsExactlyInAnyOrderElementsOf(expectedModbusRecordTuples());
-                })
-                .thenCancel()
-                .verify();
-
+                    .thenAwait(java.time.Duration.ofSeconds(2))
+                    .assertNext(aiidaRecord -> {
+                        List<AiidaRecordValue> values = aiidaRecord.aiidaRecordValues();
+                        assertThat(values).hasSize(21);
+                        assertThat(values)
+                                .extracting(AiidaRecordValue::rawTag, AiidaRecordValue::value)
+                                .containsExactlyInAnyOrderElementsOf(expectedModbusRecordTuples());
+                    })
+                    .thenCancel()
+                    .verify();
     }
 
     @Test
