@@ -44,13 +44,14 @@ class ModbusTcpDataSourceAdapterTest {
         // Construct mock client before adapter instantiation (intercepts new ModbusTcpClient(...))
         mockedClientConstruction = Mockito.mockConstruction(ModbusTcpClient.class,
                                                             (mock, context) -> {
-                                                                when(mock.readHoldingRegister(any())).thenReturn(
-                                                                        Optional.of(123));
-                                                                when(mock.readInputRegister(any())).thenReturn(Optional.of(
-                                                                        456));
-                                                                when(mock.readCoil(any())).thenReturn(Optional.of(true));
-                                                                when(mock.readDiscreteInput(any())).thenReturn(Optional.of(
-                                                                        false));
+                                                                when(mock.readHoldingRegister(any()))
+                                                                        .thenReturn(Optional.of(123));
+                                                                when(mock.readInputRegister(any()))
+                                                                        .thenReturn(Optional.of(456));
+                                                                when(mock.readCoil(any()))
+                                                                        .thenReturn(Optional.of(true));
+                                                                when(mock.readDiscreteInput(any()))
+                                                                        .thenReturn(Optional.of(false));
                                                             }
         );
 

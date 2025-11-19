@@ -98,7 +98,7 @@ class MqttStreamerTest {
         var mqttDto = new MqttDto("tcp://localhost:1883",
                                   PERMISSION_ID.toString(),
                                   "mqttPassword",
-                                  EXPECTED_DATA_TOPIC,
+                                  DATA_TOPIC,
                                   EXPECTED_STATUS_TOPIC,
                                   EXPECTED_TERMINATION_TOPIC);
 
@@ -295,11 +295,11 @@ class MqttStreamerTest {
     @Test
     void verify_connectComplete_retransmitFailedMessages() throws MqttException {
         // Given
-        when(mockRepository.findAllByPermissionId(PERMISSION_ID)).thenReturn(List.of(new FailedToSendEntity(
-                PERMISSION_ID,
-                "bar",
-                "json".getBytes(
-                        StandardCharsets.UTF_8))));
+        var topic = "bar";
+        var json = "json".getBytes(StandardCharsets.UTF_8);
+        var failedToSendEntity = new FailedToSendEntity(PERMISSION_ID, topic, json);
+        when(mockRepository.findAllByPermissionId(PERMISSION_ID))
+                .thenReturn(List.of(failedToSendEntity));
         streamer.connect();
 
         // When
