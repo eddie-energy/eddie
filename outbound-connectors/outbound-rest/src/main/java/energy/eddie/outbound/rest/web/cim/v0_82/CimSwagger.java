@@ -354,7 +354,7 @@ public interface CimSwagger {
                             name = "connectionId",
                             in = ParameterIn.QUERY,
                             description = "Filters the validated historical data market documents by connectionId ID",
-                            schema = @Schema(implementation = UUID.class)
+                            schema = @Schema(implementation = String.class)
                     ),
                     @Parameter(
                             name = "dataNeedId",
@@ -624,7 +624,7 @@ public interface CimSwagger {
                             name = "connectionId",
                             in = ParameterIn.QUERY,
                             description = "Filters the permission market documents by connectionId ID",
-                            schema = @Schema(implementation = UUID.class)
+                            schema = @Schema(implementation = String.class)
                     ),
                     @Parameter(
                             name = "dataNeedId",
@@ -989,7 +989,7 @@ public interface CimSwagger {
                             name = "connectionId",
                             in = ParameterIn.QUERY,
                             description = "Filters the accounting point data market documents by connectionId ID",
-                            schema = @Schema(implementation = UUID.class)
+                            schema = @Schema(implementation = String.class)
                     ),
                     @Parameter(
                             name = "dataNeedId",
