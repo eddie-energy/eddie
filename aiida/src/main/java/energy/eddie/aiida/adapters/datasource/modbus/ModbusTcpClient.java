@@ -87,9 +87,9 @@ public class ModbusTcpClient {
         );
     }
 
-    public Optional<Object> readDiscreteInput(ModbusDataPoint dp) {
+    public Optional<Object> readDiscreteInput(ModbusDataPoint modbusDataPoint) {
         return readModbusData(
-                dp,
+                modbusDataPoint,
                 ReadInputDiscretesRequest::new,
                 (response, ignored) -> {
                     if (response instanceof ReadInputDiscretesResponse discreteResponse) {
@@ -151,11 +151,11 @@ public class ModbusTcpClient {
 
     private <T> Optional<Object> readModbusData(
             ModbusDataPoint modbusDataPoint,
-            ModbusRequestSupplier requestSupplier,
-            ModbusResponseDataExtractor<T> dataExtractor
+            ModbusRequestCreator modbusRequestCreator,
+            ModbusResponseDataExtractor<T> modbusResponseDataExtractor
     ) {
         try {
-            var request = requestSupplier.get(modbusDataPoint.register(), modbusDataPoint.length());
+            var request = modbusRequestCreator.create(modbusDataPoint.register(), modbusDataPoint.length());
             request.setUnitID(unitId);
 
             var transaction = new ModbusTCPTransaction(connection);
@@ -163,7 +163,7 @@ public class ModbusTcpClient {
             transaction.execute();
 
             var response = transaction.getResponse();
-            T result = dataExtractor.extractAndProcess(response, modbusDataPoint);
+            T result = modbusResponseDataExtractor.extractAndProcess(response, modbusDataPoint);
 
             return Optional.of(result);
         } catch (Exception e) {

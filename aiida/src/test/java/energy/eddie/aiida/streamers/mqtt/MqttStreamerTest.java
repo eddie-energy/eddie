@@ -136,11 +136,15 @@ class MqttStreamerTest {
         streamer.connect();
 
         // Then
-        verify(mockClient).connect(argThat(options -> options.getUserName()
-                                                             .equals(mqttStreamingConfig.username()
-                                                                                        .toString()) && !options.isCleanStart() && options.isAutomaticReconnect() && new String(
-                options.getPassword(),
-                StandardCharsets.UTF_8).equals(mqttStreamingConfig.password())));
+        verify(mockClient)
+                .connect(argThat(options ->
+                                         options.getUserName()
+                                                .equals(mqttStreamingConfig.username().toString())
+                                         && !options.isCleanStart()
+                                         && options.isAutomaticReconnect()
+                                         && new String(options.getPassword(), StandardCharsets.UTF_8)
+                                                 .equals(mqttStreamingConfig.password()))
+                );
     }
 
     @Test
