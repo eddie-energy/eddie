@@ -1,6 +1,5 @@
 import { defineConfig } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
-import { transformerTwoslash } from "@shikijs/vitepress-twoslash";
 import { propertiesPlugin } from "./propertiesPlugin.mjs";
 import { imageToFigurePlugin } from "./imageToFigurePlugin.mts";
 
@@ -22,7 +21,6 @@ export default withMermaid(
         md.use(propertiesPlugin);
         md.use(imageToFigurePlugin)
       },
-      codeTransformers: [transformerTwoslash()],
     },
     themeConfig: {
       // https://vitepress.dev/reference/default-theme-config
