@@ -10,7 +10,7 @@ Therefore, only compatibility with the XSD files can be guaranteed.
 If an outbound-connector is configured to use any other format than XML, it might emit documents that look like CIM documents, but in another format.
 But the documents might violate the names and structures that are defined in the CIM and can break existing integrations.
 
-There are three types of CIM documents currently supported by EDDIE:
+There are five types of CIM documents currently supported by EDDIE:
 
 - [Permission Market Documents](./permission-market-documents.md)
 - [Accounting Point Market Documents](./accounting-point-data-market-documents.md)
@@ -28,7 +28,7 @@ The following is an example of the header, that is part of each CIM document.
 
 <MessageDocumentHeader>
     <!-- The datetime when the envelope of the document was created  -->
-    <creationDateTime>2024-12-02T10:04:22.090157624Z</creationDateTime>
+    <creationDateTime>2024-12-02T10:04:22Z</creationDateTime>
     <MessageDocumentHeader_MetaInformation>
         <!-- connectionID is given by the eligible party for one or more permission requests -->
         <connectionid>1</connectionid>
@@ -46,4 +46,56 @@ The following is an example of the header, that is part of each CIM document.
         </MessageDocumentHeader_Region>
     </MessageDocumentHeader_MetaInformation>
 </MessageDocumentHeader>
+```
+
+## Mapping Attributes
+
+Each CIM document specifies attributes that can be used to map information between other documents.
+The following diagram should give an overview on how the different CIM documents relate to each other.
+A permission request has a unique identifier called the permissionId.
+Each CIM document produced will contain this identifier too, that way it is possible to relate multiple different CIM documents to one permission request.
+
+```mermaid
+---
+  config:
+    class:
+      hideEmptyMembersBox: true
+---
+classDiagram
+    class PermissionRequest {
+        +UUID permissionId
+        +String connectionId
+        +UUID dataNeedId
+        +String status
+        +DateTime created
+    }
+
+    namespace CIM {
+        class MessageDocumentHeader {
+            +DateTime creationDateTime
+        }
+        class MessageDocumentHeader_MetaInformation {
+            +String connectionid
+            +UUID permissionid
+            +UUID dataNeedId
+            +String dataType
+        }
+
+        class MessageDocumentHeader_Region {
+            +String connector
+            +CodingScheme country
+        }
+
+        class PermissionEnvelope
+        class Permission_MarketDocument
+        class ValidatedHistoricalDataEnvelope
+        class ValidatedHistoricalData_MarketDocument
+    }
+
+    PermissionEnvelope o-- MessageDocumentHeader
+    PermissionEnvelope o-- Permission_MarketDocument
+    MessageDocumentHeader o-- MessageDocumentHeader_MetaInformation
+    MessageDocumentHeader_MetaInformation o-- MessageDocumentHeader_Region
+    ValidatedHistoricalDataEnvelope o-- MessageDocumentHeader
+    ValidatedHistoricalDataEnvelope o-- ValidatedHistoricalData_MarketDocument 
 ```
