@@ -4,29 +4,33 @@ import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
 
 public enum MqttTopicType {
-    OUTBOUND_DATA("data/outbound", true, MqttAction.PUBLISH, MqttAclType.ALLOW),
-    INBOUND_DATA("data/inbound", true, MqttAction.SUBSCRIBE, MqttAclType.ALLOW),
-    STATUS("status", false, MqttAction.PUBLISH, MqttAclType.ALLOW),
-    TERMINATION("termination", false, MqttAction.SUBSCRIBE, MqttAclType.ALLOW);
+    OUTBOUND_DATA("data/outbound", "/+", MqttAction.PUBLISH, MqttAclType.ALLOW),
+    INBOUND_DATA("data/inbound", "/+", MqttAction.SUBSCRIBE, MqttAclType.ALLOW),
+    STATUS("status", MqttAction.PUBLISH, MqttAclType.ALLOW),
+    TERMINATION("termination", MqttAction.SUBSCRIBE, MqttAclType.ALLOW);
 
-    private final String topicName;
-    private final boolean hasSuffix;
+    private final String baseTopicName;
+    private final String topicSuffix;
     private final MqttAction aiidaAclAction;
     private final MqttAclType aiidaAclType;
 
-    MqttTopicType(String topicName, boolean hasSuffix, MqttAction aiidaAclAction, MqttAclType aiidaAclType) {
-        this.topicName = topicName;
-        this.hasSuffix = hasSuffix;
+    MqttTopicType(String baseTopicName, MqttAction aiidaAclAction, MqttAclType aiidaAclType) {
+        this(baseTopicName, "", aiidaAclAction, aiidaAclType);
+    }
+
+    MqttTopicType(String baseTopicName, String topicSuffix, MqttAction aiidaAclAction, MqttAclType aiidaAclType) {
+        this.baseTopicName = baseTopicName;
+        this.topicSuffix = topicSuffix;
         this.aiidaAclAction = aiidaAclAction;
         this.aiidaAclType = aiidaAclType;
     }
 
-    public String topicName() {
-        return topicName;
+    public String baseTopicName() {
+        return baseTopicName;
     }
 
-    public boolean hasSuffix() {
-        return hasSuffix;
+    public String topicSuffix() {
+        return topicSuffix;
     }
 
     public MqttAction aiidaAclAction() {

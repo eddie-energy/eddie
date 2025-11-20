@@ -28,11 +28,11 @@ import java.time.LocalDate;
 public class MqttMessageCallback implements MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttMessageCallback.class);
 
-    private static final String STATUS_TOPIC_SUFFIX = MqttTopicType.STATUS.topicName();
+    private static final String STATUS_TOPIC_SUFFIX = MqttTopicType.STATUS.baseTopicName();
     private static final String SMART_METER_P1_CIM_SUFFIX =
-            AiidaSchema.SMART_METER_P1_CIM.buildTopicPath(MqttTopicType.OUTBOUND_DATA.topicName());
+            AiidaSchema.SMART_METER_P1_CIM.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
     private static final String SMART_METER_P1_RAW_SUFFIX =
-            AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.topicName());
+            AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
 
     private final AiidaPermissionRequestViewRepository permissionRequestViewRepository;
     private final Sinks.Many<AiidaConnectionStatusMessageDto> statusSink;
