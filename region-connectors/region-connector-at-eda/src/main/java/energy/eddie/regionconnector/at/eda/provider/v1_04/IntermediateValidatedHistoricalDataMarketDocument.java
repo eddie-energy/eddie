@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.datatype.DatatypeFactory;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
@@ -100,8 +101,9 @@ class IntermediateValidatedHistoricalDataMarketDocument {
     }
 
     private SeriesPeriod seriesPeriod(Energy energy, EnergyData energyData) {
-        var resolution = DatatypeFactory.newDefaultInstance()
-                                        .newDuration(energy.granularity().duration().toMillis());
+        var granularity = energy.granularity();
+        var duration = granularity == null ? Duration.ZERO : granularity.duration();
+        var resolution = DatatypeFactory.newDefaultInstance().newDuration(duration.toMillis());
         var interval = new EsmpTimeInterval(
                 energy.meterReadingStart(),
                 energy.meterReadingEnd()
