@@ -1,6 +1,8 @@
 package energy.eddie.regionconnector.at.eda.provider.v1_04;
 
+import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p41.ConsumptionRecord;
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.serde.SerdeInitializationException;
 import energy.eddie.cim.serde.SerializationException;
@@ -11,6 +13,9 @@ import energy.eddie.cim.v1_04.StandardDirectionTypeList;
 import energy.eddie.cim.v1_04.StandardQualityTypeList;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.*;
+import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p41.EdaConsumptionRecord01p41;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,6 +23,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.xmlunit.builder.DiffBuilder;
 
 import javax.xml.datatype.DatatypeFactory;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -29,12 +35,14 @@ import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class IntermediateValidatedHistoricalDataMarketDocumentTest {
-
     private final XmlMessageSerde serde = new XmlMessageSerde();
+    private final CommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
+            CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+            "epID"
+    );
 
     IntermediateValidatedHistoricalDataMarketDocumentTest() throws SerdeInitializationException {}
 
@@ -138,8 +146,6 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 .setSchemaVersion("version")
                 .setProcessDate(cal);
         var consumptionRecord = new IdentifiableConsumptionRecord(simpleRecord, List.of(pr), start, end);
-        var cimConfig = new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
-                                                                     "epID");
         var doc = new IntermediateValidatedHistoricalDataMarketDocument(cimConfig, consumptionRecord);
 
         // When
@@ -194,8 +200,6 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 .setSchemaVersion("version")
                 .setProcessDate(cal);
         var consumptionRecord = new IdentifiableConsumptionRecord(simpleRecord, List.of(pr), start, end);
-        var cimConfig = new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
-                                                                     "epID");
         var doc = new IntermediateValidatedHistoricalDataMarketDocument(cimConfig, consumptionRecord);
 
         // When
@@ -206,6 +210,69 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         var xmlStr = new String(xmlDoc, StandardCharsets.UTF_8);
         assertTrue(XmlValidator.validateV104ValidatedHistoricalDataMarketDocument(xmlDoc),
                    "Failed to validate XML, see:\n" + xmlStr);
+    }
+
+    @Test
+    void givenConsumptionRecord_whenThVhd_returnsValidVhd() throws JAXBException {
+        // Given
+        // language=XML
+        var payload = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <ns0:ConsumptionRecord xmlns:ns0="http://www.ebutilities.at/schemata/customerprocesses/consumptionrecord/01p41"
+                                       xmlns:ns1="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20">
+                    <ns0:MarketParticipantDirectory DocumentMode="PROD" Duplicate="false" SchemaVersion="01.41">
+                        <ns1:RoutingHeader>
+                            <ns1:Sender AddressType="ECNumber">
+                                <ns1:MessageAddress>AT000000</ns1:MessageAddress>
+                            </ns1:Sender>
+                            <ns1:Receiver AddressType="ECNumber">
+                                <ns1:MessageAddress>EP100000</ns1:MessageAddress>
+                            </ns1:Receiver>
+                            <ns1:DocumentCreationDateTime>2025-11-12T23:03:07.3687270Z</ns1:DocumentCreationDateTime>
+                        </ns1:RoutingHeader>
+                        <ns1:Sector>01</ns1:Sector>
+                        <ns0:MessageCode>DATEN_CRMSG</ns0:MessageCode>
+                    </ns0:MarketParticipantDirectory>
+                    <ns0:ProcessDirectory>
+                        <ns1:MessageId>AT000000000000000000000000000000000</ns1:MessageId>
+                        <ns1:ConversationId>EP00000000000000000000</ns1:ConversationId>
+                        <ns1:ProcessDate>2025-11-13</ns1:ProcessDate>
+                        <ns1:MeteringPoint>AT0030000000000000000000000123456</ns1:MeteringPoint>
+                        <ns0:Energy>
+                            <ns0:MeteringReason>01</ns0:MeteringReason>
+                            <ns0:MeteringPeriodStart>2025-02-28T00:00:00+01:00</ns0:MeteringPeriodStart>
+                            <ns0:MeteringPeriodEnd>2025-05-01T00:00:00+02:00</ns0:MeteringPeriodEnd>
+                            <ns0:MeteringIntervall>V</ns0:MeteringIntervall>
+                            <ns0:NumberOfMeteringIntervall>1</ns0:NumberOfMeteringIntervall>
+                            <ns0:EnergyData MeterCode="1-1:1.9.0" UOM="KWH">
+                                <ns0:EP>
+                                    <ns0:DTF>2025-02-28T00:00:00+01:00</ns0:DTF>
+                                    <ns0:DTT>2025-05-01T00:00:00+02:00</ns0:DTT>
+                                    <ns0:MM>01</ns0:MM>
+                                    <ns0:BQ>3923.3</ns0:BQ>
+                                </ns0:EP>
+                            </ns0:EnergyData>
+                        </ns0:Energy>
+                    </ns0:ProcessDirectory>
+                </ns0:ConsumptionRecord>
+                """;
+        var marshaller = JAXBContext.newInstance(ConsumptionRecord.class);
+        var consumptionRecord = (ConsumptionRecord) marshaller.createUnmarshaller()
+                                                              .unmarshal(new StringReader(payload));
+        var edaConsumptionRecord = new EdaConsumptionRecord01p41(consumptionRecord);
+        var identifiable = new IdentifiableConsumptionRecord(
+                edaConsumptionRecord,
+                List.of(new SimplePermissionRequest("pid", "cid", "dnid")),
+                edaConsumptionRecord.startDate(),
+                edaConsumptionRecord.endDate()
+        );
+        var intermediate = new IntermediateValidatedHistoricalDataMarketDocument(cimConfig, identifiable);
+
+        // When
+        var res = intermediate.toVhd();
+
+        // Then
+        assertEquals(1, res.size());
     }
 
     private static Stream<Arguments> meterCodeAndMeteringModeSource() {

@@ -10,6 +10,7 @@ import energy.eddie.regionconnector.at.eda.dto.EnergyData;
 import energy.eddie.regionconnector.at.eda.dto.EnergyPosition;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +47,9 @@ public class SeriesPeriodBuilder {
     }
 
     public SeriesPeriodBuilder withEnergy(Energy energy) {
-        seriesPeriod.setResolution(energy.granularity().name());
+        var granularity = energy.granularity();
+        var duration = granularity == null ? Duration.ZERO.toString() : granularity.toString();
+        seriesPeriod.setResolution(duration);
 
         var interval = new EsmpTimeInterval(
                 energy.meterReadingStart(),

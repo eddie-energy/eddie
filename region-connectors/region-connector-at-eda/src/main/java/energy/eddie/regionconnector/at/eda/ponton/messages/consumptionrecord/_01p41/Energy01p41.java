@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.at.eda.dto.Energy;
 import energy.eddie.regionconnector.at.eda.dto.EnergyData;
 import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;
+import jakarta.annotation.Nullable;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -13,12 +14,13 @@ public record Energy01p41(
 ) implements Energy {
 
     @Override
+    @Nullable
     public Granularity granularity() {
         return switch (energy.getMeteringIntervall()) {
             case QH -> Granularity.PT15M;
+            case H -> Granularity.PT1H;
             case D -> Granularity.P1D;
-            default ->
-                    throw new IllegalStateException("Unexpected MeteringInterval value: '" + energy.getMeteringIntervall() + "'");
+            case V -> null;
         };
     }
 
