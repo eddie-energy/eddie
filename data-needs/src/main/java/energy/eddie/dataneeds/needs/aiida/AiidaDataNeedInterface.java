@@ -4,6 +4,8 @@
 package energy.eddie.dataneeds.needs.aiida;
 
 import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.springframework.scheduling.support.CronExpression;
 
 import java.util.Set;

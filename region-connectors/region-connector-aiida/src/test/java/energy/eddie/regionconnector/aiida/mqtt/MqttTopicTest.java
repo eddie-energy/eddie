@@ -3,9 +3,9 @@
 
 package energy.eddie.regionconnector.aiida.mqtt;
 
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
-import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import energy.eddie.regionconnector.aiida.exceptions.MqttTopicException;
 import org.junit.jupiter.api.Test;
 

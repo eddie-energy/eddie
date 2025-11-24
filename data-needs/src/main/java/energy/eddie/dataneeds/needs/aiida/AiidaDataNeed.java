@@ -4,6 +4,10 @@
 package energy.eddie.dataneeds.needs.aiida;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.ObisCodeConverter;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
@@ -14,8 +18,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.scheduling.support.CronExpression;
-import tools.jackson.databind.annotation.JsonDeserialize;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Set;
 import java.util.UUID;

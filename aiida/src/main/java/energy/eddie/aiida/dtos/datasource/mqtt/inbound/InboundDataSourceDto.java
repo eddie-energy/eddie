@@ -6,7 +6,7 @@ package energy.eddie.aiida.dtos.datasource.mqtt.inbound;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 
 import java.util.UUID;
 

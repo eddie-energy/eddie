@@ -11,7 +11,7 @@ import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.api.agnostic.aiida.ObisCode;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
@@ -528,16 +528,17 @@ class MicroTeleinfoV3AdapterTest {
                                                 .expectNextMatches(received -> {
                                                     var aiidaRecordValues = received.aiidaRecordValues();
                                                     var hasPositiveActiveTags = aiidaRecordValues.stream()
-                                                            .anyMatch(aiidaRecordValue -> Objects.equals(
-                                                                    aiidaRecordValue.dataTag(),
-                                                                    POSITIVE_ACTIVE_INSTANTANEOUS_POWER) || Objects.equals(
-                                                                    aiidaRecordValue.dataTag(),
-                                                                    POSITIVE_ACTIVE_ENERGY));
+                                                                                                 .anyMatch(
+                                                                                                         aiidaRecordValue -> Objects.equals(
+                                                                                                                 aiidaRecordValue.dataTag(),
+                                                                                                                 POSITIVE_ACTIVE_INSTANTANEOUS_POWER) || Objects.equals(
+                                                                                                                 aiidaRecordValue.dataTag(),
+                                                                                                                 POSITIVE_ACTIVE_ENERGY));
 
                                                     var hasMeterDeviceId = aiidaRecordValues.stream()
-                                                            .anyMatch(aiidaRecordValue -> Objects.equals(
-                                                                    aiidaRecordValue.dataTag(),
-                                                                    DEVICE_ID_1));
+                                                                                            .anyMatch(aiidaRecordValue -> Objects.equals(
+                                                                                                    aiidaRecordValue.dataTag(),
+                                                                                                    DEVICE_ID_1));
 
                                                     return hasPositiveActiveTags && hasMeterDeviceId;
                                                 })

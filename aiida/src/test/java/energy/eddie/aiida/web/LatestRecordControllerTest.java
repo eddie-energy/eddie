@@ -7,10 +7,10 @@ import energy.eddie.aiida.dtos.record.*;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.services.LatestRecordService;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
-import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
@@ -166,7 +166,7 @@ class LatestRecordControllerTest {
     @WithMockUser
     void latestOutboundPermissionRecord_shouldReturnLatestRecord() throws Exception {
         var schemaRecords = List.of(
-                new LatestSchemaRecordDto(AiidaSchema.SMART_METER_P1_CIM, TIMESTAMP, "message1"),
+                new LatestSchemaRecordDto(AiidaSchema.SMART_METER_P1_CIM_V1_04, TIMESTAMP, "message1"),
                 new LatestSchemaRecordDto(AiidaSchema.SMART_METER_P1_RAW, TIMESTAMP.plusSeconds(10), "message2")
         );
         var outboundRecord = new LatestOutboundPermissionRecordDto(
@@ -185,7 +185,7 @@ class LatestRecordControllerTest {
                .andExpect(jsonPath("$.topic").value(TOPIC))
                .andExpect(jsonPath("$.serverUri").value(SERVER_URI))
                .andExpect(jsonPath("$.messages.length()").value(2))
-               .andExpect(jsonPath("$.messages[0].schema").value("SMART-METER-P1-CIM"))
+               .andExpect(jsonPath("$.messages[0].schema").value("SMART-METER-P1-CIM-V1-04"))
                .andExpect(jsonPath("$.messages[0].message").value("message1"));
 
         verify(service, times(1)).latestOutboundPermissionRecord(PERMISSION_ID);

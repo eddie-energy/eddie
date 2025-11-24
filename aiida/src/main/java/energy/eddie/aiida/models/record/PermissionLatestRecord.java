@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.models.record;
 
-import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

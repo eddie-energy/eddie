@@ -13,7 +13,7 @@ import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.SchemaFormatterRegistry;
 import energy.eddie.aiida.streamers.AiidaStreamer;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
-import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.common.MqttException;

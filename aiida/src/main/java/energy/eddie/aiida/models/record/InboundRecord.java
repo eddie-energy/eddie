@@ -6,7 +6,7 @@ package energy.eddie.aiida.models.record;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import jakarta.persistence.*;
 
 import java.time.Instant;

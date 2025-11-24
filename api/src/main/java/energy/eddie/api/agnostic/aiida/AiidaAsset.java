@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.dataneeds.needs.aiida;
+package energy.eddie.api.agnostic.aiida;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

@@ -1,6 +1,6 @@
 package energy.eddie.aiida.errors.formatter;
 
-import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 
 public class SchemaFormatterRegistryException extends Exception {
     public SchemaFormatterRegistryException(AiidaSchema aiidaSchema) {

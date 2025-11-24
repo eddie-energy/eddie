@@ -24,7 +24,7 @@ import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.image.Image;
 import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import org.springframework.lang.Nullable;

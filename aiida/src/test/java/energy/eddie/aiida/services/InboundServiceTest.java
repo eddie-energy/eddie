@@ -13,7 +13,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

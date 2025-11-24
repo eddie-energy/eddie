@@ -3,8 +3,8 @@
 
 package energy.eddie.regionconnector.aiida.mqtt;
 
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
-import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import energy.eddie.regionconnector.aiida.exceptions.MqttTopicException;
 
 import javax.annotation.Nullable;
@@ -55,6 +55,27 @@ public record MqttTopic(
         }
     }
 
+    public String eddieTopic() {
+        return buildTopic(MqttAction.PUBLISH);
+    }
+
+    public String aiidaTopic() {
+        return buildTopic(MqttAction.SUBSCRIBE);
+    }
+
+    public String baseTopic() {
+        return String.join("/", prefix, permissionId, topicType.baseTopicName());
+    }
+
+    public MqttAcl aiidaAcl(String username) {
+        return new MqttAcl(
+                username,
+                topicType.aiidaAclAction(),
+                topicType.aiidaAclType(),
+                baseTopic() + topicType.topicSuffix()
+        );
+    }
+
     /**
      * Builds a regex pattern to match MQTT topics for the given topic type and schema.
      * The resulting pattern captures exactly one named group: {@code permissionId}.
@@ -82,27 +103,6 @@ public record MqttTopic(
 
         var regex = "^" + prefix + "/(?<permissionId>[^/]+)/" + base + schemaTopic + "$";
         return Pattern.compile(regex);
-    }
-
-    public String eddieTopic() {
-        return buildTopic(MqttAction.PUBLISH);
-    }
-
-    public String aiidaTopic() {
-        return buildTopic(MqttAction.SUBSCRIBE);
-    }
-
-    public String baseTopic() {
-        return String.join("/", prefix, permissionId, topicType.baseTopicName());
-    }
-
-    public MqttAcl aiidaAcl(String username) {
-        return new MqttAcl(
-                username,
-                topicType.aiidaAclAction(),
-                topicType.aiidaAclType(),
-                baseTopic() + topicType.topicSuffix()
-        );
     }
 
     private String buildTopic(MqttAction requiredAction) {

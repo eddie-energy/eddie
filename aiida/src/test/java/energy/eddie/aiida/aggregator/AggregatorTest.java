@@ -14,7 +14,7 @@ import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.api.agnostic.aiida.ObisCode;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
