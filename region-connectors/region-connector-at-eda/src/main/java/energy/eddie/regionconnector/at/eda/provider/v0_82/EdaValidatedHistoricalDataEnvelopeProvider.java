@@ -68,6 +68,7 @@ public class EdaValidatedHistoricalDataEnvelopeProvider implements ValidatedHist
     private Flux<ValidatedHistoricalDataEnvelope> mapToValidatedHistoricalMarketDocument(
             IdentifiableConsumptionRecord identifiableConsumptionRecord
     ) {
+        LOGGER.debug("Mapping validated historical data market document");
         try {
             var marketDocument = director.createValidatedHistoricalDataMarketDocument(identifiableConsumptionRecord.consumptionRecord());
 
