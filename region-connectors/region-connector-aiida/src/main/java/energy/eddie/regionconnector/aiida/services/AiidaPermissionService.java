@@ -120,7 +120,7 @@ public class AiidaPermissionService implements ApplicationListener<ContextRefres
                                                     dataNeedId,
                                                     vhdResult.energyTimeframe().start(),
                                                     vhdResult.energyTimeframe().end(),
-                                                    terminationTopic.topicPattern());
+                                                    terminationTopic.eddieTopic());
                 outbox.commit(createdEvent);
                 // no validation for AIIDA requests necessary
                 outbox.commit(new SimpleEvent(permissionId, VALIDATED));

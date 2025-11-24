@@ -16,34 +16,76 @@ class MqttTopicTest {
         String permissionId = "perm-123";
         MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.OUTBOUND_DATA);
 
-        String expectedBase = "aiida/v1/" + permissionId + "/" + MqttTopicType.OUTBOUND_DATA.topicName();
-        assertEquals(expectedBase, topic.baseTopic());
+        assertEquals("aiida/v1/perm-123/data/outbound", topic.baseTopic());
     }
 
     @Test
-    void topicPattern_reflectsHasSuffix_forAllTopicTypes() {
+    void eddieTopic_withSuffix_publish() {
         String permissionId = "perm-xyz";
-        for (MqttTopicType type : MqttTopicType.values()) {
-            MqttTopic topic = new MqttTopic("aiida/v1", permissionId, type);
-            String expected = topic.baseTopic() + (type.hasSuffix() ? "/+" : "");
-            assertEquals(expected, topic.topicPattern(), "Mismatch for type: " + type);
-        }
+        MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.OUTBOUND_DATA);
+
+        assertEquals("aiida/v1/perm-xyz/data/outbound/+", topic.eddieTopic());
     }
 
     @Test
-    void extractPermissionIdFromTopic_matches_withAndWithoutSchema() throws Exception {
+    void eddieTopic_withSuffix_subscribe() {
+        String permissionId = "perm-xyz";
+        MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.INBOUND_DATA);
+
+        assertEquals("aiida/v1/perm-xyz/data/inbound", topic.eddieTopic());
+    }
+
+    @Test
+    void eddieTopic_withoutSuffix() {
+        String permissionId = "perm-xyz";
+        MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.STATUS);
+
+        assertEquals("aiida/v1/perm-xyz/status", topic.eddieTopic());
+    }
+
+    @Test
+    void aiidaTopic_withSuffix_subscribe() {
+        String permissionId = "perm-abc";
+        MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.INBOUND_DATA);
+
+        assertEquals("aiida/v1/perm-abc/data/inbound/+", topic.aiidaTopic());
+    }
+
+    @Test
+    void aiidaTopic_withSuffix_publish() {
+        String permissionId = "perm-abc";
+        MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.OUTBOUND_DATA);
+
+        assertEquals("aiida/v1/perm-abc/data/outbound", topic.aiidaTopic());
+    }
+
+    @Test
+    void aiidaTopic_withoutSuffix() {
+        String permissionId = "perm-abc";
+        MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.TERMINATION);
+
+        assertEquals("aiida/v1/perm-abc/termination", topic.aiidaTopic());
+    }
+
+    @Test
+    void extractPermissionIdFromTopic_matches_withSchema() throws Exception {
         String permissionId = "perm-42";
         MqttTopicType type = MqttTopicType.OUTBOUND_DATA;
         AiidaSchema schema = AiidaSchema.SMART_METER_P1_RAW;
 
-        String base = "aiida/v1/" + permissionId + "/" + type.topicName();
-        String withSchema = base + "/" + schema.topicName();
+        String base = "aiida/v1/" + permissionId + "/" + type.baseTopicName() + "/" + schema.topicName();
 
-        // without schema segment (schema is optional in the pattern)
         assertEquals(permissionId, MqttTopic.extractPermissionIdFromTopic(base, type, schema));
+    }
 
-        // with schema segment present
-        assertEquals(permissionId, MqttTopic.extractPermissionIdFromTopic(withSchema, type, schema));
+    @Test
+    void extractPermissionIdFromTopic_matches_withoutSchema() throws Exception {
+        String permissionId = "perm-42";
+        MqttTopicType type = MqttTopicType.STATUS;
+
+        String base = "aiida/v1/" + permissionId + "/" + type.baseTopicName();
+
+        assertEquals(permissionId, MqttTopic.extractPermissionIdFromTopic(base, type, null));
     }
 
     @Test
@@ -53,7 +95,7 @@ class MqttTopicTest {
                 MqttTopic.extractPermissionIdFromTopic(badTopic, MqttTopicType.OUTBOUND_DATA, AiidaSchema.SMART_METER_P1_RAW)
         );
 
-        String wrongPrefix = "wrongprefix/perm-42/" + MqttTopicType.OUTBOUND_DATA.topicName();
+        String wrongPrefix = "wrongprefix/perm-42/" + MqttTopicType.OUTBOUND_DATA.baseTopicName();
         assertThrows(MqttTopicException.class, () ->
                 MqttTopic.extractPermissionIdFromTopic(wrongPrefix, MqttTopicType.OUTBOUND_DATA, AiidaSchema.SMART_METER_P1_RAW)
         );
@@ -67,6 +109,6 @@ class MqttTopicTest {
         assertEquals("user1", acl.username());
         assertEquals(MqttAction.SUBSCRIBE, acl.action());
         assertEquals(MqttAclType.ALLOW, acl.aclType());
-        assertEquals(topic.topicPattern(), acl.topic());
+        assertEquals("aiida/v1/perm-99/data/inbound/+", acl.topic());
     }
 }

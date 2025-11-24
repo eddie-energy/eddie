@@ -152,7 +152,7 @@ class MqttServiceTest {
         assertEquals(MqttAclType.ALLOW, acls.getFirst().aclType());
         assertEquals(permissionId, acls.getFirst().username());
 
-        assertEquals("aiida/v1/testId/data/inbound", dto.dataTopic());
+        assertEquals("aiida/v1/testId/data/inbound/+", dto.dataTopic());
     }
 
     @Test

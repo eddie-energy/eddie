@@ -72,9 +72,9 @@ public class MqttService implements AutoCloseable {
         return new MqttDto(aiidaConfiguration.mqttServerUri(),
                            wrapper.user().username(),
                            wrapper.rawPassword(),
-                           topics.publishTopic().baseTopic(),
-                           topics.statusMessageTopic().baseTopic(),
-                           topics.terminationTopic().baseTopic());
+                           topics.dataTopic().aiidaTopic(),
+                           topics.statusTopic().aiidaTopic(),
+                           topics.terminationTopic().aiidaTopic());
     }
 
     /**
@@ -105,8 +105,8 @@ public class MqttService implements AutoCloseable {
                                 MqttTopic.of(mqttUser.permissionId(), MqttTopicType.TERMINATION));
 
         aclRepository.saveAll(List.of(
-                topics.publishTopic.aiidaAcl(mqttUser.username()),
-                topics.statusMessageTopic().aiidaAcl(mqttUser.username()),
+                topics.dataTopic().aiidaAcl(mqttUser.username()),
+                topics.statusTopic().aiidaAcl(mqttUser.username()),
                 topics.terminationTopic().aiidaAcl(mqttUser.username())));
 
         return topics;
@@ -131,17 +131,17 @@ public class MqttService implements AutoCloseable {
 
     private record UserPasswordWrapper(MqttUser user, String rawPassword) {}
 
-    private record Topics(MqttTopic publishTopic, MqttTopic statusMessageTopic, MqttTopic terminationTopic) {}
+    private record Topics(MqttTopic dataTopic, MqttTopic statusTopic, MqttTopic terminationTopic) {}
 
     public void subscribeToOutboundDataTopic(String permissionId) throws MqttException {
-        var topic = MqttTopic.of(permissionId, MqttTopicType.OUTBOUND_DATA).topicPattern();
+        var topic = MqttTopic.of(permissionId, MqttTopicType.OUTBOUND_DATA).eddieTopic();
         LOGGER.info("Subscribing to outbound data topic {}", topic);
 
         mqttClient.subscribe(topic, 1);
     }
 
     public void subscribeToStatusTopic(String permissionId) throws MqttException {
-        var topic = MqttTopic.of(permissionId, MqttTopicType.STATUS).topicPattern();
+        var topic = MqttTopic.of(permissionId, MqttTopicType.STATUS).eddieTopic();
         LOGGER.info("Subscribing to status topic {}", topic);
 
         mqttClient.subscribe(topic, 1);
