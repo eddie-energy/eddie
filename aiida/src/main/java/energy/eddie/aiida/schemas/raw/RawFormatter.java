@@ -8,7 +8,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.schemas.BaseSchemaFormatter;
 import energy.eddie.aiida.services.ApplicationInformationService;
-import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -62,7 +62,8 @@
     "transmissionSchedule": "*/5 * * * * *",
     "schemas": [
       "SMART-METER-P1-RAW",
-      "SMART-METER-P1-CIM"
+      "SMART-METER-P1-CIM-V1-04",
+      "SMART-METER-P1-CIM-V1-06"
     ],
     "asset": "CONNECTION-AGREEMENT-POINT",
     "dataTags": [

@@ -1,10 +1,9 @@
 package energy.eddie.aiida.schemas;
 
 import energy.eddie.aiida.errors.formatter.SchemaFormatterRegistryException;
-import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;
@@ -19,11 +18,6 @@ public class SchemaFormatterRegistry {
 
     public SchemaFormatterRegistry(List<SchemaFormatter> schemaFormatters) {
         for (SchemaFormatter schemaFormatter : schemaFormatters) {
-            if (AnnotationUtils.findAnnotation(schemaFormatter.getClass(), Deprecated.class) != null) {
-                LOGGER.debug("Skipping deprecated formatter: {}", schemaFormatter.getClass().getName());
-                continue;
-            }
-
             var schema = schemaFormatter.supportedSchema();
             activeFormatters.putIfAbsent(schema, schemaFormatter);
         }

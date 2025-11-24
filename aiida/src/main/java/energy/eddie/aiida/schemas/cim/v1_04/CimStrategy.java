@@ -7,7 +7,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.schemas.cim.BaseCimFormatterStrategy;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.cim.v1_04.StandardCodingSchemeTypeList;
 import energy.eddie.cim.v1_04.StandardQualityTypeList;
 import energy.eddie.cim.v1_04.rtd.*;
@@ -18,10 +18,6 @@ import org.slf4j.LoggerFactory;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-/**
- * @deprecated Version 1.06 made version 1.04 obsolete
- */
-@Deprecated(since = "20251023")
 public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, RTDMarketDocument, TimeSeries, Quantity, StandardCodingSchemeTypeList, QuantityTypeKind> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CimStrategy.class.getName());
 
@@ -60,10 +56,9 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, RTDMarket
         return timeSeries
                 .getQuantities()
                 .stream()
-                .filter(Objects::nonNull)
-                .filter(quantity -> quantity.getType() != null)
+                .filter(quantity -> quantity != null && quantity.getType() != null)
                 .map(this::quantityToAiidaRecordValue)
-                .filter(Objects::nonNull)
+                .flatMap(Optional::stream)
                 .toList();
     }
 
@@ -135,7 +130,7 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, RTDMarket
                 .withMessageDocumentHeaderMetaInformationRegionCountry(countryCode);
     }
 
-    private AiidaRecordValue quantityToAiidaRecordValue(Quantity quantity) {
+    private Optional<AiidaRecordValue> quantityToAiidaRecordValue(Quantity quantity) {
         var obisCode = OBIS_TO_QUANTITY_TYPE.entrySet()
                                             .stream()
                                             .filter(entry -> entry.getValue()
@@ -145,17 +140,19 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, RTDMarket
                                             .orElse(null);
         if (obisCode == null) {
             LOGGER.warn("No matching ObisCode found for QuantityTypeKind: {}", quantity.getType());
-            return null;
+            return Optional.empty();
         }
 
         var quantityValue = quantity.getQuantity().toString();
         var unitOfMeasurement = obisCode.unitOfMeasurement();
 
-        return new AiidaRecordValue(quantity.getType().name(),
-                                    obisCode,
-                                    quantityValue,
-                                    unitOfMeasurement,
-                                    quantityValue,
-                                    unitOfMeasurement);
+        var aiidaRecordValue = new AiidaRecordValue(quantity.getType().name(),
+                                                    obisCode,
+                                                    quantityValue,
+                                                    unitOfMeasurement,
+                                                    quantityValue,
+                                                    unitOfMeasurement);
+
+        return Optional.of(aiidaRecordValue);
     }
 }

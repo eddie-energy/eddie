@@ -9,7 +9,7 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;

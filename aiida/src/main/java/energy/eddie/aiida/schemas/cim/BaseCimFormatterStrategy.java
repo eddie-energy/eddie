@@ -6,7 +6,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,8 @@ public abstract class BaseCimFormatterStrategy<T, S, U, V, W, X> implements CimF
     protected final DataSource dataSourceOfPermissionOrThrow(Permission permission) throws CimSchemaFormatterException {
         var dataSource = permission.dataSource();
         if (dataSource == null) {
-            throw new CimSchemaFormatterException(new IllegalArgumentException("Data source is required for CIM formatting"));
+            throw new CimSchemaFormatterException(new IllegalArgumentException(
+                    "Data source is required for CIM formatting"));
         }
 
         return dataSource;
@@ -59,7 +60,8 @@ public abstract class BaseCimFormatterStrategy<T, S, U, V, W, X> implements CimF
     protected final AiidaLocalDataNeed dataNeedOfPermissionOrThrow(Permission permission) throws CimSchemaFormatterException {
         var dataNeed = permission.dataNeed();
         if (dataNeed == null) {
-            throw new CimSchemaFormatterException(new IllegalArgumentException("Data need is required for CIM formatting"));
+            throw new CimSchemaFormatterException(new IllegalArgumentException(
+                    "Data need is required for CIM formatting"));
         }
 
         return dataNeed;

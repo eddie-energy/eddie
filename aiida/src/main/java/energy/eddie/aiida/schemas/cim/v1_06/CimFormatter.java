@@ -9,11 +9,11 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.schemas.BaseSchemaFormatter;
 import energy.eddie.aiida.schemas.cim.CimFormatterStrategy;
 import energy.eddie.aiida.services.ApplicationInformationService;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.v1_06.rtd.RTDEnvelope;
-import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import org.springframework.stereotype.Component;
 
-@Component(value = "cimFormatter106")
+@Component(value = "cimFormatterVersion106")
 public class CimFormatter extends BaseSchemaFormatter {
     private final CimFormatterStrategy<RTDEnvelope> cimFormatterStrategy;
 
@@ -27,7 +27,7 @@ public class CimFormatter extends BaseSchemaFormatter {
 
     @Override
     public AiidaSchema supportedSchema() {
-        return AiidaSchema.SMART_METER_P1_CIM;
+        return AiidaSchema.SMART_METER_P1_CIM_V1_06;
     }
 
     @Override

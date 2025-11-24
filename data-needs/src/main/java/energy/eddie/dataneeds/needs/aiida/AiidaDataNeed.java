@@ -3,6 +3,8 @@ package energy.eddie.dataneeds.needs.aiida;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.ObisCodeConverter;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
