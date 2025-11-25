@@ -1256,14 +1256,18 @@ public class FooBarRawDataProvider implements RawDataProvider {
 The region connector can request validated historical data and emit it as raw data messages.
 It can react to revocation of permissions by the final customer, by checking the error messages when requesting data from the MDA's API.
 The next step is to map the validated historical data to the [validated historical data market document](../../2-integrating/messages/cim/validated-historical-data-market-documents.md).
-Similar to the `RawDataProvider`, we implement an [`ValidatedHistoricalDataEnvelopeProvider`](./api.md#validatedhistoricaldataenvelopeprovider).
+Similar to the `RawDataProvider`, we implement an [`ValidatedHistoricalDataMarketDocumentProvider`](./api.md#validatedhistoricaldatamarketdocumentprovider).
 Since the mapping of the data to a CIM document depends on the data given, that part is left out as TODO.
 There are some [helpers](./shared-functionality.md#cim-utilities-and-helper-classes) for the mapping available.
+
+> [!INFO]
+> The `ValidatedHistoricalDataMarketDocumentProvider` is only for CIM v1.04.
+> Please remember to implement the [`ValidatedHistoricalDataEnvelopeProvider`](./api.md#validatedhistoricaldataenvelopeprovider) to maintain backwards compatibility to CIM v0.82.
 
 ```java
 
 @Component
-public class FooBarValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataEnvelopeProvider {
+public class FooBarValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataMarketDocumentProvider {
   private final Flux<ValidatedHistoricalDataEnvelope> data;
 
   public FooBarValidatedHistoricalDataEnvelopeProvider(ValidatedHistoricalDataStream stream) {
@@ -1271,13 +1275,13 @@ public class FooBarValidatedHistoricalDataEnvelopeProvider implements ValidatedH
                  .map(this::toValidatedHistoricalDataMarketDocument);
   }
 
-  public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
+  public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
     return data;
   }
 
   private ValidatedHistoricalDataEnvelope toValidatedHistoricalDataMarketDocument(IdentifiableValidatedHistoricalData message) {
-    ValidatedHistoricalDataMarketDocumentComplexType vhdDocument = // TODO: Convert message to validated historical data market document
-    return new VhdEnvelope(vhdDocument, message.permissionRequest()).wrap();
+    VHDEnvelope vhdDocument = // TODO: Convert message to validated historical data market document
+    return new VhdEnvelopeWrapper(vhdDocument, message.permissionRequest()).wrap();
   }
 }
 ```
