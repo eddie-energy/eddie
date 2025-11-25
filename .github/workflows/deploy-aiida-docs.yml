@@ -19,16 +19,7 @@ jobs:
           distribution: 'temurin'
       - name: Gradle build aiida-docs
         run: ./gradlew pnpmBuildAiidaDocs
-      - name: Deploy docs to webserver
-        uses: eddie-energy/ftp-deploy-action@main
-        timeout-minutes: 5
-        with:
-          host: ${{ secrets.WEBSERVER_SFTP_HOST }}
-          password: ${{ secrets.WEBSERVER_SFTP_PASSWORD }}
-          user: ${{ secrets.WEBSERVER_SFTP_USERNAME }}
-          source: "./aiida/docs/.vitepress/dist/"
-          destination: "/public_html/aiida/"
-      - name: Copy files via SSH
+      - name: Deploy AIIDA docs
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.EDDIE_ENERGY_SSH_HOST }}
