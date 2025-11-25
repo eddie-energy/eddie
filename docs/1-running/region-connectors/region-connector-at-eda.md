@@ -34,6 +34,7 @@ depends on the way you deploy the region connector.
 | `region-connector.at.eda.ponton.messenger.username`                     | Username that can be used to retrieve a JWT Token from the PontonXP Messengers authentication endpoint. This is needed in order to use some of the authentication protected REST API endpoints. The given user must not be additionally secured by 2FA.                                                                                                                                                                                                                             |
 | `region-connector.at.eda.ponton.messenger.password`                     | Password for the above username. Needed to retrieve a JWT Token from the PontonXP Messengers authentication endpoint. This is needed in order to use some of the authentication protected REST API endpoints.                                                                                                                                                                                                                                                                       |
 | `region-connector.at.eda.consumption.records.remove.duplicates.enabled` | Enables the removal of duplicate consumption records that were already received once by EDDIE. If disabled duplicate consumption data for permission requests concerning the same metering point will be emitted to the outbound connector, this is also true if the permission request is already considered fulfilled, since MDA will send updates for the data. If enabled those updates will not be received. To enable set to `true`, disabled otherwise. Disabled by default. |
+| `region-connector.at.eda.ponton.messenger.enabled`                      | Default `true`. If set to true or missing the EDA Region Connector will try to connect to the configured Ponton X/P Messenger instance. If set to `false` it will use a drop-in replacement, which is a simple REST API to manually send Market Messages, should be used for testing and developement only, never in production!                                                                                                                                                    |
 
 The region connector can be configured using Spring properties or environment variables.
 When using environment variables, the configuration values need to be converted in the following way:
@@ -53,6 +54,7 @@ region-connector.at.eda.ponton.messenger.folder=/opt/pontonxp
 region-connector.at.eda.ponton.messenger.username=username
 region-connector.at.eda.ponton.messenger.password=password
 region-connector.at.eda.consumption.records.remove.duplicates.enabled=false
+region-connector.at.eda.ponton.messenger.enabled=true
 ```
 
 ## Running the Region Connector via EDDIE
