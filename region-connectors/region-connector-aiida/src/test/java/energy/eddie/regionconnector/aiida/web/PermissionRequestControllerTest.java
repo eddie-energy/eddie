@@ -258,7 +258,6 @@ class PermissionRequestControllerTest {
         setField(request, "end", LocalDate.of(9999, 12, 31));
         setField(request, "status", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
         setField(request, "terminationTopic", "someTopic");
-        setField(request, "mqttUsername", "someUsername");
         setField(request, "message", "someMessage");
         setField(request, "created", Instant.now());
 

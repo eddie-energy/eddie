@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MqttUserRepository extends JpaRepository<MqttUser, String> {
-    boolean existsByPermissionId(String permissionId);
+    boolean existsByUsername(String permissionId);
 }

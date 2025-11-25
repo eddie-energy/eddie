@@ -3,7 +3,6 @@ package energy.eddie.regionconnector.aiida.mqtt;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
@@ -44,8 +43,6 @@ class MqttServiceTest {
     private AiidaPermissionRequest mockRequest;
     @Mock
     private AiidaConfiguration mockConfiguration;
-    @Mock
-    private AiidaDataNeed mockDataNeed;
     @Captor
     private ArgumentCaptor<MqttUser> mqttUserCaptor;
     @Captor
@@ -70,7 +67,7 @@ class MqttServiceTest {
     @Test
     void givenAlreadyExistingCredentials_throwsException() {
         // Given
-        when(mockUserRepository.existsByPermissionId(anyString())).thenReturn(true);
+        when(mockUserRepository.existsByUsername(anyString())).thenReturn(true);
 
         // When, Then
         assertThrows(CredentialsAlreadyExistException.class,

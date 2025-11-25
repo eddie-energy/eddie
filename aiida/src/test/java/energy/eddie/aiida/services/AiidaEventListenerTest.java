@@ -22,7 +22,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -104,7 +104,7 @@ class AiidaEventListenerTest {
         var event = mock(DataSourceDeletionEvent.class);
         var permissionId1 = UUID.fromString("00000000-0000-0000-0000-000000000000");
         var permissionId2 = UUID.fromString("00000000-0000-0000-0000-000000000001");
-        var permissionIds = List.of(permissionId1, permissionId2);
+        var permissionIds = Set.of(permissionId1, permissionId2);
 
         // When
         when(event.permissionIds()).thenReturn(permissionIds);

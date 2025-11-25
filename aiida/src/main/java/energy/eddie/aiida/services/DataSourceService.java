@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 public class DataSourceService {
@@ -246,7 +247,7 @@ public class DataSourceService {
             var permissionIds = dataSource.permissions()
                                           .stream()
                                           .map(Permission::id)
-                                          .toList();
+                                          .collect(Collectors.toSet());
 
             aiidaEventPublisher.publishEvent(new DataSourceDeletionEvent(permissionIds));
         }
