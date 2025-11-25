@@ -63,8 +63,9 @@ public class MqttService implements AutoCloseable {
     ) throws CredentialsAlreadyExistException {
         LOGGER.info("Creating MQTT credentials and ACLs for permission {}", permissionId);
 
-        if (userRepository.existsByPermissionId(permissionId))
+        if (userRepository.existsByUsername(permissionId)) {
             throw new CredentialsAlreadyExistException(permissionId);
+        }
 
         var wrapper = createAndSaveMqttUser(permissionId);
         var topics = createAclsForUser(wrapper.user, isInbound);
@@ -85,7 +86,7 @@ public class MqttService implements AutoCloseable {
         // BCryptPasswordEncoder will generate and store the salt in the hash
         var passwordHash = bCryptPasswordEncoder.encode(rawPassword);
 
-        MqttUser mqttUser = new MqttUser(permissionId, passwordHash, false, permissionId);
+        var mqttUser = new MqttUser(permissionId, passwordHash, false);
         return new UserPasswordWrapper(userRepository.save(mqttUser), rawPassword);
     }
 

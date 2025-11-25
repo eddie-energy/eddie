@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusDeviceConfigException;
 import energy.eddie.aiida.models.modbus.*;
+import jakarta.annotation.Nullable;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;

@@ -8,18 +8,19 @@ import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.sga.SmartGatewaysDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.shelly.ShellyDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.simulation.SimulationDataSourceDto;
-import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
+import energy.eddie.aiida.models.datasource.interval.modbus.ModbusDataSource;
+import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
-import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 class DataSourceTest {

@@ -1,8 +1,8 @@
 package energy.eddie.aiida.adapters.datasource.sga;
 
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysTopic;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 
 import java.util.Map;
 

@@ -40,7 +40,7 @@ public class AiidaRecordConverter {
      * Converts an {@link AiidaRecord} to a {@link LatestDataSourceRecordDto}.
      *
      * @param aiidaRecord The record to convert.
-     * @param dataSource The data source which contains the metadata that should be added to the DTO.
+     * @param dataSource  The data source which contains the metadata that should be added to the DTO.
      * @return LatestAiidaRecordDto with its fields populated.
      */
     public static LatestDataSourceRecordDto recordToLatestDto(AiidaRecord aiidaRecord, DataSource dataSource) {
@@ -49,9 +49,9 @@ public class AiidaRecordConverter {
                                              aiidaRecord.asset(),
                                              dataSource.id(),
                                              aiidaRecord.aiidaRecordValues()
-                                                   .stream()
-                                                   .map(AiidaRecordConverter::toValueDto)
-                                                   .toList());
+                                                        .stream()
+                                                        .map(AiidaRecordConverter::toValueDto)
+                                                        .toList());
     }
 
     @SuppressWarnings("NullAway")
@@ -62,8 +62,7 @@ public class AiidaRecordConverter {
                 value.rawValue(),
                 value.rawUnitOfMeasurement(),
                 value.value(),
-                value.unitOfMeasurement(),
-                value.sourceKey()
+                value.unitOfMeasurement()
         );
     }
 }

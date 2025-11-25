@@ -2,14 +2,12 @@ package energy.eddie.aiida.models.record;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.aiida.utils.ObisCode;
-import jakarta.annotation.Nullable;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
-import java.util.Objects;
-
 @Entity
-@RequireDataTagOrSourceKey
 public class AiidaRecordValue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,71 +19,54 @@ public class AiidaRecordValue {
     @JsonIgnore
     private AiidaRecord aiidaRecord;
 
+    @Column(name = "raw_tag", nullable = false)
+    @Schema(description = "The rawTag tag associated to a rawTag value.")
     @JsonProperty
     private String rawTag;
 
-    @Nullable
-    @JsonProperty
     @Enumerated(EnumType.STRING)
+    @Column(name = "data_tag", nullable = false)
+    @Schema(description = "The data tag (an OBIS code) associated to a value.")
+    @JsonProperty
     private ObisCode dataTag;
 
+    @Column(name = "raw_value", nullable = false)
+    @Schema(description = "The rawTag value of the rawTag tag.")
     @JsonProperty
     private String rawValue;
 
-    @SuppressWarnings("unused") // Used when serialized to JSON
-    @JsonProperty
     @Enumerated(EnumType.STRING)
+    @Column(name = "raw_unit_of_measurement", nullable = false)
+    @Schema(description = "The unit of measurement of the rawTag value related to the rawTag tag.")
+    @JsonProperty
     private UnitOfMeasurement rawUnitOfMeasurement;
 
+    @Column(nullable = false)
+    @Schema(description = "The value of the data tag.")
     @JsonProperty
     private String value;
 
-    @SuppressWarnings("unused") // Used when serialized to JSON
-    @JsonProperty
     @Enumerated(EnumType.STRING)
-    private UnitOfMeasurement unitOfMeasurement;
-
-    @Nullable
+    @Column(name = "unit_of_measurement", nullable = false)
+    @Schema(description = "The unit of measurement of the value related to the data tag.")
     @JsonProperty
-    @Column(name = "source_key")
-    private String sourceKey;
+    private UnitOfMeasurement unitOfMeasurement;
 
     @SuppressWarnings("NullAway.Init")
     public AiidaRecordValue(
             String rawTag,
-            @Nullable ObisCode dataTag,
+            ObisCode dataTag,
             String rawValue,
             UnitOfMeasurement rawUnitOfMeasurement,
             String value,
             UnitOfMeasurement unitOfMeasurement
     ) {
-        Objects.requireNonNull(dataTag, "Data tag cannot be null here");
         this.rawTag = rawTag;
         this.dataTag = dataTag;
         this.rawValue = rawValue;
         this.rawUnitOfMeasurement = rawUnitOfMeasurement;
         this.value = value;
         this.unitOfMeasurement = unitOfMeasurement;
-        this.sourceKey = null;
-    }
-
-    @SuppressWarnings("NullAway.Init")
-    public AiidaRecordValue(
-            String rawTag,
-            @Nullable String sourceKey,
-            String rawValue,
-            UnitOfMeasurement rawUnitOfMeasurement,
-            String value,
-            UnitOfMeasurement unitOfMeasurement
-    ) {
-        Objects.requireNonNull(sourceKey, "Source key cannot be null here");
-        this.rawTag = rawTag;
-        this.dataTag = null;
-        this.rawValue = rawValue;
-        this.rawUnitOfMeasurement = rawUnitOfMeasurement;
-        this.value = value;
-        this.unitOfMeasurement = unitOfMeasurement;
-        this.sourceKey = sourceKey;
     }
 
     @SuppressWarnings("NullAway.Init")
@@ -104,7 +85,6 @@ public class AiidaRecordValue {
         this.aiidaRecord = aiidaRecord;
     }
 
-    @Nullable
     public ObisCode dataTag() {
         return dataTag;
     }
@@ -127,22 +107,5 @@ public class AiidaRecordValue {
 
     public UnitOfMeasurement rawUnitOfMeasurement() {
         return rawUnitOfMeasurement;
-    }
-
-    @Nullable
-    public String sourceKey() { return sourceKey; }
-
-    /*
-     * Returns either the dataTag or the sourceKey.
-     * `@RequireDataTagOrSourceKey` ensures that either dataTag or sourceKey are not null.
-     */
-    public String dataPointKey() {
-        if (dataTag != null) {
-            return dataTag.toString();
-        }
-        if (sourceKey != null) {
-            return sourceKey;
-        }
-        throw new IllegalStateException("Both dataTag and sourceKey are null.");
     }
 }

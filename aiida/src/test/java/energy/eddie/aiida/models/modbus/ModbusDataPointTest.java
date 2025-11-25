@@ -10,53 +10,53 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ModbusDataPointTest {
 
     @Test
-    void testGetLength_whenLengthSetExplicitly() {
+    void testLength_whenLengthSetExplicitly() {
         ModbusDataPoint dp = new ModbusDataPoint(
                 "voltage", 100, RegisterType.HOLDING, 2, "int32",
                 Endian.BIG, false, null, null, null, Access.READ
         );
 
-        assertThat(dp.getLength()).isEqualTo(2);
+        assertThat(dp.length()).isEqualTo(2);
     }
 
     @Test
-    void testGetLength_forCoilAndDiscreteReturns1() {
+    void testLength_forCoilAndDiscreteReturns1() {
         ModbusDataPoint coilDp = new ModbusDataPoint(
                 "coil", 1, RegisterType.COIL, 0, "any", null, false, null, null, null, Access.READ
         );
-        assertThat(coilDp.getLength()).isEqualTo(1);
+        assertThat(coilDp.length()).isEqualTo(1);
 
         ModbusDataPoint discreteDp = new ModbusDataPoint(
                 "discrete", 2, RegisterType.DISCRETE, 0, "any", null, false, null, null, null, Access.READ
         );
-        assertThat(discreteDp.getLength()).isEqualTo(1);
+        assertThat(discreteDp.length()).isEqualTo(1);
     }
 
     @Test
-    void testGetLength_forKnownValueTypes() {
-        assertThat(createDataPoint("dp16", "int16").getLength()).isEqualTo(1);
-        assertThat(createDataPoint("dp32", "int32").getLength()).isEqualTo(2);
-        assertThat(createDataPoint("dpf32", "float32").getLength()).isEqualTo(2);
+    void testLength_forKnownValueTypes() {
+        assertThat(createDataPoint("dp16", "int16").length()).isEqualTo(1);
+        assertThat(createDataPoint("dp32", "int32").length()).isEqualTo(2);
+        assertThat(createDataPoint("dpf32", "float32").length()).isEqualTo(2);
     }
 
     @Test
-    void testGetLength_forUnknownValueType_defaultsTo1() {
+    void testLength_forUnknownValueType_defaultsTo1() {
         ModbusDataPoint dp = createDataPoint("unknown", "crazytype");
-        assertThat(dp.getLength()).isEqualTo(1);
+        assertThat(dp.length()).isEqualTo(1);
     }
 
     @Test
-    void testGetLength_whenMissingType_returns0() {
+    void testLength_whenMissingType_returns0() {
         ModbusDataPoint dp = new ModbusDataPoint(
                 "broken", 1, null, 0, null, null, false, null, null, null, Access.READ
         );
-        assertThat(dp.getLength()).isZero();
+        assertThat(dp.length()).isZero();
     }
 
     @Test
     void testStringLengthWarningDefaultsTo1() {
         ModbusDataPoint dp = createDataPoint("stringdp", "string");
-        assertThat(dp.getLength()).isEqualTo(1);
+        assertThat(dp.length()).isEqualTo(1);
     }
 
     @Test
@@ -68,12 +68,12 @@ class ModbusDataPointTest {
 
         assertThat(dp.id()).isEqualTo("dp");
         assertThat(dp.register()).isEqualTo(123);
-        assertThat(dp.getLength()).isEqualTo(3);
+        assertThat(dp.length()).isEqualTo(3);
         assertThat(dp.registerType()).isEqualTo(RegisterType.HOLDING);
         assertThat(dp.valueType()).isEqualTo("int16");
         assertThat(dp.endian()).isEqualTo(Endian.BIG);
         assertThat(dp.virtual()).isTrue();
-        assertThat(dp.source()).containsExactly("new");
+        assertThat(dp.sources()).containsExactly("new");
         assertThat(dp.transform()).isEqualTo("x*2");
         assertThat(dp.translations()).containsEntry("on", "1");
         assertThat(dp.access()).isEqualTo(Access.WRITE);

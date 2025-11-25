@@ -16,12 +16,6 @@ public interface AiidaPermissionRequestInterface extends PermissionRequest {
     String terminationTopic();
 
     /**
-     * MQTT username associated with this permission.
-     */
-    @Nullable
-    String mqttUsername();
-
-    /**
      * A message providing further information about the latest status.
      */
     @Nullable

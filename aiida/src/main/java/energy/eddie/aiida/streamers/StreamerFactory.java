@@ -33,7 +33,7 @@ public class StreamerFactory {
      * @param recordFlux             Flux on which the records that should be sent are published.
      * @param terminationRequestSink Sink, to which the permissionId will be published when the EP requests a
      *                               termination.
-     * @throws MqttException         If the creation of the MqttClient failed.
+     * @throws MqttException If the creation of the MqttClient failed.
      */
     protected static AiidaStreamer getAiidaStreamer(
             UUID aiidaId,
@@ -47,7 +47,7 @@ public class StreamerFactory {
         var mqttFilePersistenceDirectory = "mqtt-persistence/{eddieId}/{permissionId}";
         var streamingConfig = requireNonNull(permission.mqttStreamingConfig());
         var client = MqttFactory.getMqttAsyncClient(streamingConfig.serverUri(),
-                                                    streamingConfig.username(),
+                                                    streamingConfig.username().toString(),
                                                     new MqttDefaultFilePersistence(new UriTemplate(
                                                             mqttFilePersistenceDirectory).expand(permission.eddieId(),
                                                                                                  permission.id())

@@ -2,8 +2,8 @@ package energy.eddie.aiida.adapters.datasource.fr.transformer.history;
 
 import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3DataField;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 
 import java.util.Map;
 import java.util.Optional;

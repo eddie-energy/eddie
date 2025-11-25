@@ -105,7 +105,7 @@ public class DataSourceService {
 
         return repository.findByUserId(currentUserId)
                          .stream()
-                         .filter(dataSource -> isInboundDataSourceType(dataSource.dataSourceType()))
+                         .filter(dataSource -> isInboundDataSourceType(dataSource.type()))
                          .toList();
     }
 
@@ -114,7 +114,7 @@ public class DataSourceService {
 
         return repository.findByUserId(currentUserId)
                          .stream()
-                         .filter(dataSource -> isOutboundDataSourceType(dataSource.dataSourceType()))
+                         .filter(dataSource -> isOutboundDataSourceType(dataSource.type()))
                          .toList();
     }
 
@@ -124,21 +124,20 @@ public class DataSourceService {
         var plaintextPassword = "";
 
         var dataSource = DataSource.createFromDto(dto, currentUserId);
-        LOGGER.info("Created new data source ({}) of type {}", dataSource.id(), dataSource.dataSourceType());
 
         if (dataSource instanceof MqttDataSource mqttDataSource) {
             if (mqttDataSource instanceof SinapsiAlfaDataSource sinapsiAlfaDataSource && dto instanceof SinapsiAlfaDataSourceDto sinapsiAlfaDataSourceDto) {
-                sinapsiAlfaDataSource.generateMqttSettings(sinapsiAlfaConfiguration,
-                                                           sinapsiAlfaDataSourceDto.activationKey());
-                LOGGER.info("Generated MQTT settings for Sinapsi Alfa data source ({})", dataSource.id());
+                sinapsiAlfaDataSource.configure(sinapsiAlfaConfiguration, sinapsiAlfaDataSourceDto.activationKey());
+                LOGGER.info("Generated MQTT settings for Sinapsi Alfa data source ({})", dataSource.name());
             } else {
                 plaintextPassword = SecretGenerator.generate();
-                mqttDataSource.generateMqttSettings(mqttConfiguration, bCryptPasswordEncoder, plaintextPassword);
-                LOGGER.info("Generated MQTT settings for data source ({})", dataSource.id());
+                mqttDataSource.configure(mqttConfiguration, bCryptPasswordEncoder, plaintextPassword);
+                LOGGER.info("Generated MQTT settings for {} data source ({})", dataSource.type(), dataSource.name());
             }
         }
 
         repository.save(dataSource);
+        LOGGER.debug("Created new data source ({}) of type {}", dataSource.id(), dataSource.type());
         startDataSource(dataSource);
 
         return new DataSourceSecretsDto(dataSource.id(), plaintextPassword);
@@ -155,13 +154,7 @@ public class DataSourceService {
         repository.findById(dataSourceId)
                   .ifPresentOrElse(
                           dataSource -> {
-                              var permissionIds = dataSource.permissions()
-                                                            .stream()
-                                                            .map(Permission::id)
-                                                            .collect(Collectors.toSet());
-
-                              aiidaEventPublisher.publishEvent(new DataSourceDeletionEvent(permissionIds));
-
+                              publishDataSourceDeletionEventIfOutboundDataSource(dataSource);
                               var dataSourceName = dataSource.name();
                               repository.delete(dataSource);
                               LOGGER.info("Deleted data source {} ({})", dataSourceName, dataSourceId);
@@ -217,7 +210,7 @@ public class DataSourceService {
         var mqttDataSource = castToMqttDataSourceIfSecretRegenerationIsSupported(dataSource);
         var dataSourceSecrets = new DataSourceSecretsDto(dataSourceId, SecretGenerator.generate());
 
-        mqttDataSource.setPassword(dataSourceSecrets.plaintextPassword(), bCryptPasswordEncoder);
+        mqttDataSource.updatePassword(bCryptPasswordEncoder, dataSourceSecrets.plaintextPassword());
 
         findDataSourceAdapter(dataSourceId).ifPresentOrElse(
                 adapter -> updateDataSourceAdapterState(
@@ -240,11 +233,24 @@ public class DataSourceService {
         return dataSourceAdapters.stream().filter(predicate).findFirst();
     }
 
+    @Transactional
     public InboundDataSource createInboundDataSource(Permission permission) {
         var inboundDataSource = new InboundDataSource.Builder(permission).build();
-
+        repository.save(inboundDataSource);
         LOGGER.info("Created inbound data source {}", inboundDataSource.id());
-        return repository.save(inboundDataSource);
+
+        return inboundDataSource;
+    }
+
+    private void publishDataSourceDeletionEventIfOutboundDataSource(DataSource dataSource) {
+        if (dataSource.type() != DataSourceType.INBOUND) {
+            var permissionIds = dataSource.permissions()
+                                          .stream()
+                                          .map(Permission::id)
+                                          .collect(Collectors.toSet());
+
+            aiidaEventPublisher.publishEvent(new DataSourceDeletionEvent(permissionIds));
+        }
     }
 
     private boolean isOutboundDataSourceType(DataSourceType dataSourceType) {
@@ -262,15 +268,15 @@ public class DataSourceService {
 
     private MqttDataSource castToMqttDataSourceIfSecretRegenerationIsSupported(DataSource dataSource) throws DataSourceSecretGenerationNotSupportedException {
         if (dataSource instanceof MqttDataSource mqttDataSource) {
-            if (mqttDataSource.dataSourceType() == DataSourceType.INBOUND ||
-                mqttDataSource.dataSourceType() == DataSourceType.SINAPSI_ALFA) {
-                throw new DataSourceSecretGenerationNotSupportedException(dataSource.dataSourceType());
+            if (mqttDataSource.type() == DataSourceType.INBOUND ||
+                mqttDataSource.type() == DataSourceType.SINAPSI_ALFA) {
+                throw new DataSourceSecretGenerationNotSupportedException(dataSource.type());
             }
 
             return mqttDataSource;
         }
 
-        throw new DataSourceSecretGenerationNotSupportedException(dataSource.dataSourceType());
+        throw new DataSourceSecretGenerationNotSupportedException(dataSource.type());
     }
 
     private void updateDataSourceAdapterState(

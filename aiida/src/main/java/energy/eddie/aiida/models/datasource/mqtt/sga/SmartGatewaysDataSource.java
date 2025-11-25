@@ -2,6 +2,7 @@ package energy.eddie.aiida.models.datasource.mqtt.sga;
 
 import energy.eddie.aiida.dtos.datasource.mqtt.sga.SmartGatewaysDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -23,12 +24,13 @@ public class SmartGatewaysDataSource extends MqttDataSource {
     }
 
     @Override
-    protected String topicFormattedForUi() {
-        return topic.replace(TOPIC_SUFFIX, "");
+    protected void createAccessControlEntry() {
+        var topic = TOPIC_PREFIX + id.toString().substring(0, MAX_CHARACTERS_FOR_SECRET) + TOPIC_SUFFIX;
+        accessControlEntry = new MqttAccessControlEntry(id, topic);
     }
 
     @Override
-    protected void generateTopic() {
-        this.topic = TOPIC_PREFIX + id.toString().substring(0, MAX_CHARACTERS_FOR_SECRET) + TOPIC_SUFFIX;
+    protected String topicFormattedForUi() {
+        return accessControlEntry.topic().replace(TOPIC_SUFFIX, "");
     }
 }

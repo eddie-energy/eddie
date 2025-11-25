@@ -20,7 +20,7 @@ class DataSourceDtoTest {
     @Test
     void parseJson_givenSimulation() throws JsonProcessingException {
         // Given
-        var json = "{\"name\":\"Test Source\",\"dataSourceType\":\"SIMULATION\", \"pollingInterval\": 12}";
+        var json = "{\"name\":\"Test Source\",\"type\":\"SIMULATION\", \"pollingInterval\": 12}";
 
         // When
         var dto = objectMapper.readValue(json, DataSourceDto.class);
@@ -33,7 +33,7 @@ class DataSourceDtoTest {
     @Test
     void parseJson_givenShelly() throws JsonProcessingException {
         // Given
-        var json = "{\"name\":\"Test Source\",\"dataSourceType\":\"SHELLY\"}";
+        var json = "{\"name\":\"Test Source\",\"type\":\"SHELLY\"}";
 
         // When
         var dto = objectMapper.readValue(json, DataSourceDto.class);
@@ -45,7 +45,7 @@ class DataSourceDtoTest {
     @Test
     void parseJson_givenSinapsi() throws JsonProcessingException {
         // Given
-        var json = "{\"name\":\"Test Source\",\"dataSourceType\":\"SINAPSI_ALFA\", \"activationKey\": \"abc\"}";
+        var json = "{\"name\":\"Test Source\",\"type\":\"SINAPSI_ALFA\", \"activationKey\": \"abc\"}";
 
         // When
         var dto = objectMapper.readValue(json, DataSourceDto.class);
@@ -58,13 +58,14 @@ class DataSourceDtoTest {
     @Test
     void parseJson_givenModbus() throws JsonProcessingException {
         // Given
-        var json = "{\"name\":\"Test Source\",\"dataSourceType\":\"MODBUS\", \"modbusIp\": \"abc\"}";
+        var ipAddress = "127.0.0.1";
+        var json = "{\"name\":\"Test Source\",\"type\":\"MODBUS\", \"ipAddress\": \"" + ipAddress + "\"}";
 
         // When
         var dto = objectMapper.readValue(json, DataSourceDto.class);
 
         // Then
         assertInstanceOf(ModbusDataSourceDto.class, dto);
-        assertEquals("abc", ((ModbusDataSourceDto) dto).modbusIp());
+        assertEquals(ipAddress, ((ModbusDataSourceDto) dto).ipAddress());
     }
 }

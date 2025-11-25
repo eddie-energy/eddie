@@ -19,56 +19,42 @@ import java.util.UUID;
 @Entity
 @Table(schema = AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID, name = "aiida_permission_request_view")
 public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
-    private static final AiidaDataSourceInformation dataSourceInformation = new AiidaDataSourceInformation();
+    private static final AiidaDataSourceInformation DATA_SOURCE_INFORMATION = new AiidaDataSourceInformation();
     @Id
     @Column(name = "permission_id")
     @JsonProperty(value = "permission_id")
-    private final String permissionId;
+    private String permissionId;
     @Column(name = "connection_id")
     @JsonProperty(value = "connection_id")
-    private final String connectionId;
+    private String connectionId;
     @Column(name = "data_need_id")
     @JsonProperty(value = "data_need_id")
-    private final String dataNeedId;
+    private String dataNeedId;
     @Column(name = "permission_start")
     @JsonProperty
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private final LocalDate start;
+    private LocalDate start;
     @Column(name = "permission_end")
     @JsonProperty
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private final LocalDate end;
+    private LocalDate end;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private final PermissionProcessStatus status;
+    private PermissionProcessStatus status;
     @Column(name = "termination_topic")
     @Nullable
-    private final String terminationTopic;
-    @Column(name = "mqtt_username")
-    @Nullable
-    private final String mqttUsername;
+    private String terminationTopic;
     @Column(name = "message")
     @Nullable
-    private final String message;
+    private String message;
     @Column(name = "created")
-    private final Instant created;
+    private Instant created;
     @Column(name = "aiida_id")
     @Nullable
-    private final UUID aiidaId;
+    private UUID aiidaId;
 
     @SuppressWarnings("NullAway") // Needed for JPA
     protected AiidaPermissionRequest() {
-        this.permissionId = null;
-        this.connectionId = null;
-        this.dataNeedId = null;
-        this.start = null;
-        this.end = null;
-        this.status = null;
-        this.terminationTopic = null;
-        this.mqttUsername = null;
-        this.message = null;
-        this.created = null;
-        this.aiidaId = null;
     }
 
     @Override
@@ -93,7 +79,7 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
 
     @Override
     public DataSourceInformation dataSourceInformation() {
-        return dataSourceInformation;
+        return DATA_SOURCE_INFORMATION;
     }
 
     @Override
@@ -116,12 +102,6 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     @Nullable
     public String terminationTopic() {
         return terminationTopic;
-    }
-
-    @Override
-    @Nullable
-    public String mqttUsername() {
-        return mqttUsername;
     }
 
     @Override

@@ -12,43 +12,30 @@ public class MqttUser {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
-    private final String id;
+    private String id;
     @Column(name = "username", nullable = false, unique = true)
-    private final String username;
+    private String username;
     @Column(name = "password_hash", nullable = false)
-    private final String passwordHash;
+    private String passwordHash;
     @Column(name = "is_superuser", nullable = false)
-    private final boolean isSuperuser;
-    @Column(name = "permission_id", nullable = false, unique = true)
-    private final String permissionId;
+    private boolean isSuperuser;
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
-    private final Instant createdAt;
+    private Instant createdAt;
 
     @SuppressWarnings("NullAway")
     protected MqttUser() {
-        this.id = null;
-        this.username = null;
-        this.passwordHash = null;
-        this.isSuperuser = false;
-        this.permissionId = null;
-        this.createdAt = null;
     }
 
     @SuppressWarnings("NullAway")
     public MqttUser(
-            String username,
+            String permissionId,
             String passwordHash,
-            boolean isSuperuser,
-            String permissionId
+            boolean isSuperuser
     ) {
-        this.username = username;
+        this.username = permissionId;
         this.passwordHash = passwordHash;
         this.isSuperuser = isSuperuser;
-        this.permissionId = permissionId;
-
-        this.id = null;
-        this.createdAt = null;
     }
 
     public String id() {
@@ -68,7 +55,7 @@ public class MqttUser {
     }
 
     public String permissionId() {
-        return permissionId;
+        return username;
     }
 
     public Instant createdAt() {

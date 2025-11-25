@@ -3,87 +3,103 @@ package energy.eddie.aiida.models.datasource.mqtt;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
-import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.PrePersist;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.UUID;
 
 @Entity
-@SuppressWarnings("NullAway")
+@SecondaryTable(name = MqttDataSource.TABLE_NAME)
 public abstract class MqttDataSource extends DataSource {
+    public static final String TABLE_NAME = "data_source_mqtt";
     protected static final String TOPIC_PREFIX = "aiida/";
     private static final String TOPIC_SUFFIX = "/+";
 
+    @Column(name = "internal_host", table = TABLE_NAME, nullable = false)
+    @Schema(description = "The internal host of the MQTT broker the data source connects to.")
     @JsonProperty
     protected String internalHost;
 
+    @Column(name = "external_host", table = TABLE_NAME, nullable = false)
+    @Schema(description = "The external host of the MQTT broker the data source connects to.")
     @JsonProperty
     protected String externalHost;
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "mqtt_user_id", table = TABLE_NAME, referencedColumnName = "id")
+    @JsonUnwrapped
+    protected MqttUser user;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "mqtt_acl_id", table = TABLE_NAME, referencedColumnName = "id")
     @JsonIgnore
-    protected String topic;
+    protected MqttAccessControlEntry accessControlEntry;
 
-    @JsonProperty
-    protected String username;
-
+    @Transient
     @JsonIgnore
-    protected String password;
-
-    @Enumerated(EnumType.STRING)
-    protected MqttAction action;
-
-    @Enumerated(EnumType.STRING)
-    protected MqttAclType aclType;
+    private String passwordHash;
 
     @SuppressWarnings("NullAway")
     protected MqttDataSource() {}
 
+    @SuppressWarnings("NullAway")
     protected MqttDataSource(DataSourceDto dto, UUID userId) {
         super(dto, userId);
-        this.action = MqttAction.ALL;
-        this.aclType = MqttAclType.ALLOW;
     }
 
     public String internalHost() {
         return internalHost;
     }
 
-    public String externalHost() {
-        return externalHost;
-    }
-
     public String topic() {
-        return topic;
+        return accessControlEntry.topic();
     }
 
     public String username() {
-        return username;
+        return user.username();
     }
 
     public String password() {
-        return password;
+        return user.password();
     }
 
-    public void setPassword(String plaintextPassword, BCryptPasswordEncoder passwordEncoder) {
-        this.password = passwordEncoder.encode(plaintextPassword);
-    }
-
-    public void generateMqttSettings(
-            MqttConfiguration config,
-            BCryptPasswordEncoder encoder,
-            String plaintextPassword
-    ) {
+    public void configure(MqttConfiguration config, BCryptPasswordEncoder encoder, String plaintextPassword) {
         this.internalHost = config.internalHost();
         this.externalHost = config.externalHost();
-        setPassword(plaintextPassword, encoder);
+        this.passwordHash = encoder.encode(plaintextPassword);
+    }
+
+    public void updatePassword(BCryptPasswordEncoder encoder, String plaintextPassword) {
+        var password = encoder.encode(plaintextPassword);
+        this.user.updatePassword(password);
+    }
+
+    @PrePersist
+    @Transactional
+    protected void postPersist() {
+        createAccessControlEntry();
+        createMqttUser();
+    }
+
+    @Transactional
+    protected void createMqttUser() {
+        this.user = new MqttUser(id, passwordHash);
+    }
+
+    /**
+     * This method creates the Access Control Entry for a MQTT data source using the ID of the data source.
+     * This is the default behaviour of a MQTT data source.
+     */
+    @Transactional
+    protected void createAccessControlEntry() {
+        var topic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
+        accessControlEntry = new MqttAccessControlEntry(id, topic);
     }
 
     /**
@@ -92,27 +108,8 @@ public abstract class MqttDataSource extends DataSource {
      *
      * @return The topic formatted for the UI
      */
-    @JsonGetter("topic")
+    @JsonGetter(value = "topic")
     protected String topicFormattedForUi() {
-        return this.topic.replace(TOPIC_SUFFIX, "");
-    }
-
-    protected void generateTopic() {
-        this.topic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
-    }
-
-    protected void generateUsername() {
-        this.username = id.toString();
-    }
-
-    /**
-     * This method generates the Topic and Username for a MQTT data source using the ID of the data source.
-     * This is a lifecycle event and is executed before persisting it to the database.
-     * This is the default behaviour of a MQTT data source.
-     */
-    @PrePersist
-    protected void generateTopicAndUsername() {
-        generateTopic();
-        generateUsername();
+        return accessControlEntry.topic().replace(TOPIC_SUFFIX, "");
     }
 }

@@ -1,6 +1,6 @@
 package energy.eddie.aiida.adapters.datasource.simulation;
 
-import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
+import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

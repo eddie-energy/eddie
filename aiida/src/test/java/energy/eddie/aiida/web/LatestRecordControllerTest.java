@@ -3,9 +3,9 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.record.*;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
 import energy.eddie.aiida.services.LatestRecordService;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import org.junit.jupiter.api.Test;
@@ -43,8 +43,7 @@ class LatestRecordControllerTest {
                     "25.5",
                     UnitOfMeasurement.WATT,
                     "25.5",
-                    UnitOfMeasurement.WATT,
-                    ""
+                    UnitOfMeasurement.WATT
             ),
             new AiidaRecordValueDto(
                     ObisCode.NEGATIVE_ACTIVE_ENERGY.toString(),
@@ -52,8 +51,7 @@ class LatestRecordControllerTest {
                     "60.0",
                     UnitOfMeasurement.WATT,
                     "60.0",
-                    UnitOfMeasurement.WATT,
-                    ""
+                    UnitOfMeasurement.WATT
             )
     );
     private static final LatestDataSourceRecordDto LATEST_RECORD = new LatestDataSourceRecordDto(

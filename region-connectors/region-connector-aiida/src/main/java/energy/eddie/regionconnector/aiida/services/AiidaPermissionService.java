@@ -164,7 +164,7 @@ public class AiidaPermissionService implements ApplicationListener<ContextRefres
         var dataNeed = permissionDetails.dataNeed();
         var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId,
                                                                        dataNeed instanceof InboundAiidaDataNeed);
-        outbox.commit(new MqttCredentialsCreatedEvent(permissionId, mqttDto.username()));
+        outbox.commit(new MqttCredentialsCreatedEvent(permissionId));
         subscribeToPermissionTopics(permissionId);
 
         return mqttDto;

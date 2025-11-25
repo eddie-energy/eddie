@@ -2,14 +2,14 @@ package energy.eddie.aiida.adapters.datasource.modbus;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusConnectionException;
-import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
+import energy.eddie.aiida.models.datasource.interval.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.modbus.ModbusDataPoint;
 import energy.eddie.aiida.models.modbus.ModbusDevice;
 import energy.eddie.aiida.models.modbus.ModbusSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
 import energy.eddie.aiida.services.ModbusDeviceService;
+import jakarta.annotation.Nullable;
 import org.mvel2.MVEL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,23 +18,19 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ModbusTcpDataSourceAdapter.class);
-
-    @Nullable
-    private Disposable periodicFlux;
-
     private final ModbusDevice modbusDevice;
     private final long pollingInterval;
+    private final Map<String, Object> datapointValues = new HashMap<>();
+    @Nullable
+    private Disposable periodicFlux;
     @Nullable
     private ModbusTcpClient modbusTcpClient;
-
-    private final Map<String, Object> datapointValues = new HashMap<>();
 
     /**
      * Creates a new {@code DataSourceAdapter} with the specified data source entity.
@@ -43,40 +39,44 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
      */
     public ModbusTcpDataSourceAdapter(ModbusDataSource dataSource) throws IllegalArgumentException, ModbusConnectionException {
         super(dataSource);
-        this.modbusDevice = ModbusDeviceService.loadConfig(dataSource.modbusDevice());
+        this.modbusDevice = ModbusDeviceService.loadConfig(dataSource.deviceId());
         this.pollingInterval = Math.max(TimeUnit.SECONDS.toMillis(dataSource.pollingInterval()),
                                         this.modbusDevice.intervals().read().minInterval());
 
-        if (!dataSource.enabled()) return;
+        if (!dataSource.enabled()) {
+            return;
+        }
 
-        String ip = dataSource.modbusIp();
+        var ipAddress = dataSource.ipAddress();
 
-        if (ip == null) {
+        if (ipAddress == null) {
             LOGGER.error("Failed to create ModbusClientHelper -> Modbus IP is required and must not be null");
             throw new IllegalArgumentException("Modbus IP is required and must not be null");
         }
 
         try {
-            this.modbusTcpClient = new ModbusTcpClient(ip, modbusDevice.port(), modbusDevice.unitId());
+            this.modbusTcpClient = new ModbusTcpClient(ipAddress, modbusDevice.port(), modbusDevice.unitId());
         } catch (Exception e) {
-            throw new ModbusConnectionException("Failed to create ModbusClientHelper for device: " + dataSource.modbusDevice() + ", IP: " + dataSource.modbusIp(),
+            throw new ModbusConnectionException("Failed to create ModbusClientHelper for device: "
+                                                + dataSource.deviceId() +
+                                                ", IP: "
+                                                + dataSource.ipAddress(),
                                                 e);
         }
 
-        LOGGER.info(
-                "Created new ModbusDataSource that will publish modbus values every {} seconds",
-                dataSource.pollingInterval());
+        LOGGER.info("Created new ModbusDataSource that will publish modbus values every {} seconds",
+                    dataSource.pollingInterval());
     }
 
     @Override
     public Flux<AiidaRecord> start() {
-        LOGGER.info("Starting {} with polling interval {}ms", dataSource().name(), this.pollingInterval);
-        long now = System.currentTimeMillis();
-        long delayUntilNextAlignedInterval = this.pollingInterval - (now % this.pollingInterval);
+        LOGGER.info("Starting {} with polling interval {}ms", dataSource().name(), pollingInterval);
+        var now = System.currentTimeMillis();
+        var delayUntilNextAlignedInterval = pollingInterval - (now % pollingInterval);
 
 
         periodicFlux = Flux.interval(Duration.ofMillis(delayUntilNextAlignedInterval),
-                                     Duration.ofMillis(this.pollingInterval))
+                                     Duration.ofMillis(pollingInterval))
                            .subscribeOn(Schedulers.parallel())
                            .subscribe(unused -> readModbusValues());
 
@@ -92,8 +92,8 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
             periodicFlux.dispose();
         }
 
-        if (this.modbusTcpClient != null) {
-            this.modbusTcpClient.close();
+        if (modbusTcpClient != null) {
+            modbusTcpClient.close();
         }
 
         // ignore if this fails
@@ -106,7 +106,7 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
     }
 
     private void readModbusValues() {
-        List<AiidaRecordValue> recordValues = new ArrayList<>();
+        var recordValues = new ArrayList<AiidaRecordValue>();
 
         readAllModbusDataPoints(recordValues);
         readAllVirtualDataPoints(recordValues);
@@ -118,9 +118,9 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
 
     private void readAllModbusDataPoints(List<AiidaRecordValue> recordValues) {
         for (ModbusSource source : modbusDevice.sources()) {
-            for (ModbusDataPoint dp : source.dataPoints()) {
-                if (!dp.virtual() && dp.access().canRead()) {
-                    readModbusDataPoint(source, dp, recordValues);
+            for (ModbusDataPoint dataPoint : source.dataPoints()) {
+                if (!dataPoint.virtual() && dataPoint.access().canRead()) {
+                    readModbusDataPoint(source, dataPoint, recordValues);
                 }
             }
         }
@@ -128,100 +128,109 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
 
     private void readAllVirtualDataPoints(List<AiidaRecordValue> recordValues) {
         for (ModbusSource source : modbusDevice.sources()) {
-            for (ModbusDataPoint dp : source.dataPoints()) {
-                if (dp.virtual() && dp.access().canRead()) {
-                    readVirtualModbusDataPoint(source, dp, recordValues);
+            for (ModbusDataPoint dataPoint : source.dataPoints()) {
+                if (dataPoint.virtual() && dataPoint.access().canRead()) {
+                    readVirtualModbusDataPoint(source, dataPoint, recordValues);
                 }
             }
         }
     }
 
-    private void readModbusDataPoint(ModbusSource source, ModbusDataPoint dp, List<AiidaRecordValue> recordValues) {
+    private void readModbusDataPoint(
+            ModbusSource source,
+            ModbusDataPoint dataPoint,
+            List<AiidaRecordValue> recordValues
+    ) {
         if (modbusTcpClient == null) {
             LOGGER.warn("ModbusClientHelper not initialized");
             return;
         }
 
         // read based on register type
-        var read = switch (dp.registerType()) {
-            case HOLDING -> modbusTcpClient.readHoldingRegister(dp);
-            case INPUT -> modbusTcpClient.readInputRegister(dp);
-            case COIL -> modbusTcpClient.readCoil(dp);
-            case DISCRETE -> modbusTcpClient.readDiscreteInput(dp);
+        var readRegister = switch (dataPoint.registerType()) {
+            case HOLDING -> modbusTcpClient.readHoldingRegister(dataPoint);
+            case INPUT -> modbusTcpClient.readInputRegister(dataPoint);
+            case COIL -> modbusTcpClient.readCoil(dataPoint);
+            case DISCRETE -> modbusTcpClient.readDiscreteInput(dataPoint);
             default -> {
-                LOGGER.warn("Unknown register type for datapoint {}", dp.id());
+                LOGGER.warn("Unknown register type for datapoint {}", dataPoint.id());
                 yield Optional.empty();
             }
         };
 
-        read.ifPresent(value -> {
+        readRegister.ifPresent(rawValue -> {
             // 1. Apply transformations if needed
-            Object valueObj = dp.applyTransform(value);
+            var transformedValue = dataPoint.applyTransform(rawValue);
 
             // 2. Apply translations
-            valueObj = dp.applyTranslation(valueObj);
+            var value = dataPoint.applyTranslation(transformedValue);
 
             // 3. Store data to calculate virtual datapoints
-            String dpKey = source.id() + "::" + dp.id();
-            datapointValues.put(dpKey, valueObj);
+            var rawTag = source.id() + "::" + dataPoint.id();
+            datapointValues.put(rawTag, value);
 
             // 4. Emit value
-            LOGGER.debug("Read value {} for datapoint {}", valueObj, dp.id());
+            var dataTag = dataPoint.obisCode();
+            var rawUnitOfMeasurement = dataPoint.unitOfMeasurement();
+            var unitOfMeasurement = dataTag.unitOfMeasurement();
 
-            recordValues.add(new AiidaRecordValue(
-                    dp.id(),
-                    dpKey, // Source Key if applicable
-                    value.toString(),
-                    UnitOfMeasurement.UNKNOWN, // Unit if applicable
-                    valueObj.toString(),
-                    UnitOfMeasurement.UNKNOWN
-            ));
+            LOGGER.debug("Read value {} for datapoint {}", value, dataPoint.id());
+            recordValues.add(new AiidaRecordValue(rawTag,
+                                                  dataTag,
+                                                  rawValue.toString(),
+                                                  rawUnitOfMeasurement,
+                                                  value.toString(),
+                                                  unitOfMeasurement)
+            );
         });
     }
 
     private void readVirtualModbusDataPoint(
             ModbusSource source,
-            ModbusDataPoint dp,
+            ModbusDataPoint dataPoint,
             List<AiidaRecordValue> recordValues
     ) {
-        if (!dp.isValidVirtualDatapoint()) {
-            LOGGER.warn("Misconfigured virtual datapoint {}", dp.id());
+        if (!dataPoint.isValidVirtualDatapoint()) {
+            LOGGER.warn("Misconfigured virtual datapoint {}", dataPoint.id());
             return;
         }
 
         try {
-            Map<String, Object> context = new HashMap<>();
+            var context = new HashMap<String, Object>();
 
-            for (String sourceKey : dp.source()) {
-                String fullKey = sourceKey.contains("::") ? sourceKey : source.id() + "::" + sourceKey;
-                Object value = datapointValues.getOrDefault(fullKey, 0);
-                context.put(getValidContextKey(sourceKey), value);
+            for (var dataPointSource : dataPoint.sources()) {
+                var fullKey = dataPointSource.contains("::") ? dataPointSource : source.id() + "::" + dataPointSource;
+                var value = datapointValues.getOrDefault(fullKey, 0);
+                context.put(getValidContextKey(dataPointSource), value);
             }
 
-            String expr = getValidContextKey(dp.transform());
+            var contextKey = getValidContextKey(dataPoint.transform());
 
             // 1. Apply transformations to get value of virtual datapoint
-            Object valueObj = MVEL.eval(expr, context);
+            var transformedVirtualValue = MVEL.eval(contextKey, context);
 
             // 2. Apply translations
-            valueObj = dp.applyTranslation(valueObj);
+            transformedVirtualValue = dataPoint.applyTranslation(transformedVirtualValue);
 
-            String virtualKey = source.id() + "::" + dp.id();
-            datapointValues.put(virtualKey, valueObj);
+            var rawVirtualTag = source.id() + "::" + dataPoint.id();
+            datapointValues.put(rawVirtualTag, transformedVirtualValue);
 
             // 4. Emit value
-            LOGGER.debug("Calculated virtual value {} for datapoint {}", valueObj, dp.id());
+            var dataTag = dataPoint.obisCode();
+            var rawUnitOfMeasurement = dataPoint.unitOfMeasurement();
+            var unitOfMeasurement = dataTag.unitOfMeasurement();
 
-            recordValues.add(new AiidaRecordValue(
-                    dp.id(),
-                    virtualKey, // Source Key if applicable
-                    valueObj.toString(),
-                    UnitOfMeasurement.UNKNOWN, // Unit if applicable
-                    valueObj.toString(),
-                    UnitOfMeasurement.UNKNOWN
-            ));
+            LOGGER.debug("Calculated virtual value {} for datapoint {}", transformedVirtualValue, dataPoint.id());
+
+            recordValues.add(new AiidaRecordValue(rawVirtualTag,
+                                                  dataTag,
+                                                  transformedVirtualValue.toString(),
+                                                  rawUnitOfMeasurement,
+                                                  transformedVirtualValue.toString(),
+                                                  unitOfMeasurement)
+            );
         } catch (Exception e) {
-            LOGGER.warn("Failed to calculate virtual value for datapoint {}: {}", dp.id(), e.getMessage());
+            LOGGER.warn("Failed to calculate virtual value for datapoint {}: {}", dataPoint.id(), e.getMessage());
         }
     }
 

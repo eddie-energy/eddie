@@ -8,7 +8,7 @@ import energy.eddie.aiida.adapters.datasource.fr.transformer.standard.MicroTelei
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +26,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static energy.eddie.aiida.utils.ObisCode.METER_SERIAL;
-import static energy.eddie.aiida.utils.ObisCode.POSITIVE_ACTIVE_ENERGY;
+import static energy.eddie.api.agnostic.aiida.ObisCode.METER_SERIAL;
+import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest

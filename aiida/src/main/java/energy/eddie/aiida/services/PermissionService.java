@@ -260,7 +260,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             throw new DetailFetchingFailedException(permissionId);
         }
 
-        var mqttStreamingConfig = new MqttStreamingConfig(permissionId, mqttDto);
+        var mqttStreamingConfig = new MqttStreamingConfig(mqttDto);
 
         permission.setMqttStreamingConfig(mqttStreamingConfig);
         permission.setStatus(FETCHED_MQTT_CREDENTIALS);
@@ -456,7 +456,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private void removeInboundDataSourceIfExists(Permission permission) {
         var dataSource = permission.dataSource();
 
-        if (dataSource != null && dataSource.dataSourceType() == DataSourceType.INBOUND) {
+        if (dataSource != null && dataSource.type() == DataSourceType.INBOUND) {
             aiidaEventPublisher.publishEvent(new InboundPermissionRevokeEvent(dataSource.id()));
             permission.setDataSource(null);
         }

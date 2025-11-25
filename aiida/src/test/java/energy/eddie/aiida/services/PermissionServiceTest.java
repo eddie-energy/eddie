@@ -19,6 +19,7 @@ import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
@@ -63,8 +64,8 @@ import static org.mockito.Mockito.*;
 class PermissionServiceTest {
     private final UUID eddieId = UUID.fromString("a69f9bc2-e16c-4de4-8c3e-00d219dcd819");
     private final UUID permissionId = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a5");
-    private final UUID dataSourceId = UUID.fromString("92831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final UUID dataNeedId = UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5");
+    private final UUID dataSourceId = UUID.fromString("92831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final String handshakeUrl = "https://example.org";
     private final String serviceName = "Hello Service";
     private final String connectionId = "NewAiidaRandomConnectionId";
@@ -189,7 +190,8 @@ class PermissionServiceTest {
         when(mockDataNeed.name()).thenReturn("My Name");
         when(mockDataNeed.purpose()).thenReturn("Some purpose");
         when(mockDataNeed.policyLink()).thenReturn("https://example.org");
-        when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0", "2.7.0"));
+        when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
+                                                        ObisCode.NEGATIVE_ACTIVE_ENERGY));
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
@@ -216,7 +218,8 @@ class PermissionServiceTest {
         assertEquals(dataNeedId, dataNeed.dataNeedId());
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
         assertEquals(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE, dataNeed.type());
-        assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of("1.8.0", "2.7.0"));
+        assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
+                                                                 ObisCode.NEGATIVE_ACTIVE_ENERGY));
         assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of(AiidaSchema.SMART_METER_P1_RAW));
     }
 
@@ -235,7 +238,8 @@ class PermissionServiceTest {
         when(mockDataNeed.name()).thenReturn("My Name");
         when(mockDataNeed.purpose()).thenReturn("Some purpose");
         when(mockDataNeed.policyLink()).thenReturn("https://example.org");
-        when(mockDataNeed.dataTags()).thenReturn(Set.of("1.8.0", "2.7.0"));
+        when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
+                                                        ObisCode.NEGATIVE_ACTIVE_ENERGY));
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
@@ -260,7 +264,8 @@ class PermissionServiceTest {
         assertEquals(dataNeedId, dataNeed.dataNeedId());
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
         assertEquals("illegalValue", dataNeed.type());
-        assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of("1.8.0", "2.7.0"));
+        assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
+                                                                 ObisCode.NEGATIVE_ACTIVE_ENERGY));
         assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of(AiidaSchema.SMART_METER_P1_RAW));
     }
 
@@ -370,6 +375,7 @@ class PermissionServiceTest {
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
         when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
+        when(mockMqttDto.username()).thenReturn(permissionId.toString());
 
         // When
         service.acceptPermission(permissionId, dataSourceId);
@@ -396,6 +402,7 @@ class PermissionServiceTest {
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
         when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
+        when(mockMqttDto.username()).thenReturn(permissionId.toString());
         when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
 
         // When
@@ -469,7 +476,7 @@ class PermissionServiceTest {
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.id()).thenReturn(permissionId);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
-        when(mockDataSource.dataSourceType()).thenReturn(DataSourceType.INBOUND);
+        when(mockDataSource.type()).thenReturn(DataSourceType.INBOUND);
 
         // When
         service.revokePermission(permissionId);

@@ -1,5 +1,6 @@
 package energy.eddie.dataneeds.needs.aiida;
 
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import org.springframework.scheduling.support.CronExpression;
 
 import java.util.Set;
@@ -21,7 +22,7 @@ public interface AiidaDataNeedInterface {
     /**
      * Returns the set of identifiers for the data that should be shared by the AIIDA instance.
      */
-    Set<String> dataTags();
+    Set<ObisCode> dataTags();
 
     /**
      * Returns the schema for the outgoing data

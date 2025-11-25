@@ -15,8 +15,6 @@ public class MqttStreamingConfig {
     @Id
     @Column(name = "permission_id", nullable = false)
     private UUID permissionId;
-    @Column(name = "username", nullable = false)
-    private String username;
     @Column(name = "password", nullable = false)
     private String password;
     @Column(name = "server_uri", nullable = false)
@@ -34,9 +32,8 @@ public class MqttStreamingConfig {
     protected MqttStreamingConfig() {
     }
 
-    public MqttStreamingConfig(UUID permissionId, MqttDto mqttDto) {
-        this.permissionId = permissionId;
-        this.username = mqttDto.username();
+    public MqttStreamingConfig(MqttDto mqttDto) {
+        this.permissionId = UUID.fromString(mqttDto.username());
         this.password = mqttDto.password();
         this.serverUri = mqttDto.serverUri();
         this.dataTopic = mqttDto.dataTopic();
@@ -48,8 +45,8 @@ public class MqttStreamingConfig {
         return permissionId;
     }
 
-    public String username() {
-        return username;
+    public UUID username() {
+        return permissionId;
     }
 
     public String password() {

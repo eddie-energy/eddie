@@ -1,10 +1,11 @@
-package energy.eddie.aiida.utils;
+package energy.eddie.api.agnostic.aiida;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public enum ObisCode {
     POSITIVE_ACTIVE_ENERGY("1-0:1.8.0", UnitOfMeasurement.KILO_WATT_HOUR),
@@ -52,7 +53,9 @@ public enum ObisCode {
     UNKNOWN("0-0:0.0.0", UnitOfMeasurement.UNKNOWN),
     METER_SERIAL("0-0:C.1.0", UnitOfMeasurement.NONE);
 
-
+    private static final Map<String, ObisCode> LOOKUP = Arrays.stream(ObisCode.values())
+                                                              .collect(Collectors.toUnmodifiableMap(ObisCode::toString,
+                                                                                                    obisCode -> obisCode));
     private final String code;
     private final UnitOfMeasurement unitOfMeasurement;
 
@@ -63,10 +66,7 @@ public enum ObisCode {
 
     @JsonCreator
     public static ObisCode forCode(String code) {
-        return Arrays.stream(ObisCode.values())
-                     .filter(obisCode -> obisCode.toString().equals(code))
-                     .findFirst()
-                     .orElse(UNKNOWN);
+        return LOOKUP.getOrDefault(code, UNKNOWN);
     }
 
     public UnitOfMeasurement unitOfMeasurement() {

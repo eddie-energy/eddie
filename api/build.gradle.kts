@@ -19,6 +19,7 @@ dependencies {
     implementation(libs.jackson.annotations)
     implementation(libs.jakarta.annotation.api)
     implementation(libs.jakarta.validation.api)
+    implementation(libs.jakarta.persistence.api)
     implementation(libs.reactor.core)
 
     testImplementation(libs.junit.jupiter)

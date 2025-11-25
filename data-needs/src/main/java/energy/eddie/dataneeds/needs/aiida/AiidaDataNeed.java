@@ -3,6 +3,8 @@ package energy.eddie.dataneeds.needs.aiida;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCodeConverter;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
@@ -48,8 +50,9 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     @CollectionTable(name = "aiida_data_need_data_tags",
             joinColumns = @JoinColumn(name = "data_need_id"),
             schema = "data_needs")
+    @Convert(converter = ObisCodeConverter.class)
     @JsonProperty
-    private Set<String> dataTags;
+    private Set<ObisCode> dataTags;
 
     @Override
     public AiidaAsset asset() {
@@ -62,7 +65,7 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     }
 
     @Override
-    public Set<String> dataTags() {
+    public Set<ObisCode> dataTags() {
         return dataTags;
     }
 

@@ -1,6 +1,6 @@
 package energy.eddie.aiida.adapters.datasource.modbus;
 
-import energy.eddie.aiida.models.datasource.modbus.ModbusDataSource;
+import energy.eddie.aiida.models.datasource.interval.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.services.ModbusDeviceService;
@@ -39,23 +39,27 @@ class ModbusTcpDataSourceAdapterTest {
 
         mockedDeviceService = Mockito.mockStatic(ModbusDeviceService.class);
         mockedDeviceService.when(() -> ModbusDeviceService.loadConfig(any(UUID.class)))
-                .thenReturn(modbusDevice);
+                           .thenReturn(modbusDevice);
 
         // Construct mock client before adapter instantiation (intercepts new ModbusTcpClient(...))
         mockedClientConstruction = Mockito.mockConstruction(ModbusTcpClient.class,
-                (mock, context) -> {
-                    when(mock.readHoldingRegister(any())).thenReturn(Optional.of(123));
-                    when(mock.readInputRegister(any())).thenReturn(Optional.of(456));
-                    when(mock.readCoil(any())).thenReturn(Optional.of(true));
-                    when(mock.readDiscreteInput(any())).thenReturn(Optional.of(false));
-                }
+                                                            (mock, context) -> {
+                                                                when(mock.readHoldingRegister(any()))
+                                                                        .thenReturn(Optional.of(123));
+                                                                when(mock.readInputRegister(any()))
+                                                                        .thenReturn(Optional.of(456));
+                                                                when(mock.readCoil(any()))
+                                                                        .thenReturn(Optional.of(true));
+                                                                when(mock.readDiscreteInput(any()))
+                                                                        .thenReturn(Optional.of(false));
+                                                            }
         );
 
         var dataSource = mock(ModbusDataSource.class);
         when(dataSource.enabled()).thenReturn(true);
         when(dataSource.pollingInterval()).thenReturn(1);
-        when(dataSource.modbusIp()).thenReturn("127.0.0.1");
-        when(dataSource.modbusDevice()).thenReturn(UUID.randomUUID());
+        when(dataSource.ipAddress()).thenReturn("127.0.0.1");
+        when(dataSource.deviceId()).thenReturn(UUID.randomUUID());
         adapter = new ModbusTcpDataSourceAdapter(dataSource);
 
         // Grab the actual mock instance created by the constructor
@@ -73,17 +77,16 @@ class ModbusTcpDataSourceAdapterTest {
         Flux<AiidaRecord> flux = adapter.start();
 
         StepVerifier.create(flux)
-                .thenAwait(java.time.Duration.ofSeconds(2))
-                .assertNext(aiidaRecord -> {
-                    List<AiidaRecordValue> values = aiidaRecord.aiidaRecordValues();
-                    assertThat(values).hasSize(21);
-                    assertThat(values)
-                            .extracting(AiidaRecordValue::dataPointKey, AiidaRecordValue::value)
-                            .containsExactlyInAnyOrderElementsOf(expectedModbusRecordTuples());
-                })
-                .thenCancel()
-                .verify();
-
+                    .thenAwait(java.time.Duration.ofSeconds(2))
+                    .assertNext(aiidaRecord -> {
+                        List<AiidaRecordValue> values = aiidaRecord.aiidaRecordValues();
+                        assertThat(values).hasSize(21);
+                        assertThat(values)
+                                .extracting(AiidaRecordValue::rawTag, AiidaRecordValue::value)
+                                .containsExactlyInAnyOrderElementsOf(expectedModbusRecordTuples());
+                    })
+                    .thenCancel()
+                    .verify();
     }
 
     @Test

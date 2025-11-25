@@ -1,8 +1,10 @@
 package energy.eddie.aiida.adapters.datasource.at.transformer;
 
 import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
+
+import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.*;
 
 public class OesterreichsEnergieAdapterMeasurement extends SmartMeterAdapterMeasurement {
     private final ObisCode obisCode;
@@ -28,17 +30,16 @@ public class OesterreichsEnergieAdapterMeasurement extends SmartMeterAdapterMeas
     @Override
     public UnitOfMeasurement rawUnitOfMeasurement() {
         return switch (obisCode.unitOfMeasurement()) {
-            case WATT, KILO_WATT -> UnitOfMeasurement.WATT;
-            case WATT_HOUR, KILO_WATT_HOUR -> UnitOfMeasurement.WATT_HOUR;
-            case VOLT_AMPERE_REACTIVE, KILO_VOLT_AMPERE_REACTIVE -> UnitOfMeasurement.VOLT_AMPERE_REACTIVE;
-            case VOLT_AMPERE_REACTIVE_HOUR, KILO_VOLT_AMPERE_REACTIVE_HOUR ->
-                    UnitOfMeasurement.VOLT_AMPERE_REACTIVE_HOUR;
-            case AMPERE -> UnitOfMeasurement.AMPERE;
-            case VOLT -> UnitOfMeasurement.VOLT;
-            case VOLT_AMPERE, KILO_VOLT_AMPERE -> UnitOfMeasurement.VOLT_AMPERE;
-            case HERTZ -> UnitOfMeasurement.HERTZ;
-            case NONE -> UnitOfMeasurement.NONE;
-            case UNKNOWN -> UnitOfMeasurement.UNKNOWN;
+            case WATT, KILO_WATT -> WATT;
+            case WATT_HOUR, KILO_WATT_HOUR -> WATT_HOUR;
+            case VOLT_AMPERE_REACTIVE, KILO_VOLT_AMPERE_REACTIVE -> VOLT_AMPERE_REACTIVE;
+            case VOLT_AMPERE_REACTIVE_HOUR, KILO_VOLT_AMPERE_REACTIVE_HOUR -> VOLT_AMPERE_REACTIVE_HOUR;
+            case AMPERE -> AMPERE;
+            case VOLT -> VOLT;
+            case VOLT_AMPERE, KILO_VOLT_AMPERE -> VOLT_AMPERE;
+            case HERTZ -> HERTZ;
+            case NONE -> NONE;
+            case UNKNOWN -> UNKNOWN;
         };
     }
 }

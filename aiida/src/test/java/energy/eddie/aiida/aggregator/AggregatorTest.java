@@ -3,14 +3,15 @@ package energy.eddie.aiida.aggregator;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.datasource.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.utils.TestUtils;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.AfterEach;
@@ -35,9 +36,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static energy.eddie.aiida.models.record.UnitOfMeasurement.KILO_WATT;
-import static energy.eddie.aiida.models.record.UnitOfMeasurement.KILO_WATT_HOUR;
-import static energy.eddie.aiida.utils.ObisCode.*;
+import static energy.eddie.api.agnostic.aiida.ObisCode.*;
+import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.KILO_WATT;
+import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.KILO_WATT_HOUR;
 import static org.mockito.Mockito.*;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
@@ -55,7 +56,7 @@ class AggregatorTest {
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
     private Aggregator aggregator;
     private AiidaAsset wantedAsset;
-    private Set<String> wantedCodes;
+    private Set<ObisCode> wantedCodes;
     private AiidaRecord unwanted1;
     private AiidaRecord unwanted2;
     private AiidaRecord unwanted3;
@@ -82,7 +83,7 @@ class AggregatorTest {
         when(INBOUND_DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID_3);
 
         wantedAsset = AiidaAsset.SUBMETER;
-        wantedCodes = Set.of("1-0:1.8.0", "1-0:2.8.0");
+        wantedCodes = Set.of(POSITIVE_ACTIVE_ENERGY, NEGATIVE_ACTIVE_ENERGY);
         unwanted1 = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
                 new AiidaRecordValue("1-0:1.7.0",
                                      POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
@@ -91,11 +92,11 @@ class AggregatorTest {
                                      "10",
                                      KILO_WATT_HOUR)));
         unwanted2 = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
-                new AiidaRecordValue("1-0:2.8.0", NEGATIVE_ACTIVE_ENERGY, "60", KILO_WATT_HOUR, "10", KILO_WATT_HOUR)));
+                new AiidaRecordValue(NEGATIVE_ACTIVE_ENERGY.toString(), NEGATIVE_ACTIVE_ENERGY, "60", KILO_WATT_HOUR, "10", KILO_WATT_HOUR)));
         unwanted3 = new AiidaRecord(instant, AiidaAsset.CONTROLLABLE_UNIT, USER_ID, DATA_SOURCE_ID_1, List.of(
-                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
+                new AiidaRecordValue(POSITIVE_ACTIVE_ENERGY.toString(), POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
         wanted = new AiidaRecord(instant, wantedAsset, USER_ID, DATA_SOURCE_ID_1, List.of(
-                new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
+                new AiidaRecordValue(POSITIVE_ACTIVE_ENERGY.toString(), POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
         expiration = Instant.now().plusSeconds(300_000);
         transmissionSchedule = CronExpression.parse("* * * * * *");
 
@@ -357,7 +358,7 @@ class AggregatorTest {
 
     @Test
     void verify_close_emitsCompleteSignalForFilteredFlux() {
-        var stepVerifier1 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 1"),
+        var stepVerifier1 = StepVerifier.create(aggregator.getFilteredFlux(Set.of(POSITIVE_ACTIVE_ENERGY_IN_PHASE_L1),
                                                                            wantedAsset,
                                                                            expiration,
                                                                            transmissionSchedule,
@@ -366,7 +367,7 @@ class AggregatorTest {
                                         .expectComplete()
                                         .verifyLater();
 
-        var stepVerifier2 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 2"),
+        var stepVerifier2 = StepVerifier.create(aggregator.getFilteredFlux(Set.of(POSITIVE_ACTIVE_ENERGY_IN_PHASE_L2),
                                                                            wantedAsset,
                                                                            expiration,
                                                                            transmissionSchedule,
@@ -375,7 +376,7 @@ class AggregatorTest {
                                         .expectComplete()
                                         .verifyLater();
 
-        var stepVerifier3 = StepVerifier.create(aggregator.getFilteredFlux(Set.of("Some Test 1"),
+        var stepVerifier3 = StepVerifier.create(aggregator.getFilteredFlux(Set.of(POSITIVE_ACTIVE_ENERGY_IN_PHASE_L3),
                                                                            wantedAsset,
                                                                            expiration,
                                                                            transmissionSchedule,

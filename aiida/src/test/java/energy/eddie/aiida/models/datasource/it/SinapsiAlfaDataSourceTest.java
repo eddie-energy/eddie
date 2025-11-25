@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 
 class SinapsiAlfaDataSourceTest {
     @Test
-    void generateMqttSettings_throwsException_whenUsernameIsMissing() {
+    void configure_throwsException_whenUsernameIsMissing() {
         // Given
         var dataSource = new SinapsiAlfaDataSource(mock(SinapsiAlfaDataSourceDto.class), UUID.randomUUID());
         var config = mock(SinapsiAlfaConfiguration.class);
@@ -24,12 +24,12 @@ class SinapsiAlfaDataSourceTest {
         // When / Then
         assertThrows(
                 SinapsiAlflaEmptyConfigException.class,
-                () -> dataSource.generateMqttSettings(config, "key")
+                () -> dataSource.configure(config, "key")
         );
     }
 
     @Test
-    void generateMqttSettings_throwsException_whenPasswordIsMissing() {
+    void configure_throwsException_whenPasswordIsMissing() {
         // Given
         var dataSource = new SinapsiAlfaDataSource(mock(SinapsiAlfaDataSourceDto.class), UUID.randomUUID());
         var config = mock(SinapsiAlfaConfiguration.class);
@@ -39,7 +39,7 @@ class SinapsiAlfaDataSourceTest {
         // When / Then
         assertThrows(
                 SinapsiAlflaEmptyConfigException.class,
-                () -> dataSource.generateMqttSettings(config, "key")
+                () -> dataSource.configure(config, "key")
         );
     }
 }

@@ -13,7 +13,8 @@ import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.utils.AiidaRecordConverter;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import org.junit.jupiter.api.Test;
@@ -47,8 +48,7 @@ class LatestRecordServiceTest {
                     "25.5",
                     UnitOfMeasurement.WATT,
                     "25.5",
-                    UnitOfMeasurement.WATT,
-                    ""
+                    UnitOfMeasurement.WATT
             ),
             new AiidaRecordValueDto(
                     ObisCode.NEGATIVE_ACTIVE_ENERGY.toString(),
@@ -56,8 +56,7 @@ class LatestRecordServiceTest {
                     "60.0",
                     UnitOfMeasurement.WATT,
                     "60.0",
-                    UnitOfMeasurement.WATT,
-                    ""
+                    UnitOfMeasurement.WATT
             )
     );
 

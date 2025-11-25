@@ -19,8 +19,6 @@ A single data point is represented as an AIIDA Record Value. It contains the fol
 - `value`: It is the raw value adapted to the unit of measurement for the respective OBIS code.
 - `unitOfMeasurement`: Our internal unit of measurement for the respective OBIS Code. E.g. the data can be
   converted from `Wh` to `kWh` or from `W` to `kW`.
-- `sourceKey`: Only relevant for the `Modbus` data source. It contains the identifier of the data because in
-  modbus devices we do not receive an OBIS code.
 
 ## DataTag - OBIS Code
 
@@ -111,7 +109,6 @@ Currently, the following units are supported:
       "rawUnitOfMeasurement": "kW",
       "value": "995",
       "unitOfMeasurement": "kW",
-      "sourceKey": null
     },
     {
       "rawTag": "1-0:1.8.0",
@@ -120,7 +117,6 @@ Currently, the following units are supported:
       "rawUnitOfMeasurement": "kWh",
       "value": "1348",
       "unitOfMeasurement": "kWh",
-      "sourceKey": null
     }
   ]
 }

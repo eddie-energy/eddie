@@ -1,8 +1,8 @@
 package energy.eddie.aiida.adapters.datasource.fr.transformer.standard;
 
 import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 
 public class MicroTeleinfoV3AdapterStandardModeMeasurement extends SmartMeterAdapterMeasurement {
     private final StandardModeEntry standardModeEntry;

@@ -1,8 +1,8 @@
 package energy.eddie.aiida.adapters.datasource;
 
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.models.record.UnitOfMeasurement;
-import energy.eddie.aiida.utils.ObisCode;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 
 public abstract class SmartMeterAdapterMeasurement implements AdapterMeasurement {
     protected final String entryKey;

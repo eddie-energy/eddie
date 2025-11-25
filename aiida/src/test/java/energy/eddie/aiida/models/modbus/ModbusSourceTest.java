@@ -47,7 +47,7 @@ class ModbusSourceTest {
         assertEquals(100, dp.register());
         assertEquals(RegisterType.HOLDING, dp.registerType());
         assertEquals("int16", dp.valueType());
-        assertEquals(1, dp.getLength()); // still method
+        assertEquals(1, dp.length()); // still method
         assertEquals(Endian.BIG, dp.endian());
         assertFalse(dp.virtual());
         assertEquals(Access.READ, dp.access());

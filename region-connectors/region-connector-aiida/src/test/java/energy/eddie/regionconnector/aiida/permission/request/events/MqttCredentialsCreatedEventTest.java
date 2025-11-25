@@ -9,7 +9,7 @@ class MqttCredentialsCreatedEventTest {
     @Test
     void newMqttCredentialsCreatedEvent_usesStatusAccepted() {
         // When
-        MqttCredentialsCreatedEvent event = new MqttCredentialsCreatedEvent("foo", "bar");
+        MqttCredentialsCreatedEvent event = new MqttCredentialsCreatedEvent("foo");
 
         // Then
         assertEquals(ACCEPTED, event.status());
