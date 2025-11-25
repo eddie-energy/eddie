@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._0
 import energy.eddie.regionconnector.at.eda.dto.EnergyData;
 import energy.eddie.regionconnector.at.eda.dto.EnergyPosition;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public record EnergyData01p41(
@@ -10,12 +11,13 @@ public record EnergyData01p41(
 
     @Override
     public List<EnergyPosition> energyPositions() {
-        return energyData.getEP().stream()
-                         .map(energyPosition -> new EnergyPosition(
-                                 energyPosition.getBQ(),
-                                 energyPosition.getMM()
-                         ))
-                         .toList();
+        var ep = energyData.getEP();
+        List<EnergyPosition> list = new ArrayList<>(ep.size());
+        for (var energyPosition : ep) {
+            EnergyPosition position = new EnergyPosition(energyPosition.getBQ(), energyPosition.getMM());
+            list.add(position);
+        }
+        return list;
     }
 
     @Override

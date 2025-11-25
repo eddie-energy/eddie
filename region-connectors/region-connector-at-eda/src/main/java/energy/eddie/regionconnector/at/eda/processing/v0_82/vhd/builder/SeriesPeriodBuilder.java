@@ -21,8 +21,9 @@ public class SeriesPeriodBuilder {
 
     public SeriesPeriodBuilder withEnergyData(EnergyData energyData) throws InvalidMappingException {
         List<PointComplexType> points = new ArrayList<>();
-        for (int i = 0; i < energyData.energyPositions().size(); i++) {
-            EnergyPosition meterReading = energyData.energyPositions().get(i);
+        var energyPositions = energyData.energyPositions();
+        for (int i = 0; i < energyPositions.size(); i++) {
+            EnergyPosition meterReading = energyPositions.get(i);
 
             PointComplexType point = new PointComplexType();
             point.setPosition(String.valueOf(i));

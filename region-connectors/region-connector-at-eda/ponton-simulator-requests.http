@@ -1,0 +1,90 @@
+### POST Setup permission request
+POST http://localhost:8080/region-connectors/at-eda/permission-request
+Content-Type: application/json
+
+{
+  "connectionId": "1",
+  "meteringPointId": null,
+  "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+  "dsoId": "AT001000"
+}
+
+> {%
+  client.global.set("permission-id", response.body.permissionId)
+%}
+
+### POST CM Notification
+@request-id=2AJN3NIR
+POST http://localhost:8080/region-connectors/at-eda/ponton/cm-notification/CCMO_ANSWER
+accept: */*
+Content-Type: application/xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:CMNotification xmlns:ns0="http://www.ebutilities.at/schemata/customerconsent/cmnotification/01p12"
+                    xmlns:ns1="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20">
+    <ns0:MarketParticipantDirectory DocumentMode="PROD" Duplicate="false" SchemaVersion="01.12">
+        <ns1:RoutingHeader>
+            <ns1:Sender AddressType="ECNumber">
+                <ns1:MessageAddress>AT001000</ns1:MessageAddress>
+            </ns1:Sender>
+            <ns1:Receiver AddressType="ECNumber">
+                <ns1:MessageAddress>EPXXXXXX</ns1:MessageAddress>
+            </ns1:Receiver>
+            <ns1:DocumentCreationDateTime>2024-04-02T14:40:42.2259660Z</ns1:DocumentCreationDateTime>
+        </ns1:RoutingHeader>
+        <ns1:Sector>01</ns1:Sector>
+        <ns0:MessageCode>ANTWORT_CCMO</ns0:MessageCode>
+    </ns0:MarketParticipantDirectory>
+    <ns0:ProcessDirectory>
+        <ns1:MessageId>AT000000000000000000000000000000000</ns1:MessageId>
+        <ns1:ConversationId>EP00000000000000000000</ns1:ConversationId>
+        <ns0:CMRequestId>{{request-id}}</ns0:CMRequestId>
+        <ns0:ResponseData>
+            <ns0:MeteringPoint>ATXXXXXX00000000000000000XXXXXXXX</ns0:MeteringPoint>
+            <ns0:ResponseCode>99</ns0:ResponseCode>
+        </ns0:ResponseData>
+    </ns0:ProcessDirectory>
+</ns0:CMNotification>
+
+### GET CM Request
+GET http://localhost:8080/region-connectors/at-eda/ponton/cm-request
+
+### POST CM Notification
+POST http://localhost:8080/region-connectors/at-eda/ponton/cm-notification/CCMO_ACCEPT
+accept: */*
+Content-Type: application/xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:CMNotification xmlns:ns0="http://www.ebutilities.at/schemata/customerconsent/cmnotification/01p12"
+                    xmlns:ns1="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20">
+    <ns0:MarketParticipantDirectory DocumentMode="PROD" Duplicate="false" SchemaVersion="01.12">
+        <ns1:RoutingHeader>
+            <ns1:Sender AddressType="ECNumber">
+                <ns1:MessageAddress>AT001000</ns1:MessageAddress>
+            </ns1:Sender>
+            <ns1:Receiver AddressType="ECNumber">
+                <ns1:MessageAddress>EPXXXXXX</ns1:MessageAddress>
+            </ns1:Receiver>
+            <ns1:DocumentCreationDateTime>2024-04-02T14:40:42.2259660Z</ns1:DocumentCreationDateTime>
+        </ns1:RoutingHeader>
+        <ns1:Sector>01</ns1:Sector>
+        <ns0:MessageCode>CCMO_ACCEPT</ns0:MessageCode>
+    </ns0:MarketParticipantDirectory>
+    <ns0:ProcessDirectory>
+        <ns1:MessageId>AT000000000000000000000000000000000</ns1:MessageId>
+        <ns1:ConversationId>EP00000000000000000000</ns1:ConversationId>
+        <ns0:CMRequestId>{{request-id}}</ns0:CMRequestId>
+        <ns0:ResponseData>
+            <ns0:MeteringPoint>ATXXXXXX00000000000000000XXXXXXXX</ns0:MeteringPoint>
+            <ns0:ResponseCode>99</ns0:ResponseCode>
+            <ns0:ConsentId>CONSENTID20251124</ns0:ConsentId>
+        </ns0:ResponseData>
+    </ns0:ProcessDirectory>
+</ns0:CMNotification>
+
+### POST consumption record
+POST http://localhost:8080/region-connectors/at-eda/ponton/consumption-record
+accept: */*
+Content-Type: application/xml
+
+< /home/florian/workspaces/repos/eddie/region-connectors/region-connector-at-eda/src/test/resources/xsd/consumptionrecord/_01p41/consumptionrecord_large.xml

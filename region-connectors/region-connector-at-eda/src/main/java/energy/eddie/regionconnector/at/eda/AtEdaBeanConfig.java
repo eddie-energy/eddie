@@ -17,7 +17,6 @@ import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.data.needs.calculation.strategies.EdaStrategy;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.at.eda.persistence.EdaPermissionEventRepository;
-import energy.eddie.regionconnector.at.eda.ponton.NoOpEdaAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
@@ -39,10 +38,11 @@ import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculati
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.scheduling.TaskScheduler;
@@ -91,7 +91,6 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
-    @Profile("!no-ponton")
     public EdaAdapter edaAdapter(
             PontonMessengerConnection pontonMessengerConnection,
             IdentifiableConsumptionRecordService identifiableConsumptionRecordService,
@@ -105,6 +104,8 @@ public class AtEdaBeanConfig {
     }
 
     @Bean
+    @Primary
+    @ConditionalOnProperty(value = "region-connector.at.eda.ponton.messenger.enabled", havingValue = "true", matchIfMissing = true)
     public PontonMessengerConnection pontonMessengerConnection(
             PontonXPAdapterConfiguration configuration,
             InboundMessageFactoryCollection inboundMessageFactoryCollection,
@@ -120,12 +121,6 @@ public class AtEdaBeanConfig {
                 .withHealthApi(new WebClientMessengerHealth(webClient, configuration))
                 .withMessengerMonitor(messengerMonitor)
                 .build();
-    }
-
-    @Bean
-    @Profile("no-ponton")
-    public EdaAdapter noOpEdaAdapter() {
-        return new NoOpEdaAdapter();
     }
 
     @Bean

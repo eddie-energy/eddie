@@ -29,7 +29,6 @@ public class CCMOAcceptHandler {
         this.outbox = outbox;
     }
 
-
     public void handleCCMOAccept(CMRequestStatus cmRequestStatus) {
         var permissionRequests = repository.findByConversationIdOrCMRequestId(
                 cmRequestStatus.conversationId(),
@@ -60,9 +59,9 @@ public class CCMOAcceptHandler {
             acceptPermissionRequest(cmRequestStatus.consentData().getFirst(), permissionRequest);
         } else {
             LOGGER.atInfo()
-                    .addArgument(status)
-                    .addArgument(permissionRequest::permissionId)
-                    .log("Got acceptance message for {} permission request {}, ignoring status change");
+                  .addArgument(status)
+                  .addArgument(permissionRequest::permissionId)
+                  .log("Got acceptance message for {} permission request {}, ignoring status change");
         }
         for (var consentData : cmRequestStatus.consentData().subList(1, cmRequestStatus.consentData().size())) {
             createNewPermissionRequest(consentData, permissionRequest);
@@ -73,10 +72,24 @@ public class CCMOAcceptHandler {
             ConsentData consentData,
             AtPermissionRequest permissionRequest
     ) {
+        var consentId = consentData.cmConsentId();
+        if (consentId.isEmpty()) {
+            LOGGER.atWarn()
+                  .addArgument(permissionRequest::permissionId)
+                  .log("Consent ID is missing in ACCEPTED CMRequestStatus message for permission request {}");
+            return;
+        }
+        var meteringPoint = consentData.meteringPoint();
+        if (meteringPoint.isEmpty()) {
+            LOGGER.atWarn()
+                  .addArgument(permissionRequest::permissionId)
+                  .log("Metering point id is missing in ACCEPTED CMRequestStatus message for permission request {}");
+            return;
+        }
         outbox.commit(new AcceptedEvent(
                 permissionRequest.permissionId(),
-                meteringPoint(consentData),
-                cmConsentId(consentData),
+                meteringPoint.get(),
+                consentId.get(),
                 consentData.message()
         ));
     }
@@ -105,25 +118,6 @@ public class CCMOAcceptHandler {
                 PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
                 "Permission administrator has received the request."
         ));
-        outbox.commit(new AcceptedEvent(
-                permissionId,
-                meteringPoint(consentData),
-                cmConsentId(consentData),
-                consentData.message()
-        ));
-    }
-
-    private static String meteringPoint(ConsentData consentData) {
-        return consentData
-                .meteringPoint()
-                .orElseThrow(() -> new IllegalStateException(
-                        "Metering point id is missing in ACCEPTED CMRequestStatus message"));
-    }
-
-    private static String cmConsentId(ConsentData consentData) {
-        return consentData
-                .cmConsentId()
-                .orElseThrow(() -> new IllegalStateException(
-                        "Consent id is missing in ACCEPTED CMRequestStatus message"));
+        acceptPermissionRequest(consentData, permissionRequest);
     }
 }
