@@ -9,3 +9,5 @@ ALTER TABLE mqtt_streaming_config
         FOREIGN KEY (permission_id)
             REFERENCES permission (permission_id)
             ON DELETE CASCADE;
+
+ALTER TABLE data_source DROP metering_id;
