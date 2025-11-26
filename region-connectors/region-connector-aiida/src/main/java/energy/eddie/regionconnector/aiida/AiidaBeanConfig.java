@@ -8,14 +8,14 @@ import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.data.needs.AiidaEnergyDataTimeframeStrategy;
-import energy.eddie.regionconnector.aiida.mqtt.MqttConnectCallback;
-import energy.eddie.regionconnector.aiida.mqtt.MqttMessageCallback;
+import energy.eddie.regionconnector.aiida.mqtt.callback.MqttConnectCallback;
+import energy.eddie.regionconnector.aiida.mqtt.callback.MqttMessageCallback;
+import energy.eddie.regionconnector.aiida.mqtt.message.processor.AiidaMessageProcessorRegistry;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionEventRepository;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
@@ -62,7 +62,12 @@ public class AiidaBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<RTDEnvelope> nearRealTimeDataSink() {
+    public Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> nearRealTimeDataCimV104Sink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Sinks.Many<energy.eddie.cim.v1_06.rtd.RTDEnvelope> nearRealTimeDataCimV106Sink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 
@@ -182,20 +187,8 @@ public class AiidaBeanConfig {
     }
 
     @Bean
-    public MqttMessageCallback mqttMessageCallback(
-            AiidaPermissionRequestViewRepository permissionRequestViewRepository,
-            Sinks.Many<AiidaConnectionStatusMessageDto> statusSink,
-            Sinks.Many<RTDEnvelope> nearRealTimeDataSink,
-            Sinks.Many<RawDataMessage> rawDataMessageSink,
-            ObjectMapper objectMapper
-    ) {
-        return new MqttMessageCallback(
-                permissionRequestViewRepository,
-                statusSink,
-                nearRealTimeDataSink,
-                rawDataMessageSink,
-                objectMapper
-        );
+    public MqttMessageCallback mqttMessageCallback(AiidaMessageProcessorRegistry messageProcessorRegistry) {
+        return new MqttMessageCallback(messageProcessorRegistry);
     }
 
     @Bean

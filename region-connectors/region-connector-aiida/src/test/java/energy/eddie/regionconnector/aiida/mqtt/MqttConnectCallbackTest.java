@@ -3,6 +3,7 @@
 
 package energy.eddie.regionconnector.aiida.mqtt;
 
+import energy.eddie.regionconnector.aiida.mqtt.callback.MqttConnectCallback;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttClientInterface;

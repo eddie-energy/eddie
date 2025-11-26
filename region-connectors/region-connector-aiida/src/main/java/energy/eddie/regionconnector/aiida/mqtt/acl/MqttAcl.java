@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.regionconnector.aiida.mqtt;
+package energy.eddie.regionconnector.aiida.mqtt.acl;
 
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
