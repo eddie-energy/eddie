@@ -1,0 +1,24 @@
+{
+  "asset": "SUBMETER",
+  "userId": "5211ea05-d4ab-48ff-8613-8f4791a56606",
+  "dataSourceId": "4211ea05-d4ab-48ff-8613-8f4791a56606",
+  "permissionId": "3211ea05-d4ab-48ff-8613-8f4791a56606",
+  "values": [
+    {
+      "rawTag": "PAPP",
+      "dataTag": "1-0:1.7.0",
+      "rawValue": "10",
+      "value": "10",
+      "rawUnitOfMeasurement": "VA",
+      "unitOfMeasurement": "VA"
+    },
+    {
+      "rawTag": "BASE",
+      "dataTag": "1-0:1.8.0",
+      "rawValue": "50",
+      "value": "50",
+      "rawUnitOfMeasurement": "Wh",
+      "unitOfMeasurement": "Wh"
+    }
+  ]
+}

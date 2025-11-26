@@ -28,9 +28,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.test.json.JsonAssert;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static energy.eddie.api.agnostic.aiida.ObisCode.*;
@@ -44,14 +46,15 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class SchemaTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(BaseCimFormatterStrategy.class);
-    private static final Instant timestamp = Instant.ofEpochMilli(1729334059);
-    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final AiidaRecord aiidaRecordAT = new AiidaRecord(
-            timestamp,
+    private static final Instant TIMESTAMP = Instant.ofEpochMilli(1729334059);
+    private static final UUID PERMISSION_ID = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final AiidaRecord AIIDA_RECORD_AT = new AiidaRecord(
+            TIMESTAMP,
             AiidaAsset.SUBMETER,
-            userId,
-            dataSourceId,
+            USER_ID,
+            DATA_SOURCE_ID,
             List.of(new AiidaRecordValue("1-0:1.7.0", POSITIVE_ACTIVE_INSTANTANEOUS_POWER, "10",
                                          KILO_WATT, "10",
                                          KILO_WATT),
@@ -90,11 +93,11 @@ class SchemaTest {
                                          NONE)
             )
     );
-    private static final AiidaRecord aiidaRecordFR = new AiidaRecord(
-            timestamp,
+    private static final AiidaRecord AIIDA_RECORD_FR = new AiidaRecord(
+            TIMESTAMP,
             AiidaAsset.SUBMETER,
-            userId,
-            dataSourceId,
+            USER_ID,
+            DATA_SOURCE_ID,
             List.of(new AiidaRecordValue("PAPP",
                                          POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
                                          "10",
@@ -109,11 +112,11 @@ class SchemaTest {
                                          WATT_HOUR)
             )
     );
-    private static final AiidaRecord aiidaRecordWithFaultyRecord = new AiidaRecord(
-            timestamp,
+    private static final AiidaRecord AIIDA_RECORD_WITH_FAULTY_RECORD = new AiidaRecord(
+            TIMESTAMP,
             AiidaAsset.SUBMETER,
-            userId,
-            dataSourceId,
+            USER_ID,
+            DATA_SOURCE_ID,
             List.of(new AiidaRecordValue("BASE",
                                          POSITIVE_ACTIVE_ENERGY,
                                          "ten",
@@ -122,11 +125,11 @@ class SchemaTest {
                                          KILO_WATT_HOUR)
             )
     );
-    private static final AiidaRecord aiidaRecordWithUnsupportedQuantityType = new AiidaRecord(
-            timestamp,
+    private static final AiidaRecord AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE = new AiidaRecord(
+            TIMESTAMP,
             AiidaAsset.SUBMETER,
-            userId,
-            dataSourceId,
+            USER_ID,
+            DATA_SOURCE_ID,
             List.of(new AiidaRecordValue("PAPP",
                                          POSITIVE_REACTIVE_INSTANTANEOUS_POWER,
                                          "10",
@@ -137,6 +140,7 @@ class SchemaTest {
     );
 
     private final ObjectMapper objectMapper = new AiidaConfiguration().customObjectMapper().build();
+    private final ClassLoader classLoader = getClass().getClassLoader();
 
     @Mock
     private ApplicationInformationService applicationInformationService;
@@ -152,22 +156,33 @@ class SchemaTest {
     }
 
     @Test
-    void schemaRaw() throws SchemaFormatterRegistryException, SchemaFormatterException {
+    void schemaRaw() throws SchemaFormatterRegistryException, SchemaFormatterException, IOException {
         var permissionMock = mock(Permission.class);
+        when(permissionMock.id()).thenReturn(PERMISSION_ID);
+
         var rawFormatter = new RawFormatter(applicationInformationService, objectMapper);
-
-        var rawAiidaRecordAT = "{\"timestamp\":\"1970-01-21T00:22:14.059Z\",\"asset\":\"SUBMETER\",\"userId\":\"5211ea05-d4ab-48ff-8613-8f4791a56606\",\"dataSourceId\":\"4211ea05-d4ab-48ff-8613-8f4791a56606\",\"values\":[{\"rawTag\":\"1-0:1.7.0\",\"dataTag\":\"1-0:1.7.0\",\"rawValue\":\"10\",\"rawUnitOfMeasurement\":\"kW\",\"value\":\"10\",\"unitOfMeasurement\":\"kW\"},{\"rawTag\":\"1-0:2.7.0\",\"dataTag\":\"1-0:2.7.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"kW\",\"value\":\"50\",\"unitOfMeasurement\":\"kW\"},{\"rawTag\":\"1-0:1.8.0\",\"dataTag\":\"1-0:1.8.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"kWh\",\"value\":\"50\",\"unitOfMeasurement\":\"kWh\"},{\"rawTag\":\"1-0:2.8.0\",\"dataTag\":\"1-0:2.8.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"kWh\",\"value\":\"50\",\"unitOfMeasurement\":\"kWh\"},{\"rawTag\":\"1-0:31.7.0\",\"dataTag\":\"1-0:31.7.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"A\",\"value\":\"50\",\"unitOfMeasurement\":\"A\"},{\"rawTag\":\"1-0:51.7.0\",\"dataTag\":\"1-0:51.7.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"A\",\"value\":\"50\",\"unitOfMeasurement\":\"A\"},{\"rawTag\":\"1-0:71.7.0\",\"dataTag\":\"1-0:71.7.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"A\",\"value\":\"50\",\"unitOfMeasurement\":\"A\"},{\"rawTag\":\"1-0:13.7.0\",\"dataTag\":\"1-0:13.7.0\",\"rawValue\":\"5\",\"rawUnitOfMeasurement\":\"none\",\"value\":\"5\",\"unitOfMeasurement\":\"none\"},{\"rawTag\":\"1-0:32.7.0\",\"dataTag\":\"1-0:32.7.0\",\"rawValue\":\"10\",\"rawUnitOfMeasurement\":\"V\",\"value\":\"10\",\"unitOfMeasurement\":\"V\"},{\"rawTag\":\"1-0:52.7.0\",\"dataTag\":\"1-0:52.7.0\",\"rawValue\":\"10\",\"rawUnitOfMeasurement\":\"V\",\"value\":\"10\",\"unitOfMeasurement\":\"V\"},{\"rawTag\":\"1-0:52.7.0\",\"dataTag\":\"1-0:72.7.0\",\"rawValue\":\"10\",\"rawUnitOfMeasurement\":\"V\",\"value\":\"10\",\"unitOfMeasurement\":\"V\"},{\"rawTag\":\"1-0:96.1.0\",\"dataTag\":\"0-0:96.1.0\",\"rawValue\":\"Device123\",\"rawUnitOfMeasurement\":\"none\",\"value\":\"Device123\",\"unitOfMeasurement\":\"none\"}]}";
-        var rawAiidaRecordFR = "{\"timestamp\":\"1970-01-21T00:22:14.059Z\",\"asset\":\"SUBMETER\",\"userId\":\"5211ea05-d4ab-48ff-8613-8f4791a56606\",\"dataSourceId\":\"4211ea05-d4ab-48ff-8613-8f4791a56606\",\"values\":[{\"rawTag\":\"PAPP\",\"dataTag\":\"1-0:1.7.0\",\"rawValue\":\"10\",\"rawUnitOfMeasurement\":\"VA\",\"value\":\"10\",\"unitOfMeasurement\":\"VA\"},{\"rawTag\":\"BASE\",\"dataTag\":\"1-0:1.8.0\",\"rawValue\":\"50\",\"rawUnitOfMeasurement\":\"Wh\",\"value\":\"50\",\"unitOfMeasurement\":\"Wh\"}]}";
-
         when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_RAW)).thenReturn(rawFormatter);
-
         var formatter = schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_RAW);
-        var resultAT = formatter.format(aiidaRecordAT, permissionMock);
-        var resultFR = formatter.format(aiidaRecordFR, permissionMock);
 
-        var comparator = JsonAssert.comparator(JSONCompareMode.LENIENT);
-        comparator.assertIsMatch(rawAiidaRecordAT, new String(resultAT, StandardCharsets.UTF_8));
-        comparator.assertIsMatch(rawAiidaRecordFR, new String(resultFR, StandardCharsets.UTF_8));
+        try (var rawRecordStreamAT = classLoader.getResourceAsStream("aiida/record/at/raw_record.json")) {
+            var rawRecordBytes = Objects.requireNonNull(rawRecordStreamAT).readAllBytes();
+            var expectedRecordJson = new String(rawRecordBytes, StandardCharsets.UTF_8);
+
+            var formattedRawRecordBytes = formatter.format(AIIDA_RECORD_AT, permissionMock);
+            var actualRecordJson = new String(formattedRawRecordBytes, StandardCharsets.UTF_8);
+
+            assertEquals(objectMapper.readTree(expectedRecordJson), objectMapper.readTree(actualRecordJson));
+        }
+
+        try (var rawAiidaRecordFRStream = classLoader.getResourceAsStream("aiida/record/fr/raw_record.json")) {
+            var rawRecordBytes = Objects.requireNonNull(rawAiidaRecordFRStream).readAllBytes();
+            var expectedRecordJson = new String(rawRecordBytes, StandardCharsets.UTF_8);
+
+            var formattedRawRecordBytes = formatter.format(AIIDA_RECORD_FR, permissionMock);
+            var actualRecordJson = new String(formattedRawRecordBytes, StandardCharsets.UTF_8);
+
+            assertEquals(objectMapper.readTree(expectedRecordJson), objectMapper.readTree(actualRecordJson));
+        }
     }
 
     @Test
@@ -191,14 +206,14 @@ class SchemaTest {
 
         when(dataSource.countryCode()).thenReturn("AT");
 
-        when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM)).thenReturn(cimFormatter);
+        when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM_V1_04)).thenReturn(cimFormatter);
 
-        var formatter = schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM);
-        assertDoesNotThrow(() -> formatter.format(aiidaRecordAT, permissionMock));
+        var formatter = schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM_V1_04);
+        assertDoesNotThrow(() -> formatter.format(AIIDA_RECORD_AT, permissionMock));
         assertThrows(CimSchemaFormatterException.class,
-                     () -> formatter.format(aiidaRecordWithFaultyRecord, permissionMock));
+                     () -> formatter.format(AIIDA_RECORD_WITH_FAULTY_RECORD, permissionMock));
 
-        formatter.format(aiidaRecordWithUnsupportedQuantityType, permissionMock);
+        formatter.format(AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE, permissionMock);
         assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(
                 POSITIVE_REACTIVE_INSTANTANEOUS_POWER));
     }

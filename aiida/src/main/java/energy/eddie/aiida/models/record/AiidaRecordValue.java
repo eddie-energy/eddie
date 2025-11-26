@@ -5,6 +5,7 @@ package energy.eddie.aiida.models.record;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.api.agnostic.aiida.AiidaRecordValueDto;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -110,5 +111,16 @@ public class AiidaRecordValue {
 
     public UnitOfMeasurement rawUnitOfMeasurement() {
         return rawUnitOfMeasurement;
+    }
+
+    public AiidaRecordValueDto toDto() {
+        return new AiidaRecordValueDto(
+                rawTag,
+                dataTag,
+                rawValue,
+                value,
+                rawUnitOfMeasurement,
+                unitOfMeasurement
+        );
     }
 }

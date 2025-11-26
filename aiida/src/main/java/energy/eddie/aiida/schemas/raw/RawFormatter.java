@@ -8,6 +8,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.schemas.BaseSchemaFormatter;
 import energy.eddie.aiida.services.ApplicationInformationService;
+import energy.eddie.api.agnostic.aiida.AiidaRecordDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.springframework.stereotype.Component;
 
@@ -28,14 +29,15 @@ public class RawFormatter extends BaseSchemaFormatter {
     @Override
     public byte[] format(
             AiidaRecord aiidaRecord,
-            Permission ignored
+            Permission permission
     ) throws SchemaFormatterException {
-        return serializeOrThrow(aiidaRecord);
+        var aiidaRecordDto = aiidaRecord.toDto(permission.id());
+        return serializeOrThrow(aiidaRecordDto);
     }
 
-    private byte[] serializeOrThrow(AiidaRecord aiidaRecord) throws RawSchemaFormatterException {
+    private byte[] serializeOrThrow(AiidaRecordDto aiidaRecordDto) throws RawSchemaFormatterException {
         try {
-            return mapper.writeValueAsBytes(aiidaRecord);
+            return mapper.writeValueAsBytes(aiidaRecordDto);
         } catch (JsonProcessingException e) {
             throw new RawSchemaFormatterException(e);
         }
