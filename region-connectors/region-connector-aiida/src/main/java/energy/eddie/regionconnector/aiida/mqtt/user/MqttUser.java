@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.aiida.mqtt;
+package energy.eddie.regionconnector.aiida.mqtt.user;
 
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import jakarta.persistence.*;

@@ -1,8 +1,14 @@
-package energy.eddie.regionconnector.aiida.mqtt;
+package energy.eddie.regionconnector.aiida.services;
 
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
+import energy.eddie.regionconnector.aiida.mqtt.acl.MqttAclRepository;
+import energy.eddie.regionconnector.aiida.mqtt.callback.MqttMessageCallback;
+import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopic;
+import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopicType;
+import energy.eddie.regionconnector.aiida.mqtt.user.MqttUser;
+import energy.eddie.regionconnector.aiida.mqtt.user.MqttUserRepository;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
 import jakarta.transaction.Transactional;

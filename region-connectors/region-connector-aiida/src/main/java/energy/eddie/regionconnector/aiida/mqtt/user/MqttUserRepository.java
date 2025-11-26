@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.aiida.mqtt;
+package energy.eddie.regionconnector.aiida.mqtt.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

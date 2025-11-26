@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.aiida.mqtt;
+package energy.eddie.regionconnector.aiida.mqtt.callback;
 
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttActionListener;

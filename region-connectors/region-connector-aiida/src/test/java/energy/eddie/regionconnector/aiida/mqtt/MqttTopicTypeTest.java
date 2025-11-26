@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
+import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopicType;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
