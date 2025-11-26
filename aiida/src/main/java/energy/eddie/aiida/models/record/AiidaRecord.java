@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaRecordDto;
 import jakarta.persistence.*;
 
 import java.time.Instant;
@@ -21,12 +22,12 @@ public class AiidaRecord {
     private Long id;
     @JsonProperty
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX", timezone = "UTC")
-    protected Instant timestamp;
+    private Instant timestamp;
     @JsonProperty
     @Enumerated(EnumType.STRING)
-    protected AiidaAsset asset;
+    private AiidaAsset asset;
     @JsonProperty
-    protected UUID userId;
+    private UUID userId;
     @JsonProperty
     protected UUID dataSourceId;
     @OneToMany(mappedBy = "aiidaRecord", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -87,5 +88,13 @@ public class AiidaRecord {
 
     public UUID dataSourceId() {
         return dataSourceId;
+    }
+
+    public AiidaRecordDto toDto(UUID permissionId) {
+        return new AiidaRecordDto(asset,
+                                  userId,
+                                  dataSourceId,
+                                  permissionId,
+                                  aiidaRecordValues.stream().map(AiidaRecordValue::toDto).toList());
     }
 }
