@@ -1,7 +1,5 @@
-import net.ltgt.gradle.errorprone.CheckSeverity
-import net.ltgt.gradle.errorprone.errorprone
+import energy.eddie.configureJavaCompileWithErrorProne
 import org.springframework.boot.gradle.tasks.bundling.BootJar
-import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
@@ -64,22 +62,7 @@ tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    options.errorprone.disableWarningsInGeneratedCode.set(true)
-    if (!name.lowercase(Locale.getDefault()).contains("test") && !name.lowercase(Locale.getDefault()).contains("generated")) {
-        options.errorprone {
-            check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.fr.enedis")
-            option("NullAway:UnannotatedClasses", "energy.eddie.regionconnector.fr.enedis.api.MeteringDataApi")
-            option("NullAway:UnannotatedClasses", "energy.eddie.regionconnector.fr.enedis.api.AuthorizationApi")
-            option("NullAway:TreatGeneratedAsUnannotated", true)
-            // Regex fits to Windows and Unix-style path separators. CAVEAT: excludedPaths needs a rexex string!
-            val regexString = ".*/energy/eddie/regionconnector/fr/enedis/invoker/.*".replace("/", "[/\\\\]")
-            this.excludedPaths.set(regexString)
-            option("NullawayExcludedClasses=EnedisApiClient.java")
-        }
-    }
-}
+configureJavaCompileWithErrorProne("energy.eddie.regionconnector.fr.enedis")
 
 // disable bootJar task as it needs a main class and region connectors do not have one
 tasks.getByName<BootJar>("bootJar") {
