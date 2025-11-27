@@ -25,7 +25,6 @@ The envelope contains the document and a header.
 The following is an example of the header, that is part of each CIM document.
 
 ```xml
-
 <MessageDocumentHeader>
     <!-- The datetime when the envelope of the document was created  -->
     <creationDateTime>2024-12-02T10:04:22Z</creationDateTime>

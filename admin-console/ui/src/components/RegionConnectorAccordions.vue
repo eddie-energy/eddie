@@ -5,7 +5,8 @@ import {
   getRegionConnectorsSupportedDataNeeds,
   getRegionConnectorsSupportedFeatures,
   HealthStatus,
-  type RegionConnectorMetadata
+  type RegionConnectorMetadata,
+  type RegionConnectorSupportedFeatures
 } from '@/api'
 import { REGION_CONNECTORS } from '@/constants'
 import { countryFlag, formatCountry } from '@/util/countries'
@@ -23,14 +24,22 @@ const disabledRegionConnectors = computed(() =>
   regionConnectors.value.filter(({ id }) => !REGION_CONNECTORS.includes(id)).map(({ id }) => id)
 )
 
-const SUPPORTED_FEATURES: { [key: string]: string } = {
+const SUPPORTED_FEATURES: {
+  [K in Exclude<keyof RegionConnectorSupportedFeatures, 'regionConnectorId'>]: string
+} & {
+  [key: string]: string
+} = {
   supportsConnectionsStatusMessages: 'Connections Status Messages',
   supportsRawDataMessages: 'Raw Data Messages',
-  supportsTermination: 'Termination',
-  supportsAccountingPointMarketDocuments: 'Accounting Point Market Documents',
-  supportsPermissionMarketDocuments: 'Permission Market Documents',
-  supportsValidatedHistoricalDataMarketDocuments: 'Validated Historical Data Market Documents',
-  supportsRetransmissionRequests: 'Retransmission Requests'
+  supportsTermination: 'Termination v0.82',
+  supportsAccountingPointMarketDocuments: 'Accounting Point Market Documents v0.82',
+  supportsPermissionMarketDocuments: 'Permission Market Documents v0.82',
+  supportsValidatedHistoricalDataMarketDocuments:
+    'Validated Historical Data Market Documents v0.82',
+  supportsRetransmissionRequests: 'Retransmission Requests v0.91.08',
+  supportsValidatedHistoricalDataMarketDocumentsV1_04:
+    'Validated Historical Data Market Documents v1.04',
+  supportsNearRealTimeDataMarketDocumentsV1_04: 'Near Real Time Data Market Documents v1.04'
 }
 
 const SUPPORTED_DATA_NEEDS: { [key: string]: string } = {

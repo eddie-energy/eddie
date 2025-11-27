@@ -10,6 +10,8 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
+import energy.eddie.api.v1_04.NearRealTimeDataMarketDocumentProvider;
+import energy.eddie.api.v1_04.ValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.core.services.SupportedFeatureService;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.BeansException;
@@ -74,6 +76,17 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
     @JsonProperty
     public boolean supportsRetransmissionRequests() {
         return hasBean(RegionConnectorRetransmissionService.class);
+    }
+
+    @JsonProperty
+    public boolean supportsNearRealTimeDataMarketDocuments() {
+        return hasBean(NearRealTimeDataMarketDocumentProvider.class);
+    }
+
+    @JsonProperty
+    @SuppressWarnings("java:S100")
+    public boolean supportsValidatedHistoricalDataMarketDocumentsV1_04() {
+        return hasBean(ValidatedHistoricalDataMarketDocumentProvider.class);
     }
 
     private boolean hasBean(Class<?> clazz) {

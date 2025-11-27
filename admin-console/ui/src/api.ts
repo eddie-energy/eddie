@@ -80,6 +80,8 @@ export type RegionConnectorSupportedFeatures = {
   supportsValidatedHistoricalDataMarketDocuments: boolean
   supportsRetransmissionRequests: boolean
   supportsConnectionsStatusMessages: boolean
+  supportsValidatedHistoricalDataMarketDocumentsV1_04: boolean
+  supportsNearRealTimeDataMarketDocumentsV1_04: boolean
 }
 
 export type RegionConnectorSupportedDataNeeds = {

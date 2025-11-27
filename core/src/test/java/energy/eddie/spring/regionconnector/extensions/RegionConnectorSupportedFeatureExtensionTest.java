@@ -8,6 +8,8 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
+import energy.eddie.api.v1_04.NearRealTimeDataMarketDocumentProvider;
+import energy.eddie.api.v1_04.ValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.core.services.SupportedFeatureService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +49,12 @@ class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
     @MockitoBean
     @SuppressWarnings("unused")
     private RegionConnectorRetransmissionService regionConnectorRetransmissionService;
+    @MockitoBean
+    @SuppressWarnings("unused")
+    private ValidatedHistoricalDataMarketDocumentProvider validatedHistoricalDataMarketDocumentProvider;
+    @MockitoBean
+    @SuppressWarnings("unused")
+    private NearRealTimeDataMarketDocumentProvider nearRealTimeDataMarketDocumentProvider;
 
     @Test
     void testSupportedFeatures_returnsTrue_ifFeatureInApplicationContext() {
@@ -62,7 +70,9 @@ class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
                 () -> assertTrue(extension.supportsAccountingPointMarketDocuments()),
                 () -> assertTrue(extension.supportsPermissionMarketDocuments()),
                 () -> assertTrue(extension.supportsValidatedHistoricalDataMarketDocuments()),
-                () -> assertTrue(extension.supportsRetransmissionRequests())
+                () -> assertTrue(extension.supportsRetransmissionRequests()),
+                () -> assertTrue(extension.supportsValidatedHistoricalDataMarketDocumentsV1_04()),
+                () -> assertTrue(extension.supportsNearRealTimeDataMarketDocuments())
         );
     }
 
@@ -113,7 +123,9 @@ class RegionConnectorSupportedFeatureExtensionWithoutBeansPresentTest {
                 () -> assertFalse(extension.supportsAccountingPointMarketDocuments()),
                 () -> assertFalse(extension.supportsPermissionMarketDocuments()),
                 () -> assertFalse(extension.supportsValidatedHistoricalDataMarketDocuments()),
-                () -> assertFalse(extension.supportsRetransmissionRequests())
+                () -> assertFalse(extension.supportsRetransmissionRequests()),
+                () -> assertFalse(extension.supportsValidatedHistoricalDataMarketDocumentsV1_04()),
+                () -> assertFalse(extension.supportsNearRealTimeDataMarketDocuments())
         );
     }
 }
