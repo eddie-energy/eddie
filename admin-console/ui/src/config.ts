@@ -19,5 +19,5 @@ export const TERMINATION_API_URL = `${ADMIN_URL}/terminate`
 export const REGION_CONNECTOR_API_URL = `${CORE_URL}/api/region-connectors-metadata`
 export const REGION_CONNECTOR_HEALTH_API_URL = `${CORE_URL}/actuator/health`
 export const REGION_CONNECTORS_SUPPORTED_FEATURES_API_URL = `${MANAGEMENT_URL}/${MANAGEMENT_URL_PREFIX}/region-connectors/supported-features`
-export const REGION_CONNECTORS_SUPPORTED_DATA_NEEDS_API_URL = `${MANAGEMENT_URL}${MANAGEMENT_URL_PREFIX}/region-connectors/supported-data-needs`
+export const REGION_CONNECTORS_SUPPORTED_DATA_NEEDS_API_URL = `${MANAGEMENT_URL}/${MANAGEMENT_URL_PREFIX}/region-connectors/supported-data-needs`
 export const DATA_NEEDS_API_URL = `${MANAGEMENT_URL}/data-needs/${MANAGEMENT_URL_PREFIX}`
