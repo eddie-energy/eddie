@@ -1,6 +1,6 @@
-package energy.eddie.outbound.rest.model.cim.v1_04;
+package energy.eddie.outbound.rest.model.cim.v1_06;
 
-import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_06.rtd.RTDEnvelope;
 import energy.eddie.outbound.rest.model.ModelWithJsonPayload;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -8,7 +8,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.ZonedDateTime;
 
-@Entity(name = "NearRealTimeDataMarketDocumentModelV1_04")
+@Entity(name = "NearRealTimeDataMarketDocumentModelV1_06")
 @Table(name = "near_real_time_data_marked_document", schema = "rest")
 @SuppressWarnings("NullAway")
 public class NearRealTimeDataMarketDocumentModel implements ModelWithJsonPayload<RTDEnvelope> {

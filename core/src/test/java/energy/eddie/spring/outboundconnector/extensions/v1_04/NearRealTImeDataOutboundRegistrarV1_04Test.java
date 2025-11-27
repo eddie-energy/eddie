@@ -1,6 +1,6 @@
 package energy.eddie.spring.outboundconnector.extensions.v1_04;
 
-import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnector;
+import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
 import energy.eddie.core.services.v1_04.NearRealTimeDataMarketDocumentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,9 +16,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 @SuppressWarnings("DataFlowIssue")
 @ExtendWith(MockitoExtension.class)
-class NearRealTImeDataOutboundRegistrarTest {
+class NearRealTImeDataOutboundRegistrarV1_04Test {
     @Mock
-    private NearRealTimeDataMarketDocumentOutboundConnector rtdConnector;
+    private NearRealTimeDataMarketDocumentOutboundConnectorV1_04 rtdConnector;
     @Mock
     private NearRealTimeDataMarketDocumentService service;
 
@@ -28,9 +28,9 @@ class NearRealTImeDataOutboundRegistrarTest {
         var optional = Optional.of(rtdConnector);
         // When, Then
         assertThrows(NullPointerException.class,
-                     () -> new NearRealTimeDataOutboundRegistrar(null, service));
+                     () -> new NearRealTimeDataOutboundRegistrarV1_04(null, service));
         assertThrows(NullPointerException.class,
-                     () -> new NearRealTimeDataOutboundRegistrar(optional, null));
+                     () -> new NearRealTimeDataOutboundRegistrarV1_04(optional, null));
     }
 
     @Test
@@ -38,7 +38,7 @@ class NearRealTImeDataOutboundRegistrarTest {
         // Given
 
         // When
-        new NearRealTimeDataOutboundRegistrar(Optional.empty(), service);
+        new NearRealTimeDataOutboundRegistrarV1_04(Optional.empty(), service);
 
         // Then
         verifyNoInteractions(service);
@@ -49,10 +49,10 @@ class NearRealTImeDataOutboundRegistrarTest {
         // Given
 
         // When
-        new NearRealTimeDataOutboundRegistrar(Optional.of(rtdConnector), service);
+        new NearRealTimeDataOutboundRegistrarV1_04(Optional.of(rtdConnector), service);
 
         // Then
         verify(service).getNearRealTimeDataMarketDocumentStream();
-        verify(rtdConnector).setNearRealTimeDataMarketDocumentStream(any());
+        verify(rtdConnector).setNearRealTimeDataMarketDocumentStreamV1_04(any());
     }
 }

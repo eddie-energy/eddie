@@ -204,7 +204,7 @@ class KafkaConnectorTest {
                 .withMessageDocumentHeaderMetaInformationConnectionId("cid")
                 .withMessageDocumentHeaderMetaInformationDataNeedId("dnid")
                 .withMessageDocumentHeaderMetaInformationDocumentType("near-real-time-data-market-document");
-        kafkaConnector.setNearRealTimeDataMarketDocumentStream(Flux.just(data));
+        kafkaConnector.setNearRealTimeDataMarketDocumentStreamV1_04(Flux.just(data));
         var consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafka);
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
                                                          new StringDeserializer(),
