@@ -133,4 +133,5 @@ Similar to the [`ValidatedHistoricalDataEnvelopeProvider`](#validatedhistoricald
 #### `ValidatedHistoricalDataMarketDocumentProvider`
 
 The [`ValidatedHistoricalDataMarketDocumentProvider`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v1_04/ValidatedHistoricalDataMarketDocumentProvider.html) is the new version of the [`ValidatedHistoricalDataEnvelopeProvider`](./api.md#validatedhistoricaldataenvelopeprovider).
-It should be implemented in parallel to the old version, its implementation should be the priority.
+It should be implemented in parallel to the old version, but its implementation should be the priority.
+The old version should still be supported to maintain backwards compatibility.
