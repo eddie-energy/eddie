@@ -13,7 +13,6 @@ import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderComplexType;
 import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
-import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
@@ -257,12 +256,12 @@ class AmqpOutboundTest {
     }
 
     @Test
-    void testNearRealTimeData_producesMessage() throws InterruptedException {
+    void testNearRealTimeDataCimV1_04_producesMessage() throws InterruptedException {
         // Given
         CountDownLatch latch = new CountDownLatch(1);
-        TestPublisher<RTDEnvelope> publisher = TestPublisher.create();
-        amqpOutbound.setNearRealTimeDataMarketDocumentStream(publisher.flux());
-        var message = new RTDEnvelope()
+        TestPublisher<energy.eddie.cim.v1_04.rtd.RTDEnvelope> publisher = TestPublisher.create();
+        amqpOutbound.setNearRealTimeDataMarketDocumentStreamV1_04(publisher.flux());
+        var message = new energy.eddie.cim.v1_04.rtd.RTDEnvelope()
                 .withMessageDocumentHeaderMetaInformationPermissionId("pid")
                 .withMessageDocumentHeaderMetaInformationConnectionId("cid")
                 .withMessageDocumentHeaderMetaInformationDataNeedId("dnid");
@@ -272,7 +271,41 @@ class AmqpOutboundTest {
 
         // Then
         var consumer = connection.consumerBuilder()
-                                 .queue(config.nearRealTimeDataMarketDocument())
+                                 .queue(config.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_04))
+                                 .messageHandler((ctx, msg) -> {
+                                     assertAll(
+                                             () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
+                                             () -> assertEquals("cid", msg.property(Headers.CONNECTION_ID)),
+                                             () -> assertEquals("dnid", msg.property(Headers.DATA_NEED_ID))
+                                     );
+                                     latch.countDown();
+                                 })
+                                 .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        publisher.complete();
+    }
+
+    @Test
+    void testNearRealTimeDataCimV1_06_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<energy.eddie.cim.v1_06.rtd.RTDEnvelope> publisher = TestPublisher.create();
+        amqpOutbound.setNearRealTimeDataMarketDocumentStreamV1_06(publisher.flux());
+        var message = new energy.eddie.cim.v1_06.rtd.RTDEnvelope()
+                .withMessageDocumentHeaderMetaInformationPermissionId("pid")
+                .withMessageDocumentHeaderMetaInformationConnectionId("cid")
+                .withMessageDocumentHeaderMetaInformationDataNeedId("dnid");
+
+        // When
+        publisher.emit(message);
+
+        // Then
+        var consumer = connection.consumerBuilder()
+                                 .queue(config.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_06))
                                  .messageHandler((ctx, msg) -> {
                                      assertAll(
                                              () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),

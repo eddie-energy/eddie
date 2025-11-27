@@ -3,11 +3,10 @@
 
 package energy.eddie.outbound.rest.connectors.cim.v1_04;
 
-import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnector;
+import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
 import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
-import energy.eddie.outbound.rest.connectors.cim.v0_82.CimConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -16,14 +15,16 @@ import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
 
-@Component
-@SuppressWarnings("java:S101")
-public class CimConnectorV1_04 implements ValidatedHistoricalDataMarketDocumentOutboundConnector, NearRealTimeDataMarketDocumentOutboundConnector, AutoCloseable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CimConnectorV1_04.class);
+@Component(value = "cimConnectorV1_04")
+@SuppressWarnings("java:S6830")
+public class CimConnector implements ValidatedHistoricalDataMarketDocumentOutboundConnector, NearRealTimeDataMarketDocumentOutboundConnectorV1_04, AutoCloseable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CimConnector.class);
     private final Sinks.Many<VHDEnvelope> vhdSink = Sinks.many()
                                                          .replay()
                                                          .limit(Duration.ofSeconds(10));
-    private final Sinks.Many<RTDEnvelope> rtdSink = CimConnector.createSink();
+    private final Sinks.Many<RTDEnvelope> rtdSink = Sinks.many()
+                                                         .replay()
+                                                         .limit(Duration.ofSeconds(10));
 
     public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentStream() {
         return vhdSink.asFlux();
@@ -45,8 +46,13 @@ public class CimConnectorV1_04 implements ValidatedHistoricalDataMarketDocumentO
     }
 
     @Override
-    public void setNearRealTimeDataMarketDocumentStream(Flux<RTDEnvelope> marketDocumentStream) {
-        marketDocumentStream.subscribe(rtdSink::tryEmitNext);
+    public void setNearRealTimeDataMarketDocumentStreamV1_04(Flux<RTDEnvelope> marketDocumentStream) {
+        marketDocumentStream
+                .onErrorContinue((err, obj) -> LOGGER.warn(
+                        "Encountered error while processing near real-time data market document",
+                        err
+                ))
+                .subscribe(rtdSink::tryEmitNext);
     }
 
     @Override
@@ -54,3 +60,4 @@ public class CimConnectorV1_04 implements ValidatedHistoricalDataMarketDocumentO
         rtdSink.tryEmitComplete();
     }
 }
+

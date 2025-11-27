@@ -1,9 +1,6 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-// SPDX-License-Identifier: Apache-2.0
+package energy.eddie.regionconnector.aiida.provider.v1_06;
 
-package energy.eddie.regionconnector.aiida.provider.v1_04;
-
-import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_06.rtd.RTDEnvelope;
 import energy.eddie.regionconnector.aiida.streams.IdentifiableStreams;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +20,7 @@ class AiidaNearRealTimeDataMarketDocumentProviderTest {
     void getRawDataStream_emitsUnderlyingFlux() {
         var msg1 = mock(RTDEnvelope.class);
         var msg2 = mock(RTDEnvelope.class);
-        when(streams.nearRealTimeDataCimV104Flux()).thenReturn(Flux.just(msg1, msg2));
+        when(streams.nearRealTimeDataCimV106Flux()).thenReturn(Flux.just(msg1, msg2));
 
         var provider = new AiidaNearRealTimeDataMarketDocumentProvider(streams);
 
@@ -32,7 +29,7 @@ class AiidaNearRealTimeDataMarketDocumentProviderTest {
                     .thenCancel()
                     .verify();
 
-        verify(streams).nearRealTimeDataCimV104Flux();
+        verify(streams).nearRealTimeDataCimV106Flux();
         verifyNoMoreInteractions(streams);
     }
 }

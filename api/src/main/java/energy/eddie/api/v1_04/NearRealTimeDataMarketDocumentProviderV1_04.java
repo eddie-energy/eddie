@@ -10,7 +10,8 @@ import reactor.core.publisher.Flux;
 /**
  * Used to extend a {@link RegionConnector} by making a Flux of {@link RTDEnvelope}s available.
  */
-public interface NearRealTimeDataMarketDocumentProvider {
+@SuppressWarnings("java:S114")
+public interface NearRealTimeDataMarketDocumentProviderV1_04 {
     /**
      * Data stream of all RTDEnvelope created by this region connector.
      *

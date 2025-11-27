@@ -5,8 +5,8 @@ package energy.eddie.outbound.rest.web.cim.v1_04;
 
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
-import energy.eddie.outbound.rest.dto.NearRealTimeDataMarketDocuments;
 import energy.eddie.outbound.rest.dto.ValidatedHistoricalDataMarketDocumentsV1_04;
+import energy.eddie.outbound.rest.dto.v1_04.NearRealTimeDataMarketDocuments;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -26,7 +26,7 @@ import java.util.UUID;
 
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused", "java:S114"})
 @Tag(name = "CIM v1.04 Documents", description = "Provides endpoints for CIM v1.04 documents, such as validated historical data market documents.")
-public interface CimSwaggerV1_04 {
+public interface CimSwagger {
 
     @Operation(
             operationId = "GET validated historical data market document stream v1.04",

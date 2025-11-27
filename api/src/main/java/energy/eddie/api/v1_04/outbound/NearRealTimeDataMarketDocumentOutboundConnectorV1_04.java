@@ -10,8 +10,8 @@ import reactor.core.publisher.Flux;
  * An outbound connector delivers data to the eligible party. All messages from the region connectors
  * are passed on to the EP using their transport of choice, e.g. Kafka.
  */
-public interface NearRealTimeDataMarketDocumentOutboundConnector {
-    void setNearRealTimeDataMarketDocumentStream(
-            Flux<RTDEnvelope> marketDocumentStream
-    );
+@SuppressWarnings("java:S114")
+public interface NearRealTimeDataMarketDocumentOutboundConnectorV1_04 {
+    @SuppressWarnings("java:S100")
+    void setNearRealTimeDataMarketDocumentStreamV1_04(Flux<RTDEnvelope> marketDocumentStream);
 }

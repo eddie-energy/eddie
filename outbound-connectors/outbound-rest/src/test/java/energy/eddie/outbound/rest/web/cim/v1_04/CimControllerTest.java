@@ -5,10 +5,10 @@ package energy.eddie.outbound.rest.web.cim.v1_04;
 
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
-import energy.eddie.outbound.rest.connectors.cim.v1_04.CimConnectorV1_04;
+import energy.eddie.outbound.rest.connectors.cim.v1_04.CimConnector;
 import energy.eddie.outbound.rest.model.cim.v1_04.NearRealTimeDataMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_04.ValidatedHistoricalDataMarketDocumentModelV1_04;
-import energy.eddie.outbound.rest.persistence.cim.v1_04.NearRealTImeDataMarketDocumentRepository;
+import energy.eddie.outbound.rest.persistence.cim.v1_04.NearRealTimeDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_04.ValidatedHistoricalDataMarketDocumentV1_04Repository;
 import energy.eddie.outbound.rest.web.WebTestConfig;
 import org.junit.jupiter.api.Test;
@@ -29,17 +29,17 @@ import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 
-@WebFluxTest(value = CimControllerV1_04.class, excludeAutoConfiguration = ReactiveWebSecurityAutoConfiguration.class)
+@WebFluxTest(value = CimController.class, excludeAutoConfiguration = ReactiveWebSecurityAutoConfiguration.class)
 @Import({WebTestConfig.class})
-class CimControllerV104Test {
+class CimControllerTest {
     @Autowired
     private WebTestClient webTestClient;
     @MockitoBean
-    private CimConnectorV1_04 cimConnector;
+    private CimConnector cimConnector;
     @MockitoBean
     private ValidatedHistoricalDataMarketDocumentV1_04Repository vhdRepository;
     @MockitoBean
-    private NearRealTImeDataMarketDocumentRepository rtdRepository;
+    private NearRealTimeDataMarketDocumentRepository rtdRepository;
 
     @Test
     void validatedHistoricalDataMdSSE_returnsDocuments() {

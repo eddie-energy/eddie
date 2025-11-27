@@ -11,7 +11,6 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
-import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import jakarta.annotation.Nullable;
 import org.apache.kafka.common.serialization.Serializer;
@@ -43,7 +42,9 @@ class CustomSerializer implements Serializer<Object> {
             case RTREnvelope ignored -> serialize(data);
             // CIM v1.04
             case VHDEnvelope ignored -> serialize(data);
-            case RTDEnvelope ignored -> serialize(data);
+            case energy.eddie.cim.v1_04.rtd.RTDEnvelope ignored -> serialize(data);
+            // CIM v1.06
+            case energy.eddie.cim.v1_06.rtd.RTDEnvelope ignored -> serialize(data);
             case null -> null;
             default -> {
                 LOGGER.warn("Got invalid type to serialize {}", data.getClass());

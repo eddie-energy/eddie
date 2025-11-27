@@ -104,4 +104,48 @@ public class CimSpecification {
                      .toList()
         );
     }
+
+    // TODO: Adapt when CIM v1.06 is finalized
+    // Disable name rule, for readable CIM version
+    @SuppressWarnings("java:S100")
+    public static <T> Specification<T> buildQueryForV1_06(
+            Optional<String> permissionId,
+            Optional<String> connectionId,
+            Optional<String> dataNeedId,
+            Optional<String> countryCode,
+            Optional<String> regionConnectorId,
+            Optional<ZonedDateTime> from,
+            Optional<ZonedDateTime> to
+    ) {
+        var query = List.of(
+                permissionId.map(pid -> new JsonPathSpecification<T>(
+                        List.of("messageDocumentHeader.metaInformation.permissionId"),
+                        pid
+                )),
+                connectionId.map(cid -> new JsonPathSpecification<T>(
+                        List.of("messageDocumentHeader.metaInformation.connectionId"),
+                        cid
+                )),
+                dataNeedId.map(did -> new JsonPathSpecification<T>(
+                        List.of("messageDocumentHeader.metaInformation.dataNeedId"),
+                        did
+                )),
+                countryCode.map(cc -> new JsonPathSpecification<T>(
+                        List.of("messageDocumentHeader.metaInformation.region.country"),
+                        cc.toUpperCase(Locale.ROOT)
+                )),
+                regionConnectorId.map(rc -> new JsonPathSpecification<T>(
+                        List.of("messageDocumentHeader.metaInformation.region.connector"),
+                        rc
+                )),
+                from.map(InsertionTimeSpecification::<T>insertedAfterEquals),
+                to.map(InsertionTimeSpecification::<T>insertedBeforeEquals)
+        );
+        return Specification.allOf(
+                query.stream()
+                     .filter(Optional::isPresent)
+                     .map(spec -> (Specification<T>) spec.get())
+                     .toList()
+        );
+    }
 }

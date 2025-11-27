@@ -9,7 +9,8 @@ package energy.eddie.cim;
 public enum CommonInformationModelVersions {
     V0_82("0.82"),
     V0_91_08("0.91.08"),
-    V1_04("1.04");
+    V1_04("1.04"),
+    V1_06("1.06");
 
     private final String version;
 

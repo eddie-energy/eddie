@@ -13,13 +13,13 @@ import energy.eddie.api.agnostic.outbound.RawDataOutboundConnector;
 import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
-import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnector;
+import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
+import energy.eddie.api.v1_06.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_06;
 import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
-import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
@@ -41,7 +41,8 @@ public class AmqpOutbound implements
         PermissionMarketDocumentOutboundConnector,
         ValidatedHistoricalDataEnvelopeOutboundConnector,
         AccountingPointEnvelopeOutboundConnector,
-        NearRealTimeDataMarketDocumentOutboundConnector,
+        NearRealTimeDataMarketDocumentOutboundConnectorV1_04,
+        NearRealTimeDataMarketDocumentOutboundConnectorV1_06,
         ValidatedHistoricalDataMarketDocumentOutboundConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpOutbound.class);
     private final Publisher publisher;
@@ -86,8 +87,15 @@ public class AmqpOutbound implements
     }
 
     @Override
-    public void setNearRealTimeDataMarketDocumentStream(Flux<RTDEnvelope> marketDocumentStream) {
-        marketDocumentStream.subscribe(publish(config.nearRealTimeDataMarketDocument(), AmqpOutbound::toHeaders));
+    public void setNearRealTimeDataMarketDocumentStreamV1_04(Flux<energy.eddie.cim.v1_04.rtd.RTDEnvelope> marketDocumentStream) {
+        marketDocumentStream.subscribe(publish(config.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_04),
+                                                    AmqpOutbound::toHeaders));
+    }
+
+    @Override
+    public void setNearRealTimeDataMarketDocumentStreamV1_06(Flux<energy.eddie.cim.v1_06.rtd.RTDEnvelope> marketDocumentStream) {
+        marketDocumentStream.subscribe(publish(config.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_06),
+                                               AmqpOutbound::toHeaders));
     }
 
     @Override
@@ -170,7 +178,15 @@ public class AmqpOutbound implements
         );
     }
 
-    private static Map<String, String> toHeaders(RTDEnvelope envelope) {
+    private static Map<String, String> toHeaders(energy.eddie.cim.v1_04.rtd.RTDEnvelope envelope) {
+        return Map.of(
+                Headers.PERMISSION_ID, envelope.getMessageDocumentHeaderMetaInformationPermissionId(),
+                Headers.CONNECTION_ID, envelope.getMessageDocumentHeaderMetaInformationConnectionId(),
+                Headers.DATA_NEED_ID, envelope.getMessageDocumentHeaderMetaInformationDataNeedId()
+        );
+    }
+
+    private static Map<String, String> toHeaders(energy.eddie.cim.v1_06.rtd.RTDEnvelope envelope) {
         return Map.of(
                 Headers.PERMISSION_ID, envelope.getMessageDocumentHeaderMetaInformationPermissionId(),
                 Headers.CONNECTION_ID, envelope.getMessageDocumentHeaderMetaInformationConnectionId(),

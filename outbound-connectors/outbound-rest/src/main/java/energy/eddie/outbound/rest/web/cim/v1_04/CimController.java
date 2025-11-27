@@ -5,12 +5,12 @@ package energy.eddie.outbound.rest.web.cim.v1_04;
 
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
-import energy.eddie.outbound.rest.connectors.cim.v1_04.CimConnectorV1_04;
-import energy.eddie.outbound.rest.dto.NearRealTimeDataMarketDocuments;
+import energy.eddie.outbound.rest.connectors.cim.v1_04.CimConnector;
 import energy.eddie.outbound.rest.dto.ValidatedHistoricalDataMarketDocumentsV1_04;
+import energy.eddie.outbound.rest.dto.v1_04.NearRealTimeDataMarketDocuments;
 import energy.eddie.outbound.rest.model.cim.v1_04.NearRealTimeDataMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_04.ValidatedHistoricalDataMarketDocumentModelV1_04;
-import energy.eddie.outbound.rest.persistence.cim.v1_04.NearRealTImeDataMarketDocumentRepository;
+import energy.eddie.outbound.rest.persistence.cim.v1_04.NearRealTimeDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_04.ValidatedHistoricalDataMarketDocumentV1_04Repository;
 import energy.eddie.outbound.rest.persistence.specifications.CimSpecification;
 import energy.eddie.outbound.shared.TopicStructure;
@@ -31,19 +31,19 @@ import static energy.eddie.outbound.rest.web.cim.v0_82.CimController.X_ACCEL_BUF
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
-@RestController
+@RestController(value = "cimControllerV1_04")
 @RequestMapping(TopicStructure.CIM_1_04_VALUE)
-@SuppressWarnings("java:S101")
+@SuppressWarnings("java:S6830")
 // Names shouldn't contain underscores, but this is required to not have bean name clashes with the other CimController
-public class CimControllerV1_04 implements CimSwaggerV1_04 {
-    private final CimConnectorV1_04 cimConnector;
+public class CimController implements CimSwagger {
+    private final CimConnector cimConnector;
     private final ValidatedHistoricalDataMarketDocumentV1_04Repository vhdRepository;
-    private final NearRealTImeDataMarketDocumentRepository rtdRepository;
+    private final NearRealTimeDataMarketDocumentRepository rtdRepository;
 
-    public CimControllerV1_04(
-            CimConnectorV1_04 cimConnector,
+    public CimController(
+            CimConnector cimConnector,
             ValidatedHistoricalDataMarketDocumentV1_04Repository vhdRepository,
-            NearRealTImeDataMarketDocumentRepository rtdRepository
+            NearRealTimeDataMarketDocumentRepository rtdRepository
     ) {
         this.cimConnector = cimConnector;
         this.vhdRepository = vhdRepository;
