@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS de_eta.permission_event
     granularity   text
 );
 
--- Helper function and aggregate mirroring CDS conventions
+-- Helper function
 CREATE OR REPLACE FUNCTION de_eta.coalesce2(anyelement, anyelement) RETURNS anyelement
     LANGUAGE sql AS
 'SELECT COALESCE($1, $2)';
