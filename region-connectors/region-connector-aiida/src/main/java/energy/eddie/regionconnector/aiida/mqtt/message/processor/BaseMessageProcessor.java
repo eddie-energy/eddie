@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 public abstract class BaseMessageProcessor implements AiidaMessageProcessor {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -50,7 +51,7 @@ public abstract class BaseMessageProcessor implements AiidaMessageProcessor {
     }
 
     private void validateTimespan(AiidaPermissionRequest permissionRequest) throws PermissionInvalidException {
-        var now = LocalDate.now();
+        var now = LocalDate.now(ZoneId.systemDefault());
 
         if (now.isBefore(permissionRequest.start()) || now.isAfter(permissionRequest.end())) {
             throw new PermissionInvalidException(

@@ -19,7 +19,7 @@ public class SchemaFormatterRegistry {
     public SchemaFormatterRegistry(List<SchemaFormatter> schemaFormatters) {
         for (SchemaFormatter schemaFormatter : schemaFormatters) {
             var schema = schemaFormatter.supportedSchema();
-            activeFormatters.putIfAbsent(schema, schemaFormatter);
+            registerIfAbsent(schema, schemaFormatter);
         }
 
         LOGGER.debug("Registered {} formatters", activeFormatters.size());
@@ -31,5 +31,16 @@ public class SchemaFormatterRegistry {
         }
 
         throw new SchemaFormatterRegistryException(schema);
+    }
+
+    private void registerIfAbsent(AiidaSchema schema, SchemaFormatter schemaFormatter) {
+        activeFormatters.computeIfAbsent(schema, forAbsentSchema -> registerFormatter(schemaFormatter));
+    }
+
+    private SchemaFormatter registerFormatter(SchemaFormatter schemaFormatter) {
+        LOGGER.debug("Registered {} for schema {}",
+                     schemaFormatter.getClass().getSimpleName(),
+                     schemaFormatter.supportedSchema());
+        return schemaFormatter;
     }
 }
