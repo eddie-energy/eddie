@@ -22,7 +22,8 @@ public class AmqpSetup {
                 configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_0_82),
                 configuration.nearRealTimeDataMarketDocument(),
                 configuration.terminationMarketDocument(),
-                configuration.redistributionTransactionRequestDocument()
+                configuration.redistributionTransactionRequestDocument(),
+                configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_04),
         };
         try (var management = connection.management()) {
             for (var name : topics) {
