@@ -64,7 +64,7 @@ const healthStatus = computed(() => dataSourceHealthStatuses.value[dataSource.id
       <div>
         <dt>{{ t('datasources.card.healthStatus')}}</dt>
         <StatusTag :status-type="healthStatus?.status !== 'UP' ? 'unhealthy' : 'healthy'" minimal-on-mobile>
-          {{ healthStatus?.status !== 'UP' ? t('datasources.card.healthStatusUp') : t('datasources.card.healthStatusDown') }}
+          {{ healthStatus?.status === 'UP' ? t('datasources.card.healthStatusUp') : t('datasources.card.healthStatusDown') }}
         </StatusTag>
       </div>
 
