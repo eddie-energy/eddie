@@ -26,6 +26,8 @@ include("region-connectors:region-connector-simulation")
 include("region-connectors:region-connector-us-green-button")
 include("region-connectors:shared")
 
+include("region-connectors:region-connector-de-eta")
+
 include("outbound-connectors:outbound-amqp")
 include("outbound-connectors:outbound-kafka")
 include("outbound-connectors:outbound-metric")
