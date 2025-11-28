@@ -33,6 +33,8 @@ import static java.util.function.BinaryOperator.maxBy;
 @Component
 public class Aggregator implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Aggregator.class);
+    private static final String HEALTH_REGISTRY_PREFIX = "DATA_SOURCE_";
+
     private final List<DataSourceAdapter<? extends DataSource>> dataSourceAdapters;
     private final Sinks.Many<AiidaRecord> combinedSink;
     private final AiidaRecordRepository aiidaRecordRepository;
@@ -68,7 +70,7 @@ public class Aggregator implements AutoCloseable {
         var dataSource = dataSourceAdapter.dataSource();
         LOGGER.info("Will add datasource {} with ID {} to aggregator", dataSource.name(), dataSource.id());
 
-        healthContributorRegistry.registerContributor(dataSource.id() + "_" + dataSource.name(), dataSourceAdapter);
+        healthContributorRegistry.registerContributor(HEALTH_REGISTRY_PREFIX + dataSource.id(), dataSourceAdapter);
         dataSourceAdapters.add(dataSourceAdapter);
         dataSourceAdapter.start()
                          .subscribe(this::publishRecordToCombinedFlux,
@@ -89,7 +91,7 @@ public class Aggregator implements AutoCloseable {
         var dataSource = dataSourceAdapter.dataSource();
         LOGGER.info("Will remove datasource {} with ID {} from aggregator", dataSource.name(), dataSource.id());
 
-        healthContributorRegistry.unregisterContributor(dataSource.id() + "_" + dataSource.name());
+        healthContributorRegistry.unregisterContributor(HEALTH_REGISTRY_PREFIX + dataSource.id());
         dataSourceAdapters.remove(dataSourceAdapter);
         dataSourceAdapter.close();
     }

@@ -2,7 +2,7 @@
 import { deleteDataSource, toggleDataSource } from '@/api'
 import DataSourceCard from '@/components/DataSourceCard.vue'
 import { onMounted } from 'vue'
-import { dataSources, fetchDataSources } from '@/stores/dataSources'
+import { dataSources, fetchDataSourcesFull, fetchDataSourcesHealthStatus } from '@/stores/dataSources'
 import type { AiidaDataSource } from '@/types'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { useI18n } from 'vue-i18n'
@@ -20,16 +20,17 @@ async function handleDelete(id: string) {
       t('cancelButton'),
     )
   ) {
-    deleteDataSource(id).then(() => fetchDataSources())
+    deleteDataSource(id).then(() => fetchDataSourcesFull())
   }
 }
 
 const handleEnableToggle = (datasource: AiidaDataSource) => {
-  toggleDataSource(datasource.id, datasource).then(() => fetchDataSources())
+  toggleDataSource(datasource.id, datasource).then(() => fetchDataSourcesFull())
+  setTimeout(fetchDataSourcesHealthStatus, 500)
 }
 
 onMounted(() => {
-  fetchDataSources()
+  fetchDataSourcesFull()
 })
 </script>
 

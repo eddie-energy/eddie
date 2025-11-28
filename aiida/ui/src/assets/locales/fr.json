@@ -37,7 +37,10 @@
       "mqttResetSuccess": "Mot de passe MQTT réinitialisé avec succès",
       "enabled": "Activé",
       "resetPasswordButton": "Réinitialiser le mot de passe",
-      "downloadLatestMessageButton": "Télécharger le dernier message"
+      "downloadLatestMessageButton": "Télécharger le dernier message",
+      "healthStatus": "État",
+      "healthStatusUp": "Actif",
+      "healthStatusDown": "Inactif"
     },
     "modal": {
       "name": "Nom",

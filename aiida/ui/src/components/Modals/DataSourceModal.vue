@@ -20,7 +20,7 @@ import {
   saveDataSource,
 } from '@/api'
 import type { AiidaDataSource, AiidaDataSourceIcon } from '@/types'
-import { fetchDataSources } from '@/stores/dataSources'
+import { fetchDataSourcesFull } from '@/stores/dataSources'
 import { useI18n } from 'vue-i18n'
 
 const { t, locale } = useI18n()
@@ -257,7 +257,7 @@ const handleFormSubmit = async () => {
       if (imageFile.value) {
         await addDataSourceImage(dataSource.value.id, imageFile.value)
       }
-      await fetchDataSources()
+      await fetchDataSourcesFull()
       loading.value = false
       modal.value?.close()
     } catch {

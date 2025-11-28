@@ -1,11 +1,12 @@
 import useToast from './composables/useToast'
 import { keycloak } from './keycloak'
 import type {
-  AiidaApplicationInformation,
-  AiidaDataSource,
-  AiidaDataSourceType,
-  AiidaPermission,
-  AiidaPermissionRequest,
+    AiidaApplicationInformation,
+    AiidaDataSource,
+    AiidaDataSourceHealthStatus,
+    AiidaDataSourceType,
+    AiidaPermission,
+    AiidaPermissionRequest,
 } from './types'
 const { danger, success } = useToast()
 
@@ -27,12 +28,14 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
     throw error
   }
   const isImagesEndpoint = path.startsWith('/datasources/images')
+  const isHealthEndpoint = path.startsWith('/actuator/health')
 
   const response = await window
     .fetch(BASE_URL + path, {
       headers: {
         Authorization: `Bearer ${keycloak.token}`,
         ...(!isImagesEndpoint ? { 'Content-Type': 'application/json' } : {}),
+        ...(isHealthEndpoint ? { 'Accept': 'application/json' } : {}),
       },
       ...init,
     })
@@ -46,7 +49,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       (await parseErrorResponse(response)) ??
       FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
       'errors.unexpectedError'
-    if (!(isImagesEndpoint && response.status == 404)) {
+    if (!(isImagesEndpoint && response.status == 404 || isHealthEndpoint)) {
       danger(message, response.status == 404 ? 5000 : 0, true)
     }
     throw new Error(message)
@@ -110,6 +113,10 @@ export function getIconTypes(): Promise<{ icons: string[] }> {
 
 export function getModbusVendors(): Promise<{ id: string; name: string }[]> {
   return fetch('/datasources/modbus/vendors')
+}
+
+export function getDataSourceHealthStatus(id: string): Promise<AiidaDataSourceHealthStatus> {
+    return fetch(`/actuator/health/DATA_SOURCE_${id}`)
 }
 
 export function getModbusModels(

@@ -8,9 +8,10 @@ import StatusDotIcon from '@/assets/icons/StatusDotIcon.svg'
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
 import { computed, ref } from 'vue'
 import type { AiidaDataSource } from '@/types'
-import { dataSourceImages } from '@/stores/dataSources'
+import { dataSourceHealthStatuses, dataSourceImages } from '@/stores/dataSources'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 import { useI18n } from 'vue-i18n'
+import StatusTag from "@/components/StatusTag.vue";
 
 const { t } = useI18n()
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
@@ -37,6 +38,8 @@ const {
 } = dataSource
 
 const image = computed(() => dataSourceImages.value[dataSource.id])
+const healthStatus = computed(() => dataSourceHealthStatuses.value[dataSource.id])
+
 </script>
 
 <template>
@@ -56,6 +59,13 @@ const image = computed(() => dataSourceImages.value[dataSource.id])
       <div>
         <dt>{{ t('datasources.card.id') }}</dt>
         <dd>{{ id }}</dd>
+      </div>
+
+      <div>
+        <dt>{{ t('datasources.card.healthStatus')}}</dt>
+        <StatusTag :status-type="healthStatus?.status !== 'UP' ? 'unhealthy' : 'healthy'" minimal-on-mobile>
+          {{ healthStatus?.status === 'UP' ? t('datasources.card.healthStatusUp') : t('datasources.card.healthStatusDown') }}
+        </StatusTag>
       </div>
 
       <template v-if="countryCode">

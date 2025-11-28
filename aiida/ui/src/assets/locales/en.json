@@ -36,7 +36,10 @@
       "mqttPassword": "MQTT Password",
       "enabled": "Enabled",
       "resetPasswordButton": "Reset password",
-      "downloadLatestMessageButton": "Download Latest Message"
+      "downloadLatestMessageButton": "Download Latest Message",
+      "healthStatus": "Status",
+      "healthStatusUp": "Up",
+      "healthStatusDown": "Down"
     },
     "modal": {
       "name": "Name",
