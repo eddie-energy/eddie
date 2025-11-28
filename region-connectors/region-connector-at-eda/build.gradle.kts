@@ -172,6 +172,11 @@ tasks.named("compileJava") {
     dependsOn(unpackProprietaryLibraries)
 }
 
+tasks.withType<Javadoc> {
+    dependsOn(generateEDASchemaClasses)
+    dependsOn(unpackProprietaryLibraries)
+}
+
 sourceSets.configureEach {
     java.srcDir(generateEDASchemaClasses.map { files() })
 }
