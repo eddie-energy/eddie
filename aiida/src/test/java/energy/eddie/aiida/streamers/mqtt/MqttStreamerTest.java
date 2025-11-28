@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.errors.formatter.SchemaFormatterRegistryException;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -99,25 +98,36 @@ class MqttStreamerTest {
     @Mock
     private PermissionLatestRecordMap mockLatestRecordMap;
     @Mock
-    private SchemaFormatterRegistry schemaFormatterRegistry;
-    @Mock
-    private ApplicationInformationService  mockApplicationInformationService;
+    private ApplicationInformationService mockApplicationInformationService;
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
 
     @BeforeEach()
     void setUp() {
+        // Permission
+        var permissionMock = mock(Permission.class);
+
+        // Mqtt Streaming Config
         var mqttDto = new MqttDto("tcp://localhost:1883",
                                   PERMISSION_ID.toString(),
                                   "mqttPassword",
                                   DATA_TOPIC,
                                   EXPECTED_STATUS_TOPIC,
                                   EXPECTED_TERMINATION_TOPIC);
-
         mqttStreamingConfig = new MqttStreamingConfig(mqttDto);
-        Permission permissionMock = mock(Permission.class);
+
+        // MQTT Streaming Context
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
         var streamingContext = new MqttStreamingContext(mockClient, mqttStreamingConfig, mockLatestRecordMap);
+
+        // Application Information
+        var applicationInformation = new ApplicationInformation();
+        when(mockApplicationInformationService.applicationInformation()).thenReturn(applicationInformation);
+
+        // Schema Formatter Registry
+        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
+        var rawSchemaFormatter = new RawFormatter(mockApplicationInformationService, objectMapper);
+        var schemaFormatterRegistry = new SchemaFormatterRegistry(List.of(rawSchemaFormatter));
 
         streamer = new MqttStreamer(
                 mockRepository,
@@ -174,17 +184,10 @@ class MqttStreamerTest {
 
     @Test
     @SuppressWarnings("java:S2925")
-    void givenAiidaRecord_sendsViaMqtt() throws MqttException, InterruptedException, SchemaFormatterRegistryException {
+    void givenAiidaRecord_sendsViaMqtt() throws MqttException, InterruptedException {
         // Given
         useReflectionToSetPermissionMock();
 
-        var applicationInformation = mock(ApplicationInformation.class);
-        when(applicationInformation.aiidaId()).thenReturn(UUID.randomUUID());
-        when(mockApplicationInformationService.applicationInformation()).thenReturn(applicationInformation);
-
-        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
-        var schemaFormatter = new RawFormatter(mockApplicationInformationService, objectMapper);
-        when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_RAW)).thenReturn(schemaFormatter);
 
         streamer.connect();
 
@@ -281,14 +284,6 @@ class MqttStreamerTest {
     void givenExceptionWhileSending_savesToRepository() throws Exception {
         // Given
         useReflectionToSetPermissionMock();
-
-        var applicationInformation = mock(ApplicationInformation.class);
-        when(applicationInformation.aiidaId()).thenReturn(UUID.randomUUID());
-        when(mockApplicationInformationService.applicationInformation()).thenReturn(applicationInformation);
-
-        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
-        var schemaFormatter = new RawFormatter(mockApplicationInformationService, objectMapper);
-        when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_RAW)).thenReturn(schemaFormatter);
 
         when(mockClient.publish(any(), any(), anyInt(), anyBoolean())).thenThrow(new MqttException(999));
         streamer.connect();

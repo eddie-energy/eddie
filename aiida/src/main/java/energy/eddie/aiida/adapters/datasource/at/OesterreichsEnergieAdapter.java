@@ -22,7 +22,6 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<OesterreichsEnergieDataSource> {
@@ -76,7 +75,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
         }
     }
 
-    private List<AiidaRecordValue> convertEnergyDataToAiidaRecordValues(OesterreichsEnergieAdapterJson json) {
+    private ArrayList<AiidaRecordValue> convertEnergyDataToAiidaRecordValues(OesterreichsEnergieAdapterJson json) {
         return json.energyData()
                    .entrySet()
                    .stream()
@@ -87,7 +86,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
                                 )
                    )
                    .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
-                   .toList();
+                   .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private AiidaRecordValue convertNameToAiidaRecordValue(String name) {

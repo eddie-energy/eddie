@@ -34,7 +34,6 @@ import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 @RestController(value = "cimControllerV1_04")
 @RequestMapping(TopicStructure.CIM_1_04_VALUE)
 @SuppressWarnings("java:S6830")
-// Names shouldn't contain underscores, but this is required to not have bean name clashes with the other CimController
 public class CimController implements CimSwagger {
     private final CimConnector cimConnector;
     private final ValidatedHistoricalDataMarketDocumentV1_04Repository vhdRepository;

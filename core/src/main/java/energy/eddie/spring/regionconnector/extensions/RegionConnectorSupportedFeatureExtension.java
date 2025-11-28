@@ -13,7 +13,7 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
-import energy.eddie.api.v1_04.NearRealTimeDataMarketDocumentProvider;
+import energy.eddie.api.v1_04.NearRealTimeDataMarketDocumentProviderV1_04;
 import energy.eddie.api.v1_04.ValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.core.services.SupportedFeatureService;
 import jakarta.annotation.Nullable;
@@ -83,7 +83,7 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
 
     @JsonProperty
     public boolean supportsNearRealTimeDataMarketDocuments() {
-        return hasBean(NearRealTimeDataMarketDocumentProvider.class);
+        return hasBean(NearRealTimeDataMarketDocumentProviderV1_04.class);
     }
 
     @JsonProperty
