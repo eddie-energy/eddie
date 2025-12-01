@@ -124,7 +124,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         var firstSeriesPeriodPoint = firstSeriesPeriod.getPointList().getPoints().getFirst();
         assertAll(
                 () -> assertEquals(new BigDecimal("0.008"), firstSeriesPeriodPoint.getEnergyQuantityQuantity()),
-                () -> assertEquals("1733011200", firstSeriesPeriodPoint.getPosition()),
+                () -> assertEquals("1", firstSeriesPeriodPoint.getPosition()),
                 () -> assertEquals(QualityTypeList.ESTIMATED, firstSeriesPeriodPoint.getEnergyQuantityQuality())
         );
 
@@ -153,7 +153,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         var secondSeriesPeriodPoint = secondSeriesPeriod.getPointList().getPoints().getFirst();
         assertAll(
                 () -> assertEquals(new BigDecimal("0.093"), secondSeriesPeriodPoint.getEnergyQuantityQuantity()),
-                () -> assertEquals("1733014800", secondSeriesPeriodPoint.getPosition()),
+                () -> assertEquals("2", secondSeriesPeriodPoint.getPosition()),
                 () -> assertEquals(QualityTypeList.ESTIMATED, secondSeriesPeriodPoint.getEnergyQuantityQuality())
         );
     }
