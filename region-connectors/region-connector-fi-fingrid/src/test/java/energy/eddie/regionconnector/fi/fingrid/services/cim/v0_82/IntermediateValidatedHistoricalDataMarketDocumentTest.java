@@ -1,8 +1,9 @@
-package energy.eddie.regionconnector.fi.fingrid.services;
+package energy.eddie.regionconnector.fi.fingrid.services.cim.v0_82;
 
 import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.fi.fingrid.TestResourceProvider;
+import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequestBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -15,10 +16,15 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     void toVhd_withErrors_returnsVhdsWithErrors() {
         // Given
         var response = TestResourceProvider.readTimeSeriesFromFile(TestResourceProvider.TIME_SERIES_WITH_ERRORS);
-        var intermediateVHD = new IntermediateValidatedHistoricalDataMarketDocument(List.of(response));
+        var pr = new FingridPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setConnectionId("cid")
+                .setDataNeedId("dnid")
+                .build();
+        var intermediateVHD = new IntermediateValidatedHistoricalDataMarketDocument(List.of(response), pr);
 
         // When
-        var res = intermediateVHD.toVhds().getFirst();
+        var res = intermediateVHD.toVhds().getFirst().getValidatedHistoricalDataMarketDocument();
 
         // Then
         assertAll(
@@ -44,10 +50,15 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     void toVhd_withValues_returnsVhdsWithTimeSeries() {
         // Given
         var response = TestResourceProvider.readTimeSeriesFromFile(TestResourceProvider.TIME_SERIES_WITH_VALUES);
-        var intermediateVHD = new IntermediateValidatedHistoricalDataMarketDocument(List.of(response));
+        var pr = new FingridPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setConnectionId("cid")
+                .setDataNeedId("dnid")
+                .build();
+        var intermediateVHD = new IntermediateValidatedHistoricalDataMarketDocument(List.of(response), pr);
 
         // When
-        var res = intermediateVHD.toVhds().getFirst();
+        var res = intermediateVHD.toVhds().getFirst().getValidatedHistoricalDataMarketDocument();
 
         // Then
         assertAll(
