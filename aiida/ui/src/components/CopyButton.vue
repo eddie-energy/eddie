@@ -19,7 +19,13 @@ const isCopied = computed(() => {
 </script>
 
 <template>
-  <button class="copy-button" :disabled="isCopied" :class="{ isCopied }" @click="handleCopy">
+  <button
+    class="copy-button"
+    :disabled="isCopied"
+    :class="{ isCopied }"
+    @click="handleCopy"
+    type="button"
+  >
     <Transition mode="out-in">
       <component :is="isCopied ? CheckmarkIcon : CopyIcon" />
     </Transition>

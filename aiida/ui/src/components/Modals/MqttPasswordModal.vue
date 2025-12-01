@@ -11,7 +11,7 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 const modal = useTemplateRef<HTMLDialogElement>('modal')
 const pass = ref<string | undefined>()
-const show = ref(false)
+const showPassword = ref(false)
 const title = ref('')
 
 const showModal = (password?: string, isNew?: boolean) => {
@@ -21,11 +21,11 @@ const showModal = (password?: string, isNew?: boolean) => {
 }
 
 const handleShow = () => {
-  show.value = !show.value
+  showPassword.value = !showPassword.value
 }
 
 const closeModal = () => {
-  show.value = false
+  showPassword.value = false
 }
 
 defineExpose({ showModal })
@@ -40,19 +40,22 @@ defineExpose({ showModal })
       <input
         readonly
         autocomplete="off"
-        :type="show ? 'text' : 'password'"
+        :type="showPassword ? 'text' : 'password'"
         :value="pass"
         name="password"
       />
       <div class="actions">
         <CopyButton :copy-text="pass" :aria-label="t('permissions.copyMqttPassword')" />
         <button
-          class="show-button"
+          class="showPassword-button"
           @click="handleShow"
-          :aria-label="show ? t('permissions.hideMqttPassword') : t('permissions.showMqttPassword')"
+          :aria-label="
+            showPassword ? t('permissions.hideMqttPassword') : t('permissions.showMqttPassword')
+          "
+          type="button"
         >
           <Transition mode="out-in">
-            <component :is="show ? EyeIcon : CrossedOutEyeIcon" />
+            <component :is="showPassword ? EyeIcon : CrossedOutEyeIcon" />
           </Transition>
         </button>
       </div>
@@ -71,7 +74,7 @@ defineExpose({ showModal })
 
 .actions {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
   align-items: center;
   position: absolute;
   right: var(--spacing-md);
@@ -96,8 +99,13 @@ button.copied {
   color: var(--eddie-green);
 }
 
-.show-button {
+.showPassword-button {
   color: var(--eddie-grey-medium);
+  padding: unset;
+  svg {
+    height: 1rem;
+    width: 1rem;
+  }
 }
 
 .input-field {
