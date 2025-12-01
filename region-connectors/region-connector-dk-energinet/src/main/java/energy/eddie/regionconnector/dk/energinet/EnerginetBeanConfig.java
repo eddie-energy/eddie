@@ -17,8 +17,8 @@ import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionEventRepository;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
+import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
-import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.SeriesPeriodBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.TimeSeriesBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
@@ -56,11 +56,6 @@ public class EnerginetBeanConfig {
             @Value("${" + ENERGINET_CUSTOMER_BASE_PATH_KEY + "}") String customerBasePath
     ) {
         return new PlainEnerginetConfiguration(customerBasePath);
-    }
-
-    @Bean
-    public Flux<IdentifiableApiResponse> identifiableMeterReadingFlux(PollingService pollingService) {
-        return pollingService.identifiableMeterReadings();
     }
 
     @Bean
@@ -146,17 +141,18 @@ public class EnerginetBeanConfig {
         );
     }
 
+    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
     @OnRawDataMessagesEnabled
     public RawDataProvider rawDataProvider(
             @Qualifier("objectMapper") ObjectMapper objectMapper,
-            Flux<IdentifiableApiResponse> identifiableApiResponseFlux,
+            EnergyDataStreams streams,
             Flux<IdentifiableAccountingPointDetails> accountingPointDetailsFlux
     ) {
         return new JsonRawDataProvider(
                 REGION_CONNECTOR_ID,
                 objectMapper,
-                identifiableApiResponseFlux,
+                streams.getValidatedHistoricalDataStream(),
                 accountingPointDetailsFlux
         );
     }

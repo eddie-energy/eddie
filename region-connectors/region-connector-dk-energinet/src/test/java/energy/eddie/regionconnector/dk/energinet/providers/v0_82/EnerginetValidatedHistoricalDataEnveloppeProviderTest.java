@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMark
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
+import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.SeriesPeriodBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.TimeSeriesBuilderFactory;
@@ -15,6 +16,9 @@ import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.Validat
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
@@ -27,34 +31,36 @@ import java.time.ZonedDateTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@SuppressWarnings({"resource"})
+@ExtendWith(MockitoExtension.class)
 class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
-
-    static MyEnergyDataMarketDocument myEnergyDataMarketDocument;
-
-    static ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory;
-    static IdentifiableApiResponse apiResponse;
+    private static MyEnergyDataMarketDocument myEnergyDataMarketDocument;
+    private static ValidatedHistoricalDataMarketDocumentBuilderFactory factory;
+    private static IdentifiableApiResponse apiResponse;
+    @Mock
+    private EnergyDataStreams streams;
+    @Mock
+    private ValidatedHistoricalDataMarketDocumentBuilderFactory mockFactory;
 
     @SuppressWarnings("DataFlowIssue")
     @BeforeAll
     static void setUp() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JsonNullableModule());
-        try (InputStream is = EnerginetValidatedHistoricalDataEnvelopeProviderTest.class.getClassLoader()
-                                                                                        .getResourceAsStream(
-                                                                                                "MyEnergyDataMarketDocumentResponseListApiResponse.json")) {
-            MyEnergyDataMarketDocumentResponseListApiResponse response = objectMapper.readValue(is,
-                                                                                                MyEnergyDataMarketDocumentResponseListApiResponse.class);
+        var classLoader = EnerginetValidatedHistoricalDataEnvelopeProviderTest.class.getClassLoader();
+        try (InputStream is = classLoader.getResourceAsStream("MyEnergyDataMarketDocumentResponseListApiResponse.json")) {
+            var response = objectMapper.readValue(is, MyEnergyDataMarketDocumentResponseListApiResponse.class);
             myEnergyDataMarketDocument = response.getResult().getFirst().getMyEnergyDataMarketDocument();
         }
 
-        validatedHistoricalDataMarketDocumentBuilderFactory = new ValidatedHistoricalDataMarketDocumentBuilderFactory(
-                new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
-                                                             "fallbackId"),
+        factory = new ValidatedHistoricalDataMarketDocumentBuilderFactory(
+                new PlainCommonInformationModelConfiguration(
+                        CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                        "fallbackId"
+                ),
                 new TimeSeriesBuilderFactory(new SeriesPeriodBuilderFactory())
         );
 
-        MyEnergyDataMarketDocumentResponse myEnergyDataMarketDocumentResponse = new MyEnergyDataMarketDocumentResponse();
-        myEnergyDataMarketDocumentResponse.setMyEnergyDataMarketDocument(myEnergyDataMarketDocument);
+        var myEnergyDataMarketDocumentResponse = new MyEnergyDataMarketDocumentResponse()
+                .myEnergyDataMarketDocument(myEnergyDataMarketDocument);
         var permissionRequest = new EnerginetPermissionRequestBuilder()
                 .setPermissionId("permissionId")
                 .setConnectionId("connectionId")
@@ -63,10 +69,7 @@ class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
                 .setStatus(PermissionProcessStatus.ACCEPTED)
                 .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
                 .build();
-        apiResponse = new IdentifiableApiResponse(
-                permissionRequest,
-                myEnergyDataMarketDocumentResponse
-        );
+        apiResponse = new IdentifiableApiResponse(permissionRequest, myEnergyDataMarketDocumentResponse);
     }
 
     @SuppressWarnings("DataFlowIssue")
@@ -74,9 +77,9 @@ class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
     void getValidatedHistoricalDataMarketDocumentStream_producesDocumentsWhenTestJsonIsUsed() {
         // Given
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
+        when(streams.getValidatedHistoricalDataStream()).thenReturn(testPublisher.flux());
 
-        var provider = new EnerginetValidatedHistoricalDataEnvelopeProvider(testPublisher.flux(),
-                                                                            validatedHistoricalDataMarketDocumentBuilderFactory);
+        var provider = new EnerginetValidatedHistoricalDataEnvelopeProvider(streams, factory);
 
         // When & Then
         StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
@@ -129,14 +132,12 @@ class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
         // Given
         ValidatedHistoricalDataMarketDocumentBuilder builder = mock(ValidatedHistoricalDataMarketDocumentBuilder.class);
         doThrow(new RuntimeException("Test exception")).when(builder).withMyEnergyDataMarketDocument(any());
-        ValidatedHistoricalDataMarketDocumentBuilderFactory factory = mock(
-                ValidatedHistoricalDataMarketDocumentBuilderFactory.class);
-        when(factory.create()).thenReturn(builder);
+        when(mockFactory.create()).thenReturn(builder);
 
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
+        when(streams.getValidatedHistoricalDataStream()).thenReturn(testPublisher.flux());
 
-        try (var provider = new EnerginetValidatedHistoricalDataEnvelopeProvider(testPublisher.flux(),
-                                                                                 factory)) {
+        try (var provider = new EnerginetValidatedHistoricalDataEnvelopeProvider(streams, mockFactory)) {
 
             // When & Then
             StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
@@ -146,9 +147,9 @@ class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
                         })
                         .verifyComplete();
 
-            verify(factory).create();
+            verify(mockFactory).create();
             verify(builder).withMyEnergyDataMarketDocument(any());
-            verifyNoMoreInteractions(builder, factory);
+            verifyNoMoreInteractions(builder, mockFactory);
         }
     }
 }

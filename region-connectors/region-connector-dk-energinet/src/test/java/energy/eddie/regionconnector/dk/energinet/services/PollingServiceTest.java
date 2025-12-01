@@ -16,7 +16,7 @@ import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalGra
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalPollingEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
-import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
+import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
@@ -38,7 +38,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -64,6 +63,7 @@ class PollingServiceTest {
     private DataNeedsService dataNeedsService;
     @Mock
     private ValidatedHistoricalDataDataNeed dataNeed;
+    private EnergyDataStreams streams;
     @Captor
     private ArgumentCaptor<DkInternalPollingEvent> pollingEventCaptor;
     private PollingService pollingService;
@@ -72,6 +72,7 @@ class PollingServiceTest {
     @SuppressWarnings("DirectInvocationOnMock")
         // the outbox is not directly invoked
     void setUp() {
+        streams = new EnergyDataStreams();
         pollingService = new PollingService(
                 customerApi,
                 new MeterReadingPermissionUpdateAndFulfillmentService(
@@ -81,7 +82,8 @@ class PollingServiceTest {
                 outbox,
                 mapper,
                 dataNeedsService,
-                new ApiExceptionService(outbox)
+                new ApiExceptionService(outbox),
+                streams
         );
     }
 
@@ -114,12 +116,13 @@ class PollingServiceTest {
         doReturn(Mono.error(unauthorized))
                 .when(customerApi).accessToken(anyString());
 
-        // Then
-        StepVerifier.create(pollingService.identifiableMeterReadings())
+        // When
+        StepVerifier.create(streams.getValidatedHistoricalDataStream())
                     .then(() -> pollingService.fetchHistoricalMeterReadings(permissionRequest))
-                    .then(pollingService::close)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
+                    .then(() -> streams.close())
+                    // Then
+                    .verifyComplete();
+
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
     }
 
@@ -160,13 +163,13 @@ class PollingServiceTest {
         when(dataNeed.maxGranularity()).thenReturn(Granularity.PT15M);
         when(dataNeedsService.findById(dataNeedId))
                 .thenReturn(Optional.of(dataNeed));
-
-        // Then
-        StepVerifier.create(pollingService.identifiableMeterReadings())
+        // When
+        StepVerifier.create(streams.getValidatedHistoricalDataStream())
                     .then(() -> pollingService.fetchHistoricalMeterReadings(permissionRequest))
-                    .then(pollingService::close)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
+                    .then(() -> streams.close())
+                    // Then
+                    .verifyComplete();
+
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, event.status())));
     }
 
@@ -224,18 +227,10 @@ class PollingServiceTest {
                 .thenReturn(Optional.of(dataNeed));
 
         // When
-        StepVerifier.Step<IdentifiableApiResponse> stepVerifier = StepVerifier
-                .create(pollingService.identifiableMeterReadings())
-                .then(() -> pollingService.fetchHistoricalMeterReadings(
-                        permissionRequest))
-                .then(pollingService::close);
+        pollingService.fetchHistoricalMeterReadings(permissionRequest);
 
         // Then
-        stepVerifier
-                .expectComplete()
-                .verify(Duration.ofSeconds(2));
-        ArgumentCaptor<DkInternalGranularityEvent> granularityEventCaptor = ArgumentCaptor.forClass(
-                DkInternalGranularityEvent.class);
+        var granularityEventCaptor = ArgumentCaptor.forClass(DkInternalGranularityEvent.class);
         verify(outbox).commit(granularityEventCaptor.capture());
 
         assertAll(
@@ -281,12 +276,10 @@ class PollingServiceTest {
                                        any()))
                 .thenReturn(Mono.just(document));
 
+        // When
+        pollingService.fetchHistoricalMeterReadings(permissionRequest);
+
         // Then
-        StepVerifier.create(pollingService.identifiableMeterReadings())
-                    .then(() -> pollingService.fetchHistoricalMeterReadings(permissionRequest))
-                    .then(pollingService::close)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, event.status())));
     }
 
@@ -319,12 +312,10 @@ class PollingServiceTest {
         doReturn(Mono.error(unauthorized))
                 .when(customerApi).accessToken(anyString());
 
+        // When
+        pollingService.fetchHistoricalMeterReadings(permissionRequest);
+
         // Then
-        StepVerifier.create(pollingService.identifiableMeterReadings())
-                    .then(() -> pollingService.fetchHistoricalMeterReadings(permissionRequest))
-                    .then(pollingService::close)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
         verify(outbox, never()).commit(any());
     }
 
@@ -372,18 +363,20 @@ class PollingServiceTest {
                                        any()))
                 .thenReturn(Mono.just(data));
 
-        // Then
-        StepVerifier.create(pollingService.identifiableMeterReadings())
+        // When
+        StepVerifier.create(streams.getValidatedHistoricalDataStream())
                     .then(() -> pollingService.fetchHistoricalMeterReadings(permissionRequest))
+                    .then(() -> streams.close())
+                    // Then
                     .assertNext(mr -> assertAll(
                             () -> assertEquals(permissionRequest.permissionId(), mr.permissionRequest().permissionId()),
                             () -> assertEquals(permissionRequest.connectionId(), mr.permissionRequest().connectionId()),
                             () -> assertEquals(permissionRequest.dataNeedId(), mr.permissionRequest().dataNeedId()),
                             () -> assertNotNull(mr.apiResponse())
                     ))
-                    .then(pollingService::close)
-                    .expectComplete()
-                    .verify(Duration.ofSeconds(2));
+                    .verifyComplete();
+
+
         verify(outbox).commit(pollingEventCaptor.capture());
         var res = pollingEventCaptor.getValue();
         assertEquals(end, res.latestMeterReadingEndDate());
@@ -413,11 +406,10 @@ class PollingServiceTest {
                                                                        .build();
 
         // When
-        pollingService.fetchHistoricalMeterReadings(permissionRequest);
-
-        // Then
-        StepVerifier.create(pollingService.identifiableMeterReadings())
-                    .then(pollingService::close)
+        StepVerifier.create(streams.getValidatedHistoricalDataStream())
+                    .then(() -> pollingService.fetchHistoricalMeterReadings(permissionRequest))
+                    .then(() -> streams.close())
+                    // Then
                     .verifyComplete();
     }
 

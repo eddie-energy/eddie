@@ -14,7 +14,7 @@ public class EnerginetAccountingPointEnvelopeProvider implements AccountingPoint
 
     public EnerginetAccountingPointEnvelopeProvider(
             Flux<IdentifiableAccountingPointDetails> identifiableMeteringPointDetailsFlux,
-            CommonInformationModelConfiguration cimConfiguration
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfiguration
     ) {
         this.accountingPointEnvelopeFlux = identifiableMeteringPointDetailsFlux
                 .map(this::mapToAccountingPointMarketDocument)
