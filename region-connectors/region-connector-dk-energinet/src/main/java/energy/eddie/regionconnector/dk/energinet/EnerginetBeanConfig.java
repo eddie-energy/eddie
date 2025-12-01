@@ -18,11 +18,9 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnergi
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionEventRepository;
 import energy.eddie.regionconnector.dk.energinet.persistence.DkPermissionRequestRepository;
 import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
-import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.SeriesPeriodBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.TimeSeriesBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
-import energy.eddie.regionconnector.dk.energinet.services.AccountingPointDetailsService;
 import energy.eddie.regionconnector.dk.energinet.services.PollingService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
 import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
@@ -41,7 +39,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
-import reactor.core.publisher.Flux;
 
 import java.util.function.Supplier;
 
@@ -56,11 +53,6 @@ public class EnerginetBeanConfig {
             @Value("${" + ENERGINET_CUSTOMER_BASE_PATH_KEY + "}") String customerBasePath
     ) {
         return new PlainEnerginetConfiguration(customerBasePath);
-    }
-
-    @Bean
-    public Flux<IdentifiableAccountingPointDetails> identifiableAccountingPointDetailsFlux(AccountingPointDetailsService accountingPointDetailsService) {
-        return accountingPointDetailsService.identifiableMeteringPointDetailsFlux();
     }
 
     @Bean
@@ -146,14 +138,13 @@ public class EnerginetBeanConfig {
     @OnRawDataMessagesEnabled
     public RawDataProvider rawDataProvider(
             @Qualifier("objectMapper") ObjectMapper objectMapper,
-            EnergyDataStreams streams,
-            Flux<IdentifiableAccountingPointDetails> accountingPointDetailsFlux
+            EnergyDataStreams streams
     ) {
         return new JsonRawDataProvider(
                 REGION_CONNECTOR_ID,
                 objectMapper,
                 streams.getValidatedHistoricalDataStream(),
-                accountingPointDetailsFlux
+                streams.getAccountingPointDataStream()
         );
     }
 

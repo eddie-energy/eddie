@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
+import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -13,20 +14,13 @@ public class EnerginetAccountingPointEnvelopeProvider implements AccountingPoint
     private final CommonInformationModelConfiguration cimConfiguration;
 
     public EnerginetAccountingPointEnvelopeProvider(
-            Flux<IdentifiableAccountingPointDetails> identifiableMeteringPointDetailsFlux,
+            EnergyDataStreams streams,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfiguration
     ) {
-        this.accountingPointEnvelopeFlux = identifiableMeteringPointDetailsFlux
-                .map(this::mapToAccountingPointMarketDocument)
-                .share();
+        this.accountingPointEnvelopeFlux = streams.getAccountingPointDataStream()
+                                                  .map(this::mapToAccountingPointMarketDocument)
+                                                  .share();
         this.cimConfiguration = cimConfiguration;
-    }
-
-    private AccountingPointEnvelope mapToAccountingPointMarketDocument(
-            IdentifiableAccountingPointDetails response
-    ) {
-        return new IntermediateAccountingPointMarketDocument(response, cimConfiguration)
-                .accountingPointMarketDocument();
     }
 
     @Override
@@ -37,5 +31,12 @@ public class EnerginetAccountingPointEnvelopeProvider implements AccountingPoint
     @Override
     public void close() throws Exception {
         // No resources to close
+    }
+
+    private AccountingPointEnvelope mapToAccountingPointMarketDocument(
+            IdentifiableAccountingPointDetails response
+    ) {
+        return new IntermediateAccountingPointMarketDocument(response, cimConfiguration)
+                .accountingPointMarketDocument();
     }
 }
