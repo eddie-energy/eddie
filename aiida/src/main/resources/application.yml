@@ -37,6 +37,12 @@ spring:
             scope: openid
             provider: keycloak
 
+management:
+  endpoint:
+    health:
+      show-components: when_authorized
+      show-details: when_authorized
+
 aiida:
   cleanup:
     cleanup-interval: P1D
