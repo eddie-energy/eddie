@@ -11,7 +11,6 @@ import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -101,16 +100,16 @@ final class IntermediateValidatedHistoricalDataMarketDocument {
         for (var series : timeSeries) {
             var interval = new EsmpTimeInterval(series.start(), series.end());
             List<PointComplexType> result = new ArrayList<>();
+            var position = 1;
             for (Observation obs : series.observations()) {
-                var position = series.start().until(obs.start(), ChronoUnit.MINUTES) / series.resolutionDuration()
-                                                                                             .minutes();
                 PointComplexType pointComplexType = new PointComplexType()
-                        .withPosition(String.valueOf(position))
+                        .withPosition(Integer.toString(position))
                         .withEnergyQualityQuantityQuantity(obs.quantity())
                         .withEnergyQualityQuantityQuality(
                                 obs.quality().equals("OK") ? QualityTypeList.AS_PROVIDED : QualityTypeList.NOT_AVAILABLE
                         );
                 result.add(pointComplexType);
+                position++;
             }
             list.add(
                     new SeriesPeriodComplexType()

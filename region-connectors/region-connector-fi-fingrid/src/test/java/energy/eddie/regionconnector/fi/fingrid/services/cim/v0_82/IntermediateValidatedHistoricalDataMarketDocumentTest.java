@@ -108,13 +108,13 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         assertAll(
                 () -> assertEquals(BigDecimal.valueOf(1509000, 6), first.getEnergyQualityQuantityQuantity()),
                 () -> assertEquals(QualityTypeList.AS_PROVIDED, first.getEnergyQualityQuantityQuality()),
-                () -> assertEquals("165", first.getPosition())
+                () -> assertEquals("1", first.getPosition())
         );
         var second = points.get(1);
         assertAll(
                 () -> assertEquals(BigDecimal.valueOf(3353000, 6), second.getEnergyQualityQuantityQuantity()),
                 () -> assertEquals(QualityTypeList.AS_PROVIDED, second.getEnergyQualityQuantityQuality()),
-                () -> assertEquals("166", second.getPosition())
+                () -> assertEquals("2", second.getPosition())
         );
     }
 }
