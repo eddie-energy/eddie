@@ -23,7 +23,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.function.Supplier;
 
 @Configuration
-@EnableConfigurationProperties(value = DeEtaConfiguration.class)
+@EnableConfigurationProperties(value = {DeEtaConfiguration.class, energy.eddie.regionconnector.de.eta.oauth.DeEtaOAuthProperties.class})
 public class DeEtaBeanConfig {
     @Bean
     public EventBus eventBus() {return new EventBusImpl();}
