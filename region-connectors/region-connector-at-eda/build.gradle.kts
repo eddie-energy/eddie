@@ -1,14 +1,11 @@
 import energy.eddie.configureJavaCompileWithErrorProne
-import org.apache.http.HttpStatus
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClients
 import org.springframework.boot.gradle.tasks.bundling.BootJar
-import java.io.FileOutputStream
 import java.net.URI
 
 plugins {
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
+    id("de.undercouch.download") version "5.6.0"
 
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
@@ -39,7 +36,7 @@ dependencies {
     implementation(libs.nimbus.oidc)
 
     // dependency for PontonXP Messenger
-    implementation(fileTree(pontonDestinationDir) { include("lib/adapterapi2.jar") })
+    implementation(files(pontonDestinationDir.map { it.asFileTree.matching { include("lib/adapterapi2.jar") } }))
     // dependencies needed to generate code
     jaxb(libs.jaxb.xjc)
     jaxb(libs.jaxb.runtime)
@@ -129,41 +126,19 @@ val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasse
 val pontonUri: URI =
     URI.create("https://www.ponton.de/downloads/xp/${pontonVersion}/PontonXP-Messenger-${pontonVersion}-Linux.zip")
 val pontonDestinationFile = layout.buildDirectory.file("PontonXP-Messenger-${pontonVersion}-Linux.zip")
-val pollProprietaryLibraries = task("pollProprietaryLibraries") {
-    description = "Retrieves the adapter2 library for the Ponton X/P Messenger"
-    group = "build"
-    outputs.file(pontonDestinationFile)
-    doLast {
-        val outFile = pontonDestinationFile.get().asFile
-        if (outFile.exists()) {
-            println("File already exists, skipping download.")
-            return@doLast
-        }
-        val client = HttpClients.createDefault()
-        val get = HttpGet(pontonUri)
-        val response = client.execute(get)
-        if (response.statusLine.statusCode != HttpStatus.SC_OK) {
-            throw IllegalStateException("Download of $pontonUri failed: ${response.statusLine}")
-        }
-        try {
-            response.entity.writeTo(FileOutputStream(outFile))
-        } finally {
-            response.close()
-        }
-    }
+val pollProprietaryLibraries by tasks.registering(de.undercouch.gradle.tasks.download.Download::class) {
+    src(pontonUri)
+    dest(pontonDestinationFile)
+    onlyIfModified(true)
+    overwrite(false)
 }
 
 val unpackProprietaryLibraries = task<Copy>("unpackProprietaryLibraries") {
     description = "Unpacks the adapter2 library for the Ponton X/P Messenger"
     group = "build"
-    inputs.file(pontonDestinationFile)
-    outputs.dir(pontonDestinationDir)
     dependsOn(pollProprietaryLibraries)
     from(zipTree(pontonDestinationFile))
     into(pontonDestinationDir)
-    doLast {
-        logger.info("Unpacked $pontonDestinationFile into $pontonDestinationDir")
-    }
 }
 
 tasks.named("compileJava") {
