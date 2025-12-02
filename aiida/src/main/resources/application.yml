@@ -48,7 +48,7 @@ aiida:
       inbound-record:
         retention: P1D
   public:
-    url: ${AIIDA_EXTERNAL_HOST:http://localhost:${server.port}}
+    url: ${AIIDA_EXTERNAL_HOST:http://localhost:${server.port:8080}}
   installer:
     host: http://aiida-installer:8010
   mqtt:
