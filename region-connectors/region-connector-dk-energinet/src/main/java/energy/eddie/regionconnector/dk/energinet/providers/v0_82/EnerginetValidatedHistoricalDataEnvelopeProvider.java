@@ -13,7 +13,8 @@ import reactor.core.publisher.Flux;
 
 import java.util.Objects;
 
-@Component
+@SuppressWarnings("java:S6830")
+@Component("EnerginetValidatedHistoricalDataEnvelopeProvider_v0_82")
 public class EnerginetValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataEnvelopeProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             EnerginetValidatedHistoricalDataEnvelopeProvider.class);

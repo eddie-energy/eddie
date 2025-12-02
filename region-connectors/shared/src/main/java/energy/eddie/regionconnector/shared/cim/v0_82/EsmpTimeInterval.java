@@ -34,6 +34,11 @@ public class EsmpTimeInterval {
         this.end = new EsmpDateTime(end, format, zoneId, ChronoUnit.MINUTES);
     }
 
+    public EsmpTimeInterval(@Nullable String start, @Nullable String end) {
+        this.start = start == null ? null : new EsmpDateTime(ZonedDateTime.parse(start), ChronoUnit.MINUTES);
+        this.end = end == null ? null : new EsmpDateTime(ZonedDateTime.parse(end), ChronoUnit.MINUTES);
+    }
+
     @Nullable
     public String start() {
         return start == null ? Strings.EMPTY : start.toString();
