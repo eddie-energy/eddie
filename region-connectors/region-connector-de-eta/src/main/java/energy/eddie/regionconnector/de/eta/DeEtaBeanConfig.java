@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.de.eta;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
@@ -10,11 +11,15 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.permission.requests.DeEtaPermissionRequest;
 import energy.eddie.regionconnector.de.eta.persistence.DeEtaPermissionEventRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DeEtaPermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.streams.ValidatedHistoricalDataStream;
+import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
+import energy.eddie.regionconnector.shared.services.CommonPollingService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -22,6 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -112,5 +118,36 @@ public class DeEtaBeanConfig {
                 return Mono.just(new AccountingPointDataResponse(new Object()));
             }
         };
+    }
+
+    @Bean
+    public CommonFutureDataService<DeEtaPermissionRequest> commonFutureDataService(
+            CommonPollingService<DeEtaPermissionRequest> pollingService,
+            DeEtaPermissionRequestRepository repository,
+            DeEtaRegionConnectorMetadata metadata,
+            TaskScheduler taskScheduler,
+            DataNeedCalculationService<DataNeed> calculationService
+    ) {
+        return new CommonFutureDataService<>(
+                pollingService,
+                repository,
+                "0 0 17 * * *",
+                metadata,
+                taskScheduler,
+                calculationService
+        );
+    }
+
+    @Bean
+    public JsonRawDataProvider rawDataProvider(
+            DeEtaRegionConnectorMetadata metadata,
+            ObjectMapper objectMapper,
+            ValidatedHistoricalDataStream stream
+    ) {
+        return new JsonRawDataProvider(
+                metadata.id(),
+                objectMapper,
+                stream.validatedHistoricalData()
+        );
     }
 }

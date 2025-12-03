@@ -13,7 +13,6 @@ public class LatestMeterReadingEvent extends PersistablePermissionEvent implemen
     @Column(name = "latest_reading")
     private final ZonedDateTime latestReading;
 
-
     public LatestMeterReadingEvent(String permissionId, ZonedDateTime latestReading) {
         super(permissionId, PermissionProcessStatus.ACCEPTED);
         this.latestReading = latestReading;

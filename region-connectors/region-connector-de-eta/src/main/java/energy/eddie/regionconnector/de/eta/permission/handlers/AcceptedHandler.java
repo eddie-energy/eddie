@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.de.eta.permission.handlers;
 
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.regionconnector.de.eta.permission.events.AcceptedEvent;
+import energy.eddie.regionconnector.de.eta.permission.events.StartPollingEvent;
 import energy.eddie.regionconnector.de.eta.persistence.DeEtaPermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.streams.ValidatedHistoricalDataStream;
 import energy.eddie.regionconnector.de.eta.client.DeEtaMdaApiClient;
@@ -16,7 +17,7 @@ import reactor.core.publisher.Flux;
 
 @Component
 public class AcceptedHandler implements EventHandler<PermissionEvent> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AcceptedHandler.class);
     private final DeEtaPermissionRequestRepository repo;
     private final DeEtaMdaApiClient api;
     private final ValidatedHistoricalDataStream stream;
@@ -33,19 +34,22 @@ public class AcceptedHandler implements EventHandler<PermissionEvent> {
         this.api = api;
         this.stream = stream;
         this.outbox = outbox;
+
         eventBus.filter(AcceptedEvent.class::isInstance)
+                .subscribe(this::accept);
+        eventBus.filter(StartPollingEvent.class::isInstance)
                 .subscribe(this::accept);
     }
 
     public void accept(PermissionEvent event) {
         repo.findByPermissionId(event.permissionId()).ifPresent(pr ->
                 api.fetchValidatedHistoricalData(pr)
-                    .subscribe(
-                            result -> stream.publish(pr, result),
-                            error -> handleError(error, event.permissionId())
-                    )
+                        .subscribe(
+                                result -> stream.publish(pr, result),
+                                error -> handleError(error, event.permissionId())
+                        )
         );
-        LOGGER.info("The Streaming of got accepted.");
+        LOGGER.info("The Streaming got accepted/triggered for ID: {}", event.permissionId());
     }
 
     private void handleError(Throwable error, String permissionId) {

@@ -1,16 +1,17 @@
 package energy.eddie.regionconnector.de.eta.permission.requests;
 
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
+import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 @Entity
 @Table(name = "permission_request", schema = "de_eta")
-public class DeEtaPermissionRequest implements PermissionRequest {
+public class DeEtaPermissionRequest implements MeterReadingPermissionRequest {
     @Id
     @Column(name = "permission_id")
     private final String permissionId;
@@ -99,4 +100,14 @@ public class DeEtaPermissionRequest implements PermissionRequest {
     public LocalDate end() {return dataRange != null ? dataRange.end() : null;}
 
     public String granularity() {return granularity;}
+
+
+    public Optional<ZonedDateTime> latestReading() {
+        return Optional.ofNullable(latestReading);
+    }
+
+    @Override
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return latestReading().map(ZonedDateTime::toLocalDate);
+    }
 }
