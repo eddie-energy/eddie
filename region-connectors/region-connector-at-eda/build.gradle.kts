@@ -1,6 +1,8 @@
+
 import energy.eddie.configureJavaCompileWithErrorProne
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.net.URI
+import java.util.zip.ZipFile
 
 plugins {
     id("energy.eddie.java-conventions")
@@ -19,7 +21,7 @@ repositories {
 }
 
 val pontonVersion = "4.6.5"
-val pontonDestinationDir = layout.buildDirectory.dir("PontonXP-Messenger-${pontonVersion}-Linux")
+val pontonLib = layout.projectDirectory.file("libs/adapterapi2.jar")
 // JAXB configuration holds classpath for running the JAXB XJC compiler
 val jaxb: Configuration by configurations.creating
 dependencies {
@@ -36,7 +38,7 @@ dependencies {
     implementation(libs.nimbus.oidc)
 
     // dependency for PontonXP Messenger
-    implementation(files(pontonDestinationDir.map { it.asFileTree.matching { include("lib/adapterapi2.jar") } }))
+    implementation(files("libs/adapterapi2.jar"))
     // dependencies needed to generate code
     jaxb(libs.jaxb.xjc)
     jaxb(libs.jaxb.runtime)
@@ -125,31 +127,35 @@ val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasse
 
 val pontonUri: URI =
     URI.create("https://www.ponton.de/downloads/xp/${pontonVersion}/PontonXP-Messenger-${pontonVersion}-Linux.zip")
-val pontonDestinationFile = layout.buildDirectory.file("PontonXP-Messenger-${pontonVersion}-Linux.zip")
-val pollProprietaryLibraries by tasks.registering(de.undercouch.gradle.tasks.download.Download::class) {
-    src(pontonUri)
-    dest(pontonDestinationFile)
-    onlyIfModified(true)
-    overwrite(false)
-}
-
-val unpackProprietaryLibraries = task<Copy>("unpackProprietaryLibraries") {
-    description = "Unpacks the adapter2 library for the Ponton X/P Messenger"
-    group = "build"
-    dependsOn(pollProprietaryLibraries)
-    from(zipTree(pontonDestinationFile))
-    into(pontonDestinationDir)
+val pontonDestinationFile = layout.projectDirectory.file("libs/PontonXP-Messenger-${pontonVersion}-Linux.zip")
+if (!pontonLib.asFile.exists()) {
+    download.run {
+        src(pontonUri)
+        dest(pontonDestinationFile)
+        overwrite(false)
+        onlyIfModified(true)
+    }
+    ZipFile(pontonDestinationFile.asFile).use { zip ->
+        val entry = zip.getEntry("lib/adapterapi2.jar")
+        logger.lifecycle("Extracting $entry")
+        zip.getInputStream(entry).use { input ->
+            val destFile = pontonLib.asFile
+            destFile.parentFile.mkdirs()
+            destFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+    }
 }
 
 tasks.named("compileJava") {
     // generate the classes before compiling
     dependsOn(generateEDASchemaClasses)
-    dependsOn(unpackProprietaryLibraries)
 }
 
 tasks.withType<Javadoc> {
     dependsOn(generateEDASchemaClasses)
-    dependsOn(unpackProprietaryLibraries)
+//    classpath += files(pontonLib)
 }
 
 sourceSets.configureEach {
