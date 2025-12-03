@@ -17,6 +17,7 @@ import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalGra
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkUnfulfillableEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.ApiCredentials;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.CommonPollingService;
@@ -27,9 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Sinks;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
 
@@ -41,7 +40,7 @@ import java.util.UUID;
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 
 @Service
-public class PollingService implements AutoCloseable, CommonPollingService<DkEnerginetPermissionRequest> {
+public class PollingService implements CommonPollingService<DkEnerginetPermissionRequest> {
     public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
                                                                    .filter(error -> error instanceof WebClientResponseException.TooManyRequests || error instanceof WebClientResponseException.ServiceUnavailable);
     public static final int REQUESTED_AGGREGATION_UNAVAILABLE = 30008; // from Eloverblik API documentation
@@ -49,13 +48,12 @@ public class PollingService implements AutoCloseable, CommonPollingService<DkEne
     private final IdentifiableApiResponseFilter identifiableApiResponseFilter = new IdentifiableApiResponseFilter();
     private final MeteringDetailsApiResponseFilter meteringDetailsApiResponseFilter = new MeteringDetailsApiResponseFilter();
     private final EnerginetCustomerApi energinetCustomerApi;
-    private final Flux<IdentifiableApiResponse> apiResponseFlux;
-    private final Sinks.Many<IdentifiableApiResponse> sink = Sinks.many().multicast().onBackpressureBuffer();
     private final MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService;
     private final Outbox outbox;
     private final ObjectMapper objectMapper;
     private final DataNeedsService dataNeedsService;
     private final ApiExceptionService apiExceptionService;
+    private final EnergyDataStreams energyDataStreams;
 
 
     public PollingService(
@@ -65,15 +63,15 @@ public class PollingService implements AutoCloseable, CommonPollingService<DkEne
             ObjectMapper objectMapper,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
             DataNeedsService dataNeedsService,
-            ApiExceptionService apiExceptionService
+            ApiExceptionService apiExceptionService,
+            EnergyDataStreams energyDataStreams
     ) {
         this.energinetCustomerApi = energinetCustomerApi;
         this.meterReadingPermissionUpdateAndFulfillmentService = meterReadingPermissionUpdateAndFulfillmentService;
         this.objectMapper = objectMapper;
         this.dataNeedsService = dataNeedsService;
         this.apiExceptionService = apiExceptionService;
-        apiResponseFlux = sink.asFlux()
-                              .share();
+        this.energyDataStreams = energyDataStreams;
         this.outbox = outbox;
     }
 
@@ -89,15 +87,6 @@ public class PollingService implements AutoCloseable, CommonPollingService<DkEne
         if (end.isBefore(now) || end.isEqual(now)) {
             fetch(permissionRequest, now);
         }
-    }
-
-    public Flux<IdentifiableApiResponse> identifiableMeterReadings() {
-        return apiResponseFlux;
-    }
-
-    @Override
-    public void close() {
-        sink.tryEmitComplete();
     }
 
     @Override
@@ -120,7 +109,11 @@ public class PollingService implements AutoCloseable, CommonPollingService<DkEne
                                    .orElse(true);
     }
 
-    public Mono<IdentifiableApiResponse> pollTimeSeriesData(DkEnerginetPermissionRequest permissionRequest, LocalDate from, LocalDate to) {
+    public Mono<IdentifiableApiResponse> pollTimeSeriesData(
+            DkEnerginetPermissionRequest permissionRequest,
+            LocalDate from,
+            LocalDate to
+    ) {
         return fetch(permissionRequest, from, to);
     }
 
@@ -212,8 +205,7 @@ public class PollingService implements AutoCloseable, CommonPollingService<DkEne
                 permissionRequest,
                 identifiableApiResponse
         );
-        sink.emitNext(identifiableApiResponse,
-                      Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
+        energyDataStreams.publish(identifiableApiResponse);
     }
 
     private Mono<TokenGranularityPair> fetchMeteringPointGranularity(

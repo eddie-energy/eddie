@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerA
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
+import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,17 +44,20 @@ class AccountingPointDetailsServiceTest {
     private EnerginetCustomerApi customerApi;
     @Mock
     private Outbox outbox;
+    private EnergyDataStreams streams;
     @Captor
     private ArgumentCaptor<DkSimpleEvent> simpleEventArgumentCaptor;
     private AccountingPointDetailsService accountingPointDetailsService;
 
     @BeforeEach
     void setUp() {
+        streams = new EnergyDataStreams();
         accountingPointDetailsService = new AccountingPointDetailsService(
                 customerApi,
                 mapper,
                 outbox,
-                new ApiExceptionService(outbox)
+                new ApiExceptionService(outbox),
+                streams
         );
     }
 
@@ -72,9 +76,9 @@ class AccountingPointDetailsServiceTest {
                 .when(customerApi).accessToken(anyString());
 
         // When
-        StepVerifier.create(accountingPointDetailsService.identifiableMeteringPointDetailsFlux())
+        StepVerifier.create(streams.getAccountingPointDataStream())
                     .then(() -> accountingPointDetailsService.fetchMeteringPointDetails(permissionRequest))
-                    .then(accountingPointDetailsService::close)
+                    .then(streams::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
 
@@ -96,7 +100,7 @@ class AccountingPointDetailsServiceTest {
 
         // When
         var stepVerifier = StepVerifier
-                .create(accountingPointDetailsService.identifiableMeteringPointDetailsFlux())
+                .create(streams.getAccountingPointDataStream())
                 .then(() -> accountingPointDetailsService.fetchMeteringPointDetails(
                         permissionRequest));
 
@@ -108,7 +112,7 @@ class AccountingPointDetailsServiceTest {
                         () -> assertEquals(permissionRequest.dataNeedId(), mr.permissionRequest().dataNeedId()),
                         () -> assertNotNull(mr.meteringPointDetails())
                 ))
-                .then(accountingPointDetailsService::close)
+                .then(streams::close)
                 .expectComplete()
                 .verify(Duration.ofSeconds(2));
         verify(outbox).commit(simpleEventArgumentCaptor.capture());
