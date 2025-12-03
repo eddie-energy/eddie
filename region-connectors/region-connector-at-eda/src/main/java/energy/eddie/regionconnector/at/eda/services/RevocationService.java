@@ -45,9 +45,8 @@ public class RevocationService {
             LOGGER.error("Got Revoke Message with unknown consent id: {}; Could not revoke.", consentId);
         } else {
             // Revoke every permission since we do not know which permission request was actually revoked
-            requests.forEach((request ->
-                revoke(EdaPermissionRequest.fromProjection(request))
-            ));
+            requests.forEach(request ->
+                                     revoke(EdaPermissionRequest.fromProjection(request)));
         }
     }
 
