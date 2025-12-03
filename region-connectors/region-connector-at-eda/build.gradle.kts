@@ -7,8 +7,8 @@ import java.util.zip.ZipFile
 plugins {
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
-    id("de.undercouch.download") version "5.6.0"
 
+    alias(libs.plugins.undercouch.download)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
@@ -155,7 +155,6 @@ tasks.named("compileJava") {
 
 tasks.withType<Javadoc> {
     dependsOn(generateEDASchemaClasses)
-//    classpath += files(pontonLib)
 }
 
 sourceSets.configureEach {

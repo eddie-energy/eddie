@@ -65,6 +65,8 @@ mvel2 = "2.5.2.Final"
 
 opentelemetry-instrumentation-bom = "2.18.1"
 
+undercouch-download = "5.6.0"
+
 [libraries]
 # Static analysis
 errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorpronecore" }
@@ -221,3 +223,6 @@ jsonschema2pojo = { id = "org.jsonschema2pojo", version.ref = "jsonschema2pojo" 
 
 # AIIDA
 google-jib = { id = "com.google.cloud.tools.jib", version.ref = "google-jib" }
+
+## region connecter AT EDA
+undercouch-download = { id = "de.undercouch.download", version.ref = "undercouch-download" }
