@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.de.eta.permission.requests;
 
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -37,6 +38,10 @@ public class DeEtaPermissionRequest implements PermissionRequest {
 
     @Column(name = "granularity")
     private final String granularity;
+
+    @Column(name = "latest_reading")
+    @Nullable
+    private ZonedDateTime latestReading;
 
     public DeEtaPermissionRequest(
             String permissionId,

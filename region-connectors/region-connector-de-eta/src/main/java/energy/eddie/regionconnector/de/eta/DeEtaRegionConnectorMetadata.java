@@ -3,8 +3,10 @@ package energy.eddie.regionconnector.de.eta;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
+import energy.eddie.dataneeds.needs.v1.ValidatedHistoricalDataDataNeed;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import org.springframework.stereotype.Component;
+import energy.eddie.dataneeds.needs.DataNeed;
 
 import java.time.Period;
 import java.time.ZoneId;
@@ -56,6 +58,9 @@ public class DeEtaRegionConnectorMetadata implements RegionConnectorMetadata {
         return List.of();
     }
 
+    public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(
+            ValidatedHistoricalDataDataNeed.class
+    );
     @Override
     public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
         return List.of();
