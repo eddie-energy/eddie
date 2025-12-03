@@ -49,7 +49,7 @@ class EnergyDataServiceTest {
                                                       .setEnd(LocalDate.now(ZoneOffset.UTC))
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT15M)
-                                                      .setLastMeterReadings(null)
+                                                      .setLastMeterReadings(Map.of())
                                                       .build();
         var resp = TestResourceProvider.readTimeSeriesFromFile(TestResourceProvider.TIME_SERIES_WITH_VALUES);
         var end = ZonedDateTime.parse("2024-07-27T23:00:00Z");
@@ -59,7 +59,34 @@ class EnergyDataServiceTest {
 
         // Then
         verify(outbox).commit(eventCaptor.capture());
-        assertEquals(Map.of("642502030419633983",end), eventCaptor.getValue().lastMeterReadings());
+        assertEquals(Map.of("642502030419633983", end), eventCaptor.getValue().lastMeterReadings());
+    }
+
+    @Test
+    void publishDoesNotOverrideNewerMeterReading() {
+        // Given
+        var end = ZonedDateTime.parse("2024-07-27T23:00:00Z");
+        var meterId = "642502030419633983";
+        var oldEnd = end.plusDays(1);
+        var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
+                                                      .setConnectionId("cid")
+                                                      .setDataNeedId("dnid")
+                                                      .setStatus(PermissionProcessStatus.ACCEPTED)
+                                                      .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                                                      .setStart(LocalDate.now(ZoneOffset.UTC))
+                                                      .setEnd(LocalDate.now(ZoneOffset.UTC))
+                                                      .setCustomerIdentification("cid")
+                                                      .setGranularity(Granularity.PT15M)
+                                                      .setLastMeterReadings(Map.of(meterId, oldEnd))
+                                                      .build();
+        var resp = TestResourceProvider.readTimeSeriesFromFile(TestResourceProvider.TIME_SERIES_WITH_VALUES);
+
+        // When
+        energyDataService.publish(List.of(resp), pr);
+
+        // Then
+        verify(outbox).commit(eventCaptor.capture());
+        assertEquals(Map.of(meterId, oldEnd), eventCaptor.getValue().lastMeterReadings());
     }
 
     @Test
@@ -97,7 +124,7 @@ class EnergyDataServiceTest {
                                                       .setEnd(LocalDate.now(ZoneOffset.UTC))
                                                       .setCustomerIdentification("cid")
                                                       .setGranularity(Granularity.PT15M)
-                                                      .setLastMeterReadings(null)
+                                                      .setLastMeterReadings(Map.of())
                                                       .build();
         var resp = TestResourceProvider.readTimeSeriesFromFile(TestResourceProvider.TIME_SERIES_WITH_VALUES);
 
@@ -106,32 +133,6 @@ class EnergyDataServiceTest {
 
         // Then
         StepVerifier.create(energyDataService.getRawDataStream())
-                    .expectNextCount(1)
-                    .then(() -> energyDataService.close())
-                    .verifyComplete();
-    }
-
-    @Test
-    void publishEmitsVHD() {
-        // Given
-        var pr = new FingridPermissionRequestBuilder().setPermissionId("pid")
-                                                      .setConnectionId("cid")
-                                                      .setDataNeedId("dnid")
-                                                      .setStatus(PermissionProcessStatus.ACCEPTED)
-                                                      .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
-                                                      .setStart(LocalDate.now(ZoneOffset.UTC))
-                                                      .setEnd(LocalDate.now(ZoneOffset.UTC))
-                                                      .setCustomerIdentification("cid")
-                                                      .setGranularity(Granularity.PT15M)
-                                                      .setLastMeterReadings(null)
-                                                      .build();
-        var resp = TestResourceProvider.readTimeSeriesFromFile(TestResourceProvider.TIME_SERIES_WITH_VALUES);
-
-        // When
-        energyDataService.publish(List.of(resp), pr);
-
-        // Then
-        StepVerifier.create(energyDataService.getValidatedHistoricalDataMarketDocumentsStream())
                     .expectNextCount(1)
                     .then(() -> energyDataService.close())
                     .verifyComplete();

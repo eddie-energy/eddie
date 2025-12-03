@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.fi.fingrid.services;
+package energy.eddie.regionconnector.fi.fingrid.services.cim.v0_82;
 
 
 import energy.eddie.cim.CommonInformationModelVersions;
@@ -7,7 +7,10 @@ import energy.eddie.regionconnector.fi.fingrid.client.model.Address;
 import energy.eddie.regionconnector.fi.fingrid.client.model.Agreements;
 import energy.eddie.regionconnector.fi.fingrid.client.model.CustomerDataResponse;
 import energy.eddie.regionconnector.fi.fingrid.client.model.CustomerTransaction;
+import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
+import energy.eddie.regionconnector.fi.fingrid.services.cim.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
+import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
 import jakarta.annotation.Nullable;
 
 import javax.xml.datatype.DatatypeFactory;
@@ -18,15 +21,17 @@ import java.util.List;
 
 class IntermediateAccountingPointDataMarketDocument {
     private final CustomerDataResponse customerDataResponse;
+    private final FingridPermissionRequest permissionRequest;
 
-    IntermediateAccountingPointDataMarketDocument(CustomerDataResponse customerDataResponse) {
-        this.customerDataResponse = customerDataResponse;
+    IntermediateAccountingPointDataMarketDocument(IdentifiableAccountingPointData id) {
+        this.customerDataResponse = id.payload();
+        this.permissionRequest = id.permissionRequest();
     }
 
-    public AccountingPointMarketDocumentComplexType toAp() {
+    public AccountingPointEnvelope toAp() {
         var header = customerDataResponse.customerData().header();
         var created = new EsmpDateTime(header.creation());
-        return new AccountingPointMarketDocumentComplexType()
+        return new APEnvelope(new AccountingPointMarketDocumentComplexType()
                 .withMRID(header.identification())
                 .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
                 .withType(MessageTypeList.ACCOUNTING_POINT_MASTER_DATA)
@@ -46,7 +51,8 @@ class IntermediateAccountingPointDataMarketDocument {
                 .withAccountingPointList(
                         new AccountingPointMarketDocumentComplexType.AccountingPointList()
                                 .withAccountingPoints(createAccountingPoints())
-                );
+                ), permissionRequest)
+                .wrap();
     }
 
     private List<AccountingPointComplexType> createAccountingPoints() {

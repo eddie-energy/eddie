@@ -1,8 +1,10 @@
-package energy.eddie.regionconnector.fi.fingrid.services;
+package energy.eddie.regionconnector.fi.fingrid.services.cim.v0_82;
 
 import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.fi.fingrid.TestResourceProvider;
+import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequestBuilder;
+import energy.eddie.regionconnector.fi.fingrid.services.cim.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import org.junit.jupiter.api.Test;
 
@@ -19,10 +21,16 @@ class IntermediateAccountingPointDataMarketDocumentTest {
         var transaction = customerData.customerData().transaction();
         var agreement = transaction.agreements().getFirst();
         var meter = agreement.meteringPoint();
-        var id = new IntermediateAccountingPointDataMarketDocument(customerData);
+        var pr = new FingridPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setConnectionId("cid")
+                .setDataNeedId("dnid")
+                .build();
+        var id = new IdentifiableAccountingPointData(pr, customerData);
+        var intermediate = new IntermediateAccountingPointDataMarketDocument(id);
 
         // When
-        var res = id.toAp();
+        var res = intermediate.toAp().getAccountingPointMarketDocument();
 
         // Then
         assertThat(res)

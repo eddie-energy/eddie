@@ -1,21 +1,15 @@
 package energy.eddie.regionconnector.fi.fingrid.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.IdentifiablePayload;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
-import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
-import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.regionconnector.fi.fingrid.client.model.CustomerDataResponse;
 import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.MeterReadingEvent;
-import energy.eddie.regionconnector.fi.fingrid.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
-import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
-import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
+import energy.eddie.regionconnector.fi.fingrid.services.cim.IdentifiableAccountingPointData;
+import energy.eddie.regionconnector.fi.fingrid.services.cim.IdentifiableValidatedHistoricalData;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,29 +17,26 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
 @Service
-public class EnergyDataService implements RawDataProvider, ValidatedHistoricalDataEnvelopeProvider, AccountingPointEnvelopeProvider {
+public class EnergyDataService implements RawDataProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnergyDataService.class);
     private final Sinks.Many<RawDataMessage> rawData = Sinks.many().multicast().onBackpressureBuffer();
     private final ObjectMapper objectMapper;
     private final Outbox outbox;
-    private final Sinks.Many<ValidatedHistoricalDataEnvelope> vhds = Sinks.many()
-                                                                          .multicast()
-                                                                          .onBackpressureBuffer();
-    private final Sinks.Many<AccountingPointEnvelope> aps = Sinks.many()
-                                                                 .multicast()
-                                                                 .onBackpressureBuffer();
+    private final Sinks.Many<IdentifiableAccountingPointData> aps = Sinks.many()
+                                                                         .multicast()
+                                                                         .onBackpressureBuffer();
 
-    public EnergyDataService(
-            ObjectMapper objectMapper,
-            Outbox outbox
-    ) {
+    private final Sinks.Many<IdentifiableValidatedHistoricalData> vhds = Sinks.many()
+                                                                              .multicast()
+                                                                              .onBackpressureBuffer();
+
+    public EnergyDataService(ObjectMapper objectMapper, Outbox outbox) {
         this.objectMapper = objectMapper;
         this.outbox = outbox;
     }
@@ -55,48 +46,55 @@ public class EnergyDataService implements RawDataProvider, ValidatedHistoricalDa
     }
 
     public void publish(List<TimeSeriesResponse> timeSeriesResponses, FingridPermissionRequest permissionRequest) {
+        publishWithoutUpdating(timeSeriesResponses, permissionRequest);
         publishLatestMeterReading(permissionRequest, timeSeriesResponses);
-        publishRawData(timeSeriesResponses, permissionRequest);
-        publishValidatedHistoricalDataMarketDocument(timeSeriesResponses, permissionRequest);
     }
 
     public void publishWithoutUpdating(
             List<TimeSeriesResponse> timeSeriesResponses,
             FingridPermissionRequest permissionRequest
     ) {
-        publishRawData(timeSeriesResponses, permissionRequest);
-        publishValidatedHistoricalDataMarketDocument(timeSeriesResponses, permissionRequest);
+        var id = new IdentifiableValidatedHistoricalData(permissionRequest, timeSeriesResponses);
+        vhds.tryEmitNext(id);
     }
 
     public void publish(CustomerDataResponse data, FingridPermissionRequest permissionRequest) {
-        publishRawData(data, permissionRequest);
-        publishAccountingPointDataMarketDocument(data, permissionRequest);
-        var permissionId = permissionRequest.permissionId();
-        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.FULFILLED));
-        LOGGER.info("Published accounting point data for permission request {} marking it as fulfilled", permissionId);
+        var ap = new IdentifiableAccountingPointData(permissionRequest, data);
+        aps.tryEmitNext(ap);
     }
 
     @Override
     public Flux<RawDataMessage> getRawDataStream() {
-        return rawData.asFlux();
+        return getIdentifiableValidatedHistoricalDataStream()
+                .cast(IdentifiablePayload.class)
+                .mergeWith(getIdentifiableAccountingPointDataStream())
+                .mapNotNull(id -> {
+                    try {
+                        var permissionRequest = id.permissionRequest();
+                        return new RawDataMessage(permissionRequest, objectMapper.writeValueAsString(id.payload()));
+                    } catch (Exception e) {
+                        LOGGER.error("Error while serializing {} data", id.payload(), e);
+                        return null;
+                    }
+                });
     }
 
     @Override
     public void close() {
         rawData.tryEmitComplete();
         vhds.tryEmitComplete();
+        aps.tryEmitComplete();
     }
 
-    @Override
-    public Flux<AccountingPointEnvelope> getAccountingPointEnvelopeFlux() {
-        return aps.asFlux();
-    }
-
-    @Override
-    public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
+    public Flux<IdentifiableValidatedHistoricalData> getIdentifiableValidatedHistoricalDataStream() {
         return vhds.asFlux();
     }
 
+    public Flux<IdentifiableAccountingPointData> getIdentifiableAccountingPointDataStream() {
+        return aps.asFlux();
+    }
+
+    @SuppressWarnings("java:S3655") // False positive
     private void publishLatestMeterReading(
             FingridPermissionRequest permissionRequest,
             List<TimeSeriesResponse> timeSeriesResponses
@@ -110,39 +108,17 @@ public class EnergyDataService implements RawDataProvider, ValidatedHistoricalDa
             var series = timeSeries.getLast();
             var lastObservation = series.observations().getLast();
             var end = lastObservation.start().plusMinutes(series.resolutionDuration().minutes());
-            readings.put(series.meteringPointEAN(), end);
+            var meterEAN = series.meteringPointEAN();
+            var oldMeterReadingEnd = permissionRequest.latestMeterReading(meterEAN);
+            boolean isUpdated = oldMeterReadingEnd
+                    .map(z -> z.isBefore(end))
+                    .orElse(true);
+            if (isUpdated) {
+                readings.put(meterEAN, end);
+            } else {
+                readings.put(meterEAN, oldMeterReadingEnd.get());
+            }
         }
         outbox.commit(new MeterReadingEvent(permissionRequest.permissionId(), readings));
-    }
-
-    private void publishRawData(Object response, FingridPermissionRequest permissionRequest) {
-        try {
-            rawData.tryEmitNext(new RawDataMessage(permissionRequest.permissionId(),
-                                                   permissionRequest.connectionId(),
-                                                   permissionRequest.dataNeedId(),
-                                                   permissionRequest.dataSourceInformation(),
-                                                   ZonedDateTime.now(ZoneOffset.UTC),
-                                                   objectMapper.writeValueAsString(response)));
-        } catch (JsonProcessingException e) {
-            LOGGER.error("Error while serializing time series data", e);
-        }
-    }
-
-    private void publishValidatedHistoricalDataMarketDocument(
-            List<TimeSeriesResponse> timeSeriesResponses,
-            FingridPermissionRequest permissionRequest
-    ) {
-        var docs = new IntermediateValidatedHistoricalDataMarketDocument(timeSeriesResponses).toVhds();
-        for (var vhd : docs) {
-            vhds.tryEmitNext(new VhdEnvelope(vhd, permissionRequest).wrap());
-        }
-    }
-
-    private void publishAccountingPointDataMarketDocument(
-            CustomerDataResponse accountingPointData,
-            FingridPermissionRequest permissionRequest
-    ) {
-        var ap = new IntermediateAccountingPointDataMarketDocument(accountingPointData).toAp();
-        aps.tryEmitNext(new APEnvelope(ap, permissionRequest).wrap());
     }
 }
