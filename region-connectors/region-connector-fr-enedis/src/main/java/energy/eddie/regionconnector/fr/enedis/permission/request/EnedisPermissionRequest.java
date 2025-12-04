@@ -12,8 +12,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
-
 @Entity
 @Table(schema = "fr_enedis", name = "enedis_permission_request")
 @SuppressWarnings("NullAway")
@@ -63,28 +61,6 @@ public class EnedisPermissionRequest implements FrEnedisPermissionRequest {
         latestMeterReadingEndDate = null;
         created = null;
         usagePointType = null;
-    }
-
-    public EnedisPermissionRequest(
-            String permissionId,
-            String connectionId,
-            String dataNeedId,
-            LocalDate start,
-            LocalDate end,
-            Granularity granularity,
-            PermissionProcessStatus status
-    ) {
-        this(permissionId,
-             connectionId,
-             dataNeedId,
-             start,
-             end,
-             granularity,
-             status,
-             null,
-             null,
-             ZonedDateTime.now(ZONE_ID_FR),
-             UsagePointType.CONSUMPTION);
     }
 
     @SuppressWarnings("java:S107")

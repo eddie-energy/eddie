@@ -18,7 +18,7 @@ import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepository;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
-import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.services.EnergyDataStreams;
 import energy.eddie.regionconnector.fr.enedis.services.PollingService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
 import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
@@ -71,18 +71,6 @@ public class EnedisBeanConfig {
     @Bean
     public WebClient webClient(EnedisConfiguration configuration) {
         return WebClient.create(configuration.basePath());
-    }
-
-    @Bean
-    public Sinks.Many<IdentifiableMeterReading> identifiableMeterReadingMany() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
-    public Flux<IdentifiableMeterReading> identifiableMeterReadingFlux(
-            Sinks.Many<IdentifiableMeterReading> identifiableMeterReadingMany
-    ) {
-        return identifiableMeterReadingMany.asFlux();
     }
 
     @Bean
@@ -144,17 +132,18 @@ public class EnedisBeanConfig {
         return new ConnectionStatusMessageHandler<>(eventBus, repository, pr -> "");
     }
 
+    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
     @OnRawDataMessagesEnabled
     public RawDataProvider rawDataProvider(
             ObjectMapper objectMapper,
-            Flux<IdentifiableMeterReading> identifiableMeterReadingFlux,
+            EnergyDataStreams streams,
             Flux<IdentifiableAccountingPointData> accountingPointDataFlux
     ) {
         return new JsonRawDataProvider(
                 REGION_CONNECTOR_ID,
                 objectMapper,
-                identifiableMeterReadingFlux,
+                streams.getValidatedHistoricalData(),
                 accountingPointDataFlux
         );
     }

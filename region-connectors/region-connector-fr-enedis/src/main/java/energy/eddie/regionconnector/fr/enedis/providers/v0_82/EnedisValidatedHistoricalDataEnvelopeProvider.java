@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.services.EnergyDataStreams;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -13,10 +14,10 @@ public class EnedisValidatedHistoricalDataEnvelopeProvider implements ValidatedH
     private final IntermediateMarketDocumentFactory intermediateMarketDocumentFactory;
 
     public EnedisValidatedHistoricalDataEnvelopeProvider(
-            Flux<IdentifiableMeterReading> identifiableMeterReadings,
+            EnergyDataStreams streams,
             IntermediateMarketDocumentFactory intermediateMarketDocumentFactory
     ) {
-        this.identifiableMeterReadings = identifiableMeterReadings;
+        this.identifiableMeterReadings = streams.getValidatedHistoricalData();
         this.intermediateMarketDocumentFactory = intermediateMarketDocumentFactory;
     }
 

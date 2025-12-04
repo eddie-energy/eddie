@@ -35,7 +35,7 @@ public class EnedisRegionConnector implements RegionConnector {
     public void terminatePermission(String permissionId) {
         LOGGER.info("{} got termination request for permission {}", REGION_CONNECTOR_ID, permissionId);
         var permissionRequest = repository.findByPermissionId(permissionId);
-        if (permissionRequest.isEmpty()) {
+        if (permissionRequest.isEmpty() || permissionRequest.get().status() != PermissionProcessStatus.ACCEPTED) {
             return;
         }
         outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.TERMINATED));

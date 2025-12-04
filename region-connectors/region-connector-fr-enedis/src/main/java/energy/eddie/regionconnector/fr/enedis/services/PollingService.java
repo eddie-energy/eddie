@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
 
@@ -29,28 +28,28 @@ import static energy.eddie.api.agnostic.Granularity.PT30M;
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 
 @Service
-public class PollingService implements AutoCloseable, CommonPollingService<FrEnedisPermissionRequest> {
+public class PollingService implements CommonPollingService<FrEnedisPermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
                                                                    .filter(PollingService::isRetryable);
     private final EnedisMeterReadingApi enedisApi;
-    private final Sinks.Many<IdentifiableMeterReading> meterReadings;
     private final MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService;
     private final Outbox outbox;
     private final UpdateGranularityTask updateGranularityTask;
+    private final EnergyDataStreams streams;
 
     public PollingService(
             EnedisMeterReadingApi enedisApi,
             MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService,
-            Sinks.Many<IdentifiableMeterReading> meterReadings,
             Outbox outbox,
-            UpdateGranularityTask updateGranularityTask
+            UpdateGranularityTask updateGranularityTask,
+            EnergyDataStreams streams
     ) {
         this.enedisApi = enedisApi;
-        this.meterReadings = meterReadings;
         this.meterReadingPermissionUpdateAndFulfillmentService = meterReadingPermissionUpdateAndFulfillmentService;
         this.outbox = outbox;
         this.updateGranularityTask = updateGranularityTask;
+        this.streams = streams;
     }
 
     @Override
@@ -69,11 +68,6 @@ public class PollingService implements AutoCloseable, CommonPollingService<FrEne
                && permissionRequest.latestMeterReadingEndDate()
                                    .map(latest -> latest.isBefore(now))
                                    .orElse(true);
-    }
-
-    @Override
-    public void close() throws Exception {
-        meterReadings.tryEmitComplete();
     }
 
     /**
@@ -133,8 +127,7 @@ public class PollingService implements AutoCloseable, CommonPollingService<FrEne
                 permissionRequest,
                 identifiableMeterReading
         );
-        meterReadings.emitNext(identifiableMeterReading,
-                               Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
+        streams.publish(identifiableMeterReading);
     }
 
     private Flux<IdentifiableMeterReading> fetchData(

@@ -1,11 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis.permission.handler;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrGranularityUpdateEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrUsagePointTypeEvent;
-import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequestBuilder;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
@@ -17,10 +16,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.assertArg;
@@ -42,20 +37,10 @@ class GranularityUpdatedHandlerTest {
     @Test
     void accept_onUpdatedGranularity_emitsNewUsagePointEvent() {
         // Given
-        var today = LocalDate.now(ZoneOffset.UTC);
-        var request = new EnedisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                today,
-                today,
-                Granularity.P1D,
-                PermissionProcessStatus.ACCEPTED,
-                "usagePointId",
-                null,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                UsagePointType.CONSUMPTION
-        );
+        var request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setUsagePointId("usagePointId")
+                .createEnedisPermissionRequest();
         when(repository.getByPermissionId("pid")).thenReturn(request);
 
         // When

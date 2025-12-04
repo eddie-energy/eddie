@@ -1,8 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequestBuilder;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
@@ -11,17 +10,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Clock;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.assertArg;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EnedisRegionConnectorTest {
@@ -55,15 +50,10 @@ class EnedisRegionConnectorTest {
     @Test
     void terminatePermission_withExistingPermissionId_terminates() {
         // Given
-        var request = new EnedisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                Granularity.P1D,
-                PermissionProcessStatus.ACCEPTED
-        );
+        var request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .createEnedisPermissionRequest();
         when(repository.findByPermissionId(anyString()))
                 .thenReturn(Optional.of(request));
 
@@ -76,19 +66,15 @@ class EnedisRegionConnectorTest {
     @Test
     void terminatePermission_withWrongState_doesNotThrow() {
         // Given
-        var request = new EnedisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                LocalDate.now(Clock.systemUTC()),
-                LocalDate.now(Clock.systemUTC()),
-                Granularity.P1D,
-                PermissionProcessStatus.CREATED
-        );
+        var request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStatus(PermissionProcessStatus.CREATED)
+                .createEnedisPermissionRequest();
         when(repository.findByPermissionId(anyString())).thenReturn(Optional.of(request));
 
         // When
         // Then
         assertDoesNotThrow(() -> rc.terminatePermission("pid"));
+        verify(outbox, never()).commit(any());
     }
 }
