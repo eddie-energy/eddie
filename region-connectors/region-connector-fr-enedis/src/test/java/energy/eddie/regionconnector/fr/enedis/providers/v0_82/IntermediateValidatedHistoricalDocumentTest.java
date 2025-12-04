@@ -80,7 +80,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(Granularity.P1D.name(), seriesPeriod.getResolution()),
                 () -> assertEquals(esmpTimeInterval.start(), seriesPeriod.getTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), seriesPeriod.getTimeInterval().getEnd()),
-                () -> assertEquals("0", seriesPeriod.getPointList().getPoints().getFirst().getPosition()),
+                () -> assertEquals("1", seriesPeriod.getPointList().getPoints().getFirst().getPosition()),
                 () -> assertEquals(new BigDecimal("0.0"),
                                    seriesPeriod.getPointList().getPoints().getFirst().getEnergyQuantityQuantity())
         );
@@ -154,7 +154,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(Granularity.PT30M.name(), seriesPeriod.getResolution()),
                 () -> assertEquals(esmpMeterReadingInterval.start(), seriesPeriod.getTimeInterval().getStart()),
                 () -> assertEquals(esmpMeterReadingInterval.end(), seriesPeriod.getTimeInterval().getEnd()),
-                () -> assertEquals("0", seriesPeriod.getPointList().getPoints().getFirst().getPosition()),
+                () -> assertEquals("1", seriesPeriod.getPointList().getPoints().getFirst().getPosition()),
                 () -> assertEquals(new BigDecimal("0.0"),
                                    seriesPeriod.getPointList().getPoints().getFirst().getEnergyQuantityQuantity())
         );
@@ -206,21 +206,25 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(4, timeSeries.getSeriesPeriodList().getSeriesPeriods().size()),
                 // PT30M interval
                 () -> assertEquals(2, pt30mSeries.getPointList().getPoints().size()),
+                () -> assertEquals("1", pt30mSeries.getPointList().getPoints().getFirst().getPosition()),
                 () -> assertEquals(Granularity.PT30M.name(), pt30mSeries.getResolution()),
                 () -> assertEquals("2024-02-25T23:00Z", pt30mSeries.getTimeInterval().getStart()),
                 () -> assertEquals("2024-02-26T00:00Z", pt30mSeries.getTimeInterval().getEnd()),
                 // PT10M interval
                 () -> assertEquals(3, pt10mSeries.getPointList().getPoints().size()),
+                () -> assertEquals("1", pt10mSeries.getPointList().getPoints().getFirst().getPosition()),
                 () -> assertEquals(Granularity.PT10M.name(), pt10mSeries.getResolution()),
                 () -> assertEquals("2024-02-26T00:00Z", pt10mSeries.getTimeInterval().getStart()),
                 () -> assertEquals("2024-02-26T00:30Z", pt10mSeries.getTimeInterval().getEnd()),
                 // PT15M interval
                 () -> assertEquals(2, pt15mSeries.getPointList().getPoints().size()),
+                () -> assertEquals("1", pt15mSeries.getPointList().getPoints().getFirst().getPosition()),
                 () -> assertEquals(Granularity.PT15M.name(), pt15mSeries.getResolution()),
                 () -> assertEquals("2024-02-26T00:30Z", pt15mSeries.getTimeInterval().getStart()),
                 () -> assertEquals("2024-02-26T01:00Z", pt15mSeries.getTimeInterval().getEnd()),
                 // PT60M interval
                 () -> assertEquals(21, pt60mSeries.getPointList().getPoints().size()),
+                () -> assertEquals("1", pt60mSeries.getPointList().getPoints().getFirst().getPosition()),
                 () -> assertEquals(Granularity.PT1H.name(), pt60mSeries.getResolution()),
                 () -> assertEquals("2024-02-26T01:00Z", pt60mSeries.getTimeInterval().getStart()),
                 () -> assertEquals("2024-02-26T22:00Z", pt60mSeries.getTimeInterval().getEnd())

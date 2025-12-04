@@ -180,9 +180,9 @@ public final class IntermediateValidatedHistoricalDocument {
         }
         var cur = meterReading().intervalReadings().getFirst();
         var prevResolution = cur.intervalLength().orElse("P1D");
-        var currentChunk = new ArrayList<>(List.of(new Pair<>(0, cur)));
-        var chunks = new ArrayList<PointsWithResolution>();
         var position = 1;
+        var currentChunk = new ArrayList<>(List.of(new Pair<>(position++, cur)));
+        var chunks = new ArrayList<PointsWithResolution>();
         for (int i = 1; i < meterReading().intervalReadings().size(); i++) {
             cur = meterReading().intervalReadings().get(i);
             // Different interval length
@@ -190,7 +190,7 @@ public final class IntermediateValidatedHistoricalDocument {
             if (!cur.intervalLength().map(prevResolution::equals).orElse(true)) {
                 addChunk(convertToKiloWatt, chunks, currentChunk, prevResolution);
                 currentChunk = new ArrayList<>();
-                position = 0;
+                position = 1;
                 prevResolution = cur.intervalLength().orElse("P1D");
             }
             currentChunk.add(new Pair<>(position++, cur));
