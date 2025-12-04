@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
+import energy.eddie.regionconnector.fr.enedis.services.EnergyDataStreams;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -13,10 +14,10 @@ public class EnedisAccountingPointDataEnvelopeProvider implements AccountingPoin
     private final IntermediateMarketDocumentFactory intermediateMarketDocumentFactory;
 
     public EnedisAccountingPointDataEnvelopeProvider(
-            Flux<IdentifiableAccountingPointData> identifiableAccountingPointDataFlux,
+            EnergyDataStreams streams,
             IntermediateMarketDocumentFactory intermediateMarketDocumentFactory
     ) {
-        this.identifiableAccountingPointDataFlux = identifiableAccountingPointDataFlux;
+        this.identifiableAccountingPointDataFlux = streams.getAccountingPointData();
         this.intermediateMarketDocumentFactory = intermediateMarketDocumentFactory;
     }
 

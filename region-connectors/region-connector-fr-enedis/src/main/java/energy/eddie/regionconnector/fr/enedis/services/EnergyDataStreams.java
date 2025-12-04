@@ -32,5 +32,6 @@ public class EnergyDataStreams implements AutoCloseable {
     @Override
     public void close() {
         vhdSink.tryEmitComplete();
+        apSink.tryEmitComplete();
     }
 }

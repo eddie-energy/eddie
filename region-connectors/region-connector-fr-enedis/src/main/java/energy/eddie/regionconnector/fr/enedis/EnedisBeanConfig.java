@@ -17,7 +17,6 @@ import energy.eddie.regionconnector.fr.enedis.permission.events.FrInternalPollin
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepository;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
-import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.fr.enedis.services.EnergyDataStreams;
 import energy.eddie.regionconnector.fr.enedis.services.PollingService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
@@ -36,8 +35,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 
 import java.util.function.Supplier;
 
@@ -71,18 +68,6 @@ public class EnedisBeanConfig {
     @Bean
     public WebClient webClient(EnedisConfiguration configuration) {
         return WebClient.create(configuration.basePath());
-    }
-
-    @Bean
-    public Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataMany() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
-    public Flux<IdentifiableAccountingPointData> identifiableAccountingPointDataFlux(
-            Sinks.Many<IdentifiableAccountingPointData> identifiableMeterReadingMany
-    ) {
-        return identifiableMeterReadingMany.asFlux();
     }
 
     @Bean
@@ -137,14 +122,32 @@ public class EnedisBeanConfig {
     @OnRawDataMessagesEnabled
     public RawDataProvider rawDataProvider(
             ObjectMapper objectMapper,
-            EnergyDataStreams streams,
-            Flux<IdentifiableAccountingPointData> accountingPointDataFlux
+            EnergyDataStreams streams
     ) {
         return new JsonRawDataProvider(
                 REGION_CONNECTOR_ID,
                 objectMapper,
                 streams.getValidatedHistoricalData(),
-                accountingPointDataFlux
+                streams.getAccountingPointData()
+        );
+    }
+
+    @Bean
+    public CommonFutureDataService<FrEnedisPermissionRequest> commonFutureDataService(
+            PollingService pollingService,
+            FrPermissionRequestRepository repository,
+            @Value("${region-connector.fr.enedis.polling:0 0 17 * * *}") String cronExpr,
+            EnedisRegionConnector connector,
+            TaskScheduler taskScheduler,
+            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+    ) {
+        return new CommonFutureDataService<>(
+                pollingService,
+                repository,
+                cronExpr,
+                connector.getMetadata(),
+                taskScheduler,
+                dataNeedCalculationService
         );
     }
 
@@ -161,25 +164,6 @@ public class EnedisBeanConfig {
         return new MeterReadingPermissionUpdateAndFulfillmentService(
                 fulfillmentService,
                 (pr, meterReading) -> outbox.commit(new FrInternalPollingEvent(pr.permissionId(), meterReading))
-        );
-    }
-
-    @Bean
-    public CommonFutureDataService<FrEnedisPermissionRequest> commonFutureDataService(
-            PollingService pollingService,
-            FrPermissionRequestRepository repository,
-            @Value("${region-connector.fr.enedis.polling:0 0 17 * * *}") String cronExpr,
-            EnedisRegionConnector connector,
-            TaskScheduler taskScheduler,
-            DataNeedCalculationService<DataNeed> dataNeedCalculationService
-    ){
-        return new CommonFutureDataService<>(
-                pollingService,
-                repository,
-                cronExpr,
-                connector.getMetadata(),
-                taskScheduler,
-                dataNeedCalculationService
         );
     }
 
