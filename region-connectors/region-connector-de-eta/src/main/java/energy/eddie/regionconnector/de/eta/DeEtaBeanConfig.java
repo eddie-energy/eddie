@@ -23,7 +23,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.function.Supplier;
 
 @Configuration
-@EnableConfigurationProperties(value = {DeEtaConfiguration.class, energy.eddie.regionconnector.de.eta.oauth.DeEtaOAuthProperties.class})
+@EnableConfigurationProperties(value = {DeEtaConfiguration.class, energy.eddie.regionconnector.de.eta.oauth.DeEtaOAuthProperties.class, energy.eddie.regionconnector.de.eta.client.DeEtaPaApiProperties.class})
 public class DeEtaBeanConfig {
     @Bean
     public EventBus eventBus() {return new EventBusImpl();}
@@ -39,8 +39,11 @@ public class DeEtaBeanConfig {
         return new Jackson2ObjectMapperBuilder().modules(new JsonNullableModule(), new Jdk8Module(), new JavaTimeModule());
     }
 
-    @Bean
-    public WebClient webClient(WebClient.Builder builder) {return builder.build();}
+    @Bean(name = "deEtaPaWebClient")
+    public WebClient deEtaPaWebClient(WebClient.Builder builder, energy.eddie.regionconnector.de.eta.client.DeEtaPaApiProperties props) {
+        // Build a dedicated WebClient for PA calls; using full URL in requests allows flexible per-call endpoints
+        return builder.build();
+    }
 
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
