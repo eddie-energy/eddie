@@ -5,6 +5,8 @@ import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import org.springframework.stereotype.Component;
 import energy.eddie.dataneeds.needs.DataNeed;
 
@@ -55,7 +57,8 @@ public class DeEtaRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<EnergyType> supportedEnergyTypes() {
-        return List.of();
+        // ETA+ targets electricity data
+        return List.of(EnergyType.ELECTRICITY);
     }
 
     public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(
@@ -64,6 +67,10 @@ public class DeEtaRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
-        return List.of();
+        // Supported ETA+ data needs. Keep in sync with PermissionRequestController/DataNeedCalculationService usage.
+        return List.of(
+                ValidatedHistoricalDataDataNeed.class,
+                AccountingPointDataNeed.class
+        );
     }
 }

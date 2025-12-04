@@ -7,7 +7,7 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.de.eta.client.DeEtaPaApiClient;
 import energy.eddie.regionconnector.de.eta.permission.events.RetryValidatedEvent;
 import energy.eddie.regionconnector.de.eta.permission.events.SentToPaEvent;
-import energy.eddie.regionconnector.de.eta.permission.events.SimpleEvent;
+import energy.eddie.regionconnector.de.eta.permission.events.UnableToSendEvent;
 import energy.eddie.regionconnector.de.eta.permission.events.ValidatedEvent;
 import energy.eddie.regionconnector.de.eta.persistence.DeEtaPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.ZoneOffset;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Component
 @SuppressWarnings("NullAway")
@@ -64,17 +65,63 @@ public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
                             if (resp != null && resp.success()) {
                                 outbox.commit(new SentToPaEvent(permissionId));
                             } else {
-                                outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.UNABLE_TO_SEND));
+                                var reason = "PA response indicates failure or empty response";
+                                outbox.commit(new UnableToSendEvent(
+                                        permissionId,
+                                        pr.connectionId(),
+                                        pr.dataNeedId(),
+                                        reason
+                                ));
                             }
                         },
                         throwable -> {
                             LOGGER.warn("Could not send permission request {} to DE-ETA", permissionId, throwable);
-                            outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.UNABLE_TO_SEND));
+                            var reason = buildReasonFromException(throwable);
+                            outbox.commit(new UnableToSendEvent(
+                                    permissionId,
+                                    pr.connectionId(),
+                                    pr.dataNeedId(),
+                                    reason
+                            ));
                         });
     }
 
     private void onRetry(RetryValidatedEvent event) {
         // On retry we simply re-use the same sending logic
         accept(new ValidatedEvent(event.permissionId(), null, null, null, null, null));
+    }
+
+    private static String buildReasonFromException(Throwable t) {
+        try {
+            if (t instanceof WebClientResponseException wcre) {
+                var status = wcre.getStatusCode();
+                var body = wcre.getResponseBodyAsString();
+                return formatReason(status.value(), wcre.getStatusText(), body);
+            }
+        } catch (Exception ignored) {
+            // fall through to generic message
+        }
+        var msg = t.getMessage();
+        if (msg == null || msg.isBlank()) {
+            msg = t.getClass().getSimpleName();
+        }
+        return truncate("Exception while sending to PA: " + msg);
+    }
+
+    private static String formatReason(int statusCode, String reasonPhrase, String body) {
+        String snippet = body == null ? "" : body.replace("\n", " ");
+        if (snippet.length() > 500) {
+            snippet = snippet.substring(0, 500);
+        }
+        var base = "HTTP " + statusCode + " " + (reasonPhrase == null ? "" : reasonPhrase);
+        if (snippet.isBlank()) {
+            return truncate(base);
+        }
+        return truncate(base + "; body: " + snippet);
+    }
+
+    private static String truncate(String s) {
+        if (s == null) return null;
+        return s.length() > 1000 ? s.substring(0, 1000) : s;
     }
 }
