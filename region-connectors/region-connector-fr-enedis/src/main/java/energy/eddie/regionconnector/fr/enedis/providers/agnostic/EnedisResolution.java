@@ -1,8 +1,8 @@
-package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
+package energy.eddie.regionconnector.fr.enedis.providers.agnostic;
 
 import energy.eddie.api.agnostic.Granularity;
 
-enum EnedisResolution {
+public enum EnedisResolution {
     PT10M(Granularity.PT10M),
     PT15M(Granularity.PT15M),
     PT30M(Granularity.PT30M),

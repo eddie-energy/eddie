@@ -40,7 +40,7 @@ class GranularityUpdatedHandlerTest {
         var request = new EnedisPermissionRequestBuilder()
                 .setPermissionId("pid")
                 .setUsagePointId("usagePointId")
-                .createEnedisPermissionRequest();
+                .create();
         when(repository.getByPermissionId("pid")).thenReturn(request);
 
         // When

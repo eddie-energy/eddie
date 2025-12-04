@@ -10,6 +10,7 @@ import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisDataSourceInformation;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequestBuilder;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
@@ -165,12 +166,12 @@ class IntermediateValidatedHistoricalDocumentTest {
     void testEddieValidatedHistoricalDataMarketDocument_ConsumptionLoadCurveWithChangingResolution_returnsMappedDocument() throws IOException {
         // Given
         var meterReading = TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.CONSUMPTION_LOAD_CURVE_WITH_CHANGING_RESOLUTION_1_DAY);
-        var permissionRequest = mock(FrEnedisPermissionRequest.class);
-        when(permissionRequest.connectionId()).thenReturn("cid");
-        when(permissionRequest.permissionId()).thenReturn("pid");
-        when(permissionRequest.dataNeedId()).thenReturn("dnid");
-        when(permissionRequest.granularity()).thenReturn(Granularity.PT30M);
-        when(permissionRequest.dataSourceInformation()).thenReturn(new EnedisDataSourceInformation());
+        var permissionRequest = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setConnectionId("cid")
+                .setDataNeedId("dnid")
+                .setGranularity(Granularity.PT30M)
+                .create();
 
         var intermediateVHD = intermediateValidatedHistoricalDocument(permissionRequest, meterReading);
         var esmpTimeInterval = new EsmpTimeInterval(

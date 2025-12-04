@@ -32,7 +32,7 @@ class HistoricalDataServiceTest {
                 .setPermissionId("pid")
                 .setStart(start)
                 .setEnd(end)
-                .createEnedisPermissionRequest();
+                .create();
         when(permissionRequestRepository.getByPermissionId("pid")).thenReturn(request);
         when(pollingService.isActiveAndNeedsToBeFetched(request)).thenCallRealMethod();
 
@@ -53,7 +53,7 @@ class HistoricalDataServiceTest {
                 .setPermissionId("pid")
                 .setStart(start)
                 .setEnd(end)
-                .createEnedisPermissionRequest();
+                .create();
         when(pollingService.isActiveAndNeedsToBeFetched(request)).thenCallRealMethod();
         when(permissionRequestRepository.getByPermissionId("pid")).thenReturn(request);
 

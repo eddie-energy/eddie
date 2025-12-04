@@ -53,7 +53,7 @@ class EnedisRegionConnectorTest {
         var request = new EnedisPermissionRequestBuilder()
                 .setPermissionId("pid")
                 .setStatus(PermissionProcessStatus.ACCEPTED)
-                .createEnedisPermissionRequest();
+                .create();
         when(repository.findByPermissionId(anyString()))
                 .thenReturn(Optional.of(request));
 
@@ -69,7 +69,7 @@ class EnedisRegionConnectorTest {
         var request = new EnedisPermissionRequestBuilder()
                 .setPermissionId("pid")
                 .setStatus(PermissionProcessStatus.CREATED)
-                .createEnedisPermissionRequest();
+                .create();
         when(repository.findByPermissionId(anyString())).thenReturn(Optional.of(request));
 
         // When

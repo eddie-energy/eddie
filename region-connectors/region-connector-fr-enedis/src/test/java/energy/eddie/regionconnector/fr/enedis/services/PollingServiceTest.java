@@ -63,7 +63,7 @@ class PollingServiceTest {
                 .setEnd(end)
                 .setGranularity(Granularity.P1D)
                 .setUsagePointId("usagePointId")
-                .createEnedisPermissionRequest();
+                .create();
 
         // When
         pollingService.pollTimeSeriesData(request);
@@ -98,7 +98,7 @@ class PollingServiceTest {
                 .setEnd(end)
                 .setGranularity(Granularity.P1D)
                 .setUsagePointId("usagePointId")
-                .createEnedisPermissionRequest();
+                .create();
 
         // When
         pollingService.pollTimeSeriesData(request);
@@ -143,7 +143,7 @@ class PollingServiceTest {
                 .setEnd(end)
                 .setGranularity(Granularity.P1D)
                 .setUsagePointId("usagePointId")
-                .createEnedisPermissionRequest();
+                .create();
 
         VirtualTimeScheduler.getOrSet(); // yes, this is necessary
 
@@ -177,7 +177,7 @@ class PollingServiceTest {
                 .setEnd(end)
                 .setGranularity(Granularity.P1Y)
                 .setUsagePointId("usagePointId")
-                .createEnedisPermissionRequest();
+                .create();
 
         // When
         assertThrows(IllegalStateException.class,
@@ -205,7 +205,7 @@ class PollingServiceTest {
                 .setEnd(end)
                 .setGranularity(Granularity.P1D)
                 .setUsagePointId("usagePointId")
-                .createEnedisPermissionRequest();
+                .create();
 
         when(enedisApi.getConsumptionMeterReading(anyString(), any(), any(), any()))
                 .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));
@@ -238,7 +238,7 @@ class PollingServiceTest {
                 .setEnd(end)
                 .setGranularity(Granularity.PT30M)
                 .setUsagePointId("usagePointId")
-                .createEnedisPermissionRequest();
+                .create();
 
         when(enedisApi.getConsumptionMeterReading(anyString(), any(), any(), any()))
                 .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.CONSUMPTION_LOAD_CURVE_1_DAY)));
@@ -273,7 +273,7 @@ class PollingServiceTest {
                 .setStatus(PermissionProcessStatus.ACCEPTED)
                 .setUsagePointId("usagePointId")
                 .setUsagePointType(UsagePointType.PRODUCTION)
-                .createEnedisPermissionRequest();
+                .create();
 
         when(enedisApi.getProductionMeterReading(anyString(), any(), any(), any()))
                 .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));
@@ -307,7 +307,7 @@ class PollingServiceTest {
                 .setGranularity(Granularity.P1D)
                 .setUsagePointId("usagePointId")
                 .setUsagePointType(UsagePointType.CONSUMPTION_AND_PRODUCTION)
-                .createEnedisPermissionRequest();
+                .create();
 
         when(enedisApi.getConsumptionMeterReading(anyString(), any(), any(), any()))
                 .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));

@@ -7,7 +7,8 @@ import energy.eddie.regionconnector.fr.enedis.services.EnergyDataStreams;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
-@Component
+@SuppressWarnings("java:S6830")
+@Component("EnedisValidatedHistoricalDataEnvelopeProvider_v0_82")
 public class EnedisValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataEnvelopeProvider {
 
     private final Flux<IdentifiableMeterReading> identifiableMeterReadings;

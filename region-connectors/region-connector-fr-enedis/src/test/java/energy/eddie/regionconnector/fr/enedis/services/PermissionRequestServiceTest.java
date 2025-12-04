@@ -138,7 +138,7 @@ class PermissionRequestServiceTest {
                 .setStart(LocalDate.now(ZoneOffset.UTC).minusDays(3))
                 .setEnd(LocalDate.now(ZoneOffset.UTC))
                 .setGranularity(Granularity.P1D)
-                .createEnedisPermissionRequest();
+                .create();
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(permissionRequest));
 
@@ -166,7 +166,7 @@ class PermissionRequestServiceTest {
                 .setStart(LocalDate.now(ZoneOffset.UTC).minusDays(3))
                 .setEnd(LocalDate.now(ZoneOffset.UTC))
                 .setGranularity(Granularity.P1D)
-                .createEnedisPermissionRequest();
+                .create();
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(permissionRequest));
 

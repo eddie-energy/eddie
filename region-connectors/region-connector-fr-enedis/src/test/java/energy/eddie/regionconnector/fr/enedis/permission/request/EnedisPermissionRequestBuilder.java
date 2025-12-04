@@ -62,7 +62,7 @@ public class EnedisPermissionRequestBuilder {
         return this;
     }
 
-    public EnedisPermissionRequest createEnedisPermissionRequest() {
+    public EnedisPermissionRequest create() {
         return new EnedisPermissionRequest(permissionId,
                                            connectionId,
                                            dataNeedId,
