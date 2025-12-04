@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.de.eta.permission.handlers;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.de.eta.client.DeEtaPaApiClient;
 import energy.eddie.regionconnector.de.eta.permission.events.RetryValidatedEvent;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.ZoneOffset;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import energy.eddie.regionconnector.de.eta.client.TransientPaException;
 
 @Component
 @SuppressWarnings("NullAway")
@@ -75,14 +75,22 @@ public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
                             }
                         },
                         throwable -> {
-                            LOGGER.warn("Could not send permission request {} to DE-ETA", permissionId, throwable);
-                            var reason = buildReasonFromException(throwable);
-                            outbox.commit(new UnableToSendEvent(
-                                    permissionId,
-                                    pr.connectionId(),
-                                    pr.dataNeedId(),
-                                    reason
-                            ));
+                            if (throwable instanceof TransientPaException) {
+                                // Transient network or server issue: schedule retry according to project pattern
+                                LOGGER.warn("Transient error while sending permission request {} to DE-ETA. Scheduling retry. Reason: {}",
+                                        permissionId, truncate(throwable.getMessage()));
+                                outbox.commit(new RetryValidatedEvent(permissionId));
+                            } else {
+                                // Non-transient: emit UnableToSendEvent with short reason
+                                var reason = buildReasonFromException(throwable);
+                                LOGGER.warn("Could not send permission request {} to DE-ETA. Reason: {}", permissionId, reason);
+                                outbox.commit(new UnableToSendEvent(
+                                        permissionId,
+                                        pr.connectionId(),
+                                        pr.dataNeedId(),
+                                        reason
+                                ));
+                            }
                         });
     }
 
