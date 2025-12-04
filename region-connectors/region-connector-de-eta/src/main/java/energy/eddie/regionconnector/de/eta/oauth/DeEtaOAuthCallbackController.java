@@ -2,6 +2,8 @@ package energy.eddie.regionconnector.de.eta.oauth;
 
 import energy.eddie.regionconnector.de.eta.permission.events.AcceptedEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +41,8 @@ public class DeEtaOAuthCallbackController {
                     outbox.commit(new energy.eddie.regionconnector.de.eta.permission.events.InvalidEvent(
                             s.permissionId().toString(), "Missing code/state"))
             );
+            LOGGER.info("OAuth callback missing parameters; statePresent={} ", StringUtils.hasText(state));
+            Metrics.counter("oauth.token.exchange.failure", Tags.of("region", "de-eta", "reason", "missing_params")).increment();
             return ResponseEntity.badRequest().body("Authorization failed");
         }
         try {
@@ -46,6 +50,9 @@ public class DeEtaOAuthCallbackController {
             String permissionId = result.permissionId();
             // Emit success event for the permission
             outbox.commit(new AcceptedEvent(permissionId));
+            var tokenExpiresAt = result.token().getExpiresAt();
+            LOGGER.info("OAuth callback success for permissionId={} connectionId={} tokenExpiresAt={}",
+                    permissionId, result.token().getConnectionId(), tokenExpiresAt);
             // Prefer minimal response; a redirect to a static page could be configured later.
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
@@ -55,6 +62,7 @@ public class DeEtaOAuthCallbackController {
                             s.permissionId().toString(), "OAuth token exchange failed"))
             );
             LOGGER.warn("OAuth callback handling failed: {}", e.getClass().getSimpleName());
+            Metrics.counter("oauth.token.exchange.failure", Tags.of("region", "de-eta", "reason", "exception")).increment();
             return ResponseEntity.badRequest().body("Authorization failed");
         }
     }
