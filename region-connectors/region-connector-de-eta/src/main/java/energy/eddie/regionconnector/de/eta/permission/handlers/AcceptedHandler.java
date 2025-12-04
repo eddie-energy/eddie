@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.regionconnector.de.eta.permission.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.events.StartPollingEvent;
 import energy.eddie.regionconnector.de.eta.persistence.DeEtaPermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.streams.AccountingPointDataStream;
 import energy.eddie.regionconnector.de.eta.streams.ValidatedHistoricalDataStream;
 import energy.eddie.regionconnector.de.eta.client.DeEtaMdaApiClient;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -20,19 +21,22 @@ public class AcceptedHandler implements EventHandler<PermissionEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AcceptedHandler.class);
     private final DeEtaPermissionRequestRepository repo;
     private final DeEtaMdaApiClient api;
-    private final ValidatedHistoricalDataStream stream;
+    private final ValidatedHistoricalDataStream vhdStream;
+    private final AccountingPointDataStream apdStream;
     private final Outbox outbox;
 
     public AcceptedHandler(
             Flux<PermissionEvent> eventBus,
             DeEtaPermissionRequestRepository repo,
             DeEtaMdaApiClient api,
-            ValidatedHistoricalDataStream stream,
+            ValidatedHistoricalDataStream vhdStream,
+            AccountingPointDataStream apdStream,
             Outbox outbox
     ) {
         this.repo = repo;
         this.api = api;
-        this.stream = stream;
+        this.vhdStream = vhdStream;
+        this.apdStream = apdStream;
         this.outbox = outbox;
 
         eventBus.filter(AcceptedEvent.class::isInstance)
@@ -42,14 +46,21 @@ public class AcceptedHandler implements EventHandler<PermissionEvent> {
     }
 
     public void accept(PermissionEvent event) {
-        repo.findByPermissionId(event.permissionId()).ifPresent(pr ->
-                api.fetchValidatedHistoricalData(pr)
+        repo.findByPermissionId(event.permissionId()).ifPresent(pr -> {
+            api.fetchValidatedHistoricalData(pr)
+                    .subscribe(
+                            result -> vhdStream.publish(pr, result),
+                            error -> handleError(error, event.permissionId())
+                    );
+            if (event instanceof AcceptedEvent) {
+                api.fetchAccountingPointData(pr)
                         .subscribe(
-                                result -> stream.publish(pr, result),
+                                result -> apdStream.publish(pr, result),
                                 error -> handleError(error, event.permissionId())
-                        )
-        );
-        LOGGER.info("The Streaming got accepted/triggered for ID: {}", event.permissionId());
+                        );
+            }
+        });
+        LOGGER.info("Processing accepted/polling event for ID: {}", event.permissionId());
     }
 
     private void handleError(Throwable error, String permissionId) {

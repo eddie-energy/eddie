@@ -9,11 +9,12 @@ import reactor.core.publisher.Flux;
 
 @Component
 public class DeEtaValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataEnvelopeProvider {
+
     private final Flux<ValidatedHistoricalDataEnvelope> data;
 
     public DeEtaValidatedHistoricalDataEnvelopeProvider(ValidatedHistoricalDataStream stream) {
-        data = stream.validatedHistoricalData()
-                .map(this::toValidatedHistoricalDataMarketDocument);
+        this.data = stream.validatedHistoricalData()
+                .map(this::toValidatedHistoricalDataEnvelope);
     }
 
     @Override
@@ -21,8 +22,10 @@ public class DeEtaValidatedHistoricalDataEnvelopeProvider implements ValidatedHi
         return data;
     }
 
-    private ValidatedHistoricalDataEnvelope toValidatedHistoricalDataMarketDocument(IdentifiableValidatedHistoricalData message) {
-        return null;  // TODO: Convert message to validated historical data market document
+
+    private ValidatedHistoricalDataEnvelope toValidatedHistoricalDataEnvelope(IdentifiableValidatedHistoricalData message) {
+        return null; // TODO: Echtes Mapping implementieren
+
     }
 
     @Override
