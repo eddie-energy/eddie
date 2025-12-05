@@ -35,12 +35,13 @@ dependencies {
     implementation(libs.reactor.core)
     runtimeOnly(libs.slf4j.simple)
 
-
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.reactor.test)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.testcontainers.rabbitmq)
+
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks.withType<Test> {

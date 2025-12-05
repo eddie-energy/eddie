@@ -53,6 +53,7 @@ dependencies {
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
 
+    testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.flyway.core)
     testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)

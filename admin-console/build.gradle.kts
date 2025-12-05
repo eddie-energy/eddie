@@ -34,6 +34,7 @@ dependencies {
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.reactor.test)
+    testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.h2database)
 }
 

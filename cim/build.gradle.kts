@@ -33,8 +33,9 @@ dependencies {
     implementation(libs.jakarta.annotation.api)
     implementation(libs.jakarta.validation.api)
     implementation(libs.jakarta.xml.bind.api)
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
 
     // dependencies needed to generate code
     jaxb(libs.jaxb.xjc)

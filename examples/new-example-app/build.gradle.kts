@@ -34,6 +34,8 @@ dependencies {
 
     runtimeOnly(libs.flyway.postgresql)
     runtimeOnly(libs.postgresql)
+
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks.test {

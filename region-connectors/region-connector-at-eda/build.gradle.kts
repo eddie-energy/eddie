@@ -68,6 +68,8 @@ dependencies {
     testImplementation(libs.okhttp3.mockwebserver)
     testImplementation(libs.xmlunit.core)
     testImplementation(libs.opentelemetry.sdk.testing)
+
+    testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.flyway.core)
     testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)

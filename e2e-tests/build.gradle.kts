@@ -18,6 +18,8 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.assertj.core)
     testImplementation(libs.slf4j.simple)
+
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks.register("record-test", JavaExec::class) {

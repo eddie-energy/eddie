@@ -44,6 +44,8 @@ dependencies {
     testImplementation(libs.junit.mockito)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
+
+    testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.flyway.core)
     testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)

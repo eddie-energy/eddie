@@ -62,6 +62,8 @@ dependencies {
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.flyway.core)
     testImplementation(libs.junit.mockito)
+
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks.withType<Test> {
