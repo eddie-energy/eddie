@@ -8,8 +8,7 @@ import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
-import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequestBuilder;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import energy.eddie.regionconnector.fr.enedis.tasks.UpdateGranularityTask;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -22,14 +21,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.scheduler.VirtualTimeScheduler;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,7 +45,7 @@ class PollingServiceTest {
     private UpdateGranularityTask updateGranularityTask;
 
     @Test
-    void fetchHistoricalMeterReadingsThrowsForbidden_revokesPermissionRequest() throws Exception {
+    void fetchHistoricalMeterReadingsThrowsForbidden_revokesPermissionRequest() {
         // Given
         doReturn(Mono.error(WebClientResponseException.create(HttpStatus.FORBIDDEN.value(), "", null, null, null)))
                 .when(enedisApi).getConsumptionMeterReading(anyString(), any(), any(), any());
@@ -56,21 +53,17 @@ class PollingServiceTest {
                 new FulfillmentService(outbox, FrSimpleEvent::new),
                 (pr, end) -> {}
         );
-        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox, updateGranularityTask);
+        EnergyDataStreams streams = new EnergyDataStreams();
+        PollingService pollingService = new PollingService(enedisApi, service, outbox, updateGranularityTask, streams);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
-                                                                        "cid",
-                                                                        "dnid",
-                                                                        start,
-                                                                        end,
-                                                                        Granularity.P1D,
-                                                                        PermissionProcessStatus.ACCEPTED,
-                                                                        "usagePointId",
-                                                                        null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC),
-                                                                        UsagePointType.CONSUMPTION);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStart(start)
+                .setEnd(end)
+                .setGranularity(Granularity.P1D)
+                .setUsagePointId("usagePointId")
+                .create();
 
         // When
         pollingService.pollTimeSeriesData(request);
@@ -79,11 +72,11 @@ class PollingServiceTest {
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.REVOKED, event.status())));
 
         // Clean-Up
-        pollingService.close();
+        streams.close();
     }
 
     @Test
-    void fetchHistoricalMeterReadingsThrowsOther_doesNotRevokePermissionRequest() throws Exception {
+    void fetchHistoricalMeterReadingsThrowsOther_doesNotRevokePermissionRequest() {
         // Given
         doReturn(Mono.error(WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                                                               "",
@@ -95,21 +88,17 @@ class PollingServiceTest {
                 new FulfillmentService(outbox, FrSimpleEvent::new),
                 (pr, end) -> {}
         );
-        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox, updateGranularityTask);
+        EnergyDataStreams streams = new EnergyDataStreams();
+        PollingService pollingService = new PollingService(enedisApi, service, outbox, updateGranularityTask, streams);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
-                                                                        "cid",
-                                                                        "dnid",
-                                                                        start,
-                                                                        end,
-                                                                        Granularity.P1D,
-                                                                        PermissionProcessStatus.ACCEPTED,
-                                                                        "usagePointId",
-                                                                        null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC),
-                                                                        UsagePointType.CONSUMPTION);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStart(start)
+                .setEnd(end)
+                .setGranularity(Granularity.P1D)
+                .setUsagePointId("usagePointId")
+                .create();
 
         // When
         pollingService.pollTimeSeriesData(request);
@@ -117,11 +106,11 @@ class PollingServiceTest {
         // Then
         verify(outbox, never()).commit(any());
         // Clean-Up
-        pollingService.close();
+        streams.close();
     }
 
     @Test
-    void fetchHistoricalMeterReadingsThrowsUnauthorized_retriesImmediately() throws Exception {
+    void fetchHistoricalMeterReadingsThrowsUnauthorized_retriesImmediately() {
         // Given
         when(enedisApi.getConsumptionMeterReading(anyString(), any(), any(), any()))
                 .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.UNAUTHORIZED.value(),
@@ -144,21 +133,17 @@ class PollingServiceTest {
                 new FulfillmentService(outbox, FrSimpleEvent::new),
                 (pr, end) -> {}
         );
-        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox, updateGranularityTask);
+        EnergyDataStreams streams = new EnergyDataStreams();
+        PollingService pollingService = new PollingService(enedisApi, service, outbox, updateGranularityTask, streams);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
-                                                                        "cid",
-                                                                        "dnid",
-                                                                        start,
-                                                                        end,
-                                                                        Granularity.P1D,
-                                                                        PermissionProcessStatus.ACCEPTED,
-                                                                        "usagePointId",
-                                                                        null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC),
-                                                                        UsagePointType.CONSUMPTION);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStart(start)
+                .setEnd(end)
+                .setGranularity(Granularity.P1D)
+                .setUsagePointId("usagePointId")
+                .create();
 
         VirtualTimeScheduler.getOrSet(); // yes, this is necessary
 
@@ -166,40 +151,33 @@ class PollingServiceTest {
         pollingService.pollTimeSeriesData(request);
 
         // Then
-        StepVerifier.withVirtualTime(sink::asFlux)
+        StepVerifier.withVirtualTime(streams::getValidatedHistoricalData)
                     .thenAwait(Duration.ofMinutes(2))
                     .expectNextCount(1)
-                    .then(sink::tryEmitComplete)
+                    .then(streams::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(5));
         verify(enedisApi, times(2)).getConsumptionMeterReading(anyString(), any(), any(), any());
-
-        // Clean-Up
-        pollingService.close();
     }
 
     @Test
-    void fetchHistoricalMeterReadingsThrowsIllegalStateException_givenUnsupportedGranularity() throws Exception {
+    void fetchHistoricalMeterReadingsThrowsIllegalStateException_givenUnsupportedGranularity() {
         // Given
         MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
                 new FulfillmentService(outbox, FrSimpleEvent::new),
                 (pr, end) -> {}
         );
-        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox, updateGranularityTask);
+        EnergyDataStreams streams = new EnergyDataStreams();
+        PollingService pollingService = new PollingService(enedisApi, service, outbox, updateGranularityTask, streams);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
-                                                                        "cid",
-                                                                        "dnid",
-                                                                        start,
-                                                                        end,
-                                                                        Granularity.P1Y,
-                                                                        PermissionProcessStatus.ACCEPTED,
-                                                                        "usagePointId",
-                                                                        null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC),
-                                                                        UsagePointType.CONSUMPTION);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStart(start)
+                .setEnd(end)
+                .setGranularity(Granularity.P1Y)
+                .setUsagePointId("usagePointId")
+                .create();
 
         // When
         assertThrows(IllegalStateException.class,
@@ -207,7 +185,7 @@ class PollingServiceTest {
         verifyNoInteractions(enedisApi);
 
         // Clean-Up
-        pollingService.close();
+        streams.close();
     }
 
     @Test
@@ -217,23 +195,17 @@ class PollingServiceTest {
                 new FulfillmentService(outbox, FrSimpleEvent::new),
                 (pr, end) -> {}
         );
-        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox, updateGranularityTask);
+        EnergyDataStreams streams = new EnergyDataStreams();
+        PollingService pollingService = new PollingService(enedisApi, service, outbox, updateGranularityTask, streams);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                start,
-                end,
-                Granularity.P1D,
-                PermissionProcessStatus.ACCEPTED,
-                "usagePointId",
-                null,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                UsagePointType.CONSUMPTION
-        );
+        FrEnedisPermissionRequest request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStart(start)
+                .setEnd(end)
+                .setGranularity(Granularity.P1D)
+                .setUsagePointId("usagePointId")
+                .create();
 
         when(enedisApi.getConsumptionMeterReading(anyString(), any(), any(), any()))
                 .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));
@@ -242,13 +214,11 @@ class PollingServiceTest {
         pollingService.pollTimeSeriesData(request);
 
         // Then
-        StepVerifier.create(sink.asFlux())
+        StepVerifier.create(streams.getValidatedHistoricalData())
                     .assertNext(reading -> assertEquals(MeterReadingType.CONSUMPTION, reading.meterReadingType()))
-                    .then(sink::tryEmitComplete)
+                    .then(streams::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(5));
-
-        pollingService.close();
     }
 
     @Test
@@ -258,23 +228,17 @@ class PollingServiceTest {
                 new FulfillmentService(outbox, FrSimpleEvent::new),
                 (pr, end) -> {}
         );
-        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox, updateGranularityTask);
+        EnergyDataStreams streams = new EnergyDataStreams();
+        PollingService pollingService = new PollingService(enedisApi, service, outbox, updateGranularityTask, streams);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(2);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(1);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                start,
-                end,
-                Granularity.PT30M,
-                PermissionProcessStatus.ACCEPTED,
-                "usagePointId",
-                null,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                UsagePointType.CONSUMPTION
-        );
+        FrEnedisPermissionRequest request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStart(start)
+                .setEnd(end)
+                .setGranularity(Granularity.PT30M)
+                .setUsagePointId("usagePointId")
+                .create();
 
         when(enedisApi.getConsumptionMeterReading(anyString(), any(), any(), any()))
                 .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.CONSUMPTION_LOAD_CURVE_1_DAY)));
@@ -283,13 +247,11 @@ class PollingServiceTest {
         pollingService.pollTimeSeriesData(request);
 
         // Then
-        StepVerifier.create(sink.asFlux())
+        StepVerifier.create(streams.getValidatedHistoricalData())
                     .assertNext(reading -> assertEquals(MeterReadingType.CONSUMPTION, reading.meterReadingType()))
-                    .then(sink::tryEmitComplete)
+                    .then(streams::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(5));
-
-        pollingService.close();
     }
 
     @Test
@@ -299,23 +261,19 @@ class PollingServiceTest {
                 new FulfillmentService(outbox, FrSimpleEvent::new),
                 (pr, end) -> {}
         );
-        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox, updateGranularityTask);
+        EnergyDataStreams streams = new EnergyDataStreams();
+        PollingService pollingService = new PollingService(enedisApi, service, outbox, updateGranularityTask, streams);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                start,
-                end,
-                Granularity.P1D,
-                PermissionProcessStatus.ACCEPTED,
-                "usagePointId",
-                null,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                UsagePointType.PRODUCTION
-        );
+        FrEnedisPermissionRequest request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStart(start)
+                .setEnd(end)
+                .setGranularity(Granularity.P1D)
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .setUsagePointId("usagePointId")
+                .setUsagePointType(UsagePointType.PRODUCTION)
+                .create();
 
         when(enedisApi.getProductionMeterReading(anyString(), any(), any(), any()))
                 .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));
@@ -324,13 +282,11 @@ class PollingServiceTest {
         pollingService.pollTimeSeriesData(request);
 
         // Then
-        StepVerifier.create(sink.asFlux())
+        StepVerifier.create(streams.getValidatedHistoricalData())
                     .assertNext(reading -> assertEquals(MeterReadingType.PRODUCTION, reading.meterReadingType()))
-                    .then(sink::tryEmitComplete)
+                    .then(streams::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(5));
-
-        pollingService.close();
     }
 
     @Test
@@ -340,23 +296,18 @@ class PollingServiceTest {
                 new FulfillmentService(outbox, FrSimpleEvent::new),
                 (pr, end) -> {}
         );
-        Sinks.Many<IdentifiableMeterReading> sink = Sinks.many().multicast().onBackpressureBuffer();
-        PollingService pollingService = new PollingService(enedisApi, service, sink, outbox, updateGranularityTask);
+        EnergyDataStreams streams = new EnergyDataStreams();
+        PollingService pollingService = new PollingService(enedisApi, service, outbox, updateGranularityTask, streams);
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                start,
-                end,
-                Granularity.P1D,
-                PermissionProcessStatus.ACCEPTED,
-                "usagePointId",
-                null,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                UsagePointType.CONSUMPTION_AND_PRODUCTION
-        );
+        FrEnedisPermissionRequest request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStart(start)
+                .setEnd(end)
+                .setGranularity(Granularity.P1D)
+                .setUsagePointId("usagePointId")
+                .setUsagePointType(UsagePointType.CONSUMPTION_AND_PRODUCTION)
+                .create();
 
         when(enedisApi.getConsumptionMeterReading(anyString(), any(), any(), any()))
                 .thenReturn(Mono.just(TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK)));
@@ -367,13 +318,11 @@ class PollingServiceTest {
         pollingService.pollTimeSeriesData(request);
 
         // Then
-        StepVerifier.create(sink.asFlux())
+        StepVerifier.create(streams.getValidatedHistoricalData())
                     .assertNext(reading -> assertEquals(MeterReadingType.CONSUMPTION, reading.meterReadingType()))
                     .assertNext(reading -> assertEquals(MeterReadingType.PRODUCTION, reading.meterReadingType()))
-                    .then(sink::tryEmitComplete)
+                    .then(streams::close)
                     .expectComplete()
                     .verify(Duration.ofSeconds(5));
-
-        pollingService.close();
     }
 }

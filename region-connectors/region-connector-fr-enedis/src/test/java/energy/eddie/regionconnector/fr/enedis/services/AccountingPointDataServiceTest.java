@@ -30,7 +30,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.testcontainers.shaded.org.checkerframework.checker.nullness.qual.Nullable;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.scheduler.VirtualTimeScheduler;
 
@@ -51,7 +50,7 @@ class AccountingPointDataServiceTest {
     private final String usagePointId = "usagePointId";
     private final String permissionId = "permissionId";
     @Spy
-    Sinks.Many<IdentifiableAccountingPointData> sink = Sinks.many().unicast().onBackpressureBuffer();
+    private EnergyDataStreams streams = new EnergyDataStreams();
     @Mock
     private Outbox outbox;
     @Mock
@@ -62,22 +61,6 @@ class AccountingPointDataServiceTest {
     private ArgumentCaptor<FrUsagePointTypeEvent> usagePointTypeEventCaptor;
     @Captor
     private ArgumentCaptor<FrSimpleEvent> simpleEventCaptor;
-
-    private static Stream<Arguments> validSegments() {
-        return Stream.of(
-                Arguments.of("C5", UsagePointType.CONSUMPTION),
-                Arguments.of("P4", UsagePointType.PRODUCTION),
-                Arguments.of("C4/P5", UsagePointType.CONSUMPTION_AND_PRODUCTION)
-        );
-    }
-
-    private static Stream<Arguments> invalidSegments() {
-        return Stream.of(
-                Arguments.of(""),
-                Arguments.of((String) null),
-                Arguments.of("XXX")
-        );
-    }
 
     @ParameterizedTest
     @MethodSource("validSegments")
@@ -94,16 +77,6 @@ class AccountingPointDataServiceTest {
         assertAll(
                 () -> assertEquals(permissionId, usagePointTypeEventCaptor.getValue().permissionId()),
                 () -> assertEquals(expected, usagePointTypeEventCaptor.getValue().usagePointType())
-        );
-    }
-
-    private static CustomerContract customerContract(@Nullable String segment) {
-        return new CustomerContract(
-                "customerId",
-                List.of(new UsagePointContract(null, new Contract(
-                        segment,
-                        null, null, null, null, null, null, null
-                )))
         );
     }
 
@@ -206,7 +179,7 @@ class AccountingPointDataServiceTest {
         when(enedisApi.getIdentity(usagePointId)).thenReturn(Mono.just(customerIdentity));
         when(enedisApi.getContact(usagePointId)).thenReturn(Mono.just(customerContact));
         StepVerifier.Step<IdentifiableAccountingPointData> stepVerifier = StepVerifier
-                .create(sink.asFlux())
+                .create(streams.getAccountingPointData())
                 .assertNext(data -> assertAll(
                         () -> assertEquals(permissionRequest, data.permissionRequest()),
                         () -> assertEquals(customerContract, data.contract()),
@@ -214,7 +187,7 @@ class AccountingPointDataServiceTest {
                         () -> assertEquals(customerIdentity, data.identity()),
                         () -> assertEquals(customerContact, data.contact())
                 ))
-                .then(() -> sink.tryEmitComplete());
+                .then(streams::close);
 
         // When
         accountingPointDataService.fetchAccountingPointData(permissionRequest, usagePointId);
@@ -225,23 +198,6 @@ class AccountingPointDataServiceTest {
         assertAll(
                 () -> assertEquals(permissionId, simpleEventCaptor.getValue().permissionId()),
                 () -> assertEquals(PermissionProcessStatus.FULFILLED, simpleEventCaptor.getValue().status())
-        );
-    }
-
-    private FrEnedisPermissionRequest permissionRequest() {
-        return new SimpleFrEnedisPermissionRequest(
-                "usagePointId",
-                null,
-                UsagePointType.CONSUMPTION,
-                Optional.empty(),
-                "permissionId",
-                "connectionId",
-                "dataNeedId",
-                PermissionProcessStatus.ACCEPTED,
-                new EnedisDataSourceInformation(),
-                ZonedDateTime.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC),
-                LocalDate.now(ZoneOffset.UTC)
         );
     }
 
@@ -272,11 +228,54 @@ class AccountingPointDataServiceTest {
         accountingPointDataService.fetchAccountingPointData(permissionRequest, usagePointId);
 
         // Then
-        verifyNoInteractions(sink);
+        verifyNoInteractions(streams);
         verify(outbox).commit(simpleEventCaptor.capture());
         assertAll(
                 () -> assertEquals(permissionId, simpleEventCaptor.getValue().permissionId()),
                 () -> assertEquals(PermissionProcessStatus.UNFULFILLABLE, simpleEventCaptor.getValue().status())
+        );
+    }
+
+    private static Stream<Arguments> validSegments() {
+        return Stream.of(
+                Arguments.of("C5", UsagePointType.CONSUMPTION),
+                Arguments.of("P4", UsagePointType.PRODUCTION),
+                Arguments.of("C4/P5", UsagePointType.CONSUMPTION_AND_PRODUCTION)
+        );
+    }
+
+    private static Stream<Arguments> invalidSegments() {
+        return Stream.of(
+                Arguments.of(""),
+                Arguments.of((String) null),
+                Arguments.of("XXX")
+        );
+    }
+
+    private static CustomerContract customerContract(@Nullable String segment) {
+        return new CustomerContract(
+                "customerId",
+                List.of(new UsagePointContract(null, new Contract(
+                        segment,
+                        null, null, null, null, null, null, null
+                )))
+        );
+    }
+
+    private FrEnedisPermissionRequest permissionRequest() {
+        return new SimpleFrEnedisPermissionRequest(
+                "usagePointId",
+                null,
+                UsagePointType.CONSUMPTION,
+                Optional.empty(),
+                "permissionId",
+                "connectionId",
+                "dataNeedId",
+                PermissionProcessStatus.ACCEPTED,
+                new EnedisDataSourceInformation(),
+                ZonedDateTime.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC),
+                LocalDate.now(ZoneOffset.UTC)
         );
     }
 }

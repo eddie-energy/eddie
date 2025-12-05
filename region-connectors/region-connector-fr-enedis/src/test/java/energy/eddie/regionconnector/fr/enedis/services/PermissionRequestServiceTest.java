@@ -9,12 +9,12 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.CimTestConfiguration;
-import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrAcceptedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrCreatedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrMalformedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrValidatedEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequestBuilder;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -35,7 +35,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -132,19 +131,14 @@ class PermissionRequestServiceTest {
     @Test
     void testAuthorizePermissionRequest_acceptsPermissionRequest() throws PermissionNotFoundException {
         // Given
-        EnedisPermissionRequest permissionRequest = new EnedisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                LocalDate.now(ZoneOffset.UTC).minusDays(3),
-                LocalDate.now(ZoneOffset.UTC),
-                Granularity.P1D,
-                PermissionProcessStatus.VALIDATED,
-                null,
-                null,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                UsagePointType.CONSUMPTION
-        );
+        EnedisPermissionRequest permissionRequest = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setConnectionId("cid")
+                .setDataNeedId("dnid")
+                .setStart(LocalDate.now(ZoneOffset.UTC).minusDays(3))
+                .setEnd(LocalDate.now(ZoneOffset.UTC))
+                .setGranularity(Granularity.P1D)
+                .create();
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(permissionRequest));
 
@@ -165,19 +159,14 @@ class PermissionRequestServiceTest {
         ArgumentCaptor<FrValidatedEvent> validatedCaptor = ArgumentCaptor.forClass(FrValidatedEvent.class);
         ArgumentCaptor<FrAcceptedEvent> acceptedCaptor = ArgumentCaptor.forClass(FrAcceptedEvent.class);
 
-        EnedisPermissionRequest permissionRequest = new EnedisPermissionRequest(
-                "pid",
-                "cid",
-                "dnid",
-                LocalDate.now(ZoneOffset.UTC).minusDays(3),
-                LocalDate.now(ZoneOffset.UTC),
-                Granularity.P1D,
-                PermissionProcessStatus.VALIDATED,
-                null,
-                null,
-                ZonedDateTime.now(ZoneOffset.UTC),
-                UsagePointType.CONSUMPTION
-        );
+        EnedisPermissionRequest permissionRequest = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setConnectionId("cid")
+                .setDataNeedId("dnid")
+                .setStart(LocalDate.now(ZoneOffset.UTC).minusDays(3))
+                .setEnd(LocalDate.now(ZoneOffset.UTC))
+                .setGranularity(Granularity.P1D)
+                .create();
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(permissionRequest));
 

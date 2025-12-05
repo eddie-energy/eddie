@@ -12,9 +12,9 @@ import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
 import energy.eddie.regionconnector.fr.enedis.dto.identity.CustomerIdentity;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisDataSourceInformation;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
+import energy.eddie.regionconnector.fr.enedis.services.EnergyDataStreams;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
-import reactor.test.publisher.TestPublisher;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -29,7 +29,6 @@ class EnedisAccountingPointEnvelopeProviderTest {
     void testGetEddieValidatedHistoricalDataMarketDocumentStream_publishesDocuments() throws Exception {
         // Given
         var identifiableAccountingPointData = identifiableAccountingPointData();
-        TestPublisher<IdentifiableAccountingPointData> testPublisher = TestPublisher.create();
         PlainEnedisConfiguration enedisConfiguration = new PlainEnedisConfiguration(
                 "clientId",
                 "clientSecret",
@@ -40,13 +39,14 @@ class EnedisAccountingPointEnvelopeProviderTest {
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                                                              "fallbackId")
         );
-        var provider = new EnedisAccountingPointDataEnvelopeProvider(testPublisher.flux(), factory);
+        EnergyDataStreams streams = new EnergyDataStreams();
+        var provider = new EnedisAccountingPointDataEnvelopeProvider(streams, factory);
 
         // When
         StepVerifier.create(provider.getAccountingPointEnvelopeFlux())
                     .then(() -> {
-                        testPublisher.emit(identifiableAccountingPointData);
-                        testPublisher.complete();
+                        streams.publish(identifiableAccountingPointData);
+                        streams.close();
                     })
                     .assertNext(ap -> assertEquals(identifiableAccountingPointData.permissionRequest().permissionId(),
                                                    ap.getMessageDocumentHeader()

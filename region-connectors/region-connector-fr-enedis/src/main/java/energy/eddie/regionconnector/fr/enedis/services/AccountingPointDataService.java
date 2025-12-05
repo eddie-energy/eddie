@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Sinks;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
 
@@ -30,27 +29,17 @@ public class AccountingPointDataService {
     public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
                                                                    .filter(AccountingPointDataService::isRetryable);
     private final EnedisAccountingPointDataApi enedisApi;
-    private final Sinks.Many<IdentifiableAccountingPointData> sink;
-
+    private final EnergyDataStreams energyDataStreams;
     private final Outbox outbox;
 
     public AccountingPointDataService(
             EnedisAccountingPointDataApi enedisApi,
-            Sinks.Many<IdentifiableAccountingPointData> sink,
+            EnergyDataStreams energyDataStreams,
             Outbox outbox
     ) {
         this.enedisApi = enedisApi;
-        this.sink = sink;
+        this.energyDataStreams = energyDataStreams;
         this.outbox = outbox;
-    }
-
-    /**
-     * Retries when the error is: - a 429 TooManyRequests - a 401 Unauthorized (i.e. when the token is expired)
-     */
-    private static boolean isRetryable(Throwable e) {
-        var retryable = e instanceof WebClientResponseException.TooManyRequests || e instanceof WebClientResponseException.Unauthorized;
-        LOGGER.info("Checking if error is retryable({})", retryable, e);
-        return retryable;
     }
 
     public void fetchAccountingPointData(MeterReadingPermissionRequest request, String usagePointId) {
@@ -68,11 +57,33 @@ public class AccountingPointDataService {
                     tuple -> handleAccountingPointData(
                             (FrEnedisPermissionRequest) request,
                             new IdentifiableAccountingPointData(
-                                    (FrEnedisPermissionRequest) request, tuple.getT1(), tuple.getT2(), tuple.getT3(), tuple.getT4()
+                                    (FrEnedisPermissionRequest) request,
+                                    tuple.getT1(),
+                                    tuple.getT2(),
+                                    tuple.getT3(),
+                                    tuple.getT4()
                             )
                     ),
                     e -> handleError(request.permissionId(), e)
             );
+    }
+
+    public void fetchMeteringPointSegment(String permissionId, String usagePointId) {
+        LOGGER.info("Fetching metering point segment for permissionId '{}'", permissionId);
+        enedisApi.getContract(usagePointId)
+                 .retryWhen(RETRY_BACKOFF_SPEC)
+                 .doOnError(e -> handleError(permissionId, e))
+                 .onErrorComplete()
+                 .subscribe(contract -> handleMeteringPointSegment(permissionId, contract));
+    }
+
+    /**
+     * Retries when the error is: - a 429 TooManyRequests - a 401 Unauthorized (i.e. when the token is expired)
+     */
+    private static boolean isRetryable(Throwable e) {
+        var retryable = e instanceof WebClientResponseException.TooManyRequests || e instanceof WebClientResponseException.Unauthorized;
+        LOGGER.info("Checking if error is retryable({})", retryable, e);
+        return retryable;
     }
 
     private void handleAccountingPointData(
@@ -82,7 +93,7 @@ public class AccountingPointDataService {
         LOGGER.atInfo()
               .addArgument(permissionRequest::permissionId)
               .log("Received accounting point data for permissionId '{}'");
-        sink.tryEmitNext(identifiableAccountingPointData);
+        energyDataStreams.publish(identifiableAccountingPointData);
         outbox.commit(new FrSimpleEvent(permissionRequest.permissionId(), PermissionProcessStatus.FULFILLED));
     }
 
@@ -98,15 +109,6 @@ public class AccountingPointDataService {
             );
             outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.UNFULFILLABLE));
         }
-    }
-
-    public void fetchMeteringPointSegment(String permissionId, String usagePointId) {
-        LOGGER.info("Fetching metering point segment for permissionId '{}'", permissionId);
-        enedisApi.getContract(usagePointId)
-                 .retryWhen(RETRY_BACKOFF_SPEC)
-                 .doOnError(e -> handleError(permissionId, e))
-                 .onErrorComplete()
-                 .subscribe(contract -> handleMeteringPointSegment(permissionId, contract));
     }
 
     private void handleMeteringPointSegment(String permissionId, CustomerContract contract) {

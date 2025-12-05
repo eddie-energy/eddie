@@ -1,10 +1,7 @@
 package energy.eddie.regionconnector.fr.enedis.services;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
-import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequestBuilder;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static org.mockito.Mockito.*;
 
@@ -32,17 +28,11 @@ class HistoricalDataServiceTest {
         // Given
         LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
-                                                                        "cid",
-                                                                        "dnid",
-                                                                        start,
-                                                                        end,
-                                                                        Granularity.PT30M,
-                                                                        PermissionProcessStatus.ACCEPTED,
-                                                                        "usagePointId",
-                                                                        null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC),
-                                                                        UsagePointType.CONSUMPTION);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStart(start)
+                .setEnd(end)
+                .create();
         when(permissionRequestRepository.getByPermissionId("pid")).thenReturn(request);
         when(pollingService.isActiveAndNeedsToBeFetched(request)).thenCallRealMethod();
 
@@ -59,17 +49,11 @@ class HistoricalDataServiceTest {
         // Given
         LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(20);
         LocalDate end = LocalDate.now(ZoneOffset.UTC).plusDays(10);
-        FrEnedisPermissionRequest request = new EnedisPermissionRequest("pid",
-                                                                        "cid",
-                                                                        "dnid",
-                                                                        start,
-                                                                        end,
-                                                                        Granularity.P1D,
-                                                                        PermissionProcessStatus.CREATED,
-                                                                        "usagePointId",
-                                                                        null,
-                                                                        ZonedDateTime.now(ZoneOffset.UTC),
-                                                                        UsagePointType.CONSUMPTION);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStart(start)
+                .setEnd(end)
+                .create();
         when(pollingService.isActiveAndNeedsToBeFetched(request)).thenCallRealMethod();
         when(permissionRequestRepository.getByPermissionId("pid")).thenReturn(request);
 
