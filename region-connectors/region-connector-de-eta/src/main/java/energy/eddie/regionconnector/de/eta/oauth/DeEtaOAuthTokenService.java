@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.time.Clock;
@@ -74,48 +75,46 @@ public class DeEtaOAuthTokenService {
         }
         var st = stateOpt.get();
 
-        // Exchange code for tokens
+        // Exchange token via ETA access-grant endpoint
+        // NOTE: ETA expects PUT /api/account/oauth/access-grant?token={token}&openid=connector-de-eta
         LOGGER.info("Starting token exchange for connectionId={} permissionId={}", st.connectionId(), st.permissionId());
-        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("grant_type", "authorization_code");
-        form.add("code", code);
-        form.add("redirect_uri", props.redirectUri());
-        form.add("client_id", props.clientId());
-        // Never log clientSecret; just add to form
-        form.add("client_secret", props.clientSecret());
 
-        TokenResponse resp = webClient.post()
-                .uri(props.tokenUrl())
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .bodyValue(form)
+        AccessGrantResponse resp = webClient.put()
+                .uri(UriComponentsBuilder.fromUriString(props.tokenUrl())
+                        .queryParam("token", code)
+                        .queryParam("openid", "connector-de-eta")
+                        .build()
+                        .toUri())
+                .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .bodyToMono(TokenResponse.class)
+                .bodyToMono(AccessGrantResponse.class)
                 .onErrorResume(ex -> {
-                    // Never log tokens, just class info
                     LOGGER.warn("Token exchange failed: {}", ex.getClass().getSimpleName());
                     Metrics.counter("oauth.token.exchange.failure", METRIC_TAGS).increment();
                     return Mono.error(new DeEtaOAuthException("Token exchange failed", ex));
                 })
                 .block();
 
-        if (resp == null || resp.accessToken == null || resp.accessToken.isBlank()) {
+        String accessToken = resp != null && resp.data != null ? resp.data.token : null;
+        if (accessToken == null || accessToken.isBlank()) {
             Metrics.counter("oauth.token.exchange.failure", METRIC_TAGS).increment();
             throw new DeEtaOAuthException("Empty token response");
         }
 
-        int expiresIn = resp.expiresIn <= 0 ? 3600 : resp.expiresIn;
+        // ETA response does not provide expiry information for the token; default to 1 hour
+        int expiresIn = 3600;
         LocalDateTime expiresAt = LocalDateTime.ofInstant(clock.instant(), java.time.ZoneOffset.UTC)
                 .plusSeconds(expiresIn);
 
-        String encAccess = crypto.encrypt(resp.accessToken);
-        String encRefresh = crypto.encrypt(resp.refreshToken);
+        String encAccess = crypto.encrypt(accessToken);
+        String encRefresh = crypto.encrypt( resp.data != null ? resp.data.refreshToken : null);
 
         var entity = tokenRepository.findByConnectionId(st.connectionId())
                 .map(existing -> {
-                    existing.setTokens(encAccess, encRefresh, expiresAt, resp.scope);
+                    existing.setTokens(encAccess, encRefresh, expiresAt, null);
                     return existing;
                 })
-                .orElseGet(() -> new DeEtaOAuthToken(st.connectionId(), encAccess, encRefresh, expiresAt, resp.scope));
+                .orElseGet(() -> new DeEtaOAuthToken(st.connectionId(), encAccess, encRefresh, expiresAt, null));
 
         var saved = tokenRepository.save(entity);
         Metrics.counter("oauth.token.exchange.success", METRIC_TAGS).increment();
@@ -186,6 +185,28 @@ public class DeEtaOAuthTokenService {
         private String tokenType;
 
         public String getTokenType() { return tokenType; }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class AccessGrantResponse {
+        @JsonProperty("success")
+        public boolean success;
+        @JsonProperty("message")
+        public String message;
+        @JsonProperty("offset")
+        public int offset;
+        @JsonProperty("more")
+        public boolean more;
+        @JsonProperty("data")
+        public Data data;
+
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        private static class Data {
+            @JsonProperty("token")
+            public String token;
+            @JsonProperty("refreshToken")
+            public String refreshToken;
+        }
     }
 
     public record Result(DeEtaOAuthToken token, String permissionId) {}
