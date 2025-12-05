@@ -13,7 +13,7 @@ import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
+import energy.eddie.regionconnector.es.datadis.providers.EnergyDataStreams;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
@@ -48,7 +47,7 @@ class RetransmissionPollingServiceTest {
     @Mock
     private DataApi dataApi;
     @Spy
-    private Sinks.Many<IdentifiableMeteringData> sink = Sinks.many().multicast().onBackpressureBuffer();
+    private EnergyDataStreams streams = new EnergyDataStreams();
     @InjectMocks
     private RetransmissionPollingService pollingService;
 
@@ -74,14 +73,13 @@ class RetransmissionPollingServiceTest {
         var res = pollingService.poll(permissionRequest, request);
 
         // Then
-        var emitVerifier = StepVerifier
-                .create(sink.asFlux())
-                .assertNext(result -> assertAll(
-                        () -> assertEquals(retransmitFrom, result.payload().start()),
-                        () -> assertEquals(retransmitTo, result.payload().end()),
-                        () -> assertEquals("pid", result.permissionRequest().permissionId())
-                ))
-                .then(() -> sink.tryEmitComplete());
+        var emitVerifier = StepVerifier.create(streams.getValidatedHistoricalData())
+                                       .assertNext(result -> assertAll(
+                                               () -> assertEquals(retransmitFrom, result.payload().start()),
+                                               () -> assertEquals(retransmitTo, result.payload().end()),
+                                               () -> assertEquals("pid", result.permissionRequest().permissionId())
+                                       ))
+                                       .then(() -> streams.close());
         StepVerifier
                 .create(res)
                 .assertNext(result -> assertThat(result)
@@ -111,8 +109,8 @@ class RetransmissionPollingServiceTest {
                                                   PermissionProcessStatus.ACCEPTED);
         when(dataApi.getConsumptionKwh(any())).thenReturn(Mono.just(meteringData));
         var request = new RetransmissionRequest("rc-id", "pid", retransmitFrom, retransmitTo);
-        sink.tryEmitComplete();
-       
+        streams.close();
+
         // When
         var res = pollingService.poll(permissionRequest, request);
 
