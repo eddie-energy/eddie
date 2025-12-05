@@ -11,33 +11,31 @@ import energy.eddie.regionconnector.es.datadis.permission.events.EsInvalidEvent;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Sinks;
-
-import java.time.Duration;
 
 @Component
-public class PermissionRequestConsumer implements AutoCloseable {
+public class PermissionRequestConsumer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestConsumer.class);
     private final Outbox outbox;
-    private final Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink;
     private final DataNeedsService dataNeedsService;
+    private final EnergyDataStreams streams;
 
     public PermissionRequestConsumer(
             Outbox outbox,
-            Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // Injected from another spring context
-            DataNeedsService dataNeedsService
+            DataNeedsService dataNeedsService,
+            EnergyDataStreams streams
     ) {
         this.outbox = outbox;
-        this.identifiableAccountingPointDataSink = identifiableAccountingPointDataSink;
         this.dataNeedsService = dataNeedsService;
+        this.streams = streams;
     }
 
     public void acceptPermission(
@@ -51,33 +49,6 @@ public class PermissionRequestConsumer implements AutoCloseable {
                     handleAccountingPointDataNeed(accountingPointData, permissionRequest);
             default -> handleHistoricalValidatedDataDataNeed(accountingPointData, permissionRequest);
         }
-    }
-
-    private void handleAccountingPointDataNeed(
-            AccountingPointData accountingPointData,
-            EsPermissionRequest permissionRequest
-    ) {
-        outbox.commit(new EsAcceptedEventForAPD(permissionRequest.permissionId()));
-        identifiableAccountingPointDataSink.emitNext(
-                new IdentifiableAccountingPointData(permissionRequest, accountingPointData),
-                Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1))
-        );
-        outbox.commit(new EsSimpleEvent(permissionRequest.permissionId(), PermissionProcessStatus.FULFILLED));
-    }
-
-    private void handleHistoricalValidatedDataDataNeed(
-            AccountingPointData accountingPointData,
-            EsPermissionRequest permissionRequest
-    ) {
-        var supply = accountingPointData.supply();
-        outbox.commit(
-                new EsAcceptedEventForVHD(
-                        permissionRequest.permissionId(),
-                        DistributorCode.fromCode(supply.distributorCode()),
-                        supply.pointType(),
-                        accountingPointData.contractDetails().installedCapacity().isPresent()
-                )
-        );
     }
 
     public void consumeError(Throwable e, EsPermissionRequest permissionRequest) {
@@ -95,8 +66,27 @@ public class PermissionRequestConsumer implements AutoCloseable {
         }
     }
 
-    @Override
-    public void close() {
-        identifiableAccountingPointDataSink.emitComplete(Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
+    private void handleAccountingPointDataNeed(
+            AccountingPointData accountingPointData,
+            EsPermissionRequest permissionRequest
+    ) {
+        outbox.commit(new EsAcceptedEventForAPD(permissionRequest.permissionId()));
+        streams.publish(new IdentifiableAccountingPointData(permissionRequest, accountingPointData));
+        outbox.commit(new EsSimpleEvent(permissionRequest.permissionId(), PermissionProcessStatus.FULFILLED));
+    }
+
+    private void handleHistoricalValidatedDataDataNeed(
+            AccountingPointData accountingPointData,
+            EsPermissionRequest permissionRequest
+    ) {
+        var supply = accountingPointData.supply();
+        outbox.commit(
+                new EsAcceptedEventForVHD(
+                        permissionRequest.permissionId(),
+                        DistributorCode.fromCode(supply.distributorCode()),
+                        supply.pointType(),
+                        accountingPointData.contractDetails().installedCapacity().isPresent()
+                )
+        );
     }
 }

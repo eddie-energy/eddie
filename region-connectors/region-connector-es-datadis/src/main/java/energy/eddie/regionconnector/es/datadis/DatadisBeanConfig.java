@@ -19,7 +19,6 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionEventRepository;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
 import energy.eddie.regionconnector.es.datadis.providers.EnergyDataStreams;
-import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.es.datadis.services.DataApiService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
 import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
@@ -37,8 +36,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.List;
@@ -62,16 +59,6 @@ public class DatadisBeanConfig {
         return new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .registerModule(new Jdk8Module());
-    }
-
-    @Bean
-    public Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
-    public Flux<IdentifiableAccountingPointData> identifiableAccountingPointDataFlux(Sinks.Many<IdentifiableAccountingPointData> sink) {
-        return sink.asFlux();
     }
 
     @Bean
@@ -153,14 +140,13 @@ public class DatadisBeanConfig {
     @OnRawDataMessagesEnabled
     public RawDataProvider rawDataProvider(
             ObjectMapper mapper,
-            Flux<IdentifiableAccountingPointData> accountingPointDataFlux,
             EnergyDataStreams streams
     ) {
         return new JsonRawDataProvider(
                 DatadisRegionConnectorMetadata.getInstance().countryCode(),
                 mapper,
                 streams.getValidatedHistoricalData(),
-                accountingPointDataFlux
+                streams.getAccountingPointData()
         );
     }
 

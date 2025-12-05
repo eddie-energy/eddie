@@ -5,7 +5,6 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.ContractDetailsProvider;
-import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.SupplyProvider;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
@@ -17,14 +16,13 @@ import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEvent
 import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
-import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
+import energy.eddie.regionconnector.es.datadis.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
@@ -59,7 +57,7 @@ class PermissionRequestConsumerTest {
     @Mock
     private ValidatedHistoricalDataDataNeed validatedHistoricalDataDataNeed;
     @Spy
-    private Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink = new DatadisBeanConfig().identifiableAccountingPointDataSink();
+    private EnergyDataStreams streams;
 
 
     @Test
@@ -136,12 +134,12 @@ class PermissionRequestConsumerTest {
         permissionRequestConsumer.acceptPermission(permissionRequest, accountingPointData);
 
         // Then
-        StepVerifier.create(identifiableAccountingPointDataSink.asFlux())
+        StepVerifier.create(streams.getAccountingPointData())
                     .assertNext(acp -> assertAll(
                             () -> assertEquals(permissionRequest, acp.permissionRequest()),
                             () -> assertEquals(accountingPointData, acp.accountingPointData())
                     ))
-                    .then(() -> permissionRequestConsumer.close())
+                    .then(() -> streams.close())
                     .verifyComplete();
         verify(outbox).commit(acceptedAccountingPointDataCaptor.capture());
         verify(outbox).commit(simpleCaptor.capture());
