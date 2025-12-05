@@ -50,7 +50,7 @@ jobs:
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build integrationTest codeCoverageReport sonar --info
+        run: ./gradlew build integrationTest codeCoverageReport sonar --stacktrace
 
   publish-docker-images:
     name: Publish docker images
