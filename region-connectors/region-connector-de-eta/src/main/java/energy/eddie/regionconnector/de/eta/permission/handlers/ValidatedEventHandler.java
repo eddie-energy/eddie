@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.de.eta.permission.handlers;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
-import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.de.eta.client.DeEtaPaApiClient;
 import energy.eddie.regionconnector.de.eta.permission.events.RetryValidatedEvent;
@@ -14,17 +13,23 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.ZoneOffset;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import energy.eddie.regionconnector.de.eta.client.TransientPaException;
 
 @Component
 @SuppressWarnings("NullAway")
 public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedEventHandler.class);
+    private static final String TAG_KEY_REGION = "region";
+    private static final String REGION_DE_ETA = "de-eta";
+    private static final Tags METRIC_TAGS = Tags.of(TAG_KEY_REGION, REGION_DE_ETA);
     private final DeEtaPaApiClient apiClient;
     private final DeEtaPermissionRequestRepository repository;
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
@@ -63,9 +68,11 @@ public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
         apiClient.sendPermissionRequest(pr)
                 .subscribe(resp -> {
                             if (resp != null && resp.success()) {
+                                Metrics.counter("validated.sentToPa", METRIC_TAGS).increment();
                                 outbox.commit(new SentToPaEvent(permissionId));
                             } else {
                                 var reason = "PA response indicates failure or empty response";
+                                Metrics.counter("validated.unable", METRIC_TAGS.and("cause", "pa_response")).increment();
                                 outbox.commit(new UnableToSendEvent(
                                         permissionId,
                                         pr.connectionId(),
@@ -75,14 +82,24 @@ public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
                             }
                         },
                         throwable -> {
-                            LOGGER.warn("Could not send permission request {} to DE-ETA", permissionId, throwable);
-                            var reason = buildReasonFromException(throwable);
-                            outbox.commit(new UnableToSendEvent(
-                                    permissionId,
-                                    pr.connectionId(),
-                                    pr.dataNeedId(),
-                                    reason
-                            ));
+                            if (throwable instanceof TransientPaException) {
+                                // Transient network or server issue: schedule retry according to project pattern
+                                LOGGER.warn("Transient error while sending permission request {} to DE-ETA. Scheduling retry. Reason: {}",
+                                        permissionId, truncate(throwable.getMessage()));
+                                Metrics.counter("validated.retry", METRIC_TAGS).increment();
+                                outbox.commit(new RetryValidatedEvent(permissionId));
+                            } else {
+                                // Non-transient: emit UnableToSendEvent with short reason
+                                var reason = buildReasonFromException(throwable);
+                                LOGGER.warn("Could not send permission request {} to DE-ETA. Reason: {}", permissionId, reason);
+                                Metrics.counter("validated.unable", METRIC_TAGS.and("cause", "exception")).increment();
+                                outbox.commit(new UnableToSendEvent(
+                                        permissionId,
+                                        pr.connectionId(),
+                                        pr.dataNeedId(),
+                                        reason
+                                ));
+                            }
                         });
     }
 

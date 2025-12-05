@@ -8,6 +8,8 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.de.eta.client.DeEtaPaApiClient;
 import energy.eddie.regionconnector.de.eta.permission.events.UnableToSendEvent;
+import energy.eddie.regionconnector.de.eta.permission.events.SentToPaEvent;
+import energy.eddie.regionconnector.de.eta.permission.events.RetryValidatedEvent;
 import energy.eddie.regionconnector.de.eta.permission.events.ValidatedEvent;
 import energy.eddie.regionconnector.de.eta.permission.requests.DateRange;
 import energy.eddie.regionconnector.de.eta.permission.requests.DeEtaPermissionRequest;
@@ -84,11 +86,12 @@ class ValidatedEventHandlerTest {
     }
 
     @Test
-    void testAccept_exception_commitsUnableToSendEventWithReason() {
+    void testAccept_nonTransientException_commitsUnableToSendEventWithReason() {
         // Given
         var pid = "pid-2";
         when(repository.getByPermissionId(pid)).thenReturn(buildPermissionRequest(pid, "cid-2", "dn-2"));
-        var ex = WebClientResponseException.create(500, "Error", null, "boom".getBytes(), null);
+        // simulate a 400 which is non-transient
+        var ex = WebClientResponseException.create(400, "Bad Request", null, "boom".getBytes(), null);
         when(apiClient.sendPermissionRequest(any())).thenReturn(Mono.error(ex));
 
         ArgumentCaptor<UnableToSendEvent> captor = ArgumentCaptor.forClass(UnableToSendEvent.class);
@@ -99,6 +102,38 @@ class ValidatedEventHandlerTest {
         // Then
         verify(outbox, timeout(5000)).commit(captor.capture());
         var event = captor.getValue();
-        assertTrue(event.reason().contains("HTTP 500") || event.reason().contains("boom"));
+        assertTrue(event.reason().contains("HTTP 400") || event.reason().contains("boom"));
+    }
+
+    @Test
+    void testAccept_transientException_emitsRetryValidatedEvent() {
+        // Given
+        var pid = "pid-3";
+        when(repository.getByPermissionId(pid)).thenReturn(buildPermissionRequest(pid, "cid-3", "dn-3"));
+        when(apiClient.sendPermissionRequest(any())).thenReturn(Mono.error(new energy.eddie.regionconnector.de.eta.client.TransientPaException("server 5xx")));
+
+        ArgumentCaptor<RetryValidatedEvent> captor = ArgumentCaptor.forClass(RetryValidatedEvent.class);
+
+        // When
+        eventBus.emit(new ValidatedEvent(pid, null, null, null, null, null));
+
+        // Then
+        verify(outbox, timeout(5000)).commit(captor.capture());
+    }
+
+    @Test
+    void testAccept_successResponse_commitsSentToPaEvent() {
+        // Given
+        var pid = "pid-4";
+        when(repository.getByPermissionId(pid)).thenReturn(buildPermissionRequest(pid, "cid-4", "dn-4"));
+        when(apiClient.sendPermissionRequest(any())).thenReturn(Mono.just(new DeEtaPaApiClient.SendPermissionResponse(true)));
+
+        ArgumentCaptor<SentToPaEvent> captor = ArgumentCaptor.forClass(SentToPaEvent.class);
+
+        // When
+        eventBus.emit(new ValidatedEvent(pid, null, null, null, null, null));
+
+        // Then
+        verify(outbox, timeout(5000)).commit(captor.capture());
     }
 }

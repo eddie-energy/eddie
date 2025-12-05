@@ -74,24 +74,30 @@ tasks.withType<JavaCompile>().configureEach {
     }
 }
 
+// Define a single, consistent generated sources directory using DirectoryProperty
+val generatedSchemaSourcesDir = layout.buildDirectory.dir("generated/sources/schema/main/java")
+
 jsonSchema2Pojo {
     setSource(files("src/main/resources/schema"))
     targetPackage = "energy.eddie.outbound.metric.generated"
-    targetDirectory = file("${project.layout.buildDirectory.asFile.get()}/generated/sources/schema/main/java")
+    // Use DirectoryProperty instead of interpolating buildDirectory to a String
+    targetDirectory = generatedSchemaSourcesDir.get().asFile
     includeConstructors = true
     usePrimitives = true
     setAnnotationStyle("jackson")
 }
 
 sourceSets {
-    main {
+    named("main") {
         java {
-            srcDir("${layout.buildDirectory}/generated-sources")
+            // Point main Java source set to the same generated directory
+            srcDir(generatedSchemaSourcesDir)
         }
     }
 }
 
 tasks.named<JavaCompile>("compileJava") {
     dependsOn("generateJsonSchema2Pojo")
-    source(jsonSchema2Pojo.targetDirectory)
+    // Ensure compileJava also sees the generated sources
+    source(generatedSchemaSourcesDir)
 }
