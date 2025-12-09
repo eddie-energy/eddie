@@ -36,7 +36,7 @@ public class UnitConstants {
             UnitOfMeasureTypeList.MEGAVOLT_AMPERE_REACTIVE_HOURS,
             UnitOfMeasureTypeList.MEGAWATT_HOURS
     );
-    /* CIM v0.91.08 */
+    /* CIM v1.04 */
     public static final List<StandardUnitOfMeasureTypeList> POWER_UNITS = List.of(
             // Apparent Power
             StandardUnitOfMeasureTypeList.MEGAVOLTAMPERE,

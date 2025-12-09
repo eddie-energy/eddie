@@ -12,6 +12,9 @@ import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import energy.eddie.regionconnector.us.green.button.atom.feed.Query;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
+import energy.eddie.regionconnector.us.green.button.providers.MeasurementScale;
+import energy.eddie.regionconnector.us.green.button.providers.ReadingTypeValueConverter;
+import energy.eddie.regionconnector.us.green.button.providers.UnsupportedUnitException;
 import jakarta.annotation.Nullable;
 import jakarta.xml.bind.Unmarshaller;
 import org.naesb.espi.IntervalBlock;
@@ -78,7 +81,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             var end = Instant.ofEpochSecond(interval.getStart() + interval.getDuration()).atZone(ZoneOffset.UTC);
             var esmpInterval = new EsmpTimeInterval(start, end);
             var flowDirection = getDirection(readingType.getFlowDirection());
-            var scale = new ReadingTypeValueConverter(readingType).scale();
+            var scale = ReadingTypeValueConverter.UnitOfMeasureTypeListV0_82(readingType).scale();
             var seriesPeriods = getSeriesPeriods(readingType, intervalBlock, scale);
             var vhd = new ValidatedHistoricalDataMarketDocumentComplexType()
                     .withMRID(UUID.randomUUID().toString())
@@ -143,7 +146,9 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         return vhds;
     }
 
-    private List<SeriesPeriodComplexType> getSeriesPeriods(ReadingType readingType, IntervalBlock intervalBlock, MeasurementScale scale) {
+    private List<SeriesPeriodComplexType> getSeriesPeriods(ReadingType readingType,
+                                                           IntervalBlock intervalBlock,
+                                                           MeasurementScale<UnitOfMeasureTypeList> scale) {
         var granularity = Granularity.fromMinutes(Math.toIntExact(readingType.getIntervalLength() / 60));
         List<SeriesPeriodComplexType> seriesPeriods = new ArrayList<>();
         for (var intervalReading : intervalBlock.getIntervalReading()) {

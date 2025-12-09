@@ -1,6 +1,6 @@
-package energy.eddie.regionconnector.us.green.button.providers.v0_82;
+package energy.eddie.regionconnector.us.green.button.providers;
 
-class UnsupportedUnitException extends Exception {
+public class UnsupportedUnitException extends Exception {
     public UnsupportedUnitException(String unitOfMeasurement) {
         super("Unsupported unit: " + unitOfMeasurement);
     }

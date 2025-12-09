@@ -1,11 +1,13 @@
-package energy.eddie.regionconnector.us.green.button.providers.v0_82;
+package energy.eddie.regionconnector.us.green.button.providers.v1_04;
 
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.CommonInformationModelVersions;
-import energy.eddie.cim.v0_82.vhd.*;
+import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.cim.v1_04.*;
+import energy.eddie.cim.v1_04.vhd.*;
 import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.XmlLoader;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
@@ -59,61 +61,57 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
 
         // Then
         assertEquals(1, res.size());
-        var vhd = res.getFirst().getValidatedHistoricalDataMarketDocument();
+        var vhd = res.getFirst().getMarketDocument();
         assertAll(
                 () -> assertNotNull(vhd.getMRID()),
-                () -> assertEquals(CommonInformationModelVersions.V0_82.version(), vhd.getRevisionNumber()),
-                () -> assertEquals(MessageTypeList.MEASUREMENT_VALUE_DOCUMENT, vhd.getType()),
-                () -> assertEquals(RoleTypeList.METERING_POINT_ADMINISTRATOR,
+                () -> assertEquals(CommonInformationModelVersions.V1_04.version(), vhd.getRevisionNumber()),
+                () -> assertEquals(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value(), vhd.getType()),
+                () -> assertEquals(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value(),
                                    vhd.getSenderMarketParticipantMarketRoleType()),
-                () -> assertEquals(RoleTypeList.CONSUMER, vhd.getReceiverMarketParticipantMarketRoleType()),
-                () -> assertEquals(CodingSchemeTypeList.CGM, vhd.getSenderMarketParticipantMRID().getCodingScheme()),
+                () -> assertEquals(StandardRoleTypeList.CONSUMER.value(), vhd.getReceiverMarketParticipantMarketRoleType()),
+                () -> assertEquals(CodingSchemeTypeList.CGM.value(), vhd.getSenderMarketParticipantMRID().getCodingScheme()),
                 () -> assertEquals("company", vhd.getSenderMarketParticipantMRID().getValue()),
-                () -> assertEquals(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                () -> assertEquals(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value(),
                                    vhd.getReceiverMarketParticipantMRID().getCodingScheme()),
                 () -> assertEquals("client-id", vhd.getReceiverMarketParticipantMRID().getValue()),
                 () -> assertEquals("2024-09-03T00:00Z", vhd.getPeriodTimeInterval().getStart()),
                 () -> assertEquals("2024-09-04T00:00Z", vhd.getPeriodTimeInterval().getEnd()),
-                () -> assertFalse(vhd.getTimeSeriesList().getTimeSeries().isEmpty()),
+                () -> assertFalse(vhd.getTimeSeries().isEmpty()),
                 () -> {
-                    var timeSeries = vhd.getTimeSeriesList().getTimeSeries().getFirst();
+                    var timeSeries = vhd.getTimeSeries().getFirst();
                     assertAll(
                             () -> assertNotNull(timeSeries.getMRID()),
-                            () -> assertEquals(BusinessTypeList.PRODUCTION, timeSeries.getBusinessType()),
-                            () -> assertEquals(EnergyProductTypeList.ACTIVE_POWER, timeSeries.getProduct()),
-                            () -> assertEquals(DirectionTypeList.UP, timeSeries.getFlowDirectionDirection()),
+                            () -> assertEquals(StandardBusinessTypeList.PRODUCTION.value(), timeSeries.getBusinessType()),
+                            () -> assertEquals(StandardEnergyProductTypeList.ACTIVE_POWER.value(), timeSeries.getProduct()),
+                            () -> assertEquals(StandardDirectionTypeList.UP.value(), timeSeries.getFlowDirectionDirection()),
                             () -> assertEquals(AggregateKind.SUM,
-                                               timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
+                                               timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregate()),
                             () -> assertEquals(CommodityKind.ELECTRICITYSECONDARYMETERED,
                                                timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
-                            () -> assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR,
+                            () -> assertEquals(StandardUnitOfMeasureTypeList.KILOWATT_HOUR.value(),
                                                timeSeries.getEnergyMeasurementUnitName()),
-                            () -> assertEquals(CodingSchemeTypeList.CGM,
+                            () -> assertEquals(CodingSchemeTypeList.CGM.value(),
                                                timeSeries.getMarketEvaluationPointMRID().getCodingScheme()),
                             () -> assertEquals("1669851", timeSeries.getMarketEvaluationPointMRID().getValue()),
-                            () -> assertEquals(ReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED,
-                                               timeSeries.getReasonList().getReasons().getFirst().getCode()),
+                            () -> assertEquals(StandardReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED.value(),
+                                               timeSeries.getReasonCode()),
                             () -> {
-                                var seriesPeriod = timeSeries.getSeriesPeriodList().getSeriesPeriods().getFirst();
+                                var seriesPeriod = timeSeries.getPeriods().getFirst();
                                 assertAll(
-                                        () -> assertEquals("PT15M", seriesPeriod.getResolution()),
                                         () -> assertEquals("2024-09-03T00:00Z",
                                                            seriesPeriod.getTimeInterval().getStart()),
                                         () -> assertEquals("2024-09-03T00:15Z",
                                                            seriesPeriod.getTimeInterval().getEnd()),
-                                        () -> assertEquals(String.valueOf(1725321600),
-                                                           seriesPeriod.getPointList()
-                                                                       .getPoints()
+                                        () -> assertEquals(1725321600,
+                                                           seriesPeriod.getPoints()
                                                                        .getFirst()
                                                                        .getPosition()),
                                         () -> assertEquals(BigDecimal.valueOf(10000).scaleByPowerOfTen(-8),
-                                                           seriesPeriod.getPointList()
-                                                                       .getPoints()
+                                                           seriesPeriod.getPoints()
                                                                        .getFirst()
                                                                        .getEnergyQuantityQuantity()),
-                                        () -> assertEquals(QualityTypeList.AS_PROVIDED,
-                                                           seriesPeriod.getPointList()
-                                                                       .getPoints()
+                                        () -> assertEquals(StandardMessageTypeList.SYSTEM_OPERATOR_AREA_SCHEDULE.value(),
+                                                           seriesPeriod.getPoints()
                                                                        .getFirst()
                                                                        .getEnergyQuantityQuality())
                                 );
