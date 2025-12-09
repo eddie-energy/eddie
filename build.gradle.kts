@@ -42,34 +42,24 @@ tasks.register<PnpmTask>("pnpmBuild") {
 
 tasks.register<PnpmTask>("pnpmBuildAdminConsole") {
     group = "build"
-    description = "builds and bundles the admin console ui"
+    description = "Builds the admin console UI"
     dependsOn("pnpmInstall")
     pnpmCommand.set(listOf("run", "admin:build"))
     environment = System.getenv()
 
-    doLast {
-        copy {
-            from("admin-console/ui/dist")
-            into("admin-console/src/main/resources/public")
-        }
-        file("admin-console/src/main/resources/public/index.html").renameTo(file("admin-console/src/main/resources/templates/index.html"))
-    }
+    inputs.dir("admin-console/ui")
+    outputs.dir("admin-console/ui/dist")
 }
 
-tasks.register<PnpmTask>("pnpmBuildAiidaUi") {
+tasks.register<PnpmTask>("pnpmBuildAiida") {
     group = "build"
-    description = "builds and bundles the AIIDA UI"
+    description = "Builds the AIIDA UI"
     dependsOn("pnpmInstall")
     pnpmCommand.set(listOf("run", "aiida:build"))
     environment = System.getenv()
 
-    doLast {
-        copy {
-            from("aiida/ui/dist")
-            into("aiida/src/main/resources/public")
-        }
-        file("aiida/src/main/resources/public/index.html").renameTo(file("aiida/src/main/resources/templates/vue.html"))
-    }
+    inputs.dir("aiida/ui")
+    outputs.dir("aiida/ui/dist")
 }
 
 tasks.register<PnpmTask>("pnpmBuildFrameworkDocs") {

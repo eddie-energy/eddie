@@ -38,8 +38,41 @@ dependencies {
     testRuntimeOnly(libs.h2database)
 }
 
-tasks.withType<JavaCompile>().configureEach {
+tasks.register<Copy>("copyAdminConsoleUi") {
+    group = "build"
+    description = "Copies AIIDA UI build output to public resources"
     dependsOn(":pnpmBuildAdminConsole")
+    from("ui/dist")
+    into("src/main/resources/public")
+}
+
+tasks.register<Copy>("copyAdminConsoleUiIndex") {
+    group = "build"
+    description = "Copies AIIDA UI index page to Thymeleaf template directory"
+    dependsOn(":pnpmBuildAdminConsole")
+    from("ui/dist/index.html")
+    into("src/main/resources/templates")
+}
+
+tasks.register("buildAdminConsoleUi") {
+    group = "build"
+    description = "Builds the AIIDA UI into the Spring application"
+    dependsOn(":pnpmBuildAdminConsole")
+    dependsOn("copyAdminConsoleUi")
+    dependsOn("copyAdminConsoleUiIndex")
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    dependsOn("buildAdminConsoleUi")
+}
+
+tasks.withType<ProcessResources>().configureEach {
+    dependsOn("buildAdminConsoleUi")
+}
+
+tasks.clean {
+    delete("src/main/resources/public")
+    delete("src/main/resources/templates/index.html")
 }
 
 tasks.test {

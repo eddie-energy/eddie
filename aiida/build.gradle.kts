@@ -100,8 +100,41 @@ tasks.register<Test>("integrationTest") {
     }
 }
 
+tasks.register<Copy>("copyAiidaUi") {
+    group = "build"
+    description = "Copies AIIDA UI build output to public resources"
+    dependsOn(":pnpmBuildAiida")
+    from("ui/dist")
+    into("src/main/resources/public")
+}
+
+tasks.register<Copy>("copyAiidaUiIndex") {
+    group = "build"
+    description = "Copies AIIDA UI index page to Thymeleaf template directory"
+    dependsOn(":pnpmBuildAiida")
+    from("ui/dist/index.html")
+    into("src/main/resources/templates")
+}
+
+tasks.register("buildAiidaUi") {
+    group = "build"
+    description = "Builds the AIIDA UI into the Spring application"
+    dependsOn(":pnpmBuildAiida")
+    dependsOn("copyAiidaUi")
+    dependsOn("copyAiidaUiIndex")
+}
+
 tasks.withType<JavaCompile>().configureEach {
-    dependsOn(":pnpmBuildAiidaUi")
+    dependsOn("buildAiidaUi")
+}
+
+tasks.withType<ProcessResources>().configureEach {
+    dependsOn("buildAiidaUi")
+}
+
+tasks.clean {
+    delete("src/main/resources/public")
+    delete("src/main/resources/templates/index.html")
 }
 
 jib {
