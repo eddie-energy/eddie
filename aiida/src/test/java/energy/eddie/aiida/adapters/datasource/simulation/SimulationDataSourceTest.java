@@ -20,6 +20,7 @@ class SimulationDataSourceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final SimulationDataSource DATA_SOURCE = mock(SimulationDataSource.class);
+    private static final Integer POLLING_INTERVAL = 1;
     private SimulationAdapter simulator;
 
     @BeforeEach
@@ -27,7 +28,7 @@ class SimulationDataSourceTest {
         when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
         when(DATA_SOURCE.userId()).thenReturn(USER_ID);
         when(DATA_SOURCE.name()).thenReturn("simulation");
-        when(DATA_SOURCE.pollingInterval()).thenReturn(1);
+        when(DATA_SOURCE.pollingInterval()).thenReturn(POLLING_INTERVAL);
     }
 
     @Test
@@ -43,7 +44,7 @@ class SimulationDataSourceTest {
     @Test
     void verify_bundleOfFourValuesIsGeneratedPerPeriod_andCloseEmitsCompleteOnFlux() {
         simulator = new SimulationAdapter(DATA_SOURCE);
-        var period = Duration.ofSeconds(DATA_SOURCE.pollingInterval());
+        var period = Duration.ofSeconds(POLLING_INTERVAL);
 
         StepVerifier.withVirtualTime(() -> simulator.start())
                     .expectSubscription()

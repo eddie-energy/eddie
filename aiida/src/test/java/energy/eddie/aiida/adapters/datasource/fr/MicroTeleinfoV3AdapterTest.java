@@ -37,6 +37,8 @@ class MicroTeleinfoV3AdapterTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(MicroTeleinfoV3Adapter.class);
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final MicroTeleinfoV3DataSource DATA_SOURCE = mock(MicroTeleinfoV3DataSource.class);
+    private static final String DATA_SOURCE_TOPIC = "aiida/test";
+    private static final String DATA_SOURCE_INTERNAL_HOST = "tcp://localhost:1883";
     private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
     private MicroTeleinfoV3Adapter adapter;
 
@@ -45,8 +47,8 @@ class MicroTeleinfoV3AdapterTest {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
         when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
-        when(DATA_SOURCE.internalHost()).thenReturn("tcp://localhost:1883");
-        when(DATA_SOURCE.topic()).thenReturn("aiida/test");
+        when(DATA_SOURCE.internalHost()).thenReturn(DATA_SOURCE_INTERNAL_HOST);
+        when(DATA_SOURCE.topic()).thenReturn(DATA_SOURCE_TOPIC);
         when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
 
@@ -225,9 +227,9 @@ class MicroTeleinfoV3AdapterTest {
 
             adapter.start().subscribe();
 
-            adapter.connectComplete(false, DATA_SOURCE.internalHost());
+            adapter.connectComplete(false, DATA_SOURCE_INTERNAL_HOST);
 
-            verify(mockClient).subscribe(DATA_SOURCE.topic(), 2);
+            verify(mockClient).subscribe(DATA_SOURCE_TOPIC, 2);
         }
     }
 
@@ -237,11 +239,11 @@ class MicroTeleinfoV3AdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
-            when(mockClient.subscribe(DATA_SOURCE.topic(), 2)).thenThrow(new MqttException(998877));
+            when(mockClient.subscribe(DATA_SOURCE_TOPIC, 2)).thenThrow(new MqttException(998877));
 
             StepVerifier.create(adapter.start())
                         .expectSubscription()
-                        .then(() -> adapter.connectComplete(false, DATA_SOURCE.internalHost()))
+                        .then(() -> adapter.connectComplete(false, DATA_SOURCE_INTERNAL_HOST))
                         .expectError()
                         .verify();
         }
@@ -262,9 +264,9 @@ class MicroTeleinfoV3AdapterTest {
                                                 .expectComplete()
                                                 .verifyLater();
 
-        adapter.messageArrived(DATA_SOURCE.topic(),
+        adapter.messageArrived(DATA_SOURCE_TOPIC,
                                new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
-        adapter.messageArrived(DATA_SOURCE.topic(),
+        adapter.messageArrived(DATA_SOURCE_TOPIC,
                                new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
@@ -288,7 +290,7 @@ class MicroTeleinfoV3AdapterTest {
                                                 .expectComplete()
                                                 .verifyLater();
 
-        adapter.messageArrived(DATA_SOURCE.topic(),
+        adapter.messageArrived(DATA_SOURCE_TOPIC,
                                new MqttMessage(historyModeJson.getBytes(StandardCharsets.UTF_8)));
 
         assertEquals(3, LOG_CAPTOR.getDebugLogs().size());
@@ -537,7 +539,7 @@ class MicroTeleinfoV3AdapterTest {
                                                 .expectComplete()
                                                 .verifyLater();
 
-        adapter.messageArrived(DATA_SOURCE.topic(),
+        adapter.messageArrived(DATA_SOURCE_TOPIC,
                                new MqttMessage(standardModeJson.getBytes(StandardCharsets.UTF_8)));
 
         assertEquals(3, LOG_CAPTOR.getDebugLogs().size());

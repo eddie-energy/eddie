@@ -34,6 +34,8 @@ class OesterreichsEnergieAdapterTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
     private static final OesterreichsEnergieDataSource DATA_SOURCE = mock(OesterreichsEnergieDataSource.class);
+    private static final String DATA_SOURCE_INTERNAL_HOST = "tcp://localhost:1883";
+    private static final String DATA_SOURCE_TOPIC = "aiida/test";
     private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
     private OesterreichsEnergieAdapter adapter;
 
@@ -41,8 +43,8 @@ class OesterreichsEnergieAdapterTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        when(DATA_SOURCE.internalHost()).thenReturn("tcp://localhost:1883");
-        when(DATA_SOURCE.topic()).thenReturn("aiida/test");
+        when(DATA_SOURCE.internalHost()).thenReturn(DATA_SOURCE_INTERNAL_HOST);
+        when(DATA_SOURCE.topic()).thenReturn(DATA_SOURCE_TOPIC);
         when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
 
@@ -274,9 +276,9 @@ class OesterreichsEnergieAdapterTest {
 
             adapter.start().subscribe();
 
-            adapter.connectComplete(false, DATA_SOURCE.internalHost());
+            adapter.connectComplete(false, DATA_SOURCE_INTERNAL_HOST);
 
-            verify(mockClient).subscribe(DATA_SOURCE.topic(), 2);
+            verify(mockClient).subscribe(DATA_SOURCE_TOPIC, 2);
         }
     }
 
@@ -286,11 +288,11 @@ class OesterreichsEnergieAdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
-            when(mockClient.subscribe(DATA_SOURCE.topic(), 2)).thenThrow(new MqttException(998877));
+            when(mockClient.subscribe(DATA_SOURCE_TOPIC, 2)).thenThrow(new MqttException(998877));
 
             StepVerifier.create(adapter.start())
                         .expectSubscription()
-                        .then(() -> adapter.connectComplete(false, DATA_SOURCE.internalHost()))
+                        .then(() -> adapter.connectComplete(false, DATA_SOURCE_INTERNAL_HOST))
                         .expectError()
                         .verify();
         }
@@ -310,9 +312,9 @@ class OesterreichsEnergieAdapterTest {
                                                 .expectComplete()
                                                 .verifyLater();
 
-        adapter.messageArrived(DATA_SOURCE.topic(),
+        adapter.messageArrived(DATA_SOURCE_TOPIC,
                                new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
-        adapter.messageArrived(DATA_SOURCE.topic(),
+        adapter.messageArrived(DATA_SOURCE_TOPIC,
                                new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
@@ -331,7 +333,7 @@ class OesterreichsEnergieAdapterTest {
         var json = "{\"1-0:1.8.0\":{\"value\":83622,\"time\":1698218800},\"UNKNOWN-OBIS-CODE\":{\"value\":0,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":83854.3}";
 
         StepVerifier.create(adapter.start())
-                    .then(() -> adapter.messageArrived(DATA_SOURCE.topic(),
+                    .then(() -> adapter.messageArrived(DATA_SOURCE_TOPIC,
                                                        new MqttMessage(json.getBytes(StandardCharsets.UTF_8))))
                     .expectNextMatches(received -> received.aiidaRecordValues()
                                                            .stream()

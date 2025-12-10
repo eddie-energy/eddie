@@ -31,8 +31,10 @@ import static org.mockito.Mockito.*;
 class CimAdapterTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(CimAdapter.class);
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
-    private static final String TOPIC = "aiida/cim";
+    private static final String CIM_TOPIC = "aiida/cim";
     private static final CimDataSource DATA_SOURCE = mock(CimDataSource.class);
+    private static final String DATA_SOURCE_TOPIC = "aiida/test";
+    private static final String DATA_SOURCE_INTERNAL_HOST = "tcp://localhost:1883";
     private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
     private CimAdapter adapter;
 
@@ -40,8 +42,8 @@ class CimAdapterTest {
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
-        when(DATA_SOURCE.internalHost()).thenReturn("tcp://localhost:1883");
-        when(DATA_SOURCE.topic()).thenReturn("aiida/test");
+        when(DATA_SOURCE.internalHost()).thenReturn(DATA_SOURCE_INTERNAL_HOST);
+        when(DATA_SOURCE.topic()).thenReturn(DATA_SOURCE_TOPIC);
         when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
 
@@ -184,7 +186,7 @@ class CimAdapterTest {
 
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
-                        .then(() -> adapter.messageArrived(TOPIC, message))
+                        .then(() -> adapter.messageArrived(CIM_TOPIC, message))
                         .expectNextMatches(received -> received.aiidaRecordValues()
                                                                .stream()
                                                                .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
@@ -206,9 +208,9 @@ class CimAdapterTest {
 
             adapter.start().subscribe();
 
-            adapter.connectComplete(false, DATA_SOURCE.internalHost());
+            adapter.connectComplete(false, DATA_SOURCE_INTERNAL_HOST);
 
-            verify(mockClient).subscribe(DATA_SOURCE.topic(), 2);
+            verify(mockClient).subscribe(DATA_SOURCE_TOPIC, 2);
         }
     }
 
@@ -218,11 +220,11 @@ class CimAdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
-            when(mockClient.subscribe(DATA_SOURCE.topic(), 2)).thenThrow(new MqttException(998877));
+            when(mockClient.subscribe(DATA_SOURCE_TOPIC, 2)).thenThrow(new MqttException(998877));
 
             StepVerifier.create(adapter.start())
                         .expectSubscription()
-                        .then(() -> adapter.connectComplete(false, DATA_SOURCE.internalHost()))
+                        .then(() -> adapter.connectComplete(false, DATA_SOURCE_INTERNAL_HOST))
                         .expectError()
                         .verify();
         }

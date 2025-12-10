@@ -30,12 +30,13 @@ import static org.mockito.Mockito.*;
 class InboundAdapterTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(InboundAdapter.class);
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
+    private static final String INTERNAL_HOST = "tcp://localhost:1883";
+    private static final String TOPIC = "aiida/test";
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID MQTT_USERNAME = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
     private InboundAdapter adapter;
-    private InboundDataSource dataSource;
 
     @BeforeEach
     void setUp() {
@@ -45,11 +46,12 @@ class InboundAdapterTest {
         when(MQTT_CONFIGURATION.password()).thenReturn("aiida");
 
         // Mock inbound data source
-        dataSource = mock(InboundDataSource.class);
+        var dataSource = mock(InboundDataSource.class);
         when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
         when(dataSource.userId()).thenReturn(USER_ID);
         when(dataSource.asset()).thenReturn(AiidaAsset.SUBMETER);
-        when(dataSource.internalHost()).thenReturn("tcp://localhost:1883");
+        when(dataSource.internalHost()).thenReturn(INTERNAL_HOST);
+        when(dataSource.topic()).thenReturn(TOPIC);
         when(dataSource.username()).thenReturn(String.valueOf(MQTT_USERNAME));
         when(dataSource.password()).thenReturn("testPassword");
 
@@ -193,9 +195,9 @@ class InboundAdapterTest {
 
             adapter.start().subscribe();
 
-            adapter.connectComplete(false, dataSource.internalHost());
+            adapter.connectComplete(false, INTERNAL_HOST);
 
-            verify(mockClient).subscribe(dataSource.topic(), 2);
+            verify(mockClient).subscribe(TOPIC, 2);
         }
     }
 
@@ -205,11 +207,11 @@ class InboundAdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
-            when(mockClient.subscribe(dataSource.topic(), 2)).thenThrow(new MqttException(998877));
+            when(mockClient.subscribe(TOPIC, 2)).thenThrow(new MqttException(998877));
 
             StepVerifier.create(adapter.start())
                         .expectSubscription()
-                        .then(() -> adapter.connectComplete(false, dataSource.internalHost()))
+                        .then(() -> adapter.connectComplete(false, INTERNAL_HOST))
                         .expectError()
                         .verify();
         }
