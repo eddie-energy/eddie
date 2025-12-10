@@ -111,6 +111,7 @@ public class Aggregator implements AutoCloseable {
      * {@code allowedCodes} set, a timestamp that is before {@code permissionExpirationTime} and that are aggregated
      * by the {@code transmissionSchedule}.
      */
+    @SuppressWarnings("FutureReturnValueIgnored")
     public Flux<AiidaRecord> getFilteredFlux(
             Set<ObisCode> allowedDataTags,
             AiidaAsset allowedAsset,
@@ -124,8 +125,7 @@ public class Aggregator implements AutoCloseable {
         var cronScheduler = new ThreadPoolTaskScheduler();
 
         cronScheduler.initialize();
-        @SuppressWarnings("unused") // Otherwise errorprone shows a warning
-        var unused = cronScheduler.schedule(() -> cronSink.tryEmitNext(true), cronTrigger);
+        cronScheduler.schedule(() -> cronSink.tryEmitNext(true), cronTrigger);
 
         var flux = combinedSink.asFlux().doOnComplete(() -> {
             cronScheduler.stop();
