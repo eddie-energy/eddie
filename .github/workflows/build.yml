@@ -52,12 +52,12 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./gradlew build integrationTest codeCoverageReport sonar --stacktrace
 
-      - name: Upload problems report
+      - name: Upload build reports
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: Build reports
-          path: build/reports
+          name: Build Reports
+          path: '**/build/reports'
           if-no-files-found: ignore
 
   publish-docker-images:
