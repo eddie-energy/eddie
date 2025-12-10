@@ -11,6 +11,7 @@ public record PlainAiidaConfiguration(
 ) implements AiidaConfiguration {
     private static final String USERNAME = "eddie";
 
+    @Override
     public String mqttUsername() {
         return USERNAME;
     }

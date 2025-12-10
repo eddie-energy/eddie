@@ -50,8 +50,8 @@ class OesterreichsEnergieAdapterIntegrationTest {
     private static final String EMQX_IMAGE = "emqx/emqx:5.8.6";
     private static final String EMQX_BASE_CONFIG_FILE = "emqx/base.hocon";
     private static final String EMQX_INIT_USER_FILE = "emqx/init-user.json";
-    private static final String EMQX_BASE_CONFIG_CONTAINER_PATH = "/opt/emqx/etc/" + EMQX_BASE_CONFIG_FILE.split("/")[1];
-    private static final String EMQX_INIT_USER_CONTAINER_PATH = "/opt/emqx/data/" + EMQX_INIT_USER_FILE.split("/")[1];
+    private static final String EMQX_BASE_CONFIG_CONTAINER_PATH = "/opt/emqx/etc/base.hocon";
+    private static final String EMQX_INIT_USER_CONTAINER_PATH = "/opt/emqx/data/init-user.json";
 
     private static final String TOXIPROXY_IMAGE = "ghcr.io/shopify/toxiproxy:2.5.0";
 

@@ -24,6 +24,7 @@ import reactor.core.publisher.Sinks;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 public class MqttMessageCallback implements MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttMessageCallback.class);
@@ -175,7 +176,7 @@ public class MqttMessageCallback implements MqttCallback {
     }
 
     private void validateTimespan(AiidaPermissionRequest permissionRequest) throws PermissionInvalidException {
-        var now = LocalDate.now();
+        var now = LocalDate.now(ZoneId.systemDefault());
 
         if (now.isBefore(permissionRequest.start()) || now.isAfter(permissionRequest.end())) {
             throw new PermissionInvalidException(

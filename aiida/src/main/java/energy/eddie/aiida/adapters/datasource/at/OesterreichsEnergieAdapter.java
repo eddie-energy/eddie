@@ -71,6 +71,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
         }
     }
 
+    @SuppressWarnings("NonApiType")
     private ArrayList<AiidaRecordValue> convertEnergyDataToAiidaRecordValues(OesterreichsEnergieAdapterJson json) {
         return json.energyData()
                    .entrySet()
