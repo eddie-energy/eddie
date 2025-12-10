@@ -15,6 +15,7 @@ public abstract class PersistablePermissionEvent implements PermissionEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SuppressWarnings("unused")
     private Long id;
     @Column(length = 36)
     private String permissionId;

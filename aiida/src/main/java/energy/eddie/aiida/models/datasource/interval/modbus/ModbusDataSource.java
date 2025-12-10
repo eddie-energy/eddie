@@ -33,11 +33,13 @@ public class ModbusDataSource extends IntervalDataSource {
     @Column(name = "model_id", table = TABLE_NAME, nullable = false)
     @Schema(description = "The model ID of the modbus device.")
     @JsonProperty
+    @SuppressWarnings("unused")
     private UUID modelId;
 
     @Column(name = "vendor_id", table = TABLE_NAME, nullable = false)
     @Schema(description = "The vendor ID of the modbus device.")
     @JsonProperty
+    @SuppressWarnings("unused")
     private UUID vendorId;
 
     @SuppressWarnings("NullAway")
