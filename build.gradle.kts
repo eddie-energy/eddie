@@ -40,6 +40,10 @@ tasks.register<PnpmTask>("pnpmBuild") {
     pnpmCommand.set(listOf("run", "build"))
 }
 
+interface InjectedFsOps {
+    @get:Inject val fs: FileSystemOperations
+}
+
 tasks.register<PnpmTask>("pnpmBuildAdminConsole") {
     group = "build"
     description = "Builds the admin console UI"
@@ -48,7 +52,20 @@ tasks.register<PnpmTask>("pnpmBuildAdminConsole") {
     environment = System.getenv()
 
     inputs.dir("admin-console/ui")
-    outputs.dir("admin-console/ui/dist")
+    outputs.dir("admin-console/src/main/resources/public")
+    outputs.file("admin-console/src/main/resources/templates/index.html")
+
+    val injected = project.objects.newInstance<InjectedFsOps>()
+    doLast {
+        injected.fs.copy {
+            from("admin-console/ui/dist")
+            into("admin-console/src/main/resources/public")
+        }
+        injected.fs.copy {
+            from("admin-console/ui/dist/index.html")
+            into("admin-console/src/main/resources/templates")
+        }
+    }
 }
 
 tasks.register<PnpmTask>("pnpmBuildAiida") {
@@ -59,7 +76,20 @@ tasks.register<PnpmTask>("pnpmBuildAiida") {
     environment = System.getenv()
 
     inputs.dir("aiida/ui")
-    outputs.dir("aiida/ui/dist")
+    outputs.dir("aiida/src/main/resources/public")
+    outputs.file("aiida/src/main/resources/templates/index.html")
+
+    val injected = project.objects.newInstance<InjectedFsOps>()
+    doLast {
+        injected.fs.copy {
+            from("aiida/ui/dist")
+            into("aiida/src/main/resources/public")
+        }
+        injected.fs.copy {
+            from("aiida/ui/dist/index.html")
+            into("aiida/src/main/resources/templates")
+        }
+    }
 }
 
 tasks.register<PnpmTask>("pnpmBuildFrameworkDocs") {
