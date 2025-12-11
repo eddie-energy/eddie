@@ -40,7 +40,7 @@ class AiidaRecordRepositoryIntegrationTest {
     private static final String TIMESCALEDB_CREATE_AIIDA_DB_AND_EMQX_USER_FILE =
             "timescaledb/create-aiida-db-and-emqx-user.sql";
     private static final String TIMESCALEDB_CONTAINER_PATH =
-            "/docker-entrypoint-initdb.d/" + TIMESCALEDB_CREATE_AIIDA_DB_AND_EMQX_USER_FILE.split("/")[1];
+            "/docker-entrypoint-initdb.d/create-aiida-db-and-emqx-user.sql";
 
     @SuppressWarnings("unused")
     @Container

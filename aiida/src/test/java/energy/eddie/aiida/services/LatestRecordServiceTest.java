@@ -23,7 +23,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
 
 import java.time.Instant;
 import java.util.List;
@@ -60,8 +59,6 @@ class LatestRecordServiceTest {
             )
     );
 
-    @Mock
-    private Logger logger;
     @Mock
     private AiidaRecordRepository repository;
     @Mock

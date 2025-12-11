@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 public enum AiidaSchema {
     SMART_METER_P1_RAW("SMART-METER-P1-RAW"),
@@ -29,7 +30,7 @@ public enum AiidaSchema {
     }
 
     public String topicName() {
-        return schema.toLowerCase();
+        return schema.toLowerCase(Locale.ROOT);
     }
 
     public String buildTopicPath(String baseTopic) {

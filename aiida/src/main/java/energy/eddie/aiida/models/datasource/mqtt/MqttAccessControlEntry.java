@@ -14,16 +14,19 @@ public class MqttAccessControlEntry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     @JsonIgnore
+    @SuppressWarnings("unused")
     private Long id;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @JsonIgnore
+    @SuppressWarnings("unused")
     private MqttAction action;
 
     @Column(name = "acl_type", nullable = false)
     @Enumerated(EnumType.STRING)
     @JsonIgnore
+    @SuppressWarnings("unused")
     private MqttAclType aclType;
 
     @Column(nullable = false)
@@ -32,6 +35,7 @@ public class MqttAccessControlEntry {
 
     @Column(nullable = false)
     @JsonIgnore
+    @SuppressWarnings("unused")
     private String username;
 
     @SuppressWarnings("NullAway")

@@ -67,6 +67,7 @@ public class SmartGatewaysAdapterValueDeserializer {
                         new SmartGatewaysAdapterMessageField("phasePowerCurrentL2", value, UnitOfMeasurement.AMPERE, ObisCode.UNKNOWN));
                 case PHASE_POWER_CURRENT_L3 -> builder.setPhasePowerCurrentL3(
                         new SmartGatewaysAdapterMessageField("phasePowerCurrentL3", value, UnitOfMeasurement.AMPERE, ObisCode.UNKNOWN));
+                case NOT_EXPECTED -> { /* will not occur in real use-cases and can be safely ignored */ }
             }
         }
 

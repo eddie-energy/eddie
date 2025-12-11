@@ -26,6 +26,7 @@ public class CommonFutureDataService<T extends MeterReadingPermissionRequest> {
     private final RegionConnectorMetadata metadata;
     private final DataNeedCalculationService<DataNeed> calculationService;
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     public CommonFutureDataService(
             CommonPollingService<T> pollingService,
             StatusPermissionRequestRepository<T> repository,

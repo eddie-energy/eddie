@@ -10,10 +10,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,8 +22,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DataSourceImageServiceTest {
-    @Mock
-    private Logger logger;
     @Mock
     private ImageRepository imageRepository;
     @Mock
@@ -57,7 +55,7 @@ class DataSourceImageServiceTest {
         when(dataSource.image()).thenReturn(mock(Image.class));
 
         MultipartFile file = mock(MultipartFile.class);
-        byte[] fileContent = "test".getBytes();
+        byte[] fileContent = "test".getBytes(StandardCharsets.UTF_8);
         String contentType = "image/png";
         when(file.getContentType()).thenReturn(contentType);
         when(file.getBytes()).thenReturn(fileContent);
@@ -77,7 +75,7 @@ class DataSourceImageServiceTest {
         var dataSource = mock(DataSource.class);
 
         MultipartFile file = mock(MultipartFile.class);
-        byte[] fileContent = "test".getBytes();
+        byte[] fileContent = "test".getBytes(StandardCharsets.UTF_8);
         String contentType = "image/png";
         when(file.getContentType()).thenReturn(contentType);
         when(file.getBytes()).thenReturn(fileContent);

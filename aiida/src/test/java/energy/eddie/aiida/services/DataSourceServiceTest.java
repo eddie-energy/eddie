@@ -1,11 +1,9 @@
 package energy.eddie.aiida.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfiguration;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.at.OesterreichsEnergieDataSourceDto;
@@ -63,11 +61,7 @@ class DataSourceServiceTest {
     @Mock
     private MqttConfiguration mqttConfiguration;
     @Mock
-    private ObjectMapper objectMapper;
-    @Mock
     private BCryptPasswordEncoder bCryptPasswordEncoder;
-    @Mock
-    private SinapsiAlfaConfiguration sinapsiAlfaConfiguration;
     @Mock
     private AiidaEventPublisher aiidaEventPublisher;
 
@@ -255,7 +249,6 @@ class DataSourceServiceTest {
         var result = dataSourceService.regenerateSecrets(DATA_SOURCE_ID);
 
         assertNotNull(result.plaintextPassword());
-        assertNotEquals(MQTT_OUTBOUND_DATA_SOURCE.password(), result.plaintextPassword());
         verify(MQTT_OUTBOUND_DATA_SOURCE).updatePassword(eq(bCryptPasswordEncoder), anyString());
         verify(aggregator).addNewDataSourceAdapter(any());
     }

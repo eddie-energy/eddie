@@ -16,6 +16,7 @@ public class MqttUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     @JsonIgnore
+    @SuppressWarnings("unused")
     private Long id;
 
     @Column(nullable = false)
