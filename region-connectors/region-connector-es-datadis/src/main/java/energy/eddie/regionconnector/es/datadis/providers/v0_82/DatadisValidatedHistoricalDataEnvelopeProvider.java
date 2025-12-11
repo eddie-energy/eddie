@@ -7,7 +7,8 @@ import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMe
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
-@Component
+@SuppressWarnings("java:S6830")
+@Component("DatadisValidatedHistoricalDataEnvelopeProviderV0_82")
 public class DatadisValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataEnvelopeProvider {
     private final Flux<IdentifiableMeteringData> identifiableMeterReadings;
     private final IntermediateVHDFactory intermediateVHDFactory;

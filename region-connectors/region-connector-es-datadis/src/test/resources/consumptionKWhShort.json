@@ -1,0 +1,26 @@
+[
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "01:00",
+    "consumptionKWh": 0.979,
+    "obtainMethod": "",
+    "surplusEnergyKWh": null
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "02:00",
+    "consumptionKWh": 0.939,
+    "obtainMethod": "",
+    "surplusEnergyKWh": null
+  },
+  {
+    "cups": "ES00210000XXXXXXXXXX",
+    "date": "2023/12/01",
+    "time": "03:00",
+    "consumptionKWh": 0.982,
+    "obtainMethod": "",
+    "surplusEnergyKWh": null
+  }
+]
