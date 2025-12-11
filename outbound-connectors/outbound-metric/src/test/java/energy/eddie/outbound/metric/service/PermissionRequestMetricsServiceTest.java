@@ -27,7 +27,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class PermissionRequestMetricsServiceTest {
+class PermissionRequestMetricsServiceTest {
 
     @Mock
     private AgnosticConnector agnosticConnector;
@@ -48,9 +48,6 @@ public class PermissionRequestMetricsServiceTest {
     private PermissionEventRepository permissionEventRepository;
 
     @Mock
-    private ConnectionStatusMessage csm;
-
-    @Mock
     private DataNeed dataNeed;
 
     private final MockDataSourceInformation dataSourceInformation = new MockDataSourceInformation(
@@ -67,6 +64,7 @@ public class PermissionRequestMetricsServiceTest {
         var regionConnectorId = dataSourceInformation.regionConnectorId();
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
+        var csm = mock(ConnectionStatusMessage.class);
         when(csm.status()).thenReturn(PermissionProcessStatus.VALIDATED);
         when(csm.timestamp()).thenReturn(now);
         when(csm.permissionId()).thenReturn("pid");

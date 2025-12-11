@@ -9,7 +9,6 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.client.model.*;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
 import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
-import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
@@ -36,7 +35,7 @@ class IntermediateValidatedHistoricalDocument {
             DataNeedsService dataNeedsService
     ) {
         this.fluviusConfig = fluviusConfiguration;
-        this.granularity = ((FluviusPermissionRequest) identifiableMeteredData.permissionRequest()).granularity();
+        this.granularity = identifiableMeteredData.permissionRequest().granularity();
         this.identifiableMeteredData = identifiableMeteredData;
         this.dataNeedsService = dataNeedsService;
     }

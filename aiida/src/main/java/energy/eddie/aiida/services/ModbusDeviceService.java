@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusDeviceConfigException;
 import energy.eddie.aiida.models.modbus.*;
 import jakarta.annotation.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,7 @@ public class ModbusDeviceService {
         );
     }
 
+    @Autowired
     ModbusDeviceService(List<ModbusVendor> vendors, List<ModbusModel> modbusModels, List<Device> devices) {
         this.vendors = vendors;
         this.modbusModels = modbusModels;

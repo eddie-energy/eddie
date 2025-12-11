@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-@SuppressWarnings("java:S101")
+@SuppressWarnings({"java:S3577", "NewClassNamingConvention"})
 class CimConnectorTestV1_04 {
     private final CimConnectorV1_04 connector = new CimConnectorV1_04();
 

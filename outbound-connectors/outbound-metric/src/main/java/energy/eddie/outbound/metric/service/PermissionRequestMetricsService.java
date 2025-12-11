@@ -114,7 +114,7 @@ public class PermissionRequestMetricsService {
         int currentCount = prMetrics.map(PermissionRequestMetricsModel::getPermissionRequestCount).orElse(0);
         int newCount = currentCount + 1;
         double currentMean = prMetrics.map(PermissionRequestMetricsModel::getMean).orElse(0.0);
-        double newMean = ((currentMean * currentCount) + (double) durationMilliseconds) / (double) newCount;
+        double newMean = ((currentMean * currentCount) + durationMilliseconds) / newCount;
 
         return new MeanCountRecord(newMean, newCount);
     }
