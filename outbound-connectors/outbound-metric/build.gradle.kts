@@ -1,7 +1,7 @@
 import energy.eddie.configureJavaCompileWithErrorProne
 import net.ltgt.gradle.errorprone.errorprone
 import org.springframework.boot.gradle.tasks.bundling.BootJar
-import java.util.Locale
+import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
@@ -44,6 +44,7 @@ dependencies {
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.okhttp3.mockwebserver)
 
+    testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.flyway.core)
     testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)

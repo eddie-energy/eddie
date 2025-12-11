@@ -44,7 +44,7 @@ dependencies {
     runtimeOnly(libs.postgresql)
 
     testImplementation(libs.junit.jupiter)
-    testRuntimeOnly(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 application {

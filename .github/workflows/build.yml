@@ -49,9 +49,16 @@ jobs:
 
       - name: Build and analyze
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build integrationTest codeCoverageReport sonar --info
+        run: ./gradlew build integrationTest codeCoverageReport sonar --stacktrace
+
+      - name: Upload build reports
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: Build Reports
+          path: '**/build/reports'
+          if-no-files-found: ignore
 
   publish-docker-images:
     name: Publish docker images

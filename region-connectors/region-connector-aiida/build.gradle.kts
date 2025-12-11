@@ -39,6 +39,8 @@ dependencies {
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.hakky.logcaptor)
+
+    testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.postgresql)
     testRuntimeOnly(libs.flyway.core)
     testRuntimeOnly(libs.flyway.postgresql)

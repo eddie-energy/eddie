@@ -39,6 +39,8 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)
+
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks.test {

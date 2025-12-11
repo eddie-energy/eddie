@@ -34,6 +34,7 @@ dependencies {
     // needed to have access to RegionConnectorsCommonControllerAdvice that formats error responses correctly
     testImplementation(project(":region-connectors:shared"))
 
+    testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.h2database)
     testRuntimeOnly(libs.postgresql)
     testRuntimeOnly(libs.flyway.core)

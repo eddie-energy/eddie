@@ -63,6 +63,7 @@ dependencies {
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.reactor.test)
+    testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.h2database)
 }
 
