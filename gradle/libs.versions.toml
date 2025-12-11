@@ -57,7 +57,7 @@ apache-httpcomponents-client-version = "5.4.1"
 jackson-databind-nullable-version = "0.2.6"
 google-jib = "3.4.0"
 
-testcontainers = "1.21.3"
+testcontainers = "2.0.2"
 xmlunit = "2.10.3"
 
 j2mod = "3.2.1"
@@ -86,9 +86,9 @@ junit-mockito = { module = "org.mockito:mockito-junit-jupiter", version.ref = "m
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 
 # shared dependencies
-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
-testcontainers-toxiproxy = { module = "org.testcontainers:toxiproxy", version.ref = "testcontainers" }
-testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
+testcontainers-toxiproxy = { module = "org.testcontainers:testcontainers-toxiproxy", version.ref = "testcontainers" }
+testcontainers-junit = { module = "org.testcontainers:testcontainers-junit-jupiter", version.ref = "testcontainers" }
 swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations-jakarta", version.ref = "swagger-annotations" }
 
 
@@ -123,13 +123,13 @@ jackson-jakarta-xmlbind-annotations = { module = "com.fasterxml.jackson.module:j
 
 # dependencies required by outbound-kafka
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
-testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers" }
+testcontainers-kafka = { module = "org.testcontainers:testcontainers-kafka", version.ref = "testcontainers" }
 jackson-dataformat-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
 
 # dpendencies required by outbound-amqp
 rabbitmq-amqp-client = { module = "com.rabbitmq.client:amqp-client", version.ref = "rabbitmq-amqp-client" }
-testcontainers-rabbitmq = { module = "org.testcontainers:rabbitmq", version.ref = "testcontainers" }
+testcontainers-rabbitmq = { module = "org.testcontainers:testcontainers-rabbitmq", version.ref = "testcontainers" }
 
 # used by core
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
