@@ -1,6 +1,6 @@
 # [![EDDIE - European Distributed Data Infrastructure for Energy](docs/images/eddie-horizontal.svg)](https://eddie.energy)
 
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11443/badge)](https://www.bestpractices.dev/en/projects/11443)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11443/badge)](https://www.bestpractices.dev/en/projects/11443/passing)
 
 [EDDIE](https://eddie.energy) provides a unified interface for requesting energy data from various MDAs (Metered Data Administrators) throughout
 the European Union.

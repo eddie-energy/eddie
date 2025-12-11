@@ -1,7 +1,7 @@
 import { defineConfig } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
 import { propertiesPlugin } from "./propertiesPlugin.mjs";
-import { imageToFigurePlugin } from "./imageToFigurePlugin.mts";
+import { figure } from "@mdit/plugin-figure";
 
 // https://vitepress.dev/reference/site-config
 export default withMermaid(
@@ -19,8 +19,9 @@ export default withMermaid(
     markdown: {
       config: (md) => {
         md.use(propertiesPlugin);
-        md.use(imageToFigurePlugin)
+        md.use(figure);
       },
+      math: true,
     },
     themeConfig: {
       // https://vitepress.dev/reference/default-theme-config

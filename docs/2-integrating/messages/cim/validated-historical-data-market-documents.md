@@ -201,9 +201,7 @@ The following is an example of a validated historical data market document.
 The validated historical data market document contains the `Point` class, which represents a single measurement for a certain resolution.
 To get the timestamp of a point, use the following equation:
 
-```math
-TimeStepPosition = (start of timeInterval) + ((position-1) * resolution)
-```
+$$TimeStepPosition = (startOfTimeInterval) + ((position-1) \times resolution)$$
 
 > [!WARNING] Incorrect Position
 > Some region connectors implement the position incorrectly, and return a timestamp instead of an index.
