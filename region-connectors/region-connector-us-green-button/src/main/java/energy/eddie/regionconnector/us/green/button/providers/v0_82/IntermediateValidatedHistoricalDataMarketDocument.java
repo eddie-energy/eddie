@@ -170,7 +170,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                             new SeriesPeriodComplexType.PointList()
                                     .withPoints(
                                             new PointComplexType()
-                                                    .withPosition(String.valueOf(timePeriod.getStart()))
+                                                    .withPosition("1")
                                                     .withEnergyQuantityQuantity(value)
                                                     .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED)
                                     )

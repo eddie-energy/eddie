@@ -101,7 +101,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                                                            seriesPeriod.getTimeInterval().getStart()),
                                         () -> assertEquals("2024-09-03T00:15Z",
                                                            seriesPeriod.getTimeInterval().getEnd()),
-                                        () -> assertEquals(String.valueOf(1725321600),
+                                        () -> assertEquals(String.valueOf(1),
                                                            seriesPeriod.getPointList()
                                                                        .getPoints()
                                                                        .getFirst()

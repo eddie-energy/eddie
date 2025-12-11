@@ -90,7 +90,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             var seriesPeriods = getSeriesPeriods(readingType, intervalBlock, scale);
             var vhd = new VHDMarketDocument()
                     .withMRID(UUID.randomUUID().toString())
-                    .withRevisionNumber(CommonInformationModelVersions.V1_04.version())
+                    .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
                     .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
                     .withCreatedDateTime(ZonedDateTime.now(US_ZONE_ID))
                     .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value())
@@ -113,6 +113,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                     )
                     .withTimeSeries(
                             new TimeSeries()
+                                    .withVersion("1")
                                     .withMRID(UUID.randomUUID().toString())
                                     .withBusinessType(Objects.requireNonNull(getBusinessType(flowDirection)).value())
                                     .withProduct(StandardEnergyProductTypeList.ACTIVE_POWER.value())
@@ -164,7 +165,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                     )
                     .withPoints(
                             new Point()
-                                    .withPosition(Math.toIntExact(timePeriod.getStart()))
+                                    .withPosition(1)
                                     .withEnergyQuantityQuantity(value)
                                     .withEnergyQuantityQuality(StandardQualityTypeList.AS_PROVIDED.value())
                     );
