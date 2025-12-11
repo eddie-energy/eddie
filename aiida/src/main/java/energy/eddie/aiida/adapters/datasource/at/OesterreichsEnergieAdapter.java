@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
+import java.util.List;
 
 public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<OesterreichsEnergieDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(OesterreichsEnergieAdapter.class);
@@ -58,9 +58,9 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
         try {
             var json = mapper.readValue(message.getPayload(), OesterreichsEnergieAdapterJson.class);
 
-            var aiidaRecordValues = convertEnergyDataToAiidaRecordValues(json);
-            if(!json.name().isEmpty()) {
-                aiidaRecordValues.add(convertNameToAiidaRecordValue(json));
+            var aiidaRecordValues = new ArrayList<>(convertEnergyDataToAiidaRecordValues(json));
+            if (!json.name().isEmpty()) {
+                aiidaRecordValues.add(convertNameToAiidaRecordValue(json.name()));
             }
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
@@ -71,8 +71,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
         }
     }
 
-    @SuppressWarnings("NonApiType")
-    private ArrayList<AiidaRecordValue> convertEnergyDataToAiidaRecordValues(OesterreichsEnergieAdapterJson json) {
+    private List<AiidaRecordValue> convertEnergyDataToAiidaRecordValues(OesterreichsEnergieAdapterJson json) {
         return json.energyData()
                    .entrySet()
                    .stream()
@@ -83,16 +82,16 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
                                 )
                    )
                    .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
-                   .collect(Collectors.toCollection(ArrayList::new));
+                   .toList();
     }
 
-    private AiidaRecordValue convertNameToAiidaRecordValue(OesterreichsEnergieAdapterJson json) {
+    private AiidaRecordValue convertNameToAiidaRecordValue(String name) {
         return new AiidaRecordValue(
                 "name",
                 ObisCode.DEVICE_ID_1,
-                json.name(),
+                name,
                 UnitOfMeasurement.NONE,
-                json.name(),
+                name,
                 UnitOfMeasurement.NONE
         );
     }
