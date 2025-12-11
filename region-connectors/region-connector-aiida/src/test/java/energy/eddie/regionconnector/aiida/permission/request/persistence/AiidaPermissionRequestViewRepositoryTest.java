@@ -10,9 +10,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.TestPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 import java.time.Clock;
@@ -34,8 +34,8 @@ class AiidaPermissionRequestViewRepositoryTest {
     @SuppressWarnings("unused")
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgresqlContainer =
-            new PostgreSQLContainer<>("postgres:17.5-alpine")
+    static PostgreSQLContainer postgresqlContainer =
+            new PostgreSQLContainer("postgres:17.5-alpine")
                     .withCopyFileToContainer(
                             MountableFile.forClasspathResource(CREATE_EDDIE_DB_AND_EMQX_USER_FILE),
                             CONTAINER_PATH

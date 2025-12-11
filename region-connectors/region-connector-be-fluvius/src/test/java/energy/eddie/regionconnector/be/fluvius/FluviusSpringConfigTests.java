@@ -13,9 +13,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @SuppressWarnings("SpringBootApplicationProperties")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {"region-connector.be.fluvius.redirect-uri=http://localhost:8080"})
@@ -25,7 +25,7 @@ class FluviusSpringConfigTests {
     @SuppressWarnings("unused")
     @Container
     @ServiceConnection
-    private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:15-alpine");
+    private static final PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer("postgres:15-alpine");
     @MockitoBean
     @SuppressWarnings("unused")
     private WebClient webClient;

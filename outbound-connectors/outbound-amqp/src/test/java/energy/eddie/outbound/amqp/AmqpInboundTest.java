@@ -10,7 +10,7 @@ import energy.eddie.cim.v0_91_08.ESMPDateTimeInterval;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import org.junit.jupiter.api.*;
-import org.testcontainers.containers.RabbitMQContainer;
+import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.nio.charset.StandardCharsets;
