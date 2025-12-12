@@ -1,3 +1,5 @@
+
+import de.undercouch.gradle.tasks.download.Verify
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import org.springframework.boot.gradle.tasks.bundling.BootJar
@@ -10,6 +12,7 @@ plugins {
     alias(libs.plugins.openapi.generator)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.undercouch.download)
 }
 
 group = "energy.eddie"
@@ -53,7 +56,8 @@ tasks.test {
 }
 
 // Directory for generated java files
-val generatedSwaggerJavaDir = "${project.layout.buildDirectory.asFile.get()}/generated/sources/swagger/main/java"
+val generatedSwaggerJavaDir = layout.buildDirectory.dir("generated/sources/swagger/main/java")
+val openApiFile = layout.buildDirectory.file("generated/sources/swagger/main/java/api/openapi.yaml")
 
 // Add generated sources to the main source set
 sourceSets {
@@ -71,11 +75,11 @@ sourceSets {
 
 val packagePrefix = "energy.eddie.regionconnector.dk.energinet"
 val customerApiPackagePrefix = "${packagePrefix}.customer"
-
+val energinetOpenApiChecksum = "a5e74a6173f9113b71bebe761d9856da"
 openApiGenerate {
     generatorName.set("java")
-    inputSpec.set("${projectDir}/src/main/resources/energinet-customer-api-client-v3.json")
-    outputDir.set(generatedSwaggerJavaDir)
+    remoteInputSpec.set("https://api.eloverblik.dk/customerapi/swagger/customerapi-v1.0/swagger.json")
+    outputDir.set(generatedSwaggerJavaDir.get().asFile.absolutePath)
     ignoreFileOverride.set("${projectDir}/src/main/resources/.openapi-generator-ignore")
 
     apiPackage.set("${customerApiPackagePrefix}.api")
@@ -86,11 +90,13 @@ openApiGenerate {
     generateApiDocumentation.set(false)
     generateModelTests.set(false)
     generateModelDocumentation.set(false)
-    configOptions.set(mapOf(
+    configOptions.set(
+        mapOf(
             "sourceFolder" to "/",
             "useJakartaEe" to "true",
             "dateLibrary" to "java8",
-    ))
+        )
+    )
 
     library.set("webclient")
     cleanupOutput.set(true)
@@ -98,8 +104,16 @@ openApiGenerate {
 
 val openApiTask = tasks.named("openApiGenerate")
 
-tasks.named("compileJava").configure {
+val openApiValidationTask = tasks.register<Verify>("verifyOpenApiSpecs") {
+    description = "Validates downloaded OpenAPI specs"
+    group = "verification"
     dependsOn(openApiTask)
+    src(openApiFile)
+    checksum(energinetOpenApiChecksum)
+}
+
+tasks.named("compileJava").configure {
+    dependsOn(openApiValidationTask)
 }
 
 sourceSets.configureEach {
