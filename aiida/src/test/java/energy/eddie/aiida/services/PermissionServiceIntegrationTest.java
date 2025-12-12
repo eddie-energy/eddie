@@ -21,9 +21,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -50,8 +50,8 @@ class PermissionServiceIntegrationTest {
 
     @Container
     @ServiceConnection
-    static final PostgreSQLContainer<?> timescale =
-            new PostgreSQLContainer<>(
+    static final PostgreSQLContainer timescale =
+            new PostgreSQLContainer(
                     DockerImageName.parse(TIMESCALEDB_IMAGE)
                                    .asCompatibleSubstituteFor("postgres"))
                     .withCopyFileToContainer(
