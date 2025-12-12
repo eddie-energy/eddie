@@ -104,7 +104,8 @@ jobs:
 
       - name: Run playwright tests
         env:
-          E2E_BASE_URL: "http://eddie:8080"
+          E2E_EDDIE_URL: "http://eddie:8080"
+          E2E_ADMIN_URL: "http://eddie:9090/outbound-connectors/admin-console"
           DK_ENERGINET_REFRESH_TOKEN: ${{ secrets.DK_ENERGINET_REFRESH_TOKEN }}
           DK_ENERGINET_METERING_POINT: ${{ secrets.DK_ENERGINET_METERING_POINT }}
         run: ./gradlew -Prun-e2e-tests e2e-tests:cleanTest e2e-tests:test

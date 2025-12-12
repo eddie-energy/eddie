@@ -13,6 +13,8 @@ import org.junit.jupiter.api.TestInfo;
 
 import java.nio.file.Paths;
 
+import static energy.eddie.e2etests.PlaywrightOptions.EDDIE_URL;
+
 /**
  * This E2E base test class setups the playwright environment and automatically takes a screenshot of <code>page</code>
  * when an error occurs or at the end of the test. Initially, the example app main screen is loaded as
@@ -52,7 +54,7 @@ public class E2eTestSetup {
     @BeforeEach
     void navigateToDemoPage(Page page) {
         this.page = page;
-        page.navigate("/demo");
+        page.navigate(EDDIE_URL + "/demo");
     }
 
     @AfterEach
