@@ -41,13 +41,16 @@ runs:
     #   must be used by all GitHub actions, supply chain attacks became common in recent times.
     - name: ghcr.io login
       shell: bash
-      run: echo "${{ inputs.secrets }}" | docker login ghcr.io -u $ --password-stdin
+      env:
+        SECRETS: ${{ inputs.secrets }}
+      run: echo "$SECRETS" | docker login ghcr.io -u $ --password-stdin
     - name: "Docker push image: EDDIE example-app"
       shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
       run: |
         IMAGE_NAME=eddie-example-app
         IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
-        VERSION=${{ inputs.version}}
         echo IMAGE_NAME: $IMAGE_NAME
         echo IMAGE_ID: $IMAGE_ID
         echo VERSION: $VERSION
@@ -55,10 +58,11 @@ runs:
         docker push $IMAGE_ID:$VERSION
     - name: "Docker push image: EDDIE"
       shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
       run: |
         IMAGE_NAME=eddie
         IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
-        VERSION=${{ inputs.version }}
         echo IMAGE_NAME: $IMAGE_NAME
         echo IMAGE_ID: $IMAGE_ID
         echo VERSION: $VERSION
@@ -76,9 +80,11 @@ runs:
 
     - name: Build and publish image
       shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        SECRETS: ${{ inputs.secrets }}
       run: |
         IMAGE_NAME=aiida
         IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
         echo $IMAGE_ID
-        VERSION=${{ inputs.version }} # Use the input version
-        ./gradlew --no-daemon jib --image $IMAGE_ID:$VERSION -Djib.to.auth.password=${{ inputs.secrets }}
+        ./gradlew --no-daemon jib --image $IMAGE_ID:$VERSION -Djib.to.auth.password=$SECRETS
