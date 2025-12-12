@@ -14,7 +14,7 @@ public class ReadingTypeValueConverter<T> {
     private final String uom;
     private final Map<String, MeasurementScale<T>> unitMap;
 
-    private static final Map<String, MeasurementScale<StandardUnitOfMeasureTypeList>> V1_04_MAP = Map.ofEntries(
+    private static final Map<String, MeasurementScale<StandardUnitOfMeasureTypeList>> v104MAP = Map.ofEntries(
             Map.entry("61", new MeasurementScale<>(StandardUnitOfMeasureTypeList.MEGAVOLTAMPERE, NONE_TO_MEGA)),
             Map.entry("38", new MeasurementScale<>(StandardUnitOfMeasureTypeList.WATT, 0)),
             Map.entry("63", new MeasurementScale<>(StandardUnitOfMeasureTypeList.KILOVOLT_AMPERE_REACTIVE, NONE_TO_KILO)),
@@ -32,7 +32,7 @@ public class ReadingTypeValueConverter<T> {
             Map.entry("45", new MeasurementScale<>(StandardUnitOfMeasureTypeList.CUBIC_METRES_PER_SECOND, 0))
     );
 
-    private static final Map<String, MeasurementScale<UnitOfMeasureTypeList>> V0_82_MAP = Map.ofEntries(
+    private static final Map<String, MeasurementScale<UnitOfMeasureTypeList>> v082MAP = Map.ofEntries(
             Map.entry("61", new MeasurementScale<>(UnitOfMeasureTypeList.MEGAVOLTAMPERE, NONE_TO_MEGA)),
             Map.entry("38", new MeasurementScale<>(UnitOfMeasureTypeList.WATT, 0)),
             Map.entry("63", new MeasurementScale<>(UnitOfMeasureTypeList.KILOVOLT_AMPERE_REACTIVE, NONE_TO_KILO)),
@@ -61,20 +61,20 @@ public class ReadingTypeValueConverter<T> {
         this.unitMap = unitMap;
     }
 
-    public static ReadingTypeValueConverter<StandardUnitOfMeasureTypeList> UnitOfMeasureTypeListV1_04(ReadingType rt) {
-        return new ReadingTypeValueConverter<>(rt, V1_04_MAP);
+    public static ReadingTypeValueConverter<StandardUnitOfMeasureTypeList> UnitOfMeasureTypeListV104(ReadingType rt) {
+        return new ReadingTypeValueConverter<>(rt, v104MAP);
     }
 
-    public static ReadingTypeValueConverter<StandardUnitOfMeasureTypeList> UnitOfMeasureTypeListV1_04(int scale, String vom) {
-        return new ReadingTypeValueConverter<>(scale, vom, V1_04_MAP);
+    public static ReadingTypeValueConverter<StandardUnitOfMeasureTypeList> UnitOfMeasureTypeListV104(int scale, String vom) {
+        return new ReadingTypeValueConverter<>(scale, vom, v104MAP);
     }
 
-    public static ReadingTypeValueConverter<UnitOfMeasureTypeList> UnitOfMeasureTypeListV0_82(ReadingType rt) {
-        return new ReadingTypeValueConverter<>(rt, V0_82_MAP);
+    public static ReadingTypeValueConverter<UnitOfMeasureTypeList> UnitOfMeasureTypeListV082(ReadingType rt) {
+        return new ReadingTypeValueConverter<>(rt, v082MAP);
     }
 
-    public static ReadingTypeValueConverter<UnitOfMeasureTypeList> UnitOfMeasureTypeListV0_82(int scale, String vom) {
-        return new ReadingTypeValueConverter<>(scale, vom, V0_82_MAP);
+    public static ReadingTypeValueConverter<UnitOfMeasureTypeList> UnitOfMeasureTypeListV082(int scale, String vom) {
+        return new ReadingTypeValueConverter<>(scale, vom, v082MAP);
     }
 
     /**
@@ -92,7 +92,4 @@ public class ReadingTypeValueConverter<T> {
         return new MeasurementScale<>(mapping.unit(), scale + mapping.scale());
     }
 
-    private int calculateScale(int addScale) {
-        return addScale + scale;
-    }
 }

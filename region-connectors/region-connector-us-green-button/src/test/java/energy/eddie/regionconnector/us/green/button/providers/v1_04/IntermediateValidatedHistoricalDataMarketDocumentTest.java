@@ -10,7 +10,6 @@ import energy.eddie.cim.serde.SerializationException;
 import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
-import energy.eddie.cim.v1_04.*;
 import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.XmlLoader;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;

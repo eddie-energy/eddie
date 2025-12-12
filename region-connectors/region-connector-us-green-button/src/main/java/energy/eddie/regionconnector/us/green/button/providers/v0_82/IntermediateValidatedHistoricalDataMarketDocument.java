@@ -81,7 +81,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             var end = Instant.ofEpochSecond(interval.getStart() + interval.getDuration()).atZone(ZoneOffset.UTC);
             var esmpInterval = new EsmpTimeInterval(start, end);
             var flowDirection = getDirection(readingType.getFlowDirection());
-            var scale = ReadingTypeValueConverter.UnitOfMeasureTypeListV0_82(readingType).scale();
+            var scale = ReadingTypeValueConverter.UnitOfMeasureTypeListV082(readingType).scale();
             var seriesPeriods = getSeriesPeriods(readingType, intervalBlock, scale);
             var vhd = new ValidatedHistoricalDataMarketDocumentComplexType()
                     .withMRID(UUID.randomUUID().toString())

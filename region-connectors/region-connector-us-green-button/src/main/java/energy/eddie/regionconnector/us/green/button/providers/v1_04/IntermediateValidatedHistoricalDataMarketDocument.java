@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.us.green.button.providers.v1_04;
 
+import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.IdentifiablePayload;
@@ -35,7 +36,7 @@ import java.util.UUID;
 import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata.US_ZONE_ID;
 
 class IntermediateValidatedHistoricalDataMarketDocument {
-    private static final Logger LOGGER = LoggerFactory.getLogger(energy.eddie.regionconnector.us.green.button.providers.v1_04.IntermediateValidatedHistoricalDataMarketDocument.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IntermediateValidatedHistoricalDataMarketDocument.class);
     private final UsGreenButtonPermissionRequest permissionRequest;
     private final SyndFeed syndFeed;
     private final Unmarshaller unmarshaller;
@@ -59,83 +60,93 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         var permissionId = permissionRequest.permissionId();
         LOGGER.info("Mapping validated historical data of permission request {} to CIM", permissionId);
         var query = new Query(syndFeed, unmarshaller);
-        var permissionAdmin = permissionRequest.dataSourceInformation().permissionAdministratorId();
-        var clientId = greenButtonConfiguration.clientIds().getOrDefault(permissionAdmin, "");
         var readings = query.findAllByTitle("ReadingType");
         var vhds = new ArrayList<VHDEnvelope>(readings.size());
         for (var reading : readings) {
             var related = reading.findRelatedLink("related").getHref();
             var optionalIntervalBlock = query.findFirstBySelfLinkAndTitle(related, "IntervalBlock");
             var readingType = query.unmarshal(reading, ReadingType.class);
+
             if (optionalIntervalBlock.isEmpty() || readingType == null) {
-                LOGGER.warn("Could not parse interval block or reading type {} for permission request {}",
+                LOGGER.warn("Could not parse interval block for reading type {} for permission request {}",
                         related,
                         permissionId);
                 continue;
             }
-            var meterUid = Query.intervalBlockSelfToUsagePointId(optionalIntervalBlock.get());
-            var intervalBlock = query.unmarshal(optionalIntervalBlock.get(), IntervalBlock.class);
+
+            var optionalIntervalBlockVal = optionalIntervalBlock.get();
+            var intervalBlock = query.unmarshal(optionalIntervalBlockVal, IntervalBlock.class);
             if (intervalBlock == null) {
                 LOGGER.warn("Could not parse interval block {} for permission request {}", related, permissionId);
-                continue;
+            } else {
+                var vhd = getVHDMarketDocument(readingType, intervalBlock, optionalIntervalBlockVal);
+                vhds.add(new VhdEnvelopeWrapper(vhd, permissionRequest).wrap());
             }
-            var interval = intervalBlock.getInterval();
-            var start = Instant.ofEpochSecond(interval.getStart()).atZone(ZoneOffset.UTC);
-            var end = Instant.ofEpochSecond(interval.getStart() + interval.getDuration()).atZone(ZoneOffset.UTC);
-            var esmpInterval = new ESMPDateTimeInterval()
-                    .withStart(start.toString())
-                    .withEnd(end.toString());
-            var flowDirection = getDirection(readingType.getFlowDirection());
-            var scale = ReadingTypeValueConverter.UnitOfMeasureTypeListV1_04(readingType).scale();
-            var seriesPeriods = getSeriesPeriods(readingType, intervalBlock, scale);
-            var vhd = new VHDMarketDocument()
-                    .withMRID(UUID.randomUUID().toString())
-                    .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
-                    .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
-                    .withCreatedDateTime(ZonedDateTime.now(US_ZONE_ID))
-                    .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value())
-                    .withReceiverMarketParticipantMarketRoleType(StandardRoleTypeList.CONSUMER.value())
-                    .withProcessProcessType(StandardProcessTypeList.REALISED.value())
-                    .withSenderMarketParticipantMRID(
-                            new PartyIDString()
-                                    .withCodingScheme(StandardCodingSchemeTypeList.CGM.value())
-                                    .withValue(permissionAdmin)
-                    )
-                    .withReceiverMarketParticipantMRID(
-                            new PartyIDString()
-                                    .withCodingScheme(cimConfig.eligiblePartyNationalCodingScheme().value())
-                                    .withValue(clientId)
-                    )
-                    .withPeriodTimeInterval(
-                            new ESMPDateTimeInterval()
-                                    .withStart(esmpInterval.getStart())
-                                    .withEnd(esmpInterval.getEnd())
-                    )
-                    .withTimeSeries(
-                            new TimeSeries()
-                                    .withVersion("1")
-                                    .withMRID(UUID.randomUUID().toString())
-                                    .withBusinessType(Objects.requireNonNull(getBusinessType(flowDirection)).value())
-                                    .withProduct(StandardEnergyProductTypeList.ACTIVE_POWER.value())
-                                    .withFlowDirectionDirection(Objects.requireNonNull(flowDirection).value())
-                                    .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregate(
-                                            AggregateKind.SUM
-                                    )
-                                    .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(
-                                            getCommodity(readingType)
-                                    )
-                                    .withEnergyMeasurementUnitName(scale.unit().value())
-                                    .withMarketEvaluationPointMRID(
-                                            new MeasurementPointIDString()
-                                                    .withCodingScheme(StandardCodingSchemeTypeList.CGM.value())
-                                                    .withValue(meterUid)
-                                    )
-                                    .withReasonCode(StandardReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED.value())
-                                    .withPeriods(seriesPeriods)
-                    );
-            vhds.add(new VhdEnvelopeWrapper(vhd, permissionRequest).wrap());
         }
         return vhds;
+    }
+
+    private VHDMarketDocument getVHDMarketDocument(ReadingType readingType,
+                                                   IntervalBlock intervalBlock,
+                                                   SyndEntry optionalIntervalBlockVal) throws UnsupportedUnitException {
+        var interval = intervalBlock.getInterval();
+        var start = Instant.ofEpochSecond(interval.getStart()).atZone(ZoneOffset.UTC);
+        var end = Instant.ofEpochSecond(interval.getStart() + interval.getDuration()).atZone(ZoneOffset.UTC);
+        var esmpInterval = new ESMPDateTimeInterval()
+                .withStart(start.toString())
+                .withEnd(end.toString());
+        var flowDirection = getDirection(readingType.getFlowDirection());
+        var scale = ReadingTypeValueConverter.UnitOfMeasureTypeListV104(readingType).scale();
+        var seriesPeriods = getSeriesPeriods(readingType, intervalBlock, scale);
+        var permissionAdmin = permissionRequest.dataSourceInformation().permissionAdministratorId();
+        var clientId = greenButtonConfiguration.clientIds().getOrDefault(permissionAdmin, "");
+        var meterUid = Query.intervalBlockSelfToUsagePointId(optionalIntervalBlockVal);
+
+        return new VHDMarketDocument()
+                .withMRID(UUID.randomUUID().toString())
+                .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
+                .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
+                .withCreatedDateTime(ZonedDateTime.now(US_ZONE_ID))
+                .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value())
+                .withReceiverMarketParticipantMarketRoleType(StandardRoleTypeList.CONSUMER.value())
+                .withProcessProcessType(StandardProcessTypeList.REALISED.value())
+                .withSenderMarketParticipantMRID(
+                        new PartyIDString()
+                                .withCodingScheme(StandardCodingSchemeTypeList.CGM.value())
+                                .withValue(permissionAdmin)
+                )
+                .withReceiverMarketParticipantMRID(
+                        new PartyIDString()
+                                .withCodingScheme(cimConfig.eligiblePartyNationalCodingScheme().value())
+                                .withValue(clientId)
+                )
+                .withPeriodTimeInterval(
+                        new ESMPDateTimeInterval()
+                                .withStart(esmpInterval.getStart())
+                                .withEnd(esmpInterval.getEnd())
+                )
+                .withTimeSeries(
+                        new TimeSeries()
+                                .withVersion("1")
+                                .withMRID(UUID.randomUUID().toString())
+                                .withBusinessType(Objects.requireNonNull(getBusinessType(flowDirection)).value())
+                                .withProduct(StandardEnergyProductTypeList.ACTIVE_POWER.value())
+                                .withFlowDirectionDirection(Objects.requireNonNull(flowDirection).value())
+                                .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregate(
+                                        AggregateKind.SUM
+                                )
+                                .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(
+                                        getCommodity(readingType)
+                                )
+                                .withEnergyMeasurementUnitName(scale.unit().value())
+                                .withMarketEvaluationPointMRID(
+                                        new MeasurementPointIDString()
+                                                .withCodingScheme(StandardCodingSchemeTypeList.CGM.value())
+                                                .withValue(meterUid)
+                                )
+                                .withReasonCode(StandardReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED.value())
+                                .withPeriods(seriesPeriods)
+                );
     }
 
     private List<SeriesPeriod> getSeriesPeriods(ReadingType readingType,

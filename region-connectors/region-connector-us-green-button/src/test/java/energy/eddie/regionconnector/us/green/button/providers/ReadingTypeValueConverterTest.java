@@ -33,20 +33,20 @@ class ReadingTypeValueConverterTest {
         var readingType = new ReadingType()
                 .withUom(String.valueOf(unit))
                 .withPowerOfTenMultiplier("0");
-        var converterV0_82 = ReadingTypeValueConverter.UnitOfMeasureTypeListV0_82(readingType);
-        var converterV1_04 = ReadingTypeValueConverter.UnitOfMeasureTypeListV1_04(readingType);
+        var converterV082 = ReadingTypeValueConverter.UnitOfMeasureTypeListV082(readingType);
+        var converterV104 = ReadingTypeValueConverter.UnitOfMeasureTypeListV104(readingType);
 
         // When & Then
-        assertThrows(UnsupportedUnitException.class, converterV0_82::scale);
-        assertThrows(UnsupportedUnitException.class, converterV1_04::scale);
+        assertThrows(UnsupportedUnitException.class, converterV082::scale);
+        assertThrows(UnsupportedUnitException.class, converterV104::scale);
     }
 
     @ParameterizedTest
     @MethodSource
     void testScale_onKnownUnit_doesNotThrow(int unit) {
         // Given
-        var converterV0_82 = ReadingTypeValueConverter.UnitOfMeasureTypeListV0_82(0, String.valueOf(unit));
-        var converterV1_04 = ReadingTypeValueConverter.UnitOfMeasureTypeListV1_04(0, String.valueOf(unit));
+        var converterV0_82 = ReadingTypeValueConverter.UnitOfMeasureTypeListV082(0, String.valueOf(unit));
+        var converterV1_04 = ReadingTypeValueConverter.UnitOfMeasureTypeListV104(0, String.valueOf(unit));
 
         // When & Then
         assertDoesNotThrow(converterV0_82::scale);
