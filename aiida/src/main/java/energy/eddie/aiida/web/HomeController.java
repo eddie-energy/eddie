@@ -27,7 +27,7 @@ public class HomeController {
         model.addAttribute("keycloakUrl", keycloakUrl);
         model.addAttribute("keycloakRealm", keycloakRealm);
         model.addAttribute("keycloakClient", keycloakClient);
-        return "vue";
+        return "index";
     }
 
     @GetMapping("/installer")

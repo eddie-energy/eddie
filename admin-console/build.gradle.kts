@@ -42,6 +42,10 @@ tasks.withType<JavaCompile>().configureEach {
     dependsOn(":pnpmBuildAdminConsole")
 }
 
+tasks.withType<ProcessResources>().configureEach {
+    dependsOn(":pnpmBuildAdminConsole")
+}
+
 tasks.test {
     useJUnitPlatform()
 }

@@ -92,35 +92,38 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
     // ordered schema files to prevent repeated generation of Java classes.
     val orderedSchemaFiles = setOf(
         // V0.82
-        File(cimSchemaFiles, "/v0_82/vhd/ValidatedHistoricalData_MarketDocument_2024-06-21T12.10.53.xsd"),
-        File(cimSchemaFiles, "/v0_82/ap/AccountingPoint_MarketDocument_2024-06-21T11.38.58.xsd"),
-        File(cimSchemaFiles, "/v0_82/pmd/Permission_Envelope_2024-06-21T11.51.02.xsd"),
+        cimSchemaFiles.resolve("v0_82/vhd/ValidatedHistoricalData_MarketDocument_2024-06-21T12.10.53.xsd"),
+        cimSchemaFiles.resolve("v0_82/ap/AccountingPoint_MarketDocument_2024-06-21T11.38.58.xsd"),
+        cimSchemaFiles.resolve("v0_82/pmd/Permission_Envelope_2024-06-21T11.51.02.xsd"),
         // V0.91.08
-        File(cimSchemaFiles, "/v0_91_08/RedistributionTransactionRequest Document_Annotated.xsd"),
+        cimSchemaFiles.resolve("v0_91_08/RedistributionTransactionRequest Document_Annotated.xsd"),
         // V1.04
-        File(cimSchemaFiles, "/v1_04/vhd/ValidatedHistoricalData Document_v1.04_annotated.xsd"),
-        File(cimSchemaFiles, "/v1_04/rtd/RealTimeData Document_v1.04_Annotated.xsd"),
-        File(cimSchemaFiles, "/v1_04/pmd/Permission Document_v1.04_annotated.xsd"),
-        File(cimSchemaFiles, "/v1_04/ap/AccountingPointData Document_v1.04_annotated.xsd"),
+        cimSchemaFiles.resolve("v1_04/vhd/ValidatedHistoricalData Document_v1.04_annotated.xsd"),
+        cimSchemaFiles.resolve("v1_04/rtd/RealTimeData Document_v1.04_Annotated.xsd"),
+        cimSchemaFiles.resolve("v1_04/pmd/Permission Document_v1.04_annotated.xsd"),
+        cimSchemaFiles.resolve("v1_04/ap/AccountingPointData Document_v1.04_annotated.xsd"),
     )
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed
-    inputs.files(fileTree(cimSchemaFiles).include("**/*.xsd"))
+    inputs.dir(cimSchemaFiles)
     outputs.dir(generatedXJCJavaDir)
 
-    val xsdExtension = "xsd"
     doLast {
-        // make sure the directory exists
-        file(generatedXJCJavaDir).mkdirs()
+        // Create a copy of the source file to not accidentally manipulate the real file
+        copy {
+            from(cimSchemaFiles)
+            into(temporaryDir)
+        }
+
         val xsdToGenerate = ArrayList<Triple<File, File, File>>()
         // Copy all files first, so they exist in the target directory
         for (srcFile in cimSchemaFiles.walkTopDown()) {
-            if (!srcFile.isFile || srcFile.extension != xsdExtension) {
+            if (!srcFile.isFile || srcFile.extension != "xsd") {
                 continue
             }
-            val xjbFileBasename = srcFile.name.dropLast(xsdExtension.length) + "xjb"
-            // Create a copy of the source file to not accidentally manipulate the real file
-            val tmpSrcFile = srcFile.copyTo(temporaryDir.resolve(srcFile.relativeTo(cimSchemaFiles)), true)
+            val xjbFileBasename = srcFile.nameWithoutExtension + ".xjb"
+
+            val tmpSrcFile = temporaryDir.resolve(srcFile.relativeTo(cimSchemaFiles))
             val xjbFile = temporaryDir.resolve(
                 srcFile.parentFile.resolve(xjbFileBasename).relativeTo(cimSchemaFiles)
             )
@@ -206,8 +209,7 @@ publishing {
 }
 
 fun generateBindingsFile(rootXsd: File, bindingsFilePath: String) {
-    val documentBuilderFactory = DocumentBuilderFactory
-        .newInstance()
+    val documentBuilderFactory = DocumentBuilderFactory.newInstance()
     documentBuilderFactory.isNamespaceAware = true
     // Get all referenced XSDs
     val xsdNs = "http://www.w3.org/2001/XMLSchema"
@@ -249,7 +251,7 @@ fun generateBindingsFile(rootXsd: File, bindingsFilePath: String) {
     }
     bindings
         .append("</bindings>\n")
-    File(bindingsFilePath).writeText(bindings.toString())
+    file(bindingsFilePath).writeText(bindings.toString())
 }
 
 fun getAllXsdReferences(nodes: NodeList, relative: File): Set<File> {

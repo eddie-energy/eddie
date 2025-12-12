@@ -101,7 +101,11 @@ tasks.register<Test>("integrationTest") {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    dependsOn(":pnpmBuildAiidaUi")
+    dependsOn(":pnpmBuildAiida")
+}
+
+tasks.withType<ProcessResources>().configureEach {
+    dependsOn(":pnpmBuildAiida")
 }
 
 jib {

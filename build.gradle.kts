@@ -40,35 +40,55 @@ tasks.register<PnpmTask>("pnpmBuild") {
     pnpmCommand.set(listOf("run", "build"))
 }
 
+interface InjectedFsOps {
+    @get:Inject val fs: FileSystemOperations
+}
+
 tasks.register<PnpmTask>("pnpmBuildAdminConsole") {
     group = "build"
-    description = "builds and bundles the admin console ui"
+    description = "Builds the admin console UI"
     dependsOn("pnpmInstall")
     pnpmCommand.set(listOf("run", "admin:build"))
     environment = System.getenv()
 
+    inputs.dir("admin-console/ui")
+    outputs.dir("admin-console/src/main/resources/public")
+    outputs.file("admin-console/src/main/resources/templates/index.html")
+
+    val injected = project.objects.newInstance<InjectedFsOps>()
     doLast {
-        copy {
+        injected.fs.copy {
             from("admin-console/ui/dist")
             into("admin-console/src/main/resources/public")
         }
-        file("admin-console/src/main/resources/public/index.html").renameTo(file("admin-console/src/main/resources/templates/index.html"))
+        injected.fs.copy {
+            from("admin-console/ui/dist/index.html")
+            into("admin-console/src/main/resources/templates")
+        }
     }
 }
 
-tasks.register<PnpmTask>("pnpmBuildAiidaUi") {
+tasks.register<PnpmTask>("pnpmBuildAiida") {
     group = "build"
-    description = "builds and bundles the AIIDA UI"
+    description = "Builds the AIIDA UI"
     dependsOn("pnpmInstall")
     pnpmCommand.set(listOf("run", "aiida:build"))
     environment = System.getenv()
 
+    inputs.dir("aiida/ui")
+    outputs.dir("aiida/src/main/resources/public")
+    outputs.file("aiida/src/main/resources/templates/index.html")
+
+    val injected = project.objects.newInstance<InjectedFsOps>()
     doLast {
-        copy {
+        injected.fs.copy {
             from("aiida/ui/dist")
             into("aiida/src/main/resources/public")
         }
-        file("aiida/src/main/resources/public/index.html").renameTo(file("aiida/src/main/resources/templates/vue.html"))
+        injected.fs.copy {
+            from("aiida/ui/dist/index.html")
+            into("aiida/src/main/resources/templates")
+        }
     }
 }
 
