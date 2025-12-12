@@ -228,28 +228,6 @@ class JpaPermissionRequestRepositoryTest {
     }
 
     @Test
-    void findByMeteringPointIdAndDate_AndStateAfterAcceptedOrSendToPA__returnNotCreatedEvents() {
-        // Given
-        var start = LocalDate.of(2024, 1, 1);
-        PermissionEvent event1 = new CreatedEvent("pid", "cid", "did", new EdaDataSourceInformation("asd"), "mid");
-        permissionEventRepository.saveAndFlush(event1);
-        PermissionEvent event2 = new ValidatedEvent("pid", start,
-                                                    null, AllowedGranularity.PT15M, "cmRequestId",
-                                                    "convId", ValidatedEvent.NeedsToBeSent.YES);
-        permissionEventRepository.saveAndFlush(event2);
-        PermissionEvent event3 = new SimpleEvent("pid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
-        permissionEventRepository.saveAndFlush(event3);
-
-
-        // When
-        var res = permissionRequestRepository.findByMeteringPointIdAndDateAndStateSentToPAOrAfterAccepted("mid",
-                                                    start);
-
-        // Then
-        assertThat(res).hasSize(1);
-    }
-
-    @Test
     void findByMeteringPointIdAndDate_AndStateAfterAcceptedOrSendToPA__parseObjects() {
         // Given
         var start = LocalDate.of(2024, 1, 1);

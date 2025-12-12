@@ -6,7 +6,6 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.AcceptedEvent;
@@ -21,8 +20,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Set;
 
 import static org.mockito.Mockito.*;
 

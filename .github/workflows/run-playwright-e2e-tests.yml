@@ -55,15 +55,22 @@ jobs:
         run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} build
 
       - name: Write secrets to files
+        env:
+          EDDIE_JWT_HMAC_SECRET: ${{ secrets.EDDIE_JWT_HMAC_SECRET }}
+          E2E_TEST_ALL_SECRETS: ${{ secrets.E2E_TEST_ALL_SECRETS }}
+          E2E_MIJN_AANSLUITING_JKS: ${{ secrets.E2E_MIJN_AANSLUITING_JKS }}
+          E2E_FLUVIUS_CER: ${{ secrets.E2E_FLUVIUS_CER }}
+          E2E_FLUVIUS_KEY: ${{ secrets.E2E_FLUVIUS_KEY }}
+          PONTON_ID_DAT: ${{ secrets.PONTON_ID_DAT_FILE }}
         run: |
-          echo "${{ secrets.E2E_TEST_ALL_SECRETS }}" >  ${{ env.E2E_COMPOSE_SECRETS_FILE }}
-          echo "${{ secrets.EDDIE_JWT_HMAC_SECRET }}" >>  ${{ env.E2E_COMPOSE_SECRETS_FILE }}
+          echo "$E2E_TEST_ALL_SECRETS" > ${{ env.E2E_COMPOSE_SECRETS_FILE }}
+          echo "$EDDIE_JWT_HMAC_SECRET" >> ${{ env.E2E_COMPOSE_SECRETS_FILE }}
           mkdir -p ${{ env.KEYS_FOLDER }}
-          echo -n ${{ secrets.E2E_MIJN_AANSLUITING_JKS }} | base64 -di > ${{ env.MIJN_AANSLUITING_JKS_FILE }}
-          echo -n ${{ secrets.E2E_FLUVIUS_CER }} | base64 -di > ${{ env.FLUVIUS_CER_FILE }}
-          echo -n ${{ secrets.E2E_FLUVIUS_KEY }} | base64 -di > ${{ env.FLUVIUS_KEY_FILE }}
+          echo -n "$E2E_MIJN_AANSLUITING_JKS" | base64 -di > ${{ env.MIJN_AANSLUITING_JKS_FILE }}
+          echo -n "$E2E_FLUVIUS_CER" | base64 -di > ${{ env.FLUVIUS_CER_FILE }}
+          echo -n "$E2E_FLUVIUS_KEY" | base64 -di > ${{ env.FLUVIUS_KEY_FILE }}
           mkdir -p ${{ env.PONTON_FOLDER }}
-          echo -n "${{ secrets.PONTON_ID_DAT_FILE }}" | base64 -di > ${{ env.PONTON_ID_DAT_FILE }}
+          echo -n "$PONTON_ID_DAT" | base64 -di > ${{ env.PONTON_ID_DAT_FILE }}
 
       - name: Start docker containers
         run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} up -d --wait

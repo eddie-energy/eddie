@@ -7,7 +7,6 @@ import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConnector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;

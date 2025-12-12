@@ -23,6 +23,8 @@ import static energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor.E
  * documentation for the European MasterData.
  */
 public class OpenApiDocs {
+    private static final String HOST = "localhost";
+
     @Bean
     @Primary
     public SwaggerUiConfigProperties swaggerUiConfig(
@@ -39,7 +41,7 @@ public class OpenApiDocs {
                     String docUrl = UriComponentsBuilder
                             .newInstance()
                             .scheme("http")
-                            .host("localhost")
+                            .host(HOST)
                             .port(serverPort)
                             .pathSegment(ALL_REGION_CONNECTORS_BASE_URL_PATH)
                             .pathSegment(name)
@@ -58,7 +60,7 @@ public class OpenApiDocs {
                     String docUrl = UriComponentsBuilder
                             .newInstance()
                             .scheme("http")
-                            .host("localhost")
+                            .host(HOST)
                             .port(managementPort)
                             .pathSegment("outbound-connectors")
                             .pathSegment(name)
@@ -80,7 +82,7 @@ public class OpenApiDocs {
         var url = UriComponentsBuilder
                 .newInstance()
                 .scheme("http")
-                .host("localhost")
+                .host(HOST)
                 .port(serverPort)
                 .pathSegment("european-masterdata")
                 .path(SWAGGER_DOC_PATH)
