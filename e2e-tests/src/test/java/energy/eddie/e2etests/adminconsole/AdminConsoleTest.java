@@ -13,11 +13,10 @@ import org.junit.jupiter.api.TestInfo;
 import java.nio.file.Paths;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static energy.eddie.e2etests.PlaywrightOptions.BASE_URL;
+import static energy.eddie.e2etests.PlaywrightOptions.ADMIN_URL;
 
 @UsePlaywright(PlaywrightOptions.class)
 class AdminConsoleTest {
-    private static final String ADMIN_URL = BASE_URL.replace("8080", "9090") + "/outbound-connectors/admin-console";
     private static final String LOGIN_URL = ADMIN_URL + "/login";
 
     @Test
