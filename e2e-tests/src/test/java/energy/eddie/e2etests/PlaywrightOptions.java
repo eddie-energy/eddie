@@ -14,6 +14,7 @@ public class PlaywrightOptions implements OptionsFactory {
     @Override
     public Options getOptions() {
         return new Options()
+                .setTrace(Options.Trace.RETAIN_ON_FAILURE)
                 .setBaseUrl(BASE_URL)
                 .setChannel("chromium")
                 .setHeadless(HEADLESS);
