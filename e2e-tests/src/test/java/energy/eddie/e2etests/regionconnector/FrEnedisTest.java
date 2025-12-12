@@ -1,8 +1,8 @@
-package energy.eddie.tests.e2e.fr;
+package energy.eddie.e2etests.regionconnector;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.playwright.Locator;
-import energy.eddie.tests.e2e.E2eTestSetup;
+import energy.eddie.e2etests.E2eTestSetup;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
