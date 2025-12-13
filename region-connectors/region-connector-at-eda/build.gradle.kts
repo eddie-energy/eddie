@@ -1,3 +1,4 @@
+import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.VerifyAction
 import energy.eddie.configureJavaCompileWithErrorProne
 import org.springframework.boot.gradle.tasks.bundling.BootJar
@@ -132,7 +133,43 @@ sourceSets {
     }
 }
 
+// Path to XSD files
+val edaSchemaPath = "schemas/eda/xsd/"
+val edaSchemaDir = layout.buildDirectory.dir(edaSchemaPath)
+val sources: List<Pair<URI, String>> = edaVersionMatrix.flatMap { (key, value) ->
+    value.map { (version, checksum) ->
+        URI.create(key.format(version, version)) to checksum
+    }
+}
+val downloadEDASchemas = tasks.register<Download>("downloadEDASchemas") {
+    description = "Downloads EDA XML Schemas"
+    group = "download"
+    src(sources.map { it.first })
+    dest(edaSchemaDir)
+    overwrite(false)
+    onlyIfModified(false)
+}
+
+val validatedEDASchemas = tasks.register("verifyEDASchemas") {
+    description = "Verifies the EDA Schemas"
+    group = "download"
+    dependsOn(downloadEDASchemas)
+    inputs.dir(edaSchemaDir)
+    doLast {
+        if (!downloadEDASchemas.get().didWork)
+            return@doLast
+        val verify = VerifyAction(layout)
+        sources.forEach { (url, checksum) ->
+            val file = file(url.toURL().file)
+            verify.src(layout.buildDirectory.file("$edaSchemaPath${file.name}"))
+            verify.checksum(checksum)
+            verify.execute()
+        }
+    }
+}
+
 val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasses") {
+    dependsOn(validatedEDASchemas)
     description = "Generate EDA Java Classes from XSD files"
     group = "xml"
     classpath(jaxb)
@@ -140,28 +177,6 @@ val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasse
 
     // make sure the directory exists
     file(generatedXJCJavaDir).mkdirs()
-
-    // Path to XSD files
-    val edaSchemaDir = layout.buildDirectory.dir("schemas/eda/xsd/")
-    val destination = edaSchemaDir.get()
-    val sources: List<Pair<URI, String>> = edaVersionMatrix.flatMap { (key, value) ->
-        value.map { (version, checksum) ->
-            URI.create(key.format(version, version)) to checksum
-        }
-    }
-    download.run {
-        src(sources.map { it.first })
-        dest(destination)
-        overwrite(false)
-        onlyIfModified(false)
-    }
-    val verify = VerifyAction(layout)
-    sources.forEach { (url, checksum) ->
-        val file = file(url.toURL().file)
-        verify.src(destination.file(file.name))
-        verify.checksum(checksum)
-        verify.execute()
-    }
 
     // explicitly set the encoding because of rare issues discovered on Windows 10
     args(
@@ -177,7 +192,7 @@ val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasse
     )
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed
-    inputs.files(fileTree(edaSchemaDir).include("**/*.xsd"))
+    inputs.dir(edaSchemaDir)
     outputs.dir(generatedXJCJavaDir)
 }
 
