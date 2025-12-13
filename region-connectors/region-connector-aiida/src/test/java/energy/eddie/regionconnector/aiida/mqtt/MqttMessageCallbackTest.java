@@ -30,6 +30,7 @@ import reactor.test.StepVerifier;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -147,8 +148,8 @@ class MqttMessageCallbackTest {
 
         var permission = mock(AiidaPermissionRequest.class);
         when(permission.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-        when(permission.start()).thenReturn(LocalDate.now().minusDays(1));
-        when(permission.end()).thenReturn(LocalDate.now().plusDays(1));
+        when(permission.start()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(1));
+        when(permission.end()).thenReturn(LocalDate.now(ZoneId.systemDefault()).plusDays(1));
         when(permissionRequestViewRepository.findByPermissionId("perm-1")).thenReturn(Optional.of(permission));
 
         // When
@@ -213,8 +214,8 @@ class MqttMessageCallbackTest {
 
         var permission = mock(AiidaPermissionRequest.class);
         when(permission.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-        when(permission.start()).thenReturn(LocalDate.now().plusDays(1));
-        when(permission.end()).thenReturn(LocalDate.now().plusDays(10));
+        when(permission.start()).thenReturn(LocalDate.now(ZoneId.systemDefault()).plusDays(1));
+        when(permission.end()).thenReturn(LocalDate.now(ZoneId.systemDefault()).plusDays(10));
         when(permissionRequestViewRepository.findByPermissionId("perm-1")).thenReturn(Optional.of(permission));
 
         // When, Then
@@ -234,8 +235,8 @@ class MqttMessageCallbackTest {
 
         var permission = mock(AiidaPermissionRequest.class);
         when(permission.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-        when(permission.start()).thenReturn(LocalDate.now().minusDays(10));
-        when(permission.end()).thenReturn(LocalDate.now().minusDays(1));
+        when(permission.start()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(10));
+        when(permission.end()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(1));
         when(permissionRequestViewRepository.findByPermissionId("perm-1")).thenReturn(Optional.of(permission));
 
         // When, Then
@@ -253,8 +254,8 @@ class MqttMessageCallbackTest {
         var permission = mock(AiidaPermissionRequest.class);
         when(permission.permissionId()).thenReturn("perm-1");
         when(permission.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-        when(permission.start()).thenReturn(LocalDate.now().minusDays(1));
-        when(permission.end()).thenReturn(LocalDate.now().plusDays(1));
+        when(permission.start()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(1));
+        when(permission.end()).thenReturn(LocalDate.now(ZoneId.systemDefault()).plusDays(1));
         when(permissionRequestViewRepository.findByPermissionId("perm-1")).thenReturn(Optional.of(permission));
 
         MqttMessage mqttMessage = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
@@ -332,8 +333,8 @@ class MqttMessageCallbackTest {
 
         var permission = mock(AiidaPermissionRequest.class);
         when(permission.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-        when(permission.start()).thenReturn(LocalDate.now().plusDays(1));
-        when(permission.end()).thenReturn(LocalDate.now().plusDays(10));
+        when(permission.start()).thenReturn(LocalDate.now(ZoneId.systemDefault()).plusDays(1));
+        when(permission.end()).thenReturn(LocalDate.now(ZoneId.systemDefault()).plusDays(10));
         when(permissionRequestViewRepository.findByPermissionId("perm-1")).thenReturn(Optional.of(permission));
 
         MqttMessage mqttMessage = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
@@ -352,8 +353,8 @@ class MqttMessageCallbackTest {
 
         var permission = mock(AiidaPermissionRequest.class);
         when(permission.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-        when(permission.start()).thenReturn(LocalDate.now().minusDays(10));
-        when(permission.end()).thenReturn(LocalDate.now().minusDays(1));
+        when(permission.start()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(10));
+        when(permission.end()).thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(1));
         when(permissionRequestViewRepository.findByPermissionId("perm-1")).thenReturn(Optional.of(permission));
 
         MqttMessage mqttMessage = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));

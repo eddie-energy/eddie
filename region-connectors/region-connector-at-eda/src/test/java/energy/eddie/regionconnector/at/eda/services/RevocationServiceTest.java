@@ -22,6 +22,7 @@ import reactor.test.publisher.TestPublisher;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -128,7 +129,7 @@ class RevocationServiceTest {
     private static AtPermissionRequestProjection projection(EdaPermissionRequest epm) {
         return new AtPermissionRequestProjectionTest(
                 epm.permissionId(), epm.connectionId(), epm.cmRequestId(), epm.conversationId(),
-                LocalDate.now(), LocalDate.now(), epm.dataNeedId(), "dnid", null, null,
+                LocalDate.now(ZoneId.systemDefault()), LocalDate.now(ZoneId.systemDefault()), epm.dataNeedId(), "dnid", null, null,
                 epm.message(), AllowedGranularity.PT15M.name(), epm.status().name(), Instant.now()
         );
     }

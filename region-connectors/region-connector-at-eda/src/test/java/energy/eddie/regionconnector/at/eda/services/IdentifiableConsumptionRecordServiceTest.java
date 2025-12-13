@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 
@@ -32,7 +33,7 @@ class IdentifiableConsumptionRecordServiceTest {
                                                             String cmRequestId, String conversationId) {
         return new AtPermissionRequestProjectionTest(
                 permissionId, connectionId, cmRequestId, conversationId,
-                LocalDate.now(), LocalDate.now(), dataNeedId, "dsoId", "meteringPointId", "consentId", "message",
+                LocalDate.now(ZoneId.systemDefault()), LocalDate.now(ZoneId.systemDefault()), dataNeedId, "dsoId", "meteringPointId", "consentId", "message",
                 AllowedGranularity.PT15M.name(), "ACCEPTED", Instant.now()
         );
     }
