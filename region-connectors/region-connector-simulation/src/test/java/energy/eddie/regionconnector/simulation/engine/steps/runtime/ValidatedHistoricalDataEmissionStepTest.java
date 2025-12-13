@@ -128,7 +128,7 @@ class ValidatedHistoricalDataEmissionStepTest {
         assertNotEquals(res1, res2);
     }
 
-    @SuppressWarnings("EqualsBetweenInconvertibleTypes")
+    @SuppressWarnings({"EqualsBetweenInconvertibleTypes", "EqualsIncompatibleType"})
     @Test
     void testEquals_forDifferentTypesOfSteps_returnsFalse() {
         // Given

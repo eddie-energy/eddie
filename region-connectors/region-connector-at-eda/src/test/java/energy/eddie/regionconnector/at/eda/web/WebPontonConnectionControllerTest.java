@@ -33,7 +33,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.InputStream;
@@ -53,8 +52,6 @@ class WebPontonConnectionControllerTest {
     private final ClassLoader classLoader = getClass().getClassLoader();
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private WebTestClient webTestClient;
     @Autowired
     private WebPontonConnectionController controller;
 

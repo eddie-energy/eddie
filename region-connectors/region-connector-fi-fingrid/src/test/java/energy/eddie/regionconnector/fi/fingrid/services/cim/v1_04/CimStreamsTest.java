@@ -50,7 +50,6 @@ class CimStreamsTest {
                     .then(publisher::complete)
                     // Then
                     .expectNextCount(1)
-                    .then(() -> energyDataService.close())
                     .verifyComplete();
     }
 }

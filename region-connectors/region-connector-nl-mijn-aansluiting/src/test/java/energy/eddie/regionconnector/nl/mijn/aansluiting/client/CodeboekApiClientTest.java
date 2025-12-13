@@ -19,7 +19,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.actuate.health.Status;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
@@ -32,8 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class CodeboekApiClientTest {
     private static final MockWebServer SERVER = new MockWebServer();
     private static URI baseUri;
-    @Spy
-    private final WebClient.Builder webClientBuilder = WebClient.builder();
     @SuppressWarnings("unused")
     @Spy
     private final MijnAansluitingConfiguration config = new MijnAansluitingConfiguration(
