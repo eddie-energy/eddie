@@ -14,7 +14,7 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 
-@Component("ValidatedHistoricalDataProviderV104")
+@Component("v104ValidatedHistoricalDataProvider")
 public class ValidatedHistoricalDataProvider implements ValidatedHistoricalDataMarketDocumentProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(energy.eddie.regionconnector.us.green.button.providers.v1_04.ValidatedHistoricalDataProvider.class);
     private final Flux<VHDEnvelope> validatedHistoricalDataEnvelopes;

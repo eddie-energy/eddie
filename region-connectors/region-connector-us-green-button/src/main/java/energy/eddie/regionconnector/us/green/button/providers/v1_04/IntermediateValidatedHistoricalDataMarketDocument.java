@@ -96,7 +96,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                 .withStart(start.toString())
                 .withEnd(end.toString());
         var flowDirection = getDirection(readingType.getFlowDirection());
-        var scale = ReadingTypeValueConverter.UnitOfMeasureTypeListV104(readingType).scale();
+        var scale = ReadingTypeValueConverter.v104UnitOfMeasureTypeList(readingType).scale();
         var seriesPeriods = getSeriesPeriods(readingType, intervalBlock, scale);
         var permissionAdmin = permissionRequest.dataSourceInformation().permissionAdministratorId();
         var clientId = greenButtonConfiguration.clientIds().getOrDefault(permissionAdmin, "");

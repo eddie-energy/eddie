@@ -33,8 +33,8 @@ class ReadingTypeValueConverterTest {
         var readingType = new ReadingType()
                 .withUom(String.valueOf(unit))
                 .withPowerOfTenMultiplier("0");
-        var converterV082 = ReadingTypeValueConverter.UnitOfMeasureTypeListV082(readingType);
-        var converterV104 = ReadingTypeValueConverter.UnitOfMeasureTypeListV104(readingType);
+        var converterV082 = ReadingTypeValueConverter.v082UnitOfMeasureTypeList(readingType);
+        var converterV104 = ReadingTypeValueConverter.v104UnitOfMeasureTypeList(readingType);
 
         // When & Then
         assertThrows(UnsupportedUnitException.class, converterV082::scale);
@@ -45,12 +45,12 @@ class ReadingTypeValueConverterTest {
     @MethodSource
     void testScale_onKnownUnit_doesNotThrow(int unit) {
         // Given
-        var converterV0_82 = ReadingTypeValueConverter.UnitOfMeasureTypeListV082(0, String.valueOf(unit));
-        var converterV1_04 = ReadingTypeValueConverter.UnitOfMeasureTypeListV104(0, String.valueOf(unit));
+        var v082Converter = ReadingTypeValueConverter.v082UnitOfMeasureTypeList(0, String.valueOf(unit));
+        var v104Converter = ReadingTypeValueConverter.v104UnitOfMeasureTypeList(0, String.valueOf(unit));
 
         // When & Then
-        assertDoesNotThrow(converterV0_82::scale);
-        assertDoesNotThrow(converterV1_04::scale);
+        assertDoesNotThrow(v082Converter::scale);
+        assertDoesNotThrow(v104Converter::scale);
     }
 
     private static List<Integer> allowedUnits() {

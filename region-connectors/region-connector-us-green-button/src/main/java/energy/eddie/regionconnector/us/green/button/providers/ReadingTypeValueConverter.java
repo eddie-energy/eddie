@@ -61,19 +61,19 @@ public class ReadingTypeValueConverter<T> {
         this.unitMap = unitMap;
     }
 
-    public static ReadingTypeValueConverter<StandardUnitOfMeasureTypeList> UnitOfMeasureTypeListV104(ReadingType rt) {
+    public static ReadingTypeValueConverter<StandardUnitOfMeasureTypeList> v104UnitOfMeasureTypeList(ReadingType rt) {
         return new ReadingTypeValueConverter<>(rt, v104MAP);
     }
 
-    public static ReadingTypeValueConverter<StandardUnitOfMeasureTypeList> UnitOfMeasureTypeListV104(int scale, String vom) {
+    public static ReadingTypeValueConverter<StandardUnitOfMeasureTypeList> v104UnitOfMeasureTypeList(int scale, String vom) {
         return new ReadingTypeValueConverter<>(scale, vom, v104MAP);
     }
 
-    public static ReadingTypeValueConverter<UnitOfMeasureTypeList> UnitOfMeasureTypeListV082(ReadingType rt) {
+    public static ReadingTypeValueConverter<UnitOfMeasureTypeList> v082UnitOfMeasureTypeList(ReadingType rt) {
         return new ReadingTypeValueConverter<>(rt, v082MAP);
     }
 
-    public static ReadingTypeValueConverter<UnitOfMeasureTypeList> UnitOfMeasureTypeListV082(int scale, String vom) {
+    public static ReadingTypeValueConverter<UnitOfMeasureTypeList> v082UnitOfMeasureTypeList(int scale, String vom) {
         return new ReadingTypeValueConverter<>(scale, vom, v082MAP);
     }
 
