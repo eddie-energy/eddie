@@ -9,16 +9,15 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.services.JsonResourceObj
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.assertj.core.api.InstanceOfAssertFactories;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
@@ -29,42 +28,38 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class CodeboekApiClientTest {
-    private static final MockWebServer SERVER = new MockWebServer();
-    private static URI baseUri;
-    @SuppressWarnings("unused")
-    @Spy
-    private final MijnAansluitingConfiguration config = new MijnAansluitingConfiguration(
-            "continuous-id",
-            "http://localhost",
-            new ClientID("id"),
-            new Scope("scope"),
-            baseUri,
-            "api-token",
-            URI.create("http://localhost")
-    );
-    @InjectMocks
     private CodeboekApiClient client;
+    private MockWebServer server;
 
-    @BeforeAll
-    static void setup() throws IOException {
-        SERVER.start();
-        baseUri = SERVER.url("/").uri();
+    @BeforeEach
+    void setupClient() throws IOException {
+        server = new MockWebServer();
+        server.start();
+        client = new CodeboekApiClient(new MijnAansluitingConfiguration(
+                "continuous-id",
+                "http://localhost",
+                new ClientID("id"),
+                new Scope("scope"),
+                server.url("/").uri(),
+                "api-token",
+                URI.create("http://localhost")
+        ), WebClient.builder());
     }
 
-    @AfterAll
-    static void teardown() throws IOException {
-        SERVER.shutdown();
+    @AfterEach
+    void teardown() throws IOException {
+        server.shutdown();
     }
 
     @Test
     void meteringPoints_returnsMeteringPoints() throws IOException {
         // Given
         var body = JsonResourceObjectMapper.loadRawTestJson("codeboek_response.json");
-        SERVER.enqueue(new MockResponse()
+        server.enqueue(new MockResponse()
                                .setResponseCode(200)
                                .setHeader("Content-Type", "application/json")
                                .setBody(body));
-        SERVER.enqueue(new MockResponse()
+        server.enqueue(new MockResponse()
                                .setResponseCode(200)
                                .setHeader("Content-Type", "application/json")
                                .setBody(body));
@@ -106,7 +101,7 @@ class CodeboekApiClientTest {
                   "meteringPoints": []
                 }
                 """;
-        SERVER.enqueue(new MockResponse()
+        server.enqueue(new MockResponse()
                                .setResponseCode(200)
                                .setHeader("Content-Type", "application/json")
                                .setBody(body));
@@ -125,7 +120,7 @@ class CodeboekApiClientTest {
     void meteringPoints_withServerError_setsHealthToDown(int status) {
         // Given
         // language=JSON
-        SERVER.enqueue(new MockResponse().setResponseCode(status));
+        server.enqueue(new MockResponse().setResponseCode(status));
         // When
         var res = client.meteringPoints("9999AB", "11", MeteringPoint.ProductEnum.ELK);
 
@@ -135,10 +130,11 @@ class CodeboekApiClientTest {
                     .verify();
         assertEquals(Status.DOWN, client.health().getStatus());
     }
+
     @Test
     void meteringPoints_withUnrelatedError_doesNotSetHealth() {
         // Given
-        SERVER.enqueue(new MockResponse().setStatus("jfajfdlkasjfkl"));
+        server.enqueue(new MockResponse().setStatus("jfajfdlkasjfkl"));
 
         // When
         var res = client.meteringPoints("9999AB", "11", MeteringPoint.ProductEnum.ELK);
