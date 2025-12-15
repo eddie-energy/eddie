@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.shared.cim.v0_82;
 
-import energy.eddie.cim.v0_82.pmd.CodingSchemeTypeList;
 import energy.eddie.cim.v1_04.LocalCodingSchemeType;
 import energy.eddie.cim.v1_04.StandardCodingSchemeTypeList;
 import jakarta.annotation.Nullable;
@@ -18,7 +17,7 @@ public class CimUtils {
     }
 
     @Nullable
-    public static CodingSchemeTypeList getCodingSchemePmd(String countryCode) {
+    public static energy.eddie.cim.v0_82.pmd.CodingSchemeTypeList getCodingSchemePmd(String countryCode) {
         return fromValue(countryCode, energy.eddie.cim.v0_82.pmd.CodingSchemeTypeList::fromValue);
     }
 

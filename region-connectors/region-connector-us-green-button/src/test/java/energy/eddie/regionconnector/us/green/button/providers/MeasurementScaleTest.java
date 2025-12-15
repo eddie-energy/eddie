@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.us.green.button.providers.v0_82;
+package energy.eddie.regionconnector.us.green.button.providers;
 
 import energy.eddie.cim.v0_82.vhd.UnitOfMeasureTypeList;
 import org.junit.jupiter.api.Test;
@@ -9,7 +9,7 @@ class MeasurementScaleTest {
     @Test
     void testScaled_scalesValue() {
         // Given
-        var measurementScale = new MeasurementScale(UnitOfMeasureTypeList.AMPERE, 3);
+        var measurementScale = new MeasurementScale<>(UnitOfMeasureTypeList.AMPERE, 3);
 
         // When
         var res = measurementScale.scaled(2);

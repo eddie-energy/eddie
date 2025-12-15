@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.us.green.button.providers.v0_82;
+package energy.eddie.regionconnector.us.green.button.providers;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -33,20 +33,24 @@ class ReadingTypeValueConverterTest {
         var readingType = new ReadingType()
                 .withUom(String.valueOf(unit))
                 .withPowerOfTenMultiplier("0");
-        var converter = new ReadingTypeValueConverter(readingType);
+        var converterV082 = ReadingTypeValueConverter.v082UnitOfMeasureTypeList(readingType);
+        var converterV104 = ReadingTypeValueConverter.v104UnitOfMeasureTypeList(readingType);
 
         // When & Then
-        assertThrows(UnsupportedUnitException.class, converter::scale);
+        assertThrows(UnsupportedUnitException.class, converterV082::scale);
+        assertThrows(UnsupportedUnitException.class, converterV104::scale);
     }
 
     @ParameterizedTest
     @MethodSource
     void testScale_onKnownUnit_doesNotThrow(int unit) {
         // Given
-        var converter = new ReadingTypeValueConverter(0, String.valueOf(unit));
+        var v082Converter = ReadingTypeValueConverter.v082UnitOfMeasureTypeList(0, String.valueOf(unit));
+        var v104Converter = ReadingTypeValueConverter.v104UnitOfMeasureTypeList(0, String.valueOf(unit));
 
         // When & Then
-        assertDoesNotThrow(converter::scale);
+        assertDoesNotThrow(v082Converter::scale);
+        assertDoesNotThrow(v104Converter::scale);
     }
 
     private static List<Integer> allowedUnits() {

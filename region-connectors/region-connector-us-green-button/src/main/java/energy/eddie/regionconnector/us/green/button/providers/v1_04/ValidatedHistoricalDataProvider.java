@@ -1,8 +1,8 @@
-package energy.eddie.regionconnector.us.green.button.providers.v0_82;
+package energy.eddie.regionconnector.us.green.button.providers.v1_04;
 
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.api.v1_04.ValidatedHistoricalDataMarketDocumentProvider;
+import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.providers.UnsupportedUnitException;
 import energy.eddie.regionconnector.us.green.button.services.PublishService;
@@ -14,11 +14,10 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 
-@Component
-public class ValidatedHistoricalDataProvider implements ValidatedHistoricalDataEnvelopeProvider {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedHistoricalDataProvider.class);
-    private final Flux<ValidatedHistoricalDataEnvelope> validatedHistoricalDataEnvelopes;
-
+@Component("v104ValidatedHistoricalDataProvider")
+public class ValidatedHistoricalDataProvider implements ValidatedHistoricalDataMarketDocumentProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(energy.eddie.regionconnector.us.green.button.providers.v1_04.ValidatedHistoricalDataProvider.class);
+    private final Flux<VHDEnvelope> validatedHistoricalDataEnvelopes;
 
     public ValidatedHistoricalDataProvider(
             PublishService publishService,
@@ -45,12 +44,7 @@ public class ValidatedHistoricalDataProvider implements ValidatedHistoricalDataE
     }
 
     @Override
-    public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
+    public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return validatedHistoricalDataEnvelopes;
-    }
-
-    @Override
-    public void close() throws Exception {
-        // No-Op
     }
 }
