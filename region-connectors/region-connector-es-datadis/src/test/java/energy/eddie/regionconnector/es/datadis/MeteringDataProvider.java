@@ -17,6 +17,13 @@ public class MeteringDataProvider {
         }
     }
 
+    public static List<MeteringData> loadMeteringDataShort() throws IOException {
+        try (InputStream is = MeteringDataProvider.class.getClassLoader()
+                                                        .getResourceAsStream("consumptionKWhShort.json")) {
+            return objectMapper.readValue(is, new TypeReference<>() {});
+        }
+    }
+
     public static List<MeteringData> loadMeteringDataWithDaylightSavings() throws IOException {
         try (InputStream is = MeteringDataProvider.class.getClassLoader()
                                                         .getResourceAsStream(

@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.filter.MeteringDataFilter;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
+import energy.eddie.regionconnector.es.datadis.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import energy.eddie.regionconnector.shared.retransmission.PollingFunction;
 import org.slf4j.Logger;
@@ -18,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Sinks;
 
 import java.time.ZonedDateTime;
 
@@ -28,14 +28,11 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 public class RetransmissionPollingService implements PollingFunction<EsPermissionRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RetransmissionPollingService.class);
     private final DataApi dataApi;
-    private final Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink;
+    private final EnergyDataStreams streams;
 
-    public RetransmissionPollingService(
-            DataApi dataApi,
-            Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink
-    ) {
+    public RetransmissionPollingService(DataApi dataApi, EnergyDataStreams streams) {
         this.dataApi = dataApi;
-        this.identifiableMeteringDataSink = identifiableMeteringDataSink;
+        this.streams = streams;
     }
 
     @Override
@@ -71,7 +68,7 @@ public class RetransmissionPollingService implements PollingFunction<EsPermissio
         LOGGER.atInfo()
               .addArgument(request::permissionId)
               .log("Received data for retransmission of permission {}");
-        var emitResult = identifiableMeteringDataSink.tryEmitNext(meteringData);
+        var emitResult = streams.publish(meteringData);
         if (emitResult.isFailure()) {
             LOGGER.atError()
                   .addArgument(request::permissionId)

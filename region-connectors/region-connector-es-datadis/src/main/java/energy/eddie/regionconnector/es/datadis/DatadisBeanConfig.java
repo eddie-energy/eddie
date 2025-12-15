@@ -18,8 +18,7 @@ import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionEventRepository;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
-import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
-import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
+import energy.eddie.regionconnector.es.datadis.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.es.datadis.services.DataApiService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
 import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
@@ -37,8 +36,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.List;
@@ -62,26 +59,6 @@ public class DatadisBeanConfig {
         return new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .registerModule(new Jdk8Module());
-    }
-
-    @Bean
-    public Sinks.Many<IdentifiableMeteringData> identifiableMeteringDataSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
-    public Flux<IdentifiableMeteringData> identifiableMeteringDataFlux(Sinks.Many<IdentifiableMeteringData> sink) {
-        return sink.asFlux();
-    }
-
-    @Bean
-    public Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink() {
-        return Sinks.many().multicast().onBackpressureBuffer();
-    }
-
-    @Bean
-    public Flux<IdentifiableAccountingPointData> identifiableAccountingPointDataFlux(Sinks.Many<IdentifiableAccountingPointData> sink) {
-        return sink.asFlux();
     }
 
     @Bean
@@ -158,18 +135,18 @@ public class DatadisBeanConfig {
         );
     }
 
+    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
     @OnRawDataMessagesEnabled
     public RawDataProvider rawDataProvider(
             ObjectMapper mapper,
-            Flux<IdentifiableMeteringData> meteringDataFlux,
-            Flux<IdentifiableAccountingPointData> accountingPointDataFlux
+            EnergyDataStreams streams
     ) {
         return new JsonRawDataProvider(
                 DatadisRegionConnectorMetadata.getInstance().countryCode(),
                 mapper,
-                meteringDataFlux,
-                accountingPointDataFlux
+                streams.getValidatedHistoricalData(),
+                streams.getAccountingPointData()
         );
     }
 

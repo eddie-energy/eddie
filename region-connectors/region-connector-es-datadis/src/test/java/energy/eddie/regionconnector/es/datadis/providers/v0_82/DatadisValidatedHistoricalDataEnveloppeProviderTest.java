@@ -2,21 +2,22 @@ package energy.eddie.regionconnector.es.datadis.providers.v0_82;
 
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
-import reactor.test.publisher.TestPublisher;
 
 class DatadisValidatedHistoricalDataEnvelopeProviderTest {
 
     @Test
     void testGetValidatedHistoricalDataMarketDocumentsStream_publishesDocuments() throws Exception {
         // Given
-        TestPublisher<IdentifiableMeteringData> testPublisher = TestPublisher.create();
-        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId",
-                                                                                "clientSecret",
-                                                                                "basepath"
+        EnergyDataStreams streams = new EnergyDataStreams();
+        DatadisConfig datadisConfig = new PlainDatadisConfiguration("clientId",
+                                                                    "clientSecret",
+                                                                    "basepath"
         );
         IntermediateVHDFactory factory = new IntermediateVHDFactory(
                 datadisConfig,
@@ -25,13 +26,13 @@ class DatadisValidatedHistoricalDataEnvelopeProviderTest {
         );
         IdentifiableMeteringData identifiableMeteringData = IntermediateValidatedHistoricalDocumentTest.identifiableMeterReading(
                 false);
-        var provider = new DatadisValidatedHistoricalDataEnvelopeProvider(testPublisher.flux(), factory);
+        var provider = new DatadisValidatedHistoricalDataEnvelopeProvider(streams, factory);
 
         // When
         StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
                     .then(() -> {
-                        testPublisher.emit(identifiableMeteringData);
-                        testPublisher.complete();
+                        streams.publish(identifiableMeteringData);
+                        streams.close();
                     })
                     .expectNextCount(1)
                     .verifyComplete();
