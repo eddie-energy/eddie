@@ -26,7 +26,7 @@ When using environment variables, the configuration values need to be converted 
 - Optionally convert all letters to upper case
 
 ```properties :spring
-region-connector.dk.energinet.customer.client.basepath=https://api.eloverblik.dk/customerapi
+region-connector.dk.energinet.customer.client.basepath=https://api.eloverblik.dk/
 region-connector.dk.energinet.polling=0 0 17 * * *
 region-connector.dk.energinet.retry=0 0 17 * * *
 ```
