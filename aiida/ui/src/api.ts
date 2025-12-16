@@ -219,7 +219,7 @@ export async function deleteDataSource(dataSourceId: string): Promise<void> {
   await fetch(`/datasources/${dataSourceId}`, {
     method: 'DELETE',
   })
-  success('toasts.deleteDatasource')
+  success('toasts.deleteDataSource')
 }
 
 export function regenerateDataSourceSecrets(
