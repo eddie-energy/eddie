@@ -37,8 +37,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
     public List<ValidatedHistoricalDataEnvelope> toEddieValidatedHistoricalDataMarketDocuments() {
         var vhds = new ArrayList<ValidatedHistoricalDataEnvelope>();
         for (MijnAansluitingResponse mijnAansluitingResponse : mijnAansluitingResponses) {
-            var marketEvaluationPoint = mijnAansluitingResponse.getMarketEvaluationPoint();
-            var vhdInterval = getIntervalFromRegisters(marketEvaluationPoint.getRegisterList());
+            var marketEvaluationPoint = mijnAansluitingResponse.marketEvaluationPoint();
+            var vhdInterval = getIntervalFromRegisters(marketEvaluationPoint.registerList());
             var vhd = new ValidatedHistoricalDataMarketDocumentComplexType()
                     .withMRID(UUID.randomUUID().toString())
                     .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
@@ -62,41 +62,41 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                                     .withEnd(vhdInterval.end())
                     );
             var timeSeriesList = new ArrayList<TimeSeriesComplexType>();
-            var registers = sumUpRegistersWithSameObisCode(marketEvaluationPoint.getRegisterList());
+            var registers = sumUpRegistersWithSameObisCode(marketEvaluationPoint.registerList());
             for (var register : registers) {
-                var flowDirection = obisToFlowDirection(register.getMRID());
-                if (register.getReadingList().isEmpty() || flowDirection == null) {
+                var flowDirection = obisToFlowDirection(register.mrid());
+                if (register.readingList().isEmpty() || flowDirection == null) {
                     continue;
                 }
-                var interval = new EsmpTimeInterval(register.getReadingList()
+                var interval = new EsmpTimeInterval(register.readingList()
                                                             .getFirst()
-                                                            .getDateAndOrTime()
-                                                            .getDateTime(),
-                                                    register.getReadingList()
+                                                            .dateAndOrTime()
+                                                            .dateTime(),
+                                                    register.readingList()
                                                             .getLast()
-                                                            .getDateAndOrTime()
-                                                            .getDateTime());
+                                                            .dateAndOrTime()
+                                                            .dateTime());
 
-                var readingType = register.getReadingList().getFirst().getReadingType();
-                var isEnergy = register.getMeter()
-                                       .getMRID()
+                var readingType = register.readingList().getFirst().readingType();
+                var isEnergy = register.meter()
+                                       .mrid()
                                        .startsWith("E");
                 var readingUnit = readingUnit(readingType);
 
                 var pointList = new ArrayList<PointComplexType>();
-                for (var reading : register.getReadingList()) {
+                for (var reading : register.readingList()) {
                     pointList.add(
                             new PointComplexType()
-                                    .withPosition(reading.getDateAndOrTime().getDateTime().toString())
+                                    .withPosition(reading.dateAndOrTime().dateTime().toString())
                                     .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED)
-                                    .withEnergyQuantityQuantity(reading.getValue())
+                                    .withEnergyQuantityQuantity(reading.value())
                     );
                 }
                 timeSeriesList.add(
                         new TimeSeriesComplexType()
                                 .withRegisteredResource(
                                         new RegisteredResourceComplexType()
-                                                .withMRID(register.getMeter().getMRID())
+                                                .withMRID(register.meter().mrid())
                                 )
                                 .withBusinessType(flowDirection == DirectionTypeList.DOWN ? BusinessTypeList.CONSUMPTION : BusinessTypeList.PRODUCTION)
                                 .withProduct(EnergyProductTypeList.ACTIVE_POWER)
@@ -104,7 +104,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                                 .withMarketEvaluationPointMRID(
                                         new MeasurementPointIDStringComplexType()
                                                 .withCodingScheme(CodingSchemeTypeList.NETHERLANDS_NATIONAL_CODING_SCHEME)
-                                                .withValue(marketEvaluationPoint.getMRID())
+                                                .withValue(marketEvaluationPoint.mrid())
                                 )
                                 .withFlowDirectionDirection(flowDirection)
                                 .withEnergyMeasurementUnitName(
@@ -159,7 +159,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         for (var partition : partitions) {
             var map = new HashMap<String, List<Register>>();
             for (var register : partition) {
-                var obisCode = register.getMRID();
+                var obisCode = register.mrid();
                 var code = switch (obisCode.subSequence(0, 3).toString()) {
                     case "1.8" -> "1.8";
                     case "2.8" -> "2.8";
@@ -175,33 +175,31 @@ class IntermediateValidatedHistoricalDataMarketDocument {
     }
 
     private static Register mergeAndSum(Register lr, Register rr) {
-        var register = new Register()
-                .meter(lr.getMeter());
-        register.setMRID(lr.getMRID());
         Map<DateAndOrTime, Reading> map = new HashMap<>();
 
-        for (var reading : delta(lr.getReadingList())) {
-            map.put(reading.getDateAndOrTime(), new Reading()
-                    .dateAndOrTime(reading.getDateAndOrTime())
-                    .value(reading.getValue())
-                    .readingType(reading.getReadingType()));
+        for (var reading : delta(lr.readingList())) {
+            map.put(reading.dateAndOrTime(),
+                    new Reading(reading.dateAndOrTime(), reading.readingType(), reading.value()));
         }
 
-        for (var reading : delta(rr.getReadingList())) {
-            map.merge(reading.getDateAndOrTime(), reading,
-                      (existing, incoming) -> existing.value(existing.getValue().add(incoming.getValue()))
+        for (var reading : delta(rr.readingList())) {
+            var dateAndOrTime = reading.dateAndOrTime();
+            map.merge(dateAndOrTime, reading,
+                      (existing, incoming) -> new Reading(dateAndOrTime,
+                                                          existing.readingType(),
+                                                          existing.value().add(incoming.value()))
             );
         }
 
         var readingList = new ArrayList<>(map.values());
-        readingList.sort(Comparator.comparing(r -> r.getDateAndOrTime().getDateTime()));
-        return register.readingList(readingList);
+        readingList.sort(Comparator.comparing(r -> r.dateAndOrTime().dateTime()));
+        return new Register(lr.meter(), lr.mrid(), readingList);
     }
 
     private static List<List<Register>> partitionRegistersByMeter(List<Register> registers) {
         var map = new HashMap<String, List<Register>>();
         for (var register : registers) {
-            var mrid = register.getMeter().getMRID();
+            var mrid = register.meter().mrid();
             var res = map.getOrDefault(mrid, new ArrayList<>());
             res.add(register);
             map.put(mrid, res);
@@ -213,8 +211,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         ZonedDateTime start = null;
         ZonedDateTime end = null;
         for (var register : registerList) {
-            var readingStart = register.getReadingList().getFirst().getDateAndOrTime().getDateTime();
-            var readingEnd = register.getReadingList().getLast().getDateAndOrTime().getDateTime();
+            var readingStart = register.readingList().getFirst().dateAndOrTime().dateTime();
+            var readingEnd = register.readingList().getLast().dateAndOrTime().dateTime();
             if (start == null || start.isAfter(readingStart)) {
                 start = readingStart;
             }
@@ -238,14 +236,14 @@ class IntermediateValidatedHistoricalDataMarketDocument {
     }
 
     private static String readingUnit(ReadingType readingType) {
-        var multiplier = (readingType.getMultiplier() == null ? "" : readingType.getMultiplier().toString());
-        var readingUnit = multiplier + readingType.getUnit();
+        var multiplier = (readingType.multiplier() == null ? "" : readingType.multiplier().toString());
+        var readingUnit = multiplier + readingType.unit();
         return readingUnit.toUpperCase(Locale.ROOT);
     }
 
     /**
-     * Gets a reading list and will calculate the deltas between consecutive items in the list. By calculating deltas
-     * the first item will be dropped.
+     * Gets a reading list and will calculate the deltas between consecutive items in the list.
+     * By calculating deltas, the first item will be dropped.
      *
      * @param readings list of readings with total cumulative values.
      * @return list of readings, with the delta as reading values. It has the size of the original list - 1.
@@ -256,11 +254,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         for (int i = array.length - 1; i > 0; i--) {
             var prev = array[i - 1];
             var current = array[i];
-            var delta = current.getValue().subtract(prev.getValue());
-            deltas.addFirst(new Reading()
-                                    .readingType(current.getReadingType())
-                                    .dateAndOrTime(current.getDateAndOrTime())
-                                    .value(delta));
+            var delta = current.value().subtract(prev.value());
+            deltas.addFirst(new Reading(current.dateAndOrTime(), current.readingType(), delta));
         }
         return deltas;
     }

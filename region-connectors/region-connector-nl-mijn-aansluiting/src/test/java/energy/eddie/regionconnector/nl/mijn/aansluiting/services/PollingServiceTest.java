@@ -217,8 +217,8 @@ class PollingServiceTest {
                             () -> assertEquals(registerSize,
                                                imd.meteredData()
                                                   .getFirst()
-                                                  .getMarketEvaluationPoint()
-                                                  .getRegisterList()
+                                                  .marketEvaluationPoint()
+                                                  .registerList()
                                                   .size())
                     ))
                     .verifyComplete();
@@ -296,13 +296,13 @@ class PollingServiceTest {
                             () -> assertEquals(start,
                                                imd.meteredData()
                                                   .getFirst()
-                                                  .getMarketEvaluationPoint()
-                                                  .getRegisterList()
+                                                  .marketEvaluationPoint()
+                                                  .registerList()
                                                   .getFirst()
-                                                  .getReadingList()
+                                                  .readingList()
                                                   .getFirst()
-                                                  .getDateAndOrTime()
-                                                  .getDateTime()
+                                                  .dateAndOrTime()
+                                                  .dateTime()
                                                   .toLocalDate())
                     ))
                     .verifyComplete();
@@ -334,13 +334,13 @@ class PollingServiceTest {
                             () -> assertEquals(end,
                                                imd.meteredData()
                                                   .getFirst()
-                                                  .getMarketEvaluationPoint()
-                                                  .getRegisterList()
+                                                  .marketEvaluationPoint()
+                                                  .registerList()
                                                   .getFirst()
-                                                  .getReadingList()
+                                                  .readingList()
                                                   .getLast()
-                                                  .getDateAndOrTime()
-                                                  .getDateTime()
+                                                  .dateAndOrTime()
+                                                  .dateTime()
                                                   .toLocalDate())
                     ))
                     .verifyComplete();
@@ -354,11 +354,11 @@ class PollingServiceTest {
         codeboekJson.getMeteringPoints()
                     .getFirst()
                     .setEan(json.getFirst()
-                                .getMarketEvaluationPoint()
-                                .getRegisterList()
+                                .marketEvaluationPoint()
+                                .registerList()
                                 .getFirst()
-                                .getMeter()
-                                .getMRID());
+                                .meter()
+                                .mrid());
         when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
                 .thenReturn(new AccessTokenAndSingleSyncUrl("accessToken", "singleSync"));
         when(apiClient.fetchConsumptionData("singleSync", "accessToken"))
