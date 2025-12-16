@@ -1,7 +1,9 @@
 
+import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.util.*
 
@@ -57,7 +59,6 @@ tasks.test {
 
 // Directory for generated java files
 val generatedSwaggerJavaDir = layout.buildDirectory.dir("generated/sources/swagger/main/java")
-val openApiFile = layout.buildDirectory.file("generated/sources/swagger/main/java/api/openapi.yaml")
 
 // Add generated sources to the main source set
 sourceSets {
@@ -75,10 +76,33 @@ sourceSets {
 
 val packagePrefix = "energy.eddie.regionconnector.dk.energinet"
 val customerApiPackagePrefix = "${packagePrefix}.customer"
-val energinetOpenApiChecksum = "a5e74a6173f9113b71bebe761d9856da"
+val energinetOpenApiChecksum = "660b1dedc1a467b5bb26b1fbebe6d2cf"
+val energinetOpenApiFileLocation = layout.buildDirectory.file("generated/sources/swagger/energinet.json")
+
+val downloadTask = tasks.register<Download>("openApiDownload") {
+    group = "download"
+    description = "Downloads the OpenAPI specs for energinet"
+    src("https://api.eloverblik.dk/customerapi/swagger/customerapi-v1.0/swagger.json")
+    dest(energinetOpenApiFileLocation)
+    overwrite(false)
+    onlyIfModified(true)
+}
+
+val verificationTask = tasks.register<Verify>("verifyOpenApiSpecs") {
+    description = "Validates downloaded OpenAPI specs"
+    group = "verification"
+    dependsOn(downloadTask)
+    src(energinetOpenApiFileLocation)
+    checksum(energinetOpenApiChecksum)
+}
+
+tasks.withType<GenerateTask>().configureEach {
+    dependsOn(verificationTask)
+}
+
 openApiGenerate {
     generatorName.set("java")
-    remoteInputSpec.set("https://api.eloverblik.dk/customerapi/swagger/customerapi-v1.0/swagger.json")
+    inputSpec.set(energinetOpenApiFileLocation.get().asFile.absolutePath)
     outputDir.set(generatedSwaggerJavaDir.get().asFile.absolutePath)
     ignoreFileOverride.set("${projectDir}/src/main/resources/.openapi-generator-ignore")
 
@@ -102,22 +126,12 @@ openApiGenerate {
     cleanupOutput.set(true)
 }
 
-val openApiTask = tasks.named("openApiGenerate")
-
-val openApiValidationTask = tasks.register<Verify>("verifyOpenApiSpecs") {
-    description = "Validates downloaded OpenAPI specs"
-    group = "verification"
-    dependsOn(openApiTask)
-    src(openApiFile)
-    checksum(energinetOpenApiChecksum)
-}
-
 tasks.named("compileJava").configure {
-    dependsOn(openApiValidationTask)
+    dependsOn(tasks.withType<GenerateTask>())
 }
 
 sourceSets.configureEach {
-    java.srcDir(openApiTask.map { files() })
+    java.srcDir(tasks.withType<GenerateTask>().map { files() })
 }
 
 tasks.withType<JavaCompile>().configureEach {
