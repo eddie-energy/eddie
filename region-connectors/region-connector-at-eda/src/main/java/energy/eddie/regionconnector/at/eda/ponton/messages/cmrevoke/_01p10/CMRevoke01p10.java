@@ -60,7 +60,7 @@ public record CMRevoke01p10(CCMORevoke ccmoRevoke) {
                                                 )
                                 )
                                 // For the eligible party the reason will always be other, see: https://www.ebutilities.at/documents/2025/09/CMRevoke_01p10_Schemadoku.pdf
-                                .withReasonKey("0")
+                                .withReasonKey(0)
                                 .withReason(ccmoRevoke.reason())
                 );
     }
