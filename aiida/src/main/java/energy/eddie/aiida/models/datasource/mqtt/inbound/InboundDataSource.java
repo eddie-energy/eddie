@@ -7,14 +7,16 @@ import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.MqttUser;
-import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.services.secrets.SecretType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 import java.util.Objects;
 import java.util.UUID;
+
+import static energy.eddie.aiida.services.secrets.KeyStoreSecretsService.alias;
 
 @Entity
 @SecondaryTable(name = InboundDataSource.TABLE_NAME)
@@ -34,35 +36,51 @@ public class InboundDataSource extends MqttDataSource {
     @SuppressWarnings("NullAway")
     protected InboundDataSource() {}
 
-    public InboundDataSource(InboundDataSourceDto dto, UUID userId, MqttStreamingConfig mqttStreamingConfig) {
-        this(dto, userId, mqttStreamingConfig, SecretGenerator.generate());
-    }
-
+    @SuppressWarnings("NullAway")
     public InboundDataSource(
             InboundDataSourceDto dto,
             UUID userId,
-            MqttStreamingConfig mqttStreamingConfig,
-            String accessCode
+            MqttStreamingConfig mqttStreamingConfig
     ) {
         super(dto, userId);
         this.config = mqttStreamingConfig;
         this.internalHost = config.serverUri();
         this.externalHost = config.serverUri();
-        this.accessCode = accessCode;
+    }
+
+    private InboundDataSource(InboundDataSource inboundDataSource, String passwordAlias, String accessCodeAlias) {
+        super(inboundDataSource);
+        accessCode = accessCodeAlias;
+        config = inboundDataSource.config;
+        user = inboundDataSource.user.copyWithAliasAsPassword(passwordAlias);
     }
 
     public String accessCode() {
         return accessCode;
     }
 
+    public InboundDataSource copyWithAliasAsPassword() {
+        return new InboundDataSource(this, alias(id, SecretType.PASSWORD), alias(id, SecretType.API_KEY));
+    }
+
+    @Override
+    protected void prePersist() {
+        super.prePersist();
+        createAccessCode();
+    }
+
     @Override
     protected void createMqttUser() {
-        this.user = new MqttUser(config.username().toString(), config.password());
+        this.user = new MqttUser(config.username().toString(), alias(id, SecretType.PASSWORD));
     }
 
     @Override
     protected void createAccessControlEntry() {
         this.accessControlEntry = new MqttAccessControlEntry(config.username().toString(), config.dataTopic());
+    }
+
+    private void createAccessCode() {
+        this.accessCode = alias(id, SecretType.API_KEY);
     }
 
     public static class Builder {

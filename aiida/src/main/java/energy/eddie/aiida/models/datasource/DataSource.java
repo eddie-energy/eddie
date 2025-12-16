@@ -94,6 +94,19 @@ public abstract class DataSource {
         applyDto(dto, userId);
     }
 
+    protected DataSource(DataSource dataSource) {
+        id = dataSource.id;
+        userId = dataSource.userId;
+        asset = dataSource.asset;
+        countryCode = dataSource.countryCode;
+        enabled = dataSource.enabled;
+        icon = dataSource.icon;
+        image = dataSource.image;
+        name = dataSource.name;
+        permissions = dataSource.permissions;
+        type = dataSource.type;
+    }
+
     public static DataSource createFromDto(DataSourceDto dto, UUID userId) {
         return switch (dto) {
             case OesterreichsEnergieDataSourceDto parsedDto -> new OesterreichsEnergieDataSource(parsedDto, userId);

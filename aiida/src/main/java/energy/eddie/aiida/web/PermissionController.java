@@ -1,6 +1,7 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.PatchPermissionDto;
+import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
@@ -80,7 +81,7 @@ public class PermissionController {
     public ResponseEntity<Permission> updatePermission(
             @Valid @RequestBody PatchPermissionDto patchDto,
             @Parameter(name = "permissionId", description = "Unique ID of the permission", example = "f38a1953-ae7a-480c-814f-1cca3989981e") @PathVariable UUID permissionId
-    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
+    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException, SecretStoringException {
         LOGGER.atInfo()
               // Validate that it's a real permission ID and not some malicious string
               .addArgument(() -> permissionId)

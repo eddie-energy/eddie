@@ -1,5 +1,6 @@
 package energy.eddie.aiida.services;
 
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -8,6 +9,7 @@ import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,20 +23,27 @@ public class InboundService {
 
     private final InboundRecordRepository inboundRecordRepository;
     private final PermissionRepository permissionRepository;
+    private final SecretsService secretsService;
 
     public InboundService(
             InboundRecordRepository inboundRecordRepository,
-            PermissionRepository permissionRepository
+            PermissionRepository permissionRepository,
+            SecretsService secretsService
     ) {
         this.inboundRecordRepository = inboundRecordRepository;
         this.permissionRepository = permissionRepository;
+        this.secretsService = secretsService;
     }
 
-    public InboundRecord latestRecord(UUID permissionId, String accessCode)
-            throws PermissionNotFoundException, UnauthorizedException,
-                   InvalidDataSourceTypeException, InboundRecordNotFoundException {
+    public InboundRecord latestRecord(
+            UUID permissionId,
+            String accessCode
+    ) throws PermissionNotFoundException, UnauthorizedException,
+             InvalidDataSourceTypeException, InboundRecordNotFoundException, SecretLoadingException {
         var dataSource = dataSource(permissionId);
-        if (!Objects.equals(dataSource.accessCode(), accessCode)) {
+        var savedAccessCode = secretsService.loadSecret(dataSource.accessCode());
+
+        if (!Objects.equals(accessCode, savedAccessCode)) {
             throw new UnauthorizedException(
                     "Access code does not match for data source with ID: " + dataSource.id()
             );

@@ -4,6 +4,7 @@ import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
+import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
@@ -18,6 +19,7 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
@@ -36,7 +38,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.TaskScheduler;
@@ -100,6 +101,8 @@ class PermissionServiceTest {
     private MqttDto mockMqttDto;
     @Mock
     private AiidaLocalDataNeedService mockAiidaLocalDataNeedService;
+    @Mock
+    private SecretsService mockSecretsService;
     @Captor
     private ArgumentCaptor<Permission> permissionCaptor;
     private PermissionService service;
@@ -115,7 +118,8 @@ class PermissionServiceTest {
                                         mockPermissionScheduler,
                                         mockAuthService,
                                         mockAiidaLocalDataNeedService,
-                                        mockAiidaEventPublisher);
+                                        mockAiidaEventPublisher,
+                                        mockSecretsService);
     }
 
     @Test
@@ -368,7 +372,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidPermission_acceptPermission_updatesState_callsHandshakeService_andPermissionScheduler() throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
+    void givenValidPermission_acceptPermission_updatesState_callsHandshakeService_andPermissionScheduler() throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException, SecretStoringException {
         // Given
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
@@ -395,7 +399,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidInboundPermission_createsAndStartsDataSource() throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
+    void givenValidInboundPermission_createsAndStartsDataSource() throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException, SecretStoringException {
         // Given
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
@@ -517,10 +521,22 @@ class PermissionServiceTest {
                                                    UUID.fromString("25ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
                                                    "Test Service Name",
                                                    "https://example.org"), UUID.randomUUID());
-            return Stream.of(Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-12-24T00:00:00.000Z", PermissionStatus.STREAMING_DATA),
-                             Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-09-19T00:00:00.000Z", PermissionStatus.FULFILLED),
-                             Arguments.of(per, "2023-09-11T00:00:00.000Z", "2023-09-30T00:00:00.000Z", PermissionStatus.FULFILLED),
-                             Arguments.of(per, "2023-09-11T00:00:00.000Z", "2023-10-31T00:00:00.000Z", PermissionStatus.STREAMING_DATA),
+            return Stream.of(Arguments.of(per,
+                                          "2023-09-01T00:00:00.000Z",
+                                          "2023-12-24T00:00:00.000Z",
+                                          PermissionStatus.STREAMING_DATA),
+                             Arguments.of(per,
+                                          "2023-09-01T00:00:00.000Z",
+                                          "2023-09-19T00:00:00.000Z",
+                                          PermissionStatus.FULFILLED),
+                             Arguments.of(per,
+                                          "2023-09-11T00:00:00.000Z",
+                                          "2023-09-30T00:00:00.000Z",
+                                          PermissionStatus.FULFILLED),
+                             Arguments.of(per,
+                                          "2023-09-11T00:00:00.000Z",
+                                          "2023-10-31T00:00:00.000Z",
+                                          PermissionStatus.STREAMING_DATA),
                              Arguments.of(per,
                                           "2023-10-12T00:00:00.000Z",
                                           "2023-10-15T00:00:00.000Z",
@@ -541,7 +557,8 @@ class PermissionServiceTest {
                                             permissionScheduler,
                                             mockAuthService,
                                             mockAiidaLocalDataNeedService,
-                                            mockAiidaEventPublisher);
+                                            mockAiidaEventPublisher,
+                                            mockSecretsService);
         }
 
         /**
@@ -571,7 +588,7 @@ class PermissionServiceTest {
                 doReturn(mockScheduledFuture).when(mockScheduler).schedule(any(), any(Instant.class));
 
             // When
-            service.onApplicationEvent(mock(ContextRefreshedEvent.class));
+            service.onApplicationEvent();
 
             // Then
             assertEquals(expectedState, permission.status());

@@ -1,5 +1,6 @@
 package energy.eddie.aiida.services;
 
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -10,6 +11,8 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.secrets.SecretType;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +25,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+import static energy.eddie.aiida.services.secrets.KeyStoreSecretsService.alias;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -32,6 +36,7 @@ class InboundServiceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
     private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID PERMISSION_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
+    private static final String ACCESS_CODE_ALIAS = alias(PERMISSION_ID, SecretType.API_KEY);
     private static final String ACCESS_CODE = "test-access-code";
     private static final Permission PERMISSION = new Permission();
     private static final InboundDataSource DATA_SOURCE = mock(InboundDataSource.class);
@@ -47,6 +52,8 @@ class InboundServiceTest {
     private InboundRecordRepository inboundRecordRepository;
     @Mock
     private PermissionRepository permissionRepository;
+    @Mock
+    private SecretsService secretsService;
 
     @InjectMocks
     private InboundService inboundService;
@@ -54,17 +61,18 @@ class InboundServiceTest {
     @BeforeEach
     void setUp() {
         when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
-        when(DATA_SOURCE.accessCode()).thenReturn(ACCESS_CODE);
+        when(DATA_SOURCE.accessCode()).thenReturn(ACCESS_CODE_ALIAS);
 
         PERMISSION.setDataSource(DATA_SOURCE);
     }
 
     @Test
-    void testLatestRecord_returnsRecord() throws UnauthorizedException, PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
+    void testLatestRecord_returnsRecord() throws UnauthorizedException, PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException, SecretLoadingException {
         // Given
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(PERMISSION));
         when(inboundRecordRepository.findTopByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID)).thenReturn(Optional.of(
                 INBOUND_RECORD));
+        when(secretsService.loadSecret(ACCESS_CODE_ALIAS)).thenReturn(ACCESS_CODE);
 
         // When
         var inboundRecord = inboundService.latestRecord(PERMISSION_ID, ACCESS_CODE);
@@ -87,9 +95,10 @@ class InboundServiceTest {
     }
 
     @Test
-    void testLatestRecord_withWrongAccessCode_throwsException() {
+    void testLatestRecord_withWrongAccessCode_throwsException() throws SecretLoadingException {
         // Given
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(PERMISSION));
+        when(secretsService.loadSecret(ACCESS_CODE_ALIAS)).thenReturn(ACCESS_CODE);
 
         // When, Then
         assertThrows(UnauthorizedException.class, () -> inboundService.latestRecord(PERMISSION_ID, "wrong"));
@@ -105,9 +114,10 @@ class InboundServiceTest {
     }
 
     @Test
-    void testLatestRecord_withMissingRecord_throwsException() {
+    void testLatestRecord_withMissingRecord_throwsException() throws SecretLoadingException {
         // Given
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(PERMISSION));
+        when(secretsService.loadSecret(ACCESS_CODE_ALIAS)).thenReturn(ACCESS_CODE);
 
         // When, Then
         assertThrows(InboundRecordNotFoundException.class,

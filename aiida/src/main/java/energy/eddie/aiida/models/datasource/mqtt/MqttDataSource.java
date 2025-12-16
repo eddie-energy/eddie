@@ -53,6 +53,15 @@ public abstract class MqttDataSource extends DataSource {
         super(dto, userId);
     }
 
+    protected MqttDataSource(MqttDataSource mqttDataSource) {
+        super(mqttDataSource);
+        internalHost = mqttDataSource.internalHost;
+        externalHost = mqttDataSource.externalHost;
+        user = mqttDataSource.user;
+        accessControlEntry = mqttDataSource.accessControlEntry;
+        passwordHash = mqttDataSource.passwordHash;
+    }
+
     public String internalHost() {
         return internalHost;
     }
@@ -82,7 +91,7 @@ public abstract class MqttDataSource extends DataSource {
 
     @PrePersist
     @Transactional
-    protected void postPersist() {
+    protected void prePersist() {
         createAccessControlEntry();
         createMqttUser();
     }

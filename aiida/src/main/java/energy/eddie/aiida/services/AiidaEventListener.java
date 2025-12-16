@@ -4,6 +4,8 @@ import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
+import energy.eddie.aiida.errors.SecretLoadingException;
+import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
@@ -51,6 +53,8 @@ public class AiidaEventListener {
             dataSourceService.startDataSource(inboundDataSource);
         } catch (PermissionNotFoundException e) {
             LOGGER.error("No permission found with id {}", event.permissionId(), e);
+        } catch (SecretStoringException | SecretLoadingException e) {
+            LOGGER.error("Could not create secrets for inbound datasource.", e);
         }
     }
 

@@ -4,6 +4,8 @@ import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
+import energy.eddie.aiida.errors.SecretLoadingException;
+import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
@@ -61,7 +63,7 @@ class AiidaEventListenerTest {
     }
 
     @Test
-    void testOnInboundPermissionAcceptEvent() throws PermissionNotFoundException {
+    void testOnInboundPermissionAcceptEvent() throws PermissionNotFoundException, SecretStoringException, SecretLoadingException {
         // Given
         var event = mock(InboundPermissionAcceptEvent.class);
         var permissionId = UUID.fromString("00000000-0000-0000-0000-000000000000");
