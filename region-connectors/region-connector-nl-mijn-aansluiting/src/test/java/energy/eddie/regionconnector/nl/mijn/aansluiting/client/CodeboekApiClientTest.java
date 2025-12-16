@@ -9,7 +9,8 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.services.JsonResourceObj
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.assertj.core.api.InstanceOfAssertFactories;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,38 +29,41 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class CodeboekApiClientTest {
+    private static final MockWebServer SERVER = new MockWebServer();
     private CodeboekApiClient client;
-    private MockWebServer server;
+
+    @BeforeAll
+    static void startServer() throws IOException {
+        SERVER.start();
+    }
 
     @BeforeEach
-    void setupClient() throws IOException {
-        server = new MockWebServer();
-        server.start();
+    void setupClient() {
         client = new CodeboekApiClient(new MijnAansluitingConfiguration(
                 "continuous-id",
                 "http://localhost",
                 new ClientID("id"),
                 new Scope("scope"),
-                server.url("/").uri(),
+                SERVER.url("/").uri(),
                 "api-token",
                 URI.create("http://localhost")
         ), WebClient.builder());
     }
 
-    @AfterEach
-    void teardown() throws IOException {
-        server.shutdown();
+    @AfterAll
+    static void teardown() throws IOException {
+        SERVER.shutdown();
     }
 
     @Test
     void meteringPoints_returnsMeteringPoints() throws IOException {
         // Given
         var body = JsonResourceObjectMapper.loadRawTestJson("codeboek_response.json");
-        server.enqueue(new MockResponse()
+        SERVER.enqueue(new MockResponse()
                                .setResponseCode(200)
                                .setHeader("Content-Type", "application/json")
                                .setBody(body));
-        server.enqueue(new MockResponse()
+        SERVER.enqueue(new MockResponse()
                                .setResponseCode(200)
                                .setHeader("Content-Type", "application/json")
                                .setBody(body));
@@ -101,7 +105,7 @@ class CodeboekApiClientTest {
                   "meteringPoints": []
                 }
                 """;
-        server.enqueue(new MockResponse()
+        SERVER.enqueue(new MockResponse()
                                .setResponseCode(200)
                                .setHeader("Content-Type", "application/json")
                                .setBody(body));
@@ -120,7 +124,7 @@ class CodeboekApiClientTest {
     void meteringPoints_withServerError_setsHealthToDown(int status) {
         // Given
         // language=JSON
-        server.enqueue(new MockResponse().setResponseCode(status));
+        SERVER.enqueue(new MockResponse().setResponseCode(status));
         // When
         var res = client.meteringPoints("9999AB", "11", MeteringPoint.ProductEnum.ELK);
 
@@ -134,7 +138,7 @@ class CodeboekApiClientTest {
     @Test
     void meteringPoints_withUnrelatedError_doesNotSetHealth() {
         // Given
-        server.enqueue(new MockResponse().setStatus("jfajfdlkasjfkl"));
+        SERVER.enqueue(new MockResponse().setStatus("jfajfdlkasjfkl"));
 
         // When
         var res = client.meteringPoints("9999AB", "11", MeteringPoint.ProductEnum.ELK);
