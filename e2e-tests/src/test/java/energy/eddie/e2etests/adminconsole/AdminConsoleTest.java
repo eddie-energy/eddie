@@ -1,8 +1,8 @@
-package energy.eddie.tests.e2e.core;
+package energy.eddie.e2etests.adminconsole;
 
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
-import energy.eddie.tests.e2e.PlaywrightOptions;
+import energy.eddie.e2etests.PlaywrightOptions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.TestInfo;
 import java.nio.file.Paths;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static energy.eddie.tests.e2e.PlaywrightOptions.BASE_URL;
+import static energy.eddie.e2etests.PlaywrightOptions.BASE_URL;
 
 @UsePlaywright(PlaywrightOptions.class)
 class AdminConsoleTest {

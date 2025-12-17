@@ -1,4 +1,4 @@
-package energy.eddie.tests.e2e;
+package energy.eddie.e2etests;
 
 import com.microsoft.playwright.junit.Options;
 import com.microsoft.playwright.junit.OptionsFactory;

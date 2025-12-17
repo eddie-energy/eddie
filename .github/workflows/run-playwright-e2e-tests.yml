@@ -26,7 +26,7 @@ on:
 
 env:
   COMPOSE_FILES: "-f ./env/docker-compose.yml -f ./env/docker-compose.e2e.yml"
-  E2E_COMPOSE_SECRETS_FILE: "./env/.env_secrets"
+  E2E_COMPOSE_SECRETS_FILE: "./env/.env.local"
   KEYS_FOLDER: "./env/keys"
   FLUVIUS_CER_FILE: "./env/keys/fluvius.cer"
   FLUVIUS_KEY_FILE: "./env/keys/fluvius.key"
@@ -121,7 +121,7 @@ jobs:
       - name: Clean up
         if: always()  # always clean up, even when other steps failed; a post-job script will delete anything anyway, but be sure to always delete the secrets files
         run: |
-          docker compose ${{ env.COMPOSE_FILES }} down
+          docker compose ${{ env.COMPOSE_FILES }} --profile dockerized-eddie down
           rm -f ${{ env.E2E_COMPOSE_SECRETS_FILE }}
           rm -rf ${{ env.PONTON_FOLDER }}
           rm -rf ./env/keys

@@ -1,8 +1,8 @@
-package energy.eddie.tests.e2e.be;
+package energy.eddie.e2etests.regionconnector;
 
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import energy.eddie.tests.e2e.E2eTestSetup;
+import energy.eddie.e2etests.E2eTestSetup;
 import org.junit.jupiter.api.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
