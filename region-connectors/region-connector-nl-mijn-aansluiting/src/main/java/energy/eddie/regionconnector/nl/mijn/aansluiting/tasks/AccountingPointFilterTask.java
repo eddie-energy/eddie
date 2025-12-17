@@ -14,9 +14,9 @@ public class AccountingPointFilterTask implements UnaryOperator<Tuple2<List<Mijn
     public Tuple2<List<MijnAansluitingResponse>, List<MeteringPoint>> apply(Tuple2<List<MijnAansluitingResponse>, List<MeteringPoint>> tuple) {
         var meters = new ArrayList<MeteringPoint>();
         for (var response : tuple.getT1()) {
-            for (var register : response.getMarketEvaluationPoint().getRegisterList()) {
+            for (var register : response.marketEvaluationPoint().registerList()) {
                 for (var meteringPoint : tuple.getT2()) {
-                    if (register.getMeter().getMRID().equals(meteringPoint.getEan())) {
+                    if (register.meter().mrid().equals(meteringPoint.getEan())) {
                         meters.add(meteringPoint);
                     }
                 }
