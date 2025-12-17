@@ -121,7 +121,7 @@ jobs:
       - name: Clean up
         if: always()  # always clean up, even when other steps failed; a post-job script will delete anything anyway, but be sure to always delete the secrets files
         run: |
-          docker compose ${{ env.COMPOSE_FILES }} down
+          docker compose ${{ env.COMPOSE_FILES }} --profile dockerized-eddie down
           rm -f ${{ env.E2E_COMPOSE_SECRETS_FILE }}
           rm -rf ${{ env.PONTON_FOLDER }}
           rm -rf ./env/keys
