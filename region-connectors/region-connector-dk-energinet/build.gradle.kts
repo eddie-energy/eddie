@@ -76,7 +76,7 @@ sourceSets {
 
 val packagePrefix = "energy.eddie.regionconnector.dk.energinet"
 val customerApiPackagePrefix = "${packagePrefix}.customer"
-val energinetOpenApiChecksum = "660b1dedc1a467b5bb26b1fbebe6d2cf"
+val energinetOpenApiChecksum = "4d9305ff29802dfd3f14b1b7a3bcaaf0"
 val energinetOpenApiFileLocation = layout.buildDirectory.file("generated/sources/swagger/energinet.json")
 
 val downloadTask = tasks.register<Download>("openApiDownload") {
