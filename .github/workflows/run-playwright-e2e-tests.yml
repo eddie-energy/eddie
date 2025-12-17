@@ -9,6 +9,7 @@ on:
       - ".github/workflows/run-playwright-e2e-tests.yml"
       - "core/**"
       - "e2e-tests/**"
+      - "env/**"
       - "region-connectors/**"
       - "!**.md"
   push:
@@ -18,6 +19,7 @@ on:
       - ".github/workflows/run-playwright-e2e-tests.yml"
       - "core/**"
       - "e2e-tests/**"
+      - "env/**"
       - "region-connectors/**"
       - "!**.md"
   workflow_dispatch:
