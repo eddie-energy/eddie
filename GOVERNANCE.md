@@ -15,34 +15,41 @@ The project unites academic institutions, industry partners, and developers to d
 The internal organization is structured into the following functional teams:
 
 ### Scientific & Governance Team
+
 - Oversees research quality, publication strategy, and academic partnerships.
 - Monthly meetings chaired by the _Administrative and Scientific Coordinator_
 
 ### Technical Architecture Team
+
 - Defines system architecture and ensures technical integrity.
 - Monthly meetings chaired by the _Technical Coordinator_
 
 ### Development & Engineering Team
+
 - Implements features, maintains quality, and manages releases.
 - Bi-weekly meetings chaired by the _Development Coordinator_
 
 ### Business & Ecosystem Team
+
 - Drives community growth, dissemination, and stakeholder engagement.
 - Bi-weekly meetings chaired by the _Administrative and Scientific Coordinator_
 
 ### Framework Teams
+
 Dedicated teams for core components:
+
 - EDDIE Framework Team
 - AIIDA Framework Team
 
 ### General Assembly
 
-The _General Assembly_ consists of appointed individuals of 16 consortial members of the EDDIE Project. 
+The _General Assembly_ consists of appointed individuals of 16 consortial members of the EDDIE Project.
+
 - The initial distribution of roles is set via Project EDDIE consortium.
 - Meetings every 12 months (online) chaired by the _Administrative and Scientific Coordinator_
 - Extraordinary meetings may be initiated by the _Administrative and Scientific Coordinator_, by the _Business Coordinator_ or the _Technical Coordinator_ three weeks in advance.
 - Agenda, location and key performance indicators must be sent at least 5 business days before the meeting
-- Main decision-making body, and in particular _General Assembly_ may 
+- Main decision-making body, and in particular _General Assembly_ may
     - assignments of the roles stated
     - addition of new _General Assembly_ members,
     - removal or exchange of _General Assembly_ members
@@ -56,10 +63,12 @@ Minutes of the meetings mentioned above to be stored in the project GitHub.
 ## 3. Governance Roles and Nominations
 
 ### Administrative and Scientific Coordinator
+
 **Nominee:** FH-Prof. Priv.-Doz. Dr. Oliver Hödl (University of Vienna)  
 **Focus:** Scientific leadership and project governance.
 
 **Responsibilities:**
+
 - Academic and scientific direction
 - Strategic partnerships
 - Community growth
@@ -71,10 +80,12 @@ Minutes of the meetings mentioned above to be stored in the project GitHub.
 ---
 
 ### Business Coordinator
+
 **Nominee:** Laurent Schmitt (Digital4Grids)  
 **Focus:** Stakeholder management and ecosystem development.
 
 **Responsibilities:**
+
 - Industry engagement
 - Use case alignment
 - Sustainability planning
@@ -84,10 +95,12 @@ Minutes of the meetings mentioned above to be stored in the project GitHub.
 ---
 
 ### Technical Coordinator
+
 **Nominee:** Georg Hartner (Entarc.eu GmbH)  
 **Focus:** Architecture and system design.
 
 **Responsibilities:**
+
 - Architecture governance
 - Technical alignment
 - Interoperability strategy
@@ -99,10 +112,12 @@ Minutes of the meetings mentioned above to be stored in the project GitHub.
 ---
 
 ### Development Coordinator
+
 **Nominee:** FH-Prof. Dr. Marc Kurz (FH Oberösterreich)  
 **Focus:** Development leadership and quality assurance.
 
 **Responsibilities:**
+
 - Development processes
 - Coding guidelines
 - QA and testing
@@ -115,16 +130,19 @@ Minutes of the meetings mentioned above to be stored in the project GitHub.
 ### Framework Leads
 
 #### EDDIE Framework Lead
+
 **Nominee:** Florian Weingartshofer (FH Oberösterreich)  
 **Focus:** Ownership and roadmap of EDDIE.
 
 #### AIIDA Lead
+
 **Nominee:** Stefan Penzinger (FH Oberösterreich)  
 **Focus:** Ownership and roadmap of AIIDA.
 
 ---
 
 ## 4. Organizational Diagram
+
 ```
                          Administrative & Scientific Coordinator
                         FH-Prof. Priv.-Doz. Dr. Oliver Hödl
@@ -171,21 +189,21 @@ The project adheres to the LF Energy principles of vendor neutrality, open contr
 
 ## 6. Responsibility Matrix (RACI)
 
-| Activity | Admin & Scientific | Business | Technical | Development | EDDIE Lead | AIIDA Lead |
-|----------|--------------------|----------|-----------|-------------|------------|------------|
-| Scientific leadership | R                  | I        | C         | C           | I          | I          |
-| Academic coordination | R                  | I        | C         | C           | I          | I          |
-| Business strategy | C                  | R        | C         | I           | I          | I          |
-| Partner engagement | I                  | R        | C         | I           | I          | I          |
-| Community building | R                  | C        | C         | I           | C          | C          |
-| Architecture design | I                  | I        | R         | C           | C          | C          |
-| Development leadership | I                  | I        | C         | R           | C          | C          |
-| Coding standards | I                  | I        | C         | R           | C          | C          |
-| Quality assurance | I                  | I        | C         | R           | C          | C          |
-| Release management | I                  | I        | C         | R           | C          | C          |
-| Documentation | C                  | C        | C         | R           | C          | C          |
-| EDDIE roadmap | I                  | I        | C         | R           | C          | I          |
-| AIIDA roadmap | I                  | I        | C         | R           | C          | C          |
+| Activity                 | Admin & Scientific | Business | Technical | Development | EDDIE Lead | AIIDA Lead |
+|--------------------------|--------------------|----------|-----------|-------------|------------|------------|
+| Scientific leadership    | R                  | I        | C         | C           | I          | I          |
+| Academic coordination    | R                  | I        | C         | C           | I          | I          |
+| Business strategy        | C                  | R        | C         | I           | I          | I          |
+| Partner engagement       | I                  | R        | C         | I           | I          | I          |
+| Community building       | R                  | C        | C         | I           | C          | C          |
+| Architecture design      | I                  | I        | R         | C           | C          | C          |
+| Development leadership   | I                  | I        | C         | R           | C          | C          |
+| Coding standards         | I                  | I        | C         | R           | C          | C          |
+| Quality assurance        | I                  | I        | C         | R           | C          | C          |
+| Release management       | I                  | I        | C         | R           | C          | C          |
+| Documentation            | C                  | C        | C         | R           | C          | C          |
+| EDDIE roadmap            | I                  | I        | C         | R           | C          | I          |
+| AIIDA roadmap            | I                  | I        | C         | R           | C          | C          |
 | LF Energy representation | I                  | R        | R         | I           | I          | I          |
 
 **Legend:**  
@@ -204,10 +222,12 @@ This section describes how roles interact in practice to ensure governance effic
 ### Community Building
 
 **Joint responsibility of:**
+
 - Business Coordinator
 - Technical Coordinator
 
 **Purpose:**
+
 - Foster contributor growth.
 - Align community activities with technical direction.
 - Promote adoption and visibility.
@@ -218,10 +238,12 @@ This section describes how roles interact in practice to ensure governance effic
 ### Architecture Alignment
 
 **Joint responsibility of:**
+
 - Technical Coordinator
 - Development Coordinator
 
 **Purpose:**
+
 - Translate architecture into engineering standards.
 - Ensure consistency across frameworks.
 - Guide design decisions.
@@ -233,10 +255,12 @@ This section describes how roles interact in practice to ensure governance effic
 ### Scientific and Industrial Balance
 
 **Joint responsibility of:**
+
 - Administrative & Scientific Coordinator
 - Business Coordinator
 
 **Purpose:**
+
 - Maintain academic excellence.
 - Align research with industry needs.
 - Promote knowledge transfer.
@@ -247,10 +271,12 @@ This section describes how roles interact in practice to ensure governance effic
 ### Framework Ownership
 
 **Owned by:**
+
 - EDDIE Framework Lead
 - AIIDA Lead
 
 **Purpose:**
+
 - Ensure roadmap continuity.
 - Maintain code quality.
 - Guide contributor activity.
