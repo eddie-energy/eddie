@@ -6,8 +6,6 @@ services:
     ports:
       - "8080:8080"
       - "9090:9090"
-    volumes:
-      - ./keys:/opt/core/keys # mount a folder to store key files
 
 networks:
   default:

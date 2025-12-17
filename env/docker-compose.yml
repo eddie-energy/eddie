@@ -33,6 +33,7 @@ services:
       - path: .env.local
         required: false
     volumes:
+      - ./keys:/opt/core/keys # mount a folder to store key files
       - ./ponton:/ponton # mount a folder to store ponton files
       - ./data-needs.json:/opt/core/config/data-needs.json
     depends_on:
