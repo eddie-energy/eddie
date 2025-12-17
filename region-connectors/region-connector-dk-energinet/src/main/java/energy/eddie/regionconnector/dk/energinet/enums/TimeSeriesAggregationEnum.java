@@ -2,15 +2,12 @@ package energy.eddie.regionconnector.dk.energinet.enums;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
-import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
-
-import java.util.UUID;
 
 /**
  * Enum for the Aggregation of MeterDataApi's TimeSeries Method
  *
  * @see MeterDataApi
- * @see MeterDataApi#apiMeterdataGettimeseriesDateFromDateToAggregationPost(String, String, String, UUID, MeteringPointsRequest)
+ * @see MeterDataApi#customerapiApiMeterdataGettimeseriesDateFromDateToAggregationPost
  */
 public enum TimeSeriesAggregationEnum {
     ACTUAL("Actual"),
