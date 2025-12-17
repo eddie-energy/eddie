@@ -3,8 +3,6 @@ services:
   eddie:
     env_file:
       - .env.e2e
-      - path: .env_secrets
-        required: false
     ports:
       - "8080:8080"
       - "9090:9090"

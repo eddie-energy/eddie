@@ -26,7 +26,7 @@ on:
 
 env:
   COMPOSE_FILES: "-f ./env/docker-compose.yml -f ./env/docker-compose.e2e.yml"
-  E2E_COMPOSE_SECRETS_FILE: "./env/.env_secrets"
+  E2E_COMPOSE_SECRETS_FILE: "./env/.env.local"
   KEYS_FOLDER: "./env/keys"
   FLUVIUS_CER_FILE: "./env/keys/fluvius.cer"
   FLUVIUS_KEY_FILE: "./env/keys/fluvius.key"

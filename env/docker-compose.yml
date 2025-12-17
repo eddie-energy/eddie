@@ -30,6 +30,8 @@ services:
       context: ../core
     env_file:
       - .env
+      - path: .env.local
+        required: false
     volumes:
       - ./ponton:/ponton # mount a folder to store ponton files
       - ./data-needs.json:/opt/core/config/data-needs.json
