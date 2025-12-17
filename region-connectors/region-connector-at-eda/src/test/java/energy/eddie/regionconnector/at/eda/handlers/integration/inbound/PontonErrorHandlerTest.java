@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -74,7 +75,7 @@ class PontonErrorHandlerTest {
     private static AtPermissionRequestProjection projection(PermissionProcessStatus s) {
         return new AtPermissionRequestProjectionTest(
                 "pid", "connectionId", "cmRequestId", "conversationId",
-                LocalDate.now(), LocalDate.now(), "dnid", "dsoId", "meteringPointId", "consentId", "message",
+                LocalDate.now(ZoneId.systemDefault()), LocalDate.now(ZoneId.systemDefault()), "dnid", "dsoId", "meteringPointId", "consentId", "message",
                 AllowedGranularity.PT15M.name(), s.name(), Instant.now()
         );
     }

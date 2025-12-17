@@ -204,7 +204,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                 .isEmpty();
     }
 
-    private static HashSet<String> ignoredNames(
+    private static Set<String> ignoredNames(
             StandardBusinessTypeList businessType,
             CommodityKind commodity,
             StandardUnitOfMeasureTypeList unit

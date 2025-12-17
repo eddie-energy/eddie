@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 
@@ -112,9 +113,9 @@ class CCMORejectHandlerTest {
     private static AtPermissionRequestProjection projection(AllowedGranularity allowedGranularity) {
         return new AtPermissionRequestProjectionTest(
                 "pid", "connectionId", "cmRequestId", "conversationId",
-                LocalDate.now(), LocalDate.now(), "dnid", "dsoId", "meteringPointId",
+                LocalDate.now(ZoneId.systemDefault()), LocalDate.now(ZoneId.systemDefault()), "dnid", "dsoId", "meteringPointId",
                 "consentId", "message",
-                allowedGranularity.name(),PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR.name(), Instant.now()
+                allowedGranularity.name(), PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR.name(), Instant.now()
         );
     }
 
