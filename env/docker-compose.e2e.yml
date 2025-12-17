@@ -3,9 +3,6 @@ services:
   eddie:
     env_file:
       - .env.e2e
-    ports:
-      - "8080:8080"
-      - "9090:9090"
 
 networks:
   default:

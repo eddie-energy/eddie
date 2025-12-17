@@ -32,6 +32,9 @@ services:
       - .env
       - path: .env.local
         required: false
+    ports:
+      - "8080:8080"
+      - "9090:9090"
     volumes:
       - ./keys:/opt/core/keys # mount a folder to store key files
       - ./ponton:/ponton # mount a folder to store ponton files
