@@ -1,0 +1,17 @@
+name: e2e-tests
+services:
+  eddie:
+    env_file:
+      - .env.e2e
+      - path: .env_secrets
+        required: false
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    volumes:
+      - ./keys:/opt/core/keys # mount a folder to store key files
+
+networks:
+  default:
+    external: true
+    name: "e2e-tests-network"
