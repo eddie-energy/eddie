@@ -58,8 +58,8 @@ public class MeterReadingUpdateTask {
 
 
     private List<Meter<?>> getMeters(IdentifiableMeteringData identifiableMeteringData) {
-        var electricityMeters = get(identifiableMeteringData.payload(), GetEnergyResponseModel::getElectricityMeters);
-        var gasMeters = get(identifiableMeteringData.payload(), GetEnergyResponseModel::getGasMeters);
+        var electricityMeters = get(identifiableMeteringData.payload(), GetEnergyResponseModel::electricityMeters);
+        var gasMeters = get(identifiableMeteringData.payload(), GetEnergyResponseModel::gasMeters);
         var meters = new ArrayList<Meter<?>>();
         for (var electricityMeter : electricityMeters) {
             meters.add(Meter.from(electricityMeter));
@@ -99,7 +99,7 @@ public class MeterReadingUpdateTask {
             GetEnergyResponseModelApiDataResponse payload,
             Function<GetEnergyResponseModel, List<T>> getter
     ) {
-        var data = payload.getData();
+        var data = payload.data();
         if (data == null) {
             return List.of();
         }

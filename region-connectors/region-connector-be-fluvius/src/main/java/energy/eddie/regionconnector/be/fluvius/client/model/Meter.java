@@ -17,12 +17,12 @@ public class Meter<T> {
     public static Meter<ElectricityMeterResponseModel> from(ElectricityMeterResponseModel electricityMeter) {
         return new Meter<>(
                 electricityMeter,
-                ElectricityMeterResponseModel::getMeterID,
+                ElectricityMeterResponseModel::meterID,
                 List.of(
-                        new Readings<>(electricityMeter.getQuarterHourlyEnergy(),
-                                       EQuarterHourlyEnergyItemResponseModel::getTimestampEnd),
-                        new Readings<>(electricityMeter.getDailyEnergy(),
-                                       EDailyEnergyItemResponseModel::getTimestampEnd)
+                        new Readings<>(electricityMeter.quarterHourlyEnergy(),
+                                       EQuarterHourlyEnergyItemResponseModel::timestampEnd),
+                        new Readings<>(electricityMeter.dailyEnergy(),
+                                       EDailyEnergyItemResponseModel::timestampEnd)
                 )
         );
     }
@@ -30,10 +30,10 @@ public class Meter<T> {
     public static Meter<GasMeterResponseModel> from(GasMeterResponseModel gasMeter) {
         return new Meter<>(
                 gasMeter,
-                GasMeterResponseModel::getMeterID,
+                GasMeterResponseModel::meterID,
                 List.of(
-                        new Readings<>(gasMeter.getHourlyEnergy(), GHourlyEnergyItemResponseModel::getTimestampEnd),
-                        new Readings<>(gasMeter.getDailyEnergy(), GDailyEnergyItemResponseModel::getTimestampEnd)
+                        new Readings<>(gasMeter.hourlyEnergy(), GHourlyEnergyItemResponseModel::timestampEnd),
+                        new Readings<>(gasMeter.dailyEnergy(), GDailyEnergyItemResponseModel::timestampEnd)
                 )
         );
     }

@@ -66,7 +66,7 @@ class FluviusApiClientTest {
         SERVER.enqueue(new MockResponse()
                                .addHeader("Content-Type", "application/json")
                                .setResponseCode(200)
-                               .setBody(OBJECT_MAPPER.writeValueAsString(new FluviusSessionCreateResultResponseModelApiDataResponse())));
+                               .setBody(OBJECT_MAPPER.writeValueAsString(new FluviusSessionCreateResultResponseModelApiDataResponse(null, null))));
         when(oAuthTokenService.accessToken()).thenReturn("token");
         var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
         var now = ZonedDateTime.now(ZoneOffset.UTC);
@@ -116,10 +116,11 @@ class FluviusApiClientTest {
         // Given
         when(oAuthTokenService.accessToken()).thenReturn("token");
         var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
+        var response = new GetMandateResponseModelApiDataResponse(null, null);
         SERVER.enqueue(new MockResponse()
                                .setResponseCode(200)
                                .setHeader("Content-Type", "application/json")
-                               .setBody(OBJECT_MAPPER.writeValueAsString(new GetMandateResponseModelApiDataResponse())));
+                               .setBody(OBJECT_MAPPER.writeValueAsString(response)));
 
         // When
         var res = api.mandateFor("pid");
@@ -133,7 +134,7 @@ class FluviusApiClientTest {
     @Test
     void testMockMandates_returnsSuccessMessage() throws IOException, OAuthException, URISyntaxException, ParseException {
         // Given
-        var payload = new CreateMandateResponseModelApiDataResponse();
+        var payload = new CreateMandateResponseModelApiDataResponse(null, null);
         SERVER.enqueue(new MockResponse()
                                .addHeader("Content-Type", "application/json")
                                .setResponseCode(200)
