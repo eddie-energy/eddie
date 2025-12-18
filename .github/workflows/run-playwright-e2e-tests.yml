@@ -130,7 +130,7 @@ jobs:
         with:
           name: playwright-test-result-and-screenshots-and-docker-logs
           path: |
-            ./e2e-tests/build/playwright-results
+            ./e2e-tests/build/test-results/test
             ./e2e-tests/build/reports/tests/test
             ./e2e-tests/build/docker-logs
           retention-days: 40

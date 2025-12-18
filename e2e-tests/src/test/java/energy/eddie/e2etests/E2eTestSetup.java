@@ -59,7 +59,7 @@ public class E2eTestSetup {
 
     @AfterEach
     void saveScreenshot(TestInfo testInfo) {
-        var screenshotPath = Paths.get("build/playwright-results/",
+        var screenshotPath = Paths.get("build/test-results/test",
                                        getClass().getSimpleName(),
                                        testInfo.getDisplayName() + ".png");
         page.screenshot(new Page.ScreenshotOptions().setPath(screenshotPath));
