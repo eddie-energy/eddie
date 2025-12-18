@@ -6,8 +6,10 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import energy.eddie.e2etests.PlaywrightOptions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import java.nio.file.Paths;
 
@@ -129,5 +131,13 @@ class AiidaUiTests {
         page.getByText("Account").click();
         page.getByText("Logout").click();
         assertThat(page.getByText("Sign in to your account")).isVisible();
+    }
+
+    @AfterEach
+    void saveScreenshot(Page page, TestInfo testInfo) {
+        var screenshotPath = Paths.get("build/test-results/test",
+                                       getClass().getSimpleName(),
+                                       testInfo.getDisplayName() + ".png");
+        page.screenshot(new Page.ScreenshotOptions().setPath(screenshotPath));
     }
 }
