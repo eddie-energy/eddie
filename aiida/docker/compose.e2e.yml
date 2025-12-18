@@ -5,7 +5,11 @@ services:
     env_file:
       - .env.e2e
 
+  emqx:
+    container_name: aiida-emqx
+
   keycloak:
+    container_name: aiida-keycloak
     ports: !override
       - "8889:8080"
 
