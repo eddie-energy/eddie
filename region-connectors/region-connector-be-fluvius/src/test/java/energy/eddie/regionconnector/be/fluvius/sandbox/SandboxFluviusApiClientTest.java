@@ -61,9 +61,9 @@ class SandboxFluviusApiClientTest {
         when(dataNeedsService.getById("dnid"))
                 .thenReturn(createDataNeed());
         when(api.mockMandate("pid", now, now, "541440110000000001", Granularity.PT15M))
-                .thenReturn(Mono.just(new CreateMandateResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new CreateMandateResponseModelApiDataResponse(null, null)));
         when(api.shortUrlIdentifier("pid", Flow.B2B, now, now, Granularity.PT15M))
-                .thenReturn(Mono.just(new FluviusSessionCreateResultResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new FluviusSessionCreateResultResponseModelApiDataResponse(null, null)));
 
         // When
         var res = sandboxFluviusApiClient.shortUrlIdentifier("pid", Flow.B2B, now, now, Granularity.PT15M);
@@ -78,7 +78,7 @@ class SandboxFluviusApiClientTest {
     void testMandateFor_callsDecoratee() {
         // Given
         when(api.mandateFor("pid"))
-                .thenReturn(Mono.just(new GetMandateResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetMandateResponseModelApiDataResponse(null, null)));
 
         // When
         var res = sandboxFluviusApiClient.mandateFor("pid");

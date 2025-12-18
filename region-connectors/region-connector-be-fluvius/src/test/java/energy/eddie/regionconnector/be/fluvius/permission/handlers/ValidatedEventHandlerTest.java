@@ -102,8 +102,9 @@ class ValidatedEventHandlerTest {
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         List.of(Granularity.PT15M), permissionTimeFrame, customEnergyTimeframe)
                 );
+        var responseModel = new FluviusSessionCreateResultResponseModel(null, "shortUrlIdentifier", null);
         when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any(), eq(Granularity.PT15M)))
-                .thenReturn(Mono.just(createPermissionResponse()));
+                .thenReturn(Mono.just(new FluviusSessionCreateResultResponseModelApiDataResponse(null, responseModel)));
 
         // When
         eventBus.emit(createValidatedEvent());
@@ -155,7 +156,7 @@ class ValidatedEventHandlerTest {
         when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any(), eq(Granularity.PT15M)))
                 .thenReturn(
                         // Result without data means that the response is invalid
-                        Mono.just(new FluviusSessionCreateResultResponseModelApiDataResponse())
+                        Mono.just(new FluviusSessionCreateResultResponseModelApiDataResponse(null, null))
                 );
 
         // When
@@ -192,11 +193,6 @@ class ValidatedEventHandlerTest {
         verify(outbox).commit(assertArg(event ->
                                                 assertEquals(PermissionProcessStatus.UNABLE_TO_SEND, event.status()))
         );
-    }
-
-    private FluviusSessionCreateResultResponseModelApiDataResponse createPermissionResponse() {
-        var responseModel = new FluviusSessionCreateResultResponseModel().shortUrlIdentifier("shortUrlIdentifier");
-        return new FluviusSessionCreateResultResponseModelApiDataResponse().data(responseModel);
     }
 
     private ValidatedEvent createValidatedEvent() {

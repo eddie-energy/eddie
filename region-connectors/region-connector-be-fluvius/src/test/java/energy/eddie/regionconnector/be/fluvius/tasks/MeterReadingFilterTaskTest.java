@@ -43,11 +43,12 @@ class MeterReadingFilterTaskTest {
                 .permissionId("pid")
                 .dataNeedId("dnid")
                 .build();
-        var payload = new GetEnergyResponseModel()
-                .electricityMeters(List.of(new ElectricityMeterResponseModel()))
-                .gasMeters(List.of(new GasMeterResponseModel()));
-        var data = new GetEnergyResponseModelApiDataResponse()
-                .data(payload);
+        var payload = new GetEnergyResponseModel(
+                null,
+                List.of(new GasMeterResponseModel(null, null, null, null)),
+                List.of(new ElectricityMeterResponseModel(null, null, null, null))
+        );
+        var data = new GetEnergyResponseModelApiDataResponse(null, payload);
         var id = new IdentifiableMeteringData(pr, data);
         var dn = new ValidatedHistoricalDataDataNeed(
                 new RelativeDuration(null, null, null),
@@ -63,8 +64,8 @@ class MeterReadingFilterTaskTest {
         // Then
         assertAll(
                 () -> assertEquals(pr, res.permissionRequest()),
-                () -> assertEquals(electricityCount, res.payload().getData().getElectricityMeters().size()),
-                () -> assertEquals(gasCount, res.payload().getData().getGasMeters().size())
+                () -> assertEquals(electricityCount, res.payload().data().electricityMeters().size()),
+                () -> assertEquals(gasCount, res.payload().data().gasMeters().size())
         );
     }
 
