@@ -30,7 +30,8 @@ on:
   workflow_dispatch:
 
 env:
-  COMPOSE_FILES: "-f ./env/docker-compose.yml -f ./env/docker-compose.e2e.yml"
+  EDDIE_COMPOSE_FILES: "-f ./env/docker-compose.yml -f ./env/docker-compose.e2e.yml"
+  AIIDA_COMPOSE_FILES: "-f ./aiida/docker/compose.yml -f ./aiida/docker/compose.e2e.yml"
   E2E_COMPOSE_SECRETS_FILE: "./env/.env.local"
   KEYS_FOLDER: "./env/keys"
   FLUVIUS_CER_FILE: "./env/keys/fluvius.cer"
@@ -58,12 +59,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@bfd569614358980afc8f89c2730eee75bb97efdf
 
-      - name: Gradle installDist
-        run: ./gradlew installDist
-
-      - name: Build docker images
-        run: docker compose ${{ env.COMPOSE_FILES }} build
-
       - name: Write secrets to files
         env:
           EDDIE_JWT_HMAC_SECRET: ${{ secrets.EDDIE_JWT_HMAC_SECRET }}
@@ -82,8 +77,17 @@ jobs:
           mkdir -p ${{ env.PONTON_FOLDER }}
           echo -n "$PONTON_ID_DAT" | base64 -di > ${{ env.PONTON_ID_DAT_FILE }}
 
-      - name: Start docker containers
-        run: docker compose ${{ env.COMPOSE_FILES }} --env-file ./env/.env up -d --wait
+      - name: Gradle build EDDIE jar
+        run: ./gradlew installDist
+
+      - name: Gradle build AIIDA jar
+        run: ./gradlew :aiida:bootJar
+
+      - name: Start EDDIE containers
+        run: docker compose ${{ env.EDDIE_COMPOSE_FILES }} --env-file ./env/.env --env-file ./env/.env.e2e up -d --wait --build
+
+      - name: Start AIIDA containers
+        run: docker compose ${{ env.AIIDA_COMPOSE_FILES }} --profile dockerized-aiida --env-file ./aiida/docker/.env --env-file ./aiida/docker/.env.e2e up -d --wait --build
 
       - name: Install playwright dependencies
         run: ./gradlew e2e-tests:install-playwright-deps
@@ -106,6 +110,7 @@ jobs:
         env:
           E2E_EDDIE_URL: "http://eddie:8080"
           E2E_ADMIN_URL: "http://eddie:9090/outbound-connectors/admin-console"
+          E2E_AIIDA_URL: "http://aiida:8080"
           DK_ENERGINET_REFRESH_TOKEN: ${{ secrets.DK_ENERGINET_REFRESH_TOKEN }}
           DK_ENERGINET_METERING_POINT: ${{ secrets.DK_ENERGINET_METERING_POINT }}
         run: ./gradlew -Prun-e2e-tests e2e-tests:cleanTest e2e-tests:test
@@ -130,7 +135,8 @@ jobs:
       - name: Clean up
         if: always()  # always clean up, even when other steps failed; a post-job script will delete anything anyway, but be sure to always delete the secrets files
         run: |
-          docker compose ${{ env.COMPOSE_FILES }} down
+          docker compose ${{ env.EDDIE_COMPOSE_FILES }} down
+          docker compose ${{ env.AIIDA_COMPOSE_FILES }} --profile dockerized-aiida down
           rm -f ${{ env.E2E_COMPOSE_SECRETS_FILE }}
           rm -rf ${{ env.PONTON_FOLDER }}
           rm -rf ./env/keys
