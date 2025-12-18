@@ -1,0 +1,15 @@
+services:
+  aiida:
+    ports: !override
+      - "8081:8080"
+    env_file:
+      - .env.e2e
+
+  keycloak:
+    ports: !override
+      - "8889:8080"
+
+networks:
+  default:
+    external: true
+    name: "e2e-tests-network"
