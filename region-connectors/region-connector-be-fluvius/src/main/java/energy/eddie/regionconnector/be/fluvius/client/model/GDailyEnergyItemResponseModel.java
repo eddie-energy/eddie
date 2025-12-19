@@ -7,9 +7,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 public record GDailyEnergyItemResponseModel(
-        @JsonProperty("timestampStart") @Nullable ZonedDateTime timestampStart,
-        @JsonProperty("timestampEnd") @Nullable ZonedDateTime timestampEnd,
+        @JsonProperty("timestampStart") ZonedDateTime timestampStart,
+        @JsonProperty("timestampEnd") ZonedDateTime timestampEnd,
         @JsonProperty("measurement") @Nullable List<GMeasurementItemResponseModel> measurement
-) {
-}
+) implements EnergyItemResponseModel<GMeasurementItemResponseModel> {}
 

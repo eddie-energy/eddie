@@ -7,8 +7,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 public record EDailyEnergyItemResponseModel(
-        @Nullable @JsonProperty("timestampStart") ZonedDateTime timestampStart,
-        @Nullable @JsonProperty("timestampEnd") ZonedDateTime timestampEnd,
+        @JsonProperty("timestampStart") ZonedDateTime timestampStart,
+        @JsonProperty("timestampEnd") ZonedDateTime timestampEnd,
         @JsonProperty("measurement") @Nullable List<EMeasurementItemResponseModel> measurement
-) {}
+) implements EnergyItemResponseModel<EMeasurementItemResponseModel> {}
 
