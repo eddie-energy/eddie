@@ -948,7 +948,7 @@
     "company": "Fluvius",
     "name": "Fluvius",
     "companyId": "fluvius",
-    "jumpOffUrl": "https://mijn.fluvius.be/verbruik/dienstverlener?id=",
+    "jumpOffUrl": "https://fluvius.be",
     "regionConnector": "be-fluvius"
   },
   {
@@ -992,6 +992,14 @@
     "regionConnector": "us-green-button"
   },
   {
+    "country": "de",
+    "company": "ETA Plus",
+    "name": "ETA Plus",
+    "companyId": "eta-plus",
+    "jumpOffUrl": "https://eta-plus.de",
+    "regionConnector": "de-eta"
+  },
+  {
     "country": "dk",
     "company": "Energinet",
     "name": "Energinet",
@@ -1004,7 +1012,7 @@
     "company": "Datadis",
     "name": "Datadis",
     "companyId": "datadis",
-    "jumpOffUrl": "https://datadis.es/login",
+    "jumpOffUrl": "https://datadis.es",
     "regionConnector": "es-datadis"
   },
   {
@@ -1020,6 +1028,14 @@
     "company": "Enedis",
     "name": "Enedis",
     "companyId": "enedis",
+    "jumpOffUrl": "",
+    "regionConnector": "fr-enedis"
+  },
+  {
+    "country": "fr",
+    "company": "SRD Energies",
+    "name": "SRD Energies",
+    "companyId": "srd-energies",
     "jumpOffUrl": "",
     "regionConnector": "fr-enedis"
   },

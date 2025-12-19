@@ -1,6 +1,6 @@
 import { css } from "lit";
 
-const flags = ["at", "be", "dk", "es", "fi", "fr", "nl", "us", "ca"];
+const flags = ["at", "be", "de", "dk", "es", "fi", "fr", "nl", "us", "ca"];
 
 export function hasFlag(country) {
   return flags.includes(country?.toLowerCase());
@@ -29,6 +29,10 @@ export const flagStyles = css`
 
   .flag-dk {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Cpath fill='%23C60C30' d='M32 5H15v11h21V9c0-2.209-1.791-4-4-4zM15 31h17c2.209 0 4-1.791 4-4.5V20H15v11zM0 20v6.5C0 29.209 1.791 31 4 31h7V20H0zM11 5H4C1.791 5 0 6.791 0 9v7h11V5z'/%3E%3Cpath fill='%23EEE' d='M15 5h-4v11H0v4h11v11h4V20h21v-4H15z'/%3E%3C/svg%3E");
+  }
+
+  .flag-de {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Cpath fill='%23141414' d='M32 5H4C1.791 5 0 6.791 0 9v5h36V9c0-2.209-1.791-4-4-4z'/%3E%3Cpath fill='%23DD0000' d='M0 14h36v8H0z'/%3E%3Cpath fill='%23FFCE00' d='M4 31h28c2.209 0 4-1.791 4-4v-5H0v5c0 2.209 1.791 4 4 4z'/%3E%3C/svg%3E");
   }
 
   .flag-es {

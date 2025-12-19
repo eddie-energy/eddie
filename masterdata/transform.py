@@ -23,6 +23,7 @@ args = parser.parse_args()
 REGION_CONNECTORS = {
     'at': 'at-eda',
     'be': 'be-fluvius',
+    'de': 'de-eta',
     'dk': 'dk-energinet',
     'es': 'es-datadis',
     'fi': 'fi-fingrid',

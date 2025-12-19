@@ -84,14 +84,6 @@ jsonSchema2Pojo {
     setAnnotationStyle("jackson")
 }
 
-sourceSets {
-    main {
-        java {
-            srcDir("${layout.buildDirectory}/generated-sources")
-        }
-    }
-}
-
 tasks.named<JavaCompile>("compileJava") {
     dependsOn("generateJsonSchema2Pojo")
     source(jsonSchema2Pojo.targetDirectory)
