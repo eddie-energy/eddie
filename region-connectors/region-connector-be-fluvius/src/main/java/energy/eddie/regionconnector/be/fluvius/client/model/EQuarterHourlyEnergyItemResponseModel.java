@@ -7,7 +7,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 public record EQuarterHourlyEnergyItemResponseModel(
-        @JsonProperty("timestampStart") @Nullable ZonedDateTime timestampStart,
-        @JsonProperty("timestampEnd") @Nullable ZonedDateTime timestampEnd,
-        @JsonProperty("measurement") @Nullable List<EMeasurementDetailItemResponseModel> measurement) {
-}
+        @JsonProperty("timestampStart") ZonedDateTime timestampStart,
+        @JsonProperty("timestampEnd") ZonedDateTime timestampEnd,
+        @JsonProperty("measurement") @Nullable List<EMeasurementDetailItemResponseModel> measurement
+) implements EnergyItemResponseModel<EMeasurementDetailItemResponseModel> {}

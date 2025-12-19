@@ -125,13 +125,13 @@ class IntermediateValidatedHistoricalDocumentTest {
                                                                 new EMeasurementItemResponseModel(
                                                                         "kwh",
                                                                         10.0,
-                                                                        "READ",
+                                                                        ValidationState.READ,
                                                                         10.0,
-                                                                        "READ",
+                                                                        ValidationState.READ,
                                                                         5.0,
-                                                                        "READ",
+                                                                        ValidationState.READ,
                                                                         5.0,
-                                                                        "EST"
+                                                                        ValidationState.EST
                                                                 )
                                                         )
                                                 )
@@ -260,9 +260,9 @@ class IntermediateValidatedHistoricalDocumentTest {
                                                                 new EMeasurementDetailItemResponseModel(
                                                                         "kwh",
                                                                         20.0,
-                                                                        "READ",
+                                                                        ValidationState.READ,
                                                                         10.0,
-                                                                        "READ"
+                                                                        ValidationState.READ
                                                                 )
                                                         )
                                                 )
@@ -387,10 +387,10 @@ class IntermediateValidatedHistoricalDocumentTest {
                                                         timestampStart,
                                                         timestampEnd,
                                                         List.of(
-                                                                new GMeasurementDetailItemResponseModel(
+                                                                new GMeasurementItemResponseModel(
                                                                         "m3",
                                                                         10.0,
-                                                                        "READ",
+                                                                        ValidationState.READ,
                                                                         ""
                                                                 )
                                                         )
@@ -518,7 +518,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                                                                 new GMeasurementItemResponseModel(
                                                                         "m3",
                                                                         10.0,
-                                                                        "READ",
+                                                                        ValidationState.READ,
                                                                         ""
                                                                 )
                                                         )
