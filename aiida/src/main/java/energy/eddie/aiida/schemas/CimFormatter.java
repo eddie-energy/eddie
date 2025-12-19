@@ -77,6 +77,15 @@ public class CimFormatter extends SchemaFormatter {
             AiidaRecord aiidaRecord,
             @Nullable String codingScheme
     ) throws CimFormatterException {
+
+        var prmValue = aiidaRecord.aiidaRecordValues()
+                .stream()
+                .filter(value -> value
+                        .rawTag()
+                        .equals("PRM"))
+                .findFirst();
+        String mRID = prmValue.isPresent() ? prmValue.get().value() : aiidaRecord.dataSourceId().toString();
+
         return new TimeSeries().withDateAndOrTimeDateTime(aiidaRecord.timestamp().atZone(UTC))
                                .withQuantities(aiidaRecord
                                                        .aiidaRecordValues()
@@ -89,9 +98,8 @@ public class CimFormatter extends SchemaFormatter {
                                                                        aiidaRecordValue)))
                                                        .toList())
                                .withRegisteredResourceMRID(new ResourceIDString()
-                                                                   .withCodingScheme(codingScheme)
-                                                                   .withValue(aiidaRecord.dataSourceId()
-                                                                                         .toString()))
+                                                       .withCodingScheme(codingScheme)
+                                                       .withValue(mRID))
                                .withVersion(VERSION);
     }
 
