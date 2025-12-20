@@ -12,18 +12,16 @@ public record GetEnergyResponseModel(
         @JsonProperty("gasMeters") @Nullable List<GasMeterResponseModel> gasMeters,
         @JsonProperty("electricityMeters") @Nullable List<ElectricityMeterResponseModel> electricityMeters
 ) {
-    @Nullable
     public List<MeterResponseModel> getMeterFor(EnergyType energyType) {
         return switch (energyType) {
-            case ELECTRICITY -> copyOrNull(electricityMeters);
-            case NATURAL_GAS -> copyOrNull(gasMeters);
+            case ELECTRICITY -> copyOrEmpty(electricityMeters);
+            case NATURAL_GAS -> copyOrEmpty(gasMeters);
             default -> List.of();
         };
     }
 
-    @Nullable
-    private static List<MeterResponseModel> copyOrNull(@Nullable List<? extends MeterResponseModel> source) {
-        return source == null ? null : List.copyOf(source);
+    private static List<MeterResponseModel> copyOrEmpty(@Nullable List<? extends MeterResponseModel> source) {
+        return source == null ? List.of() : List.copyOf(source);
     }
 }
 

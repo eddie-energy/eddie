@@ -116,7 +116,7 @@ public class PollingService implements CommonPollingService<FluviusPermissionReq
     }
 
     private boolean isDataPresent(GetEnergyResponseModelApiDataResponse response, String permissionId) {
-        if (response.data() != null && response.data().electricityMeters() != null) {
+        if (response.data().electricityMeters() != null) {
             return true;
         }
         LOGGER.info("Response for energy data was empty, for permission request {}", permissionId);

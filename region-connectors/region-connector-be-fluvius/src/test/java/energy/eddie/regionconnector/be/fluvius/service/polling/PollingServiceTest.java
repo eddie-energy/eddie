@@ -114,7 +114,10 @@ class PollingServiceTest {
                                                        .dataNeedId("did")
                                                        .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
-                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
+                        new ApiMetaData(null),
+                        new GetEnergyResponseModel(null, null, null)
+                )));
 
         // When
         service.pollTimeSeriesData(pr);
@@ -139,7 +142,10 @@ class PollingServiceTest {
                                                        .dataNeedId("did")
                                                        .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
-                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
+                        new ApiMetaData(null),
+                        new GetEnergyResponseModel(null, null, null)
+                )));
 
         // When
         service.pollTimeSeriesData(pr);
@@ -159,7 +165,10 @@ class PollingServiceTest {
                                                        .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
                 .thenReturn(Mono.error(error))
-                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
+                        new ApiMetaData(null),
+                        new GetEnergyResponseModel(null, null, null)
+                )));
 
         // When
         service.pollTimeSeriesData(pr);
@@ -178,7 +187,10 @@ class PollingServiceTest {
                 .addMeterReadings(new MeterReading("pid", "ean", null))
                 .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.DAILY), any(), any()))
-                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
+                        new ApiMetaData(null),
+                        new GetEnergyResponseModel(null, null, null)
+                )));
 
         // When
         service.pollTimeSeriesData(pr);
@@ -229,7 +241,10 @@ class PollingServiceTest {
         service.pollTimeSeriesData(permissionRequest);
 
         // Then
-        verify(streams, never()).publish(permissionRequest, new GetEnergyResponseModelApiDataResponse());
+        verify(streams, never()).publish(permissionRequest, new GetEnergyResponseModelApiDataResponse(
+                new ApiMetaData(null),
+                new GetEnergyResponseModel(null, null, null)
+        ));
     }
 
     @Test
@@ -357,7 +372,6 @@ class PollingServiceTest {
                                                 now.minusMinutes(15),
                                                 now,
                                                 List.of(
-
                                                         new EMeasurementItemResponseModel(
                                                                 "kwh",
                                                                 null,

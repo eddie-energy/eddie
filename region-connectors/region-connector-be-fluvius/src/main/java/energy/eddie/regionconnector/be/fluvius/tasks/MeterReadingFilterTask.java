@@ -26,10 +26,6 @@ public class MeterReadingFilterTask implements UnaryOperator<IdentifiableMeterin
         var permissionId = pr.permissionId();
         var dataNeed = (ValidatedHistoricalDataDataNeed) dataNeedsService.getById(pr.dataNeedId());
         var data = meteringData.payload().data();
-        if (data == null) {
-            LOGGER.debug("No data found for permission request {}", permissionId);
-            return meteringData;
-        }
         GetEnergyResponseModel newEnergyResponseModel;
         if (dataNeed.energyType() == EnergyType.ELECTRICITY) {
             LOGGER.debug("Electricity data found for permission request {} removing gas data", permissionId);

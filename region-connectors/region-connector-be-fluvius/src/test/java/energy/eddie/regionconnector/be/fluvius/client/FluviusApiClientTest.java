@@ -3,10 +3,7 @@ package energy.eddie.regionconnector.be.fluvius.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.oauth2.sdk.ParseException;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.be.fluvius.client.model.CreateMandateResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.*;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusConfiguration;
 import energy.eddie.regionconnector.be.fluvius.oauth.OAuthException;
 import energy.eddie.regionconnector.be.fluvius.oauth.OAuthRequestException;
@@ -66,7 +63,9 @@ class FluviusApiClientTest {
         SERVER.enqueue(new MockResponse()
                                .addHeader("Content-Type", "application/json")
                                .setResponseCode(200)
-                               .setBody(OBJECT_MAPPER.writeValueAsString(new FluviusSessionCreateResultResponseModelApiDataResponse(null, null))));
+                               .setBody(OBJECT_MAPPER.writeValueAsString(new FluviusSessionCreateResultResponseModelApiDataResponse(
+                                       null,
+                                       null))));
         when(oAuthTokenService.accessToken()).thenReturn("token");
         var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
         var now = ZonedDateTime.now(ZoneOffset.UTC);
@@ -179,7 +178,10 @@ class FluviusApiClientTest {
         SERVER.enqueue(new MockResponse()
                                .addHeader("Content-Type", "application/json")
                                .setResponseCode(200)
-                               .setBody(OBJECT_MAPPER.writeValueAsString(new GetEnergyResponseModelApiDataResponse())));
+                               .setBody(OBJECT_MAPPER.writeValueAsString(new GetEnergyResponseModelApiDataResponse(
+                                       new ApiMetaData(null),
+                                       new GetEnergyResponseModel(null, null, null)
+                               ))));
         when(oAuthTokenService.accessToken()).thenReturn("token");
         var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
         var now = ZonedDateTime.now(ZoneOffset.UTC);

@@ -66,7 +66,10 @@ class MeterReadingUpdateTaskTest {
     @Test
     void testOnMeterReading_forMissingPayload_doesNotUpdateMeterReading() {
         // Given
-        var payload = new GetEnergyResponseModelApiDataResponse();
+        var payload = new GetEnergyResponseModelApiDataResponse(
+                new ApiMetaData(null),
+                new GetEnergyResponseModel(null, null, null)
+        );
         var permissionRequest = new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
                 .addMeterReadings(new MeterReading("pid", "5001", null))
