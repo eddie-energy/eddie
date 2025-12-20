@@ -40,11 +40,8 @@ class IntermediateValidatedHistoricalDocument {
 
     public List<VHDEnvelope> toVHD() {
         GetEnergyResponseModel meteringData = identifiableMeteredData.payload().data();
-        if (meteringData == null) {
-            return List.of();
-        }
-        ValidatedHistoricalDataDataNeed dataNeed = ((ValidatedHistoricalDataDataNeed) dataNeedsService.
-                getById(identifiableMeteredData.permissionRequest().dataNeedId()));
+        ValidatedHistoricalDataDataNeed dataNeed = (ValidatedHistoricalDataDataNeed) dataNeedsService.
+                getById(identifiableMeteredData.permissionRequest().dataNeedId());
 
         ZonedDateTime fetchTime = meteringData.fetchTime();
         EnergyType type = dataNeed.energyType();
@@ -57,10 +54,6 @@ class IntermediateValidatedHistoricalDocument {
             EnergyType energyType
     ) {
         var meteringData = response.getMeterFor(energyType);
-        if (meteringData == null) {
-            return List.of();
-        }
-
         List<VHDEnvelope> vhds = new ArrayList<>();
         for (MeterResponseModel meterResponse : meteringData) {
             int seqNumber = meterResponse.seqNumber();

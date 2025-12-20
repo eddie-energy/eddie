@@ -58,9 +58,6 @@ public class MeterReadingUpdateTask {
 
     private List<MeterResponseModel> getMeters(IdentifiableMeteringData identifiableMeteringData) {
         var data = identifiableMeteringData.payload().data();
-        if (data == null) {
-            return List.of();
-        }
         List<MeterResponseModel> meters = new ArrayList<>(Objects.requireNonNullElse(data.electricityMeters(),
                                                                                      List.of()));
         List<? extends MeterResponseModel> gasMeterResponseModels = data.gasMeters();

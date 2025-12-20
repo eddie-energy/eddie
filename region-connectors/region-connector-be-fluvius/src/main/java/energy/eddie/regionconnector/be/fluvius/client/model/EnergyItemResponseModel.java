@@ -5,7 +5,7 @@ import jakarta.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-public sealed interface EnergyItemResponseModel<T extends MeasurementResponseModel> permits EDailyEnergyItemResponseModel, EQuarterHourlyEnergyItemResponseModel, GDailyEnergyItemResponseModel, GHourlyEnergyItemResponseModel {
+public interface EnergyItemResponseModel<T extends MeasurementResponseModel> {
     ZonedDateTime timestampStart();
 
     ZonedDateTime timestampEnd();

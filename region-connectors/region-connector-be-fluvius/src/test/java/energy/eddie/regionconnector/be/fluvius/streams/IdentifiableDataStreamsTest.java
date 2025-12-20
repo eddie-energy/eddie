@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.be.fluvius.streams;
 
+import energy.eddie.regionconnector.be.fluvius.client.model.ApiMetaData;
+import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModel;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
 import org.junit.jupiter.api.Test;
@@ -17,7 +19,10 @@ class IdentifiableDataStreamsTest {
                                                        .build();
 
         // When
-        streams.publish(pr, new GetEnergyResponseModelApiDataResponse());
+        streams.publish(pr, new GetEnergyResponseModelApiDataResponse(
+                new ApiMetaData(null),
+                new GetEnergyResponseModel(null, null, null)
+        ));
 
         // Then
         StepVerifier.create(streams.getMeteringData())

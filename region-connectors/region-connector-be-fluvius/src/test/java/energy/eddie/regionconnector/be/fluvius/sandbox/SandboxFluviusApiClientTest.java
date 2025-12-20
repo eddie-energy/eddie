@@ -8,10 +8,7 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.client.DataServiceType;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
-import energy.eddie.regionconnector.be.fluvius.client.model.CreateMandateResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.*;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
@@ -94,7 +91,10 @@ class SandboxFluviusApiClientTest {
         // Given
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         when(api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now))
-                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
+                        new ApiMetaData(null),
+                        new GetEnergyResponseModel(null, null, null)
+                )));
 
         // When
         var res = sandboxFluviusApiClient.energy("pid", "eanNumber", DataServiceType.DAILY, now, now);
