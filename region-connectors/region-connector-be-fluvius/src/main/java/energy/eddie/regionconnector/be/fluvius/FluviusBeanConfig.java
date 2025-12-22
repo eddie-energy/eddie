@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.be.fluvius;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
@@ -28,6 +29,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.P
 import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientSsl;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
@@ -94,6 +96,10 @@ public class FluviusBeanConfig {
         );
     }
 
+    @Bean
+    public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
+        return builder -> builder.featuresToEnable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE);
+    }
 
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
@@ -156,5 +162,4 @@ public class FluviusBeanConfig {
     Supplier<PermissionEventRepository> permissionEventSupplier(BePermissionEventRepository repo) {
         return () -> repo;
     }
-
 }

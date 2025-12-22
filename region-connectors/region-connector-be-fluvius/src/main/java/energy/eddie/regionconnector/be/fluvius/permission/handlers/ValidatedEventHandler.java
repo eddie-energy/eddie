@@ -63,11 +63,12 @@ public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
 
     private void handleSuccess(String permissionId, FluviusSessionCreateResultResponseModelApiDataResponse res) {
         LOGGER.info("Successfully sent permission request {} to Fluvius", permissionId);
-        if (res.getData() == null) {
+        var data = res.data();
+        if (data == null || data.shortUrlIdentifier() == null) {
             outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
             outbox.commit(new InvalidEvent(permissionId, "No short url identifier found"));
         } else {
-            outbox.commit(new SentToPaEvent(permissionId, res.getData().getShortUrlIdentifier()));
+            outbox.commit(new SentToPaEvent(permissionId, data.shortUrlIdentifier()));
         }
     }
 

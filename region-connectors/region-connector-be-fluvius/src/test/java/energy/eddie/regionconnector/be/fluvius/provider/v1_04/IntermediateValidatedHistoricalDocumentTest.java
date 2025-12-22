@@ -20,8 +20,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.xmlunit.builder.DiffBuilder;
 
 import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -105,39 +106,41 @@ class IntermediateValidatedHistoricalDocumentTest {
                 .dataNeedId("dnid")
                 .granularity(Granularity.P1D)
                 .build();
-        var timestampStart = OffsetDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var timestampEnd = OffsetDateTime.of(2025, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
-        var data = new GetEnergyResponseModelApiDataResponse()
-                .metaData(
-                        new ApiMetaData()
-                                .version("2")
-                )
-                .data(
-                        new GetEnergyResponseModel()
-                                .fetchTime(OffsetDateTime.now(ZoneOffset.UTC))
-                                .addElectricityMetersItem(
-                                        new ElectricityMeterResponseModel()
-                                                .seqNumber(1)
-                                                .meterID("mid")
-                                                .addDailyEnergyItem(
-                                                        new EDailyEnergyItemResponseModel()
-                                                                .timestampStart(timestampStart)
-                                                                .timestampEnd(timestampEnd)
-                                                                .addMeasurementItem(
-                                                                        new EMeasurementItemResponseModel()
-                                                                                .unit("kwh")
-                                                                                .offtakeDayValue(10.0)
-                                                                                .injectionDayValue(5.0)
-                                                                                .offtakeNightValue(10.0)
-                                                                                .injectionNightValue(5.0)
-                                                                                .offtakeDayValidationState("READ")
-                                                                                .injectionDayValidationState("READ")
-                                                                                .offtakeNightValidationState("READ")
-                                                                                .injectionNightValidationState("EST")
+        var timestampStart = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var timestampEnd = ZonedDateTime.of(2025, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
+        var data = new GetEnergyResponseModelApiDataResponse(
+                new ApiMetaData("2"),
+                new GetEnergyResponseModel(
+                        ZonedDateTime.now(ZoneOffset.UTC),
+                        null,
+                        List.of(
+                                new ElectricityMeterResponseModel(
+                                        1,
+                                        "mid",
+                                        List.of(
+                                                new EDailyEnergyItemResponseModel(
+                                                        timestampStart,
+                                                        timestampEnd,
+                                                        List.of(
+                                                                new EMeasurementItemResponseModel(
+                                                                        "kwh",
+                                                                        10.0,
+                                                                        ValidationState.READ,
+                                                                        10.0,
+                                                                        ValidationState.READ,
+                                                                        5.0,
+                                                                        ValidationState.READ,
+                                                                        5.0,
+                                                                        ValidationState.EST
                                                                 )
+                                                        )
                                                 )
+                                        ),
+                                        null
                                 )
-                );
+                        )
+                )
+        );
         var id = new IntermediateValidatedHistoricalDocument(
                 config,
                 new IdentifiableMeteringData(pr, data),
@@ -237,35 +240,37 @@ class IntermediateValidatedHistoricalDocumentTest {
                 .dataNeedId("dnid")
                 .granularity(Granularity.PT15M)
                 .build();
-        var timestampStart = OffsetDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var timestampEnd = OffsetDateTime.of(2025, 1, 1, 0, 15, 0, 0, ZoneOffset.UTC);
-        var data = new GetEnergyResponseModelApiDataResponse()
-                .metaData(
-                        new ApiMetaData()
-                                .version("2")
-                )
-                .data(
-                        new GetEnergyResponseModel()
-                                .fetchTime(OffsetDateTime.now(ZoneOffset.UTC))
-                                .addElectricityMetersItem(
-                                        new ElectricityMeterResponseModel()
-                                                .seqNumber(1)
-                                                .meterID("mid")
-                                                .addQuarterHourlyEnergyItem(
-                                                        new EQuarterHourlyEnergyItemResponseModel()
-                                                                .timestampStart(timestampStart)
-                                                                .timestampEnd(timestampEnd)
-                                                                .addMeasurementItem(
-                                                                        new EMeasurementDetailItemResponseModel()
-                                                                                .unit("kwh")
-                                                                                .offtakeValue(20.0)
-                                                                                .injectionValue(10.0)
-                                                                                .injectionValidationState("READ")
-                                                                                .offtakeValidationState("READ")
+        var timestampStart = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var timestampEnd = ZonedDateTime.of(2025, 1, 1, 0, 15, 0, 0, ZoneOffset.UTC);
+        var data = new GetEnergyResponseModelApiDataResponse(
+                new ApiMetaData("2"),
+                new GetEnergyResponseModel(
+                        ZonedDateTime.now(ZoneOffset.UTC),
+                        null,
+                        List.of(
+                                new ElectricityMeterResponseModel(
+                                        1,
+                                        "mid",
+                                        null,
+                                        List.of(
+                                                new EQuarterHourlyEnergyItemResponseModel(
+                                                        timestampStart,
+                                                        timestampEnd,
+                                                        List.of(
+                                                                new EMeasurementDetailItemResponseModel(
+                                                                        "kwh",
+                                                                        20.0,
+                                                                        ValidationState.READ,
+                                                                        10.0,
+                                                                        ValidationState.READ
                                                                 )
+                                                        )
                                                 )
+                                        )
                                 )
-                );
+                        )
+                )
+        );
         var id = new IntermediateValidatedHistoricalDocument(
                 config,
                 new IdentifiableMeteringData(pr, data),
@@ -366,33 +371,36 @@ class IntermediateValidatedHistoricalDocumentTest {
                 .dataNeedId("dnid")
                 .granularity(Granularity.PT1H)
                 .build();
-        var timestampStart = OffsetDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var timestampEnd = OffsetDateTime.of(2025, 1, 1, 1, 0, 0, 0, ZoneOffset.UTC);
-        var data = new GetEnergyResponseModelApiDataResponse()
-                .metaData(
-                        new ApiMetaData()
-                                .version("2")
-                )
-                .data(
-                        new GetEnergyResponseModel()
-                                .fetchTime(OffsetDateTime.now(ZoneOffset.UTC))
-                                .addGasMetersItem(
-                                        new GasMeterResponseModel()
-                                                .seqNumber(1)
-                                                .meterID("mid")
-                                                .addHourlyEnergyItem(
-                                                        new GHourlyEnergyItemResponseModel()
-                                                                .timestampStart(timestampStart)
-                                                                .timestampEnd(timestampEnd)
-                                                                .addMeasurementItem(
-                                                                        new GMeasurementDetailItemResponseModel()
-                                                                                .unit("m3")
-                                                                                .offtakeValue(10.0)
-                                                                                .offtakeValidationState("READ")
+        var timestampStart = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var timestampEnd = ZonedDateTime.of(2025, 1, 1, 1, 0, 0, 0, ZoneOffset.UTC);
+        var data = new GetEnergyResponseModelApiDataResponse(
+                new ApiMetaData("2"),
+                new GetEnergyResponseModel(
+                        ZonedDateTime.now(ZoneOffset.UTC),
+                        List.of(
+                                new GasMeterResponseModel(
+                                        1,
+                                        "mid",
+                                        List.of(),
+                                        List.of(
+                                                new GHourlyEnergyItemResponseModel(
+                                                        timestampStart,
+                                                        timestampEnd,
+                                                        List.of(
+                                                                new GMeasurementItemResponseModel(
+                                                                        "m3",
+                                                                        10.0,
+                                                                        ValidationState.READ,
+                                                                        ""
                                                                 )
+                                                        )
                                                 )
+                                        )
                                 )
-                );
+                        ),
+                        null
+                )
+        );
         var id = new IntermediateValidatedHistoricalDocument(
                 config,
                 new IdentifiableMeteringData(pr, data),
@@ -492,33 +500,36 @@ class IntermediateValidatedHistoricalDocumentTest {
                 .dataNeedId("dnid")
                 .granularity(Granularity.P1D)
                 .build();
-        var timestampStart = OffsetDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var timestampEnd = OffsetDateTime.of(2025, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
-        var data = new GetEnergyResponseModelApiDataResponse()
-                .metaData(
-                        new ApiMetaData()
-                                .version("2")
-                )
-                .data(
-                        new GetEnergyResponseModel()
-                                .fetchTime(OffsetDateTime.now(ZoneOffset.UTC))
-                                .addGasMetersItem(
-                                        new GasMeterResponseModel()
-                                                .seqNumber(1)
-                                                .meterID("mid")
-                                                .addDailyEnergyItem(
-                                                        new GDailyEnergyItemResponseModel()
-                                                                .timestampStart(timestampStart)
-                                                                .timestampEnd(timestampEnd)
-                                                                .addMeasurementItem(
-                                                                        new GMeasurementItemResponseModel()
-                                                                                .unit("m3")
-                                                                                .offtakeValue(10.0)
-                                                                                .offtakeValidationState("READ")
+        var timestampStart = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var timestampEnd = ZonedDateTime.of(2025, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
+        var data = new GetEnergyResponseModelApiDataResponse(
+                new ApiMetaData("2"),
+                new GetEnergyResponseModel(
+                        ZonedDateTime.now(ZoneOffset.UTC),
+                        List.of(
+                                new GasMeterResponseModel(
+                                        1,
+                                        "mid",
+                                        List.of(
+                                                new GDailyEnergyItemResponseModel(
+                                                        timestampStart,
+                                                        timestampEnd,
+                                                        List.of(
+                                                                new GMeasurementItemResponseModel(
+                                                                        "m3",
+                                                                        10.0,
+                                                                        ValidationState.READ,
+                                                                        ""
                                                                 )
+                                                        )
                                                 )
+                                        ),
+                                        null
                                 )
-                );
+                        ),
+                        null
+                )
+        );
         var id = new IntermediateValidatedHistoricalDocument(
                 config,
                 new IdentifiableMeteringData(pr, data),

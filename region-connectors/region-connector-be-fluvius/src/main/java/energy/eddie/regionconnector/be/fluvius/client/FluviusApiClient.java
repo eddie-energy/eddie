@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Component
 @Priority(value = 2)
@@ -140,21 +141,23 @@ public class FluviusApiClient implements FluviusApi {
         var start = from.format(DateTimeFormatter.ISO_DATE_TIME);
         var end = to.format(DateTimeFormatter.ISO_DATE_TIME);
 
-        var request = new FluviusSessionRequestModel()
-                .dataAccessContractNumber(fluviusConfiguration.contractNumber())
-                .referenceNumber(transformPermissionId(permissionId))
-                .flow(flow.name())
-                .addDataServicesItem(
-                        new FluviusSessionRequestDataServiceModel()
-                                .dataServiceType(DataServiceType.from(granularity).value())
-                                .dataPeriodFrom(start)
-                                .dataPeriodTo(end)
-                )
-                .numberOfEans(1)
-                .returnUrlSuccess(uriHelper.successUri(permissionId))
-                .returnUrlFailed(uriHelper.rejectUri(permissionId))
-                .sso(true)
-                .enterpriseNumber(null);
+        var request = new FluviusSessionRequestModel(
+                fluviusConfiguration.contractNumber(),
+                transformPermissionId(permissionId),
+                flow.name(),
+                List.of(
+                        new FluviusSessionRequestDataServiceModel(
+                                DataServiceType.from(granularity).value(),
+                                start,
+                                end
+                        )
+                ),
+                1,
+                uriHelper.successUri(permissionId),
+                uriHelper.rejectUri(permissionId),
+                true,
+                null
+        );
         return webClient.post()
                         .uri("/api/v2.0/shortUrlIdentifier")
                         .headers(h -> h.setBearerAuth(token))
@@ -207,15 +210,16 @@ public class FluviusApiClient implements FluviusApi {
         var start = from.format(DateTimeFormatter.ISO_DATE_TIME);
         var end = to.format(DateTimeFormatter.ISO_DATE_TIME);
         LOGGER.info("Mocking mandates is enabled, creating a new mock mandate");
-        var request = new CreateMandateRequestModel()
-                .referenceNumber(transformPermissionId(permissionId))
-                .dataServiceType(DataServiceType.from(granularity).value())
-                .dataPeriodFrom(start)
-                .dataPeriodTo(end)
-                .status("Approved")
-                .eanNumber(ean)
-                .mandateExpirationDate(end)
-                .renewalStatus("ToBeRenewed");
+        var request = new CreateMandateRequestModel(
+                transformPermissionId(permissionId),
+                ean,
+                DataServiceType.from(granularity).value(),
+                start,
+                end,
+                "Approved",
+                end,
+                "ToBeRenewed"
+        );
         return webClient.post()
                         .uri("/api/v2.0/Mandate/mock")
                         .headers(h -> h.setBearerAuth(token))

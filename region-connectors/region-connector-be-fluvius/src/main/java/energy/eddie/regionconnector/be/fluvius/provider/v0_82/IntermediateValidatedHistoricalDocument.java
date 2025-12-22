@@ -15,15 +15,11 @@ import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
 import jakarta.annotation.Nullable;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.ToDoubleFunction;
 
 class IntermediateValidatedHistoricalDocument {
-
-    private static final String EST = "EST";
     private final FluviusOAuthConfiguration fluviusConfig;
     private final IdentifiableMeteringData identifiableMeteredData;
     private final Granularity granularity;
@@ -41,44 +37,34 @@ class IntermediateValidatedHistoricalDocument {
     }
 
     public List<ValidatedHistoricalDataEnvelope> toVHD() {
-        GetEnergyResponseModel meteringData = identifiableMeteredData.payload().getData();
-        ValidatedHistoricalDataDataNeed dataNeed = ((ValidatedHistoricalDataDataNeed) dataNeedsService.
-                getById(identifiableMeteredData.permissionRequest().dataNeedId()));
-
-        if (meteringData == null) {
-            return List.of();
-        }
-
-        OffsetDateTime fetchTime = meteringData.getFetchTime();
+        GetEnergyResponseModel meteringData = identifiableMeteredData.payload().data();
+        ValidatedHistoricalDataDataNeed dataNeed = (ValidatedHistoricalDataDataNeed) dataNeedsService.
+                getById(identifiableMeteredData.permissionRequest().dataNeedId());
+        ZonedDateTime fetchTime = meteringData.fetchTime();
         EnergyType type = dataNeed.energyType();
-        return switch (type) {
-            case ELECTRICITY -> getVHD(meteringData.getElectricityMeters(), fetchTime,
-                                       r -> r.getSeqNumber() == null ? null : String.valueOf(r.getSeqNumber()),
-                                       this::getPeriodTimeIntervalFromMeterResponse, this::getElectricityTimeSeries);
-            case NATURAL_GAS -> getVHD(meteringData.getGasMeters(), fetchTime,
-                                       r -> r.getSeqNumber() == null ? null : String.valueOf(r.getSeqNumber()),
-                                       this::getPeriodTimeIntervalFromMeterResponse, this::getGasTimeSeries);
-            default -> throw new IllegalStateException("Unexpected energy type: " + type);
-        };
+        return getVHD(meteringData, fetchTime, type);
     }
 
-    private <T> List<ValidatedHistoricalDataEnvelope> getVHD(
-            List<T> meteringData,
-            OffsetDateTime fetchTime,
-            Function<T, String> getSeqNumber,
-            Function<T, ESMPDateTimeIntervalComplexType> periodIntervalProvider,
-            Function<T, List<TimeSeriesComplexType>> timeSeriesProvider
+    private List<ValidatedHistoricalDataEnvelope> getVHD(
+            GetEnergyResponseModel responseModel,
+            @Nullable ZonedDateTime fetchTime,
+            EnergyType energyType
     ) {
-        if (meteringData == null) {
-            return List.of();
-        }
+        var meteringData = responseModel.getMeterFor(energyType);
 
         List<ValidatedHistoricalDataEnvelope> vhds = new ArrayList<>();
 
-        for (T meterResponse : meteringData) {
-            String seqNumber = getSeqNumber.apply(meterResponse);
-            ESMPDateTimeIntervalComplexType periodIntervalTime = periodIntervalProvider.apply(meterResponse);
-            List<TimeSeriesComplexType> timeSeries = timeSeriesProvider.apply(meterResponse);
+        for (MeterResponseModel meterResponse : meteringData) {
+            int seqNumber = meterResponse.seqNumber();
+            ESMPDateTimeIntervalComplexType periodIntervalTime = getPeriodTimeInterval(
+                    meterResponse.getByGranularity(granularity)
+            );
+            List<TimeSeriesComplexType> timeSeries = getTimeSeries(
+                    meterResponse.getByGranularity(granularity),
+                    commodityKind(energyType),
+                    getFlowDirection(meterResponse.hasOfftake(granularity), meterResponse.hasInjection(granularity)),
+                    meterResponse.meterID()
+            );
 
             ValidatedHistoricalDataMarketDocumentComplexType vhd = createVHD(fetchTime,
                                                                              seqNumber,
@@ -90,10 +76,21 @@ class IntermediateValidatedHistoricalDocument {
         return vhds;
     }
 
+    private CommodityKind commodityKind(EnergyType energyType) {
+        return switch (energyType) {
+            case ELECTRICITY -> CommodityKind.ELECTRICITYPRIMARYMETERED;
+            case NATURAL_GAS -> CommodityKind.NATURALGAS;
+            default -> throw new IllegalStateException("Unexpected value: " + energyType);
+        };
+    }
+
     private ValidatedHistoricalDataMarketDocumentComplexType createVHD(
-            OffsetDateTime fetchTime, String seqNumber,
-            ESMPDateTimeIntervalComplexType periodIntervalTime, List<TimeSeriesComplexType> timeSeriesList
+            @Nullable ZonedDateTime fetchTime,
+            int seqNumber,
+            ESMPDateTimeIntervalComplexType periodIntervalTime,
+            List<TimeSeriesComplexType> timeSeriesList
     ) {
+        fetchTime = fetchTime == null ? ZonedDateTime.now(ZoneOffset.UTC) : fetchTime;
         return new ValidatedHistoricalDataMarketDocumentComplexType()
                 .withMRID(UUID.randomUUID().toString())
                 .withRevisionNumber(CommonInformationModelVersions.V0_82.version())
@@ -111,9 +108,9 @@ class IntermediateValidatedHistoricalDocument {
                                 .withCodingScheme(CodingSchemeTypeList.BELGIUM_NATIONAL_CODING_SCHEME)
                                 .withValue(fluviusConfig.clientId())
                 )
-                .withDescription(seqNumber)
+                .withDescription(String.valueOf(seqNumber))
                 .withPeriodTimeInterval(periodIntervalTime)
-                .withCreatedDateTime(new EsmpDateTime(fetchTime.toZonedDateTime()).toString())
+                .withCreatedDateTime(new EsmpDateTime(fetchTime).toString())
                 .withTimeSeriesList(
                         new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList()
                                 .withTimeSeries(timeSeriesList)
@@ -122,7 +119,9 @@ class IntermediateValidatedHistoricalDocument {
 
     private List<TimeSeriesComplexType> createTimeSeriesList(
             Map<String, SeriesPeriodComplexType> unitSeriesPeriodMap,
-            CommodityKind type, DirectionTypeList flowDirection, String meterId
+            CommodityKind type,
+            DirectionTypeList flowDirection,
+            @Nullable String meterId
     ) {
         List<TimeSeriesComplexType> timeSeriesList = new ArrayList<>();
         for (Map.Entry<String, SeriesPeriodComplexType> entry : unitSeriesPeriodMap.entrySet()) {
@@ -157,89 +156,16 @@ class IntermediateValidatedHistoricalDocument {
         return timeSeriesList;
     }
 
-    private List<TimeSeriesComplexType> getElectricityTimeSeries(ElectricityMeterResponseModel electricityMeterResponse) {
-        boolean offtakeDayValue = checkEnergyMeasurementValue(electricityMeterResponse.getDailyEnergy(),
-                                                              EDailyEnergyItemResponseModel::getMeasurement, m ->
-                                                                      checkDailyMeasurementValues(m.getOfftakeDayValue(),
-                                                                                                  m.getOfftakeNightValue()));
-        boolean injectionDayValue = checkEnergyMeasurementValue(electricityMeterResponse.getDailyEnergy(),
-                                                                EDailyEnergyItemResponseModel::getMeasurement, m ->
-                                                                        checkDailyMeasurementValues(m.getInjectionDayValue(),
-                                                                                                    m.getInjectionNightValue()));
-        boolean offtakeValue = checkEnergyMeasurementValue(electricityMeterResponse.getQuarterHourlyEnergy(),
-                                                           EQuarterHourlyEnergyItemResponseModel::getMeasurement,
-                                                           m -> m.getOfftakeValue() != null);
-        boolean injectionValue = checkEnergyMeasurementValue(electricityMeterResponse.getQuarterHourlyEnergy(),
-                                                             EQuarterHourlyEnergyItemResponseModel::getMeasurement,
-                                                             m -> m.getInjectionValue() != null);
-        DirectionTypeList flowDirection = getFlowDirection(offtakeDayValue,
-                                                           injectionDayValue,
-                                                           offtakeValue,
-                                                           injectionValue);
-        boolean offtake = Objects.equals(flowDirection, DirectionTypeList.UP);
-
-        return granularity.equals(Granularity.P1D) ?
-                getTimeSeries(electricityMeterResponse.getDailyEnergy(),
-                              EDailyEnergyItemResponseModel::getTimestampStart,
-                              EDailyEnergyItemResponseModel::getTimestampEnd,
-                              item -> getPoints(item, EDailyEnergyItemResponseModel::getMeasurement,
-                                                EMeasurementItemResponseModel::getUnit,
-                                                m -> getEDailyQuantity(m, offtake),
-                                                m -> getEDailyQuality(m, offtake)
-                              ),
-                              CommodityKind.ELECTRICITYPRIMARYMETERED,
-                              flowDirection,
-                              electricityMeterResponse.getMeterID()
-                ) : getTimeSeries(electricityMeterResponse.getQuarterHourlyEnergy(),
-                                  EQuarterHourlyEnergyItemResponseModel::getTimestampStart,
-                                  EQuarterHourlyEnergyItemResponseModel::getTimestampEnd,
-                                  item -> getPoints(item,
-                                                    EQuarterHourlyEnergyItemResponseModel::getMeasurement,
-                                                    EMeasurementDetailItemResponseModel::getUnit,
-                                                    m -> getEQuarterHourlyQuantity(m, offtake),
-                                                    m -> getEQuarterHourlyQuality(m, offtake)
-                                  ),
-                                  CommodityKind.ELECTRICITYPRIMARYMETERED,
-                                  flowDirection,
-                                  electricityMeterResponse.getMeterID());
-    }
-
-    private List<TimeSeriesComplexType> getGasTimeSeries(GasMeterResponseModel gasMeterResponse) {
-        return granularity.equals(Granularity.P1D) ?
-                getTimeSeries(gasMeterResponse.getDailyEnergy(),
-                              GDailyEnergyItemResponseModel::getTimestampStart,
-                              GDailyEnergyItemResponseModel::getTimestampEnd,
-                              item -> getPoints(item, GDailyEnergyItemResponseModel::getMeasurement,
-                                                GMeasurementItemResponseModel::getUnit,
-                                                m -> Optional.ofNullable(m.getOfftakeValue()).orElse(0.0),
-                                                m -> getQualityType(m.getOfftakeValidationState())
-                              ),
-                              CommodityKind.NATURALGAS,
-                              DirectionTypeList.DOWN,
-                              gasMeterResponse.getMeterID()
-                ) : getTimeSeries(gasMeterResponse.getHourlyEnergy(),
-                                  GHourlyEnergyItemResponseModel::getTimestampStart,
-                                  GHourlyEnergyItemResponseModel::getTimestampEnd,
-                                  item -> getPoints(item, GHourlyEnergyItemResponseModel::getMeasurement,
-                                                    GMeasurementDetailItemResponseModel::getUnit,
-                                                    m -> Optional.ofNullable(m.getOfftakeValue()).orElse(0.0),
-                                                    m -> getQualityType(m.getOfftakeValidationState())
-                                  ),
-                                  CommodityKind.NATURALGAS,
-                                  DirectionTypeList.DOWN,
-                                  gasMeterResponse.getMeterID());
-    }
-
     private UnitOfMeasureTypeList getUnitCIM(String unit) {
         return unit.equalsIgnoreCase("m3") ? UnitOfMeasureTypeList.CUBIC_METRE
                 : UnitOfMeasureTypeList.fromValue(unit.toUpperCase(Locale.ROOT));
     }
 
-    private <T> List<TimeSeriesComplexType> getTimeSeries(
-            List<T> energyItems,
-            Function<T, OffsetDateTime> getTimestampStart, Function<T, OffsetDateTime> getTimestampEnd,
-            Function<T, Map<String, List<PointComplexType>>> pointMapper, CommodityKind commodityKind,
-            DirectionTypeList direction, String meterId
+    private List<TimeSeriesComplexType> getTimeSeries(
+            @Nullable List<? extends EnergyItemResponseModel<?>> energyItems,
+            CommodityKind commodityKind,
+            DirectionTypeList direction,
+            @Nullable String meterId
     ) {
         if (energyItems == null) {
             return List.of();
@@ -247,11 +173,13 @@ class IntermediateValidatedHistoricalDocument {
 
         List<TimeSeriesComplexType> timeSeriesList = new ArrayList<>();
 
-        for (T item : energyItems) {
-            Map<String, List<PointComplexType>> unitPointsMap = pointMapper.apply(item);
-            Map<String, SeriesPeriodComplexType> unitSeriesPeriodMap = getSeriesPeriods(getTimestampStart.apply(item),
-                                                                                        getTimestampEnd.apply(item),
-                                                                                        unitPointsMap);
+        for (EnergyItemResponseModel<?> item : energyItems) {
+            Map<String, List<PointComplexType>> unitPointsMap = getPoints(item);
+            Map<String, SeriesPeriodComplexType> unitSeriesPeriodMap = getSeriesPeriods(
+                    item.timestampStart(),
+                    item.timestampEnd(),
+                    unitPointsMap
+            );
             timeSeriesList.addAll(createTimeSeriesList(unitSeriesPeriodMap, commodityKind, direction, meterId));
         }
 
@@ -259,8 +187,9 @@ class IntermediateValidatedHistoricalDocument {
     }
 
     private Map<String, SeriesPeriodComplexType> getSeriesPeriods(
-            OffsetDateTime timestampStart,
-            OffsetDateTime timestampEnd, Map<String, List<PointComplexType>> unitPointsMap
+            ZonedDateTime timestampStart,
+            ZonedDateTime timestampEnd,
+            Map<String, List<PointComplexType>> unitPointsMap
     ) {
         Map<String, SeriesPeriodComplexType> seriesPeriodMap = new HashMap<>();
         for (Map.Entry<String, List<PointComplexType>> entry : unitPointsMap.entrySet()) {
@@ -270,14 +199,8 @@ class IntermediateValidatedHistoricalDocument {
         return seriesPeriodMap;
     }
 
-    private <R, M> Map<String, List<PointComplexType>> getPoints(
-            R response,
-            Function<R, List<M>> measurementListExtractor,
-            Function<M, String> unitExtractor,
-            ToDoubleFunction<M> quantityExtractor,
-            Function<M, QualityTypeList> qualityExtractor
-    ) {
-        List<M> measurements = measurementListExtractor.apply(response);
+    private Map<String, List<PointComplexType>> getPoints(EnergyItemResponseModel<? extends MeasurementResponseModel> response) {
+        List<? extends MeasurementResponseModel> measurements = response.measurement();
         if (measurements == null) {
             return Map.of();
         }
@@ -285,10 +208,10 @@ class IntermediateValidatedHistoricalDocument {
         Map<String, List<PointComplexType>> pointsMap = new HashMap<>();
 
         for (int i = 0; i < measurements.size(); i++) {
-            M measurement = measurements.get(i);
-            String unit = unitExtractor.apply(measurement);
-            Double quantity = quantityExtractor.applyAsDouble(measurement);
-            QualityTypeList quality = qualityExtractor.apply(measurement);
+            MeasurementResponseModel measurement = measurements.get(i);
+            String unit = measurement.unit();
+            Double quantity = measurement.value();
+            QualityTypeList quality = getQualityType(measurement.validationStates());
 
             pointsMap.putIfAbsent(unit, new ArrayList<>());
             pointsMap.get(unit).add(createPoint(i + 1, quantity, quality));
@@ -304,45 +227,21 @@ class IntermediateValidatedHistoricalDocument {
                 .withEnergyQuantityQuality(quality);
     }
 
-    private double getEDailyQuantity(EMeasurementItemResponseModel m, boolean offtake) {
-        return offtake ? sumNullSafe(m.getOfftakeDayValue(), m.getOfftakeNightValue())
-                : sumNullSafe(m.getInjectionDayValue(), m.getInjectionNightValue());
-    }
-
-    private double getEQuarterHourlyQuantity(EMeasurementDetailItemResponseModel m, boolean offtake) {
-        return offtake ? Optional.ofNullable(m.getOfftakeValue()).orElse(0.0)
-                : Optional.ofNullable(m.getInjectionValue()).orElse(0.0);
-    }
-
-    private Double sumNullSafe(@Nullable Double first, @Nullable Double second) {
-        return Optional.ofNullable(first).orElse(0.0) + Optional.ofNullable(second).orElse(0.0);
-    }
-
-    private QualityTypeList getEDailyQuality(EMeasurementItemResponseModel m, boolean offtake) {
-        return offtake ? getQualityType(m.getOfftakeDayValidationState(), m.getOfftakeNightValidationState())
-                : getQualityType(m.getInjectionDayValidationState(), m.getInjectionNightValidationState());
-    }
-
-    private QualityTypeList getEQuarterHourlyQuality(EMeasurementDetailItemResponseModel m, boolean offtake) {
-        return getQualityType(offtake ? m.getOfftakeValidationState() : m.getInjectionValidationState());
-    }
-
-    private QualityTypeList getQualityType(String... validationStates) {
-        for (String state : validationStates) {
-            if (Objects.equals(state, EST)) {
+    private QualityTypeList getQualityType(ValidationState... validationStates) {
+        for (ValidationState state : validationStates) {
+            if (state == ValidationState.EST) {
                 return QualityTypeList.ESTIMATED;
             }
         }
-
         return QualityTypeList.AS_PROVIDED;
     }
 
     private SeriesPeriodComplexType createSeriesPeriod(
-            OffsetDateTime timestampStart,
-            OffsetDateTime timestampEnd, List<PointComplexType> points
+            ZonedDateTime timestampStart,
+            ZonedDateTime timestampEnd,
+            List<PointComplexType> points
     ) {
-        EsmpTimeInterval interval = new EsmpTimeInterval(timestampStart.toZonedDateTime(),
-                                                         timestampEnd.toZonedDateTime());
+        EsmpTimeInterval interval = new EsmpTimeInterval(timestampStart, timestampEnd);
         return new SeriesPeriodComplexType()
                 .withResolution(granularity.toString())
                 .withTimeInterval(
@@ -353,44 +252,12 @@ class IntermediateValidatedHistoricalDocument {
                 .withPointList(new SeriesPeriodComplexType.PointList().withPoints(points));
     }
 
-    private DirectionTypeList getFlowDirection(
-            boolean offtakeDayValue, boolean injectionDayValue,
-            boolean offtakeValue, boolean injectionValue
-    ) {
-        if (offtakeValue || offtakeDayValue) {
-            return injectionValue || injectionDayValue ? DirectionTypeList.UP_AND_DOWN : DirectionTypeList.DOWN;
+    private DirectionTypeList getFlowDirection(boolean hasOfftake, boolean hasInjection) {
+        if (hasOfftake) {
+            return hasInjection ? DirectionTypeList.UP_AND_DOWN : DirectionTypeList.DOWN;
         } else {
             return DirectionTypeList.UP;
         }
-    }
-
-    private <T, U> boolean checkEnergyMeasurementValue(
-            List<T> response, Function<T, List<U>> measurementExtractor,
-            Predicate<U> valueChecker
-    ) {
-
-        if (response == null) {
-            return false;
-        }
-
-        for (T item : response) {
-            List<U> measurements = measurementExtractor.apply(item);
-            if (measurements == null) {
-                continue;
-            }
-
-            for (U measurement : measurements) {
-                if (valueChecker.test(measurement)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private boolean checkDailyMeasurementValues(Double dayVal, Double nightVal) {
-        return dayVal != null && nightVal != null;
     }
 
     @Nullable
@@ -403,51 +270,28 @@ class IntermediateValidatedHistoricalDocument {
         };
     }
 
-    private ESMPDateTimeIntervalComplexType getPeriodTimeIntervalFromMeterResponse(
-            ElectricityMeterResponseModel electricityMeterResponse
-    ) {
-        return granularity.equals(Granularity.P1D) ? getPeriodTimeInterval(electricityMeterResponse.getDailyEnergy(),
-                                                                           EDailyEnergyItemResponseModel::getTimestampStart,
-                                                                           EDailyEnergyItemResponseModel::getTimestampEnd)
-                : getPeriodTimeInterval(electricityMeterResponse.getQuarterHourlyEnergy(),
-                                        EQuarterHourlyEnergyItemResponseModel::getTimestampStart,
-                                        EQuarterHourlyEnergyItemResponseModel::getTimestampEnd);
-    }
-
-    private ESMPDateTimeIntervalComplexType getPeriodTimeIntervalFromMeterResponse(GasMeterResponseModel gasMeterResponse) {
-        return granularity.equals(Granularity.P1D) ? getPeriodTimeInterval(gasMeterResponse.getDailyEnergy(),
-                                                                           GDailyEnergyItemResponseModel::getTimestampStart,
-                                                                           GDailyEnergyItemResponseModel::getTimestampEnd)
-                : getPeriodTimeInterval(gasMeterResponse.getHourlyEnergy(),
-                                        GHourlyEnergyItemResponseModel::getTimestampStart,
-                                        GHourlyEnergyItemResponseModel::getTimestampEnd);
-    }
-
-
-    private <T> ESMPDateTimeIntervalComplexType getPeriodTimeInterval(
-            List<T> items,
-            Function<T, OffsetDateTime> startExtractor, Function<T, OffsetDateTime> endExtractor
-    ) {
+    @SuppressWarnings({"NullAway", "javabugs:S2259"})
+    // False positive for items, since it is checked in a separate method
+    private ESMPDateTimeIntervalComplexType getPeriodTimeInterval(@Nullable List<? extends EnergyItemResponseModel<?>> items) {
         ESMPDateTimeIntervalComplexType periodTimeInterval = new ESMPDateTimeIntervalComplexType();
 
         if (isNullOrEmpty(items)) {
             return periodTimeInterval;
         }
 
-        OffsetDateTime earliestTimestampStart = startExtractor.apply(items.getFirst());
-        OffsetDateTime latestTimestampEnd = endExtractor.apply(items.getFirst());
+        ZonedDateTime earliestTimestampStart = items.getFirst().timestampStart();
+        ZonedDateTime latestTimestampEnd = items.getFirst().timestampEnd();
 
-        for (T item : items) {
-            earliestTimestampStart = getEarliestTimestamp(earliestTimestampStart, startExtractor.apply(item));
-            latestTimestampEnd = getLatestTimestamp(latestTimestampEnd, endExtractor.apply(item));
+        for (EnergyItemResponseModel<?> item : items) {
+            earliestTimestampStart = getEarliestTimestamp(earliestTimestampStart, item.timestampStart());
+            latestTimestampEnd = getLatestTimestamp(latestTimestampEnd, item.timestampEnd());
         }
 
         if (earliestTimestampStart == null || latestTimestampEnd == null) {
             return periodTimeInterval;
         }
 
-        EsmpTimeInterval interval = new EsmpTimeInterval(earliestTimestampStart.toZonedDateTime(),
-                                                         latestTimestampEnd.toZonedDateTime());
+        EsmpTimeInterval interval = new EsmpTimeInterval(earliestTimestampStart, latestTimestampEnd);
         return periodTimeInterval.withStart(interval.start()).withEnd(interval.end());
     }
 
@@ -456,16 +300,11 @@ class IntermediateValidatedHistoricalDocument {
         return list == null || list.isEmpty();
     }
 
-    @Nullable
-    private static OffsetDateTime getLatestTimestamp(@Nullable OffsetDateTime current, @Nullable OffsetDateTime other) {
-        return other != null && other.isAfter(current) ? other : current;
+    private static ZonedDateTime getLatestTimestamp(ZonedDateTime current, ZonedDateTime other) {
+        return other.isAfter(current) ? other : current;
     }
 
-    @Nullable
-    private static OffsetDateTime getEarliestTimestamp(
-            @Nullable OffsetDateTime current,
-            @Nullable OffsetDateTime other
-    ) {
-        return other != null && other.isBefore(current) ? other : current;
+    private static ZonedDateTime getEarliestTimestamp(ZonedDateTime current, ZonedDateTime other) {
+        return other.isBefore(current) ? other : current;
     }
 }

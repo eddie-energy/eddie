@@ -5,6 +5,8 @@ import energy.eddie.api.agnostic.retransmission.result.DataNotAvailable;
 import energy.eddie.api.agnostic.retransmission.result.Failure;
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
 import energy.eddie.api.agnostic.retransmission.result.Success;
+import energy.eddie.regionconnector.be.fluvius.client.model.ApiMetaData;
+import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModel;
 import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.service.polling.PollingService;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
@@ -89,7 +91,12 @@ class RetransmissionPollingServiceTest {
         var to = LocalDate.of(2025, 2, 1);
         var request = new RetransmissionRequest("be-fluvius", "pid", from, to);
         when(pollingService.forcePoll(pr, from, to))
-                .thenReturn(Flux.just(new GetEnergyResponseModelApiDataResponse()));
+                .thenReturn(Flux.just(
+                        new GetEnergyResponseModelApiDataResponse(
+                                new ApiMetaData(null),
+                                new GetEnergyResponseModel(null, null, null)
+                        )
+                ));
         // When
         var res = retransmissionPollingService.poll(pr, request);
 

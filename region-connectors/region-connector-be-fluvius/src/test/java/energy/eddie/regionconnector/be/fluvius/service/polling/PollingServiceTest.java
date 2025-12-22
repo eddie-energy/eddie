@@ -23,9 +23,9 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
@@ -114,7 +114,10 @@ class PollingServiceTest {
                                                        .dataNeedId("did")
                                                        .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
-                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
+                        new ApiMetaData(null),
+                        new GetEnergyResponseModel(null, null, null)
+                )));
 
         // When
         service.pollTimeSeriesData(pr);
@@ -139,7 +142,10 @@ class PollingServiceTest {
                                                        .dataNeedId("did")
                                                        .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
-                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
+                        new ApiMetaData(null),
+                        new GetEnergyResponseModel(null, null, null)
+                )));
 
         // When
         service.pollTimeSeriesData(pr);
@@ -159,7 +165,10 @@ class PollingServiceTest {
                                                        .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
                 .thenReturn(Mono.error(error))
-                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
+                        new ApiMetaData(null),
+                        new GetEnergyResponseModel(null, null, null)
+                )));
 
         // When
         service.pollTimeSeriesData(pr);
@@ -178,7 +187,10 @@ class PollingServiceTest {
                 .addMeterReadings(new MeterReading("pid", "ean", null))
                 .build();
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.DAILY), any(), any()))
-                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
+                        new ApiMetaData(null),
+                        new GetEnergyResponseModel(null, null, null)
+                )));
 
         // When
         service.pollTimeSeriesData(pr);
@@ -218,8 +230,10 @@ class PollingServiceTest {
         when(apiClient.energy(any(), any(), any(), any(), any()))
                 .thenReturn(
                         Mono.just(
-                                new GetEnergyResponseModelApiDataResponse()
-                                        .data(new GetEnergyResponseModel().electricityMeters(null))
+                                new GetEnergyResponseModelApiDataResponse(
+                                        null,
+                                        new GetEnergyResponseModel(null, null, null)
+                                )
                         )
                 );
 
@@ -227,7 +241,10 @@ class PollingServiceTest {
         service.pollTimeSeriesData(permissionRequest);
 
         // Then
-        verify(streams, never()).publish(permissionRequest, new GetEnergyResponseModelApiDataResponse());
+        verify(streams, never()).publish(permissionRequest, new GetEnergyResponseModelApiDataResponse(
+                new ApiMetaData(null),
+                new GetEnergyResponseModel(null, null, null)
+        ));
     }
 
     @Test
@@ -343,24 +360,35 @@ class PollingServiceTest {
     }
 
     private GetEnergyResponseModelApiDataResponse createSampleGetEnergyResponseModels() {
-        var now = OffsetDateTime.now(ZoneOffset.UTC);
-        return new GetEnergyResponseModelApiDataResponse()
-                .data(new GetEnergyResponseModel()
-                              .addElectricityMetersItem(
-                                      new ElectricityMeterResponseModel()
-                                              .meterID("meterId")
-                                              .addDailyEnergyItem(
-                                                      new EDailyEnergyItemResponseModel()
-                                                              .timestampStart(now.minusMinutes(15))
-                                                              .timestampEnd(now)
-                                                              .addMeasurementItem(
-                                                                      new EMeasurementItemResponseModel()
-                                                                              .unit("kwH")
-                                                                              .injectionDayValue(5.0)
-                                                              )
-                                              )
-                              )
-
-                );
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        return new GetEnergyResponseModelApiDataResponse(
+                null,
+                new GetEnergyResponseModel(null, null, List.of(
+                        new ElectricityMeterResponseModel(
+                                1,
+                                "meterId",
+                                List.of(
+                                        new EDailyEnergyItemResponseModel(
+                                                now.minusMinutes(15),
+                                                now,
+                                                List.of(
+                                                        new EMeasurementItemResponseModel(
+                                                                "kwh",
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                5.0,
+                                                                null,
+                                                                null,
+                                                                null
+                                                        )
+                                                )
+                                        )
+                                ),
+                                null
+                        )
+                ))
+        );
     }
 }

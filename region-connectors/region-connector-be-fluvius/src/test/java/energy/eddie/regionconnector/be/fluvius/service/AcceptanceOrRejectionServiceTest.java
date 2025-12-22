@@ -209,7 +209,7 @@ class AcceptanceOrRejectionServiceTest {
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(getPermissionRequest(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
         when(fluviusApi.mandateFor("pid"))
-                .thenReturn(Mono.just(new GetMandateResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetMandateResponseModelApiDataResponse(null, null)));
 
         // When
         service.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.ACCEPTED);
@@ -226,9 +226,7 @@ class AcceptanceOrRejectionServiceTest {
     }
 
     private GetMandateResponseModelApiDataResponse createMandateResponse(String status) {
-        var mandate = new MandateResponseModel()
-                .referenceNumber("pid")
-                .status(status);
-        return new GetMandateResponseModelApiDataResponse().data(new GetMandateResponseModel().mandates(List.of(mandate)));
+        var mandate = new MandateResponseModel("pid", status, null, null, null, null, null, null, null);
+        return new GetMandateResponseModelApiDataResponse(null, new GetMandateResponseModel(null, List.of(mandate)));
     }
 }
