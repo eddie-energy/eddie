@@ -55,7 +55,7 @@ apache-httpcomponents-client-version = "5.4.1"
 jackson-databind-nullable-version = "0.2.6"
 google-jib = "3.4.0"
 
-testcontainers = "2.0.2"
+testcontainers = "2.0.3"
 xmlunit = "2.10.3"
 
 j2mod = "3.2.1"
