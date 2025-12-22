@@ -22,6 +22,7 @@ dependencies {
     implementation(project(":region-connectors:shared"))
 
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.actuator)
@@ -32,9 +33,6 @@ dependencies {
     implementation(libs.jakarta.annotation.api)
 
     implementation(libs.reactor.core)
-    implementation(libs.reactor.netty.core)
-    implementation(libs.reactor.netty.http)
-    implementation(libs.netty.codec.http)
 
     testImplementation(libs.reactor.test)
     testImplementation(libs.junit.jupiter)
