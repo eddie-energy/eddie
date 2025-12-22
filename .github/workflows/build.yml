@@ -7,16 +7,17 @@ on:
       - synchronize
     paths-ignore:
       - "docs/**"
+      - ".github/workflows/build.yml"
       - ".idea/**"
       - ".sonarlint/**"
       - ".run/**"
       - "**.md"
-      - ".github/**"
   push:
     branches:
       - main
     paths-ignore:
       - "docs/**"
+      - ".github/workflows/build.yml"
       - ".idea/**"
       - ".sonarlint/**"
       - ".run/**"
