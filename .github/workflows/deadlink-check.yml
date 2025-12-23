@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Deadlink check
-        uses: lycheeverse/lychee-action@v2
+        uses: lycheeverse/lychee-action@631725aa742da9b8eb5e3541942ab992832223e3
         with:
           # Checks for dead links in the referenced files.
           # Ignores private github links and localhost links, which would make it fail.
@@ -28,6 +28,6 @@ jobs:
           args: --exclude '^https://github\.com/eddie-energy/' --exclude '^https://gw.ext.prod.api.enedis.fr' --exclude '^https://www.eancodeboek.nl' --exclude '^https://particulier.edf.fr/en/home/contract-and-consumption/meter/linky-meter.html$' --exclude '^https://www.npmjs.com/' --exclude 'https://.+\.sharepoint.com' --exclude 'https://eddie.energy/metadata-sharing' --exclude '^https://mvnrepository\.com/' --exclude-all-private --user-agent 'Mozilla/5.0' --exclude-path 'node_modules' --hidden --extensions md --root-dir $(pwd) --insecure .
           fail: 'true'
       - name: Comment Broken Links
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@5060d4700a91de252c87eeddd2da026382d9298a
         with:
           path: lychee/out.md
