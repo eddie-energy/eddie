@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.de.eta.persistence;
 
-import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.de.eta.DeDataSourceInformation;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
@@ -76,7 +75,7 @@ public class DePermissionRequestRepositoryImpl implements DePermissionRequestRep
     /**
      * RowMapper to convert database rows to DePermissionRequest objects
      */
-    private static class PermissionRequestRowMapper implements RowMapper<DePermissionRequest> {
+    static class PermissionRequestRowMapper implements RowMapper<DePermissionRequest> {
         @Override
         public DePermissionRequest mapRow(ResultSet rs, int rowNum) throws SQLException {
             var builder = DePermissionRequest.builder()
