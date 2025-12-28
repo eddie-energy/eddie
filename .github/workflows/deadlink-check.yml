@@ -17,7 +17,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
       - name: Deadlink check
         uses: lycheeverse/lychee-action@631725aa742da9b8eb5e3541942ab992832223e3
         with:
