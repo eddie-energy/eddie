@@ -7,7 +7,7 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
-import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21.CMRequest01p21OutboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p30.CMRequest01p30OutboundMessageFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -59,7 +59,7 @@ class EdaStrategyTest {
         // When
         var timeFrame = edaStrategy.energyDataTimeframe(
                 timeframedDataNeed,
-                CMRequest01p21OutboundMessageFactory.ACTIVE_FROM.atStartOfDay(AT_ZONE_ID)
+                CMRequest01p30OutboundMessageFactory.ACTIVE_FROM.atStartOfDay(AT_ZONE_ID)
         );
 
         assertAll(
