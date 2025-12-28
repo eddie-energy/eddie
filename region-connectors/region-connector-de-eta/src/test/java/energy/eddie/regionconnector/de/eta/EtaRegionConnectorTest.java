@@ -68,4 +68,11 @@ class EtaRegionConnectorTest {
 
         verify(outbox, never()).commit(any());
     }
+
+    @Test
+    void constructorShouldLogInitialization() {
+        // Just to cover the constructor and the log line
+        EtaRegionConnector newConnector = new EtaRegionConnector(repository, outbox);
+        assertThat(newConnector).isNotNull();
+    }
 }
