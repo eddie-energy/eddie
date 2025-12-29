@@ -18,16 +18,16 @@ jobs:
   docs-deploy:
     runs-on: [ linux, external ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@5d7b2146334bacf88728daaa70414a99f5164e0f
         with:
           java-version: '21'
           distribution: 'temurin'
       - name: Gradle build javadocs
         run: ./gradlew allJavadoc
       - name: Deploy javadoc
-        uses: appleboy/scp-action@v1
+        uses: appleboy/scp-action@7179e72a3fa4d4c33870a471708fda724fae7596
         with:
           host: ${{ secrets.EDDIE_ENERGY_SSH_HOST }}
           username: ${{ secrets.EDDIE_ENERGY_SSH_USERNAME }}
