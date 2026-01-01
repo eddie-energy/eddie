@@ -17,7 +17,7 @@ import static energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata.REG
  * permission termination requests.
  */
 @Component
-public class EtaRegionConnector implements energy.eddie.api.v0.RegionConnector {
+public class EtaRegionConnector implements RegionConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(EtaRegionConnector.class);
     
     private final DePermissionRequestRepository repository;
