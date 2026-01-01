@@ -4,7 +4,7 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.de.eta.config.DeConfiguration;
+import energy.eddie.regionconnector.de.eta.config.PlainDeConfiguration;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
@@ -29,11 +29,12 @@ class EtaRegionConnectorSpringConfigTest {
                 .withBean(DePermissionEventRepository.class, () -> mock(DePermissionEventRepository.class))
                 .withBean(DePermissionRequestRepository.class, () -> mock(DePermissionRequestRepository.class))
                 .withBean(DataNeedsService.class, () -> mock(DataNeedsService.class))
-                .withBean(DeConfiguration.class, () -> {
-                    DeConfiguration config = mock(DeConfiguration.class);
-                    when(config.eligiblePartyId()).thenReturn("party-1");
-                    return config;
-                })
+                .withBean(PlainDeConfiguration.class, () -> new PlainDeConfiguration(
+                        "party-1",
+                        "https://api.eta-plus.de",
+                        "client-id",
+                        "client-secret"
+                ))
                 .withBean(CommonInformationModelConfiguration.class, () -> {
                     CommonInformationModelConfiguration cimConfig = mock(CommonInformationModelConfiguration.class);
                     when(cimConfig.eligiblePartyNationalCodingScheme()).thenReturn(CodingSchemeTypeList.EIC);

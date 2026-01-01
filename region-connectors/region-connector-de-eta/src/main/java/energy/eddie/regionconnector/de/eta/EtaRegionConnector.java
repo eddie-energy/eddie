@@ -1,6 +1,4 @@
 package energy.eddie.regionconnector.de.eta;
-
-import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
@@ -19,7 +17,6 @@ import static energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata.REG
  * permission termination requests.
  */
 @Component
-//@RegionConnector(name = REGION_CONNECTOR_ID)
 public class EtaRegionConnector implements energy.eddie.api.v0.RegionConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(EtaRegionConnector.class);
     
@@ -54,8 +51,8 @@ public class EtaRegionConnector implements energy.eddie.api.v0.RegionConnector {
         // Mark the permission as terminated in the database
         // The actual termination will be handled by a scheduled task or event processor
         // that reads from the outbox and sends termination requests to ETA Plus
-        
-        // TODO: Implement actual termination logic with ETA Plus API
+
+        // Implement actual termination logic with ETA Plus API in GH-2197 by developer bilal-sakhawat1
         // For now, we just mark it as terminated and requiring external termination
         
         // Publish termination events
