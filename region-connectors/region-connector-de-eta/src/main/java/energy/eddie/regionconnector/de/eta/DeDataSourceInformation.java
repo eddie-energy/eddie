@@ -9,19 +9,17 @@ import energy.eddie.api.agnostic.DataSourceInformation;
  */
 public class DeDataSourceInformation implements DataSourceInformation {
     
-    private static final String COUNTRY_CODE = "DE";
-    private static final String REGION_CONNECTOR_ID = "de-eta";
     private static final String PERMISSION_ADMINISTRATOR_ID = "eta-plus";
     private static final String METERED_DATA_ADMINISTRATOR_ID = "eta-plus";
 
     @Override
     public String countryCode() {
-        return COUNTRY_CODE;
+        return EtaRegionConnectorMetadata.getInstance().countryCode();
     }
 
     @Override
     public String regionConnectorId() {
-        return REGION_CONNECTOR_ID;
+        return EtaRegionConnectorMetadata.REGION_CONNECTOR_ID;
     }
 
     @Override

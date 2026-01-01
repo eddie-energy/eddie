@@ -4,7 +4,8 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.de.eta.config.DeConfiguration;
+import energy.eddie.regionconnector.de.eta.config.PlainDeConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
@@ -15,7 +16,6 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,6 +25,7 @@ import org.springframework.web.reactive.function.client.WebClient;
  * This configuration class sets up beans and dependencies required by the region connector.
  */
 @Configuration
+@EnableConfigurationProperties(PlainDeConfiguration.class)
 public class EtaRegionConnectorSpringConfig {
 
     /**
@@ -85,7 +86,7 @@ public class EtaRegionConnectorSpringConfig {
             EventBus eventBus,
             DePermissionRequestRepository repository,
             DataNeedsService dataNeedsService,
-            DeConfiguration configuration,
+            PlainDeConfiguration configuration,
             CommonInformationModelConfiguration cimConfig,
             TransmissionScheduleProvider<DePermissionRequest> transmissionScheduleProvider
     ) {
