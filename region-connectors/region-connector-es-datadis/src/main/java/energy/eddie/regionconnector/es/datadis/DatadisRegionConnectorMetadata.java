@@ -7,14 +7,12 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.regionconnector.es.datadis.data.needs.DatadisDataNeedRuleSet;
 
 import javax.annotation.Nullable;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
-
-import static energy.eddie.api.agnostic.Granularity.PT15M;
-import static energy.eddie.api.agnostic.Granularity.PT1H;
 
 public class DatadisRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "es-datadis";
@@ -34,7 +32,6 @@ public class DatadisRegionConnectorMetadata implements RegionConnectorMetadata {
      */
     public static final Period PERIOD_LATEST_END = Period.ofMonths(MAXIMUM_MONTHS_IN_THE_FUTURE).minusDays(1);
     public static final Period PERIOD_EARLIEST_START = Period.ofMonths(-MAXIMUM_MONTHS_IN_THE_PAST);
-    public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(PT15M, PT1H);
     public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(
             ValidatedHistoricalDataDataNeed.class,
             AccountingPointDataNeed.class
@@ -79,7 +76,7 @@ public class DatadisRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<Granularity> supportedGranularities() {
-        return SUPPORTED_GRANULARITIES;
+        return DatadisDataNeedRuleSet.SUPPORTED_GRANULARITIES;
     }
 
     @Override
