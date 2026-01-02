@@ -154,7 +154,7 @@ tasks.register<Javadoc>("allJavadoc") {
     val fileTree: List<File> = (projDef.flatMap { it.sourceSets.main.get().allJava })
     setSource(fileTree)
     classpath = files(projDef.flatMap { it.sourceSets.main.get().compileClasspath })
-    setDestinationDir(file("${project.rootDir}/build/docs/javadoc-all"))
+    options.destinationDirectory(file("${project.rootDir}/build/docs/javadoc-all"))
     val opt = options as StandardJavadocDocletOptions
     // Disable linting in generated CIM classes
     opt.addStringOption("Xdoclint/package:-energy.eddie.cim.*", "-quiet")
