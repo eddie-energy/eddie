@@ -2,11 +2,8 @@ package energy.eddie.core.services;
 
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,8 +40,6 @@ class MetadataServiceTest {
             public RegionConnectorMetadata getMetadata() {
                 var mock = mock(RegionConnectorMetadata.class);
                 when(mock.id()).thenReturn(Integer.toString(counter));
-                when(mock.supportedDataNeeds()).thenReturn(List.of(ValidatedHistoricalDataDataNeed.class,
-                                                                   AiidaDataNeed.class));
                 return mock;
             }
 

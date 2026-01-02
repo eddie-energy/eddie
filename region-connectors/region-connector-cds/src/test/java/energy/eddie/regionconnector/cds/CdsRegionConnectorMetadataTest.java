@@ -55,26 +55,4 @@ class CdsRegionConnectorMetadataTest {
         var res = metadata.countryCodes();
         assertThat(res).containsExactlyInAnyOrder("us", "ca", "at");
     }
-
-    @Test
-    void testSupportedEnergyTypes_returnsEnergyTypes() {
-        // Given
-        when(client.masterData())
-                .thenReturn(Mono.just(
-                        new CdsServerMasterData(
-                                "CDS Server",
-                                "1",
-                                URI.create("http://localhost"),
-                                Set.of(
-                                        new Coverage(EnergyType.ELECTRICITY, "us"),
-                                        new Coverage(EnergyType.HYDROGEN, "us"),
-                                        new Coverage(EnergyType.NATURAL_GAS, "ca")
-                                )
-                        )
-                ));
-
-        // When
-        var res = metadata.supportedEnergyTypes();
-        assertThat(res).containsExactlyInAnyOrder(EnergyType.NATURAL_GAS, EnergyType.HYDROGEN, EnergyType.ELECTRICITY);
-    }
 }

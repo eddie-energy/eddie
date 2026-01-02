@@ -23,7 +23,7 @@ public class FluviusDataNeedsRuleSet implements DataNeedRuleSet {
 
     @Override
     public List<DataNeedRule<? extends DataNeed>> dataNeedRules() {
-        var granularities = sandboxEnabled
+        var granularitiesForGas = sandboxEnabled
                 ? List.of(Granularity.PT15M, Granularity.P1D)
                 : List.of(Granularity.PT30M, Granularity.P1D);
         return List.of(
@@ -33,7 +33,7 @@ public class FluviusDataNeedsRuleSet implements DataNeedRuleSet {
                 ),
                 new ValidatedHistoricalDataDataNeedRule(
                         EnergyType.NATURAL_GAS,
-                        granularities
+                        granularitiesForGas
                 )
         );
     }

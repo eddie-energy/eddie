@@ -4,9 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Period;
 import java.time.ZoneOffset;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MojElektroRegionConnectorMetadataTest {
 
@@ -38,31 +37,7 @@ class MojElektroRegionConnectorMetadataTest {
     }
 
     @Test
-    void testSupportedGranularities() {
-        List<?> granularities = metadata.supportedGranularities();
-
-        assertNotNull(granularities);
-        assertTrue(granularities.isEmpty());
-    }
-
-    @Test
     void testTimeZone() {
         assertEquals(ZoneOffset.UTC, metadata.timeZone());
-    }
-
-    @Test
-    void testSupportedEnergyTypes() {
-        List<?> energyTypes = metadata.supportedEnergyTypes();
-
-        assertNotNull(energyTypes);
-        assertTrue(energyTypes.isEmpty());
-    }
-
-    @Test
-    void testSupportedDataNeeds() {
-        List<?> dataNeeds = metadata.supportedDataNeeds();
-
-        assertNotNull(dataNeeds);
-        assertTrue(dataNeeds.isEmpty());
     }
 }
