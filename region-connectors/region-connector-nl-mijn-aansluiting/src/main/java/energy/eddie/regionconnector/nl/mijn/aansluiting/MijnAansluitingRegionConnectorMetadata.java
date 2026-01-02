@@ -17,7 +17,6 @@ public class MijnAansluitingRegionConnectorMetadata implements RegionConnectorMe
     public static final String REGION_CONNECTOR_ID = "nl-mijn-aansluiting";
     public static final Period MAX_PERIOD_IN_PAST = Period.ofYears(-2);
     public static final Period MAX_PERIOD_IN_FUTURE = Period.ofYears(9999);
-    public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.P1D);
     public static final ZoneId NL_ZONE_ID = ZoneId.of("Europe/Amsterdam");
     public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(ValidatedHistoricalDataDataNeed.class,
                                                                                        AccountingPointDataNeed.class);
@@ -65,7 +64,7 @@ public class MijnAansluitingRegionConnectorMetadata implements RegionConnectorMe
 
     @Override
     public List<Granularity> supportedGranularities() {
-        return SUPPORTED_GRANULARITIES;
+        return MijnAansluitingDataNeedRuleSet.SUPPORTED_GRANULARITIES;
     }
 
     @Override
