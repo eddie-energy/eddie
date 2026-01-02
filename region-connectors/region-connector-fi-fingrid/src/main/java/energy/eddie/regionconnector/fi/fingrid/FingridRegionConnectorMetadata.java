@@ -7,6 +7,7 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.regionconnector.fi.fingrid.data.needs.FingridDataNeedRuleSet;
 
 import java.time.Period;
 import java.time.ZoneId;
@@ -45,13 +46,7 @@ public class FingridRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<Granularity> supportedGranularities() {
-        return List.of(
-                Granularity.PT15M,
-                Granularity.PT1H,
-                Granularity.P1D,
-                Granularity.P1M,
-                Granularity.P1Y
-        );
+        return FingridDataNeedRuleSet.SUPPORTED_GRANULARITIES;
     }
 
     @Override
