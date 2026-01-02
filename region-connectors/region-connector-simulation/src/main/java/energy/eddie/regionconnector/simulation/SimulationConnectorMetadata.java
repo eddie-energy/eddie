@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 
 import javax.annotation.Nullable;
 import java.time.Period;
@@ -69,6 +70,6 @@ public class SimulationConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
-        return List.of();
+        return List.of(ValidatedHistoricalDataDataNeed.class);
     }
 }
