@@ -11,7 +11,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 class AtEdaTest extends E2eTestSetup {
     @Test
     void withoutAccountingPointId() {
-        this.navigateToRegionConnector(null, "Austria", "Netz Niederösterreich GmbH");
+        this.navigateToRegionConnector(null, "Austria", "Wiener Netze GmbH");
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
 
@@ -22,6 +22,6 @@ class AtEdaTest extends E2eTestSetup {
         assertThat(locator).isVisible();
 
         // Continue button should show the name of the PA
-        page.getByText("Continue to Netz Niederösterreich").click();
+        page.getByText("Continue to Wiener Netze").click();
     }
 }
