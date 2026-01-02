@@ -40,7 +40,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.be.fluvius.FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID;
@@ -68,8 +67,8 @@ public class FluviusBeanConfig {
         return new DataNeedCalculationServiceImpl(dataNeedsService,
                                                   metadata,
                                                   new FluviusPermissionTimeframeStrategy(),
-                                                  new FluviusEnergyTimeframeStrategy(metadata),
-                                                  List.of());
+                                                  new FluviusEnergyTimeframeStrategy(metadata)
+        );
     }
 
     @Bean

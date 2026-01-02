@@ -45,7 +45,6 @@ import reactor.core.publisher.Sinks;
 
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
-import java.util.List;
 import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.*;
@@ -201,8 +200,7 @@ public class AiidaBeanConfig {
                 dataNeedsService,
                 AiidaRegionConnectorMetadata.getInstance(),
                 new PermissionEndIsEnergyDataEndStrategy(),
-                new AiidaEnergyDataTimeframeStrategy(),
-                List.of()
+                new AiidaEnergyDataTimeframeStrategy()
         );
     }
 

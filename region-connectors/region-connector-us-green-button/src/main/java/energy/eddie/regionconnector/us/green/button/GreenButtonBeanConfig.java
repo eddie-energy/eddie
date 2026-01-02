@@ -33,7 +33,6 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.function.Supplier;
 
 @Configuration
@@ -89,8 +88,7 @@ public class GreenButtonBeanConfig {
                 dataNeedsService,
                 GreenButtonRegionConnectorMetadata.getInstance(),
                 new PermissionEndIsEnergyDataEndStrategy(),
-                new DefaultEnergyDataTimeframeStrategy(GreenButtonRegionConnectorMetadata.getInstance()),
-                List.of()
+                new DefaultEnergyDataTimeframeStrategy(GreenButtonRegionConnectorMetadata.getInstance())
         );
     }
 

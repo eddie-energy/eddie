@@ -4,8 +4,14 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.*;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.RegionConnectorFilter;
+import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.supported.DataNeedRuleSet;
+import energy.eddie.regionconnector.shared.services.data.needs.MatchedRules.MatchedVHDRules;
+import energy.eddie.regionconnector.shared.services.data.needs.MatchedRules.NoMatch;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.EnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
@@ -16,8 +22,6 @@ import jakarta.transaction.Transactional;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of the {@link DataNeedCalculationService} that can be customized to fit the requirements of the region connector.
@@ -27,8 +31,8 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     private final DataNeedsService dataNeedsService;
     private final RegionConnectorMetadata regionConnectorMetadata;
     private final PermissionTimeframeStrategy strategy;
-    private final List<Predicate<DataNeed>> additionalChecks;
     private final EnergyDataTimeframeStrategy energyDataTimeframeStrategy;
+    private final DataNeedRuleSet dataNeedRuleSet;
 
     /**
      * Uses {@link PermissionEndIsEnergyDataEndStrategy} for the {@link PermissionTimeframeStrategy} and {@link DefaultEnergyDataTimeframeStrategy} for the {@link EnergyDataTimeframeStrategy}.
@@ -44,8 +48,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         this(dataNeedsService,
              regionConnectorMetadata,
              new PermissionEndIsEnergyDataEndStrategy(),
-             new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
-             List.of()
+             new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata)
         );
     }
 
@@ -57,20 +60,44 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
      * @param regionConnectorMetadata     metadata of the region connector
      * @param strategy                    strategy that is used to calculate the permission timeframe
      * @param energyDataTimeframeStrategy strategy that is used to calculate the energy timeframe
-     * @param additionalChecks            additional checks
+     */
+    public DataNeedCalculationServiceImpl(
+            DataNeedsService dataNeedsService,
+            RegionConnectorMetadata regionConnectorMetadata,
+            PermissionTimeframeStrategy strategy,
+            EnergyDataTimeframeStrategy energyDataTimeframeStrategy
+    ) {
+        this(
+                dataNeedsService,
+                regionConnectorMetadata,
+                strategy,
+                energyDataTimeframeStrategy,
+                new DefaultDataNeedRuleSet(regionConnectorMetadata)
+        );
+    }
+
+    /**
+     * Constructs an instance with custom {@link PermissionTimeframeStrategy} and {@link EnergyDataTimeframeStrategy}.
+     * Furthermore, it allows adding additional checks for the data need.
+     *
+     * @param dataNeedsService            service to get the data need
+     * @param regionConnectorMetadata     metadata of the region connector
+     * @param strategy                    strategy that is used to calculate the permission timeframe
+     * @param energyDataTimeframeStrategy strategy that is used to calculate the energy timeframe
+     * @param dataNeedRuleSet             ruleset for data needs per region connector
      */
     public DataNeedCalculationServiceImpl(
             DataNeedsService dataNeedsService,
             RegionConnectorMetadata regionConnectorMetadata,
             PermissionTimeframeStrategy strategy,
             EnergyDataTimeframeStrategy energyDataTimeframeStrategy,
-            List<Predicate<DataNeed>> additionalChecks
+            DataNeedRuleSet dataNeedRuleSet
     ) {
         this.dataNeedsService = dataNeedsService;
         this.regionConnectorMetadata = regionConnectorMetadata;
         this.strategy = strategy;
-        this.additionalChecks = additionalChecks;
         this.energyDataTimeframeStrategy = energyDataTimeframeStrategy;
+        this.dataNeedRuleSet = dataNeedRuleSet;
     }
 
     @Override
@@ -92,32 +119,28 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
 
             var type = filter.get().type();
             if (type == RegionConnectorFilter.Type.ALLOWLIST && !rcIsInList) {
-                return new DataNeedNotSupportedResult("Region connector " + regionConnectorMetadata.id() + " is not in the allowlist");
+                return new DataNeedNotSupportedResult("Region connector " + regionConnectorId + " is not in the allowlist");
             }
 
             if (type == RegionConnectorFilter.Type.BLOCKLIST && rcIsInList) {
-                return new DataNeedNotSupportedResult("Region connector " + regionConnectorMetadata.id() + " is in the blocklist");
+                return new DataNeedNotSupportedResult("Region connector " + regionConnectorId + " is in the blocklist");
             }
         }
-        if (!supportsDataNeedType(dataNeed)) {
-            var classes = regionConnectorMetadata.supportedDataNeeds()
-                                                 .stream()
-                                                 .map(Class::getSimpleName)
-                                                 .collect(Collectors.joining(", "));
+        var matcher = new DataNeedRuleMatcher(dataNeed, dataNeedRuleSet);
+        var matchingResult = matcher.find();
+        if (matchingResult instanceof NoMatch) {
+            var classes = String.join(", ", dataNeedRuleSet.supportedDataNeeds());
             return new DataNeedNotSupportedResult(
                     "Data need type \"%s\" not supported, region connector supports data needs of types %s"
                             .formatted(dataNeed.getClass().getSimpleName(), classes)
             );
         }
-        if (!additionalChecks.stream().allMatch(check -> check.test(dataNeed))) {
-            return new DataNeedNotSupportedResult("Data need not supported, additional checks have failed");
-        }
-        var supportedGranularities = supportedGranularities(dataNeed);
-        if (!areGranularitiesSupported(dataNeed, supportedGranularities)) {
-            return new DataNeedNotSupportedResult("Granularities are not supported");
-        }
-        if (!isEnergyTypeSupported(dataNeed)) {
+        if (!isEnergyTypeSupported(matchingResult)) {
             return new DataNeedNotSupportedResult("Energy type is not supported");
+        }
+        var supportedGranularities = supportedGranularities(matchingResult);
+        if (!areGranularitiesSupported(matchingResult, supportedGranularities)) {
+            return new DataNeedNotSupportedResult("Granularities are not supported");
         }
         Timeframe energyStartAndEndDate;
         try {
@@ -156,42 +179,32 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         return regionConnectorMetadata.id();
     }
 
-    private static boolean areGranularitiesSupported(DataNeed dataNeed, List<Granularity> supportedGranularities) {
-        return !(dataNeed instanceof ValidatedHistoricalDataDataNeed) || !supportedGranularities.isEmpty();
+    private static boolean areGranularitiesSupported(
+            MatchedRules matchingResult,
+            List<Granularity> supportedGranularities
+    ) {
+        return !(matchingResult instanceof MatchedVHDRules) || !supportedGranularities.isEmpty();
     }
 
-    private boolean isEnergyTypeSupported(DataNeed dataNeed) {
-        return !(dataNeed instanceof ValidatedHistoricalDataDataNeed vhd)
-               || regionConnectorMetadata.supportedEnergyTypes().contains(vhd.energyType());
-    }
-
-    /**
-     * Determines if the region-connector supports this data need type.
-     *
-     * @param dataNeed the data need, which should be checked
-     * @return if the data need is supported
-     */
-    private boolean supportsDataNeedType(DataNeed dataNeed) {
-        for (Class<? extends DataNeedInterface> supportedDataNeed : regionConnectorMetadata.supportedDataNeeds()) {
-            if (supportedDataNeed.isInstance(dataNeed)) {
-                return true;
-            }
-        }
-        return false;
+    private boolean isEnergyTypeSupported(MatchedRules matchingResult) {
+        return !(matchingResult instanceof MatchedVHDRules vhd) || vhd.forEnergyType().isPresent();
     }
 
     /**
-     * Calculates a list of supported granularities based on a data need. If the data need is not a timeframed data
+     * Calculates a list of supported granularities based on a data need. If the data need is not a validated historical data data
      * need, an empty list is returned.
      *
-     * @param dataNeed the data need
-     * @return a list of supported granularities, which can be empty if the data need is not a timeframed data need.
+     * @return a list of supported granularities, which can be empty if the data need is not a validated historical data data need.
      */
-    private List<Granularity> supportedGranularities(DataNeed dataNeed) {
-        if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed vhdDN)) {
+    private List<Granularity> supportedGranularities(MatchedRules result) {
+        if (!(result instanceof MatchedVHDRules rules)) {
             return List.of();
         }
-        var choice = new GranularityChoice(regionConnectorMetadata.granularitiesFor(vhdDN.energyType()));
-        return choice.findAll(vhdDN.minGranularity(), vhdDN.maxGranularity());
+        var rule = rules.forEnergyType();
+        if (rule.isEmpty()) {
+            return List.of();
+        }
+        var choice = new GranularityChoice(rule.get().granularities());
+        return choice.findAll(rules.dataNeed().minGranularity(), rules.dataNeed().maxGranularity());
     }
 }

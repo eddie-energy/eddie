@@ -5,7 +5,6 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.supported.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import org.junit.jupiter.api.Test;
 
-import java.time.Period;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,15 +24,11 @@ class FluviusSupportedDataNeedsSpecificationsTest {
                 .containsExactlyInAnyOrder(
                         new ValidatedHistoricalDataDataNeedRule(
                                 EnergyType.ELECTRICITY,
-                                List.of(Granularity.PT15M, Granularity.P1D),
-                                Period.ofYears(-3),
-                                Period.ofYears(3)
+                                List.of(Granularity.PT15M, Granularity.P1D)
                         ),
                         new ValidatedHistoricalDataDataNeedRule(
                                 EnergyType.NATURAL_GAS,
-                                List.of(Granularity.PT30M, Granularity.P1D),
-                                Period.ofYears(-3),
-                                Period.ofYears(3)
+                                List.of(Granularity.PT30M, Granularity.P1D)
                         )
                 );
     }
@@ -52,15 +47,11 @@ class FluviusSupportedDataNeedsSpecificationsTest {
                 .containsExactlyInAnyOrder(
                         new ValidatedHistoricalDataDataNeedRule(
                                 EnergyType.ELECTRICITY,
-                                List.of(Granularity.PT15M, Granularity.P1D),
-                                Period.ofYears(-3),
-                                Period.ofYears(3)
+                                List.of(Granularity.PT15M, Granularity.P1D)
                         ),
                         new ValidatedHistoricalDataDataNeedRule(
                                 EnergyType.NATURAL_GAS,
-                                List.of(Granularity.PT15M, Granularity.P1D),
-                                Period.ofYears(-3),
-                                Period.ofYears(3)
+                                List.of(Granularity.PT15M, Granularity.P1D)
                         )
                 );
     }

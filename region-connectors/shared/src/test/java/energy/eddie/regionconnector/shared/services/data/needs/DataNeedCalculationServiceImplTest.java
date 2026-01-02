@@ -10,7 +10,6 @@ import energy.eddie.dataneeds.needs.RegionConnectorFilter;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -121,26 +120,6 @@ class DataNeedCalculationServiceImplTest {
     }
 
     @Test
-    void givenDataNeed_withAdditionalChecksFailing_returnsDataNeedNotSupportedResult() {
-        // Given
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(new AccountingPointDataNeed()));
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService,
-                                                                    metadata,
-                                                                    new PermissionEndIsEnergyDataEndStrategy(),
-                                                                    new DefaultEnergyDataTimeframeStrategy(metadata),
-                                                                    List.of(
-                                                                            in -> true,
-                                                                            in -> false
-                                                                    ));
-        // When
-        var res = calculationService.calculate("dnid");
-
-        // Then
-        assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
-    }
-
-    @Test
     void givenValidatedHistoricalDataDataNeed_withSupportedGranularities_returnsValidatedHistoricalDataNeedResult() {
         // Given
         when(dataNeedsService.findById("dnid"))
@@ -224,8 +203,8 @@ class DataNeedCalculationServiceImplTest {
                                                                     new PermissionEndIsEnergyDataEndStrategy(),
                                                                     (dn, referenceDateTime) -> {
                                                                         throw new UnsupportedDataNeedException("", "");
-                                                                    },
-                                                                    List.of());
+                                                                    }
+        );
         // When
         var res = calculationService.calculate("dnid");
 

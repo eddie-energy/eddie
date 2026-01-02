@@ -9,7 +9,6 @@ import energy.eddie.dataneeds.supported.DataNeedRuleSet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.time.Period;
 import java.util.List;
 
 @Component
@@ -30,15 +29,11 @@ public class FluviusDataNeedsRuleSet implements DataNeedRuleSet {
         return List.of(
                 new ValidatedHistoricalDataDataNeedRule(
                         EnergyType.ELECTRICITY,
-                        List.of(Granularity.PT15M, Granularity.P1D),
-                        Period.ofYears(-3),
-                        Period.ofYears(3)
+                        List.of(Granularity.PT15M, Granularity.P1D)
                 ),
                 new ValidatedHistoricalDataDataNeedRule(
                         EnergyType.NATURAL_GAS,
-                        granularities,
-                        Period.ofYears(-3),
-                        Period.ofYears(3)
+                        granularities
                 )
         );
     }

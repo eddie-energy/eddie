@@ -38,7 +38,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
 import reactor.netty.http.client.HttpClient;
 
-import java.util.List;
 import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -130,8 +129,7 @@ public class DatadisBeanConfig {
                 dataNeedsService,
                 DatadisRegionConnectorMetadata.getInstance(),
                 new DatadisStrategy(),
-                new DefaultEnergyDataTimeframeStrategy(DatadisRegionConnectorMetadata.getInstance()),
-                List.of()
+                new DefaultEnergyDataTimeframeStrategy(DatadisRegionConnectorMetadata.getInstance())
         );
     }
 

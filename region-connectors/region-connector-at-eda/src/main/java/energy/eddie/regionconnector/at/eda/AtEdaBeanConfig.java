@@ -49,7 +49,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
@@ -200,8 +199,7 @@ public class AtEdaBeanConfig {
                 dataNeedsService,
                 EdaRegionConnectorMetadata.getInstance(),
                 new PermissionEndIsEnergyDataEndStrategy(),
-                new EdaStrategy(),
-                List.of()
+                new EdaStrategy()
         );
     }
 

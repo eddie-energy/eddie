@@ -1,4 +1,4 @@
-package energy.eddie.spring.regionconnector.extensions.dataneeds;
+package energy.eddie.regionconnector.shared.services.data.needs;
 
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
@@ -38,9 +38,7 @@ public class DefaultDataNeedRuleSet implements DataNeedRuleSet {
                 for (var supportedEnergyType : metadata.supportedEnergyTypes()) {
                     sdn.add(new ValidatedHistoricalDataDataNeedRule(
                             supportedEnergyType,
-                            metadata.granularitiesFor(supportedEnergyType),
-                            metadata.earliestStart(),
-                            metadata.latestEnd()
+                            metadata.granularitiesFor(supportedEnergyType)
                     ));
                 }
             } else if (supportedDataNeed.isAssignableFrom(InboundAiidaDataNeed.class)) {

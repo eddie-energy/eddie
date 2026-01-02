@@ -1,4 +1,4 @@
-package energy.eddie.spring.regionconnector.extensions.dataneeds;
+package energy.eddie.regionconnector.shared.services.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
@@ -84,8 +84,6 @@ class DefaultDataNeedRuleSetTest {
                     assertThat(spec.getDataNeedClass()).isEqualTo(ValidatedHistoricalDataDataNeed.class);
                     assertThat(spec.energyType()).isEqualTo(EnergyType.ELECTRICITY);
                     assertThat(spec.granularities()).isEqualTo(List.of(Granularity.P1D));
-                    assertThat(spec.earliestStart()).isEqualTo(Period.ZERO);
-                    assertThat(spec.latestEnd()).isEqualTo(Period.ZERO);
                 });
     }
 }

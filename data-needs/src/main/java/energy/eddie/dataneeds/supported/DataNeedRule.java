@@ -9,7 +9,6 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 
-import java.time.Period;
 import java.util.List;
 
 /**
@@ -48,9 +47,7 @@ public sealed interface DataNeedRule<T extends DataNeed> {
      */
     record ValidatedHistoricalDataDataNeedRule(
             @JsonProperty("energyTypes") EnergyType energyType,
-            @JsonProperty("granularities") List<Granularity> granularities,
-            @JsonProperty("earliestStart") Period earliestStart,
-            @JsonProperty("latestEnd") Period latestEnd
+            @JsonProperty("granularities") List<Granularity> granularities
     ) implements DataNeedRule<ValidatedHistoricalDataDataNeed> {
         @Override
         public Class<ValidatedHistoricalDataDataNeed> getDataNeedClass() {
