@@ -1,6 +1,13 @@
 ### GET region connector metadata
 GET http://localhost:8080/api/region-connectors-metadata
 
+### GET supported data needs of region-connectors
+GET http://localhost:8080/api/region-connectors/supported-data-need-specifications
+
+### GET supported data needs of one region-connector
+@regionConnector = dk-energinet
+GET http://localhost:8080/api/region-connectors/{{regionConnector}}/supported-data-needs
+
 ### GET actuator endpoint
 GET http://localhost:8080/actuator
 

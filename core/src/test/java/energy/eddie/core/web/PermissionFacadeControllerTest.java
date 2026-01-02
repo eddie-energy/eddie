@@ -8,6 +8,7 @@ import energy.eddie.core.application.information.ApplicationInformation;
 import energy.eddie.core.security.JwtIssuerFilter;
 import energy.eddie.core.services.ApplicationInformationService;
 import energy.eddie.core.services.DataNeedCalculationRouter;
+import energy.eddie.core.services.DataNeedRuleSetRouter;
 import energy.eddie.core.services.MetadataService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
+import static energy.eddie.dataneeds.supported.DataNeedRule.AccountingPointDataNeedRule;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -44,6 +46,8 @@ class PermissionFacadeControllerTest {
     private DataNeedCalculationRouter router;
     @MockitoBean
     private ApplicationInformationService applicationInformationService;
+    @MockitoBean
+    private DataNeedRuleSetRouter dataNeedRuleSetRouter;
 
     @Test
     void applicationInformation_returnsApplicationInformation() throws Exception {
@@ -93,5 +97,24 @@ class PermissionFacadeControllerTest {
         mockMvc.perform(get("/api/region-connectors/data-needs/9bd0668f-cc19-40a8-99db-dc2cb2802b17"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$", hasKey("at-eda")));
+    }
+
+    @Test
+    void regionConnectorsSupportedDataNeeds_withRegionConnectorId_returnsDataNeedRuleSet() throws Exception {
+        when(dataNeedRuleSetRouter.dataNeedRuleSets("id"))
+                .thenReturn(() -> List.of(new AccountingPointDataNeedRule()));
+
+        mockMvc.perform(get("/api/region-connectors/{region-connector}/data-need-rule-set", "id"))
+               .andExpect(status().isOk());
+    }
+
+    @Test
+    void regionConnectorsSupportedDataNeeds_returnsDataNeedRuleSet() throws Exception {
+        when(dataNeedRuleSetRouter.dataNeedRuleSets())
+                .thenReturn(Map.of("id", () -> List.of(new AccountingPointDataNeedRule())));
+
+        mockMvc.perform(get("/api/region-connectors/data-need-rule-set"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$", hasKey("id")));
     }
 }
