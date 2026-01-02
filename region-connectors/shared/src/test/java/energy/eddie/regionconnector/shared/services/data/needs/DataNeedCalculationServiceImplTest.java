@@ -26,10 +26,11 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.when;
@@ -176,6 +177,7 @@ class DataNeedCalculationServiceImplTest {
         var result = assertInstanceOf(ValidatedHistoricalDataDataNeedResult.class, res);
         assertEquals(List.of(Granularity.PT15M, Granularity.P1D), result.granularities());
     }
+
     @Test
     void givenValidatedHistoricalDataDataNeed_withUnsupportedGranularities_returnsUnsupportedDataNeedResult() {
         // Given
@@ -241,6 +243,34 @@ class DataNeedCalculationServiceImplTest {
 
         // Then
         assertEquals("id", res);
+    }
+
+    @Test
+    void givenMultipleDataNeeds_whenCalculateAll_thenReturnsCorrectResults() {
+        // Given
+        when(dataNeedsService.findById("vhd-dnid"))
+                .thenReturn(Optional.of(
+                        new ValidatedHistoricalDataDataNeed(
+                                new RelativeDuration(null, null, null),
+                                EnergyType.ELECTRICITY,
+                                Granularity.PT1H,
+                                Granularity.P1D
+                        )
+                ));
+        when(dataNeedsService.findById("ap-dnid"))
+                .thenReturn(Optional.of(
+                        new AccountingPointDataNeed("name", "desc", "purpose", "https://localhost", true, null)
+                ));
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+
+        // When
+        var res = service.calculateAll(Set.of("vhd-dnid", "ap-dnid"));
+
+        // Then
+        assertThat(res, allOf(
+                hasEntry(equalTo("vhd-dnid"), instanceOf(ValidatedHistoricalDataDataNeedResult.class)),
+                hasEntry(equalTo("ap-dnid"), instanceOf(AccountingPointDataNeedResult.class))
+        ));
     }
 
     private static Stream<Arguments> regionConnectorFilterConfigurations() {
