@@ -9,6 +9,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.supported.DataNeedRuleSet;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
 import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.data.needs.calculation.strategies.DatadisStrategy;
@@ -123,13 +124,15 @@ public class DatadisBeanConfig {
 
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
+            DataNeedRuleSet ruleSet
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
                 DatadisRegionConnectorMetadata.getInstance(),
                 new DatadisStrategy(),
-                new DefaultEnergyDataTimeframeStrategy(DatadisRegionConnectorMetadata.getInstance())
+                new DefaultEnergyDataTimeframeStrategy(DatadisRegionConnectorMetadata.getInstance()),
+                ruleSet
         );
     }
 

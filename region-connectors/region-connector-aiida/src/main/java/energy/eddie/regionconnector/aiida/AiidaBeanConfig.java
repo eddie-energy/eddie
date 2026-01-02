@@ -13,6 +13,7 @@ import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.supported.DataNeedRuleSet;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.data.needs.AiidaEnergyDataTimeframeStrategy;
@@ -194,13 +195,15 @@ public class AiidaBeanConfig {
 
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
+            DataNeedRuleSet ruleSet
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
                 AiidaRegionConnectorMetadata.getInstance(),
                 new PermissionEndIsEnergyDataEndStrategy(),
-                new AiidaEnergyDataTimeframeStrategy()
+                new AiidaEnergyDataTimeframeStrategy(),
+                ruleSet
         );
     }
 

@@ -9,6 +9,7 @@ import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.supported.DataNeedRuleSet;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusConfiguration;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
 import energy.eddie.regionconnector.be.fluvius.data.needs.FluviusEnergyTimeframeStrategy;
@@ -62,12 +63,15 @@ public class FluviusBeanConfig {
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
-            RegionConnectorMetadata metadata
+            RegionConnectorMetadata metadata,
+            DataNeedRuleSet ruleSet
     ) {
-        return new DataNeedCalculationServiceImpl(dataNeedsService,
-                                                  metadata,
-                                                  new FluviusPermissionTimeframeStrategy(),
-                                                  new FluviusEnergyTimeframeStrategy(metadata)
+        return new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                metadata,
+                new FluviusPermissionTimeframeStrategy(),
+                new FluviusEnergyTimeframeStrategy(metadata),
+                ruleSet
         );
     }
 

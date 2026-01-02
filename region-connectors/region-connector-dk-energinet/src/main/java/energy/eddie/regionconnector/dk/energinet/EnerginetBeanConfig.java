@@ -10,6 +10,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.supported.DataNeedRuleSet;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.config.PlainEnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalPollingEvent;
@@ -125,11 +126,13 @@ public class EnerginetBeanConfig {
 
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
+            DataNeedRuleSet ruleSet
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
-                EnerginetRegionConnectorMetadata.getInstance()
+                EnerginetRegionConnectorMetadata.getInstance(),
+                ruleSet
         );
     }
 

@@ -9,6 +9,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.supported.DataNeedRuleSet;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisTokenProvider;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
@@ -101,11 +102,13 @@ public class EnedisBeanConfig {
 
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
+            DataNeedRuleSet ruleSet
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
-                EnedisRegionConnectorMetadata.getInstance()
+                EnedisRegionConnectorMetadata.getInstance(),
+                ruleSet
         );
     }
 

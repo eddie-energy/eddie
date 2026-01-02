@@ -43,36 +43,14 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
      */
     public DataNeedCalculationServiceImpl(
             DataNeedsService dataNeedsService,
-            RegionConnectorMetadata regionConnectorMetadata
+            RegionConnectorMetadata regionConnectorMetadata,
+            DataNeedRuleSet dataNeedRuleSet
     ) {
         this(dataNeedsService,
              regionConnectorMetadata,
              new PermissionEndIsEnergyDataEndStrategy(),
-             new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata)
-        );
-    }
-
-    /**
-     * Constructs an instance with custom {@link PermissionTimeframeStrategy} and {@link EnergyDataTimeframeStrategy}.
-     * Furthermore, it allows adding additional checks for the data need.
-     *
-     * @param dataNeedsService            service to get the data need
-     * @param regionConnectorMetadata     metadata of the region connector
-     * @param strategy                    strategy that is used to calculate the permission timeframe
-     * @param energyDataTimeframeStrategy strategy that is used to calculate the energy timeframe
-     */
-    public DataNeedCalculationServiceImpl(
-            DataNeedsService dataNeedsService,
-            RegionConnectorMetadata regionConnectorMetadata,
-            PermissionTimeframeStrategy strategy,
-            EnergyDataTimeframeStrategy energyDataTimeframeStrategy
-    ) {
-        this(
-                dataNeedsService,
-                regionConnectorMetadata,
-                strategy,
-                energyDataTimeframeStrategy,
-                new DefaultDataNeedRuleSet(regionConnectorMetadata)
+             new DefaultEnergyDataTimeframeStrategy(regionConnectorMetadata),
+             dataNeedRuleSet
         );
     }
 

@@ -24,6 +24,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.supported.DataNeedRuleSet;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.MijnAansluitingPermissionEventRepository;
@@ -134,11 +135,13 @@ public class MijnAansluitingBeanConfig {
 
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
+            DataNeedRuleSet ruleSet
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
-                MijnAansluitingRegionConnectorMetadata.getInstance()
+                MijnAansluitingRegionConnectorMetadata.getInstance(),
+                ruleSet
         );
     }
 

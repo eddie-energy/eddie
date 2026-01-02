@@ -6,6 +6,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.supported.DataNeedRuleSet;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -82,13 +83,15 @@ public class GreenButtonBeanConfig {
 
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
+            DataNeedRuleSet ruleSet
     ) {
         return new DataNeedCalculationServiceImpl(
                 dataNeedsService,
                 GreenButtonRegionConnectorMetadata.getInstance(),
                 new PermissionEndIsEnergyDataEndStrategy(),
-                new DefaultEnergyDataTimeframeStrategy(GreenButtonRegionConnectorMetadata.getInstance())
+                new DefaultEnergyDataTimeframeStrategy(GreenButtonRegionConnectorMetadata.getInstance()),
+                ruleSet
         );
     }
 

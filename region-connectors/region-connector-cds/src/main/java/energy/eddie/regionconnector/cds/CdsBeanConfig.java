@@ -6,6 +6,7 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.supported.DataNeedRuleSet;
 import energy.eddie.regionconnector.cds.config.CdsConfiguration;
 import energy.eddie.regionconnector.cds.persistence.CdsPermissionEventRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -50,9 +51,10 @@ public class CdsBeanConfig {
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
-            CdsRegionConnectorMetadata metadata
+            CdsRegionConnectorMetadata metadata,
+            DataNeedRuleSet ruleSet
     ) {
-        return new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+        return new DataNeedCalculationServiceImpl(dataNeedsService, metadata, ruleSet);
     }
 
     @Bean

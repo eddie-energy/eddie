@@ -10,6 +10,7 @@ import energy.eddie.dataneeds.needs.RegionConnectorFilter;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.dataneeds.supported.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static energy.eddie.dataneeds.supported.DataNeedRule.AccountingPointDataNeedRule;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -58,7 +60,7 @@ class DataNeedCalculationServiceImplTest {
         // Given
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.empty());
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata, List::of);
         // When
         var res = calculationService.calculate("dnid");
 
@@ -78,7 +80,11 @@ class DataNeedCalculationServiceImplTest {
         when(accountingPointDataNeed.isEnabled()).thenReturn(true);
         when(accountingPointDataNeed.regionConnectorFilter()).thenReturn(Optional.of(regionConnectorFilter));
         when(dataNeedsService.findById("dnid")).thenReturn(Optional.of(accountingPointDataNeed));
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                metadata,
+                () -> List.of(new AccountingPointDataNeedRule())
+        );
 
         // When
         var res = calculationService.calculate("dnid");
@@ -93,7 +99,7 @@ class DataNeedCalculationServiceImplTest {
         when(accountingPointDataNeed.isEnabled()).thenReturn(false);
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.of(accountingPointDataNeed));
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata, List::of);
         // When
         var res = calculationService.calculate("dnid");
 
@@ -107,7 +113,12 @@ class DataNeedCalculationServiceImplTest {
         when(dataNeedsService.findById("dnid"))
                 .thenReturn(Optional.of(aiidaDataNeed));
         when(aiidaDataNeed.isEnabled()).thenReturn(true);
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                metadata,
+                () -> List.of(new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of()),
+                              new AccountingPointDataNeedRule())
+        );
         // When
         var res = calculationService.calculate("dnid");
 
@@ -129,7 +140,14 @@ class DataNeedCalculationServiceImplTest {
                         Granularity.PT15M,
                         Granularity.P1D
                 )));
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                metadata,
+                () -> List.of(new ValidatedHistoricalDataDataNeedRule(
+                        EnergyType.ELECTRICITY,
+                        List.of(Granularity.PT15M, Granularity.P1D)
+                ))
+        );
         // When
         var res = calculationService.calculate("dnid");
 
@@ -147,7 +165,14 @@ class DataNeedCalculationServiceImplTest {
                 Granularity.PT15M,
                 Granularity.P1D
         );
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                metadata,
+                () -> List.of(new ValidatedHistoricalDataDataNeedRule(
+                        EnergyType.ELECTRICITY,
+                        List.of(Granularity.PT15M, Granularity.P1D)
+                ))
+        );
 
         // When
         var res = calculationService.calculate(value);
@@ -167,7 +192,14 @@ class DataNeedCalculationServiceImplTest {
                         Granularity.PT5M,
                         Granularity.PT10M
                 )));
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                metadata,
+                () -> List.of(new ValidatedHistoricalDataDataNeedRule(
+                        EnergyType.ELECTRICITY,
+                        List.of(Granularity.PT15M, Granularity.P1D)
+                ))
+        );
         // When
         var res = calculationService.calculate("dnid");
 
@@ -185,7 +217,14 @@ class DataNeedCalculationServiceImplTest {
                         Granularity.PT5M,
                         Granularity.P1D
                 )));
-        var calculationService = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+        var calculationService = new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                metadata,
+                () -> List.of(new ValidatedHistoricalDataDataNeedRule(
+                        EnergyType.ELECTRICITY,
+                        List.of(Granularity.PT15M, Granularity.P1D)
+                ))
+        );
         // When
         var res = calculationService.calculate("dnid");
 
@@ -203,7 +242,11 @@ class DataNeedCalculationServiceImplTest {
                                                                     new PermissionEndIsEnergyDataEndStrategy(),
                                                                     (dn, referenceDateTime) -> {
                                                                         throw new UnsupportedDataNeedException("", "");
-                                                                    }
+                                                                    },
+                                                                    () -> List.of(new ValidatedHistoricalDataDataNeedRule(
+                                                                            EnergyType.ELECTRICITY,
+                                                                            List.of(Granularity.PT15M, Granularity.P1D)
+                                                                    ))
         );
         // When
         var res = calculationService.calculate("dnid");
@@ -215,7 +258,9 @@ class DataNeedCalculationServiceImplTest {
     @Test
     void regionConnectorId_returnsId() {
         // Given
-        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService,
+                                                         metadata,
+                                                         List::of);
 
         // When
         var res = service.regionConnectorId();
