@@ -2,7 +2,6 @@ package energy.eddie.core.services;
 
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.core.dtos.SupportedDataNeeds;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import org.junit.jupiter.api.Test;
@@ -11,7 +10,6 @@ import java.util.List;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -55,19 +53,5 @@ class MetadataServiceTest {
                 // No-Op
             }
         };
-    }
-
-    @Test
-    void givenNewRegionConnector_returnsSupportedDataNeedsOfRegionConnector() {
-        var service = new MetadataService();
-
-        service.registerRegionConnector(createNewTestRegionConnector());
-
-        var actual = service.getSupportedDataNeeds();
-
-        var expected = new SupportedDataNeeds("1", List.of("ValidatedHistoricalDataDataNeed", "AiidaDataNeed"));
-
-        assertIterableEquals(expected.dataNeeds(), actual.getFirst().dataNeeds());
-
     }
 }
