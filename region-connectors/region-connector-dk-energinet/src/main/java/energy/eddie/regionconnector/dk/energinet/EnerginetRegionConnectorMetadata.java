@@ -7,6 +7,7 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.regionconnector.dk.energinet.data.needs.EnerginetDataNeedRuleSet;
 
 import javax.annotation.Nullable;
 import java.time.Period;
@@ -19,11 +20,6 @@ public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata
     public static final Period PERIOD_EARLIEST_START = Period.ofYears(-4);
     // Currently we only support the customer api and the token for this is valid for a maximum of 1 year
     public static final Period PERIOD_LATEST_END = Period.ofYears(1);
-    public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.PT15M,
-                                                                            Granularity.PT1H,
-                                                                            Granularity.P1D,
-                                                                            Granularity.P1M,
-                                                                            Granularity.P1Y);
     public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(
             ValidatedHistoricalDataDataNeed.class,
             AccountingPointDataNeed.class
@@ -75,7 +71,7 @@ public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata
 
     @Override
     public List<Granularity> supportedGranularities() {
-        return SUPPORTED_GRANULARITIES;
+        return EnerginetDataNeedRuleSet.SUPPORTED_GRANULARITIES;
     }
 
     @Override
