@@ -194,10 +194,9 @@ import java.util.List;
 
 public class FooBarRegionConnectorMetadata implements RegionConnectorMetadata {
   public static final String REGION_CONNECTOR_ID = "foo-bar";
-  public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of();
-  private static final FluviusRegionConnectorMetadata INSTANCE = new FluviusRegionConnectorMetadata();
+  private static final FooBarRegionConnectorMetadata INSTANCE = new FooBarRegionConnectorMetadata();
 
-  private FluviusRegionConnectorMetadata() {}
+  private FooBarRegionConnectorMetadata() {}
 
   public static RegionConnectorMetadata getInstance() {
     return INSTANCE;
@@ -230,22 +229,6 @@ public class FooBarRegionConnectorMetadata implements RegionConnectorMetadata {
     // TODO: find out for your region, what the newest data is that you can request
     return Period.ofYears(0);
   }
-
-  @Override
-  public List<Granularity> supportedGranularities() {
-    // TODO: find out what the resolutions of the data are that your MDA supports
-    return List.of();
-  }
-
-  @Override
-  public ZoneId timeZone() {
-    return ZoneOffset.UTC;
-  }
-
-  @Override
-  public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
-    return List.copyOf(SUPPORTED_DATA_NEEDS);
-  }
 }
 ```
 
@@ -256,6 +239,33 @@ With the region connector metadata in place go ahead and update the `FooBarSprin
 @SpringBootApplication
 @RegionConnector(name = FooBarRegionConnectorMetadata.REGION_CONNECTOR_ID)
 public class FooBarSpringConfig {
+}
+```
+
+#### DataNeedRuleSet
+
+Each region connector can create rules on which data needs it can support.
+Furthermore, those rules include what energy types and granularity are supported.
+Essentially, a data need rule set defines, what data the region connector can provide and in what form.
+All of this is mapped onto EDDIE's data need concept.
+The following is an example of a rule set for data needs.
+It defines two rules.
+First, it allows AccountingPointDataNeeds, which is rather straightforward.
+Second, it allows ValidateHistoricalDataDataNeeds, but only for Electricity data with an resolution of either 15 minutes or one day.
+
+```java
+package energy.eddie.regionconnector.foo.bar.data.needs;
+
+@Component
+public class FooBarDataNeedRuleSet implements DataNeedRuleSet {
+    @Override
+    public List<DataNeedRule<? extends DataNeed>> dataNeedRules() {
+        return List.of(
+                new AcountingPointDataNeedRule();
+                new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT15M, Granularity.P1D))
+        )
+    }
+
 }
 ```
 
