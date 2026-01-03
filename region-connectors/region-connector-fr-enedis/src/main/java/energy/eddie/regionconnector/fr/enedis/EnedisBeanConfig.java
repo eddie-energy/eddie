@@ -12,7 +12,6 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisTokenProvider;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrInternalPollingEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepository;
@@ -31,6 +30,7 @@ import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
@@ -40,19 +40,10 @@ import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
-import static energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration.*;
 
+@EnableConfigurationProperties(EnedisConfiguration.class)
 @Configuration
 public class EnedisBeanConfig {
-    @Bean
-    public EnedisConfiguration enedisConfiguration(
-            @Value("${" + ENEDIS_CLIENT_ID_KEY + "}") String clientId,
-            @Value("${" + ENEDIS_CLIENT_SECRET_KEY + "}") String clientSecret,
-            @Value("${" + ENEDIS_BASE_PATH_KEY + "}") String basePath
-    ) {
-        return new PlainEnedisConfiguration(clientId, clientSecret, basePath);
-    }
-
     @Bean
     public ObjectMapper objectMapper() {
         return new ObjectMapper()

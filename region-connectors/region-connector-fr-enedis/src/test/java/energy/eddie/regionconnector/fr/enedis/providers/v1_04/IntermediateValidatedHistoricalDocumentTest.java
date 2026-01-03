@@ -5,7 +5,7 @@ import energy.eddie.cim.serde.SerializationException;
 import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
-import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequestBuilder;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
@@ -117,7 +117,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 .create();
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 new IdentifiableMeterReading(pr, response, MeterReadingType.CONSUMPTION),
-                new PlainEnedisConfiguration("client-id", "secret", "https://localhost")
+                new EnedisConfiguration("client-id", "secret", "https://localhost")
         );
 
         // When
