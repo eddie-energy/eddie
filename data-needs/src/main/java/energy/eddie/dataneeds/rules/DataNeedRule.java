@@ -17,12 +17,11 @@ import java.util.List;
  * {@code new SupportedValidatedHistoricalDataDataNeedSpecification(List.of(PT15M), List.of(Granularity.PT15M));}
  *
  * @param <T> the type of data need that is supported.
- * @summary Specifies the configuration of a supported {@link DataNeed} by a region connector.
  */
 public sealed interface DataNeedRule<T extends DataNeed> {
     /**
+     * The {@link DataNeed} class of the DataNeedRule.
      * @return the class of the {@link DataNeed} that is supported.
-     * @summary The {@link DataNeed} class of the specification.
      */
     @JsonIgnore
     Class<T> getDataNeedClass();
@@ -33,7 +32,6 @@ public sealed interface DataNeedRule<T extends DataNeed> {
      * Primary used to indicate the type for JSON serialization.
      *
      * @return the simple class name of the {@link DataNeed}.
-     * @summary returns the simple class name of the {@link DataNeed}.
      */
     @JsonProperty("type")
     default String getType() {
@@ -41,9 +39,9 @@ public sealed interface DataNeedRule<T extends DataNeed> {
     }
 
     /**
+     * The SupportedValidatedHistoricalDataDataNeedSpecification specifies one supported variant of the {@link ValidatedHistoricalDataDataNeed}.
      * @param energyType    the supported {@link EnergyType}.
      * @param granularities a list of supported {@link Granularity}.
-     * @summary The SupportedValidatedHistoricalDataDataNeedSpecification specifies one supported variant of the {@link ValidatedHistoricalDataDataNeed}.
      */
     record ValidatedHistoricalDataDataNeedRule(
             @JsonProperty("energyTypes") EnergyType energyType,
@@ -56,7 +54,7 @@ public sealed interface DataNeedRule<T extends DataNeed> {
     }
 
     /**
-     * @summary The SupportedAccountingPointDataNeedSpecification specifies one supported variant of the {@link AccountingPointDataNeed}.
+     * The SupportedAccountingPointDataNeedSpecification specifies one supported variant of the {@link AccountingPointDataNeed}.
      */
     record AccountingPointDataNeedRule() implements DataNeedRule<AccountingPointDataNeed> {
         @Override
@@ -66,9 +64,9 @@ public sealed interface DataNeedRule<T extends DataNeed> {
     }
 
     /**
+     * The SupportedAiidaDataNeedSpecification specifies one supported variant of either the {@link energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed} or the {@link energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed}.
      * @param aiidaDataNeedClass specifies which of the {@link AiidaDataNeed} is supported.
      * @param <T>                The concrete {@link AiidaDataNeed}.
-     * @summary The SupportedAiidaDataNeedSpecification specifies one supported variant of either the {@link energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed} or the {@link energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed}.
      */
     record AiidaDataNeedRule<T extends AiidaDataNeed>(Class<T> aiidaDataNeedClass)
             implements DataNeedRule<T> {

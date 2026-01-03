@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @summary This interface specifies all data need rules that are supported by a certain region connector.
+ * This interface specifies all data need rules that are supported by a certain region connector.
  */
 public interface DataNeedRuleSet {
 
     /**
+     * Returns all the data need rules
      * @return all data need rules
-     * @summary Returns all the data need rules
      */
     @JsonValue
     @SuppressWarnings("java:S1452")
