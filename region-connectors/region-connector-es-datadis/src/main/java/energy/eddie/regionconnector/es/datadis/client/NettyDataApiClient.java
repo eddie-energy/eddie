@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -34,12 +34,12 @@ public class NettyDataApiClient implements DataApi {
             HttpClient httpClient,
             ObjectMapper mapper,
             DatadisTokenProvider tokenProvider,
-            DatadisConfig config
+            DatadisConfiguration config
     ) {
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.tokenProvider = tokenProvider;
-        this.consumptionKwhEndpoint = URI.create(config.basePath()).resolve("api-private/api/get-consumption-data");
+        this.consumptionKwhEndpoint = URI.create(config.basepath()).resolve("api-private/api/get-consumption-data");
     }
 
     @Override

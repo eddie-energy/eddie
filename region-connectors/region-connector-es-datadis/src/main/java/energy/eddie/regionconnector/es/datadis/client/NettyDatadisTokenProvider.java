@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.es.datadis.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class NettyDatadisTokenProvider implements DatadisTokenProvider {
-    private final DatadisConfig config;
+    private final DatadisConfiguration config;
     private final HttpClient httpClient;
     private final ObjectMapper mapper;
     private final URI tokenEndpoint;
@@ -26,13 +26,13 @@ public class NettyDatadisTokenProvider implements DatadisTokenProvider {
     private long expiryTime;
 
     public NettyDatadisTokenProvider(
-            DatadisConfig config,
+            DatadisConfiguration config,
             HttpClient httpClient,
             ObjectMapper mapper
     ) {
         this.config = config;
         this.httpClient = httpClient;
-        this.tokenEndpoint = URI.create(config.basePath()).resolve("nikola-auth/tokens/login");
+        this.tokenEndpoint = URI.create(config.basepath()).resolve("nikola-auth/tokens/login");
         this.mapper = mapper;
     }
 

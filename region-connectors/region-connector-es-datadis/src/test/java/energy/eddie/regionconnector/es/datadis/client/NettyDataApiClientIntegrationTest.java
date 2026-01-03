@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ class NettyDataApiClientIntegrationTest {
             HttpClient.create(),
             mapper,
             () -> Mono.just("replace_me"),
-            new PlainDatadisConfiguration("username", "password", "https://datadis.es")
+            new DatadisConfiguration("username", "password", "https://datadis.es")
     );
 
     @Test

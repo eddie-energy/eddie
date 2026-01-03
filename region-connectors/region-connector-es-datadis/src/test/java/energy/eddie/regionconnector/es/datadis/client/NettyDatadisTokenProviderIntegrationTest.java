@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.es.datadis.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.netty.http.client.HttpClient;
@@ -21,7 +21,7 @@ class NettyDatadisTokenProviderIntegrationTest {
     void getToken_withValidCredentials_returnsToken() {
         ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
-                new MyDatadisConfig("replace", "replace"),
+                new DatadisConfiguration("x", "x", "localhost"),
                 HttpClient.create(),
                 mapper
         );
@@ -35,7 +35,7 @@ class NettyDatadisTokenProviderIntegrationTest {
     void getToken_withInvalidCredentials_returnsError() {
         ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
-                new MyDatadisConfig("x", "x"),
+                new DatadisConfiguration("x", "x", "https://datadis.es"),
                 HttpClient.create(),
                 mapper
         );
@@ -52,7 +52,7 @@ class NettyDatadisTokenProviderIntegrationTest {
         ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
 
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
-                new MyDatadisConfig("x", "x"),
+                new DatadisConfiguration("x", "x", "localhost"),
                 mock,
                 mapper
         );
@@ -71,7 +71,7 @@ class NettyDatadisTokenProviderIntegrationTest {
         ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
 
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
-                new MyDatadisConfig("x", "x"),
+                new DatadisConfiguration("x", "x", "localhost"),
                 mock,
                 mapper
         );
@@ -95,7 +95,7 @@ class NettyDatadisTokenProviderIntegrationTest {
         when(requestMock.uri(any(URI.class))).thenReturn(requestMock);
 
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
-                new MyDatadisConfig("x", "x"),
+                new DatadisConfiguration("x", "x", "localhost"),
                 mock,
                 mapper
         );
@@ -115,19 +115,12 @@ class NettyDatadisTokenProviderIntegrationTest {
         when(requestMock.uri(any(URI.class))).thenReturn(requestMock);
 
         NettyDatadisTokenProvider uut = new NettyDatadisTokenProvider(
-                new MyDatadisConfig("x", "x"),
+                new DatadisConfiguration("x", "x", "http://localhost"),
                 mock,
                 mapper
         );
 
         assertThrows(NullPointerException.class, () -> uut.getToken().block());
         verify(requestMock, times(1)).sendForm(any());
-    }
-
-    private record MyDatadisConfig(String username, String password) implements DatadisConfig {
-        @Override
-        public String basePath() {
-            return "https://datadis.es";
-        }
     }
 }

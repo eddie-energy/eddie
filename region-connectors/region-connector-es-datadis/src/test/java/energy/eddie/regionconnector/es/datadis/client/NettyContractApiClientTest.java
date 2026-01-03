@@ -5,8 +5,7 @@ import energy.eddie.regionconnector.es.datadis.ContractDetailsProvider;
 import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.api.ContractApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import okhttp3.mockwebserver.MockResponse;
@@ -30,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class NettyContractApiClientTest {
     private static MockWebServer mockBackEnd;
-    private static DatadisConfig datadisConfig;
+    private static DatadisConfiguration datadisConfig;
     private final ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
 
     @BeforeAll
@@ -38,7 +37,7 @@ class NettyContractApiClientTest {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
         var basePath = "http://localhost:" + mockBackEnd.getPort();
-        datadisConfig = new PlainDatadisConfiguration("username", "password", basePath);
+        datadisConfig = new DatadisConfiguration("username", "password", basePath);
     }
 
     @AfterAll

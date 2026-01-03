@@ -9,7 +9,7 @@ import energy.eddie.regionconnector.es.datadis.ContractDetailsProvider;
 import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.PointType;
 import energy.eddie.regionconnector.es.datadis.SupplyProvider;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
@@ -53,7 +53,7 @@ class IntermediateAccountingPointMarketDocumentTest {
         // too many assertions
     void accountingPointEnvelope_mapsAsExpected() throws IOException {
         // Given
-        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId", "clientSecret", "basepath");
+        DatadisConfiguration datadisConfig = new DatadisConfiguration("clientId", "clientSecret", "basepath");
         PlainCommonInformationModelConfiguration cimConfiguration = new PlainCommonInformationModelConfiguration(
                 energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                 "fallbackId");

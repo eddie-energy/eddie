@@ -5,8 +5,7 @@ import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringDataRequest;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
@@ -33,7 +32,7 @@ import static org.mockito.Mockito.when;
 class NettyDataApiClientTest {
 
     private static MockWebServer mockBackEnd;
-    private static DatadisConfig config;
+    private static DatadisConfiguration config;
     private final ObjectMapper mapper = MeteringDataProvider.objectMapper;
 
     @BeforeAll
@@ -41,7 +40,7 @@ class NettyDataApiClientTest {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
         var basePath = "http://localhost:" + mockBackEnd.getPort();
-        config = new PlainDatadisConfiguration("username", "password", basePath);
+        config = new DatadisConfiguration("username", "password", basePath);
     }
 
     @AfterAll

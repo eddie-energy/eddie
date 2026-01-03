@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.api.ContractApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -32,12 +32,12 @@ public class NettyContractApiClient implements ContractApi {
             HttpClient httpClient,
             ObjectMapper mapper,
             DatadisTokenProvider tokenProvider,
-            DatadisConfig config
+            DatadisConfiguration config
     ) {
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.tokenProvider = tokenProvider;
-        this.suppliesEndpoint = URI.create(config.basePath()).resolve("api-private/api/get-contract-detail");
+        this.suppliesEndpoint = URI.create(config.basepath()).resolve("api-private/api/get-contract-detail");
     }
 
     @Override

@@ -3,8 +3,7 @@ package energy.eddie.regionconnector.es.datadis.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -33,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SuppressWarnings("rawtypes")
 class NettyAuthorizationApiClientTest {
     private static MockWebServer mockBackEnd;
-    private static DatadisConfig datadisConfig;
+    private static DatadisConfiguration datadisConfig;
     private final ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
 
     @BeforeAll
@@ -41,7 +40,7 @@ class NettyAuthorizationApiClientTest {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
         var basePath = "http://localhost:" + mockBackEnd.getPort();
-        datadisConfig = new PlainDatadisConfiguration("username", "password", basePath);
+        datadisConfig = new DatadisConfiguration("username", "password", basePath);
     }
 
     @AfterAll

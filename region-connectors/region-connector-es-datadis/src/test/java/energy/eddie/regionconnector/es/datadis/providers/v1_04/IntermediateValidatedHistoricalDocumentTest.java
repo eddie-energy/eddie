@@ -9,7 +9,7 @@ import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import org.junit.jupiter.api.Test;
@@ -106,7 +106,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 new IdentifiableMeteringData(pr, intermediateMeteringDataMono),
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                                                              "EP-ID"),
-                new PlainDatadisConfiguration("client-id", "secret", "https://localhost")
+                new DatadisConfiguration("client-id", "secret", "https://localhost")
         );
 
         // When

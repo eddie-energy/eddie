@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.es.datadis.providers.v0_82;
 
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ class DatadisAccountingPointEnvelopeProviderTest {
     @Test
     void testGetAccountingPointEnvelopeFlux_publishesDocuments() throws Exception {
         // Given
-        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId", "clientSecret", "basepath");
+        DatadisConfiguration datadisConfig = new DatadisConfiguration("clientId", "clientSecret", "basepath");
         IntermediateAPMDFactory factory = new IntermediateAPMDFactory(
                 datadisConfig,
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.SPAIN_NATIONAL_CODING_SCHEME,
