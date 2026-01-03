@@ -3,7 +3,7 @@ package energy.eddie.spring.regionconnector.extensions.dataneeds;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.core.services.DataNeedRuleSetRouter;
-import energy.eddie.dataneeds.supported.DataNeedRuleSet;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import org.springframework.beans.factory.ObjectProvider;
 
 import static java.util.Objects.requireNonNull;

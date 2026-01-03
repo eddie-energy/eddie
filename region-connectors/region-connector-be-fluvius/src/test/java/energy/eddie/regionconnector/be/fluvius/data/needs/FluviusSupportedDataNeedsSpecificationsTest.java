@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.be.fluvius.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
-import energy.eddie.dataneeds.supported.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

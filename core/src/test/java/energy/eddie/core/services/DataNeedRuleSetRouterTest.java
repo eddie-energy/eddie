@@ -1,8 +1,8 @@
 package energy.eddie.core.services;
 
 import energy.eddie.core.dtos.SupportedDataNeeds;
-import energy.eddie.dataneeds.supported.DataNeedRule.AccountingPointDataNeedRule;
-import energy.eddie.dataneeds.supported.DataNeedRuleSet;
+import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

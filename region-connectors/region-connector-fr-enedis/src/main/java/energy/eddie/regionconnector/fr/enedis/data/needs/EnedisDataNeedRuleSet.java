@@ -3,10 +3,10 @@ package energy.eddie.regionconnector.fr.enedis.data.needs;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.supported.DataNeedRule;
-import energy.eddie.dataneeds.supported.DataNeedRule.AccountingPointDataNeedRule;
-import energy.eddie.dataneeds.supported.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
-import energy.eddie.dataneeds.supported.DataNeedRuleSet;
+import energy.eddie.dataneeds.rules.DataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

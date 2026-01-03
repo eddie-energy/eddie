@@ -1,7 +1,7 @@
 package energy.eddie.core.services;
 
 import energy.eddie.core.dtos.SupportedDataNeeds;
-import energy.eddie.dataneeds.supported.DataNeedRuleSet;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package energy.eddie.dataneeds.supported;
+package energy.eddie.dataneeds.rules;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import energy.eddie.dataneeds.needs.DataNeed;

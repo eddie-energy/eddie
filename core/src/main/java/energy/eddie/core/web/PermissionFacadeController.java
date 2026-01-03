@@ -6,7 +6,7 @@ import energy.eddie.core.application.information.ApplicationInformation;
 import energy.eddie.core.services.*;
 import energy.eddie.dataneeds.exceptions.DataNeedDisabledException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
-import energy.eddie.dataneeds.supported.DataNeedRuleSet;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -24,7 +24,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
-import static energy.eddie.dataneeds.supported.DataNeedRule.AccountingPointDataNeedRule;
+import static energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

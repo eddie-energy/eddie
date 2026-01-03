@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.shared.services.data.needs;
 
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.supported.DataNeedRule;
-import energy.eddie.dataneeds.supported.DataNeedRuleSet;
+import energy.eddie.dataneeds.rules.DataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.regionconnector.shared.services.data.needs.MatchedRules.Matched;
 import energy.eddie.regionconnector.shared.services.data.needs.MatchedRules.MatchedVHDRules;
 import energy.eddie.regionconnector.shared.services.data.needs.MatchedRules.NoMatch;
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import static energy.eddie.dataneeds.supported.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
+import static energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 
 /**
  * This class checks a {@link DataNeedRuleSet} for rules that match the provided {@link DataNeed}.

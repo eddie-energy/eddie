@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.shared.services.data.needs;
 
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.supported.DataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRule;
 
 import java.util.List;
 import java.util.Optional;

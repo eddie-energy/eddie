@@ -4,7 +4,7 @@ import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.core.services.DataNeedRuleSetRouter;
 import energy.eddie.core.services.UnknownRegionConnectorException;
-import energy.eddie.dataneeds.supported.DataNeedRuleSet;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
