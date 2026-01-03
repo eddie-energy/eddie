@@ -14,7 +14,6 @@ import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
-import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
 import energy.eddie.regionconnector.aiida.data.needs.AiidaEnergyDataTimeframeStrategy;
 import energy.eddie.regionconnector.aiida.mqtt.MqttConnectCallback;
 import energy.eddie.regionconnector.aiida.mqtt.MqttMessageCallback;
@@ -69,11 +68,7 @@ public class AiidaBeanConfig {
         if (mqttPassword != null && mqttPassword.trim().isEmpty())
             mqttPassword = null;
 
-        return new PlainAiidaConfiguration(customerId,
-                                           bCryptStrength,
-                                           handshakeUrl,
-                                           mqttServerUri,
-                                           mqttPassword);
+        return new AiidaConfiguration(customerId, bCryptStrength, handshakeUrl, mqttServerUri, mqttPassword);
     }
 
     @Bean

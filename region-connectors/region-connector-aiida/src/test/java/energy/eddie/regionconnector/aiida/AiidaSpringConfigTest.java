@@ -11,10 +11,10 @@ class AiidaSpringConfigTest {
     void givenLocalhost_aiidaConfiguration_constructsHandshakeUrlTemplateAsExpected() {
         // When
         AiidaConfiguration config = new AiidaBeanConfig().aiidaConfiguration("foo",
-                                                                               5,
-                                                                               "http://localhost:1234",
-                                                                               "fooBar",
-                                                                               null);
+                                                                             5,
+                                                                             "http://localhost:1234",
+                                                                             "fooBar",
+                                                                             null);
 
         // Then
         assertEquals("foo", config.customerId());
@@ -27,10 +27,10 @@ class AiidaSpringConfigTest {
     void givenEmpty_aiidaConfiguration_usesNull() {
         // When
         AiidaConfiguration config = new AiidaBeanConfig().aiidaConfiguration("foo",
-                                                                               5,
-                                                                               "http://localhost:1234",
-                                                                               "fooBar",
-                                                                               "   ");
+                                                                             5,
+                                                                             "http://localhost:1234",
+                                                                             "fooBar",
+                                                                             "   ");
 
         // Then
         assertNull(config.mqttPassword());
