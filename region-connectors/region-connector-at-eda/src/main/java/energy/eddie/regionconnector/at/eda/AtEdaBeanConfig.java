@@ -13,11 +13,9 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
-import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.data.needs.calculation.strategies.EdaStrategy;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.at.eda.persistence.EdaPermissionEventRepository;
-import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapter;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
@@ -36,14 +34,12 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.P
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Scope;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -54,42 +50,10 @@ import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.TRANSMISSION_CYCLE;
-import static energy.eddie.regionconnector.at.eda.config.AtConfiguration.ELIGIBLE_PARTY_ID_KEY;
-import static energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration.*;
 
 @Configuration
+@EnableConfigurationProperties({AtConfiguration.class, PontonXPAdapterConfiguration.class})
 public class AtEdaBeanConfig {
-    @Bean
-    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-    public PontonXPAdapterConfiguration pontonXPAdapterConfiguration(
-            @Value("${" + ADAPTER_ID_KEY + "}") String adapterId,
-            @Value("${" + ADAPTER_VERSION_KEY + "}") String adapterVersion,
-            @Value("${" + HOSTNAME_KEY + "}") String hostname,
-            @Value("${" + PORT_KEY + "}") int port,
-            @Value("${" + API_ENDPOINT_KEY + "}") String apiEndpoint,
-            @Value("${" + WORK_FOLDER_KEY + "}") String workFolder,
-            @Value("${" + USERNAME_KEY + "}") String username,
-            @Value("${" + PASSWORD_KEY + "}") String password
-    ) {
-        return new PlainPontonXPAdapterConfiguration(
-                adapterId,
-                adapterVersion,
-                hostname,
-                port,
-                apiEndpoint,
-                workFolder,
-                username,
-                password
-        );
-    }
-
-    @Bean
-    public AtConfiguration atConfiguration(
-            @Value("${" + ELIGIBLE_PARTY_ID_KEY + "}") String eligiblePartyId
-    ) {
-        return new PlainAtConfiguration(eligiblePartyId);
-    }
-
     @Bean
     public EdaAdapter edaAdapter(
             PontonMessengerConnection pontonMessengerConnection,

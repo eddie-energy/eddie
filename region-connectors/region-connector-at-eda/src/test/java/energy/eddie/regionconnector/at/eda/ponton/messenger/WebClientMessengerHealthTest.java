@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda.ponton.messenger;
 
-import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -27,7 +26,7 @@ class WebClientMessengerHealthTest {
     static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
-        config = new PlainPontonXPAdapterConfiguration(
+        config = new PontonXPAdapterConfiguration(
                 "adapterId",
                 "adapterVersion",
                 "hostname",

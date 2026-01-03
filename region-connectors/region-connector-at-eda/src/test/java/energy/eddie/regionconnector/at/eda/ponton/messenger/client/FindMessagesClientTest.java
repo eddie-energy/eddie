@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.at.eda.ponton.messenger.client;
 
-import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonTokenProvider;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.client.model.FindMessages;
@@ -27,7 +26,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class FindMessagesClientTest {
     private static final MockWebServer SERVER = new MockWebServer();
-    private final PontonXPAdapterConfiguration config = new PlainPontonXPAdapterConfiguration(
+    private final PontonXPAdapterConfiguration config = new PontonXPAdapterConfiguration(
             "adapter-id",
             "1.0",
             SERVER.url("/").toString(),

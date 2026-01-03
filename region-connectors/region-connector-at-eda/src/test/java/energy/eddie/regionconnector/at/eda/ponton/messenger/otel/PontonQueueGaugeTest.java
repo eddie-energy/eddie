@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.ponton.messenger.otel;
 
-import energy.eddie.regionconnector.at.eda.ponton.PlainPontonXPAdapterConfiguration;
+import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.client.FindMessagesClient;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.client.model.Messages;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PontonQueueGaugeTest {
-    private final PlainPontonXPAdapterConfiguration config = new PlainPontonXPAdapterConfiguration(
+    private final PontonXPAdapterConfiguration config = new PontonXPAdapterConfiguration(
             "adapter",
             "1.0",
             "https://localhost",
