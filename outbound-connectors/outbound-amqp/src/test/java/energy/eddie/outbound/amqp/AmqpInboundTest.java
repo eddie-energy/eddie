@@ -10,6 +10,7 @@ import energy.eddie.cim.v0_91_08.ESMPDateTimeInterval;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import org.junit.jupiter.api.*;
+import org.springframework.test.annotation.DirtiesContext;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -19,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DirtiesContext
 class AmqpInboundTest {
     private static final RabbitMQContainer rabbit =
             new RabbitMQContainer(DockerImageName.parse("rabbitmq:4-management-alpine"));

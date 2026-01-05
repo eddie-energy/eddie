@@ -17,6 +17,7 @@ import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.TopicStructure;
 import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.junit.jupiter.api.*;
+import org.springframework.test.annotation.DirtiesContext;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 import reactor.test.publisher.TestPublisher;
@@ -28,9 +29,11 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DirtiesContext
 class AmqpOutboundTest {
-    private static final RabbitMQContainer rabbit = new RabbitMQContainer(DockerImageName.parse(
-            "rabbitmq:4-management-alpine"));
+    private static final RabbitMQContainer rabbit = new RabbitMQContainer(
+            DockerImageName.parse("rabbitmq:4-management-alpine")
+    );
     private final MockDataSourceInformation dataSourceInformation = new MockDataSourceInformation("AT",
                                                                                                   "at-eda",
                                                                                                   "paid",
