@@ -30,8 +30,6 @@ postgresql = "42.7.3"
 javalin = "6.3.0"
 jdbi3 = "3.37.1"
 reactor = "3.7.0"
-reactor-netty = "1.2.0"
-netty-codec-http = "4.1.115.Final"
 slf4j = "2.0.7"
 guice = "7.0.0"
 jte = "3.1.15"
@@ -57,7 +55,7 @@ apache-httpcomponents-client-version = "5.4.1"
 jackson-databind-nullable-version = "0.2.6"
 google-jib = "3.4.0"
 
-testcontainers = "2.0.2"
+testcontainers = "2.0.3"
 xmlunit = "2.10.3"
 
 j2mod = "3.2.1"
@@ -109,10 +107,6 @@ jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datat
 
 reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
 reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "reactor" }
-
-reactor-netty-http = { module = "io.projectreactor.netty:reactor-netty-http", version.ref = "reactor-netty" }
-reactor-netty-core = { module = "io.projectreactor.netty:reactor-netty-core", version.ref = "reactor-netty" }
-netty-codec-http = { module = "io.netty:netty-codec-http", version.ref = "netty-codec-http" }
 
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
 

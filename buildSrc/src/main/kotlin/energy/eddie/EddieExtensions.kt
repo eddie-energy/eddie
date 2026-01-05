@@ -9,6 +9,7 @@ import java.util.*
 
 fun Project.configureJavaCompileWithErrorProne(packageName: String) {
     tasks.withType<JavaCompile>().configureEach {
+        options.errorprone.disableWarningsInGeneratedCode.set(true)
         if (!name.lowercase(Locale.getDefault()).contains("test")) {
             options.errorprone {
                 check("NullAway", CheckSeverity.ERROR)
