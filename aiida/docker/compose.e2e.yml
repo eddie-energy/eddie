@@ -1,5 +1,6 @@
 services:
   aiida:
+    pull_policy: build
     ports: !override
       - "8081:8080"
     env_file:
