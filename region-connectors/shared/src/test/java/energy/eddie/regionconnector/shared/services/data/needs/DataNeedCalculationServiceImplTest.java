@@ -9,6 +9,7 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.RegionConnectorFilter;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
+import energy.eddie.dataneeds.rules.DataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
@@ -285,7 +286,11 @@ class DataNeedCalculationServiceImplTest {
                 .thenReturn(Optional.of(
                         new AccountingPointDataNeed("name", "desc", "purpose", "https://localhost", true, null)
                 ));
-        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+        List<DataNeedRule<?>> dataNeedRules = List.of(
+                new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT1H)),
+                new AccountingPointDataNeedRule()
+        );
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata, () -> dataNeedRules);
 
         // When
         var res = service.calculateAll(Set.of("vhd-dnid", "ap-dnid"));
